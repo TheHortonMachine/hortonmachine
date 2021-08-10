@@ -117,8 +117,6 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
         WritableRaster outBaseflowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
         WritableRandomIter outBaseflowIter = CoverageUtilities.getWritableRandomIterator(outBaseflowWR);
-        WritableRaster outLsumWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, lsumNv);
-        WritableRandomIter outLsumIter = CoverageUtilities.getWritableRandomIterator(outLsumWR);
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         int flowNv = HMConstants.getIntNovalue(inFlowdirections);
@@ -160,7 +158,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     lSumMatrix[row][col] = lsumNv;
                 }
             }
-            calculateLsumMatrix(sourceCells, lSumMatrix, infiltrationIter, netIter, outLsumIter, lsumNv, pm);
+            calculateLsumMatrix(sourceCells, lSumMatrix, infiltrationIter, netIter, lsumNv, pm);
 
             // calculate matrix of cumulated baseflow
             double[][] bSumMatrix = new double[rows][cols];
@@ -177,8 +175,8 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
             outBaseflow = CoverageUtilities.buildCoverageWithNovalue("baseflow", outBaseflowWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
-            outLsum = CoverageUtilities.buildCoverageWithNovalue("lsum", outLsumWR, regionMap,
-                    inFlowdirections.getCoordinateReferenceSystem(), lsumNv);
+            outLsum = CoverageUtilities.buildCoverageWithNovalue("lsum", lSumMatrix, regionMap,
+                    inFlowdirections.getCoordinateReferenceSystem(), true, lsumNv);
         } finally {
             flowIter.done();
             netInfiltrationIter.done();
@@ -186,13 +184,12 @@ public class OmsBaseflowWaterVolume extends HMModel {
             netIter.done();
 
             outBaseflowIter.done();
-            outLsumIter.done();
         }
 
     }
 
     private void calculateLsumMatrix( List<FlowNode> sourceCells, double[][] lSumMatrix, RandomIter infiltrationIter,
-            RandomIter netIter, WritableRandomIter outLsumIter, double lsumNv, IHMProgressMonitor pm ) {
+            RandomIter netIter, double lsumNv, IHMProgressMonitor pm ) {
 
         pm.beginTask("Calculating lsum...", sourceCells.size());
         for( FlowNode sourceCell : sourceCells ) {
@@ -205,15 +202,13 @@ public class OmsBaseflowWaterVolume extends HMModel {
             int y = sourceCell.row;
             lSumMatrix[y][x] = li; // no upstream contribution
 
-            sourceCell.setValueInMap(outLsumIter, li);
-
             // go downstream
             Set<FlowNode> seen = new HashSet<>();
             FlowNode cell = sourceCell.goDownstream();
             while( cell != null ) {
                 List<FlowNode> upstreamCells = cell.getEnteringNodes();
                 // check if all upstream have a value
-                boolean canProcess = canProcess(outLsumIter, lsumNv, upstreamCells);
+                boolean canProcess = canProcess(lSumMatrix, lsumNv, upstreamCells);
                 if (canProcess) {
                     double currentCellLi = cell.getValueFromMap(infiltrationIter);
                     // infiltratedWaterVolumeState.get(locator,
@@ -231,7 +226,6 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     }
                     double currentCellLSum = currentCellLi + lSumUpstreamCells;
                     lSumMatrix[cell.row][cell.col] = currentCellLSum;
-                    cell.setValueInMap(outLsumIter, currentCellLSum);
                     cell = cell.goDownstream();
 
                     if (cell != null) {
@@ -250,12 +244,10 @@ public class OmsBaseflowWaterVolume extends HMModel {
         pm.done();
     }
 
-    private boolean canProcess( WritableRandomIter outLsumIter, double lsumNv, List<FlowNode> upstreamCells ) {
+    private boolean canProcess( double[][] lSumMatrix, double lsumNv, List<FlowNode> upstreamCells ) {
         boolean canProcess = true;
         for( FlowNode upstreamCell : upstreamCells ) {
-            double lsum = upstreamCell.getValueFromMap(outLsumIter);
-
-//                    double lsum = lSumMatrix[upstreamCell.row][upstreamCell.col];
+            double lsum = lSumMatrix[upstreamCell.row][upstreamCell.col];
             if (HMConstants.isNovalue(lsum, lsumNv)) {
                 // stop, we still need the other upstream values
                 canProcess = false;
