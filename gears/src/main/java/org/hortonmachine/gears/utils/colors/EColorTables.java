@@ -39,6 +39,7 @@ public enum EColorTables {
     reds, //
     blues, //
     greens, //
+    violets, //
     contrasting130, //
     contrasting; //
 }

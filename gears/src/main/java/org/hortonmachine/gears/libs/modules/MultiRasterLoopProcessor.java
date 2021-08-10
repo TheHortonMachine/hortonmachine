@@ -24,8 +24,12 @@ public class MultiRasterLoopProcessor {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(rasters[0]);
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
+        double nv = HMConstants.doubleNovalue;
+        if (noValue != null) {
+            nv = noValue;
+        }
 
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, nv);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
 
         RandomIter[] iters = new RandomIter[rasters.length];
@@ -33,11 +37,6 @@ public class MultiRasterLoopProcessor {
             if (rasters != null) {
                 iters[i] = CoverageUtilities.getRandomIterator(rasters[i]);
             }
-        }
-
-        double nv = HMConstants.doubleNovalue;
-        if (noValue != null) {
-            nv = noValue;
         }
 
         try {
@@ -69,7 +68,8 @@ public class MultiRasterLoopProcessor {
             outIter.done();
         }
 
-        return CoverageUtilities.buildCoverageWithNovalue("raster", outWR, regionMap, rasters[0].getCoordinateReferenceSystem(), noValue);
+        return CoverageUtilities.buildCoverageWithNovalue("raster", outWR, regionMap, rasters[0].getCoordinateReferenceSystem(),
+                noValue);
     }
 
 }

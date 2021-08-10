@@ -253,7 +253,7 @@ public class RasterStyleUtilities {
     private static String getQgisStyleContinuous( double min, double max, double[] values, Color[] colors, int labelDecimals )
             throws Exception {
 
-        double delta = (max - min) / colors.length - 1;
+        double delta = (max - min) / (colors.length - 1);
         if (values == null) {
             values = new double[colors.length];
 

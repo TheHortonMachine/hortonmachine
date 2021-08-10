@@ -183,6 +183,17 @@ public class DefaultTables {
                 "8 48 107\n";
         map.put(EColorTables.blues.name(), blues);
 
+        String violets = "252,251,253\n" + //
+                "239,237,245\n" + //
+                "218,218,235\n" + //
+                "188,189,220\n" + //
+                "158,154,200\n" + //
+                "128,125,186\n" + //
+                "106,81,163\n" + //
+                "84,39,143\n" + //
+                "63,0,125\n";
+        map.put(EColorTables.violets.name(), violets);
+
         String shalstab = "1.0 255 0 0 1.0 255 0 0\n" + //
                 "2.0 0 255 0 2.0 0 255 0\n" + //
                 "3.0 255 255 0 3.0 255 255 0\n" + //

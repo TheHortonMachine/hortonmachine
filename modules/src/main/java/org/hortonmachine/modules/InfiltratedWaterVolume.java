@@ -17,11 +17,12 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inFlowdirections_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.*;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inNet_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inPet_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inRainfall_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inRunoff_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.outAet_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.outInfiltration_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.outNetInfiltration_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.pAlpha_DESCRIPTION;
@@ -88,6 +89,16 @@ public class InfiltratedWaterVolume extends HMModel {
     @In
     public double pGamma = 1.0;
 
+    @Description(outAet_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outAet = null;
+
+    @Description(outLsumAvailable_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outLsumAvailable = null;
+
     @Description(outNetInfiltration_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -114,5 +125,7 @@ public class InfiltratedWaterVolume extends HMModel {
 
         dumpRaster(inf.outInfiltration, outInfiltration);
         dumpRaster(inf.outNetInfiltration, outNetInfiltration);
+        dumpRaster(inf.outAet, outAet);
+        dumpRaster(inf.outLsumAvailable, outLsumAvailable);
     }
 }

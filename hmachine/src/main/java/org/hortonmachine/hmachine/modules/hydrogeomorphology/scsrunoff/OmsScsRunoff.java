@@ -99,6 +99,7 @@ public class OmsScsRunoff extends HMModel {
             _eventsNv = getNovalue(inNumberOfEvents);
         }
         double eventsNv = _eventsNv;
+        double runoffNv = -1.0;
 
         MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating runoff...", pm);
         IDataLoopFunction funct = new IDataLoopFunction(){
@@ -108,8 +109,11 @@ public class OmsScsRunoff extends HMModel {
                 double rain = values[0];
                 double cn = values[1];
                 double net = values[2];
-                if (isNovalue(rain, rainNv) || isNovalue(cn, cnNv)) {
-                    return rainNv;
+                if (isNovalue(rain, rainNv)) {
+                    return runoffNv;
+                }
+                if (isNovalue(cn, cnNv)) {
+                    return 0;
                 }
                 int eventNum = (int) values[3];
                 if (isNovalue(eventNum, eventsNv)) {
@@ -120,7 +124,7 @@ public class OmsScsRunoff extends HMModel {
                 return calculateRunoff(rain, cn, isNet, eventNum);
             }
         };
-        outputDischarge = processor.loop(funct, rainNv, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
+        outputDischarge = processor.loop(funct, runoffNv, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
 
     }
 
