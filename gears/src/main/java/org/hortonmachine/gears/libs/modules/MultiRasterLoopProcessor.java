@@ -72,7 +72,9 @@ public class MultiRasterLoopProcessor {
             pm.done();
         } finally {
             for( RandomIter randomIter : iters ) {
-                randomIter.done();
+                if (randomIter != null) {
+                    randomIter.done();
+                }
             }
             outIter.done();
         }
