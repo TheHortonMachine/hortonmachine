@@ -21,6 +21,16 @@ public class MultiRasterLoopProcessor {
     }
 
     public GridCoverage2D loop( IDataLoopFunction function, Double noValue, GridCoverage2D... rasters ) {
+        GridCoverage2D refRaster = null;
+        for( GridCoverage2D raster : rasters ) {
+            if (raster != null) {
+                refRaster = raster;
+                break;
+            }
+        }
+        if (refRaster == null) {
+            throw new IllegalArgumentException("At least one raster needs to be non null.");
+        }
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(rasters[0]);
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
@@ -34,7 +44,7 @@ public class MultiRasterLoopProcessor {
 
         RandomIter[] iters = new RandomIter[rasters.length];
         for( int i = 0; i < iters.length; i++ ) {
-            if (rasters != null) {
+            if (rasters[i] != null) {
                 iters[i] = CoverageUtilities.getRandomIterator(rasters[i]);
             }
         }
@@ -47,7 +57,6 @@ public class MultiRasterLoopProcessor {
                     return null;
                 }
                 for( int c = 0; c < cols; c++ ) {
-
                     for( int i = 0; i < iters.length; i++ ) {
                         if (iters[i] != null) {
                             values[i] = iters[i].getSampleDouble(c, r, 0);
