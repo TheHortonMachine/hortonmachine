@@ -815,11 +815,11 @@
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
-			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
-			<url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 	</distributionManagement>
 
@@ -843,7 +843,7 @@
 			<url>https://repo.osgeo.org/repository/release/</url>
 			<!-- contains release (including third-party-dependences)                            -->
 			<!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
-			<!-- geosolutions (http://maven.geo-solutions.it/)                                   -->
+			<!-- geosolutions (https://maven.geo-solutions.it/)                                   -->
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -858,7 +858,7 @@
 			</snapshots>
 			<id>geosolutions</id>
 			<name>GeoSolutions repository used for imageio-ext, jai-ext</name>
-			<url>http://maven.geo-solutions.it/</url>
+			<url>https://maven.geo-solutions.it/</url>
 		</repository>
 
 		<repository>
@@ -867,12 +867,12 @@
 			</snapshots>
 			<id>sonatype-nexus-snapshots</id>
 			<name>jgrasstools snapshots</name>
-			<url>http://oss.sonatype.org/content/repositories/snapshots</url>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</repository>
 		<repository>
 			<id>jitpack.io</id>
 			<name>jitpack</name>
-			<url>http://jitpack.io</url>
+			<url>https://jitpack.io</url>
 		</repository>
 	</repositories>
 
