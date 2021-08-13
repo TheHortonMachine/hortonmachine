@@ -48,6 +48,7 @@ import org.hortonmachine.gui.utils.GuiUtilities
 
 import javax.swing.Action
 import javax.swing.Icon
+import javax.swing.ImageIcon
 import javax.swing.JApplet
 import javax.swing.JFileChooser
 import javax.swing.JFrame
@@ -95,7 +96,7 @@ import java.util.prefs.Preferences
  */
 class Console implements CaretListener, HyperlinkListener, ComponentListener, FocusListener {
     static String myTitle = 'Geoscript and Hortonmachine GroovyConsole';
-    static String myVersions = ' Geoscript Version 1.14\n Hortonmachine Version 0.9.9 \n Groovy Version ';
+    static String myVersions = ' Geoscript Version 1.14\n Hortonmachine Version 0.10.4 \n Groovy Version ';
 
     static final String DEFAULT_SCRIPT_NAME_START = 'ConsoleScript'
 
@@ -381,6 +382,51 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
         }
 
         binding.variables._outputTransforms = OutputTransforms.loadOutputTransforms()
+        
+        // remove last for strings
+        binding.variables._outputTransforms.remove(binding.variables._outputTransforms.size()-1)
+        
+        // add nifty objects that fit in tables
+        binding.variables._outputTransforms << { it ->
+            if (it instanceof Map) {
+                def table = new javax.swing.JTable(
+                    it.collect{ k, v ->
+                        [k, v?.inspect()] as Object[]
+                    } as Object[][],
+                    ['Key', 'Value'] as Object[])
+                table.preferredScrollableViewportSize = table.preferredSize
+                return new javax.swing.JScrollPane(table)
+            }
+        }
+        binding.variables._outputTransforms << { it ->
+            if (it instanceof List) {
+                def objs = new Object[it.size()][1]
+                def i = 0
+                it.each {
+                  objs[i++][0] = it.toString()
+                }
+                def table = new javax.swing.JTable(
+                    objs,
+                    ['Value'] as Object[])
+                table.preferredScrollableViewportSize = table.preferredSize
+                return new javax.swing.JScrollPane(table)
+            }
+        }
+        binding.variables._outputTransforms << { it ->
+            if (
+                it instanceof geoscript.geom.Geometry ||
+                it instanceof geoscript.feature.Feature
+                ) {
+                def img = geoscript.render.Draw.drawToImage(["size":[600,600],"backgroundColor":"white"],it)
+                return new ImageIcon(img)
+            } else if ( it instanceof geoscript.render.Map ) {
+                return new ImageIcon(it.renderToImage())
+            }
+        }
+        
+        // or else to nothing
+//        binding.variables._outputTransforms << { it -> if (it != null) "" }
+        
     }
 
     void newScript(ClassLoader parent, Binding binding) {
