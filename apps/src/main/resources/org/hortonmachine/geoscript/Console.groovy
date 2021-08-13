@@ -75,6 +75,7 @@ import javax.swing.text.Style
 import javax.swing.text.StyleConstants
 import javax.swing.text.html.HTML
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.EventQueue
@@ -394,31 +395,63 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
                         [k, v?.inspect()] as Object[]
                     } as Object[][],
                     ['Key', 'Value'] as Object[])
+                table.setGridColor(Color.BLACK)
                 table.preferredScrollableViewportSize = table.preferredSize
                 return new javax.swing.JScrollPane(table)
             }
         }
         binding.variables._outputTransforms << { it ->
             if (it instanceof List) {
-                def objs = new Object[it.size()][1]
+                def objs = null
+                def header = []
                 def i = 0
-                it.each {
-                  objs[i++][0] = it.toString()
+                it.each { it2 ->
+                   if(it2 instanceof List) {
+                       if(objs==null) {
+                           objs = new Object[it.size()][it2.size()]
+                           for(c in 0..(it2.size()-1) ) {
+                               header << "Value " + (c+1)
+                           }
+                       }
+                       def j = 0;
+                       it2.each { it3 ->
+                           objs[i][j++] = it3.toString()
+                       }
+                       i++
+                   }else {
+                       if(objs==null) {
+                          objs = new Object[it.size()][1]
+                          header << "Value"
+                       }
+                       objs[i++][0] = it2.toString()
+                   }
                 }
                 def table = new javax.swing.JTable(
                     objs,
-                    ['Value'] as Object[])
+                    header as Object[])
+                table.setGridColor(Color.BLACK)
                 table.preferredScrollableViewportSize = table.preferredSize
                 return new javax.swing.JScrollPane(table)
             }
         }
         binding.variables._outputTransforms << { it ->
-            if (
-                it instanceof geoscript.geom.Geometry ||
-                it instanceof geoscript.feature.Feature
-                ) {
-                def img = geoscript.render.Draw.drawToImage(["size":[600,600],"backgroundColor":"white"],it)
+            if ( it instanceof geoscript.geom.Geometry || it instanceof geoscript.layer.Layer) {
+                def img = geoscript.render.Draw.drawToImage(["size":[400,400],"backgroundColor":"white"],it)
                 return new ImageIcon(img)
+            } else if ( it instanceof geoscript.feature.Feature ) {
+                def map =[:]
+                it.attributes.each{attributeName,value->
+                    map.put(attributeName, value)
+                }
+                def objs = map.collect{ k, v ->
+                    [k, v?.inspect()] as Object[]
+                } as Object[][]
+                def table = new javax.swing.JTable(
+                    objs,
+                    ['Name', 'Value'] as Object[])
+                table.setGridColor(Color.BLACK)
+                table.preferredScrollableViewportSize = table.preferredSize
+                return new javax.swing.JScrollPane(table)
             } else if ( it instanceof geoscript.render.Map ) {
                 return new ImageIcon(it.renderToImage())
             }
