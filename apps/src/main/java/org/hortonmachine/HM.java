@@ -54,7 +54,6 @@ import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
-import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
 import org.hortonmachine.gears.utils.chart.TimeSeries;
@@ -648,28 +647,16 @@ public class HM {
     }
 
     public static void plotJtsGeometries( Map<String, Object> options, List<Geometry> geomsList ) {
-        String title = "";
-        String xLabel = "x";
-        String yLabel = "y";
+        JFreeChart chart = makeJtsGeometriesChart(options, geomsList);
+        ChartPanel chartPanel = new ChartPanel(chart, true);
+        chartPanel.setRangeZoomable(true);
+        chartPanel.setDomainZoomable(true);
+
         int width = 1200;
         int height = 800;
-        int strokeWidth = 2;
-        boolean drawCoords = true;
 
         if (options != null) {
-            Object object = options.get("title");
-            if (object instanceof String) {
-                title = (String) object;
-            }
-            object = options.get("xlabel");
-            if (object instanceof String) {
-                xLabel = (String) object;
-            }
-            object = options.get("ylabel");
-            if (object instanceof String) {
-                yLabel = (String) object;
-            }
-            object = options.get("size");
+            Object object = options.get("size");
             if (object instanceof List) {
                 List size = (List) object;
                 try {
@@ -688,6 +675,43 @@ public class HM {
             object = options.get("height");
             if (object instanceof Number) {
                 height = ((Number) object).intValue();
+            }
+        }
+
+        Dimension preferredSize = new Dimension(width, height);
+        chartPanel.setPreferredSize(preferredSize);
+
+        GuiUtilities.openDialogWithPanel(chartPanel, "Simple Geometry Plot", preferredSize, false);
+    }
+
+    public static JFreeChart makeGeometriesChart( List<geoscript.geom.Geometry> geomsList ) {
+        return makeJtsGeometriesChart(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
+    }
+
+    public static JFreeChart makeGeometriesChart( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
+        return makeJtsGeometriesChart(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
+    }
+
+    public static JFreeChart makeJtsGeometriesChart( Map<String, Object> options, List<Geometry> geomsList ) {
+        String title = "";
+        String xLabel = "x";
+        String yLabel = "y";
+
+        int strokeWidth = 2;
+        boolean drawCoords = true;
+
+        if (options != null) {
+            Object object = options.get("title");
+            if (object instanceof String) {
+                title = (String) object;
+            }
+            object = options.get("xlabel");
+            if (object instanceof String) {
+                xLabel = (String) object;
+            }
+            object = options.get("ylabel");
+            if (object instanceof String) {
+                yLabel = (String) object;
             }
             object = options.get("strokeWidth");
             if (object instanceof Number) {
@@ -835,16 +859,9 @@ public class HM {
         s.add(env.getMinX() - deltaX, env.getMinY() - deltaY);
         s.add(env.getMaxX() + deltaX, env.getMaxY() + deltaY);
 
-        ChartPanel chartPanel = new ChartPanel(chart, true);
-        chartPanel.setRangeZoomable(true);
-        chartPanel.setDomainZoomable(true);
-
         renderer.setSeriesPaint(0, ColorUtilities.makeTransparent(Color.red, 0));
 
-        Dimension preferredSize = new Dimension(width, height);
-        chartPanel.setPreferredSize(preferredSize);
-
-        GuiUtilities.openDialogWithPanel(chartPanel, "Simple Geometry Plot", preferredSize, false);
+        return chart;
     }
 
     public static void scatterPlot( List<List<List<Number>>> data ) {
@@ -1152,6 +1169,42 @@ public class HM {
     public static ColorInterpolator getColorInterpolator( String colortable, double min, double max, Integer alpha ) {
         ColorInterpolator ci = new ColorInterpolator(colortable, min, max, alpha);
         return ci;
+    }
+
+    // ANYTHING THAT CAN BE CONVERTED TO IMAGE
+    public static BufferedImage toImage( List<geoscript.geom.Geometry> geomsList ) {
+        JFreeChart chart = makeJtsGeometriesChart(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
+        return chart.createBufferedImage(600, 400);
+    }
+
+    public static BufferedImage toImage( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
+        int width = 600;
+        int height = 400;
+
+        if (options != null) {
+            Object object = options.get("size");
+            if (object instanceof List) {
+                List size = (List) object;
+                try {
+                    if (size.size() == 2) {
+                        width = ((Number) size.get(0)).intValue();
+                        height = ((Number) size.get(1)).intValue();
+                    }
+                } catch (Exception e) {
+                    // ignore and use default
+                }
+            }
+            object = options.get("width");
+            if (object instanceof Number) {
+                width = ((Number) object).intValue();
+            }
+            object = options.get("height");
+            if (object instanceof Number) {
+                height = ((Number) object).intValue();
+            }
+        }
+        return makeJtsGeometriesChart(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()))
+                .createBufferedImage(width, height);
     }
 
 }
