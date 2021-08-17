@@ -76,7 +76,7 @@ public class GridNode extends Node {
 
         if (isInRaster(col, row)) {
             elevation = gridIter.getSampleDouble(col, row, 0);
-            if (HMConstants.isNovalue(elevation, novalue)) {
+            if (HMConstants.isNovalue(elevation, doubleNovalue)) {
                 isValid = false;
             } else {
                 isValid = true;
