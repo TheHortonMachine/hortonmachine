@@ -34,6 +34,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,6 +45,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.imageio.ImageIO;
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -1205,6 +1207,15 @@ public class HM {
     }
 
     // ANYTHING THAT CAN BE CONVERTED TO IMAGE
+    public static BufferedImage toImage( String imageFilePath ) {
+        try {
+            return ImageIO.read(new File(imageFilePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public static BufferedImage toImage( List<geoscript.geom.Geometry> geomsList ) {
         JFreeChart chart = makeJtsGeometriesChart(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
         return chart.createBufferedImage(600, 400);
