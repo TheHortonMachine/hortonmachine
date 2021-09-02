@@ -42,6 +42,8 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
+import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
 import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -55,6 +57,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.linearref.LengthIndexedLine;
 import org.locationtech.jts.operation.overlayng.OverlayNG;
 import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
@@ -121,6 +124,11 @@ public class GeoframeInputsBuilder extends HMModel {
 
     private boolean doOverWrite = true;
 
+    /**
+     * If <code>true</code>, hack is used to find main network in basin, else pfafstetter.
+     */
+    private boolean useHack = false;
+
     @Execute
     public void process() throws Exception {
         checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins, outFolder);
@@ -130,7 +138,7 @@ public class GeoframeInputsBuilder extends HMModel {
         pm.beginTask("Vectorize raster map...", IHMProgressMonitor.UNKNOWN);
         List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null);
         pm.done();
-        
+
         GridCoverage2D pit = getRaster(inPitfiller);
 
 //        Point checkPoint = gf.createPoint(new Coordinate(708212.62,5141393.38));
@@ -155,11 +163,13 @@ public class GeoframeInputsBuilder extends HMModel {
         netAttributesBuilder.inTca = tca;
         netAttributesBuilder.inNet = net;
         netAttributesBuilder.doHack = true;
-        netAttributesBuilder.onlyDoSimpleGeoms = true;
+        netAttributesBuilder.onlyDoSimpleGeoms = false;
         netAttributesBuilder.process();
         SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
+//        dumpVector(outNet, "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins/network_attributes_full.shp");
 
-        List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, "hack");
+        String userDataField = useHack ? NetworkChannel.HACKNAME : NetworkChannel.PFAFNAME;
+        List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, userDataField);
 
         Map<Integer, List<Geometry>> collected = cells.parallelStream()
                 .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
@@ -182,15 +192,14 @@ public class GeoframeInputsBuilder extends HMModel {
 
             List<Geometry> polygons = entry.getValue();
             Geometry basin = CascadedPolygonUnion.union(polygons);
-            Geometry basinBuffer = basin.buffer(1);
 
             // extract largest basin
             double maxArea = Double.NEGATIVE_INFINITY;
-            Geometry maxPolygon = basinBuffer;
-            int numGeometries = basinBuffer.getNumGeometries();
+            Geometry maxPolygon = basin;
+            int numGeometries = basin.getNumGeometries();
             if (numGeometries > 1) {
                 for( int i = 0; i < numGeometries; i++ ) {
-                    Geometry geometryN = basinBuffer.getGeometryN(i);
+                    Geometry geometryN = basin.getGeometryN(i);
                     double area = geometryN.getArea();
                     if (area > maxArea) {
                         maxArea = area;
@@ -200,40 +209,44 @@ public class GeoframeInputsBuilder extends HMModel {
             }
 
             // get network pieces inside basin
-            PreparedGeometry preparedBasin = PreparedGeometryFactory.prepare(basinBuffer);
             List<LineString> netPieces = new ArrayList<>();
-            List<Integer> hacksList = new ArrayList<>();
-            int minHack = Integer.MAX_VALUE;
-            HashMap<Integer, List<LineString>> hack4Lines = new HashMap<>();
+            List<Integer> checkValueList = new ArrayList<>();
+            int minCheckValue = Integer.MAX_VALUE;
+            HashMap<Integer, List<LineString>> checkValueList4Lines = new HashMap<>();
             for( Geometry netGeom : netGeometries ) {
 
-                if (preparedBasin.intersects(netGeom)) {
-                    Geometry netIntersection = maxPolygon.intersection(netGeom);
-                    for( int i = 0; i < netIntersection.getNumGeometries(); i++ ) {
-                        Geometry geometryN = netIntersection.getGeometryN(i);
-                        if (geometryN instanceof LineString && geometryN.getLength() > 0) {
-                            Object userData = netGeom.getUserData();
-                            int hack = Integer.parseInt(userData.toString());
-                            minHack = Math.min(minHack, hack);
+                LengthIndexedLine lil = new LengthIndexedLine(netGeom);
+                Coordinate centerCoord = lil.extractPoint(0.5);
+                double value = CoverageUtilities.getValue(subBasins, centerCoord);
+                if ((int) value == basinNum) {
+                    Object userData = netGeom.getUserData();
 
-                            netPieces.add((LineString) geometryN);
-                            hacksList.add(hack);
-
-                            List<LineString> list = hack4Lines.get(hack);
-                            if (list == null) {
-                                list = new ArrayList<>();
-                            }
-                            list.add((LineString) geometryN);
-                            hack4Lines.put(hack, list);
-                        }
+                    int checkValue;
+                    if (useHack) {
+                        checkValue = Integer.parseInt(userData.toString());
+                    } else {
+                        String pfaf = userData.toString();
+                        PfafstetterNumber p = new PfafstetterNumber(pfaf);
+                        checkValue = p.getOrder();
                     }
+                    minCheckValue = Math.min(minCheckValue, checkValue);
+                    checkValueList.add(checkValue);
+                    List<LineString> list = checkValueList4Lines.get(checkValue);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                    }
+                    list.add((LineString) netGeom);
+                    checkValueList4Lines.put(checkValue, list);
+
+                    netPieces.add((LineString) netGeom);
+
                 }
             }
 
             double mainNetLength = 0;
-            List<LineString> minHackLines = hack4Lines.get(minHack);
-            for( LineString minHackLine : minHackLines ) {
-                mainNetLength += minHackLine.getLength();
+            List<LineString> minCheckValueLines = checkValueList4Lines.get(minCheckValue);
+            for( LineString minCheckValueLine : minCheckValueLines ) {
+                mainNetLength += minCheckValueLine.getLength();
             }
 
             Envelope basinEnvelope = maxPolygon.getEnvelopeInternal();
@@ -299,14 +312,14 @@ public class GeoframeInputsBuilder extends HMModel {
             }
 
             // finalize feature writing
-            
+
             // BASINS
             Object[] basinValues = new Object[]{maxPolygon, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
                     skyview};
             basinsBuilder.addAll(basinValues);
             SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
             allBasins.add(basinFeature);
-            
+
             // dump single subbasin
             DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
             singleBasin.add(basinFeature);
@@ -314,12 +327,12 @@ public class GeoframeInputsBuilder extends HMModel {
             if (!basinShpFile.exists() || doOverWrite) {
                 dumpVector(singleBasin, basinShpFile.getAbsolutePath());
             }
-            
+
             Object[] centroidValues = new Object[]{centroid, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
                     skyview};
             basinCentroidsBuilder.addAll(centroidValues);
             SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
-            
+
             // dump single centroid
             DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
             singleCentroid.add(basinCentroidFeature);
@@ -327,13 +340,13 @@ public class GeoframeInputsBuilder extends HMModel {
             if (!centroidShpFile.exists() || doOverWrite) {
                 dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
             }
-            
+
             // CHANNELS
             DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
             for( int i = 0; i < netPieces.size(); i++ ) {
                 LineString netLine = netPieces.get(i);
-                Integer hack = hacksList.get(i);
-                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength(), hack};
+                Integer checkValue = checkValueList.get(i);
+                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength(), checkValue};
                 singleNetBuilder.addAll(netValues);
                 SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
 
@@ -435,22 +448,33 @@ public class GeoframeInputsBuilder extends HMModel {
         b.add("the_geom", LineString.class);
         b.add("basinid", Integer.class);
         b.add("length_m", Double.class);
-        b.add("hack", Double.class);
+        if (useHack) {
+            b.add("hack", Double.class);
+        } else {
+            b.add("pfaforder", Double.class);
+        }
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         return builder;
     }
 
     public static void main( String[] args ) throws Exception {
-        String path = "/Users/hydrologis/lavori_tmp/UNITN/avisio_10/";
+        String path = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins/";
 
-        String pit = path + "wa_pit_10m.asc";
-        String drain = path + "wa_dedrain_10m.asc";
-        String tca = path + "wa_tca_10m.asc";
-        String net = path + "wa_net1000_10m.asc";
-        String sky = path + "wa_sky_10m.asc";
-        String basins = path + "wa_subb_10m.asc";
+        String pit = path + "brenta_pit.asc";
+        String drain = path + "brenta_drain.asc";
+        String tca = path + "brenta_tca.asc";
+        String net = path + "brenta_net_10000.asc";
+        String sky = path + "brenta_skyview.asc";
+        String basins = path + "mytest_desiredbasins_5000000_20.asc";
         String outfolder = path + "geoframe";
+//        String pit = path + "wa_pit_10m.asc";
+//        String drain = path + "wa_dedrain_10m.asc";
+//        String tca = path + "wa_tca_10m.asc";
+//        String net = path + "wa_net1000_10m.asc";
+//        String sky = path + "wa_sky_10m.asc";
+//        String basins = path + "wa_subb_10m.asc";
+//        String outfolder = path + "geoframe";
 
         GeoframeInputsBuilder g = new GeoframeInputsBuilder();
         g.inPitfiller = pit;
