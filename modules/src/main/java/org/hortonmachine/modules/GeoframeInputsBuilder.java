@@ -42,6 +42,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
 import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
@@ -117,6 +118,10 @@ public class GeoframeInputsBuilder extends HMModel {
     @In
     public String inBasins = null;
 
+    @Description(OmsRescaledDistance.OMSRESCALEDDISTANCE_pRatio_DESCRIPTION)
+    @In
+    public double pRatio = 50;
+
     @Description("Output folder for the geoframe data preparation")
     @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
@@ -127,7 +132,7 @@ public class GeoframeInputsBuilder extends HMModel {
     /**
      * If <code>true</code>, hack is used to find main network in basin, else pfafstetter.
      */
-    private boolean useHack = false;
+    private boolean useHack = true;
 
     @Execute
     public void process() throws Exception {
@@ -158,6 +163,7 @@ public class GeoframeInputsBuilder extends HMModel {
         GridCoverage2D tca = getRaster(inTca);
 
         OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
+        netAttributesBuilder.pm = pm;
         netAttributesBuilder.inDem = pit;
         netAttributesBuilder.inFlow = drain;
         netAttributesBuilder.inTca = tca;
@@ -309,6 +315,30 @@ public class GeoframeInputsBuilder extends HMModel {
             File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
             if (!netFile.exists() || doOverWrite) {
                 dumpRaster(cutNet, netFile.getAbsolutePath());
+            }
+
+            OmsRescaledDistance rescaledDistance1 = new OmsRescaledDistance();
+            rescaledDistance1.pm = pm;
+            rescaledDistance1.inElev = cutPit;
+            rescaledDistance1.inFlow = cutDrain;
+            rescaledDistance1.inNet = cutNet;
+            rescaledDistance1.pRatio = 1;
+            rescaledDistance1.process();
+            File rescaled1File = new File(basinFolder, "rescaleddistance_1_" + basinNum + ".asc");
+            if (!rescaled1File.exists() || doOverWrite) {
+                dumpRaster(rescaledDistance1.outRescaled, rescaled1File.getAbsolutePath());
+            }
+
+            OmsRescaledDistance rescaledDistance = new OmsRescaledDistance();
+            rescaledDistance.pm = pm;
+            rescaledDistance.inElev = cutPit;
+            rescaledDistance.inFlow = cutDrain;
+            rescaledDistance.inNet = cutNet;
+            rescaledDistance.pRatio = pRatio;
+            rescaledDistance.process();
+            File rescaledRatioFile = new File(basinFolder, "rescaleddistance_" + pRatio + "_" + basinNum + ".asc");
+            if (!rescaledRatioFile.exists() || doOverWrite) {
+                dumpRaster(rescaledDistance.outRescaled, rescaledRatioFile.getAbsolutePath());
             }
 
             // finalize feature writing
