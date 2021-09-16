@@ -701,7 +701,7 @@ public class ModelsEngine {
      * @throws Exception
      */
     public static WritableRaster netNumbering( GridCoverage2D flowGC, GridCoverage2D netGC, GridCoverage2D tcaGC,
-            SimpleFeatureCollection pointsFC, List<NetLink> netLinksList, IHMProgressMonitor pm ) throws Exception {
+            List<Geometry> points, List<NetLink> netLinksList, IHMProgressMonitor pm ) throws Exception {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
@@ -726,16 +726,13 @@ public class ModelsEngine {
             List<FlowNode> splitNodes = new ArrayList<>();
             List<String> fixedNodesColRows = new ArrayList<>();
             // SUPPLIED POINTS
-            if (pointsFC != null) {
+            if (points != null) {
                 Envelope envelope = regionMap.toEnvelope();
                 GridGeometry2D gridGeometry = flowGC.getGridGeometry();
-                SimpleFeatureIterator pointsIter = pointsFC.features();
                 // snap points on net if necessary
-                while( pointsIter.hasNext() ) {
-                    SimpleFeature pointFeature = pointsIter.next();
-                    Coordinate pointCoordinate = ((Geometry) pointFeature.getDefaultGeometry()).getCoordinate();
+                for( Geometry point : points ) {
+                    Coordinate pointCoordinate = point.getCoordinate();
                     if (envelope.contains(pointCoordinate)) {
-
                         GridCoordinates2D gridCoordinate = gridGeometry
                                 .worldToGrid(new DirectPosition2D(pointCoordinate.x, pointCoordinate.y));
 
@@ -767,7 +764,6 @@ public class ModelsEngine {
                         }
                     }
                 }
-                pointsIter.close();
             }
 
             // FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)

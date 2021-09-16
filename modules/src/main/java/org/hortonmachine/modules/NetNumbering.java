@@ -25,13 +25,17 @@ import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumb
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_LICENSE;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_NAME;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_STATUS;
-import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.*;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_desiredArea_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inFlow_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inNet_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inPoints_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_inTca_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outBasinsInfo_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outBasins_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outDesiredBasins_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outMindmapDesired_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outMindmap_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_outNetnum_DESCRIPTION;
 
@@ -50,7 +54,6 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
-import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
@@ -127,7 +130,7 @@ public class NetNumbering extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outGeoframeTopology = null;
-    
+
     @Description(OMSNETNUMBERING_outBasinsInfo_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -157,7 +160,8 @@ public class NetNumbering extends HMModel {
         if (pDesiredArea != null && outDesiredMindmap != null && outDesiredMindmap.trim().length() > 0) {
             FileUtilities.writeFile(omsnetnumbering.outDesiredMindmap, new File(outDesiredMindmap));
         }
-        if (outGeoframeTopology != null && omsnetnumbering.outGeoframeTopology != null && omsnetnumbering.outGeoframeTopology.trim().length() > 0) {
+        if (outGeoframeTopology != null && omsnetnumbering.outGeoframeTopology != null
+                && omsnetnumbering.outGeoframeTopology.trim().length() > 0) {
             FileUtilities.writeFile(omsnetnumbering.outGeoframeTopology, new File(outGeoframeTopology));
         }
         if (outBasinsInfo != null && omsnetnumbering.outBasinsInfo != null && omsnetnumbering.outBasinsInfo.trim().length() > 0) {
@@ -166,32 +170,36 @@ public class NetNumbering extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String folder = "/Users/hydrologis/lavori_tmp/UNITN/fixgeoframebuilder/test2/brenta_levico_02/";
-        String inPoints = null;//folder + "idroStation.shp";
+        String folder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins_5M_20/";
+        String inPoints = null;// folder + "idroStation.shp";
 
-        int desiredArea = 2_000_000;
-        int desiredDelta = 20;
+        Double desiredArea = 5_000_000.0;
+        Double desiredDelta = 20.0;
         // int maxChannels = -1;
 
-        String inFlow = folder + "brenta_levico_drain_02.asc";
-        String inTca = folder + "brenta_levico_tca_02.asc";
-        String inNet = folder + "brenta_levico_net10000_02.asc";
+        String inFlow = folder + "brenta_drain.asc";
+        String inTca = folder + "brenta_tca.asc";
+        String inNet = folder + "brenta_net_10000.asc";
         String withPoints = inPoints == null ? "" : "_pts";
 
         String outNetnum = folder + "mytest" + withPoints + "_netnum.asc";
         String outBasins = folder + "mytest" + withPoints + "_basins.asc";
-        String outDesireredBasins = folder + "mytest" + withPoints + "_desiredbasins_" + desiredArea + "_" + desiredDelta
-                + ".asc";
+        String extra = "";
+        if (desiredArea != null) {
+            extra = "_desiredbasins_" + desiredArea + "_" + desiredDelta;
+        }
+
+        String outDesireredBasins = folder + "mytest" + withPoints + extra + ".asc";
         String outMM = folder + "mytest" + withPoints + "_mindmap.txt";
-        String outDesMM = folder + "mytest" + withPoints + "_mindmap_desired_" + desiredArea + "_" + desiredDelta + ".txt";
+        String outDesMM = folder + "mytest" + withPoints + "_mindmap" + extra + ".txt";
         String outGeoframe = folder + "mytest" + withPoints + "_geoframe.txt";
         String outBasinInfo = folder + "mytest" + withPoints + "_basininfo.txt";
         NetNumbering omsnetnumbering = new NetNumbering();
         omsnetnumbering.inFlow = inFlow;
         omsnetnumbering.inTca = inTca;
         omsnetnumbering.inNet = inNet;
-        omsnetnumbering.pDesiredArea = (double) desiredArea;
-        omsnetnumbering.pDesiredAreaDelta = (double) desiredDelta;
+        omsnetnumbering.pDesiredArea = desiredArea;
+        omsnetnumbering.pDesiredAreaDelta = desiredDelta;
         // omsnetnumbering.pMaxAllowedConfluences = maxChannels;
 
         if (inPoints != null) {

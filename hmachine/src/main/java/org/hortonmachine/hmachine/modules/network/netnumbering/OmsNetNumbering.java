@@ -50,7 +50,9 @@ import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.modules.NetLink;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -181,10 +183,15 @@ public class OmsNetNumbering extends HMModel {
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
 
+        List<Geometry> pointsList = null;
+        if (inPoints != null) {
+            pointsList = FeatureUtilities.featureCollectionToGeometriesList(inPoints, true, null);
+        }
+
         WritableRandomIter netNumIter = null;
         try {
             List<NetLink> linksList = new ArrayList<NetLink>();
-            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, inPoints, linksList, pm);
+            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, pointsList, linksList, pm);
             outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
 
             netNumIter = RandomIterFactory.createWritable(netNumWR, null);
@@ -305,12 +312,6 @@ public class OmsNetNumbering extends HMModel {
                     sb.append("@endmindmap\n");
                     outDesiredMindmap = sb.toString();
 
-                    // build geoframe topology input
-                    StringBuilder geoframeSb = new StringBuilder();
-                    geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
-                    printLinkAsGeoframe(rootLink, geoframeSb);
-                    outGeoframeTopology = geoframeSb.toString();
-
                     // build basins info
                     StringBuilder basinsInfoSb = new StringBuilder();
                     basinsInfoSb.append("basinid;outletX;outletY;area\n");
@@ -344,6 +345,12 @@ public class OmsNetNumbering extends HMModel {
                     outDesiredBasins = CoverageUtilities.buildCoverageWithNovalue("desiredsubbasins", desiredSubbasinsWR,
                             regionMap, inFlow.getCoordinateReferenceSystem(), HMConstants.intNovalue);
                 }
+
+                // build geoframe topology input
+                StringBuilder geoframeSb = new StringBuilder();
+                geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
+                printLinkAsGeoframe(rootLink, geoframeSb);
+                outGeoframeTopology = geoframeSb.toString();
 
             } finally {
                 subbasinIter.done();

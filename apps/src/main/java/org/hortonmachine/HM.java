@@ -54,6 +54,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.iso.text.WKTParser;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
@@ -75,6 +76,7 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -93,6 +95,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -123,6 +126,8 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.index.strtree.STRtree;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.operation.TransformException;
@@ -220,9 +225,13 @@ public class HM {
         sb.append("Create the QGIS style file for a given colortable and raster file:").append("\n");
         sb.append("\tmakeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals )").append("\n");
         sb.append("Create an image with raster info around a given cell (or world position):").append("\n");
-        sb.append("\tBufferedImage toImage( String path, cellX, cellY, int bufferCells, String dtm, int width, int height )").append("\n");
-        sb.append("Create an image of a list of geometries:").append("\n");
-        sb.append("\tBufferedImage toImage( List<Geometry> geomsList )").append("\n");
+        sb.append("\tBufferedImage toImage( String path, cellX, cellY, int bufferCells, String dtm, int width, int height )")
+                .append("\n");
+        sb.append("Create an image of a list of geometries (format can be geoscript, jts or wkt geometry:").append("\n");
+        sb.append("\tBufferedImage toImage( List geomsList )").append("\n");
+        sb.append("Create an image from a string, if interpretable (currently image file path and wkt geometry are supported):")
+                .append("\n");
+        sb.append("\tBufferedImage toImage( String value)").append("\n");
 
         sb.append("\n");
         sb.append("Spatial tools").append("\n");
@@ -1207,18 +1216,46 @@ public class HM {
     }
 
     // ANYTHING THAT CAN BE CONVERTED TO IMAGE
-    public static BufferedImage toImage( String imageFilePath ) {
+    public static BufferedImage toImage( String fileOrGeometryWkt ) {
         try {
-            return ImageIO.read(new File(imageFilePath));
-        } catch (IOException e) {
+            File file = new File(fileOrGeometryWkt);
+            if (file.exists()) {
+                return ImageIO.read(file);
+            } else {
+                // try with wkt geometry
+                Geometry geometry = new WKTReader().read(fileOrGeometryWkt);
+                JFreeChart chart = makeJtsGeometriesChart(null, Arrays.asList(geometry));
+                return chart.createBufferedImage(600, 400);
+            }
+        } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static BufferedImage toImage( List<geoscript.geom.Geometry> geomsList ) {
-        JFreeChart chart = makeJtsGeometriesChart(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
-        return chart.createBufferedImage(600, 400);
+    @SuppressWarnings("unchecked")
+    public static BufferedImage toImage( List< ? > geomsList ) {
+        Object object = geomsList.get(0);
+        if (object instanceof geoscript.geom.Geometry) {
+            JFreeChart chart = makeJtsGeometriesChart(null,
+                    ((List<geoscript.geom.Geometry>) geomsList).stream().map(gg -> gg.getG()).collect(Collectors.toList()));
+            return chart.createBufferedImage(600, 400);
+        } else if (object instanceof Geometry) {
+            JFreeChart chart = makeJtsGeometriesChart(null, ((List<Geometry>) geomsList));
+            return chart.createBufferedImage(600, 400);
+        } else if (object instanceof String) {
+            // suppose wkt
+            JFreeChart chart = makeJtsGeometriesChart(null, ((List<String>) geomsList).stream().map(wkt -> {
+                try {
+                    return new WKTReader().read(wkt);
+                } catch (ParseException e) {
+                    throw new ModelsIllegalargumentException("Unable to interpret objects as wkt geometries.", "HM");
+                }
+            }).collect(Collectors.toList()));
+            return chart.createBufferedImage(600, 400);
+        } else {
+            throw new ModelsIllegalargumentException("Unable to interpret list of objects.", "HM");
+        }
     }
 
     public static BufferedImage toImage( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
