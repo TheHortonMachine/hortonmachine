@@ -186,7 +186,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
                     boolean isPetNv = HMConstants.isNovalue(pet, petNv);
 
-                    boolean isStream = !HMConstants.isNovalue(net, netNv);
+                    boolean isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
                     double initialAet = 0;
                     double li = 0;
                     if (!isStream) {
@@ -222,7 +222,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                             net = cell.getDoubleValueFromMap(netIter);
 
                             if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(runoff, runoffNv)) {
-                                isStream = !HMConstants.isNovalue(net, netNv);
+                                isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
 
                                 double lAvailableUpstream = 0.0;
                                 double lSumAvailableUpstream = 0.0;
@@ -257,7 +257,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                                 cell.setDoubleValueInMap(outLiIter, liCC);
                                 cell.setDoubleValueInMap(outAetIter, aetCC);
 
-                            } else if (!HMConstants.isNovalue(net, netNv) && cell.isValid()) {
+                            } else if (!HMConstants.isNovalue(net, netNv) && net != 0.0 && cell.isValid()) {
                                 cell.setDoubleValueInMap(outLiAvailableIter, 0);
                                 cell.setDoubleValueInMap(outLiIter, 0);
                                 cell.setDoubleValueInMap(outAetIter, 0);

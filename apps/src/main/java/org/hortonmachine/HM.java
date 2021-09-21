@@ -34,7 +34,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +56,6 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.iso.text.WKTParser;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
@@ -92,10 +93,10 @@ import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.coverage.RasterCellInfo;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -224,6 +225,8 @@ public class HM {
         sb.append("\tStyle styleForColorTable( String tableName, double min, double max, double opacity )").append("\n");
         sb.append("Create the QGIS style file for a given colortable and raster file:").append("\n");
         sb.append("\tmakeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals )").append("\n");
+        sb.append("Create the SLD style file for a given colortable and raster file:").append("\n");
+        sb.append("\tmakeSldStyleForRaster( String tableName, String rasterPath )").append("\n");
         sb.append("Create an image with raster info around a given cell (or world position):").append("\n");
         sb.append("\tBufferedImage toImage( String path, cellX, cellY, int bufferCells, String dtm, int width, int height )")
                 .append("\n");
@@ -273,6 +276,29 @@ public class HM {
         return sb.toString();
     }
 
+    public static String allMethods() throws Exception {
+        Method[] m = HM.class.getDeclaredMethods();
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+        sb.append("All Methods").append("\n");
+        sb.append("-------------").append("\n");
+        for( Method method : m ) {
+            String methodName = method.getName();
+            int modifiers = method.getModifiers();
+            if (!Modifier.isPrivate(modifiers) && !methodName.startsWith("lambda") && !methodName.startsWith("$")) {
+                sb.append(methodName);
+                sb.append(" ( ");
+                Parameter[] parameters = method.getParameters();
+                for( Parameter parameter : parameters ) {
+                    Class< ? > type = parameter.getType();
+                    sb.append(type.getSimpleName()).append(" ").append(parameter.getName() + ", ");
+                }
+                sb.append(" )\n");
+            }
+        }
+        return sb.toString();
+    }
+
     public static List<SimpleFeature> readVector( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
@@ -288,7 +314,12 @@ public class HM {
     public static GridCoverage2D readRaster( String source ) throws Exception {
         if (source == null || source.trim().length() == 0)
             return null;
-        return OmsRasterReader.readRaster(source);
+        OmsRasterReader reader = new OmsRasterReader();
+        reader.file = source;
+        reader.pm = new DummyProgressMonitor();
+        reader.process();
+        GridCoverage2D geodata = reader.outRaster;
+        return geodata;
     }
 
     public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
@@ -1155,6 +1186,18 @@ public class HM {
                 RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity)));
     }
 
+    public static void makeSldStyleForRaster( String tableName, String rasterPath ) throws Exception {
+        RasterSummary s = new RasterSummary();
+        s.pm = new DummyProgressMonitor();
+        s.inRaster = rasterPath;
+        s.process();
+        double min = s.outMin;
+        double max = s.outMax;
+        String style = RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, 1));
+        File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "sld");
+        FileUtilities.writeFile(style, styleFile);
+    }
+
     public static void makeQgisStyleForRaster( String tableName, String rasterPath ) throws Exception {
         makeQgisStyleForRaster(tableName, rasterPath, 2);
     }
@@ -1213,6 +1256,27 @@ public class HM {
     public static ColorInterpolator getColorInterpolator( String colortable, double min, double max, Integer alpha ) {
         ColorInterpolator ci = new ColorInterpolator(colortable, min, max, alpha);
         return ci;
+    }
+
+    public static RasterCellInfo getCellInfo( int col, int row, int buffer, String... rasterPaths ) throws Exception {
+        GridCoverage2D[] rasters = new GridCoverage2D[rasterPaths.length];
+        int i = 0;
+        for( String path : rasterPaths ) {
+            rasters[i++] = readRaster(path);
+        }
+        RasterCellInfo ri = new RasterCellInfo(col, row, rasters);
+        return ri;
+    }
+    
+    public static RasterCellInfo getCellInfo( double lon, double lat, int buffer, String... rasterPaths ) throws Exception {
+        GridCoverage2D[] rasters = new GridCoverage2D[rasterPaths.length];
+        int i = 0;
+        for( String path : rasterPaths ) {
+            rasters[i++] = readRaster(path);
+        }
+        RasterCellInfo ri = new RasterCellInfo(lon, lat, rasters);
+        ri.setBufferCells(buffer);
+        return ri;
     }
 
     // ANYTHING THAT CAN BE CONVERTED TO IMAGE

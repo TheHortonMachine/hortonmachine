@@ -435,6 +435,32 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
             }
         }
         binding.variables._outputTransforms << { it ->
+            if (it instanceof double[][]) {
+                def objs = null
+                def header = []
+                def i = 0
+                it.each { it2 ->
+                    if(objs==null) {
+                        objs = new Object[it.size()][it2.size()]
+                                for(c in 0..(it2.size()-1) ) {
+                                    header << "Value " + (c+1)
+                                }
+                    }
+                    def j = 0;
+                    it2.each { it3 ->
+                        objs[i][j++] = String.valueOf(it3)
+                    }
+                    i++
+                }
+                def table = new javax.swing.JTable(
+                        objs,
+                        header as Object[])
+                        table.setGridColor(Color.BLACK)
+                        table.preferredScrollableViewportSize = table.preferredSize
+                        return new javax.swing.JScrollPane(table)
+            }
+        }
+        binding.variables._outputTransforms << { it ->
             if ( it instanceof geoscript.geom.Geometry || it instanceof geoscript.layer.Layer) {
                 def img = geoscript.render.Draw.drawToImage(["size":[400,400],"backgroundColor":"white"],it)
                 return new ImageIcon(img)
@@ -454,6 +480,11 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
                 return new javax.swing.JScrollPane(table)
             } else if ( it instanceof geoscript.render.Map ) {
                 return new ImageIcon(it.renderToImage())
+            }
+        }
+        binding.variables._outputTransforms << { it ->
+            if ( it instanceof org.hortonmachine.gears.utils.coverage.RasterCellInfo ) {
+                return ((org.hortonmachine.gears.utils.coverage.RasterCellInfo)it).toString()
             }
         }
         

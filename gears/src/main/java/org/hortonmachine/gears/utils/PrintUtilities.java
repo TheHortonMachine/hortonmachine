@@ -230,8 +230,4 @@ public class PrintUtilities {
         return sb.toString();
     }
 
-    public static void main( String[] args ) throws Exception {
-        System.out.println(getRegionPrint(OmsRasterReader
-                .readRaster("/home/hydrologis/TMP/R3GIS/data/planetscope_20191018_092049_0f15_sat0f15_epsg32634.tiff")));
-    }
 }

@@ -129,6 +129,16 @@ public class StringUtilities {
         return string.substring(0, count);
     }
 
+    public static String trimOrPadToCount( String string, int count ) {
+        while( string.length() < count ) {
+            string += " ";
+        }
+        if (string.length() > count) {
+            string = string.substring(0, count);
+        }
+        return string;
+    }
+
     /**
      * Get scanner from input stream.
      * 
@@ -181,8 +191,8 @@ public class StringUtilities {
         }
         return array;
     }
-    
-    public static String[] parseCommand(String command) {
+
+    public static String[] parseCommand( String command ) {
         Pattern parsingPattern = Pattern.compile("[^\"\\s]+|\"(\\.|[^\\\"])*\"");
         List<String> params = null;
         params = new ArrayList<String>();

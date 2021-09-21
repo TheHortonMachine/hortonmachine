@@ -332,7 +332,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
             RandomIter netIter, RandomIter infiltrationIter, RandomIter netInfiltrationIter ) {
         // process current cell
         double net = cell.getDoubleValueFromMap(netIter);
-        boolean isStream = !HMConstants.isNovalue(net, netNv);
+        boolean isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
 
         double bSum = 0.0;
         int x = cell.col;

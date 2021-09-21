@@ -34,6 +34,7 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OmsPotentialEvapotranspiredWaterVolume.DESCRIPTION)
 @Author(name = OmsPotentialEvapotranspiredWaterVolume.AUTHORNAMES, contact = OmsPotentialEvapotranspiredWaterVolume.AUTHORCONTACTS)
@@ -60,6 +61,7 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public GridCoverage2D inAtmosphericTemp = null;
 
     @Description(inSolarRadiation_DESCRIPTION)
+    @Unit("MJ/m2")
     @In
     public GridCoverage2D inSolarRadiation = null;
 

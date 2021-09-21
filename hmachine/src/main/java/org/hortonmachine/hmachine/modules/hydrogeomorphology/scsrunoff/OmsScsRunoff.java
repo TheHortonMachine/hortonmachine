@@ -119,9 +119,10 @@ public class OmsScsRunoff extends HMModel {
                 if (isNovalue(eventNum, eventsNv)) {
                     eventNum = 1; // default num events to 1 if not available
                 }
-                boolean isNet = !isNovalue(net, netNv);
+                boolean isNet = !isNovalue(net, netNv) && net != 0.0;
 
-                return calculateRunoff(rain, cn, isNet, eventNum);
+                double runoff = calculateRunoff(rain, cn, isNet, eventNum);
+                return runoff;
             }
         };
         outputDischarge = processor.loop(funct, runoffNv, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
