@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.dbs.geopackage.hm;
 
-import java.io.IOException;
 import java.sql.Connection;
 
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;

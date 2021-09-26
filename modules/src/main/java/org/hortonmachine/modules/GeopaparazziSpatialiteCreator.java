@@ -1,23 +1,5 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
- *
- * The HortonMachine is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/*
- * This file is part of HortonMachine (http://www.hortonmachine.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
  * The HortonMachine is free software: you can redistribute it and/or modify
@@ -57,7 +39,6 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.hm.HMImportExportUtils;
 import org.hortonmachine.gears.io.geopaparazzi.styles.GeopaparazziDatabaseProperties;
-import org.hortonmachine.gears.io.geopaparazzi.styles.ISpatialiteTableAndFieldsNames;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -127,8 +108,8 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
     public static final String DESCRIPTION = "Creates a spatialite database for geopaparazzi from a set of shapefiles or adds to an existing one.";
     public static final String OmsGeopaparazziSpatialiteCreator_LABEL = HMConstants.VECTORPROCESSING;
     public static final String OmsGeopaparazziSpatialiteCreator_encoding = "The encoding to use for the import.";
-    public static final String OmsGeopaparazziSpatialiteCreator_sizefactor = "A multiplication factor between SLD and geopap sizes (appilies to border widths and sizes).";
-    public static final String OmsGeopaparazziSpatialiteCreator_lineswidthfactor = "A multiplication factor between SLD and geopap line widths (appilies to line widths).";
+    public static final String OmsGeopaparazziSpatialiteCreator_sizefactor = "A multiplication factor between SLD and geopap sizes (applies to border widths and sizes).";
+    public static final String OmsGeopaparazziSpatialiteCreator_lineswidthfactor = "A multiplication factor between SLD and geopap line widths (applies to line widths).";
     public static final String OmsGeopaparazziSpatialiteCreator_TAGS = "geopaparazzi, vector";
     public static final String OmsGeopaparazziSpatialiteCreator_NAME = "geopaparazzispatialitecreator";
     public static final String OmsGeopaparazziSpatialiteCreator_inShapefilesFolder = "The folder of shapefiles to import.";
