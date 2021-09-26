@@ -60,14 +60,6 @@ public class GeopaparazziGeopackageCreator extends HMModel {
     @In
     public String inGeopackage = null;
 
-    @Description(OmsGeopaparazziGeopackageCreator_sizefactor)
-    @In
-    public int pSizeFactor = 3;
-
-    @Description(OmsGeopaparazziGeopackageCreator_lineswidthfactor)
-    @In
-    public int pLinesWidthFactor = 6;
-
     @Description(OmsGeopaparazziGeopackageCreator_inShapefilesFolder)
     @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
@@ -77,8 +69,6 @@ public class GeopaparazziGeopackageCreator extends HMModel {
     public static final String THE_GEOPAPARAZZI_DATABASE_FILE = "The existing or new geopackage database file.";
     public static final String DESCRIPTION = "Creates a geopackage database for geopaparazzi/smash from a set of shapefiles or adds to an existing one.";
     public static final String OmsGeopaparazziSpatialiteCreator_LABEL = HMConstants.VECTORPROCESSING;
-    public static final String OmsGeopaparazziGeopackageCreator_sizefactor = "A multiplication factor between SLD and geopap sizes (applies to border widths and sizes).";
-    public static final String OmsGeopaparazziGeopackageCreator_lineswidthfactor = "A multiplication factor between SLD and geopap line widths (applies to line widths).";
     public static final String OmsGeopaparazziGeopackageCreator_TAGS = "geopaparazzi, vector";
     public static final String OmsGeopaparazziGeopackageCreator_NAME = "geopaparazzigeopackagecreator";
     public static final String OmsGeopaparazziGeopackageCreator_inShapefilesFolder = "The folder of shapefiles to import.";
@@ -87,13 +77,6 @@ public class GeopaparazziGeopackageCreator extends HMModel {
     @Execute
     public void process() throws Exception {
         checkNull(inGeopackage, inShapefilesFolder);
-
-        if (pSizeFactor < 1) {
-            pSizeFactor = 3;
-        }
-        if (pLinesWidthFactor < 1) {
-            pLinesWidthFactor = 6;
-        }
 
         File shpFolder = new File(inShapefilesFolder);
         File[] shpfiles = shpFolder.listFiles(new FilenameFilter(){
