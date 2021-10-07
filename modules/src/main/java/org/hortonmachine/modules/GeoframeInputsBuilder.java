@@ -333,7 +333,7 @@ public class GeoframeInputsBuilder extends HMModel {
                         }
 
                         // handle interaction with downstream basin
-                        outBasin.upStreamBasins.clear();
+                        outBasin.upStreamBasins.removeAll(lakeBasin.upStreamBasins);
                         outBasin.upStreamBasins.add(lakeBasin);
                         Geometry geomToCut = basinId2geomMap.get(outBasin.id);
                         Geometry newGeom = geomToCut.difference(lakeGeom);
@@ -854,17 +854,28 @@ public class GeoframeInputsBuilder extends HMModel {
     }
 
     public static void main( String[] args ) throws Exception {
-        String path = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins_5M_20/";
+        String path = "/Users/hydrologis/lavori_tmp/UNITN/D_basin_issue/";
 
-        String pit = path + "brenta_pit.asc";
-        String drain = path + "brenta_drain.asc";
-        String tca = path + "brenta_tca.asc";
-        String net = path + "brenta_net_10000.asc";
-        String sky = path + "brenta_skyview.asc";
-        String basins = path + "mytest_desiredbasins_5000000.0_20.0.asc";
-        String topology = path + "mytest_geoframe.txt";
+        String pit = path + "pf.asc";
+        String drain = path + "dd.asc";
+        String tca = path + "tca.asc";
+        String net = path + "net.asc";
+        String sky = path + "sky.asc";
+        String basins = path + "dsb.asc";
+        String topology = path + "tp";
 
-        String lakes = path + "../laghi/laghiBrenta.shp";
+        String lakes = path + "lago.shp";
+//        String path = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_projects/15_uniTN_basins/brenta/brenta_063basins_5M_20/";
+//        
+//        String pit = path + "brenta_pit.asc";
+//        String drain = path + "brenta_drain.asc";
+//        String tca = path + "brenta_tca.asc";
+//        String net = path + "brenta_net_10000.asc";
+//        String sky = path + "brenta_skyview.asc";
+//        String basins = path + "mytest_desiredbasins_5000000.0_20.0.asc";
+//        String topology = path + "mytest_geoframe.txt";
+//        
+//        String lakes = path + "../laghi/laghiBrenta.shp";
 
         String outfolder = path + "geoframe";
 
