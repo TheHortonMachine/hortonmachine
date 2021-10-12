@@ -41,19 +41,26 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
+import javax.imageio.spi.ImageReaderSpi;
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
+import org.geotools.coverage.grid.io.AbstractGridFormat;
+import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -63,6 +70,7 @@ import org.geotools.map.MapContent;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.lite.StreamingRenderer;
+import org.geotools.util.factory.Hints;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -314,6 +322,7 @@ public class HM {
     public static GridCoverage2D readRaster( String source ) throws Exception {
         if (source == null || source.trim().length() == 0)
             return null;
+
         OmsRasterReader reader = new OmsRasterReader();
         reader.file = source;
         reader.pm = new DummyProgressMonitor();
@@ -332,6 +341,37 @@ public class HM {
         if (vector == null || source == null)
             return;
         OmsVectorWriter.writeVector(source, vector);
+    }
+
+    public static String getRegisteredRasterFormats() {
+        ServiceLoader<ImageReaderSpi> loader = ServiceLoader.load(ImageReaderSpi.class);
+
+        StringBuilder sb = new StringBuilder();
+        TreeSet<String> extSet = new TreeSet<String>();
+        Iterator<ImageReaderSpi> iterator = loader.iterator();
+        while( iterator.hasNext() ) {
+            try {
+                ImageReaderSpi imageReaderSpi = (ImageReaderSpi) iterator.next();
+                String[] fileSuffixes = imageReaderSpi.getFileSuffixes();
+                if (fileSuffixes.length > 0) {
+                    String[] formatNames = imageReaderSpi.getFormatNames();
+//            String vendorName = imageReaderSpi.getVendorName();
+//            sb.append(vendorName).append("\n");
+                    for( int i = 0; i < formatNames.length; i++ ) {
+                        if (extSet.add(formatNames[i].toLowerCase())) {
+                            sb.append(formatNames[i]).append(" ");
+                        }
+                    }
+                    String suff = Arrays.toString(fileSuffixes);
+                    if (extSet.add(suff.toLowerCase())) {
+                        sb.append("\t").append(suff).append("\n");
+                    }
+                }
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        return sb.toString();
     }
 
     public static STRtree getSpatialIndex( List<List<Object>> objects ) {
@@ -1267,7 +1307,7 @@ public class HM {
         RasterCellInfo ri = new RasterCellInfo(col, row, rasters);
         return ri;
     }
-    
+
     public static RasterCellInfo getCellInfo( double lon, double lat, int buffer, String... rasterPaths ) throws Exception {
         GridCoverage2D[] rasters = new GridCoverage2D[rasterPaths.length];
         int i = 0;

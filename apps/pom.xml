@@ -57,7 +57,11 @@
 			</exclusions>
 		</dependency>
 
-
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-netcdf</artifactId>
+			<version>${gt.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.geoscript</groupId>
 			<artifactId>geoscript-groovy</artifactId>
@@ -76,10 +80,10 @@
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-epsg-hsql</artifactId>
 				</exclusion>
-				<exclusion>
+				<!-- <exclusion>
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-netcdf</artifactId>
-				</exclusion>
+				</exclusion> -->
 				<exclusion>
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-gtopo30</artifactId>

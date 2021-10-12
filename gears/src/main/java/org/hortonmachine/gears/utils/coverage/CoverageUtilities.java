@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 
 import javax.media.jai.ROI;
@@ -416,6 +417,37 @@ public class CoverageUtilities {
         }
         iter.done();
         return clippedCoverage;
+    }
+
+    /**
+     * Apply an operation to the coverage's values.
+     * 
+     * @param coverage the original coverage.
+     * @param operator the operator to apply.
+     * @return the new coverage.
+     * @throws Exception
+     */
+    public static GridCoverage2D apply( GridCoverage2D coverage, DoubleUnaryOperator operator ) throws Exception {
+        RegionMap regionMap = getRegionParamsFromGridCoverage(coverage);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+
+        double nv = HMConstants.getNovalue(coverage);
+
+        WritableRaster outWR = renderedImage2WritableRaster(coverage.getRenderedImage(), false);
+        WritableRandomIter iter = RandomIterFactory.createWritable(outWR, null);
+        for( int y = 0; y < rows; y++ ) {
+            for( int x = 0; x < cols; x++ ) {
+                double value = iter.getSampleDouble(x, y, 0);
+                if (!HMConstants.isNovalue(value, nv)) {
+                    double newValue = operator.applyAsDouble(value);
+                    iter.setSample(x, y, 0, newValue);
+                }
+            }
+        }
+        iter.done();
+        GridCoverage2D outCoverage = buildCoverage("applied", outWR, regionMap, coverage.getCoordinateReferenceSystem());
+        return outCoverage;
     }
 
     /**
@@ -1523,6 +1555,38 @@ public class CoverageUtilities {
         }
 
         GridCoverage2D outCoverage = buildCoverage("merged", outWR, onRegionMap, valuesMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
+        return outCoverage;
+    }
+
+    public static GridCoverage2D sumCoverages( GridCoverage2D gc1, GridCoverage2D gc2 ) {
+        RegionMap gc1RegionMap = getRegionParamsFromGridCoverage(gc1);
+        int c1 = gc1RegionMap.getCols();
+        int r1 = gc1RegionMap.getRows();
+        RegionMap gc2RegionMap = getRegionParamsFromGridCoverage(gc2);
+        int c2 = gc2RegionMap.getCols();
+        int r2 = gc2RegionMap.getRows();
+
+        if (c1 != c2 || r1 != r2) {
+            throw new IllegalArgumentException("The raster maps have to be of equal size to be mapped.");
+        }
+
+        RandomIter gc1Iter = RandomIterFactory.create(gc1.getRenderedImage(), null);
+        WritableRaster outWR = renderedImage2WritableRaster(gc2.getRenderedImage(), false);
+        WritableRandomIter gc2Iter = RandomIterFactory.createWritable(outWR, null);
+
+        double nv1 = HMConstants.getNovalue(gc1);
+        for( int r = 0; r < r1; r++ ) {
+            for( int c = 0; c < c1; c++ ) {
+                double v1 = gc1Iter.getSampleDouble(c, r, 0);
+                double v2 = gc2Iter.getSampleDouble(c, r, 0);
+                if (!HMConstants.isNovalue(v1, nv1)) {
+                    double newV = v1 + v2;
+                    gc2Iter.setSample(c, r, 0, newV);
+                }
+            }
+        }
+
+        GridCoverage2D outCoverage = buildCoverage("merged", outWR, gc2RegionMap, gc1.getCoordinateReferenceSystem());
         return outCoverage;
     }
 
