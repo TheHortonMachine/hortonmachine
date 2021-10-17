@@ -113,6 +113,10 @@
 					<artifactId>gt-geobuf</artifactId>
 				</exclusion>
 				<exclusion>
+					<groupId>org.geotools</groupId>
+					<artifactId>gt-netcdf</artifactId>
+				</exclusion>
+				<exclusion>
 					<groupId>no.ecc.vectortile</groupId>
 					<artifactId>java-vector-tile</artifactId>
 				</exclusion>
