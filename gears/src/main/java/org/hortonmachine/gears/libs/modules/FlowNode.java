@@ -56,6 +56,7 @@ public class FlowNode extends Node {
     private int seFlow;
 
     private List<FlowNode> enteringNodes;
+    private double flowD;
 
     /**
      * The constructor.
@@ -75,16 +76,17 @@ public class FlowNode extends Node {
         } else {
             // TODO remove the two sync blocks if possible
             synchronized (gridIter) {
-                flow = gridIter.getSample(col, row, 0);
+                flowD = gridIter.getSampleDouble(col, row, 0);
             }
-            if (HMConstants.isNovalue(flow)) {
+            if (HMConstants.isNovalue(flowD)) {
                 isValid = false;
             } else {
                 isValid = true;
             }
+            flow = (int) flowD;
         }
 
-        if ((int) flow == (int) OUTLET) {
+        if (flow == OUTLET) {
             isMarkedAsOutlet = true;
         }
 
@@ -148,7 +150,7 @@ public class FlowNode extends Node {
     public String toString() {
         return "FlowNode [\n\tcol=" + col + //
                 ", \n\trow=" + row + //
-                ", \n\tflow=" + flow + //
+                ", \n\tflow=" + flow + "(" + flowD + ")" + //
                 ", \n\tisValid=" + isValid() + //
                 ", \n\ttouchesBounds=" + touchesBound + //
                 ", \n\tisSource=" + isSource() + //
@@ -455,7 +457,7 @@ public class FlowNode extends Node {
         int result = 1;
         result = prime * result + col;
         long temp;
-        temp = Double.doubleToLongBits(flow);
+        temp = Double.doubleToLongBits(flowD);
         result = prime * result + (int) (temp ^ (temp >>> 32));
         result = prime * result + row;
         return result;
@@ -472,7 +474,7 @@ public class FlowNode extends Node {
         FlowNode other = (FlowNode) obj;
         if (col != other.col || row != other.row)
             return false;
-        if (Double.doubleToLongBits(flow) != Double.doubleToLongBits(other.flow))
+        if (Double.doubleToLongBits(flowD) != Double.doubleToLongBits(other.flowD))
             return false;
         return true;
     }
