@@ -148,7 +148,7 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
                             || HMConstants.isNovalue(solarRad, solarNv)) {
                         return rainNv;
                     }
-                    return calculateEtp(kc, tMax, tMin, tAvg, rainfall, solarRad);
+                    return calculateEtp(kc, tMax, tMin, tAvg, rainfall, solarRad/1000);
                 }
             };
             outputPet = processor.loop(funct, rainNv, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,

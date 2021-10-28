@@ -100,6 +100,7 @@ public class OmsScsRunoff extends HMModel {
         }
         double eventsNv = _eventsNv;
         double runoffNv = -1.0;
+        int defaultEvents = 10; // default num events to 10 if not available
 
         MultiRasterLoopProcessor processor = new MultiRasterLoopProcessor("Calculating runoff...", pm);
         IDataLoopFunction funct = new IDataLoopFunction(){
@@ -115,9 +116,14 @@ public class OmsScsRunoff extends HMModel {
                 if (isNovalue(cn, cnNv)) {
                     return 0;
                 }
-                int eventNum = (int) values[3];
-                if (isNovalue(eventNum, eventsNv)) {
-                    eventNum = 1; // default num events to 1 if not available
+                int eventNum;
+                if (inNumberOfEvents != null) {
+                    eventNum = (int) values[3];
+                    if (isNovalue(eventNum, eventsNv)) {
+                        eventNum = defaultEvents;
+                    }
+                }else {
+                    eventNum = defaultEvents;
                 }
                 boolean isNet = !isNovalue(net, netNv) && net != 0.0;
 

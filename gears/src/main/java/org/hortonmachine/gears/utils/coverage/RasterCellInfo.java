@@ -57,12 +57,22 @@ public class RasterCellInfo {
         double toLon = lon + xres * bufferCells;
         double fromLat = lat + yres * bufferCells;
         double toLat = lat - yres * bufferCells;
+        
+        StringBuilder sepSb = new StringBuilder();
+        sepSb.append("+");
+        for( int i = 0; i < cellChars+2; i++ ) {
+            sepSb.append("-");
+        }
+        sepSb.append("+");
+        for( int i = 0; i < bufferCells * 2 + 1; i++ ) {
+            sepSb.append("-------------------+");
+        }
+        String sep = sepSb.toString();
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n");
         for( double la = fromLat; la >= toLat; la -= yres ) {
-            sb.append(
-                    "+------------------------------------------------------------------------------------------------------+\n");
+            sb.append(sep + "\n");
             for( GridCoverage2D g2d : coverage2ds ) {
                 String name = StringUtilities.trimOrPadToCount(g2d.getName().toString(), cellChars);
                 sb.append("| ").append(name).append(" | ");
@@ -78,7 +88,7 @@ public class RasterCellInfo {
                 sb.append("\n");
             }
         }
-        sb.append("+------------------------------------------------------------------------------------------------------+\n");
+        sb.append(sep + "\n");
 
         return sb.toString();
     }

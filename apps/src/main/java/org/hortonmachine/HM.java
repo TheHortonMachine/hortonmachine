@@ -1305,6 +1305,7 @@ public class HM {
             rasters[i++] = readRaster(path);
         }
         RasterCellInfo ri = new RasterCellInfo(col, row, rasters);
+        ri.setBufferCells(buffer);
         return ri;
     }
 
