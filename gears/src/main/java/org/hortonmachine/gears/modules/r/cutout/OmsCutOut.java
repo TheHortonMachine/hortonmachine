@@ -124,8 +124,10 @@ public class OmsCutOut extends GridMultiProcessing {
         RenderedImage geodataRI = inRaster.getRenderedImage();
         RandomIter geodataIter = RandomIterFactory.create(geodataRI, null);
 
+        double maskNv = 0;
         if (inMask != null) {
             RenderedImage maskRI = inMask.getRenderedImage();
+            maskNv = HMConstants.getNovalue(inMask);
             maskIter = RandomIterFactory.create(maskRI, null);
         }
 
@@ -133,6 +135,7 @@ public class OmsCutOut extends GridMultiProcessing {
         WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
 
         try {
+            double _maskNv = maskNv;
             pm.beginTask("Processing map...", nRows * nCols);
             processGrid(nCols, nRows, false, ( c, r ) -> {
                 if (pm.isCanceled()) {
@@ -142,12 +145,12 @@ public class OmsCutOut extends GridMultiProcessing {
                 if (maskIter != null) {
                     double maskValue = maskIter.getSampleDouble(c, r, 0);
                     if (!doInverse) {
-                        if (isNovalue(maskValue)) {
+                        if (isNovalue(maskValue, _maskNv)) {
                             outIter.setSample(c, r, 0, HMConstants.doubleNovalue);
                             return;
                         }
                     } else {
-                        if (!isNovalue(maskValue)) {
+                        if (!isNovalue(maskValue, _maskNv)) {
                             outIter.setSample(c, r, 0, HMConstants.doubleNovalue);
                             return;
                         }

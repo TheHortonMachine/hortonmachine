@@ -137,7 +137,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
 
-        double outNv = -1E32;// as INVEST HMConstants.doubleNovalue;
+        double outNv = -9999;//-1E32;// as INVEST HMConstants.doubleNovalue;
 
         WritableRaster outLiWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
         WritableRandomIter outLiIter = CoverageUtilities.getWritableRandomIterator(outLiWR);
@@ -175,6 +175,11 @@ public class OmsInfiltratedWaterVolume extends HMModel {
             pm.done();
 
             double[][] lSumAvailableMatrix = new double[rows][cols];
+            for( int r = 0; r < lSumAvailableMatrix.length; r++ ) {
+                for( int c = 0; c < lSumAvailableMatrix[0].length; c++ ) {
+                    lSumAvailableMatrix[r][c] = outNv;
+                }
+            }
 
             for( FlowNode sourceCell : sourceCells ) {
                 double pet = sourceCell.getValueFromMap(petIter);
@@ -256,6 +261,7 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                                 cell.setDoubleValueInMap(outLiAvailableIter, lAvailableCC);
                                 cell.setDoubleValueInMap(outLiIter, liCC);
                                 cell.setDoubleValueInMap(outAetIter, aetCC);
+
 
                             } else if (!HMConstants.isNovalue(net, netNv) && net != 0.0 && cell.isValid()) {
                                 cell.setDoubleValueInMap(outLiAvailableIter, 0);

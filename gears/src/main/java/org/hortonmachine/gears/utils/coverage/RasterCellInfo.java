@@ -1,6 +1,7 @@
 package org.hortonmachine.gears.utils.coverage;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.StringUtilities;
 import org.locationtech.jts.geom.Coordinate;
@@ -65,9 +66,14 @@ public class RasterCellInfo {
             for( GridCoverage2D g2d : coverage2ds ) {
                 String name = StringUtilities.trimOrPadToCount(g2d.getName().toString(), cellChars);
                 sb.append("| ").append(name).append(" | ");
+                double nv = HMConstants.getNovalue(g2d);
                 for( double lo = fromLon; lo <= toLon; lo += xres ) {
                     double v = CoverageUtilities.getValue(g2d, lo, la);
-                    sb.append(String.format("%17.8f", v)).append(" | ");
+                    if (HMConstants.isNovalue(v, nv)) {
+                        sb.append("       -nv-       | ");
+                    } else {
+                        sb.append(String.format("%17.8f", v)).append(" | ");
+                    }
                 }
                 sb.append("\n");
             }
