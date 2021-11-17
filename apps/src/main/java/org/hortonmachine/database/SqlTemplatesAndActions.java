@@ -28,6 +28,7 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -55,6 +56,7 @@ import org.hortonmachine.dbs.compat.IHmExtrasDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.datatypes.EDataType;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.Logger;
@@ -742,7 +744,8 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
                     try {
                         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-                        IFormHandler formHandler = new DbFormHandler(spatialiteViewer.currentConnectedSqlDatabase, table.tableName);
+                        IFormHandler formHandler = new DbFormHandler(spatialiteViewer.currentConnectedSqlDatabase,
+                                table.tableName);
                         final FormBuilderController controller = new FormBuilderController(formHandler);
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine FORMS Editor");
                         Class<DatabaseViewer> class1 = DatabaseViewer.class;
@@ -756,6 +759,86 @@ public class SqlTemplatesAndActions {
         } else {
             return null;
         }
+    }
+
+    public Action getGenerateInsertExportAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
+        if (isNosql) {
+            return null;
+        }
+
+        return new AbstractAction("Generate insert sql statements"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                try {
+                    DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
+                    File[] saveFiles = gBridge.showSaveFileDialog("Save sql file", PreferencesHandler.getLastFile(), null);
+                    if (saveFiles != null && saveFiles.length > 0) {
+                        try {
+                            PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
+                        } catch (Exception e1) {
+                            logger.insertError("SqlTemplatesAndActions", "ERROR", e1);
+                        }
+                    } else {
+                        return;
+                    }
+                    File saveFile = saveFiles[0];
+
+                    ADb db = spatialiteViewer.currentConnectedSqlDatabase;
+                    QueryResult result = db.getTableRecordsMapFromRawSql("select * from " + table.tableName, -1);
+                    List<String> colNames = result.names;
+                    List<String> types = result.types;
+                    List<Object[]> data = result.data;
+                    StringBuilder sb = new StringBuilder();
+                    for( int i = 0; i < data.size(); i++ ) {
+                        Object[] record = data.get(i);
+
+                        sb.append("INSERT INTO ").append(table.tableName).append("(");
+
+                        StringBuilder namesSb = new StringBuilder();
+                        StringBuilder valuesSb = new StringBuilder();
+
+                        boolean firstDone = false;
+                        for( int j = 0; j < record.length; j++ ) {
+                            if (record[j] != null) {
+                                String name = colNames.get(j);
+                                String type = types.get(j);
+                                EDataType etype = EDataType.getType4Name(type);
+                                if (etype == EDataType.BLOB || etype == EDataType.GEOMETRY) {
+                                    continue;
+                                } else {
+                                    if (firstDone) {
+                                        namesSb.append(",");
+                                        valuesSb.append(",");
+                                    }
+
+                                    namesSb.append(name);
+
+                                    String value = record[j].toString();
+                                    value = ADb.escapeSql(value);
+                                    if (etype == EDataType.TEXT) {
+                                        valuesSb.append("'").append(value).append("'");
+                                    }else {
+                                        valuesSb.append(value);
+                                    }
+                                    firstDone = true;
+                                }
+                            }
+                        }
+
+                        sb.append(namesSb.toString());
+                        sb.append(") VALUES (");
+                        sb.append(valuesSb.toString());
+                        sb.append(");\n");
+                    }
+
+                    FileUtilities.writeFile(sb.toString(), saveFile);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
+
     }
 
     public Action getUpdateLayerStats( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {

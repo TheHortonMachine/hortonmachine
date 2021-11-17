@@ -20,6 +20,7 @@ package org.hortonmachine.dbs.compat.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hortonmachine.dbs.datatypes.EDataType;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -47,6 +48,8 @@ public class QueryResult {
     
     /**
      * The types of the columns of the result.
+     * 
+     * @see EDataType
      */
     public List<String> types = new ArrayList<>();
     

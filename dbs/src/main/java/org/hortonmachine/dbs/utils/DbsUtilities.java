@@ -381,6 +381,21 @@ public class DbsUtilities {
         return tableName;
     }
 
+    public static String fixColumnName( String columnName ) {
+        if (columnName.charAt(0) == '\'') {
+            // already fixed
+            return columnName;
+        }
+        if ( //
+        Character.isDigit(columnName.charAt(0)) || //
+                columnName.matches(".*\\s+.*") || //
+                columnName.contains("-") //
+        ) {
+            return "\"" + columnName + "\"";
+        }
+        return columnName;
+    }
+    
     /**
      * Get from preference.
      * 

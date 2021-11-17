@@ -24,6 +24,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.h2.upgrade.DbUpgrade;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -745,6 +746,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
             if (DbsUtilities.isReservedName(columnName)) {
                 columnName = DbsUtilities.fixReservedNameForQuery(columnName);
             }
+            columnName = DbsUtilities.fixColumnName(columnName);
 
             String columnTypeName = columnInfo[1];
 
