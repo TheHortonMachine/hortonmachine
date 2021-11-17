@@ -29,7 +29,6 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.modules.FlowNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -123,6 +122,8 @@ public class OmsBaseflowWaterVolume extends HMModel {
     private double infNv;
 
     private double netNv;
+
+    private int infNovaluesCount = 0;
 
     @Execute
     public void process() throws Exception {
@@ -266,7 +267,13 @@ public class OmsBaseflowWaterVolume extends HMModel {
         for( FlowNode sourceCell : sourceCells ) {
             double li = sourceCell.getValueFromMap(infiltrationIter);
             if (HMConstants.isNovalue(li, infNv)) {
-                pm.errorMessage("Found novalue in infiltration map. Check your data. Setting infiltration to 0.");
+                infNovaluesCount++;
+                if (infNovaluesCount == 5) {
+                    pm.errorMessage(
+                            "No more debug messages printed. Just setting infiltration to 0 due to novalue in infiltration.");
+                } else if (infNovaluesCount < 5) {
+                    pm.errorMessage("Found novalue in infiltration map. Check your data. Setting infiltration to 0.");
+                }
                 li = 0;
             }
             int x = sourceCell.col;
@@ -285,7 +292,13 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     // infiltratedWaterVolumeState.get(locator,
                     // Double.class);
                     if (HMConstants.isNovalue(currentCellLi, infNv)) {
-                        pm.errorMessage("Found novalue in infiltration map. Check your data. Setting infiltration to 0.");
+                        infNovaluesCount++;
+                        if (infNovaluesCount == 5) {
+                            pm.errorMessage(
+                                    "No more debug messages printed. Just setting infiltration to 0 due to novalue in infiltration.");
+                        } else if (infNovaluesCount < 5) {
+                            pm.errorMessage("Found novalue in infiltration map. Check your data. Setting infiltration to 0.");
+                        }
                         currentCellLi = 0;
                     }
                     double lSumUpstreamCells = 0.0;
