@@ -115,12 +115,6 @@ public class OmsMeasurementsDataCoach extends HMModel {
     public static final String inInterpolate_DESCRIPTION = "The vector of the points in which the data have to be interpolated.";
     public static final String fInterpolateid_DESCRIPTION = "The field of the interpolated vector points, defining the id.";
     public static final String fPointZ_DESCRIPTION = "The field of the interpolated vector points, defining the elevation.";
-    public static final String OMSKRIGING_pMode_DESCRIPTION = "The interpolation mode (0 = interpolate on irregular grid, 1 = interpolate on regular grid).";
-    public static final String OMSKRIGING_pIntegralscale_DESCRIPTION = "The integral scale.";
-    public static final String OMSKRIGING_pVariance_DESCRIPTION = "The variance.";
-    public static final String OMSKRIGING_doLogarithmic_DESCRIPTION = "Switch for logaritmic run selection.";
-    public static final String OMSKRIGING_inInterpolationGrid_DESCRIPTION = "The collection of the points in which the data needs to be interpolated.";
-    public static final String OMSKRIGING_pSemivariogramType_DESCRIPTION = "The type of theoretical semivariogram: 0 = Gaussian; 1 = Exponential.";
     public static final String maxCount_description = "In the case of kriging with neighbor, inNumCloserStations is the number of stations the algorithm has to consider";
     public static final String maxdist_Description = "In the case of kriging with neighbor, maxdist is the maximum distance within the algorithm has to consider the stations";
 
