@@ -135,10 +135,10 @@ public class ExperimentalVariogram extends HMModel {
      * @param xStation the vector containing the x value of the station
      * @param yStation the vector containing the y value of the station
      * @param hStation the vector containing the variable value of the station
-     * @param Cutoffinput the cutoff input
+     * @param cutoffInput the cutoff input
      * @return the double[][] matrix of the results of the processing
      */
-    private double[][] processAlgorithm( double[] xStation, double yStation[], double[] hStation, double Cutoffinput ) {
+    private double[][] processAlgorithm( double[] xStation, double yStation[], double[] hStation, double cutoffInput ) {
 
         double x1, x2, y1, y2;
         double dDifX, dDifY;
@@ -146,7 +146,7 @@ public class ExperimentalVariogram extends HMModel {
         double mean = 0;
         double maxDistance = 0;
 
-        double Cutoff;
+        double cutoff;
         int iCount = xStation.length;
         double distanceMatrix[][] = new double[iCount][iCount];
 
@@ -163,10 +163,10 @@ public class ExperimentalVariogram extends HMModel {
 
         diagonal = Math.sqrt((x_max - x_min) * (x_max - x_min) + (y_max - y_min) * (y_max - y_min));
 
-        if (Cutoffinput == 0) {
-            Cutoff = diagonal / 3;
+        if (cutoffInput == 0) {
+            cutoff = diagonal / 3;
         } else
-            Cutoff = Cutoffinput;
+            cutoff = cutoffInput;
 
         // Compute the distance matrix
         for( int i = 0; i < iCount - 1; i++ ) {
@@ -195,7 +195,7 @@ public class ExperimentalVariogram extends HMModel {
         // compute the mean of the input hStation
         mean /= (double) iCount;
 
-        return calculate(Cutoff, distanceMatrix, hStation, mean, maxDistance);
+        return calculate(cutoff, distanceMatrix, hStation, mean, maxDistance);
 
     }
 

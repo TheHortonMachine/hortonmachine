@@ -16,6 +16,16 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.nextgen;
 
+import static org.hortonmachine.gears.libs.modules.Variables.*;
+import static org.hortonmachine.gears.libs.modules.Variables.COSINE;
+import static org.hortonmachine.gears.libs.modules.Variables.DISTANCE;
+import static org.hortonmachine.gears.libs.modules.Variables.EPANECHNIKOV;
+import static org.hortonmachine.gears.libs.modules.Variables.GAUSSIAN;
+import static org.hortonmachine.gears.libs.modules.Variables.INVERSE_DISTANCE;
+import static org.hortonmachine.gears.libs.modules.Variables.QUARTIC;
+import static org.hortonmachine.gears.libs.modules.Variables.TRIANGULAR;
+import static org.hortonmachine.gears.libs.modules.Variables.TRIWEIGHT;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -33,6 +43,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("Measurements data coach.")
 //@Documentation("Kriging.html")
@@ -64,7 +75,20 @@ public class OmsKrigingInterpolator extends HMModel {
     @Out
     public HashMap<Integer, double[]> outTargetIds2ValueMap;
 
-//    public static final String OMSKRIGING_pMode_DESCRIPTION = "The interpolation mode (0 = interpolate on irregular grid, 1 = interpolate on regular grid).";
+    @Description("Variogram mode.")
+    @UI("combo:" + KRIGING_EXPERIMENTAL_VARIOGRAM + "," + KRIGING_DEFAULT_VARIOGRAM)
+    @In
+    public String pMode = KRIGING_DEFAULT_VARIOGRAM;
+    
+    @Description("Specified cutoff for experimental variogram.")
+    @In
+    public double pCutoff;
+
+    @Description("Number of bins to consider in the anlysis for the experimental variogram.")
+    @In
+    public int pBins;
+    
+    
 //    public static final String OMSKRIGING_pIntegralscale_DESCRIPTION = "The integral scale.";
 //    public static final String OMSKRIGING_pVariance_DESCRIPTION = "The variance.";
 //    public static final String OMSKRIGING_doLogarithmic_DESCRIPTION = "Switch for logaritmic run selection.";
@@ -92,6 +116,18 @@ public class OmsKrigingInterpolator extends HMModel {
 
                 break;
             case INTERPOLATION_KRIGING:
+                if(pMode.equals(KRIGING_EXPERIMENTAL_VARIOGRAM)) {
+                    OmsExperimentalVariogram expVariogram = new OmsExperimentalVariogram();
+                    expVariogram.inStationIds2CoordinateMap = inStationIds2CoordinateMap;
+                    expVariogram.inStationIds2ValueMap = inStationIds2ValueMap;
+                    expVariogram.pCutoff = pCutoff;
+                    expVariogram.pBins = pBins;
+                    expVariogram.process();
+                    HashMap<Integer, double[]> outExperimentalVariogram = expVariogram.outExperimentalVariogram;
+                    
+                }
+                
+                
                 throw new RuntimeException("Not implemented yet");
 //                break;
             case NODATA:

@@ -151,4 +151,7 @@ public interface Variables {
     public String TOPOLOGYPRESERVINGSIMPLIFIER = "TopologyPreservingSimplifier";
     public String DOUGLAS_PEUCKER = "Douglas Peucker";
     public String PRECISION_REDUCER = "Reduce coordinate precision";
+    
+    public String KRIGING_EXPERIMENTAL_VARIOGRAM = "With Experimental Variogram";
+    public String KRIGING_DEFAULT_VARIOGRAM = "With Default Variogram";
 }
