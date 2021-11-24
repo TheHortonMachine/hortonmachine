@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.variogram;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.apache.commons.math3.fitting.SimpleCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
 
@@ -34,10 +37,10 @@ public class VariogramFunctionFitter {
         this.initNugget = initNugget;
     }
 
-    public double[] fit( double[] distances, double[] values ) {
+    public double[] fit( Collection<double[]> allValues ) {
         final WeightedObservedPoints obs = new WeightedObservedPoints();
-        for( int i = 0; i < values.length; i++ ) {
-            obs.add(distances[i], values[i]);
+        for( double[] ds : allValues ) {
+            obs.add(ds[0], ds[1]);
         }
 
         SimpleCurveFitter curveFitter = SimpleCurveFitter.create(function, new double[]{initSill, initRange, initNugget});

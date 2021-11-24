@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
@@ -80,6 +81,11 @@ public class OmsKrigingInterpolator extends HMModel {
     @In
     public String pMode = KRIGING_DEFAULT_VARIOGRAM;
     
+    @Description("Theoretical Variogram type.")
+    @UI("combo:" + ITheoreticalVariogram.TYPES)
+    @In
+    public String pTheoreticalVariogramType = ITheoreticalVariogram.EXPONENTIAL;
+    
     @Description("Specified cutoff for experimental variogram.")
     @In
     public double pCutoff;
@@ -124,6 +130,16 @@ public class OmsKrigingInterpolator extends HMModel {
                     expVariogram.pBins = pBins;
                     expVariogram.process();
                     HashMap<Integer, double[]> outExperimentalVariogram = expVariogram.outExperimentalVariogram;
+                    
+                    OmsTheoreticalVariogram theoVariogram = new OmsTheoreticalVariogram();
+                    theoVariogram.inExperimentalVariogramMap = outExperimentalVariogram;
+                    theoVariogram.pTheoreticalVariogramType = pTheoreticalVariogramType;
+                    HashMap<Integer, double[]> outTheoreticalVariogram = theoVariogram.outTheoreticalVariogram;
+                    double outSill = theoVariogram.outSill;
+                    double outRange = theoVariogram.outRange;
+                    double outNugget = theoVariogram.outNugget;
+                    
+                    
                     
                 }
                 
