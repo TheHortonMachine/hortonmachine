@@ -4,7 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -36,8 +38,12 @@ public class TestKrigingVectorMode {
 
         VariogramFunction function = new VariogramFunction(ITheoreticalVariogram.LINEAR);
 
+        List<double[]> data = new ArrayList<>();
+        for( int i = 0; i < values.length; i++ ) {
+            data.add(new double[] {distances[i], values[i]});
+        }
         VariogramFunctionFitter fitter = new VariogramFunctionFitter(function, 1, 3, 4);
-        double[] fit = fitter.fit(distances, values);
+        double[] fit = fitter.fit(data);
 
         assertEquals(1.9769933586233943, fit[0], 0.0000001);
         assertEquals(3.9539830033063583, fit[1], 0.0000001);

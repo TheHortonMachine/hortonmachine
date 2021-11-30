@@ -18,7 +18,6 @@
 package org.hortonmachine.hmachine.modules.statistics.kriging.variogram;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.commons.math3.fitting.SimpleCurveFitter;
 import org.apache.commons.math3.fitting.WeightedObservedPoints;
