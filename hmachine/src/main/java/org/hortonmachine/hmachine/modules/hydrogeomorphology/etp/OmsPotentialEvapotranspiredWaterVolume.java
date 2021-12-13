@@ -163,6 +163,9 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
      */
     public static double calculateEtp( double kc, double tMax, double tMin, double tAvg, double rainfall, double solarRad ) {
         double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76);
+        
+        referenceET = referenceET * 30.0;
+        
         return calculateEtp(kc, referenceET);
     }
 
