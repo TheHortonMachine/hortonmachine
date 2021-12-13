@@ -1387,6 +1387,7 @@ public class ModelsEngine {
     /**
      * Verify if the current station (i) is already into the arrays.
      *
+     * @deprecated This is no longer used.
      * @param xStation the x coordinate of the stations
      * @param yStation the y coordinate of the stations
      * @param zStation the z coordinate of the stations

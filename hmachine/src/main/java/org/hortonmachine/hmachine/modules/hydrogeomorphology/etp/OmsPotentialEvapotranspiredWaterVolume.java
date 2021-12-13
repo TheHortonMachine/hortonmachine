@@ -44,6 +44,10 @@ import oms3.annotations.Unit;
 @Status(OmsPotentialEvapotranspiredWaterVolume.STATUS)
 @License(OmsPotentialEvapotranspiredWaterVolume.LICENSE)
 public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
+    @Description(pDaysInTimestep_DESCRIPTION)
+    @In
+    public Double pDaysInTimestep = null;
+
     @Description(inCropCoefficient_DESCRIPTION)
     @In
     public GridCoverage2D inCropCoefficient = null;
@@ -88,6 +92,7 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public static final String AUTHORNAMES = "The klab team.";
     public static final String AUTHORCONTACTS = "www.integratedmodelling.org";
 
+    public static final String pDaysInTimestep_DESCRIPTION = "The days contained in the used timestep (for a month that would be 30).";
     public static final String inCropCoefficient_DESCRIPTION = "The map of crop coefficient.";
     public static final String inReferenceEtp_DESCRIPTION = "The map of reference evapotraspiration (optional, excludes all but the crop coefficient).";
     public static final String inMaxTemp_DESCRIPTION = "The map of maximum temperature.";
@@ -120,12 +125,20 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
                         return etpNovalue;
                     }
 
-                    return calculateEtp(kc, refEtp);
+                    return calculatePotentialEtp(kc, refEtp);
                 }
             };
             outputPet = processor.loop(funct, etpNovalue, inCropCoefficient, inReferenceEtp);
         } else {
             checkNull(inMaxTemp, inMinTemp, inAtmosphericTemp, inSolarRadiation, inRainfall);
+
+            double daysInTs = 30.0;
+            if (pDaysInTimestep != null) {
+                daysInTs = pDaysInTimestep;
+            } else {
+                pm.errorMessage("No days count in timestamp available, setting it to 30 (assuming 1 month timestep).");
+            }
+            double _daysInTs = daysInTs;
 
             double rainNv = HMConstants.getNovalue(inRainfall);
             double maxNv = HMConstants.getNovalue(inMaxTemp);
@@ -148,7 +161,8 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
                             || HMConstants.isNovalue(solarRad, solarNv)) {
                         return rainNv;
                     }
-                    return calculateEtp(kc, tMax, tMin, tAvg, rainfall, solarRad/1000);
+                    double refEtp = calculateReferenceEtp(tMax, tMin, tAvg, rainfall, solarRad, _daysInTs);
+                    return calculatePotentialEtp(kc, refEtp);
                 }
             };
             outputPet = processor.loop(funct, rainNv, inCropCoefficient, inMaxTemp, inMinTemp, inAtmosphericTemp, inRainfall,
@@ -160,20 +174,29 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     /**
      * Calculate pet using the solar radiation.
      *  
+     * @param tMax value of maximum temperature.
+     * @param tMin value of minimum temperature.
+     * @param tAvg value of average temperature.
+     * @param rainfall value of rainfall.
+     * @param solarRad the solar radiation.
+     * @param daysInTs the count of days in the considered timestep.
+     * @return the reference ETP.
      */
-    public static double calculateEtp( double kc, double tMax, double tMin, double tAvg, double rainfall, double solarRad ) {
-        double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76);
-        return calculateEtp(kc, referenceET);
+    public static double calculateReferenceEtp( double tMax, double tMin, double tAvg, double rainfall, double solarRad,
+            double daysInTs ) {
+        double referenceET = 0.0013 * 0.408 * solarRad * (tAvg + 17) * Math.pow((tMax - tMin - 0.0123 * rainfall), 0.76)
+                * daysInTs;
+        return referenceET;
     }
 
     /**
      * Calculate pet using the reference etp.
      * 
-     * @param kc
-     * @param referenceET
-     * @return
+     * @param kc value of crop coefficient.
+     * @param referenceET the reference ETP.
+     * @return the potential etp.
      */
-    private static double calculateEtp( double kc, double referenceET ) {
+    private static double calculatePotentialEtp( double kc, double referenceET ) {
         return kc * referenceET;
     }
 
