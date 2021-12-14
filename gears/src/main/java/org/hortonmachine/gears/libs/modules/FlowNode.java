@@ -104,7 +104,10 @@ public class FlowNode extends Node {
                     touchesBound = true;
                 } else {
                     synchronized (gridIter) {
-                        tmp = gridIter.getSample(newC, newR, 0);
+                        double tmpD = gridIter.getSampleDouble(newC, newR, 0);
+                        if (!HMConstants.isNovalue(tmpD)) {
+                            tmp = (int) tmpD;
+                        }
                     }
                 }
 

@@ -1676,6 +1676,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             objects[i] = formatted;
                         }
                     }
+                } else if(objects[i] == null) {
+                    objects[i] = "NULL";
                 }
             }
         }
