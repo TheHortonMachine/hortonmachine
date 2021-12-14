@@ -162,6 +162,9 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     return;
                 }
                 for( int c = 0; c < cols; c++ ) {
+                    if(r==1&&c==959) {
+                        System.out.println();
+                    }
                     FlowNode node = new FlowNode(flowIter, cols, rows, c, r, flowNv);
 
                     // get exit cells
