@@ -920,6 +920,7 @@
 					<encoding>UTF-8</encoding>
 				        <release>11</release>
 					<debug>true</debug>
+					<fork>true</fork>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -1110,6 +1111,7 @@
 							<source>1.8</source>
 							<target>1.8</target>
 							<encoding>UTF-8</encoding>
+					<fork>true</fork>
 						</configuration>
 					</plugin>
 				</plugins>
