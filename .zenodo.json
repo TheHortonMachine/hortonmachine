@@ -23,28 +23,36 @@
   ],
   "contributors": [
      {
-       "name":"Charles Ehlschlaeger"
+       "name":"Charles Ehlschlaeger",
+       "type": "Other"
      },
      {
-       "name":"David Tarboton"
+       "name":"David Tarboton",
+       "type": "Other"
      },
      {
-       "name":"Giuseppe Formetta"
+       "name":"Giuseppe Formetta",
+       "type": "Other"
      },
      {
-       "name":"Daniele Andreis"
+       "name":"Daniele Andreis",
+       "type": "Other"
      },
      {
-       "name":"Erica Ghesla"
+       "name":"Erica Ghesla",
+       "type": "Other"
      },
      {
-       "name":"Cozzini Andrea"
+       "name":"Cozzini Andrea",
+       "type": "Other"
      },
      {
-       "name":"Pisoni Silvano"
+       "name":"Pisoni Silvano",
+       "type": "Other"
      },
      {
-       "name":"Stefano Endrizzi"
+       "name":"Stefano Endrizzi",
+       "type": "Other"
      }
   ],
   "references": [
