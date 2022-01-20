@@ -1,0 +1,53 @@
+{
+  "access_right": "open",
+  "title":"Hortonmachine",
+  "description":"The Hortonmachine is an open source Java Library dedicated to hydrologic and geomorphologic modelling.",
+  "language": "eng",
+  "license": {"id":"GPL-3.0-or-later"},
+  "keywords": ["gis","hydrology", "geomorphology", "java"],
+  "creators": [
+     {
+       "name":"Andrea Antonello",
+       "affiliation":"HydroloGIS S.r.l., Free University of Bolzano",
+       "orcid":"0000-0001-9543-751X"
+     },
+     {
+       "name":"Silvia Franceschi",
+       "affiliation":"HydroloGIS S.r.l."
+     },
+     {
+       "name":"Rigon Riccardo",
+       "affiliation":"Universita' degli Studi di Trento",
+       "orcid":"0000-0002-7668-5806"
+     }
+  ],
+  "contributors": [
+     {
+       "name":"Charles Ehlschlaeger"
+     },
+     {
+       "name":"David Tarboton"
+     },
+     {
+       "name":"Giuseppe Formetta"
+     },
+     {
+       "name":"Daniele Andreis"
+     },
+     {
+       "name":"Erica Ghesla"
+     },
+     {
+       "name":"Cozzini Andrea"
+     },
+     {
+       "name":"Pisoni Silvano"
+     },
+     {
+       "name":"Stefano Endrizzi"
+     }
+  ],
+  "references": [
+    
+  ]
+}
