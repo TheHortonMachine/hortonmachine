@@ -42,8 +42,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.media.jai.ROI;
 import javax.media.jai.ROIShape;
@@ -90,6 +92,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
 import org.opengis.coverage.grid.GridCoverageReader;
 import org.opengis.geometry.DirectPosition;
@@ -1803,7 +1806,10 @@ public class CoverageUtilities {
      * @return the list of envelope geometries.
      */
     public static List<Polygon> gridcoverageToCellPolygons( GridCoverage2D coverage,
-            Predicate<Coordinate> keepCoordinatePredicate ) {
+            Predicate<Coordinate> keepCoordinatePredicate, boolean doIncrementalMerge, IHMProgressMonitor pm ) {
+        if (pm == null) {
+            pm = new DummyProgressMonitor();
+        }
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         double west = regionMap.getWest();
         double north = regionMap.getNorth();
@@ -1812,9 +1818,13 @@ public class CoverageUtilities {
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
 
+        int everyRows = 1000;
+
         GeometryFactory gf = GeometryUtilities.gf();
         RandomIter iter = CoverageUtilities.getRandomIterator(coverage);
+        List<Geometry> bigPolygons = new ArrayList<Geometry>();
         List<Polygon> polygons = new ArrayList<Polygon>();
+        pm.beginTask("Vectorizing raster cells...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
                 double w = west + xres * c;
@@ -1840,6 +1850,46 @@ public class CoverageUtilities {
 
                 double value = iter.getSampleDouble(c, r, 0);
                 polygon.setUserData(value);
+            }
+
+            if (doIncrementalMerge && ((r > 0 && r % everyRows == 0) || r == rows - 1)) {
+                // merge same value to single geometries to save memory
+                Map<Integer, List<Geometry>> collected = polygons.parallelStream()
+                        .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
+                        .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
+                pm.message(r + " of " + rows);
+
+                polygons = new ArrayList<Polygon>();
+                int size = collected.size();
+                int count = 0;
+                for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
+                    count++;
+                    if(count % 10 == 0)
+                        pm.message("   -> " + count + " of " + size);
+                    Integer basinId = entry.getKey();
+                    List<Geometry> value = entry.getValue();
+                    Geometry tmpGeom = CascadedPolygonUnion.union(value);
+                    for( int i = 0; i < tmpGeom.getNumGeometries(); i++ ) {
+                        Polygon geometryN = (Polygon) tmpGeom.getGeometryN(i);
+                        geometryN.setUserData(basinId);
+                        bigPolygons.add(geometryN);
+                    }
+                }
+                
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
+        if (doIncrementalMerge) {
+            polygons = new ArrayList<Polygon>();
+            for( Geometry tmpGeom : bigPolygons ) {
+                Object userData = tmpGeom.getUserData();
+                for( int i = 0; i < tmpGeom.getNumGeometries(); i++ ) {
+                    Polygon geometryN = (Polygon) tmpGeom.getGeometryN(i);
+                    geometryN.setUserData(userData);
+                    polygons.add(geometryN);
+                }
             }
         }
         return polygons;

@@ -35,6 +35,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -147,9 +148,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
         GridCoverage2D subBasins = getRaster(inBasins);
         CoordinateReferenceSystem crs = subBasins.getCoordinateReferenceSystem();
-        pm.beginTask("Vectorize raster map...", IHMProgressMonitor.UNKNOWN);
-        List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null);
-        pm.done();
+        List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null, true, pm);
 
         GridCoverage2D pit = getRaster(inPitfiller);
         GridCoverage2D sky = getRaster(inSkyview);
@@ -336,7 +335,24 @@ public class GeoframeInputsBuilder extends HMModel {
                         outBasin.upStreamBasins.removeAll(lakeBasin.upStreamBasins);
                         outBasin.upStreamBasins.add(lakeBasin);
                         Geometry geomToCut = basinId2geomMap.get(outBasin.id);
-                        Geometry newGeom = geomToCut.difference(lakeGeom);
+                        Geometry newGeom;
+                        try {
+                            newGeom = geomToCut.difference(lakeGeom);
+                        } catch (Exception e) {
+                            File folder = new File(outFolder);
+                            File errorFile = new File(folder, "errors." + HMConstants.GPKG + "#error_basin_" + outBasin.id);
+                            
+                            String message = "An error occurred during intersection between basin and lake geometries. IGNORING LAKE.\nGeometries written to: " + errorFile;
+                            
+                            pm.errorMessage(message);
+                            
+                            geomToCut.setUserData("basin_" + outBasin.id);
+                            lakeGeom.setUserData("lake");
+                            SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs, geomToCut, lakeGeom);
+                            OmsVectorWriter.writeVector(errorFile.getAbsolutePath(), fc);
+                            
+                            continue;
+                        }
                         outBasin.basinGeometry = newGeom;
                         basinId2geomMap.put(outBasin.id, newGeom);
 

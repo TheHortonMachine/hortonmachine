@@ -425,7 +425,28 @@ public class OmsNetworkAttributesBuilder extends HMModel {
                  * the line is finished 
                  */
                 if (lineCoordinatesList.size() < 2) {
-                    throw new RuntimeException();
+                    if (lineCoordinatesList.size() == 1) {
+//                        FlowNode tmpDown = runningNode.goDownstream();
+//                        Coordinate c = lineCoordinatesList.get(0);
+//                        if(tmpDown.isValid()) {
+//                            int tmpCol = tmpDown.col;
+//                            int tmpRow = tmpDown.row;
+//                            Coordinate tmpCoord= CoverageUtilities.coordinateFromColRow(tmpCol, tmpRow, gridGeometry);
+                            lineCoordinatesList.add(coord);
+                            int[] colRow = CoverageUtilities.colRowFromCoordinate(startCoordinate, gridGeometry, null);
+                            String message = "Guessing 2nd coordinate for line with less than 2 coordinates";
+                            message += ": "
+                                    + "\n   original -> col/row=" + colRow[0] + "/" + colRow[1] + "  x/y=" + startCoordinate.x + "/" + startCoordinate.y
+                                    + "\n   added -> col/row=" + col + "/" + row + "  x/y=" + coord.x + "/" + coord.y;
+                            pm.errorMessage(message);
+//                        } else {
+//                            String message = "Downstream cell of col/row=" + col + "/" + row + "  x/y=" + c.x + "/" + c.y + " is invalid.";
+//                            pm.errorMessage(message);
+//                        }
+                        
+                    } else {
+                        throw new RuntimeException("Found line without coordinates: col/row=" + col + "/" + row);
+                    }
                 }
                 // create a line and finish this trail
                 createLine(lineCoordinatesList, hackIndex);
