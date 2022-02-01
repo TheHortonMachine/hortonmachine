@@ -161,10 +161,10 @@ public class OmsTimeSeriesIteratorReader extends HMModel {
                 if (rowsIterator.hasNext()) {
                     String[] row = rowsIterator.next();
                     secondTime = row[1];
+                    // the dt is equal to the difference of the time of 2 rows.
+                    tTimestep = formatter.parseDateTime(secondTime).getMinuteOfDay()
+                            - formatter.parseDateTime(tStart).getMinuteOfDay();
                 }
-                // the dt is equal to the fifference of the time of 2 rows.
-                tTimestep = formatter.parseDateTime(secondTime).getMinuteOfDay()
-                        - formatter.parseDateTime(tStart).getMinuteOfDay();
                 // close and reopen to read the row.
                 rowsIterator.close();
                 rowsIterator = (TableIterator<String[]>) table.rows().iterator();
