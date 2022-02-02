@@ -6,9 +6,9 @@ import java.util.Map.Entry;
 
 public class TestMain {
     public static void main( String[] args ) throws Exception {
-        String stations = "C:/Users/hydrologis/lavori_tmp/2021_unitn/test_kriging/KrigingTestEventData/newGenKriging/shapefile/stations_utm.shp";
-        String targets= "C:/Users/hydrologis/lavori_tmp/2021_unitn/test_kriging/KrigingTestEventData/newGenKriging/shapefile/centroids_utm.shp";
-        String data = "C:/Users/hydrologis/lavori_tmp/2021_unitn/test_kriging/KrigingTestEventData/newGenKriging/input_kriging_hourly.csv";
+        String stations = "/home/hydrologis/TMP/UNITN/newGenKriging/shapefile/stations_utm.shp";
+        String targets= "/home/hydrologis/TMP/UNITN/newGenKriging/shapefile/centroids_utm.shp";
+        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/01_input_kriging_hourly_allnodata.csv";
         
         OmsMeasurementsDataCoach mc = new OmsMeasurementsDataCoach();
         mc.inStations = stations;
@@ -21,6 +21,8 @@ public class TestMain {
         
         mc.pMaxDist = 10000.0;
         mc.pMaxClosestStationsNum = 10;
+        
+        mc.initProcess();
         
         OmsKrigingInterpolator interpolator = new OmsKrigingInterpolator();
         
