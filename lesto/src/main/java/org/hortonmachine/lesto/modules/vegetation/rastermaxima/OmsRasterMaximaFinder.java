@@ -111,6 +111,10 @@ public class OmsRasterMaximaFinder extends HMModel {
     @In
     public boolean doCircular = true;
 
+    @Description(doAllowNovalues_DESCRIPTION)
+    @In
+    public boolean doAllowNovalues = false;
+
     @Description(pBorderDistanceThres_DESCRIPTION)
     @Unit("m")
     @In
@@ -144,9 +148,10 @@ public class OmsRasterMaximaFinder extends HMModel {
     public static final String inGeodata_DESCRIPTION = "The input CHM.";
     public static final String pThreshold_DESCRIPTION = "Threshold on maxima. Only maxima higher than the threshold are kept.";
     public static final String pMode_DESCRIPTION = "Processing mode.";
-    public static final String pPercent_DESCRIPTION = "Percentage to apply to the maxima window to downsize it (default is 60%).";
-    public static final String pMaxRadius_DESCRIPTION = "Maximum radius to use in meters.";
+    public static final String pPercent_DESCRIPTION = "Percentage to apply to the maxima window to downsize it (default is 60%). This is ignored in CUSTOM mode.";
+    public static final String pMaxRadius_DESCRIPTION = "Maximum radius to use in meters. This is ignored in CUSTOM mode.";
     public static final String doCircular_DESCRIPTION = "Use circular window.";
+    public static final String doAllowNovalues_DESCRIPTION = "Allow novalues inside the window of the maxima.";
     public static final String pBorderDistanceThres_DESCRIPTION = "Distance threshold to mark maxima as near a border. If <0 check is ignored.";
     public static final String pSize_DESCRIPTION = "The windows size in cells to use for custom mode(default is 3).";
     public static final String outMaxima_DESCRIPTION = "The maxima vector.";
@@ -299,7 +304,7 @@ public class OmsRasterMaximaFinder extends HMModel {
                         } else {
                             nonValidCells++;
                         }
-                        if (nonValidCells > 1) {
+                        if (nonValidCells > 1 && !doAllowNovalues) {
                             note = "exclude: found invalid neighbor cells = " + nonValidCells;
                             isMax = false;
                             break;

@@ -77,6 +77,10 @@ public class RasterMaximaFinder extends HMModel {
     @Description(OmsRasterMaximaFinder.doCircular_DESCRIPTION)
     @In
     public boolean doCircular = true;
+    
+    @Description(OmsRasterMaximaFinder.doAllowNovalues_DESCRIPTION)
+    @In
+    public boolean doAllowNovalues = false;
 
     @Description(OmsRasterMaximaFinder.pBorderDistanceThres_DESCRIPTION)
     @Unit("m")
@@ -112,6 +116,7 @@ public class RasterMaximaFinder extends HMModel {
         maxFinder.pPercent = pPercent;
         maxFinder.pMaxRadius = pMaxRadius;
         maxFinder.doCircular = doCircular;
+        maxFinder.doAllowNovalues = doAllowNovalues;
         maxFinder.pBorderDistanceThres = pBorderDistanceThres;
         maxFinder.pTopBufferThres = pTopBufferThres;
         maxFinder.pTopBufferThresCellCount = pTopBufferThresCellCount;
