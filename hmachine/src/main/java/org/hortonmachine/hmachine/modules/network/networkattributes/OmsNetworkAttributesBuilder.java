@@ -68,6 +68,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
@@ -481,15 +482,20 @@ public class OmsNetworkAttributesBuilder extends HMModel {
                         handleTrail(flowNode, coord, hackIndex + 1);
                     }
                 } else {
-                    // we want also hack numbering and friends
-                    FlowNode mainUpstream = runningNode.getUpstreamTcaBased(tcaIter, null);
-                    // the main channel keeps the same index
-                    handleTrail(mainUpstream, coord, hackIndex);
-                    // the others jump up one
-                    for( FlowNode flowNode : checkedNodes ) {
-                        if (!flowNode.equals(mainUpstream)) {
-                            handleTrail(flowNode, coord, hackIndex + 1);
+                    try {
+                        // we want also hack numbering and friends
+                        FlowNode mainUpstream = runningNode.getUpstreamTcaBased(tcaIter, null);
+                        // the main channel keeps the same index
+                        handleTrail(mainUpstream, coord, hackIndex);
+                        // the others jump up one
+                        for( FlowNode flowNode : checkedNodes ) {
+                            if (!flowNode.equals(mainUpstream)) {
+                                handleTrail(flowNode, coord, hackIndex + 1);
+                            }
                         }
+                    } catch (Exception e) {
+                        String msg = "Unable to getUpstreamTcaBased of node: " + runningNode;
+                        pm.errorMessage(msg);
                     }
                 }
                 break;
@@ -517,11 +523,19 @@ public class OmsNetworkAttributesBuilder extends HMModel {
             Point2D p = new Point2D.Double();
             double[] value = new double[1];
             p.setLocation(startPoint.getX(), startPoint.getY());
-            inDem.evaluate(p, value);
-            double startElev = value[0];
-            p.setLocation(endPoint.getX(), endPoint.getY());
-            inDem.evaluate(p, value);
-            double endElev = value[0];
+            double startElev = -9999.0;
+            double endElev = -9999.0;
+            
+            try {
+                inDem.evaluate(p, value);
+                startElev = value[0];
+                p.setLocation(endPoint.getX(), endPoint.getY());
+                inDem.evaluate(p, value);
+                endElev = value[0];
+            } catch (Exception e) {
+                String msg = "Unable to read DEM in one of points: \n\t1) " + startPoint + "\n\t2) " + endPoint;
+                pm.errorMessage(msg);
+            }
             values = new Object[]{newNetLine, hackindex, 0, "-", startElev, endElev};
         }
         networkBuilder.addAll(values);
