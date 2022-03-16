@@ -461,7 +461,10 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
             }
         }
         binding.variables._outputTransforms << { it ->
-            if ( it instanceof geoscript.geom.Geometry || it instanceof geoscript.layer.Layer) {
+            if ( it instanceof geoscript.geom.Geometry ) { // || it instanceof geoscript.layer.Layer) {
+                def img = org.hortonmachine.HM.toImage(["size":[600,600]], [it])
+                return new ImageIcon(img)
+            } else if ( it instanceof geoscript.layer.Layer ) {
                 def img = geoscript.render.Draw.drawToImage(["size":[400,400],"backgroundColor":"white"],it)
                 return new ImageIcon(img)
             } else if ( it instanceof geoscript.feature.Feature ) {

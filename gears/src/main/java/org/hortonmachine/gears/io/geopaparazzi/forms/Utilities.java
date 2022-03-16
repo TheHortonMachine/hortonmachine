@@ -367,6 +367,46 @@ public class Utilities {
         }
         return imageIds;
     }
+    
+    /**
+     * Get the form item label out of a form string.
+     *
+     * @param formString the form.
+     * @return The form label or null.
+     * @throws Exception if something goes wrong.
+     */
+    public static String getFormLabel( String formString, String defaultValue ) throws Exception {
+        if (formString != null && formString.length() > 0) {
+            JSONObject sectionObject = new JSONObject(formString);
+            List<String> formsNames = Utilities.getFormNames4Section(sectionObject);
+            for( String formName : formsNames ) {
+                JSONObject form4Name = Utilities.getForm4Name(formName, sectionObject);
+                JSONArray formItems = Utilities.getFormItems(form4Name);
+                for( int i = 0; i < formItems.length(); i++ ) {
+                    JSONObject formItem = formItems.getJSONObject(i);
+                    if (!formItem.has(Utilities.TAG_KEY)) {
+                        continue;
+                    }
+
+                    String value = "";
+                    if (formItem.has(Utilities.TAG_VALUE))
+                        value = formItem.getString(Utilities.TAG_VALUE);
+                    if (formItem.has(Utilities.TAG_ISLABEL)) {
+                        String isLabelStr = formItem.getString(Utilities.TAG_ISLABEL);
+                        if (isLabelStr.toLowerCase().equals("true") || isLabelStr.toLowerCase().equals("yes")) {
+                            if(value.trim().length() > 0 )
+                                return value;
+                            else 
+                                return defaultValue; 
+                        }
+
+                    }
+
+                }
+            }
+        }
+        return defaultValue;
+    }
 
     /**
      * Create the forms root json object from the map of sections json objects.
