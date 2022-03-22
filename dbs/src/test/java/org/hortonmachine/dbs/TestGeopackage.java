@@ -19,6 +19,7 @@ import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.GeopackageTableNames;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.geopackage.TileMatrix;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.junit.Test;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -41,7 +42,7 @@ public class TestGeopackage {
             List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
             assertEquals(16, tables.size());
 
-            String point2DTable = "point2d";
+            SqlName point2DTable = SqlName.m("point2d");
             assertTrue(db.hasSpatialIndex(point2DTable));
             GeometryColumn geometryColumn = db.getGeometryColumnsForTable(point2DTable);
             assertEquals("geom", geometryColumn.geometryColumnName);
@@ -51,7 +52,7 @@ public class TestGeopackage {
             assertEquals(1, geometries.size());
             assertEquals("POINT (1 2)", geometries.get(0).toText());
 
-            String line2DTable = "linestring2d";
+            SqlName line2DTable = SqlName.m("linestring2d");
             assertTrue(db.hasSpatialIndex(line2DTable));
             geometryColumn = db.getGeometryColumnsForTable(line2DTable);
             assertEquals("geom", geometryColumn.geometryColumnName);
@@ -62,7 +63,7 @@ public class TestGeopackage {
             assertEquals("LINESTRING (1 2, 3 4)", geometries.get(0).toText());
 
             // with spatial index
-            String polygon2DTable = "polygon2d";
+            SqlName polygon2DTable = SqlName.m("polygon2d");
             assertTrue(db.hasSpatialIndex(polygon2DTable));
             geometryColumn = db.getGeometryColumnsForTable(polygon2DTable);
             assertEquals("geom", geometryColumn.geometryColumnName);
@@ -73,14 +74,14 @@ public class TestGeopackage {
             assertEquals("POLYGON ((0 0, 0 10, 10 10, 10 0, 0 0), (1 1, 1 9, 9 9, 9 1, 1 1))", geometries.get(0).toText());
 
             // has no spatial index
-            String multipoint2DTable = "multipoint2d";
+            SqlName multipoint2DTable = SqlName.m("multipoint2d");
             assertFalse(db.hasSpatialIndex(multipoint2DTable));
             geometries = db.getGeometriesIn(multipoint2DTable, (Envelope) null);
             geometries.removeIf(g -> g == null);
             assertEquals(1, geometries.size());
             assertEquals("MULTIPOINT ((0 1), (2 3))", geometries.get(0).toText());
 
-            String geomcollection2DTable = "geomcollection2d";
+            SqlName geomcollection2DTable = SqlName.m("geomcollection2d");
             assertTrue(db.hasSpatialIndex(geomcollection2DTable));
             geometries = db.getGeometriesIn(geomcollection2DTable, (Envelope) null);
             geometries.removeIf(g -> g == null);
@@ -90,7 +91,7 @@ public class TestGeopackage {
             geometries = db.getGeometriesIn(geomcollection2DTable, new Envelope(9, 11, 9, 11));
             assertEquals(2, geometries.size());
 
-            String point3DTable = "point3d";
+            SqlName point3DTable = SqlName.m("point3d");
             assertTrue(db.hasSpatialIndex(point3DTable));
             FeatureEntry feature = db.feature(point3DTable);
             assertEquals("POINT".toLowerCase(), feature.getGeometryType().getTypeName().toLowerCase());
@@ -120,7 +121,7 @@ public class TestGeopackage {
             List<Entry> contents = db.contents();
             assertEquals(1, contents.size());
 
-            TileEntry tileEntry = db.tile("test");
+            TileEntry tileEntry = db.tile(SqlName.m("test"));
             assertNotNull(tileEntry);
 
             int srid = tileEntry.getSrid();
@@ -160,7 +161,7 @@ public class TestGeopackage {
             List<Entry> contents = db.contents();
             assertEquals(1, contents.size());
 
-            String tableName = "gboverviewplus";
+            SqlName tableName = SqlName.m("gboverviewplus");
             TileEntry tileEntry = db.tile(tableName);
             assertNotNull(tileEntry);
 

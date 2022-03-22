@@ -23,6 +23,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Simple queries templates.
@@ -30,7 +31,7 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class MongoSqlTemplates extends ASqlTemplates {
-    public String selectOnColumn( String columnName, String tableName ) {
+    public String selectOnColumn( String columnName, SqlName tableName ) {
         String query = columnName + "=?";
         return query;
     }
@@ -56,52 +57,52 @@ public class MongoSqlTemplates extends ASqlTemplates {
     }
 
     @Override
-    public String addGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
+    public String addGeometryColumn( SqlName tableName, String columnName, String srid, String geomType, String dimension ) {
         return null;
     }
 
     @Override
-    public String recoverGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
+    public String recoverGeometryColumn( SqlName tableName, String columnName, String srid, String geomType, String dimension ) {
         return null;
     }
 
     @Override
-    public String discardGeometryColumn( String tableName, String geometryColumnName ) {
+    public String discardGeometryColumn( SqlName tableName, String geometryColumnName ) {
         return null;
     }
 
     @Override
-    public String createSpatialIndex( String tableName, String columnName ) {
+    public String createSpatialIndex( SqlName tableName, String columnName ) {
         return null;
     }
 
     @Override
-    public String checkSpatialIndex( String tableName, String columnName ) {
+    public String checkSpatialIndex( SqlName tableName, String columnName ) {
         return null;
     }
 
     @Override
-    public String recoverSpatialIndex( String tableName, String columnName ) {
+    public String recoverSpatialIndex( SqlName tableName, String columnName ) {
         return null;
     }
 
     @Override
-    public String disableSpatialIndex( String tableName, String columnName ) {
+    public String disableSpatialIndex( SqlName tableName, String columnName ) {
         return null;
     }
 
     @Override
-    public String showSpatialMetadata( String tableName, String columnName ) {
+    public String showSpatialMetadata( SqlName tableName, String columnName ) {
         return null;
     }
 
     @Override
-    public String dropTable( String tableName, String geometryColumnName ) {
+    public String dropTable( SqlName tableName, String geometryColumnName ) {
         return null;
     }
 
     @Override
-    public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
+    public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, SqlName tableName,
             String newTableName, String newSrid ) throws Exception {
         return null;
     }
@@ -122,7 +123,7 @@ public class MongoSqlTemplates extends ASqlTemplates {
     }
 
     @Override
-    public String addSrid( String tableName, int srid, String geometryColumnName ) {
+    public String addSrid( SqlName tableName, int srid, String geometryColumnName ) {
         return null;
     }
 

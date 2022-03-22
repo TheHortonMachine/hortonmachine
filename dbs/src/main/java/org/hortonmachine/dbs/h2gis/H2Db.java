@@ -37,6 +37,7 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
+import org.hortonmachine.dbs.utils.SqlName;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
@@ -259,13 +260,13 @@ public class H2Db extends ADb {
     }
 
     @Override
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     String name = rs.getString(1);
-                    if (name.equalsIgnoreCase(tableName)) {
+                    if (name.equalsIgnoreCase(tableName.name)) {
                         return true;
                     }
                 }
@@ -274,7 +275,7 @@ public class H2Db extends ADb {
         });
     }
 
-    public ETableType getTableType( String tableName ) throws Exception {
+    public ETableType getTableType( SqlName tableName ) throws Exception {
         String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "')";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -295,10 +296,10 @@ public class H2Db extends ADb {
     }
 
     @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns( SqlName tableName ) throws Exception {
         // select * from information_schema.columns where table_name = 'TEST';
         // [name, type, primarykey]
-        String tableNameUpper = tableName.toUpperCase();
+        String tableNameUpper = tableName.name.toUpperCase();
         String pkSql = "select c.COLUMN_NAME from information_schema.columns c , information_schema.indexes i"
                 + " where  upper(c.table_name) = '" + tableNameUpper + "' and upper(i.table_name) = '" + tableNameUpper + "'"
                 + " and c.COLUMN_NAME=i.COLUMN_NAME and i.PRIMARY_KEY = true";
@@ -331,16 +332,16 @@ public class H2Db extends ADb {
     }
 
     @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
 
         String sql = "SELECT PKTABLE_NAME, PKCOLUMN_NAME, FKCOLUMN_NAME FROM INFORMATION_SCHEMA.CROSS_REFERENCES where upper(FKTABLE_NAME)='"
-                + tableName.toUpperCase() + "'";
+                + tableName.name.toUpperCase() + "'";
         return execOnConnection(connection -> {
             List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     ForeignKey fKey = new ForeignKey();
-                    fKey.fromTable = tableName;
+                    fKey.fromTable = tableName.name;
                     fKey.toTable = rs.getString(1);
                     fKey.to = rs.getString(2);
                     fKey.from = rs.getString(3);
@@ -352,9 +353,9 @@ public class H2Db extends ADb {
     }
 
     @Override
-    public List<Index> getIndexes( String tableName ) throws Exception {
+    public List<Index> getIndexes( SqlName tableName ) throws Exception {
 
-        String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='" + tableName.toUpperCase()
+        String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='" + tableName.name.toUpperCase()
                 + "'";
 
         return execOnConnection(connection -> {
@@ -365,7 +366,7 @@ public class H2Db extends ADb {
 
                     String indexName = rs.getString(1);
 
-                    index.table = tableName;
+                    index.table = tableName.name;
                     index.name = indexName;
 
                     String createSql = rs.getString(2);

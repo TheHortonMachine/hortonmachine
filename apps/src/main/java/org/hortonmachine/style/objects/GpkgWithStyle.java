@@ -7,6 +7,7 @@ import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.BasicStyle;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.style.StyleUtilities;
@@ -14,27 +15,27 @@ import org.hortonmachine.gears.utils.style.StyleUtilities;
 public class GpkgWithStyle implements IObjectWithStyle {
 
     private File dataFile;
-    private String tableName;
+    private SqlName tableName;
 
     private GeopackageCommonDb db;
     private FeatureEntry featureEntry;
 
     public void setDataFile( File dataFile, String tableName ) throws Exception {
         this.dataFile = dataFile;
-        this.tableName = tableName;
+        this.tableName = SqlName.m(tableName);
 
         db = new GeopackageDb();
         db.open(dataFile.getAbsolutePath());
         if (tableName != null) {
-            featureEntry = db.feature(tableName);
+            featureEntry = db.feature(this.tableName);
         } else {
             featureEntry = db.features().get(0);
-            tableName = featureEntry.getTableName();
+            this.tableName = SqlName.m(featureEntry.getTableName());
         }
     }
 
     public String getName() {
-        return tableName;
+        return tableName.name;
     }
 
     public File getDataFile() {

@@ -22,6 +22,7 @@ import java.util.Date;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Common import and export utilities.
@@ -43,7 +44,7 @@ public class ImportExportUtils {
      * @param geometryType the geometry type of the file.
      * @throws Exception
      */
-    public static void executeShapefileImportQueries( final ASpatialDb db, String tableName, String shpPath, String encoding,
+    public static void executeShapefileImportQueries( final ASpatialDb db, SqlName tableName, String shpPath, String encoding,
             int srid, ESpatialiteGeometryType geometryType ) throws Exception {
         SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMddHHmmss");
 
@@ -59,16 +60,16 @@ public class ImportExportUtils {
             shpPath = shpPath.substring(0, shpPath.length() - 4);
         }
 
-        String tmptable = "virtualTmp" + dateFormatter.format(new Date()) + tableName;
+        String tmptable = "virtualTmp" + dateFormatter.format(new Date()) + tableName.nameForIndex();
 
         final String sql1 = "CREATE VIRTUAL TABLE " + tmptable + " using virtualshape('" + shpPath + "','" + encoding + "',"
                 + srid + ");";
         final String sql2 = "select RegisterVirtualGeometry('" + tmptable + "');";
-        final String sql3 = "create table " + tableName + " as select * from " + tmptable + ";";
-        String sql4 = "select recovergeometrycolumn('" + tableName + "','Geometry'," + srid + ",'" + geomType + "');";
-        final String sql5 = "select CreateSpatialIndex('" + tableName + "','Geometry');";
+        final String sql3 = "create table " + tableName.fixedName + " as select * from " + tmptable + ";";
+        String sql4 = "select recovergeometrycolumn('" + tableName.name + "','Geometry'," + srid + ",'" + geomType + "');";
+        final String sql5 = "select CreateSpatialIndex('" + tableName.name + "','Geometry');";
         final String sql6 = "drop table '" + tmptable + "';";
-        final String sql7 = "select updateLayerStatistics('" + tableName + "');";
+        final String sql7 = "select updateLayerStatistics('" + tableName.name + "');";
         db.executeInsertUpdateDeleteSql(sql1);
         db.executeInsertUpdateDeleteSql(sql2);
         db.executeInsertUpdateDeleteSql(sql3);
@@ -82,7 +83,7 @@ public class ImportExportUtils {
             } else {
                 geomType = MULTI + geomType;
             }
-            sql4 = "select recovergeometrycolumn('" + tableName + "','Geometry'," + srid + ",'" + geomType + "');";
+            sql4 = "select recovergeometrycolumn('" + tableName.name + "','Geometry'," + srid + ",'" + geomType + "');";
             db.executeInsertUpdateDeleteSql(sql4);
         }
         db.executeInsertUpdateDeleteSql(sql5);
@@ -100,7 +101,7 @@ public class ImportExportUtils {
      * @param srid the epsg code for the file.
      * @throws Exception
      */
-    public static void executeShapefileAttachQueries( final ASpatialDb db, String tableName, String shpPath, String encoding,
+    public static void executeShapefileAttachQueries( final ASpatialDb db, SqlName tableName, String shpPath, String encoding,
             int srid ) throws Exception {
         if (encoding == null || encoding.trim().length() == 0) {
             encoding = "UTF-8";
@@ -110,9 +111,9 @@ public class ImportExportUtils {
             shpPath = shpPath.substring(0, shpPath.length() - 4);
         }
 
-        final String sql1 = "CREATE VIRTUAL TABLE " + tableName + " using virtualshape('" + shpPath + "','" + encoding + "',"
+        final String sql1 = "CREATE VIRTUAL TABLE " + tableName.fixedDoubleName + " using virtualshape('" + shpPath + "','" + encoding + "',"
                 + srid + ");";
-        final String sql2 = "select RegisterVirtualGeometry('" + tableName + "');";
+        final String sql2 = "select RegisterVirtualGeometry('" + tableName.name + "');";
         db.executeInsertUpdateDeleteSql(sql1);
         db.executeInsertUpdateDeleteSql(sql2);
     }

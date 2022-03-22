@@ -25,7 +25,7 @@ import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
-
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
@@ -59,12 +59,12 @@ public class LasLevelsTable {
      * @throws Exception 
      */
     public static boolean hasLevel( ASpatialDb db, int levelNum ) throws Exception {
-        String tablename = TABLENAME + levelNum;
+        SqlName tablename = SqlName.m(TABLENAME + levelNum);
         return db.hasTable(tablename);
     }
 
     public static void createTable( ASpatialDb db, int srid, int levelNum, boolean avoidIndex ) throws Exception {
-        String tablename = TABLENAME + levelNum;
+        SqlName tablename = SqlName.m(TABLENAME + levelNum);
         if (!db.hasTable(tablename)) {
             String[] creates = {//
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTO_INCREMENT", //
@@ -178,7 +178,7 @@ public class LasLevelsTable {
      * @throws Exception
      */
     public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Envelope envelope ) throws Exception {
-        String tableName = TABLENAME + levelNum;
+        SqlName tableName = SqlName.m(TABLENAME + levelNum);
         List<LasLevel> lasLevels = new ArrayList<>();
         String sql = "SELECT " + COLUMN_GEOM + "," + //
                 COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_AVG_ELEV + "," + //
@@ -237,7 +237,7 @@ public class LasLevelsTable {
      * @throws Exception
      */
     public static List<LasLevel> getLasLevels( ASpatialDb db, int levelNum, Geometry geometry ) throws Exception {
-        String tableName = TABLENAME + levelNum;
+        SqlName tableName = SqlName.m(TABLENAME + levelNum);
         List<LasLevel> lasLevels = new ArrayList<>();
         String sql = "SELECT " + COLUMN_GEOM + "," + //
                 COLUMN_ID + "," + COLUMN_SOURCE_ID + "," + COLUMN_AVG_ELEV + "," + //

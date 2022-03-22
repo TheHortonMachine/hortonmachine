@@ -21,6 +21,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.ImportExportUtils;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Import and export utilities for Geopaparazzi.
@@ -40,7 +41,7 @@ public class GPImportExportUtils {
      * @param geometryType the geometry type of the file.
      * @throws Exception
      */
-    public static void importShapefileThroughVirtualTable( final ASpatialDb db, final String tableName, final String shpPath,
+    public static void importShapefileThroughVirtualTable( final ASpatialDb db, final SqlName tableName, final String shpPath,
             final String encoding, final int srid, final ESpatialiteGeometryType geometryType ) throws Exception {
 
         GPTransactionExecuter transactionExecuter = new GPTransactionExecuter(db){
@@ -62,7 +63,7 @@ public class GPImportExportUtils {
      * @param srid the epsg code for the file.
      * @throws Exception
      */
-    public static void attachShapefileThroughVirtualTable( final ASpatialDb db, final String tableName, final String shpPath,
+    public static void attachShapefileThroughVirtualTable( final ASpatialDb db, final SqlName tableName, final String shpPath,
             final String encoding, final int srid ) throws Exception {
 
         GPTransactionExecuter transactionExecuter = new GPTransactionExecuter(db){

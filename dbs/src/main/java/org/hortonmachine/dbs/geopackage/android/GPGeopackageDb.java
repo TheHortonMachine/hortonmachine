@@ -1,10 +1,9 @@
 package org.hortonmachine.dbs.geopackage.android;
 
-import java.io.IOException;
-
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
 import org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb;
+import org.hortonmachine.dbs.utils.SqlName;
 
 import jsqlite.Database;
 
@@ -57,22 +56,22 @@ public class GPGeopackageDb extends GeopackageCommonDb {
     }
 
     @Override
-    public String getSldString( String tableName ) throws Exception {
+    public String getSldString( SqlName tableName ) throws Exception {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+    public void updateSldStyle( SqlName tableName, String sldString ) throws Exception {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public String getFormString( String tableName ) throws Exception {
+    public String getFormString( SqlName tableName ) throws Exception {
         throw new RuntimeException("Not supported");
     }
 
     @Override
-    public void updateForm( String tableName, String form ) throws Exception {
+    public void updateForm( SqlName tableName, String form ) throws Exception {
         throw new RuntimeException("Not supported");
     }
 }

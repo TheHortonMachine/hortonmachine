@@ -1,31 +1,29 @@
 package org.hortonmachine.dbs;
 
-import static org.hortonmachine.dbs.TestUtilities.MPOLY_TABLE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.List;
 
+import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.locationtech.jts.geom.MultiPolygon;
 
 /**
  * Main tests for normal dbs
  */
 public class TestDbsMain {
 
-    private static final String TABLE1 = "table1";
-    private static final String TABLE2 = "table2";
+    private static final SqlName TABLE1 = SqlName.m("table1");
+    private static final SqlName TABLE2 = SqlName.m("123 withspacesand numbers");
     private static final EDb DB_TYPE = DatabaseTypeForTests.DB_TYPE;
 
     private static ADb db;
@@ -60,9 +58,9 @@ public class TestDbsMain {
                 "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
         db.createIndex(TABLE2, "table1id", false);
         inserts = new String[]{//
-                "INSERT INTO " + TABLE2 + " VALUES(1, 1);", //
-                "INSERT INTO " + TABLE2 + " VALUES(2, 2);", //
-                "INSERT INTO " + TABLE2 + " VALUES(3, 3);", //
+                "INSERT INTO " + TABLE2.fixedDoubleName + " VALUES(1, 1);", //
+                "INSERT INTO " + TABLE2.fixedDoubleName + " VALUES(2, 2);", //
+                "INSERT INTO " + TABLE2.fixedDoubleName + " VALUES(3, 3);", //
         };
         for( String insert : inserts ) {
             db.executeInsertUpdateDeleteSql(insert);
@@ -109,10 +107,11 @@ public class TestDbsMain {
         assertEquals(1, indexes.size());
 
     }
-    
+
     @Test
     public void testContentsRaw() throws Exception {
-        assertEquals(3, db.getCount(TABLE1));
+        long count = db.getCount(TABLE1);
+        assertEquals(3, count);
 
         String sql = "select id, name, temperature from " + TABLE1 + " order by temperature";
         QueryResult result = db.getTableRecordsMapFromRawSql(sql, 2);

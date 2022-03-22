@@ -28,6 +28,7 @@ import java.io.FilenameFilter;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -97,7 +98,7 @@ public class GeopaparazziGeopackageCreator extends HMModel {
 
             pm.beginTask("Importing shapefiles...", shpfiles.length);
             for( File shpFile : shpfiles ) {
-                String name = FileUtilities.getNameWithoutExtention(shpFile);
+                SqlName name = SqlName.m(FileUtilities.getNameWithoutExtention(shpFile));
 
                 if (db.hasTable(name)) {
                     pm.errorMessage("Table already existing: " + name);

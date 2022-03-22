@@ -18,9 +18,9 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.log.EMessageType;
 import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.log.Message;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**

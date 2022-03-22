@@ -30,6 +30,7 @@ import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.MercatorUtils;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.shapes.FeatureLine;
@@ -63,10 +64,10 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
     private AirspaceAttributes highlightAttrs;
     private ReferencedEnvelope bounds;
     private GeopackageCommonDb db;
-    private String tableName;
+    private SqlName tableName;
 
     public GeopackageVectorLayer( String gpkgPath, String tableName ) throws Exception {
-        this.tableName = tableName;
+        this.tableName = SqlName.m(tableName);
         this.title = tableName;
         db = new GeopackageDb();
         db.open(gpkgPath);

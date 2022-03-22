@@ -38,6 +38,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.spatialite.hm.HMImportExportUtils;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.geopaparazzi.styles.GeopaparazziDatabaseProperties;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
@@ -147,7 +148,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
                 db.initSpatialMetadata(null);
             }
 
-            if (!db.hasTable(GeopaparazziDatabaseProperties.PROPERTIESTABLE)) {
+            if (!db.hasTable(SqlName.m(GeopaparazziDatabaseProperties.PROPERTIESTABLE))) {
                 GeopaparazziDatabaseProperties.createPropertiesTable(db);
             } else {
                 QueryResult qres1 = db.getTableRecordsMapFromRawSql("select * from dataproperties", 10);
@@ -160,7 +161,7 @@ public class GeopaparazziSpatialiteCreator extends HMModel {
 
             pm.beginTask("Importing shapefiles...", shpfiles.length);
             for( File shpFile : shpfiles ) {
-                String name = FileUtilities.getNameWithoutExtention(shpFile);
+                SqlName name = SqlName.m(FileUtilities.getNameWithoutExtention(shpFile));
 
                 if (db.hasTable(name)) {
                     pm.errorMessage("Table already existing: " + name);

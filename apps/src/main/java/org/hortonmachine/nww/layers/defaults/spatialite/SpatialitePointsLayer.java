@@ -23,6 +23,7 @@ import java.util.List;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
@@ -63,7 +64,7 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
         try {
             if (db instanceof GTSpatialiteThreadsafeDb) {
                 GTSpatialiteThreadsafeDb gtDb = (GTSpatialiteThreadsafeDb) db;
-                tableBounds = gtDb.getTableBounds(tableName);
+                tableBounds = gtDb.getTableBounds(SqlName.m(tableName));
             } else {
                 tableBounds = CrsUtilities.WORLD;
             }
@@ -82,7 +83,7 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
         setMarkers(new ArrayList<Marker>());
 
         try {
-            QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, featureLimit, NwwUtilities.GPS_CRS_SRID, null);
+            QueryResult tableRecords = db.getTableRecordsMapIn(SqlName.m(tableName), null, featureLimit, NwwUtilities.GPS_CRS_SRID, null);
             int count = tableRecords.data.size();
             List<String> names = tableRecords.names;
             for( int i = 0; i < count; i++ ) {

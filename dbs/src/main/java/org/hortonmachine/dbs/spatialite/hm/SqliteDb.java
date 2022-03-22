@@ -39,6 +39,7 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -191,13 +192,12 @@ public class SqliteDb extends ADb {
         }
     }
 
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT name FROM sqlite_master WHERE type='table'";
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String name = rs.getString(1);
-                name = DbsUtilities.fixTableName(name);
-                if (name.equalsIgnoreCase(tableName)) {
+                if (name.equalsIgnoreCase(tableName.name)) {
                     return true;
                 }
             }
@@ -205,24 +205,24 @@ public class SqliteDb extends ADb {
         }
     }
 
-    public ETableType getTableType( String tableName ) throws Exception {
+    public ETableType getTableType( SqlName tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableType(this, tableName);
     }
 
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns( SqlName tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableColumns(this, tableName);
     }
 
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
         String sql = null;
-        if (tableName.indexOf('.') != -1) {
+        if (tableName.name.indexOf('.') != -1) {
             // it is an attached database
-            String[] split = tableName.split("\\.");
+            String[] split = tableName.name.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
             sql = "PRAGMA " + dbName + ".foreign_key_list(" + DbsUtilities.fixTableName(tmpTableName) + ")";
         } else {
-            sql = "PRAGMA foreign_key_list(" + DbsUtilities.fixTableName(tableName) + ")";
+            sql = "PRAGMA foreign_key_list(" + tableName.fixedDoubleName + ")";
         }
 
         List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
@@ -244,7 +244,7 @@ public class SqliteDb extends ADb {
             }
             while( rs.next() ) {
                 ForeignKey fKey = new ForeignKey();
-                fKey.fromTable = tableName;
+                fKey.fromTable = tableName.name;
                 Object fromObj = rs.getObject(fromIndex);
                 Object toObj = rs.getObject(toIndex);
                 Object toTableObj = rs.getObject(toTableIndex);
@@ -268,7 +268,7 @@ public class SqliteDb extends ADb {
     }
 
     @Override
-    public List<Index> getIndexes( String tableName ) throws Exception {
+    public List<Index> getIndexes( SqlName tableName ) throws Exception {
         return SpatialiteCommonMethods.getIndexes(this, tableName);
     }
 

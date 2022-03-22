@@ -35,6 +35,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -42,7 +43,6 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
@@ -128,7 +128,7 @@ public class OmsVectorWriter extends HMModel {
                         "The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
                         this);
             }
-            String table = split[1];
+            SqlName table = SqlName.m(split[1]);
             String dbPath = split[0];
 
             try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {

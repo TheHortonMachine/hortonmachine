@@ -38,6 +38,7 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
+import org.hortonmachine.dbs.utils.SqlName;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
@@ -250,15 +251,15 @@ public class PGDb extends ADb {
     }
 
     @Override
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES "
                 + "WHERE (TABLE_TYPE='BASE TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL') " + "and table_schema='"
-                + WORKING_SCHEMA + "' and upper(table_name) = upper('" + tableName + "')";
+                + WORKING_SCHEMA + "' and upper(table_name) = upper('" + tableName.name + "')";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     String name = rs.getString(1);
-                    if (name.equalsIgnoreCase(tableName)) {
+                    if (name.equalsIgnoreCase(tableName.name)) {
                         return true;
                     }
                 }
@@ -267,8 +268,8 @@ public class PGDb extends ADb {
         });
     }
 
-    public ETableType getTableType( String tableName ) throws Exception {
-        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName
+    public ETableType getTableType( SqlName tableName ) throws Exception {
+        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName.name
                 + "') and table_Schema!='information_schema'";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -289,7 +290,7 @@ public class PGDb extends ADb {
     }
 
     @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns( SqlName tableName ) throws Exception {
         // [name, type, primarykey]
         String pkSql = getIndexSql(tableName);
 
@@ -307,8 +308,8 @@ public class PGDb extends ADb {
             }
         });
 
-        String sql = "select column_name, data_type from information_schema.columns where upper(table_name)=upper('" + tableName
-                + "') and table_Schema!='information_schema'";
+        String sql = "select column_name, data_type from information_schema.columns where upper(table_name)=upper('"
+                + tableName.name + "') and table_Schema!='information_schema'";
         return execOnConnection(connection -> {
             List<String[]> colInfo = new ArrayList<>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -327,7 +328,7 @@ public class PGDb extends ADb {
     }
 
     @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
         String sql = "SELECT " + //
                 "    tc.table_name, kcu.column_name, " + //
                 "    ccu.table_name AS foreign_table_name, " + //
@@ -338,14 +339,14 @@ public class PGDb extends ADb {
                 "        AS kcu ON tc.constraint_name = kcu.constraint_name " + //
                 "    JOIN information_schema.constraint_column_usage  " + //
                 "        AS ccu ON ccu.constraint_name = tc.constraint_name " + //
-                "WHERE constraint_type = 'FOREIGN KEY' and upper(tc.table_name)=upper('" + tableName + "')";
+                "WHERE constraint_type = 'FOREIGN KEY' and upper(tc.table_name)=upper('" + tableName.name + "')";
 
         return execOnConnection(connection -> {
             List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     ForeignKey fKey = new ForeignKey();
-                    fKey.fromTable = tableName;
+                    fKey.fromTable = tableName.name;
                     fKey.from = rs.getString(2);
                     fKey.toTable = rs.getString(3);
                     fKey.to = rs.getString(4);
@@ -357,7 +358,7 @@ public class PGDb extends ADb {
     }
 
     @Override
-    public List<Index> getIndexes( String tableName ) throws Exception {
+    public List<Index> getIndexes( SqlName tableName ) throws Exception {
 
         String sql = getIndexSql(tableName);
 
@@ -372,7 +373,7 @@ public class PGDb extends ADb {
                     String indexName = rs.getString(3);
                     String createSql = rs.getString(5);
 
-                    index.table = tableName;
+                    index.table = tableName.name;
                     index.name = indexName;
 
                     String lower = createSql.toLowerCase();
@@ -406,7 +407,7 @@ public class PGDb extends ADb {
 
     }
 
-    private String getIndexSql( String tableName ) {
+    private String getIndexSql( SqlName tableName ) {
         return "SELECT  tnsp.nspname AS schema_name,   trel.relname AS table_name,   irel.relname AS index_name,   " + //
                 " a.attname    || ' ' || CASE o.option & 1 WHEN 1 THEN 'DESC' ELSE 'ASC' END   || ' ' || CASE  " + //
                 " o.option & 2 WHEN 2 THEN 'NULLS FIRST' ELSE 'NULLS LAST' END   AS column, " + //
@@ -419,7 +420,7 @@ public class PGDb extends ADb {
                 "  a.attnum = c.colnum , " + //
                 "  pg_indexes pi " + //
                 "  where pi.indexname=irel.relname " + //
-                "  and upper(trel.relname)=upper('" + tableName + "')";
+                "  and upper(trel.relname)=upper('" + tableName.name + "')";
     }
 
     @Override
@@ -459,7 +460,7 @@ public class PGDb extends ADb {
             }
         }
     }
-    
+
     /**
      * Get the list of databases.
      * 
@@ -471,7 +472,7 @@ public class PGDb extends ADb {
         List<String> dbs = new ArrayList<>();
         String sql = "SELECT datname FROM pg_database WHERE datistemplate = false;";
         db.execOnResultSet(sql, resSet -> {
-            while (resSet.next()) {
+            while( resSet.next() ) {
                 String dbName = resSet.getString(1);
                 dbs.add(dbName);
             }

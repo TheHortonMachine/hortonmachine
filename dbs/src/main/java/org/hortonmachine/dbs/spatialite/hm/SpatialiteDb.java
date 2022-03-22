@@ -47,6 +47,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.OsCheck;
 import org.hortonmachine.dbs.utils.OsCheck.OSType;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -222,18 +223,18 @@ public class SpatialiteDb extends ASpatialDb {
         }
     }
 
-    public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
+    public void createSpatialTable( SqlName tableName, int tableSrid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
         SpatialiteCommonMethods.createSpatialTable(this, tableName, tableSrid, geometryFieldData, fieldData, foreignKeys,
                 avoidIndex);
     }
 
     @Override
-    public Envelope getTableBounds( String tableName ) throws Exception {
+    public Envelope getTableBounds( SqlName tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableBounds(this, tableName);
     }
 
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
+    public QueryResult getTableRecordsMapIn( SqlName tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
             throws Exception {
         return SpatialiteCommonMethods.getTableRecordsMapIn(this, tableName, envelope, limit, reprojectSrid, whereStr);
     }
@@ -259,17 +260,17 @@ public class SpatialiteDb extends ASpatialDb {
         return tablesMap;
     }
 
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
+    public String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
         return SpatialiteCommonMethods.getSpatialindexBBoxWherePiece(this, tableName, alias, x1, y1, x2, y2);
     }
 
-    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
+    public String getSpatialindexGeometryWherePiece( SqlName tableName, String alias, Geometry geometry ) throws Exception {
         return SpatialiteCommonMethods.getSpatialindexGeometryWherePiece(this, tableName, alias, geometry);
     }
 
-    public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
-        if (!hasTable(SpatialiteGeometryColumns.TABLENAME))
+    public GeometryColumn getGeometryColumnsForTable( SqlName tableName ) throws Exception {
+        if (!hasTable(SqlName.m(SpatialiteGeometryColumns.TABLENAME)))
             return null;
         return SpatialiteCommonMethods.getGeometryColumnsForTable(sqliteDb.getConnectionInternal(), tableName);
     }
@@ -280,26 +281,26 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable( SqlName tableName ) throws Exception {
         return sqliteDb.hasTable(tableName);
     }
 
-    public ETableType getTableType( String tableName ) throws Exception {
+    public ETableType getTableType( SqlName tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableType(this, tableName);
     }
 
     @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns( SqlName tableName ) throws Exception {
         List<String[]> tableColumns = SpatialiteCommonMethods.getTableColumns(this, tableName);
         return tableColumns;
     }
 
     @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
         return sqliteDb.getForeignKeys(tableName);
     }
 
-    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+    public String getGeojsonIn( SqlName tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
     }
 
@@ -309,7 +310,7 @@ public class SpatialiteDb extends ASpatialDb {
      * @param tableName
      * @throws Exception
      */
-    public void deleteGeoTable( String tableName ) throws Exception {
+    public void deleteGeoTable( SqlName tableName ) throws Exception {
         String sql = "SELECT DropGeoTable('" + tableName + "');";
 
         try (IHMStatement stmt = sqliteDb.getConnectionInternal().createStatement()) {
@@ -317,12 +318,12 @@ public class SpatialiteDb extends ASpatialDb {
         }
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg,
             boolean avoidIndex ) throws Exception {
         SpatialiteCommonMethods.addGeometryXYColumnAndIndex(this, tableName, geomColName, geomType, epsg, avoidIndex);
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg )
             throws Exception {
         addGeometryXYColumnAndIndex(tableName, geomColName, geomType, epsg, false);
     }
@@ -447,7 +448,7 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    public List<Index> getIndexes( String tableName ) throws Exception {
+    public List<Index> getIndexes( SqlName tableName ) throws Exception {
         return sqliteDb.getIndexes(tableName);
     }
 

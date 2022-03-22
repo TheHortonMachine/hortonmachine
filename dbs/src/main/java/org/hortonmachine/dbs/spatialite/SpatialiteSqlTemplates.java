@@ -23,6 +23,7 @@ import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Simple queries templates.
@@ -52,58 +53,58 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
     }
 
     @Override
-    public String addGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
+    public String addGeometryColumn( SqlName tableName, String columnName, String srid, String geomType, String dimension ) {
         String query = "SELECT AddGeometryColumn('" + tableName + "', '" + columnName + "',  " + srid + ", '" + geomType + "', '"
                 + dimension + "')";
         return query;
     }
 
     @Override
-    public String recoverGeometryColumn( String tableName, String columnName, String srid, String geomType, String dimension ) {
+    public String recoverGeometryColumn( SqlName tableName, String columnName, String srid, String geomType, String dimension ) {
         String query = "SELECT RecoverGeometryColumn('" + tableName + "', '" + columnName + "',  " + srid + ", '" + geomType
                 + "', '" + dimension + "')";
         return query;
     }
 
     @Override
-    public String discardGeometryColumn( String tableName, String geometryColumnName ) {
+    public String discardGeometryColumn( SqlName tableName, String geometryColumnName ) {
         String query = "SELECT DiscardGeometryColumn('" + tableName + "', '" + geometryColumnName + "');";
         return query;
     }
 
     @Override
-    public String createSpatialIndex( String tableName, String columnName ) {
+    public String createSpatialIndex( SqlName tableName, String columnName ) {
         String query = "SELECT CreateSpatialIndex('" + tableName + "','" + columnName + "');";
         return query;
     }
 
     @Override
-    public String checkSpatialIndex( String tableName, String columnName ) {
+    public String checkSpatialIndex( SqlName tableName, String columnName ) {
         String query = "SELECT CheckSpatialIndex('" + tableName + "','" + columnName + "');";
         return query;
     }
 
     @Override
-    public String recoverSpatialIndex( String tableName, String columnName ) {
+    public String recoverSpatialIndex( SqlName tableName, String columnName ) {
         String query = "SELECT RecoverSpatialIndex('" + tableName + "','" + columnName + "');";
         return query;
     }
 
     @Override
-    public String disableSpatialIndex( String tableName, String columnName ) {
+    public String disableSpatialIndex( SqlName tableName, String columnName ) {
         String query = "SELECT DisableSpatialIndex('" + tableName + "','" + columnName + "');";
         return query;
     }
 
     @Override
-    public String showSpatialMetadata( String tableName, String columnName ) {
+    public String showSpatialMetadata( SqlName tableName, String columnName ) {
         String query = "SELECT * FROM geom_cols_ref_sys WHERE Lower(f_table_name) = Lower('" + tableName
                 + "') AND Lower(f_geometry_column) = Lower('" + columnName + "')";
         return query;
     }
 
     @Override
-    public String dropTable( String tableName, String geometryColumnName ) {
+    public String dropTable( SqlName tableName, String geometryColumnName ) {
         String query = "";
         if (geometryColumnName != null) {
             query = "SELECT DiscardGeometryColumn('" + tableName + "', '" + geometryColumnName + "');";
@@ -115,9 +116,9 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
     }
 
     @Override
-    public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
+    public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, SqlName tableName,
             String newTableName, String newSrid ) throws Exception {
-        String letter = tableName.substring(0, 1);
+        String letter = tableName.name.substring(0, 1);
         String columnName = letter + "." + geometryColumn.columnName;
         String query = DbsUtilities.getSelectQuery(db, table, false);
         query = query.replaceFirst(columnName, "ST_Transform(" + columnName + ", " + newSrid + ")");
@@ -162,7 +163,7 @@ public class SpatialiteSqlTemplates extends ASqlTemplates {
     }
 
     @Override
-    public String addSrid( String tableName, int srid, String geometryColumnName ) {
+    public String addSrid( SqlName tableName, int srid, String geometryColumnName ) {
         return "-- added during geometry column creation";
     }
 

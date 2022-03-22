@@ -5,15 +5,16 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.IHmExtrasDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 
 public class DbFormHandler implements IFormHandler {
 
     private ADb db;
-    private String tableName;
+    private SqlName tableName;
 
     public DbFormHandler( ADb db, String tableName ) {
         this.db = db;
-        this.tableName = tableName;
+        this.tableName = SqlName.m(tableName);
     }
 
     @Override

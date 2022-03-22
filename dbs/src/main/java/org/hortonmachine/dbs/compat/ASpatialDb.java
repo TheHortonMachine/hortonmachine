@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
@@ -70,7 +71,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @param avoidIndex if <code>true</code>, no spatial index is created.
      * @throws SQLException
      */
-    public abstract void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
+    public abstract void createSpatialTable( SqlName tableName, int tableSrid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception;
 
     /**
@@ -85,7 +86,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      *            KEY).
      * @throws Exception
      */
-    public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData )
+    public void createSpatialTable( SqlName tableName, int tableSrid, String geometryFieldData, String[] fieldData )
             throws Exception {
         createSpatialTable(tableName, tableSrid, geometryFieldData, fieldData, null, false);
     }
@@ -121,7 +122,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the geometry column or <code>null</code>.
      * @throws Exception
      */
-    public abstract GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception;
+    public abstract GeometryColumn getGeometryColumnsForTable( SqlName tableName ) throws Exception;
 
     /**
      * Get the where query piece based on a geometry intersection.
@@ -135,7 +136,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the query piece.
      * @throws Exception
      */
-    public abstract String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry )
+    public abstract String getSpatialindexGeometryWherePiece( SqlName tableName, String alias, Geometry geometry )
             throws Exception;
 
     /**
@@ -154,7 +155,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the sql piece.
      * @throws Exception
      */
-    public abstract String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2,
+    public abstract String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2,
             double y2 ) throws Exception;
 
     /**
@@ -164,13 +165,14 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @param geomColumnName the geometry column name.
      * @throws Exception
      */
-    public void createSpatialIndex( String tableName, String geomColumnName ) throws Exception {
+    public void createSpatialIndex( SqlName tableName, String geomColumnName ) throws Exception {
         if (geomColumnName == null) {
             geomColumnName = "the_geom";
         }
         String realColumnName = getProperColumnNameCase(tableName, geomColumnName);
         String realTableName = getProperTableNameCase(tableName);
-        String sql = "CREATE SPATIAL INDEX ON " + realTableName + "(" + realColumnName + ");";
+        
+        String sql = "CREATE SPATIAL INDEX ON " + SqlName.m(realTableName).fixedDoubleName + "(" + realColumnName + ");";
 
         execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement()) {
@@ -193,7 +195,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @param where an optional where string (without the where keyword)
      * @throws Exception
      */
-    public void insertGeometry( String tableName, Geometry geometry, String epsg , String where) throws Exception {
+    public void insertGeometry( SqlName tableName, Geometry geometry, String epsg , String where) throws Exception {
         String epsgStr = "4326";
         if (epsg == null) {
             epsgStr = epsg;
@@ -223,7 +225,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return <code>true</code> if a geometry column is present.
      * @throws Exception
      */
-    public boolean isTableSpatial( String tableName ) throws Exception {
+    public boolean isTableSpatial( SqlName tableName ) throws Exception {
         GeometryColumn geometryColumns = getGeometryColumnsForTable(tableName);
         return geometryColumns != null;
     }
@@ -264,7 +266,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the result object.
      * @throws Exception
      */
-    public abstract QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid,
+    public abstract QueryResult getTableRecordsMapIn( SqlName tableName, Envelope envelope, int limit, int reprojectSrid,
             String whereStr ) throws Exception;
 
     /**
@@ -280,7 +282,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return The list of geometries intersecting the envelope.
      * @throws Exception
      */
-    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope, String... prePostWhere ) throws Exception {
+    public List<Geometry> getGeometriesIn( SqlName tableName, Envelope envelope, String... prePostWhere ) throws Exception {
         List<String> wheres = new ArrayList<>();
         String pre = "";
         String post = "";
@@ -297,7 +299,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         }
 
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + DbsUtilities.fixTableName(tableName);
+        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName.fixedDoubleName;
 
         if (envelope != null && supportsSpatialIndex) {
             double x1 = envelope.getMinX();
@@ -346,7 +348,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return The list of geometries intersecting the geometry.
      * @throws Exception
      */
-    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry, String... prePostWhere )
+    public List<Geometry> getGeometriesIn( SqlName tableName, Geometry intersectionGeometry, String... prePostWhere )
             throws Exception {
         List<Geometry> geoms = new ArrayList<Geometry>();
 
@@ -365,7 +367,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
             }
         }
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
-        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + DbsUtilities.fixTableName(tableName);
+        String sql = "SELECT " + pre + gCol.geometryColumnName + post + " FROM " + tableName.fixedDoubleName;
 
         if (intersectionGeometry != null && supportsSpatialIndex) {
             intersectionGeometry.setSRID(gCol.srid);
@@ -408,7 +410,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return The resulting geojson.
      * @throws Exception
      */
-    public abstract String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision )
+    public abstract String getGeojsonIn( SqlName tableName, String[] fields, String wherePiece, Integer precision )
             throws Exception;
 
     /**
@@ -419,7 +421,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the {@link Envelope} of the table.
      * @throws Exception
      */
-    public abstract Envelope getTableBounds( String tableName ) throws Exception;
+    public abstract Envelope getTableBounds( SqlName tableName ) throws Exception;
 
     /**
      * Get the column [name, type, primarykey] values of a table.
@@ -431,7 +433,7 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
      * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public abstract List<String[]> getTableColumns( String tableName ) throws Exception;
+    public abstract List<String[]> getTableColumns( SqlName tableName ) throws Exception;
 
     protected abstract void logWarn( String message );
 

@@ -30,6 +30,8 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.OsCheck;
+import org.hortonmachine.dbs.utils.OsCheck.OSType;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,7 +58,11 @@ public class TestSpatialDbsMain {
     @BeforeClass
     public static void createDb() throws Exception {
 
-        DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "/opt/local/lib/");
+        if (OsCheck.getOperatingSystemType() == OSType.MacOS) {
+            DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "/opt/local/lib/");
+        } else if (OsCheck.getOperatingSystemType() == OSType.Linux) {
+            DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "/usr/lib/x86_64-linux-gnu/");
+        }
 
         String tempDir = System.getProperty("java.io.tmpdir");
         String dbPath = tempDir + File.separator + "jgt-dbs-testspatialdbsmain" + DB_TYPE.getExtensionOnCreation();
@@ -86,7 +92,7 @@ public class TestSpatialDbsMain {
                     + " MULTILINESTRING ((7.4 42.6, 7.4 39, 8.6 38.5), (8 40.3, 9.5 38.6, 8.4 37.5)), "
                     + " MULTIPOINT ((6.8 42.5), (6.8 41.4), (6.6 40.2)))";
             String[] geomCollectionInserts = new String[]{//
-                    "INSERT INTO " + GEOMCOLL_TABLE
+                    "INSERT INTO " + GEOMCOLL_TABLE.fixedDoubleName
                             + " (id, name, temperature, the_geom) VALUES(?, ?, ?, ST_GeomFromText(?, 4326));", //
             };
             Object[] values = {1, "Tscherms", 36.0, gCollWKT};
@@ -151,7 +157,7 @@ public class TestSpatialDbsMain {
     public void testContentsRaw() throws Exception {
         assertEquals(3, db.getCount(MPOLY_TABLE));
 
-        String sql = "select id, name, temperature from " + MPOLY_TABLE + " order by temperature";
+        String sql = "select id, name, temperature from " + MPOLY_TABLE.fixedDoubleName + " order by temperature";
         QueryResult result = db.getTableRecordsMapFromRawSql(sql, 2);
         assertEquals(2, result.data.size());
 
@@ -166,44 +172,44 @@ public class TestSpatialDbsMain {
     @Test
     public void testAllTablesCount() throws Exception {
         assertEquals(3, db.getCount(MPOLY_TABLE));
-        String sql = "select * from " + MPOLY_TABLE;
+        String sql = "select * from " + MPOLY_TABLE.fixedDoubleName;
         QueryResult result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(3, result.data.size());
         assertTrue(result.geometryIndex != -1);
 
         assertEquals(3, db.getCount(POLY_TABLE));
-        sql = "select * from " + POLY_TABLE;
+        sql = "select * from " + POLY_TABLE.fixedDoubleName;
         result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(3, result.data.size());
         assertTrue(result.geometryIndex != -1);
 
         assertEquals(2, db.getCount(MPOINTS_TABLE));
-        sql = "select * from " + MPOINTS_TABLE;
+        sql = "select * from " + MPOINTS_TABLE.fixedDoubleName;
         result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(2, result.data.size());
         assertTrue(result.geometryIndex != -1);
 
         assertEquals(3, db.getCount(POINTS_TABLE));
-        sql = "select * from " + POINTS_TABLE;
+        sql = "select * from " + POINTS_TABLE.fixedDoubleName;
         result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(3, result.data.size());
         assertTrue(result.geometryIndex != -1);
 
         assertEquals(1, db.getCount(MLINES_TABLE));
-        sql = "select * from " + MLINES_TABLE;
+        sql = "select * from " + MLINES_TABLE.fixedDoubleName;
         result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(1, result.data.size());
         assertTrue(result.geometryIndex != -1);
 
         assertEquals(2, db.getCount(LINES_TABLE));
-        sql = "select * from " + LINES_TABLE;
+        sql = "select * from " + LINES_TABLE.fixedDoubleName;
         result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertEquals(2, result.data.size());
         assertTrue(result.geometryIndex != -1);
 
         if (DB_TYPE == EDb.SPATIALITE) {
             assertEquals(1, db.getCount(GEOMCOLL_TABLE));
-            sql = "select * from " + GEOMCOLL_TABLE;
+            sql = "select * from " + GEOMCOLL_TABLE.fixedDoubleName;
             result = db.getTableRecordsMapFromRawSql(sql, -1);
             assertEquals(1, result.data.size());
             assertTrue(result.geometryIndex != -1);
@@ -226,7 +232,7 @@ public class TestSpatialDbsMain {
 
     @Test
     public void testGeometries() throws Exception {
-        String sql = "select id, name, temperature, the_geom from " + MPOLY_TABLE + " order by temperature";
+        String sql = "select id, name, temperature, the_geom from " + MPOLY_TABLE.fixedDoubleName + " order by temperature";
         QueryResult result = db.getTableRecordsMapFromRawSql(sql, -1);
         assertFalse(result.geometryIndex == -1);
         List<Geometry> geomsList = new ArrayList<>();

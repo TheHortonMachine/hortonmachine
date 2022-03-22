@@ -29,6 +29,7 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TypeLevel;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.nosql.INosqlDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**
@@ -95,7 +96,7 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
             TableLevel tableLevel = (TableLevel) value;
             try {
                 if (db != null) {
-                    ETableType tableType = db.getTableType(tableLevel.tableName);
+                    ETableType tableType = db.getTableType(SqlName.m(tableLevel.tableName));
                     if (tableLevel.isGeo) {
                         if (tableType == ETableType.EXTERNAL) {
                             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL));

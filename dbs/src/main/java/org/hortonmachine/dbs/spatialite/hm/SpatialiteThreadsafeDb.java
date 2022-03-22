@@ -19,7 +19,7 @@ package org.hortonmachine.dbs.spatialite.hm;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -40,7 +40,7 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         // logger.debug("Unlocked: " + tag);
     }
 
-    public void deleteGeoTable( String tableName ) throws Exception {
+    public void deleteGeoTable( SqlName tableName ) throws Exception {
         try {
             lockWrite("deleteGeoTable");
             super.deleteGeoTable(tableName);
@@ -49,7 +49,7 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg, boolean avoidIndex )
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg, boolean avoidIndex )
             throws Exception {
         try {
             lockWrite("addGeometryXYColumnAndIndex");
@@ -59,7 +59,7 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg)
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg)
             throws Exception {
         try {
             lockWrite("addGeometryXYColumnAndIndex");
@@ -69,7 +69,7 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void insertGeometry( String tableName, Geometry geometry, String epsg, String where ) throws Exception {
+    public void insertGeometry( SqlName tableName, Geometry geometry, String epsg, String where ) throws Exception {
         try {
             lockWrite("insertGeometry");
             super.insertGeometry(tableName, geometry, epsg, where);
@@ -78,7 +78,7 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void createTable( String tableName, String... fieldData ) throws Exception {
+    public void createTable( SqlName tableName, String... fieldData ) throws Exception {
         long cm = System.currentTimeMillis();
         try {
             lockWrite("start createTable " + cm + ":" + tableName);
@@ -88,7 +88,7 @@ public class SpatialiteThreadsafeDb extends SpatialiteDb {
         }
     }
 
-    public void createIndex( String tableName, String column, boolean isUnique ) throws Exception {
+    public void createIndex( SqlName tableName, String column, boolean isUnique ) throws Exception {
         long cm = System.currentTimeMillis();
         try {
             lockWrite("start createIndex " + cm + ":" + tableName + "," + column);

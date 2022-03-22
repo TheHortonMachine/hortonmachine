@@ -30,6 +30,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * A logging database.
@@ -40,6 +41,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
  */
 public class LogDb implements AutoCloseable, ILogDb {
     public static final String TABLE_MESSAGES = "logmessages";
+    public static final SqlName TABLE_MESSAGES_SLQ = SqlName.m(TABLE_MESSAGES);
 
     // TABLE_EVENTS
     public static final String ID_NAME = "id";
@@ -61,7 +63,7 @@ public class LogDb implements AutoCloseable, ILogDb {
 
     public LogDb( ADb existingDb ) throws Exception {
         logDb = existingDb;
-        if (!logDb.hasTable(TABLE_MESSAGES)) {
+        if (!logDb.hasTable(TABLE_MESSAGES_SLQ)) {
             createTable();
             createIndexes();
         }
@@ -73,7 +75,7 @@ public class LogDb implements AutoCloseable, ILogDb {
             return true;
         } else {
             boolean open = logDb.open(dbPath);
-            if (!logDb.hasTable(TABLE_MESSAGES)) {
+            if (!logDb.hasTable(TABLE_MESSAGES_SLQ)) {
                 createTable();
                 createIndexes();
             }
@@ -82,7 +84,7 @@ public class LogDb implements AutoCloseable, ILogDb {
     }
 
     public void createTable() throws Exception {
-        if (logDb != null && !logDb.hasTable(TABLE_MESSAGES)) {
+        if (logDb != null && !logDb.hasTable(TABLE_MESSAGES_SLQ)) {
 
             ADatabaseSyntaxHelper helper = logDb.getType().getDatabaseSyntaxHelper();
 
@@ -117,9 +119,9 @@ public class LogDb implements AutoCloseable, ILogDb {
     }
 
     public void createIndexes() throws Exception {
-        if (logDb != null && logDb.hasTable(TABLE_MESSAGES)) {
-            logDb.createIndex(TABLE_MESSAGES, TimeStamp_NAME, false);
-            logDb.createIndex(TABLE_MESSAGES, type_NAME, false);
+        if (logDb != null && logDb.hasTable(TABLE_MESSAGES_SLQ)) {
+            logDb.createIndex(TABLE_MESSAGES_SLQ, TimeStamp_NAME, false);
+            logDb.createIndex(TABLE_MESSAGES_SLQ, type_NAME, false);
         }
     }
 

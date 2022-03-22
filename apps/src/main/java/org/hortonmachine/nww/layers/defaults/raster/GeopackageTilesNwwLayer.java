@@ -32,6 +32,7 @@ import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.MercatorUtils;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.utils.images.TileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
@@ -73,7 +74,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
         try (GeopackageCommonDb db = new GeopackageDb()) {
             db.open(gpkgFile.getAbsolutePath());
 
-            TileEntry tile = db.tile(tableName);
+            TileEntry tile = db.tile(SqlName.m(tableName));
             Envelope bounds = tile.getBounds();
             Coordinate centre3857 = bounds.centre();
             Coordinate ll = MercatorUtils.convert3857To4326(centre3857);
@@ -96,9 +97,10 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
     private static LevelSet makeLevels( File gpkgFile, GeopackageCommonDb gpkgDb, String tableName ) throws Exception {
         AVList params = new AVListImpl();
 
-        String cacheRelativePath = "gpkg/" + gpkgFile.getName() + "-" + tableName + "-tiles";
+        SqlName tName = SqlName.m(tableName);
+        String cacheRelativePath = "gpkg/" + gpkgFile.getName() + "-" + tName.name + "-tiles";
 
-        TileEntry tile = gpkgDb.tile(tableName);
+        TileEntry tile = gpkgDb.tile(tName);
         int tileSize = tile.getTileMatricies().get(0).getTileWidth();
 
         String urlString = gpkgFile.toURI().toURL().toExternalForm();
@@ -121,7 +123,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
             cacheFolder.mkdirs();
         }
 
-        List<Integer> tileZoomLevelsWithData = gpkgDb.getTileZoomLevelsWithData(tableName);
+        List<Integer> tileZoomLevelsWithData = gpkgDb.getTileZoomLevelsWithData(tName);
 
         params.setValue(AVKey.TILE_URL_BUILDER, new TileUrlBuilder(){
 
@@ -159,7 +161,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
                     File imgFile = new File(tileImageFolderFile, sb.toString());
                     if (!imgFile.exists()) {
                         BufferedImage bImg = null;
-                        byte[] bytes = gpkgDb.getTile(tableName, x, y, zoom);
+                        byte[] bytes = gpkgDb.getTile(tName, x, y, zoom);
                         if (bytes != null) {
                             ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                             bImg = ImageIO.read(bais);
@@ -173,7 +175,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
                                     continue;
                                 }
 
-                                BufferedImage img = TileUtilities.getTileFromDifferentZoomlevel(gpkgDb, tableName, x, y, zoom,
+                                BufferedImage img = TileUtilities.getTileFromDifferentZoomlevel(gpkgDb, tName.name, x, y, zoom,
                                         tileSize, higherZoom);
                                 if (img != null) {
                                     bImg = img;
@@ -190,7 +192,7 @@ public class GeopackageTilesNwwLayer extends BasicMercatorTiledImageLayer implem
                                     if (!tileZoomLevelsWithData.contains(lowerZoom)) {
                                         continue;
                                     }
-                                    BufferedImage img = TileUtilities.getTileFromDifferentZoomlevel(gpkgDb, tableName, x, y, zoom,
+                                    BufferedImage img = TileUtilities.getTileFromDifferentZoomlevel(gpkgDb, tName.name, x, y, zoom,
                                             tileSize, lowerZoom);
                                     if (img != null) {
                                         bImg = img;

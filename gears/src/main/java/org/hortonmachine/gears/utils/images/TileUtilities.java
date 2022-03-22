@@ -27,6 +27,7 @@ import javax.imageio.ImageIO;
 
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.MercatorUtils;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
@@ -56,7 +57,7 @@ public class TileUtilities {
      */
     public static BufferedImage getTileFromDifferentZoomlevel( GeopackageCommonDb gpkgDb, String tableName, int x, int y, int zoom,
             int tileSize, int otherZoomLevel ) throws Exception {
-
+        SqlName tName = SqlName.m(tableName);
         if (otherZoomLevel > zoom) {
             // for higher zoomlevel, we need to retrieve the tiles and patch them together
             List<int[]> tilesAtHigherZoom = MercatorUtils.getTilesAtHigherZoom(x, y, zoom, otherZoomLevel, tileSize);
@@ -71,7 +72,7 @@ public class TileUtilities {
             int runningY = 0;
             boolean hasOne = false;
             for( int[] zxy2 : tilesAtHigherZoom ) {
-                byte[] tile2 = gpkgDb.getTile(tableName, zxy2[1], zxy2[2], zxy2[0]);
+                byte[] tile2 = gpkgDb.getTile(tName, zxy2[1], zxy2[2], zxy2[0]);
                 if (tile2 != null) {
                     hasOne = true;
                     ByteArrayInputStream bais = new ByteArrayInputStream(tile2);
@@ -103,7 +104,7 @@ public class TileUtilities {
             double swy1 = swEnv.getMinY();
 
             int[] zxy3 = MercatorUtils.getTileNumber(centre.y, centre.x, otherZoomLevel);
-            byte[] tileBytes = gpkgDb.getTile(tableName, zxy3[1], zxy3[2], zxy3[0]);
+            byte[] tileBytes = gpkgDb.getTile(tName, zxy3[1], zxy3[2], zxy3[0]);
             if (tileBytes != null) {
                 ByteArrayInputStream bais = new ByteArrayInputStream(tileBytes);
                 BufferedImage img = ImageIO.read(bais);

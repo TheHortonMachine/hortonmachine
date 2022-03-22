@@ -12,6 +12,7 @@ import org.h2.tools.Server;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.h2gis.H2GisServer;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -34,6 +34,7 @@ import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
@@ -80,7 +81,7 @@ public class DbsHelper {
             throw new RuntimeException("The geometry table name needs to be the first after the FROM keyword.");
         }
 
-        GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
+        GeometryColumn geometryColumns = db.getGeometryColumnsForTable(SqlName.m(tableName));
         if (geometryColumns == null) {
             throw new IllegalArgumentException("The supplied table name doesn't seem to be spatial: " + tableName);
         }
@@ -90,7 +91,7 @@ public class DbsHelper {
         String geomColumnName = geometryColumns.geometryColumnName;
 
         if (roi != null) {
-            String where = db.getSpatialindexGeometryWherePiece(tableName, null, roi);
+            String where = db.getSpatialindexGeometryWherePiece(SqlName.m(tableName), null, roi);
             simpleSql += " where " + where;
         }
 

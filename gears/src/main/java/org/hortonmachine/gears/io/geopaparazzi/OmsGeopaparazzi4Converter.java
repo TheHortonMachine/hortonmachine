@@ -69,6 +69,7 @@ import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Utilities;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
@@ -199,7 +200,7 @@ public class OmsGeopaparazzi4Converter extends HMModel {
         try (SqliteDb db = new SqliteDb()) {
             db.open(geopapDatabaseFile.getAbsolutePath());
 
-            boolean hasMetadata = db.hasTable(TableDescriptions.TABLE_METADATA);
+            boolean hasMetadata = db.hasTable(SqlName.m(TableDescriptions.TABLE_METADATA));
 
             db.execOnConnection(connection -> {
                 if (hasMetadata)

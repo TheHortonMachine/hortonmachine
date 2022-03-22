@@ -108,6 +108,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.CommonQueries;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -529,7 +530,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 if (currentConnectedSqlDatabase != null) {
                                     if (currentConnectedSqlDatabase instanceof ASpatialDb) {
                                         queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
-                                                currentSelectedTable.tableName, null, SQL_ONSELECT_LIMIT, -1, null);
+                                                SqlName.m(currentSelectedTable.tableName), null, SQL_ONSELECT_LIMIT, -1, null);
                                     } else {
                                         queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
                                                 "select * from " + currentSelectedTable.tableName, SQL_ONSELECT_LIMIT);
@@ -1676,7 +1677,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             objects[i] = formatted;
                         }
                     }
-                } else if(objects[i] == null) {
+                } else if (objects[i] == null) {
                     objects[i] = "NULL";
                 }
             }

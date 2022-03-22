@@ -29,6 +29,7 @@ import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryParser;
 import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.spatialite.SqliteNonSpatialDataType;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * The available databases.
@@ -271,7 +272,7 @@ public enum EDb {
             // sqlite
             try (ASpatialDb db = SPATIALITE.getSpatialDb()) {
                 db.open(file.getAbsolutePath());
-                if (db.hasTable(SpatialiteTableNames.CHECK_SPATIALITE_TABLE)) {
+                if (db.hasTable(SqlName.m(SpatialiteTableNames.CHECK_SPATIALITE_TABLE))) {
                     return SPATIALITE;
                 } else {
                     if (name.toLowerCase().endsWith(GEOPACKAGE.getExtension())) {

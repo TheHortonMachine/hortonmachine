@@ -65,6 +65,7 @@ import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.postgis.PGDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -116,7 +117,7 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
                 String tableName = column.parent.tableName;
-                String query = sqlTemplates.selectOnColumn(columnName, tableName);
+                String query = sqlTemplates.selectOnColumn(columnName, SqlName.m(tableName));
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -131,7 +132,7 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName;
                 String columnName = column.columnName;
-                String query = sqlTemplates.updateOnColumn(DbsUtilities.fixTableName(tableName), columnName);
+                String query = sqlTemplates.updateOnColumn(SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -153,7 +154,7 @@ public class SqlTemplatesAndActions {
                     String srid = result[2];
                     String geomType = result[3];
                     String dimension = result[4];
-                    String query = sqlTemplates.addGeometryColumn(tableName, columnName, srid, geomType, dimension);
+                    String query = sqlTemplates.addGeometryColumn(SqlName.m(tableName), columnName, srid, geomType, dimension);
                     spatialiteViewer.addTextToQueryEditor(query);
                 }
             };
@@ -177,7 +178,7 @@ public class SqlTemplatesAndActions {
                     String srid = result[2];
                     String geomType = result[3];
                     String dimension = result[4];
-                    String query = sqlTemplates.recoverGeometryColumn(tableName, columnName, srid, geomType, dimension);
+                    String query = sqlTemplates.recoverGeometryColumn(SqlName.m(tableName), columnName, srid, geomType, dimension);
                     spatialiteViewer.addTextToQueryEditor(query);
                 }
             };
@@ -193,7 +194,7 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName;
                     String geometryColumnName = column.geomColumn.geometryColumnName;
-                    String query = sqlTemplates.discardGeometryColumn(tableName, geometryColumnName);
+                    String query = sqlTemplates.discardGeometryColumn(SqlName.m(tableName), geometryColumnName);
                     spatialiteViewer.addTextToQueryEditor(query);
                 }
 
@@ -212,7 +213,7 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName;
                 String columnName = column.columnName;
-                String query = sqlTemplates.createSpatialIndex(tableName, columnName);
+                String query = sqlTemplates.createSpatialIndex(SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
             }
 
@@ -226,7 +227,7 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName;
                     String columnName = column.columnName;
-                    String query = sqlTemplates.checkSpatialIndex(tableName, columnName);
+                    String query = sqlTemplates.checkSpatialIndex(SqlName.m(tableName), columnName);
                     spatialiteViewer.addTextToQueryEditor(query);
                 }
 
@@ -243,7 +244,7 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName;
                     String columnName = column.columnName;
-                    String query = sqlTemplates.recoverSpatialIndex(tableName, columnName);
+                    String query = sqlTemplates.recoverSpatialIndex(SqlName.m(tableName), columnName);
                     spatialiteViewer.addTextToQueryEditor(query);
                 }
             };
@@ -259,7 +260,7 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName;
                     String columnName = column.columnName;
-                    String query = sqlTemplates.disableSpatialIndex(tableName, columnName);
+                    String query = sqlTemplates.disableSpatialIndex(SqlName.m(tableName), columnName);
                     spatialiteViewer.addTextToQueryEditor(query);
                 }
 
@@ -278,7 +279,7 @@ public class SqlTemplatesAndActions {
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName;
                 String columnName = column.columnName;
-                String query = sqlTemplates.showSpatialMetadata(tableName, columnName);
+                String query = sqlTemplates.showSpatialMetadata(SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -296,7 +297,7 @@ public class SqlTemplatesAndActions {
                 String refColumn = tableColsFromFK[1];
                 String tableName = column.parent.tableName;
                 String columnName = column.columnName;
-                String query = sqlTemplates.combinedSelect(refTable, refColumn, tableName, columnName);
+                String query = sqlTemplates.combinedSelect(SqlName.m(refTable), refColumn, SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
             }
 
@@ -315,8 +316,8 @@ public class SqlTemplatesAndActions {
                     String refTable = tableColsFromFK[0];
                     QueryResult queryResult;
                     if (spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb) {
-                        queryResult = ((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase).getTableRecordsMapIn(refTable,
-                                null, 1000, -1, null);
+                        queryResult = ((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase)
+                                .getTableRecordsMapIn(SqlName.m(refTable), null, 1000, -1, null);
                     } else {
                         queryResult = spatialiteViewer.currentConnectedSqlDatabase
                                 .getTableRecordsMapFromRawSql("select * from " + refTable, 100);
@@ -430,7 +431,7 @@ public class SqlTemplatesAndActions {
                     }
 
                     SpatialDbsImportUtils.createTableFromShp((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase,
-                            openFiles[0], newTableName, sridStr, false);
+                            openFiles[0], SqlName.m(newTableName), sridStr, false);
                     spatialiteViewer.refreshDatabaseTree();
                 } catch (Exception e1) {
                     GuiUtilities.handleError(spatialiteViewer, e1);
@@ -498,7 +499,8 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    List<String[]> tableColumns = spatialiteViewer.currentConnectedSqlDatabase.getTableColumns(table.tableName);
+                    List<String[]> tableColumns = spatialiteViewer.currentConnectedSqlDatabase
+                            .getTableColumns(SqlName.m(table.tableName));
 
                     String cols = tableColumns.stream().map(tc -> tc[0]).collect(Collectors.joining(","));
                     String quest = tableColumns.stream().map(tc -> "?").collect(Collectors.joining(","));
@@ -547,7 +549,7 @@ public class SqlTemplatesAndActions {
                             break;
                         }
                     }
-                    String query = sqlTemplates.dropTable(tableName, geometryColumnName);
+                    String query = sqlTemplates.dropTable(SqlName.m(tableName), geometryColumnName);
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception ex) {
                     logger.insertError("SqlTemplatesAndActions", "Error", ex);
@@ -564,7 +566,7 @@ public class SqlTemplatesAndActions {
                     long count = 0;
                     if (spatialiteViewer.currentConnectedSqlDatabase != null) {
                         String tableName = table.tableName;
-                        count = spatialiteViewer.currentConnectedSqlDatabase.getCount(tableName);
+                        count = spatialiteViewer.currentConnectedSqlDatabase.getCount(SqlName.m(tableName));
                     } else if (spatialiteViewer.currentConnectedNosqlDatabase != null) {
                         String tableName = table.tableName;
                         INosqlCollection collection = spatialiteViewer.currentConnectedNosqlDatabase.getCollection(tableName);
@@ -607,7 +609,7 @@ public class SqlTemplatesAndActions {
                     try {
                         hasErrors = !SpatialDbsImportUtils.importShapefile(
                                 (ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, openFiles[0],
-                                spatialiteViewer.currentSelectedTable.tableName, -1, useFromTextForGeom, spatialiteViewer.pm);
+                                SqlName.m(spatialiteViewer.currentSelectedTable.tableName), -1, useFromTextForGeom, spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
                         hasErrors = true;
@@ -646,7 +648,7 @@ public class SqlTemplatesAndActions {
                     String newSrid = result[1];
 
                     String query = sqlTemplates.reprojectTable(table, (ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase,
-                            geometryColumn, tableName, newTableName, newSrid);
+                            geometryColumn, SqlName.m(tableName), newTableName, newSrid);
 
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception ex) {
@@ -817,7 +819,7 @@ public class SqlTemplatesAndActions {
                                     value = ADb.escapeSql(value);
                                     if (etype == EDataType.TEXT) {
                                         valuesSb.append("'").append(value).append("'");
-                                    }else {
+                                    } else {
                                         valuesSb.append(value);
                                     }
                                     firstDone = true;
@@ -1037,9 +1039,10 @@ public class SqlTemplatesAndActions {
                             "It is possible to use one of the vector tables as area of interest. Tiles outside the area will be ignored.",
                             names.toArray(new String[0]), "");
                     if (selectedTable != null) {
-                        GeometryColumn gc = db.getGeometryColumnsForTable(selectedTable);
-                        List<Geometry> geometries = db.getGeometriesIn(selectedTable, (Envelope) null, (String[]) null);
-                        int dataSrid = db.feature(selectedTable).getSrid();
+                        SqlName tName = SqlName.m(selectedTable);
+                        GeometryColumn gc = db.getGeometryColumnsForTable(tName);
+                        List<Geometry> geometries = db.getGeometriesIn(tName, (Envelope) null, (String[]) null);
+                        int dataSrid = db.feature(tName).getSrid();
                         List<Geometry> geometries3857;
                         if (dataSrid == GeopackageCommonDb.MERCATOR_SRID) {
                             geometries3857 = geometries;
@@ -1138,7 +1141,7 @@ public class SqlTemplatesAndActions {
                                     256, _limitsGeom3857);
                             String description = "HM import of " + openFiles[0].getName();
                             int addedTiles = ((GeopackageCommonDb) databaseViewer.currentConnectedSqlDatabase)
-                                    .addTilestable(_nameForTable, description, envelopeInternal, tileProducer);
+                                    .addTilestable(SqlName.m(_nameForTable), description, envelopeInternal, tileProducer);
 
                             pm.message("Inserted " + addedTiles + " new tiles.");
                         }

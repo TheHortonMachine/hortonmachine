@@ -55,6 +55,7 @@ import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -296,8 +297,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @param name THe name of the feature entry.
      * @return The entry, or <code>null</code> if no such entry exists.
      */
-    public FeatureEntry feature( String name ) throws Exception {
-        if (!sqliteDb.hasTable(GEOMETRY_COLUMNS)) {
+    public FeatureEntry feature( SqlName name ) throws Exception {
+        if (!sqliteDb.hasTable(SqlName.m(GEOMETRY_COLUMNS))) {
             return null;
         }
         return sqliteDb.execOnConnection(connection -> {
@@ -308,7 +309,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     GEOPACKAGE_CONTENTS, GEOMETRY_COLUMNS, SPATIAL_REF_SYS);
 
             try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
-                pStmt.setString(1, name);
+                pStmt.setString(1, name.name);
                 pStmt.setString(2, DataType.Feature.value());
 
                 IHMResultSet rs = pStmt.executeQuery();
@@ -330,8 +331,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @param name THe name of the tile entry.
      * @return The entry, or <code>null</code> if no such entry exists.
      */
-    public TileEntry tile( String name ) throws Exception {
-        if (!sqliteDb.hasTable(GEOMETRY_COLUMNS)) {
+    public TileEntry tile( SqlName name ) throws Exception {
+        if (!sqliteDb.hasTable(SqlName.m(GEOMETRY_COLUMNS))) {
             return null;
         }
         return sqliteDb.execOnConnection(connection -> {
@@ -343,7 +344,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     GEOPACKAGE_CONTENTS, SPATIAL_REF_SYS);
 
             try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
-                pStmt.setString(1, name);
+                pStmt.setString(1, name.name);
                 pStmt.setString(2, DataType.Tile.value());
 
                 IHMResultSet rs = pStmt.executeQuery();
@@ -369,12 +370,12 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @return the tile image bytes.
      * @throws Exception
      */
-    public byte[] getTile( String tableName, int tx, int ty, int zoom ) throws Exception {
+    public byte[] getTile( SqlName tableName, int tx, int ty, int zoom ) throws Exception {
         // if (tileRowType.equals("tms")) { // if it is not OSM way
         // int[] tmsTileXY = MercatorUtils.osmTile2TmsTile(tx, ty, zoom);
         // ty = tmsTileXY[1];
         // }
-        String sql = format(SELECTQUERY, DbsUtilities.fixTableName(tableName));
+        String sql = format(SELECTQUERY, tableName.fixedDoubleName);
         return sqliteDb.execOnConnection(connection -> {
             byte[] imageBytes = null;
             try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
@@ -401,7 +402,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @return the tile image bytes.
      * @throws Exception
      */
-    public byte[] getTile( String tableName, double lon, double lat, int zoom ) throws Exception {
+    public byte[] getTile( SqlName tableName, double lon, double lat, int zoom ) throws Exception {
         int[] zxy = MercatorUtils.getTileNumber(lat, lon, zoom);
         return getTile(tableName, zxy[1], zxy[2], zoom);
     }
@@ -413,12 +414,14 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @return the list of zoom levels.
      * @throws Exception
      */
-    public List<Integer> getTileZoomLevelsWithData( String tableName ) throws Exception {
-        String sql = "select distinct " + COL_TILES_ZOOM_LEVEL + " from " + DbsUtilities.fixTableName(tableName) + " order by "
+    public List<Integer> getTileZoomLevelsWithData( SqlName tableName ) throws Exception {
+        String sql = "select distinct " + COL_TILES_ZOOM_LEVEL + " from ? order by "
                 + COL_TILES_ZOOM_LEVEL;
 
         return sqliteDb.execOnConnection(connection -> {
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            try (IHMPreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, tableName.name);
+                IHMResultSet rs = stmt.executeQuery();
                 List<Integer> list = new ArrayList<>();
                 while( rs.next() ) {
                     int zoomLevel = rs.getInt(1);
@@ -436,7 +439,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @return whether this feature entry has a spatial index available.
      * @throws IOException
      */
-    public boolean hasSpatialIndex( String table ) throws Exception {
+    public boolean hasSpatialIndex( SqlName table ) throws Exception {
         FeatureEntry feature = feature(table);
         return sqliteDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pStmt = connection
@@ -449,7 +452,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
     }
 
     private String getSpatialIndexName( FeatureEntry feature ) {
-        return "rtree_" + feature.tableName + "_" + feature.geometryColumn;
+        return "rtree_" + SqlName.m(feature.tableName).nameForIndex() + "_" + feature.geometryColumn;
     }
 
     private FeatureEntry createFeatureEntry( IHMResultSet rs ) throws Exception {
@@ -680,12 +683,12 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         }
     }
 
-    public void createSpatialTable( String tableName, int tableSrid, String geometryFieldData, String[] fieldData,
+    public void createSpatialTable( SqlName tableName, int tableSrid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
-        sb.append(tableName).append("(");
+        sb.append(tableName.fixedDoubleName).append("(");
         for( int i = 0; i < fieldData.length; i++ ) {
             if (i != 0)
                 sb.append(",");
@@ -716,14 +719,13 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
     }
 
     @Override
-    public Envelope getTableBounds( String tableName ) throws Exception {
+    public Envelope getTableBounds( SqlName tableName ) throws Exception {
         // TODO
         throw new RuntimeException("Not implemented yet...");
     }
 
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
+    public QueryResult getTableRecordsMapIn( SqlName tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
             throws Exception {
-        tableName = DbsUtilities.fixTableName(tableName);
         QueryResult queryResult = new QueryResult();
         GeometryColumn gCol = null;
         String geomColLower = null;
@@ -981,7 +983,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         return tablesMap;
     }
 
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
+    public String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
         if (!supportsSpatialIndex)
             return null;
@@ -996,27 +998,27 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
         String check = "(" + x1 + " <= maxx and " + x2 + " >= minx and " + y1 + " <= maxy and " + y2 + " >= miny)";
         // Make Sure the table name is escaped
-        String sql = pk + " IN ( SELECT id FROM \"" + spatial_index + "\"  WHERE " + check + ")";
+        String sql = pk + " IN ( SELECT id FROM " + spatial_index + "  WHERE " + check + ")";
         return sql;
     }
 
-    public String getPrimaryKey( String tableName ) throws Exception {
+    public String getPrimaryKey( SqlName tableName ) throws Exception {
         String pk = SpatialiteCommonMethods.getPrimaryKey(sqliteDb, tableName);
         return pk;
     }
 
-    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
+    public String getSpatialindexGeometryWherePiece( SqlName tableName, String alias, Geometry geometry ) throws Exception {
         // this is not possible in gpkg, backing on envelope intersection
         Envelope env = geometry.getEnvelopeInternal();
         return getSpatialindexBBoxWherePiece(tableName, alias, env.getMinX(), env.getMinY(), env.getMaxX(), env.getMaxY());
     }
 
-    public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
+    public GeometryColumn getGeometryColumnsForTable( SqlName tableName ) throws Exception {
         FeatureEntry feature = feature(tableName);
         if (feature == null)
             return null;
         SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
-        gc.tableName = tableName;
+        gc.tableName = tableName.name;
         gc.geometryColumnName = feature.geometryColumn;
         gc.geometryType = feature.geometryType;
         int dim = 2;
@@ -1041,26 +1043,26 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
     }
 
     @Override
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable( SqlName tableName ) throws Exception {
         return sqliteDb.hasTable(tableName);
     }
 
-    public ETableType getTableType( String tableName ) throws Exception {
+    public ETableType getTableType( SqlName tableName ) throws Exception {
         return SpatialiteCommonMethods.getTableType(this, tableName);
     }
 
     @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns( SqlName tableName ) throws Exception {
         List<String[]> tableColumns = SpatialiteCommonMethods.getTableColumns(this, tableName);
         return tableColumns;
     }
 
     @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
         return sqliteDb.getForeignKeys(tableName);
     }
 
-    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+    public String getGeojsonIn( SqlName tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         return SpatialiteCommonMethods.getGeojsonIn(this, tableName, fields, wherePiece, precision);
     }
 
@@ -1070,13 +1072,13 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @param tableName
      * @throws Exception
      */
-    public void deleteGeoTable( String tableName ) throws Exception {
+    public void deleteGeoTable( SqlName tableName ) throws Exception {
         String sql = getType().getSqlTemplates().dropTable(tableName, null);
         sqliteDb.executeInsertUpdateDeleteSql(sql);
     }
 
     @Override
-    public void insertGeometry( String tableName, Geometry geometry, String epsgStr, String where ) throws Exception {
+    public void insertGeometry( SqlName tableName, Geometry geometry, String epsgStr, String where ) throws Exception {
         int epsg = 4326;
         if (epsgStr != null) {
             try {
@@ -1105,13 +1107,13 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg,
             boolean avoidIndex ) throws Exception {
         if (!avoidIndex)
             createSpatialIndex(tableName, geomColName);
     }
 
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg )
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg )
             throws Exception {
         createSpatialIndex(tableName, geomColName);
     }
@@ -1235,7 +1237,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
     }
 
     @Override
-    public List<Index> getIndexes( String tableName ) throws Exception {
+    public List<Index> getIndexes( SqlName tableName ) throws Exception {
         return sqliteDb.getIndexes(tableName);
     }
 
@@ -1249,14 +1251,16 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      *
      * @param e feature entry to create spatial index for
      */
-    public void createSpatialIndex( String tableName, String geometryName ) throws Exception {
+    public void createSpatialIndex( SqlName tableName, String geometryName ) throws Exception {
         Map<String, String> properties = new HashMap<String, String>();
 
         String pk = SpatialiteCommonMethods.getPrimaryKey(sqliteDb, tableName);
         if (pk == null) {
             throw new IOException("Spatial index only supported for primary key of single column.");
         }
-        properties.put("t", tableName);
+        properties.put("ttt", tableName.name);
+        properties.put("tt", tableName.fixedName);
+        properties.put("t", tableName.nameForIndex());
         properties.put("c", geometryName);
         properties.put("i", pk);
 
@@ -1324,7 +1328,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         }
     }
 
-    private void addGeoPackageContentsEntry( String dataType, String tableName, int srid, String description, Envelope crsBounds )
+    private void addGeoPackageContentsEntry( String dataType, SqlName tableName, int srid, String description, Envelope crsBounds )
             throws Exception {
         if (!hasCrs(srid))
             throw new IOException("The srid is not yet present in the package. Please add it before proceeding.");
@@ -1364,9 +1368,9 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                 }
 
                 int i = 1;
-                pStmt.setString(i++, tableName);
+                pStmt.setString(i++, tableName.name);
                 pStmt.setString(i++, dataType);
-                pStmt.setString(i++, tableName);
+                pStmt.setString(i++, tableName.name);
                 if (description != null)
                     pStmt.setString(i++, description);
                 pStmt.setDouble(i++, minx);
@@ -1382,7 +1386,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
     }
 
-    private void updateGeoPackageContentsEntry( String tableName, Envelope crsBounds ) throws Exception {
+    private void updateGeoPackageContentsEntry( SqlName tableName, Envelope crsBounds ) throws Exception {
         String sql = "update " + GEOPACKAGE_CONTENTS + " set min_x=?, min_y=?, max_x=?, max_y=? where table_name=?";
         sqliteDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
@@ -1401,7 +1405,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                 pStmt.setDouble(i++, miny);
                 pStmt.setDouble(i++, maxx);
                 pStmt.setDouble(i++, maxy);
-                pStmt.setString(i++, tableName);
+                pStmt.setString(i++, tableName.name);
 
                 pStmt.executeUpdate();
                 return null;
@@ -1410,7 +1414,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
     }
 
-    private void addGeometryColumnsEntry( String tableName, String geometryName, String geometryType, int srid, boolean hasZ,
+    private void addGeometryColumnsEntry( SqlName tableName, String geometryName, String geometryType, int srid, boolean hasZ,
             boolean hasM ) throws Exception {
         // geometryless tables should not be inserted into this table.
         String sql = format("INSERT INTO %s VALUES (?, ?, ?, ?, ?, ?);", GEOMETRY_COLUMNS);
@@ -1418,7 +1422,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         sqliteDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
                 int i = 1;
-                pStmt.setString(i++, tableName);
+                pStmt.setString(i++, tableName.name);
                 pStmt.setString(i++, geometryName);
                 pStmt.setString(i++, geometryType);
                 pStmt.setInt(i++, srid);
@@ -1431,12 +1435,12 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         });
     }
 
-    public BasicStyle getBasicStyle( String tableName ) throws Exception {
+    public BasicStyle getBasicStyle( SqlName tableName ) throws Exception {
         checkStyleTable(sqliteDb);
 
         return sqliteDb.execOnConnection(connection -> {
             BasicStyle basicStyle = new BasicStyle();
-            String sql = "select simplified from " + HM_STYLES_TABLE + " where lower(tablename)='" + tableName.toLowerCase()
+            String sql = "select simplified from " + HM_STYLES_TABLE + " where lower(tablename)='" + tableName.name.toLowerCase()
                     + "'";
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
@@ -1448,15 +1452,15 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         });
     }
 
-    public void updateSimplifiedStyle( String tableName, String simplified ) throws Exception {
+    public void updateSimplifiedStyle( SqlName tableName, String simplified ) throws Exception {
         Long count = sqliteDb.getLong(
-                "select count(*) from " + HM_STYLES_TABLE + " where tablename='" + DbsUtilities.fixTableName(tableName) + "'");
+                "select count(*) from " + HM_STYLES_TABLE + " where tablename='" + tableName.fixedDoubleName + "'");
         String sql;
         if (count == 0) {
             sql = "INSERT INTO " + HM_STYLES_TABLE + "(tablename, simplified) VALUES(?,?)";
             sqliteDb.execOnConnection(connection -> {
                 try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
-                    pstmt.setString(1, tableName);
+                    pstmt.setString(1, tableName.name);
                     pstmt.setString(2, simplified);
                     pstmt.executeUpdate();
                 } catch (Exception e) {
@@ -1469,7 +1473,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
             sqliteDb.execOnConnection(connection -> {
                 try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
                     pstmt.setString(1, simplified);
-                    pstmt.setString(2, tableName);
+                    pstmt.setString(2, tableName.name);
                     pstmt.executeUpdate();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -1486,12 +1490,12 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * <p>Only 3857 tiles are supported. The data need to be in that projection.
      *
      */
-    public int addTilestable( String tableName, String description, Envelope dataBounds3857, ITilesProducer tilesProducer )
+    public int addTilestable( SqlName tableName, String description, Envelope dataBounds3857, ITilesProducer tilesProducer )
             throws Exception {
-        String fixedTableName = DbsUtilities.fixTableName(tableName);
+        String fixedTableName = tableName.fixedDoubleName;
         int insertedCount = 0;
 
-        TileEntry tileEntry = tile(fixedTableName);
+        TileEntry tileEntry = tile(tableName);
         if (tileEntry == null) {
             String createTableSql = format("CREATE TABLE %s (id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
                     + COL_TILES_ZOOM_LEVEL + " INTEGER NOT NULL, " + COL_TILES_TILE_COLUMN + " INTEGER NOT NULL,"
@@ -1500,7 +1504,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
             // update the metadata tables
             addGeoPackageContentsEntry(DataType.Tile.value, tableName, MERCATOR_SRID, description, dataBounds3857);
         } else {
-            updateGeoPackageContentsEntry(fixedTableName, dataBounds3857);
+            updateGeoPackageContentsEntry(tableName, dataBounds3857);
         }
 
         // insert the tiles
@@ -1575,7 +1579,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                         tilesList.add(tile);
 
                         if (tilesList.size() == 1000) {
-                            putTiles(fixedTableName, tilesList);
+                            putTiles(tableName, tilesList);
                             insertedCount += tilesList.size();
                             tilesList.clear();
                         }
@@ -1587,14 +1591,14 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
             String sql = format("INSERT or replace INTO %s (table_name, srs_id, min_x, min_y, max_x, max_y) VALUES (?,?,?,?,?,?)",
                     TILE_MATRIX_SET);
-            sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName, MERCATOR_SRID, levelBounds3857.getMinX(),
+            sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName.name, MERCATOR_SRID, levelBounds3857.getMinX(),
                     levelBounds3857.getMinY(), levelBounds3857.getMaxX(), levelBounds3857.getMaxY()});
 
             sql = format(
                     "INSERT or replace INTO %s (table_name, zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size) VALUES (?,?,?,?,?,?,?,?)",
                     TILE_MATRIX_METADATA);
             if (tileEntry == null) {
-                sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName, z, xTileCount, yTileCount, tileSize,
+                sqliteDb.executeInsertUpdateDeletePreparedSql(sql, new Object[]{tableName.name, z, xTileCount, yTileCount, tileSize,
                         tileSize, sampleTileBounds3857.getWidth() / tileSize, sampleTileBounds3857.getHeight() / tileSize});
             } else {
                 List<TileMatrix> tileMatricies = tileEntry.getTileMatricies();
@@ -1603,7 +1607,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                 if (firstZ.isPresent()) {
                     TileMatrix tm = firstZ.get();
                     sqliteDb.executeInsertUpdateDeletePreparedSql(sql,
-                            new Object[]{tableName, z, tm.matrixWidth + xTileCount, tm.matrixHeight + yTileCount, tileSize,
+                            new Object[]{tableName.name, z, tm.matrixWidth + xTileCount, tm.matrixHeight + yTileCount, tileSize,
                                     tileSize, sampleTileBounds3857.getWidth() / tileSize,
                                     sampleTileBounds3857.getHeight() / tileSize});
                 }
@@ -1611,14 +1615,14 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         }
 
         if (tilesList.size() > 0) {
-            putTiles(fixedTableName, tilesList);
+            putTiles(tableName, tilesList);
             insertedCount += tilesList.size();
         }
 
         // add index at the end
         if (tileEntry == null) {
             String createIndexSql = format("create index idx%s_zyx_idx on %s(" + COL_TILES_ZOOM_LEVEL + ", "
-                    + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ");", tableName, fixedTableName);
+                    + COL_TILES_TILE_COLUMN + ", " + COL_TILES_TILE_ROW + ");", tableName.nameForIndex(), fixedTableName);
             sqliteDb.executeInsertUpdateDeleteSql(createIndexSql);
         }
 
@@ -1635,7 +1639,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
      * @param tileData the tile image data.
      * @throws Exception
      */
-    public void putTile( String tableName, int tx, int ty, int zoom, byte[] tileData ) throws Exception {
+    public void putTile( SqlName tableName, int tx, int ty, int zoom, byte[] tileData ) throws Exception {
         String sql = format(INSERTQUERY, tableName);
         sqliteDb.execOnConnection(connection -> {
             try (IHMPreparedStatement pstmt = connection.prepareStatement(sql)) {
@@ -1649,7 +1653,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         });
     }
 
-    public void putTiles( String tableName, List<Tile> tilesList ) throws Exception {
+    public void putTiles( SqlName tableName, List<Tile> tilesList ) throws Exception {
         String sql = format(INSERTQUERY, tableName);
 
         sqliteDb.execOnConnection(connection -> {

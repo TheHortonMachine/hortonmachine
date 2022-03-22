@@ -111,7 +111,7 @@ public class Spatialite2Postgis implements AutoCloseable {
         ADatabaseSyntaxHelper dsh = postgis.getType().getDatabaseSyntaxHelper();
         while( todo.size() > 0 && count < 10 ) {
             for( TableLevel tableLevel : todo ) {
-                String tableName = tableLevel.tableName;
+                SqlName tableName = SqlName.m(tableLevel.tableName);
                 String tableSql = getTableSql(spatialite, tableName);
 
                 System.out.println("Trying to create table: " + tableName);
@@ -223,7 +223,7 @@ public class Spatialite2Postgis implements AutoCloseable {
             tablesList = finalDoneOrder;
         }
         for( TableLevel tableLevel : tablesList ) {
-            String tableName = tableLevel.tableName;
+            SqlName tableName = SqlName.m(tableLevel.tableName);
             System.out.println("Copy table " + tableName);
             System.out.println("Read data...");
             QueryResult queryResult = spatialite.getTableRecordsMapFromRawSql("select * from " + tableName, -1);
@@ -327,7 +327,7 @@ public class Spatialite2Postgis implements AutoCloseable {
 
     }
 
-    public static String getTableSql( ADb db, String tableName ) throws Exception {
+    public static String getTableSql( ADb db, SqlName tableName ) throws Exception {
         String sql = "SELECT sql FROM sqlite_master WHERE type='table' and tbl_name='" + tableName + "'";
 
         return db.execOnConnection(connection -> {
@@ -343,7 +343,7 @@ public class Spatialite2Postgis implements AutoCloseable {
 
     }
 
-    public static List<String> getIndexSqls( ADb db, String tableName ) throws Exception {
+    public static List<String> getIndexSqls( ADb db, SqlName tableName ) throws Exception {
         String sql = "SELECT sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName + "'";
 
         return db.execOnConnection(connection -> {

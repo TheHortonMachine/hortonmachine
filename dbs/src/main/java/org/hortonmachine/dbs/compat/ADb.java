@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.HMConnectionConsumer;
 import org.hortonmachine.dbs.utils.HMResultSetConsumer;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Abstract non spatial db class.
@@ -201,10 +202,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      *            KEY).
      * @throws SQLException
      */
-    public void createTable( String tableName, String... fieldData ) throws Exception {
+    public void createTable( SqlName tableName, String... fieldData ) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
-        sb.append(tableName).append("(");
+        sb.append(tableName.fixedDoubleName).append("(");
         for( int i = 0; i < fieldData.length; i++ ) {
             if (i != 0) {
                 sb.append(",");
@@ -234,7 +235,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      *            if <code>true</code>, a unique index will be created.
      * @throws Exception
      */
-    public void createIndex( String tableName, String column, boolean isUnique ) throws Exception {
+    public void createIndex( SqlName tableName, String column, boolean isUnique ) throws Exception {
         String sql = getIndexSql(tableName, column, isUnique);
 
         execOnConnection(connection -> {
@@ -263,13 +264,17 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      *            if <code>true</code>, a unique index will be created.
      * @return the index sql.
      */
-    public String getIndexSql( String tableName, String column, boolean isUnique ) {
+    public String getIndexSql( SqlName tableName, String column, boolean isUnique ) {
         String unique = "UNIQUE ";
         if (!isUnique) {
             unique = "";
         }
-        String indexName = tableName + "__" + column + "_idx";
-        String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName + "(" + column + ");";
+        String indexName = tableName.nameForIndex();
+        indexName = indexName + "__" + column + "_idx";
+        if(Character.isDigit(indexName.charAt(0))) {
+            indexName = "_" + indexName;
+        }
+        String sql = "CREATE " + unique + "INDEX " + indexName + " on " + tableName.fixedDoubleName + " (" + column + ");";
         return sql;
     }
 
@@ -291,7 +296,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return <code>true</code> if the table exists.
      * @throws Exception
      */
-    public abstract boolean hasTable( String tableName ) throws Exception;
+    public abstract boolean hasTable( SqlName tableName ) throws Exception;
 
     /**
      * Gets the table type.
@@ -301,7 +306,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the table type.
      * @throws Exception
      */
-    public abstract ETableType getTableType( String tableName ) throws Exception;
+    public abstract ETableType getTableType( SqlName tableName ) throws Exception;
 
     /**
      * Get the column [name, type, primarykey] values of a table.
@@ -313,7 +318,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the list of column [name, type, pk].
      * @throws SQLException
      */
-    public abstract List<String[]> getTableColumns( String tableName ) throws Exception;
+    public abstract List<String[]> getTableColumns( SqlName tableName ) throws Exception;
 
     /**
      * Get the foreign keys from a table.
@@ -323,7 +328,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the list of keys.
      * @throws Exception
      */
-    public abstract List<ForeignKey> getForeignKeys( String tableName ) throws Exception;
+    public abstract List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception;
 
     /**
      * Get the indexes of a table (no primary keys and no foreign keys).
@@ -333,7 +338,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the list of indexes.
      * @throws Exception
      */
-    public abstract List<Index> getIndexes( String tableName ) throws Exception;
+    public abstract List<Index> getIndexes( SqlName tableName ) throws Exception;
 
     /**
      * Get the record count of a table.
@@ -343,8 +348,8 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the record count or -1.
      * @throws Exception
      */
-    public long getCount( String tableName ) throws Exception {
-        String sql = "select count(*) from " + DbsUtilities.fixTableName(tableName);
+    public long getCount( SqlName tableName ) throws Exception {
+        String sql = "select count(*) from " + tableName.fixedDoubleName;
         Long count = execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
@@ -364,10 +369,12 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the current max value.
      * @throws Exception
      */
-    public long getMax( String tableName, String fieldName ) throws Exception {
-        String sql = "select max(" + fieldName + ") from " + DbsUtilities.fixTableName(tableName);
+    public long getMax( SqlName tableName, String fieldName ) throws Exception {
+        String sql = "select max(?) from " + tableName.fixedDoubleName;
         Long max = execOnConnection(connection -> {
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            try (IHMPreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, fieldName);
+                IHMResultSet rs = stmt.executeQuery();
                 if (rs.next()) {
                     return rs.getLong(1);
                 }
@@ -571,7 +578,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return the name found in the columns list of the table.
      * @throws Exception
      */
-    public String getProperColumnNameCase( String tableName, String columnName ) throws Exception {
+    public String getProperColumnNameCase( SqlName tableName, String columnName ) throws Exception {
         List<String[]> tableColumns = getTableColumns(tableName);
         String realName = columnName;
         for( String[] cols : tableColumns ) {
@@ -590,11 +597,11 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @return
      * @throws Exception
      */
-    public String getProperTableNameCase( String tableName ) throws Exception {
+    public String getProperTableNameCase( SqlName tableName ) throws Exception {
         List<String> tables = getTables(false);
-        String realName = tableName;
+        String realName = tableName.name;
         for( String name : tables ) {
-            if (name.equalsIgnoreCase(tableName)) {
+            if (name.equalsIgnoreCase(tableName.name)) {
                 realName = name;
                 break;
             }
@@ -613,7 +620,7 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      *            the type of the column to add.
      * @throws Exception 
      */
-    public void addNewColumn( String tableName, String columnToAdd, String typeToAdd ) throws Exception {
+    public void addNewColumn( SqlName tableName, String columnToAdd, String typeToAdd ) throws Exception {
         if (hasTable(tableName)) {
             List<String[]> tableColumns = getTableColumns(tableName);
             List<String> tableColumnsFirst = new ArrayList<String>();

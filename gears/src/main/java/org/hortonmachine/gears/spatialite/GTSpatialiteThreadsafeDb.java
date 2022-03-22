@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -43,7 +44,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {
 
     @Override
-    public ReferencedEnvelope getTableBounds( String tableName ) throws Exception {
+    public ReferencedEnvelope getTableBounds( SqlName tableName ) throws Exception {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         String geomFieldName = gCol.geometryColumnName;
 

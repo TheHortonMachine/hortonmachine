@@ -28,6 +28,7 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.utils.SerializationUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * A preferences database.
@@ -97,7 +98,8 @@ public enum PreferencesDb implements AutoCloseable {
     }
 
     public void createTable( EDb dbType ) throws Exception {
-        if (prefDb != null && !prefDb.hasTable(TABLE_PREFERENCES)) {
+        SqlName tPref = SqlName.m(TABLE_PREFERENCES);
+        if (prefDb != null && !prefDb.hasTable(tPref)) {
             ADatabaseSyntaxHelper helper = dbType.getDatabaseSyntaxHelper();
             String[] fields = { //
                     KEY_NAME + " " + helper.TEXT() + " " + helper.PRIMARYKEY(), //
@@ -122,8 +124,8 @@ public enum PreferencesDb implements AutoCloseable {
                 return null;
             });
 
-            if (prefDb != null && prefDb.hasTable(TABLE_PREFERENCES)) {
-                prefDb.createIndex(TABLE_PREFERENCES, KEY_NAME, true);
+            if (prefDb != null && prefDb.hasTable(tPref)) {
+                prefDb.createIndex(tPref, KEY_NAME, true);
             }
         }
     }

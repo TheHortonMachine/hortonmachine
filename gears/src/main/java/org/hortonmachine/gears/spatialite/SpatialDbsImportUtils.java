@@ -47,6 +47,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -94,13 +95,13 @@ public class SpatialDbsImportUtils {
      * @return the name of the created table.
      * @throws Exception
      */
-    public static String createTableFromShp( ASpatialDb db, File shapeFile, String newTableName, String forceSrid,
+    public static SqlName createTableFromShp( ASpatialDb db, File shapeFile, SqlName newTableName, String forceSrid,
             boolean avoidSpatialIndex ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         SimpleFeatureType schema = featureSource.getSchema();
         if (newTableName == null) {
-            newTableName = FileUtilities.getNameWithoutExtention(shapeFile);
+            newTableName = SqlName.m(FileUtilities.getNameWithoutExtention(shapeFile));
         }
         return createTableFromSchema(db, schema, newTableName, forceSrid, avoidSpatialIndex);
     }
@@ -117,7 +118,7 @@ public class SpatialDbsImportUtils {
      *          have to be inserted and the index will be created later manually.
      * @throws Exception
      */
-    public static String createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, String newTableName, String forceSrid,
+    public static SqlName createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, SqlName newTableName, String forceSrid,
             boolean avoidSpatialIndex ) throws Exception {
         GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
@@ -229,7 +230,7 @@ public class SpatialDbsImportUtils {
      * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static boolean importShapefile( ASpatialDb db, File shapeFile, String tableName, int limit, boolean useFromTextForGeom,
+    public static boolean importShapefile( ASpatialDb db, File shapeFile, SqlName tableName, int limit, boolean useFromTextForGeom,
             IHMProgressMonitor pm ) throws Exception {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
@@ -251,7 +252,7 @@ public class SpatialDbsImportUtils {
      * @return <code>false</code>, is an error occurred. 
      * @throws Exception
      */
-    public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, String tableName,
+    public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, SqlName tableName,
             int limit, boolean useFromTextForGeom, IHMProgressMonitor pm ) throws Exception {
         SimpleFeatureType schema = featureCollection.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
@@ -427,7 +428,7 @@ public class SpatialDbsImportUtils {
      * @throws SQLException
      * @throws Exception
      */
-    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, String tableName, int featureLimit,
+    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, SqlName tableName, int featureLimit,
             int forceSrid, String whereStr ) throws SQLException, Exception {
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
@@ -472,7 +473,7 @@ public class SpatialDbsImportUtils {
         List<String> types = tableRecords.types;
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName(tableName);
+        b.setName(tableName.name);
         if (forceCrs != null) {
             b.setCRS(forceCrs);
         } else {
@@ -545,7 +546,7 @@ public class SpatialDbsImportUtils {
         return fc;
     }
 
-    public static DefaultFeatureCollection tableGeomsToFeatureFCollection( ASpatialDb db, String tableName, int forceSrid,
+    public static DefaultFeatureCollection tableGeomsToFeatureFCollection( ASpatialDb db, SqlName tableName, int forceSrid,
             String geomPrefix, String geomPostfix, String whereStr ) throws SQLException, Exception {
 
         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);

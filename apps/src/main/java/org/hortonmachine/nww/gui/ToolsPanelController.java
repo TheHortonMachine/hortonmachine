@@ -49,6 +49,7 @@ import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
@@ -555,7 +556,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         String sldString = null;
                         try (GeopackageCommonDb db = new GeopackageDb()) {
                             db.open(selectedFile.getAbsolutePath());
-                            sldString = db.getSldString(tableName);
+                            sldString = db.getSldString(SqlName.m(tableName));
                         }
                         Style style;
                         if (sldString != null) {
@@ -625,7 +626,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                         layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                     } else {
-                        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
+                        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(SqlName.m(tableName));
                         if (geometryColumn != null) {
                             org.hortonmachine.dbs.datatypes.EGeometryType geomType = geometryColumn.geometryType;
                             if (geomType.isPolygon()) {

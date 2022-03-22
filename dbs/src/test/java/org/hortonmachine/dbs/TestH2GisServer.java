@@ -14,7 +14,6 @@ import org.hortonmachine.dbs.h2gis.H2GisServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 

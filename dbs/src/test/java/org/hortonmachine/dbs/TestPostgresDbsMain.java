@@ -12,6 +12,7 @@ import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -23,8 +24,8 @@ import org.junit.Test;
 @Ignore 
 public class TestPostgresDbsMain {
 
-    private static final String TABLE1 = "table1";
-    private static final String TABLE2 = "table2";
+    private static final SqlName TABLE1 = SqlName.m("table1");
+    private static final SqlName TABLE2 = SqlName.m("123 table2");
     private static final EDb DB_TYPE = EDb.POSTGRES;
 
     private static ADb db;
@@ -49,9 +50,9 @@ public class TestPostgresDbsMain {
         db.createTable(TABLE2, "id " + dt.INTEGER() + " PRIMARY KEY", "table1id " + dt.INTEGER(),
                 "FOREIGN KEY (table1id) REFERENCES " + TABLE1 + "(id)");
         inserts = new String[]{//
-                "INSERT INTO " + TABLE2 + " VALUES(1, 1);", //
-                "INSERT INTO " + TABLE2 + " VALUES(2, 2);", //
-                "INSERT INTO " + TABLE2 + " VALUES(3, 3);", //
+                "INSERT INTO " + TABLE2.fixedDoubleName + " VALUES(1, 1);", //
+                "INSERT INTO " + TABLE2.fixedDoubleName  + " VALUES(2, 2);", //
+                "INSERT INTO " + TABLE2.fixedDoubleName  + " VALUES(3, 3);", //
         };
         for( String insert : inserts ) {
             db.executeInsertUpdateDeleteSql(insert);
@@ -65,7 +66,7 @@ public class TestPostgresDbsMain {
             db.executeInsertUpdateDeleteSql("drop table " + TABLE1 + " cascade");
         }
         if (db.hasTable(TABLE2)) {
-            db.executeInsertUpdateDeleteSql("drop table " + TABLE2);
+            db.executeInsertUpdateDeleteSql("drop table " + TABLE2.fixedDoubleName );
         }
         if (db != null) {
             db.close();

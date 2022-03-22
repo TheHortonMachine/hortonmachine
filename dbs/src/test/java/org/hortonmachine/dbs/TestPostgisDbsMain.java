@@ -27,6 +27,7 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -108,7 +109,7 @@ public class TestPostgisDbsMain {
         removeIfExists(db, LINES_TABLE);
     }
 
-    private static void removeIfExists( ASpatialDb db, String tableName ) {
+    private static void removeIfExists( ASpatialDb db, SqlName tableName ) {
         try {
             if (db.hasTable(tableName)) {
                 try {

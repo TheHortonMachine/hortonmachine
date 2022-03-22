@@ -22,6 +22,7 @@ import java.io.File;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Simple queries templates interface.
@@ -30,12 +31,12 @@ import org.hortonmachine.dbs.utils.DbsUtilities;
  */
 public abstract class ASqlTemplates {
 
-    public String selectOnColumn( String columnName, String tableName ) {
-        String query = "SELECT * FROM " + DbsUtilities.fixTableName(tableName) + " WHERE " + columnName + "=?";
+    public String selectOnColumn( String columnName, SqlName tableName ) {
+        String query = "SELECT * FROM " + tableName.fixedDoubleName + " WHERE " + columnName + "=?";
         return query;
     }
 
-    public String updateOnColumn( String tableName, String columnName ) {
+    public String updateOnColumn( SqlName tableName, String columnName ) {
         String query = "UPDATE " + tableName + " SET " + columnName + " = XXX";
         return query;
     }
@@ -52,35 +53,35 @@ public abstract class ASqlTemplates {
 
     public abstract boolean hasReprojectTable();
 
-    public abstract String addSrid( String tableName, int srid, String geometryColumnName );
+    public abstract String addSrid( SqlName tableName, int srid, String geometryColumnName );
 
-    public abstract String addGeometryColumn( String tableName, String columnName, String srid, String geomType,
+    public abstract String addGeometryColumn( SqlName tableName, String columnName, String srid, String geomType,
             String dimension );
 
-    public abstract String recoverGeometryColumn( String tableName, String columnName, String srid, String geomType,
+    public abstract String recoverGeometryColumn( SqlName tableName, String columnName, String srid, String geomType,
             String dimension );
 
-    public abstract String discardGeometryColumn( String tableName, String geometryColumnName );
+    public abstract String discardGeometryColumn( SqlName tableName, String geometryColumnName );
 
-    public abstract String createSpatialIndex( String tableName, String columnName );
+    public abstract String createSpatialIndex( SqlName tableName, String columnName );
 
-    public abstract String checkSpatialIndex( String tableName, String columnName );
+    public abstract String checkSpatialIndex( SqlName tableName, String columnName );
 
-    public abstract String recoverSpatialIndex( String tableName, String columnName );
+    public abstract String recoverSpatialIndex( SqlName tableName, String columnName );
 
-    public abstract String disableSpatialIndex( String tableName, String columnName );
+    public abstract String disableSpatialIndex( SqlName tableName, String columnName );
 
-    public abstract String showSpatialMetadata( String tableName, String columnName );
+    public abstract String showSpatialMetadata( SqlName tableName, String columnName );
 
-    public String combinedSelect( String refTable, String refColumn, String tableName, String columnName ) {
-        String query = "SELECT t1.*, t2.* FROM " + DbsUtilities.fixTableName(tableName) + " t1, "
-                + DbsUtilities.fixTableName(refTable) + " t2" + "\nWHERE t1." + columnName + "=t2." + refColumn;
+    public String combinedSelect( SqlName refTable, String refColumn, SqlName tableName, String columnName ) {
+        String query = "SELECT t1.*, t2.* FROM " + tableName.fixedDoubleName + " t1, " + refTable.fixedDoubleName
+                + " t2" + "\nWHERE t1." + columnName + "=t2." + refColumn;
         return query;
     }
 
-    public abstract String dropTable( String tableName, String geometryColumnName );
+    public abstract String dropTable( SqlName tableName, String geometryColumnName );
 
-    public abstract String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, String tableName,
+    public abstract String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, SqlName tableName,
             String newTableName, String newSrid ) throws Exception;
 
     public abstract String attachShapefile( File file );

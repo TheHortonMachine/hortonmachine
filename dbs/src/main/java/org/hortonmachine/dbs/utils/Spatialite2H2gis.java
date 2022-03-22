@@ -93,7 +93,7 @@ public class Spatialite2H2gis implements AutoCloseable {
         int count = 0;
         while( todo.size() > 0 && count < 10 ) {
             for( TableLevel tableLevel : todo ) {
-                String tableName = tableLevel.tableName;
+                SqlName tableName = SqlName.m(tableLevel.tableName);
                 String tableSql = getTableSql(spatialite, tableName);
 
                 System.out.println("Trying to create table: " + tableName);
@@ -112,7 +112,7 @@ public class Spatialite2H2gis implements AutoCloseable {
                     if (tableLevel.isGeo) {
                         GeometryColumn geometryColumn = spatialite.getGeometryColumnsForTable(tableName);
                         try {
-                            if (tableName.equals("gpspoints")) {
+                            if (tableName.name.equals("gpspoints")) {
                                 System.out.println();
                             }
                             h2gis.createSpatialIndex(tableName, geometryColumn.geometryColumnName);
@@ -198,7 +198,7 @@ public class Spatialite2H2gis implements AutoCloseable {
             tablesList = finalDoneOrder;
         }
         for( TableLevel tableLevel : tablesList ) {
-            String tableName = tableLevel.tableName;
+            SqlName tableName = SqlName.m(tableLevel.tableName);
             System.out.println("Copy table " + tableName);
             System.out.println("Read data...");
             QueryResult queryResult = spatialite.getTableRecordsMapFromRawSql("select * from " + tableName, -1);
@@ -235,7 +235,7 @@ public class Spatialite2H2gis implements AutoCloseable {
                                 if (objects[i] == null) {
 
                                     if (emptyGeomStr == null) {
-                                        EGeometryType gType= _gCol.geometryType;
+                                        EGeometryType gType = _gCol.geometryType;
                                         if (gType.isLine()) {
                                             if (gType.isMulti()) {
                                                 emptyGeomStr = gf.createLineString((CoordinateSequence) null).toText();
@@ -294,8 +294,8 @@ public class Spatialite2H2gis implements AutoCloseable {
 
     }
 
-    public static String getTableSql( ADb db, String tableName ) throws Exception {
-        String sql = "SELECT sql FROM sqlite_master WHERE type='table' and tbl_name='" + tableName + "'";
+    public static String getTableSql( ADb db, SqlName tableName ) throws Exception {
+        String sql = "SELECT sql FROM sqlite_master WHERE type='table' and tbl_name='" + tableName.name + "'";
 
         return db.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -310,8 +310,8 @@ public class Spatialite2H2gis implements AutoCloseable {
 
     }
 
-    public static List<String> getIndexSqls( ADb db, String tableName ) throws Exception {
-        String sql = "SELECT sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName + "'";
+    public static List<String> getIndexSqls( ADb db, SqlName tableName ) throws Exception {
+        String sql = "SELECT sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName.name + "'";
 
         return db.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {

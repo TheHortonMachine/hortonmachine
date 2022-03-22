@@ -201,11 +201,11 @@ public class DbsUtilities {
         if (!Character.isDigit(tableName.charAt(0))) {
             letter = tableName.substring(0, 1);
         }
-        List<String[]> tableColumns = db.getTableColumns(tableName);
+        List<String[]> tableColumns = db.getTableColumns(SqlName.m(tableName));
         GeometryColumn geometryColumns = null;
         try {
             if (db instanceof ASpatialDb) {
-                geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(tableName);
+                geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(SqlName.m(tableName));
             }
         } catch (Exception e) {
             // ignore
@@ -367,7 +367,19 @@ public class DbsUtilities {
      * @return the fixed name.
      */
     public static String fixTableName( String tableName ) {
-        if (tableName.charAt(0) == '\'') {
+//        if (tableName.charAt(0) == '\'') {
+//            // already fixed
+//            return tableName;
+//        }
+//        if ( //
+//                Character.isDigit(tableName.charAt(0)) || //
+//                tableName.matches(".*\\s+.*") || //
+//                tableName.contains("-") //
+//                ) {
+//            return "'" + tableName + "'";
+//        }
+//        return tableName;
+        if (tableName.charAt(0) == '\"') {
             // already fixed
             return tableName;
         }
@@ -376,7 +388,7 @@ public class DbsUtilities {
                 tableName.matches(".*\\s+.*") || //
                 tableName.contains("-") //
         ) {
-            return "'" + tableName + "'";
+            return "\"" + tableName + "\"";
         }
         return tableName;
     }
@@ -395,7 +407,7 @@ public class DbsUtilities {
         }
         return columnName;
     }
-    
+
     /**
      * Get from preference.
      * 
@@ -436,7 +448,7 @@ public class DbsUtilities {
      * @return the list of names.
      * @throws Exception
      */
-    public static List<String> getTableAlphanumericFields( ADb db, String tableName ) throws Exception {
+    public static List<String> getTableAlphanumericFields( ADb db, SqlName tableName ) throws Exception {
         List<String[]> tableColumns = db.getTableColumns(tableName);
         List<String> names = new ArrayList<>();
         for( String[] item : tableColumns ) {

@@ -35,6 +35,7 @@ import org.hortonmachine.dbs.nosql.INosqlCollection;
 import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.nosql.INosqlDocument;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 
 /**
  * Class representing a db level.
@@ -81,10 +82,11 @@ public class DbLevel {
             if (tablesList == null) {
                 continue;
             }
-            for( String tableName : tablesList ) {
+            for( String tName : tablesList ) {
+                SqlName tableName = SqlName.m(tName);
                 TableLevel tableLevel = new TableLevel();
                 tableLevel.parent = dbLevel;
-                tableLevel.tableName = tableName;
+                tableLevel.tableName = tableName.name;
 
                 ETableType tableType = db.getTableType(tableName);
                 tableLevel.tableType = tableType;

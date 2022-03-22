@@ -22,6 +22,7 @@ import java.sql.Connection;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.sqlite.Function;
 
 /**
@@ -78,22 +79,22 @@ public class GeopackageDb extends GeopackageCommonDb {
     }
 
     @Override
-    public String getSldString( String tableName ) throws Exception {
+    public String getSldString( SqlName tableName ) throws Exception {
         return getSldStringInternal(sqliteDb, tableName);
     }
 
     @Override
-    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+    public void updateSldStyle( SqlName tableName, String sldString ) throws Exception {
         updateSldStyleInternal(sqliteDb, tableName, sldString);
     }
 
     @Override
-    public String getFormString( String tableName ) throws Exception {
+    public String getFormString( SqlName tableName ) throws Exception {
         return getFormStringInternal(sqliteDb, tableName);
     }
 
     @Override
-    public void updateForm( String tableName, String form ) throws Exception {
+    public void updateForm( SqlName tableName, String form ) throws Exception {
         updateFormsInternal(sqliteDb, tableName, form);
     }
 }

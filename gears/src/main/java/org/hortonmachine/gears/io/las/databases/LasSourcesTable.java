@@ -26,6 +26,7 @@ import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
@@ -35,7 +36,7 @@ import org.locationtech.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LasSourcesTable {
-    public static final String TABLENAME = "lassources";
+    public static final SqlName TABLENAME = SqlName.m("lassources");
 
     public static final String COLUMN_ID = "id";
     public static final String COLUMN_GEOM = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;

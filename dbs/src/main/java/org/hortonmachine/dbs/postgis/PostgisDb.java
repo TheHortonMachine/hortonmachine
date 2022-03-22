@@ -44,6 +44,7 @@ import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
@@ -156,7 +157,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public Envelope getTableBounds( String tableName ) throws Exception {
+    public Envelope getTableBounds( SqlName tableName ) throws Exception {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         if (gCol == null)
             return null;
@@ -227,7 +228,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
         }
     }
 
-    public void createSpatialTable( String tableName, int srid, String geometryFieldData, String[] fieldData,
+    public void createSpatialTable( SqlName tableName, int srid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
@@ -277,7 +278,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
      * @param avoidIndex if <code>true</code>, the index is not created.
      * @throws Exception
      */
-    public void addGeometryXYColumnAndIndex( String tableName, String geomColName, String geomType, String epsg,
+    public void addGeometryXYColumnAndIndex( SqlName tableName, String geomColName, String geomType, String epsg,
             boolean avoidIndex ) throws Exception {
         String epsgStr = "4326";
         if (epsg != null) {
@@ -316,26 +317,26 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public boolean hasTable( String tableName ) throws Exception {
+    public boolean hasTable( SqlName tableName ) throws Exception {
         return pgDb.hasTable(tableName);
     }
 
-    public ETableType getTableType( String tableName ) throws Exception {
+    public ETableType getTableType( SqlName tableName ) throws Exception {
         return pgDb.getTableType(tableName);
     }
 
     @Override
-    public List<String[]> getTableColumns( String tableName ) throws Exception {
+    public List<String[]> getTableColumns( SqlName tableName ) throws Exception {
         return pgDb.getTableColumns(tableName);
     }
 
     @Override
-    public List<ForeignKey> getForeignKeys( String tableName ) throws Exception {
+    public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
         return pgDb.getForeignKeys(tableName);
     }
 
     @Override
-    public List<Index> getIndexes( String tableName ) throws Exception {
+    public List<Index> getIndexes( SqlName tableName ) throws Exception {
         return pgDb.getIndexes(tableName);
     }
 
@@ -421,7 +422,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
+    public GeometryColumn getGeometryColumnsForTable( SqlName tableName ) throws Exception {
         String indexSql = "SELECT tablename FROM pg_indexes WHERE upper(tablename) = upper('" + tableName
                 + "') and upper(indexdef) like '%USING GIST%'";
         List<String> tablesWithIndex = new ArrayList<>();
@@ -466,7 +467,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public String getSpatialindexGeometryWherePiece( String tableName, String alias, Geometry geometry ) throws Exception {
+    public String getSpatialindexGeometryWherePiece( SqlName tableName, String alias, Geometry geometry ) throws Exception {
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
         if (alias == null) {
             alias = "";
@@ -483,7 +484,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public String getSpatialindexBBoxWherePiece( String tableName, String alias, double x1, double y1, double x2, double y2 )
+    public String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
         Polygon bounds = DbsUtilities.createPolygonFromBounds(x1, y1, x2, y2);
         GeometryColumn gCol = getGeometryColumnsForTable(tableName);
@@ -500,7 +501,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
 
     }
 
-    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
+    public QueryResult getTableRecordsMapIn( SqlName tableName, Envelope envelope, int limit, int reprojectSrid, String whereStr )
             throws Exception {
         QueryResult queryResult = new QueryResult();
 
@@ -555,7 +556,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
             itemsWithComma = "*";
         }
         sql += itemsWithComma;
-        sql += " FROM " + tableName;
+        sql += " FROM " + tableName.fixedDoubleName;
 
         List<String> whereStrings = new ArrayList<>();
         if (envelope != null) {
@@ -622,7 +623,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
 
     }
 
-    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+    public String getGeojsonIn( SqlName tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
         if (precision == 0) {
             precision = 6;
         }
@@ -676,22 +677,22 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public String getSldString( String tableName ) throws Exception {
+    public String getSldString( SqlName tableName ) throws Exception {
         return getSldStringInternal(pgDb, tableName);
     }
 
     @Override
-    public void updateSldStyle( String tableName, String sldString ) throws Exception {
+    public void updateSldStyle( SqlName tableName, String sldString ) throws Exception {
         updateSldStyleInternal(pgDb, tableName, sldString);
     }
 
     @Override
-    public String getFormString( String tableName ) throws Exception {
+    public String getFormString( SqlName tableName ) throws Exception {
         return getFormStringInternal(pgDb, tableName);
     }
 
     @Override
-    public void updateForm( String tableName, String form ) throws Exception {
+    public void updateForm( SqlName tableName, String form ) throws Exception {
         updateFormsInternal(pgDb, tableName, form);
     }
 }

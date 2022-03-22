@@ -31,6 +31,7 @@ import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
+import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -40,6 +41,7 @@ import org.hortonmachine.dbs.datatypes.EDataType;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
@@ -86,7 +88,7 @@ public class SpatialiteCommonMethods {
         return sql;
     }
 
-    public static QueryResult getTableRecordsMapIn( ASpatialDb db, String tableName, Envelope envelope, int limit,
+    public static QueryResult getTableRecordsMapIn( ASpatialDb db, SqlName tableName, Envelope envelope, int limit,
             int reprojectSrid, String whereStr ) throws Exception, ParseException {
         QueryResult queryResult = new QueryResult();
         GeometryColumn gCol = null;
@@ -258,7 +260,7 @@ public class SpatialiteCommonMethods {
 
         String sql = "SELECT ";
         sql += DbsUtilities.joinByComma(items);
-        sql += " FROM " + DbsUtilities.fixTableName(tableName);
+        sql += " FROM " + tableName.fixedDoubleName;
 
         List<String> whereStrings = new ArrayList<>();
         if (envelope != null) {
@@ -318,21 +320,21 @@ public class SpatialiteCommonMethods {
      * Get the table columns from a non spatial db.
      * 
      * @param db the db.
-     * @param tableName the name of the table to get the columns for.
+     * @param tName the name of the table to get the columns for.
      * @return the list of table column information. See {@link ADb#getTableColumns(String)}
      * @throws Exception
      */
-    public static List<String[]> getTableColumns( ADb db, String tableName ) throws Exception {
+    public static List<String[]> getTableColumns( ADb db, SqlName tableName ) throws Exception {
         String sql;
-        tableName = DbsUtilities.fixTableName(tableName);
-        if (tableName.indexOf('.') != -1) {
+        String tName = tableName.fixedDoubleName;
+        if (tName.indexOf('.') != -1) {
             // it is an attached database
-            String[] split = tableName.split("\\.");
+            String[] split = tName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
             sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
         } else {
-            sql = "PRAGMA table_info(" + tableName + ")";
+            sql = "PRAGMA table_info(" + tName + ")";
         }
 
         return db.execOnConnection(connection -> {
@@ -388,21 +390,21 @@ public class SpatialiteCommonMethods {
      * Get the primary key from a non spatial db.
      * 
      * @param db the db.
-     * @param tableName the name of the table to get the pk for.
+     * @param tName the name of the table to get the pk for.
      * @return the pk name
      * @throws Exception
      */
-    public static String getPrimaryKey( ADb db, String tableName ) throws Exception {
+    public static String getPrimaryKey( ADb db, SqlName tableName ) throws Exception {
         String sql;
-        tableName = DbsUtilities.fixTableName(tableName);
-        if (tableName.indexOf('.') != -1) {
+        String tName = tableName.fixedDoubleName;
+        if (tName.indexOf('.') != -1) {
             // it is an attached database
-            String[] split = tableName.split("\\.");
+            String[] split = tName.split("\\.");
             String dbName = split[0];
             String tmpTableName = split[1];
             sql = "PRAGMA " + dbName + ".table_info(" + tmpTableName + ")";
         } else {
-            sql = "PRAGMA table_info(" + tableName + ")";
+            sql = "PRAGMA table_info(" + tName + ")";
         }
 
         return db.execOnConnection(connection -> {
@@ -462,7 +464,7 @@ public class SpatialiteCommonMethods {
      * @return the list of table column information. See {@link ADb#getTableColumns(String)}
      * @throws Exception
      */
-    public static List<String[]> getTableColumns( ASpatialDb db, String tableName ) throws Exception {
+    public static List<String[]> getTableColumns( ASpatialDb db, SqlName tableName ) throws Exception {
         List<String[]> tableColumns = getTableColumns((ADb) db, tableName);
         for( String[] cols : tableColumns ) {
             if (cols[1].trim().length() == 0) {
@@ -476,7 +478,7 @@ public class SpatialiteCommonMethods {
         return tableColumns;
     }
 
-    // public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Envelope
+    // public static List<Geometry> getGeometriesIn( ASpatialDb db, SqlName tableName, Envelope
     // envelope, String... prePostWhere )
     // throws Exception, ParseException {
     // List<Geometry> geoms = new ArrayList<Geometry>();
@@ -519,7 +521,7 @@ public class SpatialiteCommonMethods {
     // }
     // }
     //
-    // public static List<Geometry> getGeometriesIn( ASpatialDb db, String tableName, Geometry
+    // public static List<Geometry> getGeometriesIn( ASpatialDb db, SqlName tableName, Geometry
     // intersectionGeometry,
     // String... prePostWhere ) throws Exception, ParseException {
     // List<Geometry> geoms = new ArrayList<Geometry>();
@@ -558,21 +560,22 @@ public class SpatialiteCommonMethods {
     // }
     // }
 
-    public static GeometryColumn getGeometryColumnsForTable( IHMConnection connection, String tableName ) throws Exception {
+    public static GeometryColumn getGeometryColumnsForTable( IHMConnection connection, SqlName tableName ) throws Exception {
         String attachedStr = "";
-        if (tableName.indexOf('.') != -1) {
+        String tName = tableName .fixedDoubleName;
+        if (tName.indexOf('.') != -1) {
             // if the tablename contains a dot, then it comes from an attached
             // database
 
             // get the database name
-            String[] split = tableName.split("\\.");
+            String[] split = tName.split("\\.");
             attachedStr = split[0] + ".";
-            tableName = split[1];
+            tName = split[1];
             // logger.debug(MessageFormat.format("Considering attached database:
             // {0}", attachedStr));
         }
 
-        String tableNameNoApex = tableName.replaceAll("'", ""); // in case added due to special name
+        String tableNameNoApex = tName.replaceAll("'", ""); // in case added due to special name
         String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
                 + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
@@ -601,7 +604,7 @@ public class SpatialiteCommonMethods {
                 + SpatialiteGeometryColumns.VIRT_COORD_DIMENSION + ", " //
                 + SpatialiteGeometryColumns.VIRT_SRID + " from " //
                 + attachedStr + SpatialiteGeometryColumns.VIRT_TABLENAME + " where Lower("
-                + SpatialiteGeometryColumns.VIRT_F_TABLE_NAME + ")=Lower('" + tableName + "')";
+                + SpatialiteGeometryColumns.VIRT_F_TABLE_NAME + ")=Lower('" + tName + "')";
         try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();
@@ -635,7 +638,7 @@ public class SpatialiteCommonMethods {
 
     }
 
-    public static Envelope getTableBounds( ASpatialDb db, String tableName ) throws Exception {
+    public static Envelope getTableBounds( ASpatialDb db, SqlName tableName ) throws Exception {
         GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
         String geomFieldName;
         if (gCol != null) {
@@ -688,31 +691,32 @@ public class SpatialiteCommonMethods {
         });
     }
 
-    public static String getSpatialindexBBoxWherePiece( ASpatialDb db, String tableName, String alias, double x1, double y1,
+    public static String getSpatialindexBBoxWherePiece( ASpatialDb db, SqlName tableName, String alias, double x1, double y1,
             double x2, double y2 ) throws Exception {
         String rowid = "";
         if (alias == null) {
             alias = "";
-            rowid = DbsUtilities.fixTableName(tableName) + ".ROWID";
+            rowid = tableName.fixedDoubleName + ".ROWID";
         } else {
             rowid = alias + ".ROWID";
             alias = alias + ".";
         }
         GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
-        if (tableName.indexOf('.') != -1) {
+        String tName = tableName.name;
+        if (tableName.name.indexOf('.') != -1) {
             // if the tablename contains a dot, then it comes from an attached
             // database
-            tableName = "DB=" + tableName;
+            tName = "DB=" + tableName.name;
         }
 
         String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2
                 + ")) = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "f_table_name = '" + tableName + "' AND " //
+                + "f_table_name = '" + tName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
 
-    public static String getSpatialindexGeometryWherePiece( ASpatialDb db, String tableName, String alias, Geometry geometry )
+    public static String getSpatialindexGeometryWherePiece( ASpatialDb db, SqlName tableName, String alias, Geometry geometry )
             throws Exception {
         String rowid = "";
         if (alias == null) {
@@ -729,14 +733,15 @@ public class SpatialiteCommonMethods {
         double y1 = envelope.getMinY();
         double y2 = envelope.getMaxY();
         GeometryColumn gCol = db.getGeometryColumnsForTable(tableName);
-        if (tableName.indexOf('.') != -1) {
+        String tName = tableName.name;
+        if (tableName.name.indexOf('.') != -1) {
             // if the tablename contains a dot, then it comes from an attached
             // database
-            tableName = "DB=" + tableName;
+            tName = "DB=" + tableName;
         }
         String sql = "ST_Intersects(" + alias + gCol.geometryColumnName + ", " + "ST_GeomFromText('" + geometry.toText() + "')"
                 + ") = 1 AND " + rowid + " IN ( SELECT ROWID FROM SpatialIndex WHERE "//
-                + "f_table_name = '" + tableName + "' AND " //
+                + "f_table_name = '" + tName + "' AND " //
                 + "search_frame = BuildMbr(" + x1 + ", " + y1 + ", " + x2 + ", " + y2 + "))";
         return sql;
     }
@@ -755,7 +760,7 @@ public class SpatialiteCommonMethods {
      * @param avoidIndex if <code>true</code>, the index is not created.
      * @throws Exception
      */
-    public static void addGeometryXYColumnAndIndex( ASpatialDb db, String tableName, String geomColName, String geomType,
+    public static void addGeometryXYColumnAndIndex( ASpatialDb db, SqlName tableName, String geomColName, String geomType,
             String epsg, boolean avoidIndex ) throws Exception {
         String epsgStr = "4326";
         if (epsg != null) {
@@ -789,11 +794,11 @@ public class SpatialiteCommonMethods {
 
     }
 
-    public static void createSpatialTable( ASpatialDb db, String tableName, int tableSrid, String geometryFieldData,
+    public static void createSpatialTable( ASpatialDb db, SqlName tableName, int tableSrid, String geometryFieldData,
             String[] fieldData, String[] foreignKeys, boolean avoidIndex ) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
-        sb.append(tableName).append("(");
+        sb.append(tableName.fixedDoubleName).append("(");
         for( int i = 0; i < fieldData.length; i++ ) {
             if (i != 0) {
                 sb.append(",");
@@ -825,7 +830,7 @@ public class SpatialiteCommonMethods {
         addGeometryXYColumnAndIndex(db, tableName, geomColName, type, String.valueOf(tableSrid), avoidIndex);
     }
 
-    public static String getGeojsonIn( ASpatialDb db, String tableName, String[] fields, String wherePiece, Integer precision )
+    public static String getGeojsonIn( ASpatialDb db, SqlName tableName, String[] fields, String wherePiece, Integer precision )
             throws Exception {
         if (precision == 0) {
             precision = 6;
@@ -835,7 +840,7 @@ public class SpatialiteCommonMethods {
         String sql;
         if (fields == null || fields.length == 0) {
             sql = "SELECT AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326)), " + precision + ",0) FROM "
-                    + DbsUtilities.fixTableName(tableName);
+                    + tableName.fixedDoubleName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
@@ -855,7 +860,7 @@ public class SpatialiteCommonMethods {
                 sb.append("\n").append(fieldsList.get(i));
             }
             sql += sb.toString() + " || \"}}\") || \"]}\"";
-            sql += " FROM " + DbsUtilities.fixTableName(tableName);
+            sql += " FROM " + tableName.fixedDoubleName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
@@ -873,7 +878,7 @@ public class SpatialiteCommonMethods {
         });
     }
 
-    public static ETableType getTableType( ADb db, String tableName ) throws Exception {
+    public static ETableType getTableType( ADb db, SqlName tableName ) throws Exception {
         String sql = "SELECT type, sql FROM sqlite_master WHERE Lower(tbl_name)=Lower('" + tableName + "')";
 
         return db.execOnConnection(connection -> {
@@ -896,18 +901,26 @@ public class SpatialiteCommonMethods {
 
     }
 
-    public static List<Index> getIndexes( ADb db, String tableName ) throws Exception {
-        String sql = "SELECT name, sql FROM sqlite_master WHERE type='index' and tbl_name='" + tableName + "'";
+    /**
+     * @param db
+     * @param tableName
+     * @return
+     * @throws Exception
+     */
+    public static List<Index> getIndexes( ADb db, SqlName tableName ) throws Exception {
+        String sql = "SELECT name, sql FROM sqlite_master WHERE type='index' and tbl_name=?";
 
         return db.execOnConnection(connection -> {
             List<Index> indexes = new ArrayList<Index>();
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            try (IHMPreparedStatement stmt = connection.prepareStatement(sql)) {
+                stmt.setString(1, tableName.name);
+                IHMResultSet rs = stmt.executeQuery();
                 while( rs.next() ) {
                     Index index = new Index();
 
                     String indexName = rs.getString(1);
 
-                    index.table = tableName;
+                    index.table = tableName.name;
                     index.name = indexName;
 
                     String createSql = rs.getString(2);

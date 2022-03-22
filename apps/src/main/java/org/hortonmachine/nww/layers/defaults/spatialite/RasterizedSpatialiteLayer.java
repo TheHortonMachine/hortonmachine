@@ -39,6 +39,7 @@ import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -80,7 +81,7 @@ public class RasterizedSpatialiteLayer extends BasicMercatorTiledImageLayer impl
         this.setUseTransparentTextures(true);
 
         try {
-            centre = db.getTableBounds(tableName).centre();
+            centre = db.getTableBounds(SqlName.m(tableName)).centre();
         } catch (Exception e) {
             e.printStackTrace();
             centre = CrsUtilities.WORLD.centre();
@@ -105,7 +106,7 @@ public class RasterizedSpatialiteLayer extends BasicMercatorTiledImageLayer impl
                 }
             }
 
-            DefaultFeatureCollection fc = SpatialDbsImportUtils.tableToFeatureFCollection(db, tableName, featureLimit,
+            DefaultFeatureCollection fc = SpatialDbsImportUtils.tableToFeatureFCollection(db, SqlName.m(tableName), featureLimit,
                     NwwUtilities.GPS_CRS_SRID, null);
             long t2 = System.currentTimeMillis();
             System.out.println("FINISHED READING: " + tableName + " -> " + ((t2 - t1) / 1000) + "sec");

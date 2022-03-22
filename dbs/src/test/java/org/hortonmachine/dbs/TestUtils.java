@@ -169,11 +169,11 @@ public class TestUtils {
     public void testDbUtils() throws Exception {
         String name = "123name";
         String fixedName = DbsUtilities.fixTableName(name);
-        assertEquals("'" + name + "'", fixedName);
+        assertEquals("\"" + name + "\"", fixedName);
 
         name = "name with space";
         fixedName = DbsUtilities.fixTableName(name);
-        assertEquals("'" + name + "'", fixedName);
+        assertEquals("\"" + name + "\"", fixedName);
     }
 
     @Test
