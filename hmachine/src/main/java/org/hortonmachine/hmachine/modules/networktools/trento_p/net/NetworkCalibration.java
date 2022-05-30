@@ -927,7 +927,7 @@ public class NetworkCalibration implements Network {
                     strBuilder.append(limit);
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
-                    strBuilder.append(networkPipes[l - 1].getId());
+                    strBuilder.append(networkPipes[l].getId());
                     strBuilder.append(" ");
                     strBuilder.append("tp " + tp);
                     strBuilder.append("\n");

@@ -386,10 +386,22 @@ public class HM {
         return tree;
     }
 
+    /**
+     * Open a map viewer on a given folder.
+     * 
+     * @param folderPath the folder to load.
+     */
     public static void showFolder( String folderPath ) {
         HMMapframe.openFiles(new File[]{new File(folderPath)});
     }
 
+    /**
+     * Load a groovy script to be run with the current script.
+     * 
+     * @param scriptPath the path to the script.
+     * @return the script loaded.
+     * @throws Exception
+     */
     public static Script load( String scriptPath ) throws Exception {
         GroovyShell gsh = new GroovyShell();
         return gsh.parse(new File(scriptPath));
@@ -1227,13 +1239,18 @@ public class HM {
     }
 
     public static void makeSldStyleForRaster( String tableName, String rasterPath ) throws Exception {
+        makeSldStyleForRaster(tableName, rasterPath, 1);
+    }
+
+    public static void makeSldStyleForRaster( String tableName, String rasterPath, double opacity ) throws Exception {
         RasterSummary s = new RasterSummary();
         s.pm = new DummyProgressMonitor();
         s.inRaster = rasterPath;
         s.process();
         double min = s.outMin;
         double max = s.outMax;
-        String style = RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, 1));
+        String style = RasterStyleUtilities
+                .styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity));
         File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "sld");
         FileUtilities.writeFile(style, styleFile);
     }
@@ -1322,6 +1339,10 @@ public class HM {
 
     // ANYTHING THAT CAN BE CONVERTED TO IMAGE
     public static BufferedImage toImage( String fileOrGeometryWkt ) {
+        return toImage(fileOrGeometryWkt, 1000, 800);
+    }
+    
+    public static BufferedImage toImage( String fileOrGeometryWkt, int width, int height ) {
         try {
             File file = new File(fileOrGeometryWkt);
             if (file.exists()) {
@@ -1330,7 +1351,7 @@ public class HM {
                 // try with wkt geometry
                 Geometry geometry = new WKTReader().read(fileOrGeometryWkt);
                 JFreeChart chart = makeJtsGeometriesChart(null, Arrays.asList(geometry));
-                return chart.createBufferedImage(600, 400);
+                return chart.createBufferedImage(width, height);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1393,17 +1414,27 @@ public class HM {
                 .createBufferedImage(width, height);
     }
 
-    public static BufferedImage toImage( String mapPath, int cellX, int cellY, int bufferCells, String dtm, int width,
+    public static BufferedImage toImage( int cellX, int cellY, int bufferCells, String mapPath, String dtm, int width,
             int height ) throws Exception {
         GridCoverage2D map = OmsRasterReader.readRaster(mapPath);
         return createRasterImageWithInfoAroundCell(mapPath, map, cellX, cellY, bufferCells, width, height, dtm);
     }
 
-    public static BufferedImage toImage( String mapPath, double worldX, double worldY, int bufferCells, String dtm, int width,
+    public static BufferedImage toImage( int cellX, int cellY, int bufferCells, String mapPath, int width, int height )
+            throws Exception {
+        return toImage(cellX, cellY, bufferCells, mapPath, null, width, height);
+    }
+
+    public static BufferedImage toImage( double worldX, double worldY, int bufferCells, String mapPath, String dtm, int width,
             int height ) throws Exception {
         GridCoverage2D map = OmsRasterReader.readRaster(mapPath);
         int[] colRow = CoverageUtilities.colRowFromCoordinate(new Coordinate(worldX, worldY), map.getGridGeometry(), null);
         return createRasterImageWithInfoAroundCell(mapPath, map, colRow[0], colRow[1], bufferCells, width, height, dtm);
+    }
+
+    public static BufferedImage toImage( double worldX, double worldY, int bufferCells, String mapPath, int width, int height )
+            throws Exception {
+        return toImage(worldX, worldY, bufferCells, mapPath, null, width, height);
     }
 
     private static BufferedImage createRasterImageWithInfoAroundCell( String mapPath, GridCoverage2D map, int col, int row,

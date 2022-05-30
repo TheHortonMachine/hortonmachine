@@ -38,6 +38,7 @@ import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeome
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.makeRegionParamsMap;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -203,7 +204,15 @@ public class OmsRasterReader extends HMModel {
 
                     AbstractGridCoverage2DReader rasterReader = format.getReader(mapFile,
                             new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));
-
+                    
+                    if(file.toLowerCase().endsWith(".nc")) {
+                        // try to force netcdf reader even if not recognised
+                        Class< ? > ncfClass = Class.forName("org.geotools.coverage.io.netcdf.NetCDFReader");
+                        Class<?>[] type = { Object.class,Hints.class };
+                        Constructor<?> cons = ncfClass.getConstructor(type);
+                        Object[] obj = { mapFile,null};
+                        rasterReader = (AbstractGridCoverage2DReader) cons.newInstance(obj);
+                    }
                     originalEnvelope = rasterReader.getOriginalEnvelope();
                     if (!doEnvelope) {
                         outRaster = rasterReader.read(generalParameter);

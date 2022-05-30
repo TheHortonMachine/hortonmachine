@@ -36,9 +36,18 @@ import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRAST
 import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_P_BINS_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_STATUS;
 
+import java.awt.image.WritableRaster;
+
+import javax.media.jai.iterator.RandomIterFactory;
+import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.Variables;
 import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -119,5 +128,19 @@ public class RasterSummary extends HMModel {
         outRange = rastersummary.outRange;
         outSum = rastersummary.outSum;
         outCb = rastersummary.outCb;
+    }
+    
+    
+
+    public static double[] getMinMax( GridCoverage2D raster ) throws Exception {
+        return OmsRasterSummary.getMinMax(raster);
+    }
+
+    public static double[] getMinMaxAvgSum( GridCoverage2D raster ) throws Exception {
+        return OmsRasterSummary.getMinMaxAvgSum(raster);
+    }
+
+    public static int[] getCellsNovaluesAndZeroesCount( GridCoverage2D coverage ) throws Exception {
+        return OmsRasterSummary.getCellsNovaluesAndZeroesCount(coverage);
     }
 }

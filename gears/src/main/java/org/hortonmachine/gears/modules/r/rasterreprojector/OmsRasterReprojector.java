@@ -35,11 +35,14 @@ import javax.media.jai.Interpolation;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.CoverageProcessingException;
+import org.geotools.coverage.processing.CoverageProcessor;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -47,6 +50,7 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
@@ -129,16 +133,16 @@ public class OmsRasterReprojector extends HMModel {
 
         CoordinateReferenceSystem targetCrs = CrsUtilities.getCrsFromEpsg(pCode, null);
 
-        Interpolation interpolation = null;
+        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         if (pInterpolation.equals(BILINEAR)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
         } else if (pInterpolation.equals(BICUBIC)) {
             interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
         }
         CoordinateReferenceSystem sourceCrs = inRaster.getCoordinateReferenceSystem();
-        if (!CrsUtilities.isCrsValid(sourceCrs)) {
-            return;
-        }
+//        if (!CrsUtilities.isCrsValid(sourceCrs)) {
+//            throw new ModelsIllegalargumentException("Source projection not supported.", this);
+//        }
 
         GridGeometry2D gridGeometry = null;
         if (pXres != null && pYres != null) {
@@ -148,7 +152,6 @@ public class OmsRasterReprojector extends HMModel {
             double e = regionMap.getEast();
             double w = regionMap.getWest();
             Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new Envelope(w, e, s, n));
-
 
             MathTransform transform = CRS.findMathTransform(sourceCrs, targetCrs);
             Geometry targetGeometry = JTS.transform(polygon, transform);
@@ -166,15 +169,27 @@ public class OmsRasterReprojector extends HMModel {
         }
         pm.beginTask("Reprojecting...", IHMProgressMonitor.UNKNOWN);
 
-        if (gridGeometry == null) {
-            if (interpolation == null) {
-                outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs);
+        try {
+            if (gridGeometry == null) {
+                if (interpolation == null) {
+                    outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs);
+                } else {
+                    outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolation);
+                }
             } else {
-                outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, null, interpolation);
+                outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, gridGeometry, interpolation);
             }
-        } else {
-            outRaster = (GridCoverage2D) Operations.DEFAULT.resample(inRaster, targetCrs, gridGeometry, interpolation);
+        } catch (CoverageProcessingException e) {
+            
+            
+            CoverageProcessor processor = new CoverageProcessor();
+            ParameterValueGroup params = processor.getOperation("Resample").getParameters();
+            params.parameter("Source").setValue(inRaster);
+//                params.parameter("Source").value = this.coverage
+            params.parameter("CoordinateReferenceSystem").setValue(targetCrs);
+            outRaster = (GridCoverage2D) processor.doOperation(params);
         }
+
         pm.done();
 
     }

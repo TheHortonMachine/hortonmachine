@@ -275,7 +275,7 @@ public class OmsTrentoPCalibration extends HMModel {
 
         String w = warningBuilder.toString();
         if (!w.equals(warnings)) {
-            pm.message(w);
+            pm.errorMessage(w);
         }
 
         pm.message(msg.message("trentoP.end"));

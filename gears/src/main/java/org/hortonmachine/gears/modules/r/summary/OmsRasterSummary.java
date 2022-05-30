@@ -29,7 +29,11 @@ import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRAST
 import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.OMSRASTERSUMMARY_STATUS;
 
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.util.List;
+
+import javax.media.jai.iterator.RandomIterFactory;
+import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -254,6 +258,34 @@ public class OmsRasterSummary extends HMModel {
         double avg = summary.outMean;
         double sum = summary.outSum;
         return new double[]{min, max, avg, sum};
+    }
+
+    public static int[] getCellsNovaluesAndZeroesCount( GridCoverage2D coverage ) throws Exception {
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+
+        double nv = HMConstants.getNovalue(coverage);
+
+        WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(coverage.getRenderedImage(), false);
+        WritableRandomIter iter = RandomIterFactory.createWritable(outWR, null);
+
+        int nvCount = 0;
+        int all = cols * rows;
+        int zeroesCount = 0;
+        for( int y = 0; y < rows; y++ ) {
+            for( int x = 0; x < cols; x++ ) {
+                double value = iter.getSampleDouble(x, y, 0);
+                if (HMConstants.isNovalue(value, nv)) {
+                    nvCount++;
+                } else if (value == 0) {
+                    zeroesCount++;
+                }
+            }
+        }
+        iter.done();
+
+        return new int[]{all, nvCount, zeroesCount};
     }
 
 }
