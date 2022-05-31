@@ -53,13 +53,12 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Con
 
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.PipeCombo;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
-import org.opengis.feature.simple.SimpleFeature;
-
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+import org.opengis.feature.simple.SimpleFeature;
 
 /**
  * This is a class which represents a sewer pipe.
@@ -278,9 +277,9 @@ public class Pipe {
 
     public double k;
     /**
-     * The coordinate of the pipes extreme.
+     * The coordinate of the pipes coordinates.
      */
-    public Coordinate[] point = null;
+    public Coordinate[] pipeCoordinates = null;
     /**
      * The amount of the area which drain in this pipe, included all the upstream pipe.
      */
@@ -504,7 +503,7 @@ public class Pipe {
                 throw new IllegalArgumentException(msg.message("trentoP.error.fieldArea" + tmp));
             }
             this.lenght = ((Geometry) pipeFeature.getDefaultGeometry()).getLength();
-            this.point = ((Geometry) pipeFeature.getDefaultGeometry()).getCoordinates();
+            this.pipeCoordinates = ((Geometry) pipeFeature.getDefaultGeometry()).getCoordinates();
 
             this.initialElevation = pipeCombo.getInitialJunctionElev(); // TODO also add depth?
 

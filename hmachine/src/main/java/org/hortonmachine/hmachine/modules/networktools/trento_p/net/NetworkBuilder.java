@@ -1356,4 +1356,10 @@ public class NetworkBuilder implements Network {
 
     }
 
+    @Override
+    public Pipe[] getNetworkPipes() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

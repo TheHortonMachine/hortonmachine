@@ -259,7 +259,7 @@ public class NetworkCalibration implements Network {
          * 
          * @return 
          */
-        public NetworkCalibration build() {
+        public Network build() {
             return new NetworkCalibration(this);
         }
 
@@ -341,6 +341,11 @@ public class NetworkCalibration implements Network {
      */
     public int getTpMax() {
         return tpMax;
+    }
+    
+    @Override
+    public Pipe[] getNetworkPipes() {
+        return networkPipes;
     }
 
     /*

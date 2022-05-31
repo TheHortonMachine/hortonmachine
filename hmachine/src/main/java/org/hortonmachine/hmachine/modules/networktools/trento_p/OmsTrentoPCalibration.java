@@ -249,11 +249,6 @@ public class OmsTrentoPCalibration extends HMModel {
          * work well, can be deleted) andcreate the net as an array of pipes. .
          */
         setNetworkPipes(verifyParameter());
-        /*
-         * create a network object. It can be a NetworkCalibration if the mode
-         * (pTest==1) verify otherwise is a NetworkBuilder.
-         */
-        Network network = null;
         // set other common parameters for the verification.
         if (inPipes != null) {
             for( int t = 0; t < networkPipes.length; t++ ) {
@@ -268,10 +263,21 @@ public class OmsTrentoPCalibration extends HMModel {
         outDischarge = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
         outFillDegree = new LinkedHashMap<DateTime, HashMap<Integer, double[]>>();
         // initialize the NetworkCalibration.
-        network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, warningBuilder,
+        /*
+         * create a network object. It can be a NetworkCalibration if the mode
+         * (pTest==1) verify otherwise is a NetworkBuilder.
+         */
+        Network network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, warningBuilder,
                 tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
         network.geoSewer();
         outTpMax = ((NetworkCalibration) network).getTpMax();
+        
+        pm.message("Network topology used:");
+        for( Pipe pipe : networkPipes ) {
+           String pmsg = "\tPipe " + pipe.getId() + " -> " + pipe.getIdPipeWhereDrain();
+           pm.message(pmsg);
+        }
+        
 
         String w = warningBuilder.toString();
         if (!w.equals(warnings)) {
@@ -484,9 +490,9 @@ public class OmsTrentoPCalibration extends HMModel {
         networkPipes[tmpOutIndex].setIndexPipeWhereDrain(-1);
 
         // start to construct the net.
-        int numberOfPoint = networkPipes[tmpOutIndex].point.length - 1;
-        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].point[0]);
-        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].point[numberOfPoint]);
+        int numberOfPoint = networkPipes[tmpOutIndex].pipeCoordinates.length - 1;
+        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].pipeCoordinates[0]);
+        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].pipeCoordinates[numberOfPoint]);
 
         List<Integer> missingId = new ArrayList<Integer>();
         for( Pipe pipe : networkPipes ) {
@@ -509,10 +515,10 @@ public class OmsTrentoPCalibration extends HMModel {
      * 
      * @param index
      *            the ID of this pipe.
-     * @param cord
+     * @param checkCord
      *            the Coordinate of the link where drain.
      */
-    private void findIdThatDrainsIntoIndex( int index, Coordinate cord ) {
+    private void findIdThatDrainsIntoIndex( int index, Coordinate checkCord ) {
         int t = 0;
         double toll = 0.1;
         for( int i = 0; i < networkPipes.length; i++ ) {
@@ -529,16 +535,16 @@ public class OmsTrentoPCalibration extends HMModel {
                 continue;
             }
             // extract the coordinate of the point of the linee of the new pipe.
-            Coordinate[] coords = networkPipes[i].point;
+            Coordinate[] coords = networkPipes[i].pipeCoordinates;
             // if one of the coordinates are near of coord then the 2 pipe are
             // linked.
             int lastIndex = coords.length - 1;
-            if (cord.distance(coords[0]) < toll) {
+            if (checkCord.distance(coords[0]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(networkPipes[index].getId());
                 networkPipes[i].setIndexPipeWhereDrain(index);
                 findIdThatDrainsIntoIndex(i, coords[lastIndex]);
                 t++;
-            } else if (cord.distance(coords[lastIndex]) < toll) {
+            } else if (checkCord.distance(coords[lastIndex]) < toll) {
                 networkPipes[i].setIdPipeWhereDrain(networkPipes[index].getId());
                 networkPipes[i].setIndexPipeWhereDrain(index);
                 findIdThatDrainsIntoIndex(i, coords[0]);

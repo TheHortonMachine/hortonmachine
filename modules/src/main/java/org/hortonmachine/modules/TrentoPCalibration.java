@@ -196,8 +196,16 @@ public class TrentoPCalibration extends HMModel {
         int rows = matrix.length;
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                sb.append(matrix[r][c]);
-                sb.append(", ");
+                if(r==0) {
+                    if(c==0) {
+                        sb.append("TIME, ");
+                    }else {
+                        sb.append((int)matrix[r][c]).append(", ");
+                    }
+                }else {
+                    sb.append(matrix[r][c]);
+                    sb.append(", ");
+                }
             }
             sb.append("\n");
         }
@@ -211,7 +219,7 @@ public class TrentoPCalibration extends HMModel {
         DateTime second = null;
         int l = outDischarge.size();
 
-        double[][] rainData = new double[l][nStation + 1];
+        double[][] rainData = new double[l+1][nStation + 1];
         int index = 0;
         int dt = 0;
         for( Entry<DateTime, HashMap<Integer, double[]>> dischargeRecord : dischargeSet ) {
@@ -220,9 +228,18 @@ public class TrentoPCalibration extends HMModel {
             HashMap<Integer, double[]> values = dischargeRecord.getValue();
             if (first == null) {
                 first = dateTime;
-                rainData[index][0] = 1;
                 Set<Integer> tmp = values.keySet();
                 int i = 0;
+                // create header
+                rainData[index][0] = -1;
+                for( Integer f : tmp ) {
+                    rainData[index][i + 1] = f;
+                    i++;
+                }
+                index++;
+                // first line of data
+                rainData[index][0] = 0;
+                i = 0;
                 for( Integer f : tmp ) {
                     rainData[index][i + 1] = values.get(f)[0];
                     i++;

@@ -482,9 +482,9 @@ public class OmsTrentoPProject extends HMModel {
         networkPipes[tmpOutIndex].setIndexPipeWhereDrain(-1);
 
         // start to construct the net.
-        int numberOfPoint = networkPipes[tmpOutIndex].point.length - 1;
-        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].point[0]);
-        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].point[numberOfPoint]);
+        int numberOfPoint = networkPipes[tmpOutIndex].pipeCoordinates.length - 1;
+        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].pipeCoordinates[0]);
+        findIdThatDrainsIntoIndex(tmpOutIndex, networkPipes[tmpOutIndex].pipeCoordinates[numberOfPoint]);
 
         List<Integer> missingId = new ArrayList<Integer>();
         for( Pipe pipe : networkPipes ) {
@@ -527,7 +527,7 @@ public class OmsTrentoPProject extends HMModel {
                 continue;
             }
             // extract the coordinate of the point of the linee of the new pipe.
-            Coordinate[] coords = networkPipes[i].point;
+            Coordinate[] coords = networkPipes[i].pipeCoordinates;
             // if one of the coordinates are near of coord then the 2 pipe are
             // linked.
             int lastIndex = coords.length - 1;

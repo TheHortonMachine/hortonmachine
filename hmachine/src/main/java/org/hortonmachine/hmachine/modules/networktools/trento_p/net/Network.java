@@ -39,4 +39,6 @@ public interface Network {
      * @throws Exception
      */
     public void geoSewer() throws Exception;
+
+    Pipe[] getNetworkPipes();
 }
