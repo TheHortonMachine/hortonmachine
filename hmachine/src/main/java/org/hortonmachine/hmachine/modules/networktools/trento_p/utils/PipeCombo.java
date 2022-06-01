@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.AreasTrentoP;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.JunctionsTrentoP;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -24,9 +26,18 @@ public class PipeCombo {
     private double finalJunctionElev;
     private double finalJunctionDepth;
 
+    private SimpleFeature areaFeature;
+
+    private SimpleFeature junction1Feature;
+
+    private SimpleFeature junction2Feature;
+
     public PipeCombo( SimpleFeature pipeFeature, SimpleFeature areaFeature, SimpleFeature junction1Feature,
             SimpleFeature junction2Feature ) {
         this.pipeFeature = pipeFeature;
+        this.areaFeature = areaFeature;
+        this.junction1Feature = junction1Feature;
+        this.junction2Feature = junction2Feature;
 
         Geometry areaGeom = (Geometry) areaFeature.getDefaultGeometry();
         area = areaGeom.getArea() / 10000.0;
@@ -75,6 +86,15 @@ public class PipeCombo {
 
     public SimpleFeature getPipeFeature() {
         return pipeFeature;
+    }
+
+    @Override
+    public String toString() {
+        return "pipe id: " + pipeFeature.getAttribute(PipesTrentoP.ID.getAttributeName()) + 
+                " area id: " + areaFeature.getAttribute(AreasTrentoP.ID.getAttributeName()) + 
+                " junct1 id: " + junction1Feature.getAttribute(JunctionsTrentoP.ID.getAttributeName()) + 
+                " junct2 id: " + junction2Feature.getAttribute(JunctionsTrentoP.ID.getAttributeName()) 
+                ;
     }
 
     public static List<PipeCombo> joinPipeCombos( SimpleFeatureCollection pipes, SimpleFeatureCollection areas,

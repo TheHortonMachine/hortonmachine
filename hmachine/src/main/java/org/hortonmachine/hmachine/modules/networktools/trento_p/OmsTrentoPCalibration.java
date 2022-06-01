@@ -449,6 +449,13 @@ public class OmsTrentoPCalibration extends HMModel {
     private void setNetworkPipes( boolean isAreaNotAllDry ) throws Exception {
 
         List<PipeCombo> pipeCombos = PipeCombo.joinPipeCombos(inPipes, inAreas, inJunctions);
+        
+        pm.message("Listing pipes/areas/junctions association");
+        for( PipeCombo pipeCombo : pipeCombos ) {
+            pm.message("   -> " + pipeCombo);
+        }
+        
+        
 
         int length = inPipes.size();
         networkPipes = new Pipe[length];

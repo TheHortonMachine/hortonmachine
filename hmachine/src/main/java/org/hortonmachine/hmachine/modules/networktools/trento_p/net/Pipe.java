@@ -51,6 +51,7 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Con
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.TWO_TWENTYOVERTHIRTEEN;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.WSPECIFICWEIGHT;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.PipeCombo;
@@ -503,6 +504,9 @@ public class Pipe {
                 throw new IllegalArgumentException(msg.message("trentoP.error.fieldArea" + tmp));
             }
             this.lenght = ((Geometry) pipeFeature.getDefaultGeometry()).getLength();
+            if(this.lenght == 0) {
+                throw new ModelsIllegalargumentException("Pipe with zero length at ID: " + this.id, this); 
+            }
             this.pipeCoordinates = ((Geometry) pipeFeature.getDefaultGeometry()).getCoordinates();
 
             this.initialElevation = pipeCombo.getInitialJunctionElev(); // TODO also add depth?
