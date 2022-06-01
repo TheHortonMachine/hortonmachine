@@ -641,7 +641,7 @@ public class NetworkBuilder implements Network {
                  * L * i ^ GAMMA [ min ]
                  */
                 networkPipes[l].residenceTime = (-networkPipes[l].getDrainArea() * HOUR2MIN * networkPipes[l].getAverageResidenceTime() / networkPipes[l]
-                        .getLenght());
+                        .getLength());
             }
 
             maxd = 0;
@@ -669,7 +669,7 @@ public class NetworkBuilder implements Network {
                  * convergenza di r .
                  */
 
-                No = networkPipes[l].getLenght()
+                No = networkPipes[l].getLength()
                         / (MINUTE2SEC * networkPipes[l].residenceTime * celerityfactor * networkPipes[l].meanSpeed);
 
                 // Estremo superiore da adottare nella ricerca della r*.
@@ -691,7 +691,7 @@ public class NetworkBuilder implements Network {
                 		* a
                 		* pow(networkPipes[l].tP, n - 1)
                 		* (1 + MINUTE2SEC * celerityfactor * networkPipes[l].meanSpeed * networkPipes[l].tP
-                				/ networkPipes[l].getLenght() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
+                				/ networkPipes[l].getLength() - 1 / No * log(exp(No) + exp(r) - 1)) * 166.6666667);
                 /*
                  * Portata Q [ l / s ]
                  */
@@ -736,7 +736,7 @@ public class NetworkBuilder implements Network {
             /*
              * L / u [ min ] ritardo locale dell 'onda di piena
              */
-            localdelay[l] = (networkPipes[l].getLenght()) / (celerityfactor * MINUTE2SEC * networkPipes[l].meanSpeed);
+            localdelay[l] = (networkPipes[l].getLength()) / (celerityfactor * MINUTE2SEC * networkPipes[l].meanSpeed);
 
             // Ac [ha] superfice servita
 
@@ -744,9 +744,9 @@ public class NetworkBuilder implements Network {
 
             // Mean length of upstream net [m] (=length of pipe)
 
-            networkPipes[l].totalSubNetLength = networkPipes[l].getLenght();
+            networkPipes[l].totalSubNetLength = networkPipes[l].getLength();
 
-            networkPipes[l].meanLengthSubNet = networkPipes[l].getLenght();
+            networkPipes[l].meanLengthSubNet = networkPipes[l].getLength();
 
             // Passo allo stato successivo
             k++;
@@ -806,7 +806,7 @@ public class NetworkBuilder implements Network {
                 // k tempo di residenza [ min ]
 
                 networkPipes[l].residenceTime = (-networkPipes[l].getDrainArea() * networkPipes[l].getAverageResidenceTime() / networkPipes[l]
-                        .getLenght());
+                        .getLength());
             }
 
             // Restituisce l'area del subnetwork che si chiude in l
@@ -835,7 +835,7 @@ public class NetworkBuilder implements Network {
                 /*
                  * L / u [ min ]
                  */
-                localdelay[l] = networkPipes[l].getLenght() / (celerityfactor * MINUTE2SEC * networkPipes[l].meanSpeed);
+                localdelay[l] = networkPipes[l].getLength() / (celerityfactor * MINUTE2SEC * networkPipes[l].meanSpeed);
                 /*
                  * Aggiorna i ritardi nella matrice net, includendo il ritardo
                  * relativo allo stato che si sta progettando. Questo perche la
@@ -1274,7 +1274,7 @@ public class NetworkBuilder implements Network {
             i = (int) one[j];
             ind = i;
             // la lunghezza del tubo precedentemente progettato
-            length = networkPipes[ind].getLenght();
+            length = networkPipes[ind].getLength();
 
             // seguo il percorso dell'acqua finch� non si incontra l'uscita.
             while( networkPipes[ind].getIdPipeWhereDrain() != OUT_ID_PIPE ) {
@@ -1294,7 +1294,7 @@ public class NetworkBuilder implements Network {
                      * lunghezza del percorsa dall'acqua prima di raggiungere lo
                      * stato l che si sta progettando
                      */
-                    net[r][1] = length + networkPipes[l].getLenght();
+                    net[r][1] = length + networkPipes[l].getLength();
 
                     /*
                      * Ritardo accumulato dall'onda di piena formatasi in uno
@@ -1333,12 +1333,12 @@ public class NetworkBuilder implements Network {
                  * non ha alcuna utilita se l 'acqua raggiunge un 'uscita senza
                  * attraversare lo stato che so sta progettando
                  */
-                t += networkPipes[ind].getLenght() / (celerityfactor * MINUTE2SEC * networkPipes[ind].meanSpeed);
+                t += networkPipes[ind].getLength() / (celerityfactor * MINUTE2SEC * networkPipes[ind].meanSpeed);
                 /*
                  * accumula le lunghezze percorse dall'acqua per arrivare al
                  * tratto da progettare
                  */
-                length += networkPipes[ind].getLenght();
+                length += networkPipes[ind].getLength();
             }
             /*
              * viene incrementato solo se l'area drena in l quindi non puo'

@@ -339,7 +339,7 @@ public class Pipe {
         return drainArea;
     }
 
-    public double getLenght() {
+    public double getLength() {
         return lenght;
     }
 
@@ -686,7 +686,7 @@ public class Pipe {
          */
         newtheta = getDiameter(diameters, tau, g, dD, maxd, strWarnings);
         /* [%] Pendenza del terreno */
-        naturalslope = METER2CM * (getInitialElevation() - getFinalElevation()) / getLenght();
+        naturalslope = METER2CM * (getInitialElevation() - getFinalElevation()) / getLength();
         /* [%] pendenza minima del tratto che si sta progettando. */
         ms = getMinimumPipeSlope();
 
@@ -726,7 +726,7 @@ public class Pipe {
          * Quota dello scavo alla fine del tubo calcolata considerando la
          * pendenza effettiva del tratto [m s.l.m.]
          */
-        depthFinalPipe = (depthInitialPipe - getLenght() * pipeSlope / METER2CM);
+        depthFinalPipe = (depthInitialPipe - getLength() * pipeSlope / METER2CM);
         /* Quota pelo libero all'inizio del tubo [m s.l.m.] */
         initialFreesurface = depthInitialPipe + emptyDegree * D / METER2CM + dD[0] / METER2CM;
         /* Quota pelo libero all'inizio del tubo [m s.l.m.] */
@@ -1039,7 +1039,7 @@ public class Pipe {
         /* [%] pendenza minima per il tratto che si sta dimensionando. */
         ms = getMinimumPipeSlope();
         /* [%] Pendenza del terreno */
-        naturalslope = METER2CM * (getInitialElevation() - getFinalElevation()) / getLenght();
+        naturalslope = METER2CM * (getInitialElevation() - getFinalElevation()) / getLength();
         /*
          * Avvisa l'utente che il tratto che si sta progettando e in
          * contropendenza
@@ -1076,7 +1076,7 @@ public class Pipe {
          * Quota dello scavo alla fine del tubo calcolata considerando la
          * pendenza effettiva del tratto [m s.l.m.]
          */
-        depthFinalPipe = depthInitialPipe - getLenght() * pipeSlope / METER2CM;
+        depthFinalPipe = depthInitialPipe - getLength() * pipeSlope / METER2CM;
         /* Quota pelo libero all'inizio del tubo [m s.l.m.] */
         initialFreesurface = depthInitialPipe + emptyDegree * D / METER2CM;
         /* Quota pelo libero all'inizio del tubo [m s.l.m.] */
@@ -1307,7 +1307,7 @@ public class Pipe {
          * Quota dello scavo alla fine del tubo calcolata considerando la
          * pendenza effettiva del tratto [ m s . l . m . ]
          */
-        depthFinalPipe = depthInitialPipe - getLenght() * pipeSlope / METER2CM;
+        depthFinalPipe = depthInitialPipe - getLength() * pipeSlope / METER2CM;
         // Quota pelo libero all 'inizio del tubo [ m s . l . m . ]
         initialFreesurface = depthInitialPipe + emptyDegree * D / METER2CM;
         // Quota pelo libero all 'inizio del tubo [ m s . l . m . ]

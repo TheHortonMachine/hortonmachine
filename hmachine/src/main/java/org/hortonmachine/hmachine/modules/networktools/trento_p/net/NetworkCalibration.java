@@ -30,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -342,7 +343,7 @@ public class NetworkCalibration implements Network {
     public int getTpMax() {
         return tpMax;
     }
-    
+
     @Override
     public Pipe[] getNetworkPipes() {
         return networkPipes;
@@ -400,7 +401,7 @@ public class NetworkCalibration implements Network {
             // Updates delays
             for( int i = 0; i < net.length; i++ ) {
                 net[i][2] += localdelay;
-            };
+            } ;
 
             for( int j = 0; j < net.length; ++j ) {
                 num = (int) net[j][0];
@@ -422,7 +423,7 @@ public class NetworkCalibration implements Network {
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
             // Average velocity in pipe [ m / s ]
             u = qMax * 80 / (pow(networkPipes[k].diameterToVerify, 2) * (theta - sin(theta)));
-            localdelay = networkPipes[k].getLenght() / (celerityfactor1 * u * MINUTE2SEC);
+            localdelay = networkPipes[k].getLength() / (celerityfactor1 * u * MINUTE2SEC);
             count++;
             // verify if it's an infiniteloop.
             if (count > MAX_NUMBER_ITERATION) {
@@ -588,17 +589,16 @@ public class NetworkCalibration implements Network {
             B = qMax / (CUBICMETER2LITER * networkPipes[k].getKs() * Math.sqrt(networkPipes[k].verifyPipeSlope / METER2CM));
             known = (B * TWO_THIRTEENOVERTHREE) / Math.pow(networkPipes[k].diameterToVerify / METER2CM, EIGHTOVERTHREE);
             theta = Utility.thisBisection(maxtheta, known, TWOOVERTHREE, minG, accuracy, jMax, pm, strBuilder);
-            double tmp1 = 0;
-            double tmp2 = 0;
-            if (k - 1 >= 0) {
-                tmp1 = networkPipes[k].diameterToVerify;
-                tmp2 = networkPipes[k].getLenght();
+            if (k < 0) {
+                throw new ModelsIllegalargumentException("k can't be < 0", this);
             }
+            double diam = networkPipes[k].diameterToVerify;
+            double length = networkPipes[k].getLength();
 
             // Average velocity in pipe [ m / s ]
 
-            u = qMax * 80 / (Math.pow(tmp1, 2) * (theta - Math.sin(theta)));
-            localdelay = tmp2 / (celerityfactor1 * u * MINUTE2SEC);
+            u = qMax * 80 / (Math.pow(diam, 2) * (theta - Math.sin(theta)));
+            localdelay = length / (celerityfactor1 * u * MINUTE2SEC);
             count++;
             if (count > MAX_NUMBER_ITERATION) {
                 infiniteLoop = true;
@@ -782,7 +782,7 @@ public class NetworkCalibration implements Network {
             i = (int) one[j];
             ind = i;
             // la lunghezza del tubo precedentemente progettato
-            length = networkPipes[ind].getLenght();
+            length = networkPipes[ind].getLength();
 
             // seguo il percorso dell'acqua finch� non si incontra l'uscita.
             while( networkPipes[ind].getIdPipeWhereDrain() != OUT_ID_PIPE ) {
@@ -802,7 +802,7 @@ public class NetworkCalibration implements Network {
                      * lunghezza del percorsa dall'acqua prima di raggiungere lo
                      * stato l che si sta progettando
                      */
-                    net[r][1] = length + networkPipes[l].getLenght();
+                    net[r][1] = length + networkPipes[l].getLength();
 
                     /*
                      * Ritardo accumulato dall'onda di piena formatasi in uno
@@ -928,7 +928,7 @@ public class NetworkCalibration implements Network {
                     NumberFormat formatter = new DecimalFormat("#.###");
                     String limit = formatter.format(maxFill);
                     strBuilder.append(" ");
-                    strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
+                    strBuilder.append(msg.message("trentoP.warning.emptydegree")); // $NON-NLS-2$
                     strBuilder.append(limit);
                     strBuilder.append(" ");
                     strBuilder.append(msg.message("trentoP.warning.emptydegree2"));
@@ -976,7 +976,7 @@ public class NetworkCalibration implements Network {
                         strBuilder.append(msg.message("trentoP.error.infiniteLoop"));
                     } else {
                         // if a pipe is fill.
-                        strBuilder.append(msg.message("trentoP.warning.emptydegree")); //$NON-NLS-2$
+                        strBuilder.append(msg.message("trentoP.warning.emptydegree")); // $NON-NLS-2$
                         strBuilder.append(maxFill);
                         strBuilder.append(" ");
                         strBuilder.append(msg.message("trentoP.warning.emptydegree2"));

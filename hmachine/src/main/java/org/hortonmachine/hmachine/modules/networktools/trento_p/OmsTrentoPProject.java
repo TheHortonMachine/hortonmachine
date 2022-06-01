@@ -688,7 +688,7 @@ public class OmsTrentoPProject extends HMModel {
             results[i][0] = networkPipes[index].getId();
             results[i][1] = networkPipes[index].getIdPipeWhereDrain();
             results[i][2] = networkPipes[index].getDrainArea();
-            results[i][3] = networkPipes[index].getLenght();
+            results[i][3] = networkPipes[index].getLength();
             results[i][4] = networkPipes[index].getInitialElevation();
             results[i][5] = networkPipes[index].getFinalElevation();
             results[i][6] = networkPipes[index].getRunoffCoefficient();
