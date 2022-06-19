@@ -16,13 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
+import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
+import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.geometry.Envelope2D;
 import org.geotools.imageio.netcdf.utilities.NetCDFUtilities;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.opengis.geometry.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -36,8 +51,11 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
+import ucar.ma2.Index;
+import ucar.ma2.IndexIterator;
 import ucar.ma2.Range;
 import ucar.nc2.Attribute;
+import ucar.nc2.Dimension;
 import ucar.nc2.Variable;
 import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
@@ -50,6 +68,10 @@ import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.time.CalendarDate;
+import ucar.unidata.geoloc.LatLonPoint;
+import ucar.unidata.geoloc.LatLonRect;
+import ucar.unidata.geoloc.ProjectionImpl;
+import ucar.unidata.geoloc.ProjectionRect;
 import ucar.unidata.util.Parameter;
 
 @Description("NetdcfInfo command.")
@@ -178,31 +200,197 @@ public class NetcdfInfo extends HMModel {
         sb.append(NL);
         sb.append("Grid definitions: ").append(NL);
         GridDataset gds = GridDataset.open(inPath);
-        GridDatatype grid = gds.findGridDatatype("pr");
-        GridCoordSystem coordSys = grid.getCoordinateSystem();
-        CoordinateAxis xAxis = coordSys.getXHorizAxis();
-        CoordinateAxis yAxis = coordSys.getYHorizAxis();
+        List<GridDatatype> grids = gds.getGrids();
+        i = 0;
+        for( GridDatatype grid : grids ) {
+            List<Dimension> dimensions = grid.getDimensions();
+            if (dimensions.size() > 2) {
+                String gridName = grid.getFullName();
+                sb.append(IND).append(i++).append(")").append(gridName).append(": ").append(NL);
 
-        double minValue = xAxis.getMinValue();
-        double maxValue = xAxis.getMaxValue();
-        String fullName = xAxis.getFullName();
-        sb.append(IND).append("X Axis (" + fullName + "): ").append(minValue).append(" -> ").append(maxValue).append(NL);
-        minValue = yAxis.getMinValue();
-        maxValue = yAxis.getMaxValue();
-        fullName = yAxis.getFullName();
-        sb.append(IND).append("Y Axis (" + fullName + "): ").append(minValue).append(" -> ").append(maxValue).append(NL);
+                // GridDatatype grid = gds.findGridDatatype("pr");
+                GridCoordSystem coordSys = grid.getCoordinateSystem();
+                ProjectionImpl proj = coordSys.getProjection();
+                CoordinateAxis xAxis = coordSys.getXHorizAxis();
+                CoordinateAxis yAxis = coordSys.getYHorizAxis();
 
-        if (coordSys.hasTimeAxis1D()) {
-            CoordinateAxis1DTime tAxis1D = coordSys.getTimeAxis1D();
-            fullName = tAxis1D.getFullName();
-            List<CalendarDate> dates = tAxis1D.getCalendarDates();
-            sb.append(IND).append("Time Axis (" + fullName + "): ").append(dates.get(0)).append(" -> ").append(dates.get(dates.size() - 1)).append(NL);
+                double minXValue = xAxis.getMinValue();
+                double maxXValue = xAxis.getMaxValue();
+                long xSize = xAxis.getSize();
+                double xDelta = (maxXValue - minXValue) / xSize;
+
+                String fullName = xAxis.getFullName();
+                sb.append(IND + IND).append("X Axis (" + fullName + "): ").append(minXValue).append(" -> ").append(maxXValue)
+                        .append("   (" + xSize + ")").append(NL);
+                double minYValue = yAxis.getMinValue();
+                double maxYValue = yAxis.getMaxValue();
+                long ySize = yAxis.getSize();
+                double yDelta = (maxYValue - minYValue) / ySize;
+
+                fullName = yAxis.getFullName();
+                sb.append(IND + IND).append("Y Axis (" + fullName + "): ").append(minYValue).append(" -> ").append(maxYValue)
+                        .append("   (" + ySize + ")").append(NL);
+
+                if (coordSys.hasTimeAxis1D()) {
+                    CoordinateAxis1DTime tAxis1D = coordSys.getTimeAxis1D();
+                    fullName = tAxis1D.getFullName();
+                    long tSize = tAxis1D.getSize();
+                    List<CalendarDate> dates = tAxis1D.getCalendarDates();
+                    sb.append(IND + IND).append("Time Axis (" + fullName + "): ").append(dates.get(0)).append(" -> ")
+                            .append(dates.get(dates.size() - 1)).append("   (" + tSize + ")").append(NL);
+                }
+
+                ProjectionRect boundingBox = coordSys.getBoundingBox();
+                sb.append(IND + IND).append("ProjectionRect: ").append(boundingBox).append(NL);
+                double minX = boundingBox.getMinX();
+                double minY = boundingBox.getMinY();
+                double maxX = boundingBox.getMaxX();
+                double maxY = boundingBox.getMaxY();
+
+                LatLonRect latLonBoundingBox = coordSys.getLatLonBoundingBox();
+                double latMin = latLonBoundingBox.getLatMin();
+                double latMax = latLonBoundingBox.getLatMax();
+                double latDelta = (latMax - latMin) / ySize;
+                double lonMin = latLonBoundingBox.getLonMin();
+                double lonMax = latLonBoundingBox.getLonMax();
+                double lonDelta = (lonMax - lonMin) / xSize;
+
+                int[] xyMin = coordSys.findXYindexFromLatLonBounded(latMin, lonMin, null);
+                int[] xyMax = coordSys.findXYindexFromLatLonBounded(latMax, lonMax, null);
+                sb.append(IND + IND).append("Lat Long X: ").append(lonMin).append(" -> ").append(lonMax).append(NL);
+                sb.append(IND + IND).append("Lat Long Y: ").append(latMin).append(" -> ").append(latMax).append(NL);
+
+                Envelope envelope = new Envelope2D(DefaultGeographicCRS.WGS84, lonMin, latMin, lonMax - lonMin, latMax - latMin);
+                GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, (int) xSize, (int) ySize);
+                GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
+
+                dumpGrid(grid, coordSys, proj, xAxis, yAxis, gridGeometry2D);
+
+//                WritableRaster wRaster = CoverageUtilities.createWritableRaster((int) xSize, (int) ySize, null, null, null);
+//                WritableRandomIter iter = CoverageUtilities.getWritableRandomIterator(wRaster);
+//                try {
+////                    Array firsTsData = grid.readVolumeData(0);
+////                    IndexIterator indexIterator = firsTsData.getIndexIterator();
+//
+//                    int fromRow = xyMin[1];
+//                    int toRow = xyMax[1];
+//                    int fromCol = xyMin[0];
+//                    int toCol = xyMax[0];
+//
+//                    for( int r = fromRow, row = 0; r <= toRow; r++, row++ ) {
+//                        for( int c = fromCol, col = 0; c <= toCol; c++, col++ ) {
+//                            Array data = grid.readDataSlice(0, 0, r, c); // note order is t, z,y, x
+//                            double value = data.getDouble(0);
+//                            iter.setSample(col, row, 0, value);
+//                        }
+//                    }
+//
+////                    for( int row = 0; row < ySize; row++ ) {
+//////                        double lat = minYValue + row * yDelta;
+////                        for( int col = 0; col < xSize; col++ ) {
+//////                            double lon = minXValue + col * xDelta;
+////
+////                            Array data = grid.readDataSlice(0, 0, row, col); // note order is t, z,
+////                                                                             // y, x
+////                            double value = data.getDouble(0);
+////                            iter.setSample(col, row, 0, value);
+//////                            if (indexIterator.hasNext()) {
+//////                                Object next = indexIterator.next();
+//////                                if (next instanceof Number) {
+//////                                    double value = ((Number) next).doubleValue();
+//////
+//////                                    iter.setSample(col, row, 0, value);
+////////                                    int[] xy = coordSys.findXYindexFromLatLon(lat, lon, null);
+////////                                    LatLonPoint latLon = coordSys.getLatLon(xy[0], xy[1]);
+//////                                }
+//////                            } else {
+//////                                throw new RuntimeException();
+//////                            }
+////                        }
+////                    }
+//                    RegionMap regionMap = new RegionMap();
+//                    regionMap.put(CoverageUtilities.NORTH, latMax);
+//                    regionMap.put(CoverageUtilities.SOUTH, latMin);
+//                    regionMap.put(CoverageUtilities.WEST, lonMin);
+//                    regionMap.put(CoverageUtilities.EAST, lonMax);
+//                    regionMap.put(CoverageUtilities.XRES, xDelta);
+//                    regionMap.put(CoverageUtilities.YRES, yDelta);
+//                    regionMap.put(CoverageUtilities.ROWS, (double) ySize);
+//                    regionMap.put(CoverageUtilities.COLS, (double) xSize);
+//                    GridCoverage2D outcoverage = CoverageUtilities.buildCoverage("raster", wRaster, regionMap,
+//                            DefaultGeographicCRS.WGS84);
+//
+//                    dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_first_ts.tiff");
+//                } finally {
+//                    iter.done();
+//                }
+            }
         }
-
-//        Array firsTsData = grid.readVolumeData(0);
 
         System.out.println(sb.toString());
 
+    }
+
+    private void dumpGrid( GridDatatype grid, GridCoordSystem coordSys, ProjectionImpl proj, CoordinateAxis xAxis,
+            CoordinateAxis yAxis, GridGeometry2D gridGeometry2D ) throws Exception {
+        Array xValues = xAxis.read();
+        Array yValues = yAxis.read();
+        int[] xShape = xValues.getShape();
+        int[] yShape = yValues.getShape();
+        Index xIndex = xValues.getIndex();
+        Index yIndex = yValues.getIndex();
+
+        WritableRaster wRaster = CoverageUtilities.createWritableRaster(xShape[0], yShape[0], null, null,
+                HMConstants.doubleNovalue);
+        WritableRandomIter iter = CoverageUtilities.getWritableRandomIterator(wRaster);
+
+        try {
+            Array firsTsData = grid.readVolumeData(0);
+            IndexIterator indexIterator = firsTsData.getIndexIterator();
+            pm.beginTask("Processing...", yShape[0]);
+            for( int j = 0; j < yShape[0]; j++ ) {
+                for( int ii = 0; ii < xShape[0]; ii++ ) {
+                    double xVal = xValues.getDouble(xIndex.set(ii));
+                    double yVal = yValues.getDouble(yIndex.set(j));
+                    double latitude = proj.projToLatLon(xVal, yVal).getLatitude();
+                    double longitude = proj.projToLatLon(xVal, yVal).getLongitude();
+//                    int[] xy = coordSys.findXYindexFromLatLon(latitude, longitude, null);
+//                    Array data = grid.readDataSlice(0, 0, xy[1], xy[0]); // note order is t, z,y, x
+//                    double value = data.getDouble(0);
+
+                    if (indexIterator.hasNext()) {
+                        Object next = indexIterator.next();
+                        if (next instanceof Number) {
+                            double value = ((Number) next).doubleValue();
+
+                            int[] colRow = CoverageUtilities.colRowFromCoordinate(new Coordinate(longitude, latitude),
+                                    gridGeometry2D, null);
+                            if (colRow[0] < xShape[0] && colRow[1] < yShape[0])
+                                try {
+                                    iter.setSample(colRow[0], colRow[1], 0, value);
+                                } catch (Exception e) {
+                                    // ignore
+                                }
+                        }
+
+                    }
+
+//                    System.out.println(xVal + " " + yVal + " " + latitude + "  " + longitude + " " + value);
+//                    System.out.println();
+
+                }
+                pm.worked(1);
+            }
+            pm.done();
+
+            RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry2D);
+            GridCoverage2D outcoverage = CoverageUtilities.buildCoverageWithNovalue("raster", wRaster, regionMap,
+                    DefaultGeographicCRS.WGS84, HMConstants.doubleNovalue);
+
+            dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_first_ts.tiff");
+        } finally {
+            iter.done();
+        }
     }
 
     public static void main( String[] args ) throws Exception {
