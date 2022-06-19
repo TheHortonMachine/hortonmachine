@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.hortonmachine</groupId>
@@ -111,7 +113,7 @@
 				<artifactId>slf4j-api</artifactId>
 				<version>1.7.5</version>
 			</dependency>
-		  <dependency>
+			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-jdk14</artifactId>
 				<version>1.7.5</version>
@@ -419,7 +421,7 @@
 				<groupId>com.h2database</groupId>
 				<artifactId>h2</artifactId>
 				<version>1.4.197</version>
-      </dependency>
+			</dependency>
 			<dependency>
 				<groupId>org.orbisgis</groupId>
 				<artifactId>h2gis</artifactId>
@@ -553,7 +555,7 @@
 				<version>1.9</version>
 			</dependency>
 
-      <!-- gt vs groovy deps clash -->
+			<!-- gt vs groovy deps clash -->
 			<dependency>
 				<groupId>jakarta.annotation</groupId>
 				<artifactId>jakarta.annotation-api</artifactId>
@@ -828,6 +830,13 @@
 				<version>3.7.4</version>
 			</dependency>
 
+			<!-- netcdf -->
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-netcdf</artifactId>
+				<version>${gt.version}</version>
+			</dependency>
+
 
 			<dependency>
 				<groupId>junit</groupId>
@@ -868,9 +877,9 @@
 			<id>osgeo</id>
 			<name>OSGeo Nexus Release Repository</name>
 			<url>https://repo.osgeo.org/repository/release/</url>
-			<!-- contains release (including third-party-dependences)                            -->
+			<!-- contains release (including third-party-dependences) -->
 			<!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
-			<!-- geosolutions (https://maven.geo-solutions.it/)                                   -->
+			<!-- geosolutions (https://maven.geo-solutions.it/) -->
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -918,7 +927,7 @@
 				<version>3.8.1</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
-				        <release>11</release>
+					<release>11</release>
 					<debug>true</debug>
 				</configuration>
 			</plugin>
@@ -956,9 +965,7 @@
 				</executions>
 			</plugin>
 
-			<!-- 
-                can be used to find newest versions fo plugins: mvn versions:display-plugin-updates
-            -->
+			<!-- can be used to find newest versions fo plugins: mvn versions:display-plugin-updates -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
