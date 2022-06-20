@@ -151,10 +151,6 @@ public class NetcdfInfo extends HMModel {
 
         }
 
-//        NetCDFTimeUtilities.getTimeUnits(title, null)
-
-//        GridDataset gds = GridDataset.open(inPath);
-
         i = 1;
         sb.append("Variables").append(NL);
         for( Variable variable : variables ) {
@@ -206,7 +202,12 @@ public class NetcdfInfo extends HMModel {
             List<Dimension> dimensions = grid.getDimensions();
             if (dimensions.size() > 2) {
                 String gridName = grid.getFullName();
+                List<Attribute> attributes = grid.getAttributes();
                 sb.append(IND).append(i++).append(")").append(gridName).append(": ").append(NL);
+                sb.append(IND+IND).append("Attributes:").append(NL);
+                for( Attribute attribute : attributes ) {
+                    sb.append(IND+IND+IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue()).append(NL);
+                }
 
                 // GridDatatype grid = gds.findGridDatatype("pr");
                 GridCoordSystem coordSys = grid.getCoordinateSystem();
@@ -217,19 +218,17 @@ public class NetcdfInfo extends HMModel {
                 double minXValue = xAxis.getMinValue();
                 double maxXValue = xAxis.getMaxValue();
                 long xSize = xAxis.getSize();
-                double xDelta = (maxXValue - minXValue) / xSize;
 
                 String fullName = xAxis.getFullName();
-                sb.append(IND + IND).append("X Axis (" + fullName + "): ").append(minXValue).append(" -> ").append(maxXValue)
-                        .append("   (" + xSize + ")").append(NL);
+                sb.append(IND + IND).append("Proj X Axis (" + fullName + "): ").append(minXValue).append(" -> ").append(maxXValue)
+                        .append("   (" + xSize + ")").append("  extent: ").append(maxXValue - minXValue).append(NL);
                 double minYValue = yAxis.getMinValue();
                 double maxYValue = yAxis.getMaxValue();
                 long ySize = yAxis.getSize();
-                double yDelta = (maxYValue - minYValue) / ySize;
 
                 fullName = yAxis.getFullName();
-                sb.append(IND + IND).append("Y Axis (" + fullName + "): ").append(minYValue).append(" -> ").append(maxYValue)
-                        .append("   (" + ySize + ")").append(NL);
+                sb.append(IND + IND).append("Proj Y Axis (" + fullName + "): ").append(minYValue).append(" -> ").append(maxYValue)
+                        .append("   (" + ySize + ")").append("  extent: ").append(maxYValue - minYValue).append(NL);
 
                 if (coordSys.hasTimeAxis1D()) {
                     CoordinateAxis1DTime tAxis1D = coordSys.getTimeAxis1D();
@@ -240,90 +239,43 @@ public class NetcdfInfo extends HMModel {
                             .append(dates.get(dates.size() - 1)).append("   (" + tSize + ")").append(NL);
                 }
 
-                ProjectionRect boundingBox = coordSys.getBoundingBox();
-                sb.append(IND + IND).append("ProjectionRect: ").append(boundingBox).append(NL);
-                double minX = boundingBox.getMinX();
-                double minY = boundingBox.getMinY();
-                double maxX = boundingBox.getMaxX();
-                double maxY = boundingBox.getMaxY();
+//                ProjectionRect boundingBox = coordSys.getBoundingBox();
+//                sb.append(IND + IND).append("ProjectionRect: ").append(boundingBox).append(NL);
+//                double minX = boundingBox.getMinX();
+//                double minY = boundingBox.getMinY();
+//                double maxX = boundingBox.getMaxX();
+//                double maxY = boundingBox.getMaxY();
 
-                LatLonRect latLonBoundingBox = coordSys.getLatLonBoundingBox();
-                double latMin = latLonBoundingBox.getLatMin();
-                double latMax = latLonBoundingBox.getLatMax();
-                double latDelta = (latMax - latMin) / ySize;
-                double lonMin = latLonBoundingBox.getLonMin();
-                double lonMax = latLonBoundingBox.getLonMax();
-                double lonDelta = (lonMax - lonMin) / xSize;
-
-                int[] xyMin = coordSys.findXYindexFromLatLonBounded(latMin, lonMin, null);
-                int[] xyMax = coordSys.findXYindexFromLatLonBounded(latMax, lonMax, null);
-                sb.append(IND + IND).append("Lat Long X: ").append(lonMin).append(" -> ").append(lonMax).append(NL);
-                sb.append(IND + IND).append("Lat Long Y: ").append(latMin).append(" -> ").append(latMax).append(NL);
-
-                Envelope envelope = new Envelope2D(DefaultGeographicCRS.WGS84, lonMin, latMin, lonMax - lonMin, latMax - latMin);
+                Array xValues = xAxis.read();
+                Array yValues = yAxis.read();
+                int[] xShape = xValues.getShape();
+                int[] yShape = yValues.getShape();
+                Index xIndex = xValues.getIndex();
+                Index yIndex = yValues.getIndex();
+                // first find final bounds
+                org.locationtech.jts.geom.Envelope env = new org.locationtech.jts.geom.Envelope();
+                for( int j = 0; j < yShape[0]; j++ ) {
+                    for( int ii = 0; ii < xShape[0]; ii++ ) {
+                        double xVal = xValues.getDouble(xIndex.set(ii));
+                        double yVal = yValues.getDouble(yIndex.set(j));
+                        double latitude = proj.projToLatLon(xVal, yVal).getLatitude();
+                        double longitude = proj.projToLatLon(xVal, yVal).getLongitude();
+                        env.expandToInclude(new Coordinate(longitude, latitude));
+                    }
+                }
+                // and create the target gridgeometry
+                double lonMin = env.getMinX();
+                double latMin = env.getMinY();
+                double lonMax = env.getMaxX();
+                double latMax = env.getMaxY();
+                Envelope envelope = new Envelope2D(DefaultGeographicCRS.WGS84, lonMin, latMin, env.getWidth(), env.getHeight());
                 GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, (int) xSize, (int) ySize);
                 GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
+                sb.append(IND + IND).append("Longitude: ").append(lonMin).append(" -> ").append(lonMax).append("  extent: ").append(lonMax - lonMin).append(NL);
+                sb.append(IND + IND).append("Latitude: ").append(latMin).append(" -> ").append(latMax).append("  extent: ").append(latMax - latMin).append(NL);
 
                 dumpGrid(grid, coordSys, proj, xAxis, yAxis, gridGeometry2D);
 
-//                WritableRaster wRaster = CoverageUtilities.createWritableRaster((int) xSize, (int) ySize, null, null, null);
-//                WritableRandomIter iter = CoverageUtilities.getWritableRandomIterator(wRaster);
-//                try {
-////                    Array firsTsData = grid.readVolumeData(0);
-////                    IndexIterator indexIterator = firsTsData.getIndexIterator();
-//
-//                    int fromRow = xyMin[1];
-//                    int toRow = xyMax[1];
-//                    int fromCol = xyMin[0];
-//                    int toCol = xyMax[0];
-//
-//                    for( int r = fromRow, row = 0; r <= toRow; r++, row++ ) {
-//                        for( int c = fromCol, col = 0; c <= toCol; c++, col++ ) {
-//                            Array data = grid.readDataSlice(0, 0, r, c); // note order is t, z,y, x
-//                            double value = data.getDouble(0);
-//                            iter.setSample(col, row, 0, value);
-//                        }
-//                    }
-//
-////                    for( int row = 0; row < ySize; row++ ) {
-//////                        double lat = minYValue + row * yDelta;
-////                        for( int col = 0; col < xSize; col++ ) {
-//////                            double lon = minXValue + col * xDelta;
-////
-////                            Array data = grid.readDataSlice(0, 0, row, col); // note order is t, z,
-////                                                                             // y, x
-////                            double value = data.getDouble(0);
-////                            iter.setSample(col, row, 0, value);
-//////                            if (indexIterator.hasNext()) {
-//////                                Object next = indexIterator.next();
-//////                                if (next instanceof Number) {
-//////                                    double value = ((Number) next).doubleValue();
-//////
-//////                                    iter.setSample(col, row, 0, value);
-////////                                    int[] xy = coordSys.findXYindexFromLatLon(lat, lon, null);
-////////                                    LatLonPoint latLon = coordSys.getLatLon(xy[0], xy[1]);
-//////                                }
-//////                            } else {
-//////                                throw new RuntimeException();
-//////                            }
-////                        }
-////                    }
-//                    RegionMap regionMap = new RegionMap();
-//                    regionMap.put(CoverageUtilities.NORTH, latMax);
-//                    regionMap.put(CoverageUtilities.SOUTH, latMin);
-//                    regionMap.put(CoverageUtilities.WEST, lonMin);
-//                    regionMap.put(CoverageUtilities.EAST, lonMax);
-//                    regionMap.put(CoverageUtilities.XRES, xDelta);
-//                    regionMap.put(CoverageUtilities.YRES, yDelta);
-//                    regionMap.put(CoverageUtilities.ROWS, (double) ySize);
-//                    regionMap.put(CoverageUtilities.COLS, (double) xSize);
-//                    GridCoverage2D outcoverage = CoverageUtilities.buildCoverage("raster", wRaster, regionMap,
-//                            DefaultGeographicCRS.WGS84);
-//
-//                    dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_first_ts.tiff");
-//                } finally {
-//                    iter.done();
-//                }
             }
         }
 
@@ -333,6 +285,7 @@ public class NetcdfInfo extends HMModel {
 
     private void dumpGrid( GridDatatype grid, GridCoordSystem coordSys, ProjectionImpl proj, CoordinateAxis xAxis,
             CoordinateAxis yAxis, GridGeometry2D gridGeometry2D ) throws Exception {
+
         Array xValues = xAxis.read();
         Array yValues = yAxis.read();
         int[] xShape = xValues.getShape();
@@ -345,6 +298,8 @@ public class NetcdfInfo extends HMModel {
         WritableRandomIter iter = CoverageUtilities.getWritableRandomIterator(wRaster);
 
         try {
+            org.locationtech.jts.geom.Envelope env = new org.locationtech.jts.geom.Envelope();
+
             Array firsTsData = grid.readVolumeData(0);
             IndexIterator indexIterator = firsTsData.getIndexIterator();
             pm.beginTask("Processing...", yShape[0]);
@@ -363,13 +318,13 @@ public class NetcdfInfo extends HMModel {
                         if (next instanceof Number) {
                             double value = ((Number) next).doubleValue();
 
-                            int[] colRow = CoverageUtilities.colRowFromCoordinate(new Coordinate(longitude, latitude),
-                                    gridGeometry2D, null);
+                            Coordinate coordinate = new Coordinate(longitude, latitude);
+                            int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry2D, null);
                             if (colRow[0] < xShape[0] && colRow[1] < yShape[0])
                                 try {
                                     iter.setSample(colRow[0], colRow[1], 0, value);
                                 } catch (Exception e) {
-                                    // ignore
+                                    e.printStackTrace();
                                 }
                         }
 
@@ -382,6 +337,9 @@ public class NetcdfInfo extends HMModel {
                 pm.worked(1);
             }
             pm.done();
+
+            System.out.println(env);// Env[-44.5938638919001 : 64.96437666717893, 21.987828756838308
+                                    // : 72.5849994760081]
 
             RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry2D);
             GridCoverage2D outcoverage = CoverageUtilities.buildCoverageWithNovalue("raster", wRaster, regionMap,
