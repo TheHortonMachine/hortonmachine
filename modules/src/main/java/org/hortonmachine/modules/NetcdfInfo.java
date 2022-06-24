@@ -193,6 +193,9 @@ public class NetcdfInfo extends HMModel {
 
         }
 
+        System.out.println(sb.toString());
+
+        sb = new StringBuilder();
         sb.append(NL);
         sb.append("Grid definitions: ").append(NL);
         GridDataset gds = GridDataset.open(inPath);
@@ -204,14 +207,17 @@ public class NetcdfInfo extends HMModel {
                 String gridName = grid.getFullName();
                 List<Attribute> attributes = grid.getAttributes();
                 sb.append(IND).append(i++).append(")").append(gridName).append(": ").append(NL);
-                sb.append(IND+IND).append("Attributes:").append(NL);
+                sb.append(IND + IND).append("Attributes:").append(NL);
                 for( Attribute attribute : attributes ) {
-                    sb.append(IND+IND+IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue()).append(NL);
+                    sb.append(IND + IND + IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue())
+                            .append(NL);
                 }
 
                 // GridDatatype grid = gds.findGridDatatype("pr");
                 GridCoordSystem coordSys = grid.getCoordinateSystem();
                 ProjectionImpl proj = coordSys.getProjection();
+                sb.append(IND + IND).append("Projection: ").append(proj).append(NL);
+
                 CoordinateAxis xAxis = coordSys.getXHorizAxis();
                 CoordinateAxis yAxis = coordSys.getYHorizAxis();
 
@@ -238,6 +244,7 @@ public class NetcdfInfo extends HMModel {
                     sb.append(IND + IND).append("Time Axis (" + fullName + "): ").append(dates.get(0)).append(" -> ")
                             .append(dates.get(dates.size() - 1)).append("   (" + tSize + ")").append(NL);
                 }
+                
 
 //                ProjectionRect boundingBox = coordSys.getBoundingBox();
 //                sb.append(IND + IND).append("ProjectionRect: ").append(boundingBox).append(NL);
@@ -254,10 +261,10 @@ public class NetcdfInfo extends HMModel {
                 Index yIndex = yValues.getIndex();
                 // first find final bounds
                 org.locationtech.jts.geom.Envelope env = new org.locationtech.jts.geom.Envelope();
-                for( int j = 0; j < yShape[0]; j++ ) {
-                    for( int ii = 0; ii < xShape[0]; ii++ ) {
-                        double xVal = xValues.getDouble(xIndex.set(ii));
-                        double yVal = yValues.getDouble(yIndex.set(j));
+                for( int y = 0; y < yShape[0]; y++ ) {
+                    for( int x = 0; x < xShape[0]; x++ ) {
+                        double xVal = xValues.getDouble(xIndex.set(x));
+                        double yVal = yValues.getDouble(yIndex.set(y));
                         double latitude = proj.projToLatLon(xVal, yVal).getLatitude();
                         double longitude = proj.projToLatLon(xVal, yVal).getLongitude();
                         env.expandToInclude(new Coordinate(longitude, latitude));
@@ -268,11 +275,17 @@ public class NetcdfInfo extends HMModel {
                 double latMin = env.getMinY();
                 double lonMax = env.getMaxX();
                 double latMax = env.getMaxY();
+                sb.append(IND + IND).append("Longitude: ").append(lonMin).append(" -> ").append(lonMax).append("  extent: ")
+                .append(lonMax - lonMin).append(NL);
+                sb.append(IND + IND).append("Latitude: ").append(latMin).append(" -> ").append(latMax).append("  extent: ")
+                .append(latMax - latMin).append(NL);
+
+                System.out.println(sb.toString());
+                sb.setLength(0);
+
                 Envelope envelope = new Envelope2D(DefaultGeographicCRS.WGS84, lonMin, latMin, env.getWidth(), env.getHeight());
                 GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, (int) xSize, (int) ySize);
                 GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
-                sb.append(IND + IND).append("Longitude: ").append(lonMin).append(" -> ").append(lonMax).append("  extent: ").append(lonMax - lonMin).append(NL);
-                sb.append(IND + IND).append("Latitude: ").append(latMin).append(" -> ").append(latMax).append("  extent: ").append(latMax - latMin).append(NL);
 
                 dumpGrid(grid, coordSys, proj, xAxis, yAxis, gridGeometry2D);
 
@@ -303,10 +316,10 @@ public class NetcdfInfo extends HMModel {
             Array firsTsData = grid.readVolumeData(0);
             IndexIterator indexIterator = firsTsData.getIndexIterator();
             pm.beginTask("Processing...", yShape[0]);
-            for( int j = 0; j < yShape[0]; j++ ) {
-                for( int ii = 0; ii < xShape[0]; ii++ ) {
-                    double xVal = xValues.getDouble(xIndex.set(ii));
-                    double yVal = yValues.getDouble(yIndex.set(j));
+            for( int y = 0; y < yShape[0]; y++ ) {
+                for( int x = 0; x < xShape[0]; x++ ) {
+                    double xVal = xValues.getDouble(xIndex.set(x));
+                    double yVal = yValues.getDouble(yIndex.set(y));
                     double latitude = proj.projToLatLon(xVal, yVal).getLatitude();
                     double longitude = proj.projToLatLon(xVal, yVal).getLongitude();
 //                    int[] xy = coordSys.findXYindexFromLatLon(latitude, longitude, null);
@@ -345,7 +358,8 @@ public class NetcdfInfo extends HMModel {
             GridCoverage2D outcoverage = CoverageUtilities.buildCoverageWithNovalue("raster", wRaster, regionMap,
                     DefaultGeographicCRS.WGS84, HMConstants.doubleNovalue);
 
-            dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_first_ts.tiff");
+//            dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_first_ts.tiff");
+            dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/02_tas_first_ts_fixed.tiff");
         } finally {
             iter.done();
         }
@@ -353,7 +367,8 @@ public class NetcdfInfo extends HMModel {
 
     public static void main( String[] args ) throws Exception {
         NetcdfInfo i = new NetcdfInfo();
-        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_EUR-11_IPSL-IPSL-CM5A-MR_rcp45_r1i1p1_SMHI-RCA4_v1_day_20460101-20501231.nc";
+//        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_EUR-11_IPSL-IPSL-CM5A-MR_rcp45_r1i1p1_SMHI-RCA4_v1_day_20460101-20501231.nc";
+        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/tas_AFR-22_fixed.nc";
 //        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/02_tas_AFR-22_CCCma-CanESM2_rcp85_r1i1p1_CCCma-CanRCM4_r2_day_20510101-20551231.nc";
         i.process();
     }
