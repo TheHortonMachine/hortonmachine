@@ -64,6 +64,7 @@ import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.CoordinateTransform;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.transform.RotatedPole;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
@@ -72,12 +73,14 @@ import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.LatLonRect;
 import ucar.unidata.geoloc.ProjectionImpl;
 import ucar.unidata.geoloc.ProjectionRect;
+import ucar.unidata.geoloc.projection.LatLonProjection;
+import ucar.unidata.geoloc.projection.RotatedLatLon;
 import ucar.unidata.util.Parameter;
 
 @Description("NetdcfInfo command.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
 @Keywords("netdcf")
-@Label(HMConstants.GDAL)
+@Label(HMConstants.NETCDF)
 @Name("_netcdfinfo")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
@@ -86,6 +89,8 @@ public class NetcdfInfo extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inPath = null;
+
+    public boolean doLongitudeShift = false;
 
     @Execute
     public void process() throws Exception {
@@ -216,6 +221,7 @@ public class NetcdfInfo extends HMModel {
                 // GridDatatype grid = gds.findGridDatatype("pr");
                 GridCoordSystem coordSys = grid.getCoordinateSystem();
                 ProjectionImpl proj = coordSys.getProjection();
+
                 sb.append(IND + IND).append("Projection: ").append(proj).append(NL);
 
                 CoordinateAxis xAxis = coordSys.getXHorizAxis();
@@ -244,7 +250,6 @@ public class NetcdfInfo extends HMModel {
                     sb.append(IND + IND).append("Time Axis (" + fullName + "): ").append(dates.get(0)).append(" -> ")
                             .append(dates.get(dates.size() - 1)).append("   (" + tSize + ")").append(NL);
                 }
-                
 
 //                ProjectionRect boundingBox = coordSys.getBoundingBox();
 //                sb.append(IND + IND).append("ProjectionRect: ").append(boundingBox).append(NL);
@@ -265,8 +270,16 @@ public class NetcdfInfo extends HMModel {
                     for( int x = 0; x < xShape[0]; x++ ) {
                         double xVal = xValues.getDouble(xIndex.set(x));
                         double yVal = yValues.getDouble(yIndex.set(y));
-                        double latitude = proj.projToLatLon(xVal, yVal).getLatitude();
-                        double longitude = proj.projToLatLon(xVal, yVal).getLongitude();
+                        double longitude = xVal;
+                        double latitude = yVal;
+
+                        if (!(proj instanceof LatLonProjection)) {
+                            LatLonPoint latLonPoint = proj.projToLatLon(xVal, yVal);
+                            latitude = latLonPoint.getLatitude();
+                            longitude = latLonPoint.getLongitude();
+                        }
+
+                        longitude = checkLongitude(longitude);
                         env.expandToInclude(new Coordinate(longitude, latitude));
                     }
                 }
@@ -276,100 +289,31 @@ public class NetcdfInfo extends HMModel {
                 double lonMax = env.getMaxX();
                 double latMax = env.getMaxY();
                 sb.append(IND + IND).append("Longitude: ").append(lonMin).append(" -> ").append(lonMax).append("  extent: ")
-                .append(lonMax - lonMin).append(NL);
+                        .append(lonMax - lonMin).append(NL);
                 sb.append(IND + IND).append("Latitude: ").append(latMin).append(" -> ").append(latMax).append("  extent: ")
-                .append(latMax - latMin).append(NL);
-
-                System.out.println(sb.toString());
-                sb.setLength(0);
-
-                Envelope envelope = new Envelope2D(DefaultGeographicCRS.WGS84, lonMin, latMin, env.getWidth(), env.getHeight());
-                GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, (int) xSize, (int) ySize);
-                GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
-
-                dumpGrid(grid, coordSys, proj, xAxis, yAxis, gridGeometry2D);
+                        .append(latMax - latMin).append(NL);
 
             }
         }
-
-        System.out.println(sb.toString());
+        pm.message(sb.toString());
 
     }
 
-    private void dumpGrid( GridDatatype grid, GridCoordSystem coordSys, ProjectionImpl proj, CoordinateAxis xAxis,
-            CoordinateAxis yAxis, GridGeometry2D gridGeometry2D ) throws Exception {
-
-        Array xValues = xAxis.read();
-        Array yValues = yAxis.read();
-        int[] xShape = xValues.getShape();
-        int[] yShape = yValues.getShape();
-        Index xIndex = xValues.getIndex();
-        Index yIndex = yValues.getIndex();
-
-        WritableRaster wRaster = CoverageUtilities.createWritableRaster(xShape[0], yShape[0], null, null,
-                HMConstants.doubleNovalue);
-        WritableRandomIter iter = CoverageUtilities.getWritableRandomIterator(wRaster);
-
-        try {
-            org.locationtech.jts.geom.Envelope env = new org.locationtech.jts.geom.Envelope();
-
-            Array firsTsData = grid.readVolumeData(0);
-            IndexIterator indexIterator = firsTsData.getIndexIterator();
-            pm.beginTask("Processing...", yShape[0]);
-            for( int y = 0; y < yShape[0]; y++ ) {
-                for( int x = 0; x < xShape[0]; x++ ) {
-                    double xVal = xValues.getDouble(xIndex.set(x));
-                    double yVal = yValues.getDouble(yIndex.set(y));
-                    double latitude = proj.projToLatLon(xVal, yVal).getLatitude();
-                    double longitude = proj.projToLatLon(xVal, yVal).getLongitude();
-//                    int[] xy = coordSys.findXYindexFromLatLon(latitude, longitude, null);
-//                    Array data = grid.readDataSlice(0, 0, xy[1], xy[0]); // note order is t, z,y, x
-//                    double value = data.getDouble(0);
-
-                    if (indexIterator.hasNext()) {
-                        Object next = indexIterator.next();
-                        if (next instanceof Number) {
-                            double value = ((Number) next).doubleValue();
-
-                            Coordinate coordinate = new Coordinate(longitude, latitude);
-                            int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry2D, null);
-                            if (colRow[0] < xShape[0] && colRow[1] < yShape[0])
-                                try {
-                                    iter.setSample(colRow[0], colRow[1], 0, value);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                        }
-
-                    }
-
-//                    System.out.println(xVal + " " + yVal + " " + latitude + "  " + longitude + " " + value);
-//                    System.out.println();
-
-                }
-                pm.worked(1);
+    private double checkLongitude( double longitude ) {
+        if (doLongitudeShift) {
+            if (longitude < 0) {
+                longitude = longitude + 180.0;
+            } else {
+                longitude = longitude - 180.0;
             }
-            pm.done();
-
-            System.out.println(env);// Env[-44.5938638919001 : 64.96437666717893, 21.987828756838308
-                                    // : 72.5849994760081]
-
-            RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry2D);
-            GridCoverage2D outcoverage = CoverageUtilities.buildCoverageWithNovalue("raster", wRaster, regionMap,
-                    DefaultGeographicCRS.WGS84, HMConstants.doubleNovalue);
-
-//            dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_first_ts.tiff");
-            dumpRaster(outcoverage, "/home/hydrologis/TMP/KLAB/cordex_scenarios/02_tas_first_ts_fixed.tiff");
-        } finally {
-            iter.done();
         }
+        return longitude;
     }
 
     public static void main( String[] args ) throws Exception {
         NetcdfInfo i = new NetcdfInfo();
-//        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/01_pr_EUR-11_IPSL-IPSL-CM5A-MR_rcp45_r1i1p1_SMHI-RCA4_v1_day_20460101-20501231.nc";
-        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/tas_AFR-22_fixed.nc";
-//        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/02_tas_AFR-22_CCCma-CanESM2_rcp85_r1i1p1_CCCma-CanRCM4_r2_day_20510101-20551231.nc";
+        i.doLongitudeShift = false;
+        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/05_tas_SAM-44_CCCma-CanESM2_rcp85_r1i1p1_UCAN-WRF341I_v2_day_20510101-20551231.nc";
         i.process();
     }
 }
