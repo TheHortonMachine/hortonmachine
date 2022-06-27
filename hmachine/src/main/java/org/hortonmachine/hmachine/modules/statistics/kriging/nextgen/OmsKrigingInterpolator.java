@@ -80,12 +80,12 @@ public class OmsKrigingInterpolator extends HMModel {
     @UI("combo:" + KRIGING_EXPERIMENTAL_VARIOGRAM + "," + KRIGING_DEFAULT_VARIOGRAM)
     @In
     public String pMode = KRIGING_DEFAULT_VARIOGRAM;
-    
+
     @Description("Theoretical Variogram type.")
     @UI("combo:" + ITheoreticalVariogram.TYPES)
     @In
     public String pTheoreticalVariogramType = ITheoreticalVariogram.EXPONENTIAL;
-    
+
     @Description("Specified cutoff for experimental variogram.")
     @In
     public double pCutoff;
@@ -93,8 +93,7 @@ public class OmsKrigingInterpolator extends HMModel {
     @Description("Number of bins to consider in the anlysis for the experimental variogram.")
     @In
     public int pBins;
-    
-    
+
 //    public static final String OMSKRIGING_pIntegralscale_DESCRIPTION = "The integral scale.";
 //    public static final String OMSKRIGING_pVariance_DESCRIPTION = "The variance.";
 //    public static final String OMSKRIGING_doLogarithmic_DESCRIPTION = "Switch for logaritmic run selection.";
@@ -122,30 +121,35 @@ public class OmsKrigingInterpolator extends HMModel {
 
                 break;
             case INTERPOLATION_KRIGING:
-                if(pMode.equals(KRIGING_EXPERIMENTAL_VARIOGRAM)) {
+                if (pMode.equals(KRIGING_EXPERIMENTAL_VARIOGRAM)) {
+                    HashMap<Integer, Coordinate> validStationIds2CoordinateMap = new HashMap<>();
+                    HashMap<Integer, double[]> validStationIds2ValueMap = new HashMap<>();
+                    for( Integer tmpStationId : association.stationIds ) {
+                        validStationIds2CoordinateMap.put(tmpStationId, inStationIds2CoordinateMap.get(tmpStationId));
+                        validStationIds2ValueMap.put(tmpStationId, inStationIds2ValueMap.get(tmpStationId));
+                    }
+
                     OmsExperimentalVariogram expVariogram = new OmsExperimentalVariogram();
-                    expVariogram.inStationIds2CoordinateMap = inStationIds2CoordinateMap;
-                    expVariogram.inStationIds2ValueMap = inStationIds2ValueMap;
+                    expVariogram.inStationIds2CoordinateMap = validStationIds2CoordinateMap;
+                    expVariogram.inStationIds2ValueMap = validStationIds2ValueMap;
                     expVariogram.pCutoff = pCutoff;
                     expVariogram.pBins = pBins;
                     expVariogram.process();
                     HashMap<Integer, double[]> outExperimentalVariogram = expVariogram.outExperimentalVariogram;
-                    
+
                     OmsTheoreticalVariogram theoVariogram = new OmsTheoreticalVariogram();
                     theoVariogram.inExperimentalVariogramMap = outExperimentalVariogram;
                     theoVariogram.pTheoreticalVariogramType = pTheoreticalVariogramType;
+                    theoVariogram.process();
                     HashMap<Integer, double[]> outTheoreticalVariogram = theoVariogram.outTheoreticalVariogram;
                     double outSill = theoVariogram.outSill;
                     double outRange = theoVariogram.outRange;
                     double outNugget = theoVariogram.outNugget;
-                    
-                    
-                    
+
+                } else {
+                    throw new RuntimeException("Not implemented yet");
                 }
-                
-                
-                throw new RuntimeException("Not implemented yet");
-//                break;
+                break;
             case NODATA:
             default:
                 // do nothing, the target point will be ignored as it has no data

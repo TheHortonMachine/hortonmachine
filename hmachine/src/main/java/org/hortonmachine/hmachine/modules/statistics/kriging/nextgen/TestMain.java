@@ -1,5 +1,7 @@
 package org.hortonmachine.hmachine.modules.statistics.kriging.nextgen;
 
+import static org.hortonmachine.gears.libs.modules.Variables.KRIGING_EXPERIMENTAL_VARIOGRAM;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -10,8 +12,9 @@ public class TestMain {
         String targets = "/home/hydrologis/TMP/UNITN/newGenKriging/shapefile/centroids_utm.shp";
 //        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/01_input_kriging_hourly_allnodata.csv";
 //        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/04_input_kriging_hourly_twovalues.csv";
-        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/03_input_kriging_hourly_onevalue.csv";
+//        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/03_input_kriging_hourly_onevalue.csv";
 //        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/05_input_kriging_hourly_allconstantvalue.csv";
+        String data = "/home/hydrologis/TMP/UNITN/newGenKriging/06_input_kriging_hourly_morevalues.csv";
 
         OmsMeasurementsDataCoach mc = new OmsMeasurementsDataCoach();
         mc.inStations = stations;
@@ -29,6 +32,7 @@ public class TestMain {
         mc.initProcess();
 
         OmsKrigingInterpolator interpolator = new OmsKrigingInterpolator();
+        interpolator.pMode = KRIGING_EXPERIMENTAL_VARIOGRAM;
 
         int timestepCount = 1;
 
