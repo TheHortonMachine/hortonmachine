@@ -114,12 +114,24 @@ public class NetcdfInfo extends HMModel {
         sb.append("File type id: ").append(fileTypeId).append(NL);
         sb.append("File type version: ").append(fileTypeVersion).append(NL);
         sb.append("File type description: ").append(fileTypeDescription).append(NL);
+        sb.append(NL);
+        
+        List<Attribute> globalAttributes = netcdfDataset.getGlobalAttributes();
+        sb.append("Clobal Attributes").append(NL);
+        for( Attribute attribute : globalAttributes ) {
+            sb.append(IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue()).append(NL);
+        }
 
+        sb.append(NL);
         sb.append("Coordinate systems").append(NL);
         List<CoordinateSystem> coordinateSystems = netcdfDataset.getCoordinateSystems();
         int i = 1;
         for( CoordinateSystem cs : coordinateSystems ) {
             sb.append(IND).append(i++).append(") ").append(cs.getName()).append(": ").append(cs).append(NL);
+            sb.append(IND+IND).append("has X/Y CoordAxis + CoordTrans Projection: ").append(cs.isGeoXY()).append(NL);
+            sb.append(IND+IND).append("has lat/long CoordAxis: ").append(cs.isLatLon()).append(NL);
+            sb.append(IND+IND).append("has radial distance + azimuth CoordAxis: ").append(cs.isRadial()).append(NL);
+            sb.append(IND+IND).append("has time Axis: ").append(cs.hasTimeAxis()).append(NL);
         }
         sb.append(NL);
         sb.append("Coordinate Axes").append(NL);
@@ -313,7 +325,7 @@ public class NetcdfInfo extends HMModel {
     public static void main( String[] args ) throws Exception {
         NetcdfInfo i = new NetcdfInfo();
         i.doLongitudeShift = false;
-        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/05_tas_SAM-44_CCCma-CanESM2_rcp85_r1i1p1_UCAN-WRF341I_v2_day_20510101-20551231.nc";
+        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
         i.process();
     }
 }

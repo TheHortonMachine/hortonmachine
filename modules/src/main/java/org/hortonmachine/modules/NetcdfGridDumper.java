@@ -18,12 +18,9 @@
 package org.hortonmachine.modules;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.media.jai.iterator.WritableRandomIter;
@@ -31,20 +28,22 @@ import javax.media.jai.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.io.netcdf.NetCDFReader;
-import org.geotools.data.DataSourceException;
 import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.imageio.netcdf.utilities.NetCDFUtilities;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -57,36 +56,23 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import ucar.ma2.Array;
-import ucar.ma2.DataType;
 import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
-import ucar.ma2.Range;
-import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
-import ucar.nc2.Variable;
-import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
-import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
-import ucar.nc2.dataset.CoordinateSystem;
-import ucar.nc2.dataset.CoordinateTransform;
-import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.VariableDS;
-import ucar.nc2.dataset.transform.RotatedPole;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.time.CalendarDate;
 import ucar.unidata.geoloc.LatLonPoint;
-import ucar.unidata.geoloc.LatLonRect;
 import ucar.unidata.geoloc.ProjectionImpl;
-import ucar.unidata.geoloc.ProjectionRect;
+import ucar.unidata.geoloc.projection.LambertConformal;
 import ucar.unidata.geoloc.projection.LatLonProjection;
-import ucar.unidata.geoloc.projection.RotatedLatLon;
-import ucar.unidata.util.Parameter;
 
 @Description("Dump NetCDF grids to geotools compatible rasters command.")
-@Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
+@Author(name = "Antonello Andrea, Ferdinando Villa", contact = "http://www.hydrologis.com, BC3")
 @Keywords("netdcf")
 @Label(HMConstants.NETCDF)
 @Name("_netcdfgriddumper")
@@ -106,32 +92,60 @@ public class NetcdfGridDumper extends HMModel {
 
     public String outFolder;
 
+    private ProjectionImpl netcdfProj = null;
+    private MathTransform geotoolsTransform = null;
+
     @Execute
     public void process() throws Exception {
-        
-        
+
         GridDataset gds = GridDataset.open(inPath);
         List<GridDatatype> grids = gds.getGrids();
-        
-        long count = grids.stream().filter(g-> g.getDimensions().size() > 2).count();
+
+        long count = grids.stream().filter(g -> g.getDimensions().size() > 2).count();
         pm.message("Grid definitions found: " + count);
         for( GridDatatype grid : grids ) {
             List<Dimension> dimensions = grid.getDimensions();
+            VariableDS v = grid.getVariable();
+//            CoordinateReferenceSystem crs = NetCDFProjection.parseProjection(v, new GridMappingCRSParser(attr));
+
             if (dimensions.size() > 2) {
                 String gridName = grid.getFullName();
                 pm.message("Dumping grid: " + gridName);
 
-                try {
-                    NetCDFReader netCDFReader = new NetCDFReader(new File(inPath), null);
-                    GridCoverage2D read = netCDFReader.read(gridName, null);
-                } catch (Exception e) {
-                    e.printStackTrace();
+//                try {
+//                    NetCDFReader netCDFReader = new NetCDFReader(new File(inPath), null);
+//                    GridCoverage2D read = netCDFReader.read(gridName, null);
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+
+                GridCoordSystem coordSys = grid.getCoordinateSystem();
+                netcdfProj = coordSys.getProjection();
+
+                if (netcdfProj instanceof LambertConformal) {
+                    LambertConformal lc = (LambertConformal) netcdfProj;
+                    String wks = lc.toWKS();
+                    if (wks.trim().endsWith(",")) {
+                        // units part is not added, is km in netcdf
+                        wks += "UNIT[\"m\",1000]]";
+                    }
+                    CoordinateReferenceSystem sourceCRS = CRS.parseWKT(wks);
+                    CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
+                    geotoolsTransform = CRS.findMathTransform(sourceCRS, targetCRS, true);
                 }
                 
-                GridCoordSystem coordSys = grid.getCoordinateSystem();
-                ProjectionImpl proj = coordSys.getProjection();
                 CoordinateAxis xAxis = coordSys.getXHorizAxis();
                 CoordinateAxis yAxis = coordSys.getYHorizAxis();
+                List<CoordinateAxis> coordinateAxes = coordSys.getCoordinateAxes();
+                for( CoordinateAxis coordinateAxis : coordinateAxes ) {
+                    if (coordinateAxis.getFullName().equals("lon")) {
+                        xAxis = coordinateAxis;
+                    }
+                    if (coordinateAxis.getFullName().equals("lat")) {
+                        yAxis = coordinateAxis;
+                    }
+                }
+
 
                 List<CalendarDate> datesList = new ArrayList<>();
                 if (coordSys.hasTimeAxis1D()) {
@@ -145,6 +159,86 @@ public class NetcdfGridDumper extends HMModel {
                 int[] yShape = yValues.getShape();
                 Index xIndex = xValues.getIndex();
                 Index yIndex = yValues.getIndex();
+
+//                /*
+//                 * each fucking variable and each fucking file can have a different fucking
+//                 * chunk size; reading anything else than one fucking chunk at a time slows
+//                 * things down to a fucking crawl.
+//                 */
+//                int[] chunkSizes = new int[v.getShape().length];
+//                for( Attribute a : v.getAttributes() ) {
+//                    if ("_ChunkSizes".equals(a.getFullName())) {
+//                        for( int i = 0; i < a.getValues().getSize(); i++ ) {
+//                            chunkSizes[i] = ((Number) a.getValue(i)).intValue();
+//                        }
+//                        break;
+//                    }
+//                }
+//
+//                int nd = v.getShape().length;
+//                int times = nd > 2 ? v.getShape()[0] : 1;
+//                int rowDim = nd > 2 ? 1 : 0;
+//                int colDim = nd > 2 ? 2 : 1;
+//                int rows = v.getShape()[rowDim];
+//                int cols = v.getShape()[colDim];
+//
+//                /*
+//                 * Read up one chunk at a time
+//                 */
+//                int[] readOrigin = new int[nd];
+//                int[] readShape = new int[nd];
+//
+//                if (chunkSizes.length == 3 && chunkSizes[0] != 1) {
+//                    Logger.INSTANCE.w("NetCDF reader: time chunk size != 1: proceed at your own risk");
+//                }
+//
+//                /*
+//                 * assumes we're facing a 1 for time chunksize, or no time; we have sent a
+//                 * fucking warning if not
+//                 */
+//                for( int startRow = 0; startRow < rows; startRow += chunkSizes[rowDim] ) {
+//                    for( int startCol = 0; startCol < cols; startCol += chunkSizes[colDim] ) {
+//                        if (nd > 2) {
+//                            readOrigin[0] = 0;
+//                            readShape[0] = 1;
+//                        }
+//                        readOrigin[rowDim] = startRow;
+//                        readOrigin[colDim] = startCol;
+//                        readShape[rowDim] = chunkSizes[rowDim];
+//                        readShape[colDim] = chunkSizes[colDim];
+//
+//                        /*
+//                         * they apparently like to have chunks[dim] starting at last chunk[dim] + 1,
+//                         * just to complicate things.
+//                         */
+//                        while( readOrigin[rowDim] + readShape[rowDim] > rows ) {
+//                            readShape[rowDim]--;
+//                        }
+//                        while( readOrigin[colDim] + readShape[colDim] > cols ) {
+//                            readShape[colDim]--;
+//                        }
+//
+//                        // this is the fucking chunk and its fucking index
+//                        Array dataArray = v.read(readOrigin, readShape);
+//                        Index index = dataArray.getIndex();
+//
+//                        for( int col = 0; col < readShape[colDim]; col++ ) {
+//                            for( int row = 0; row < readShape[rowDim]; row++ ) {
+//
+//                                if (nd > 2) {
+//                                    index.set(0, row, col);
+//                                } else {
+//                                    index.set(row, col);
+//                                }
+//
+//                                Double sample = dataArray.getDouble(index);
+//
+//                            }
+//                        }
+//                    }
+//
+//                }
+
                 // first find final bounds
                 org.locationtech.jts.geom.Envelope env = new org.locationtech.jts.geom.Envelope();
                 int rows = yShape[0];
@@ -153,17 +247,16 @@ public class NetcdfGridDumper extends HMModel {
                     for( int x = 0; x < cols; x++ ) {
                         double xVal = xValues.getDouble(xIndex.set(x));
                         double yVal = yValues.getDouble(yIndex.set(y));
-                        double longitude = xVal;
-                        double latitude = yVal;
+                        Coordinate coordinate = new Coordinate(xVal, yVal);
 
-                        if (!(proj instanceof LatLonProjection)) {
-                            LatLonPoint latLonPoint = proj.projToLatLon(xVal, yVal);
-                            latitude = latLonPoint.getLatitude();
-                            longitude = latLonPoint.getLongitude();
+                        if (geotoolsTransform != null) {
+                            coordinate = transformGeotoolsWay(coordinate);
+                        } else if (netcdfProj != null && !(netcdfProj instanceof LatLonProjection)) {
+                            coordinate = transformNetcdfWay(coordinate);
+                            coordinate = checkLongitude(coordinate);
                         }
 
-                        longitude = checkLongitude(longitude);
-                        env.expandToInclude(new Coordinate(longitude, latitude));
+                        env.expandToInclude(coordinate);
                     }
                 }
                 // and create the target gridgeometry
@@ -176,22 +269,33 @@ public class NetcdfGridDumper extends HMModel {
                 GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, cols, rows);
                 GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
 
-                dumpGrid(grid, coordSys, proj, xAxis, yAxis, datesList, gridGeometry2D);
-
+                dumpGrid(grid, coordSys, netcdfProj, xAxis, yAxis, datesList, gridGeometry2D);
             }
+
         }
 
     }
 
-    private double checkLongitude( double longitude ) {
+    private Coordinate transformGeotoolsWay( Coordinate coordinate ) throws TransformException {
+        coordinate = JTS.transform(coordinate, null, geotoolsTransform);
+        return coordinate;
+    }
+
+    private Coordinate transformNetcdfWay( Coordinate coordinate ) {
+        LatLonPoint latLonPoint = netcdfProj.projToLatLon(coordinate.x, coordinate.y);
+        coordinate = new Coordinate(latLonPoint.getLongitude(), latLonPoint.getLatitude());
+        return coordinate;
+    }
+
+    private Coordinate checkLongitude( Coordinate coordinate ) {
         if (doLongitudeShift) {
-            if (longitude < 0) {
-                longitude = longitude + 180.0;
+            if (coordinate.x < 0) {
+                coordinate.x = coordinate.x + 180.0;
             } else {
-                longitude = longitude - 180.0;
+                coordinate.x = coordinate.x - 180.0;
             }
         }
-        return longitude;
+        return coordinate;
     }
 
     private void dumpGrid( GridDatatype grid, GridCoordSystem coordSys, ProjectionImpl proj, CoordinateAxis xAxis,
@@ -232,15 +336,16 @@ public class NetcdfGridDumper extends HMModel {
                     for( int x = 0; x < xShape[0]; x++ ) {
                         double xVal = xValues.getDouble(xIndex.set(x));
                         double yVal = yValues.getDouble(yIndex.set(y));
-                        double latitude = yVal;
-                        double longitude = xVal;
-                        if (!(proj instanceof LatLonProjection)) {
-                            LatLonPoint latLonPoint = proj.projToLatLon(xVal, yVal);
-                            latitude = latLonPoint.getLatitude();
-                            longitude = latLonPoint.getLongitude();
+
+                        Coordinate coordinate = new Coordinate(xVal, yVal);
+
+                        if (geotoolsTransform != null) {
+                            coordinate = transformGeotoolsWay(coordinate);
+                        } else if (netcdfProj != null && !(netcdfProj instanceof LatLonProjection)) {
+                            coordinate = transformNetcdfWay(coordinate);
+                            coordinate = checkLongitude(coordinate);
                         }
 
-                        longitude = checkLongitude(longitude);
 //                    int[] xy = coordSys.findXYindexFromLatLon(latitude, longitude, null);
 //                    Array data = grid.readDataSlice(0, 0, xy[1], xy[0]); // note order is t, z,y, x
 //                    double value = data.getDouble(0);
@@ -250,7 +355,6 @@ public class NetcdfGridDumper extends HMModel {
                             if (next instanceof Number) {
                                 double value = ((Number) next).doubleValue();
 
-                                Coordinate coordinate = new Coordinate(longitude, latitude);
                                 int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry2D, null);
                                 if (colRow[0] < xShape[0] && colRow[1] < yShape[0])
                                     try {
