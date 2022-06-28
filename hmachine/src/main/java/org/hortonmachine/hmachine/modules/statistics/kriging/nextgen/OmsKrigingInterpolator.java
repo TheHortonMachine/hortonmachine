@@ -86,10 +86,6 @@ public class OmsKrigingInterpolator extends HMModel {
     @In
     public String pTheoreticalVariogramType = ITheoreticalVariogram.EXPONENTIAL;
 
-    @Description("Specified cutoff for experimental variogram.")
-    @In
-    public double pCutoff;
-
     @Description("Number of bins to consider in the anlysis for the experimental variogram.")
     @In
     public int pBins;
@@ -132,7 +128,6 @@ public class OmsKrigingInterpolator extends HMModel {
                     OmsExperimentalVariogram expVariogram = new OmsExperimentalVariogram();
                     expVariogram.inStationIds2CoordinateMap = validStationIds2CoordinateMap;
                     expVariogram.inStationIds2ValueMap = validStationIds2ValueMap;
-                    expVariogram.pCutoff = pCutoff;
                     expVariogram.pBins = pBins;
                     expVariogram.process();
                     HashMap<Integer, double[]> outExperimentalVariogram = expVariogram.outExperimentalVariogram;

@@ -60,10 +60,6 @@ public class OmsExperimentalVariogram extends HMModel {
     @In
     public boolean doIncludezero = true;
 
-    @Description("Specified cutoff")
-    @In
-    public double pCutoff;
-
     @Description("Number of bins to consider in the anlysis")
     @In
     public int pBins;
@@ -85,25 +81,6 @@ public class OmsExperimentalVariogram extends HMModel {
     public void process() throws Exception {
         int iCount = inStationIds2CoordinateMap.size();// xStation.length;
         double distanceMatrix[][] = new double[iCount][iCount];
-
-        double x_max = Double.NEGATIVE_INFINITY;
-        double x_min = Double.POSITIVE_INFINITY;
-        double y_max = Double.NEGATIVE_INFINITY;
-        double y_min = Double.POSITIVE_INFINITY;
-
-        for( Entry<Integer, Coordinate> entry : inStationIds2CoordinateMap.entrySet() ) {
-            Coordinate coord = entry.getValue();
-            x_min = Math.min(x_min, coord.x);
-            y_min = Math.min(y_min, coord.y);
-            x_max = Math.max(x_max, coord.x);
-            y_max = Math.max(y_max, coord.y);
-        }
-        double diagonal = Math.sqrt((x_max - x_min) * (x_max - x_min) + (y_max - y_min) * (y_max - y_min));
-
-        double cutoff = pCutoff;
-        if (pCutoff == 0) {
-            cutoff = diagonal / 3;
-        }
 
         // Compute the distance matrix
         double maxDistance = 0;
@@ -147,7 +124,7 @@ public class OmsExperimentalVariogram extends HMModel {
         // compute the mean of the input hStation
         mean /= (double) iCount;
 
-        double[][] outResult = calculateVariogram(cutoff, distanceMatrix, hStation, mean, maxDistance);
+        double[][] outResult = calculateVariogram(distanceMatrix, hStation, mean, maxDistance);
 
         outStationsDistances = distanceMatrix;
         
@@ -161,20 +138,19 @@ public class OmsExperimentalVariogram extends HMModel {
     /**
      * Calculate the variances and the distances
      *
-     * @param cutoff the cutoff
      * @param distanceMatrix the distance matrix
      * @param hStation the vector containing the variable value of the station
      * @param mean the mean value of the input data
      * @param maxDistance the max distance value
      * @return the double[][] matrix with the results (the variances and the distances)
      */
-    public double[][] calculateVariogram( double cutoff, double[][] distanceMatrix, double[] hStation, double mean, double maxDistance ) {
+    public double[][] calculateVariogram( double[][] distanceMatrix, double[] hStation, double mean, double maxDistance ) {
 
         pBins = (pBins == 0) ? 15 : pBins;
-        double binAmplitude = cutoff / pBins;
+        double binAmplitude = maxDistance / pBins;
 
         // number of distance for each bin
-        int iClasses = (int) (maxDistance / binAmplitude + 2);
+        int iClasses = pBins;// (int) (maxDistance / binAmplitude + 2);
 
         // definition of the vectors containing the variance, covariance, semivariance,
         // number of the points in the specified bin..
@@ -192,7 +168,7 @@ public class OmsExperimentalVariogram extends HMModel {
             double value1 = hStation[i];
 
             for( int j = i + 1; j < distanceMatrix.length; j++ ) {
-                if (distanceMatrix[i][j] > 0 && distanceMatrix[i][j] < cutoff) {
+                if (distanceMatrix[i][j] > 0) {
 
                     // return the class of considered distance
                     int iClass = (int) Math.floor((distanceMatrix[i][j]) / binAmplitude);
