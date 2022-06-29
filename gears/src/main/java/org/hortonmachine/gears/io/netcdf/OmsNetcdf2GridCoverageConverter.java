@@ -225,8 +225,8 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 }
                 int datesCount = datesList.size();
                 if (datesCount <= pToTimestep) {
-                    throw new ModelsIllegalargumentException(
-                            "The dataset contains " + datesCount + " time slices. Please set the toTimestep accordingly.", this);
+                    pToTimestep = datesCount;
+                    pm.errorMessage("The dataset contains " + datesCount + " time slices. toTimestep has been set accordingly.");
                 }
 
                 xValues = xAxis.read();
