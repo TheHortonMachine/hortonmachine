@@ -16,28 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
-import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 
-import javax.media.jai.iterator.WritableRandomIter;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridEnvelope2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.imageio.netcdf.utilities.NetCDFUtilities;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.geometry.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -52,29 +37,25 @@ import oms3.annotations.UI;
 import ucar.ma2.Array;
 import ucar.ma2.DataType;
 import ucar.ma2.Index;
-import ucar.ma2.IndexIterator;
 import ucar.ma2.Range;
 import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.Variable;
 import ucar.nc2.constants.AxisType;
 import ucar.nc2.dataset.CoordinateAxis;
-import ucar.nc2.dataset.CoordinateAxis1D;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.CoordinateTransform;
+import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.transform.RotatedPole;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.time.CalendarDate;
 import ucar.unidata.geoloc.LatLonPoint;
-import ucar.unidata.geoloc.LatLonRect;
 import ucar.unidata.geoloc.ProjectionImpl;
-import ucar.unidata.geoloc.ProjectionRect;
 import ucar.unidata.geoloc.projection.LatLonProjection;
-import ucar.unidata.geoloc.projection.RotatedLatLon;
 import ucar.unidata.util.Parameter;
 
 @Description("NetdcfInfo command.")
@@ -97,9 +78,14 @@ public class NetcdfInfo extends HMModel {
         StringBuilder sb = new StringBuilder();
         File infile = new File(inPath);
         if (!infile.exists()) {
-            throw new ModelsIllegalargumentException("File doesn't exist.", this);
+            if(!inPath.startsWith("http")) {
+                throw new ModelsIllegalargumentException("The inptu doesn't exist.", this);
+            }
         }
-        NetcdfDataset netcdfDataset = NetCDFUtilities.getDataset(inPath);
+        
+        DatasetUrl datasetUrl = DatasetUrl.findDatasetUrl(inPath);
+        NetcdfDataset netcdfDataset = NetcdfDatasets.acquireDataset(datasetUrl, null);
+//        NetcdfDataset netcdfDataset = NetCDFUtilities.getDataset(inPath);
         List<Variable> variables = netcdfDataset.getVariables();
         String NL = "\n";
         String IND = "\t";
@@ -117,7 +103,7 @@ public class NetcdfInfo extends HMModel {
         sb.append(NL);
         
         List<Attribute> globalAttributes = netcdfDataset.getGlobalAttributes();
-        sb.append("Clobal Attributes").append(NL);
+        sb.append("Global Attributes").append(NL);
         for( Attribute attribute : globalAttributes ) {
             sb.append(IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue()).append(NL);
         }
@@ -263,13 +249,6 @@ public class NetcdfInfo extends HMModel {
                             .append(dates.get(dates.size() - 1)).append("   (" + tSize + ")").append(NL);
                 }
 
-//                ProjectionRect boundingBox = coordSys.getBoundingBox();
-//                sb.append(IND + IND).append("ProjectionRect: ").append(boundingBox).append(NL);
-//                double minX = boundingBox.getMinX();
-//                double minY = boundingBox.getMinY();
-//                double maxX = boundingBox.getMaxX();
-//                double maxY = boundingBox.getMaxY();
-
                 Array xValues = xAxis.read();
                 Array yValues = yAxis.read();
                 int[] xShape = xValues.getShape();
@@ -310,7 +289,7 @@ public class NetcdfInfo extends HMModel {
         pm.message(sb.toString());
 
     }
-
+    
     private double checkLongitude( double longitude ) {
         if (doLongitudeShift) {
             if (longitude < 0) {
@@ -324,8 +303,9 @@ public class NetcdfInfo extends HMModel {
 
     public static void main( String[] args ) throws Exception {
         NetcdfInfo i = new NetcdfInfo();
-        i.doLongitudeShift = false;
-        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
+        i.doLongitudeShift = true;
+        i.inPath = "/home/hydrologis/Desktop/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
+//        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
         i.process();
     }
 }

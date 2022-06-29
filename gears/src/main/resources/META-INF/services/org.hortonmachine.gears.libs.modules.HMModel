@@ -121,3 +121,4 @@ org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer
 org.hortonmachine.gears.ui.OmsCoverageViewer
 org.hortonmachine.gears.ui.OmsMapsViewer
 org.hortonmachine.gears.ui.OmsMatrixCharter
+org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter

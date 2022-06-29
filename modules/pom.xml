@@ -22,9 +22,14 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>com.github.docker-java</groupId>
-		    <artifactId>docker-java</artifactId>
+			<groupId>com.github.docker-java</groupId>
+			<artifactId>docker-java</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 </project>

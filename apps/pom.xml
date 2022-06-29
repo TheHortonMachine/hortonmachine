@@ -58,11 +58,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-netcdf</artifactId>
-			<version>${gt.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.geoscript</groupId>
 			<artifactId>geoscript-groovy</artifactId>
 			<version>${geoscript.version}</version>
