@@ -23,6 +23,8 @@ import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pFalseNorthingCorrection;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pFromTimestep;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pGridName;
+import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pNorthPoleLatitudeCorrection;
+import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pNorthPoleLongitudeCorrection;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pToTimestep;
 
 import java.io.File;
@@ -72,10 +74,6 @@ public class NetcdfGridDumper extends HMModel {
     @In
     public Integer pToTimestep;
 
-    @Description(DESCR_doLongitudeShift)
-    @In
-    public boolean doLongitudeShift = false;
-
     @Description(DESCR_pFalseEastingCorrection)
     @In
     public Double pFalseEastingCorrection = null;
@@ -84,6 +82,14 @@ public class NetcdfGridDumper extends HMModel {
     @In
     public Double pFalseNorthingCorrection = null;
 
+    @Description(DESCR_pNorthPoleLongitudeCorrection)
+    @In
+    public Double pNorthPoleLongitudeCorrection = null;
+
+    @Description(DESCR_pNorthPoleLatitudeCorrection)
+    @In
+    public Double pNorthPoleLatitudeCorrection = null;
+    
     @Description(DESCR_outFolder)
     @UI(HMConstants.FOLDEROUT_UI_HINT)
     @Out
@@ -97,9 +103,10 @@ public class NetcdfGridDumper extends HMModel {
         converter.pGridName = pGridName;
         converter.pFromTimestep = pFromTimestep;
         converter.pToTimestep = pToTimestep;
-        converter.doLongitudeShift = doLongitudeShift;
         converter.pFalseEastingCorrection = pFalseEastingCorrection;
         converter.pFalseNorthingCorrection = pFalseNorthingCorrection;
+        converter.pNorthPoleLatitudeCorrection = pNorthPoleLatitudeCorrection;
+        converter.pNorthPoleLongitudeCorrection = pNorthPoleLongitudeCorrection;
 
         converter.initProcess();
 

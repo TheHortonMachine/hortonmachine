@@ -18,7 +18,7 @@
 package org.hortonmachine.gears.io.netcdf;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.text.SimpleDateFormat;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -37,7 +37,6 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.geometry.Envelope;
 
@@ -56,9 +55,7 @@ import oms3.annotations.UI;
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
-import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
-import ucar.nc2.Variable;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.VariableDS;
@@ -66,9 +63,9 @@ import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.time.CalendarDate;
-import ucar.unidata.geoloc.LatLonPoint;
 import ucar.unidata.geoloc.ProjectionImpl;
-import ucar.unidata.geoloc.projection.LambertConformal;
+import ucar.unidata.geoloc.ProjectionPoint;
+import ucar.unidata.geoloc.projection.RotatedPole;
 
 @Description("Dump NetCDF grids to geotools Gridcoverage converting them to lat/lon EPSG:4326.")
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
@@ -95,10 +92,6 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     @In
     public Integer pToTimestep;
 
-    @Description(DESCR_doLongitudeShift)
-    @In
-    public boolean doLongitudeShift = false;
-
     @Description(DESCR_pFalseEastingCorrection)
     @In
     public Double pFalseEastingCorrection = null;
@@ -106,6 +99,14 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     @Description(DESCR_pFalseNorthingCorrection)
     @In
     public Double pFalseNorthingCorrection = null;
+
+    @Description(DESCR_pNorthPoleLongitudeCorrection)
+    @In
+    public Double pNorthPoleLongitudeCorrection = null;
+
+    @Description(DESCR_pNorthPoleLatitudeCorrection)
+    @In
+    public Double pNorthPoleLatitudeCorrection = null;
 
     @Description(DESCR_outRaster)
     @Out
@@ -120,6 +121,8 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     public static final String DESCR_outRaster = "The output raster map generated for the current timestamp.";
     public static final String DESCR_pFalseNorthingCorrection = "An optional correction on the false northing.";
     public static final String DESCR_pFalseEastingCorrection = "An optional correction on the false easting.";
+    public static final String DESCR_pNorthPoleLongitudeCorrection = "An optional correction of the north pole northing .";
+    public static final String DESCR_pNorthPoleLatitudeCorrection = "An optional correction on the false easting.";
     public static final String DESCR_doLongitudeShift = "If set to true, a shift of the longitude by 180 degrees is performed.";
     public static final String DESCR_pToTimestep = "The timestap index at which to end to dump. If not set defaults to the start index.";
     public static final String DESCR_pFromTimestep = "The timestap index from which to start to dump.";
@@ -196,27 +199,12 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 coordSys = dumpGrid.getCoordinateSystem();
                 netcdfProj = coordSys.getProjection();
 
-                if (netcdfProj instanceof LambertConformal) {
-                    LambertConformal lc = (LambertConformal) netcdfProj;
-                    if (pFalseEastingCorrection != null) {
-                        lc.setFalseEasting(pFalseEastingCorrection);
-                    }
-                    if (pFalseNorthingCorrection != null) {
-                        lc.setFalseNorthing(2800);
-                    }
-                }
+                fixFalseEasting(netcdfProj);
+                fixFalseNorthing(netcdfProj);
+                fixNorthPole(netcdfProj);
 
                 CoordinateAxis xAxis = coordSys.getXHorizAxis();
                 CoordinateAxis yAxis = coordSys.getYHorizAxis();
-//                List<CoordinateAxis> coordinateAxes = coordSys.getCoordinateAxes();
-//                for( CoordinateAxis coordinateAxis : coordinateAxes ) {
-//                    if (coordinateAxis.getFullName().equals("lon")) {
-//                        xAxis = coordinateAxis;
-//                    }
-//                    if (coordinateAxis.getFullName().equals("lat")) {
-//                        yAxis = coordinateAxis;
-//                    }
-//                }
 
                 datesList = new ArrayList<>();
                 if (coordSys.hasTimeAxis1D()) {
@@ -247,7 +235,6 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                         Coordinate coordinate = new Coordinate(xVal, yVal);
 
                         coordinate = toLatLong(netcdfProj, coordinate);
-                        coordinate = checkLongitude(coordinate);
 
                         env.expandToInclude(coordinate);
                     }
@@ -278,6 +265,53 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
         }
     }
 
+    private void fixFalseEasting( Object obj ) {
+        try {
+            if (pFalseEastingCorrection != null) {
+                Method method = obj.getClass().getMethod("setFalseEasting", double.class);
+                method.invoke(obj, pFalseEastingCorrection.doubleValue());
+                pm.errorMessage("Set false easting to: " + pFalseEastingCorrection);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void fixFalseNorthing( Object obj ) {
+        try {
+            if (pFalseNorthingCorrection != null) {
+                Method method = obj.getClass().getMethod("setFalseNorthing", double.class);
+                method.invoke(obj, pFalseNorthingCorrection.doubleValue());
+                pm.errorMessage("Set false northing to: " + pFalseNorthingCorrection);
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void fixNorthPole( Object obj ) {
+        try {
+            if (pNorthPoleLongitudeCorrection != null || pNorthPoleLatitudeCorrection != null) {
+                if (obj instanceof RotatedPole) {
+                    RotatedPole rp = (RotatedPole) obj;
+                    ProjectionPoint northPole = rp.getNorthPole();
+                    double lon = northPole.getX();
+                    double lat = northPole.getY();
+                    if (pNorthPoleLongitudeCorrection != null) {
+                        lon = pNorthPoleLongitudeCorrection;
+                    }
+                    if (pNorthPoleLatitudeCorrection != null) {
+                        lon = pNorthPoleLatitudeCorrection;
+                    }
+                    netcdfProj = new RotatedPole(lat, lon);
+                    pm.errorMessage("Correcting RotatedPole North Pole x/y to: " + lon + " / " + lat);
+                }
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
     @Execute
     public void process() throws Exception {
         if (timestepIterator != null && timestepIterator.hasNext()) {
@@ -299,7 +333,6 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                         Coordinate coordinate = new Coordinate(xVal, yVal);
 
                         coordinate = toLatLong(netcdfProj, coordinate);
-                        coordinate = checkLongitude(coordinate);
 
                         if (indexIterator.hasNext()) {
                             Object next = indexIterator.next();
@@ -334,17 +367,6 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
             pm.done();
         }
 
-    }
-
-    private Coordinate checkLongitude( Coordinate coordinate ) {
-        if (doLongitudeShift) {
-            if (coordinate.x < 0) {
-                coordinate.x = coordinate.x + 180.0;
-            } else {
-                coordinate.x = coordinate.x - 180.0;
-            }
-        }
-        return coordinate;
     }
 
 }
