@@ -46,9 +46,7 @@ import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.CoordinateTransform;
-import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
-import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
@@ -78,13 +76,13 @@ public class NetcdfInfo extends HMModel {
         StringBuilder sb = new StringBuilder();
         File infile = new File(inPath);
         if (!infile.exists()) {
-            if(!inPath.startsWith("http")) {
-                throw new ModelsIllegalargumentException("The inptu doesn't exist.", this);
+            if (!inPath.startsWith("http")) {
+                throw new ModelsIllegalargumentException("The input doesn't exist.", this);
             }
         }
-        
-        DatasetUrl datasetUrl = DatasetUrl.findDatasetUrl(inPath);
-        NetcdfDataset netcdfDataset = NetcdfDatasets.acquireDataset(datasetUrl, null);
+
+//        DatasetUrl datasetUrl = DatasetUrl.findDatasetUrl(inPath);
+        NetcdfDataset netcdfDataset = NetcdfDataset.acquireDataset(inPath, null);
 //        NetcdfDataset netcdfDataset = NetCDFUtilities.getDataset(inPath);
         List<Variable> variables = netcdfDataset.getVariables();
         String NL = "\n";
@@ -101,7 +99,7 @@ public class NetcdfInfo extends HMModel {
         sb.append("File type version: ").append(fileTypeVersion).append(NL);
         sb.append("File type description: ").append(fileTypeDescription).append(NL);
         sb.append(NL);
-        
+
         List<Attribute> globalAttributes = netcdfDataset.getGlobalAttributes();
         sb.append("Global Attributes").append(NL);
         for( Attribute attribute : globalAttributes ) {
@@ -114,10 +112,10 @@ public class NetcdfInfo extends HMModel {
         int i = 1;
         for( CoordinateSystem cs : coordinateSystems ) {
             sb.append(IND).append(i++).append(") ").append(cs.getName()).append(": ").append(cs).append(NL);
-            sb.append(IND+IND).append("has X/Y CoordAxis + CoordTrans Projection: ").append(cs.isGeoXY()).append(NL);
-            sb.append(IND+IND).append("has lat/long CoordAxis: ").append(cs.isLatLon()).append(NL);
-            sb.append(IND+IND).append("has radial distance + azimuth CoordAxis: ").append(cs.isRadial()).append(NL);
-            sb.append(IND+IND).append("has time Axis: ").append(cs.hasTimeAxis()).append(NL);
+            sb.append(IND + IND).append("has X/Y CoordAxis + CoordTrans Projection: ").append(cs.isGeoXY()).append(NL);
+            sb.append(IND + IND).append("has lat/long CoordAxis: ").append(cs.isLatLon()).append(NL);
+            sb.append(IND + IND).append("has radial distance + azimuth CoordAxis: ").append(cs.isRadial()).append(NL);
+            sb.append(IND + IND).append("has time Axis: ").append(cs.hasTimeAxis()).append(NL);
         }
         sb.append(NL);
         sb.append("Coordinate Axes").append(NL);
@@ -196,7 +194,7 @@ public class NetcdfInfo extends HMModel {
 
         }
 
-        System.out.println(sb.toString());
+        pm.message(sb.toString());
 
         sb = new StringBuilder();
         sb.append(NL);
@@ -270,7 +268,6 @@ public class NetcdfInfo extends HMModel {
                             longitude = latLonPoint.getLongitude();
                         }
 
-                        longitude = checkLongitude(longitude);
                         env.expandToInclude(new Coordinate(longitude, latitude));
                     }
                 }
@@ -288,17 +285,6 @@ public class NetcdfInfo extends HMModel {
         }
         pm.message(sb.toString());
 
-    }
-    
-    private double checkLongitude( double longitude ) {
-        if (doLongitudeShift) {
-            if (longitude < 0) {
-                longitude = longitude + 180.0;
-            } else {
-                longitude = longitude - 180.0;
-            }
-        }
-        return longitude;
     }
 
     public static void main( String[] args ) throws Exception {
