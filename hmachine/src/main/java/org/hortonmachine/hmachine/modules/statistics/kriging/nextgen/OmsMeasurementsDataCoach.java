@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -85,13 +86,21 @@ public class OmsMeasurementsDataCoach extends HMModel {
     @In
     public String fInterpolatedZ = null;
 
-    @Description(maxdist_Description)
+    @Description(maxdist_kriging_Description)
     @In
-    public Double pMaxDist = null;
+    public Double pMaxDistKriging = 10_000.0;
+
+    @Description(maxdist_idw_Description)
+    @In
+    public Double pMaxDistIdw = 100_000.0;
 
     @Description(maxCount_description)
     @In
-    public Integer pMaxClosestStationsNum = null;
+    public Integer pMaxClosestStationsNum = 100;
+
+    @Description("Minimum number of non zero value stations to allow Kriging interpolation.")
+    @In
+    public Integer pMinNonZeroStationsForKrigingNum = 3;
 
     @Description("Static target points ids to coordinates map for current timestep.")
     @Out
@@ -117,7 +126,8 @@ public class OmsMeasurementsDataCoach extends HMModel {
     public static final String fInterpolateid_DESCRIPTION = "The field of the interpolated vector points, defining the id.";
     public static final String fPointZ_DESCRIPTION = "The field of the interpolated vector points, defining the elevation.";
     public static final String maxCount_description = "In the case of kriging with neighbor, inNumCloserStations is the number of stations the algorithm has to consider";
-    public static final String maxdist_Description = "In the case of kriging with neighbor, maxdist is the maximum distance within the algorithm has to consider the stations";
+    public static final String maxdist_kriging_Description = "In the case of kriging with neighbor, maxdist is the maximum distance within the algorithm to consider the stations";
+    public static final String maxdist_idw_Description = "In the case of no kriging (all other cases), maxdist is the maximum distance within the algorithm to consider the stations";
 
     private OmsTimeSeriesIteratorReader inputReader;
 
@@ -131,7 +141,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
     public void initProcess() {
         doProcess = true;
     }
-    
+
     private void ensureOpen() throws Exception {
         if (allStationsMap != null) {
             return;
@@ -201,7 +211,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
         inputReader.nextRecord();
         outStationIds2ValueMap = inputReader.outData;
 
-        // TODO do checks
+        // extract all stations that have valid data in the timestep
         List<Integer> stationsToKeep = new ArrayList<>();
         for( Entry<Integer, double[]> id2Value : outStationIds2ValueMap.entrySet() ) {
             Integer id = id2Value.getKey();
@@ -218,23 +228,24 @@ public class OmsMeasurementsDataCoach extends HMModel {
         outStationIds2CoordinateMap = tmpMap;
 
         outTargetPointId2AssociationMap = new HashMap<>();
-        if (pMaxDist != null && pMaxClosestStationsNum != null) {
+        if (pMaxDistKriging != null && pMaxDistIdw!=null && pMaxClosestStationsNum != null) {
             for( Entry<Integer, Coordinate> interpEntry : targetPointsMap.entrySet() ) {
                 Integer interpId = interpEntry.getKey();
                 Coordinate xyz = interpEntry.getValue();
 
+                // check distance of target points from stations for kriging
                 TreeMap<Double, Integer> distance2StationIdMap = new TreeMap<>();
-                // check for stations in the max distance and sort them
                 for( Entry<Integer, Coordinate> statEntry : outStationIds2CoordinateMap.entrySet() ) {
                     Integer stationId = statEntry.getKey();
                     Coordinate statXyz = statEntry.getValue();
 
                     double distance = statXyz.distance(xyz);
-                    if (distance < pMaxDist) {
+                    if (distance < pMaxDistKriging) {
                         distance2StationIdMap.put(distance, stationId);
                     }
                 }
 
+                // check if we have enough stations for kriging
                 TargetPointAssociation tpa = new TargetPointAssociation();
                 int count = 0;
                 double previous = 0;
@@ -259,20 +270,65 @@ public class OmsMeasurementsDataCoach extends HMModel {
                     }
                     count++;
                 }
-                if (tpa.stationIds.isEmpty()) {
-                    tpa.interpolationType = InterpolationType.NODATA;
-                } else if (allSame) {
-                    tpa.interpolationType = InterpolationType.NOINTERPOLATION_USE_RAW_DATA;
+
+                if (nonZeroCount >= pMinNonZeroStationsForKrigingNum && !allSame) {
+                    tpa.interpolationType = InterpolationType.INTERPOLATION_KRIGING;
+                    outTargetPointId2AssociationMap.put(interpId, tpa);
                 } else {
-                    if (tpa.stationIds.size() == 1) {
-                        tpa.interpolationType = InterpolationType.NOINTERPOLATION_USE_RAW_DATA;
-                    } else if (tpa.stationIds.size() == 2 || nonZeroCount < 3) {
-                        tpa.interpolationType = InterpolationType.INTERPOLATION_IDW;
-                    } else {
-                        tpa.interpolationType = InterpolationType.INTERPOLATION_KRIGING;
+                    // if not enough stations for kriging, we redo the stations extraction
+                    // using the max dist for IDW
+                    if (pMaxDistIdw != null && pMaxClosestStationsNum != null) {
+                        // check distance of target points from stations for IDW
+                        distance2StationIdMap = new TreeMap<>();
+                        for( Entry<Integer, Coordinate> statEntry : outStationIds2CoordinateMap.entrySet() ) {
+                            Integer stationId = statEntry.getKey();
+                            Coordinate statXyz = statEntry.getValue();
+
+                            double distance = statXyz.distance(xyz);
+                            if (distance < pMaxDistIdw) {
+                                distance2StationIdMap.put(distance, stationId);
+                            }
+                        }
+                        // check if we have enough stations for idw
+                        tpa = new TargetPointAssociation();
+                        count = 0;
+                        previous = 0;
+                        allSame = true;
+                        nonZeroCount = 0;
+                        for( Entry<Double, Integer> entry : distance2StationIdMap.entrySet() ) {
+                            if (count < pMaxClosestStationsNum) {
+
+                                tpa.stationDistances.add(entry.getKey());
+                                tpa.stationIds.add(entry.getValue());
+
+                                double value = outStationIds2ValueMap.get(entry.getValue())[0];
+                                if (value != 0.0) {
+                                    nonZeroCount++;
+                                }
+                                if (count != 0 && allSame) {
+                                    if (previous != value) {
+                                        allSame = false;
+                                    }
+                                }
+                                previous = value;
+                            }
+                            count++;
+                        }
+
+                        if (tpa.stationIds.isEmpty()) {
+                            tpa.interpolationType = InterpolationType.NODATA;
+                        } else if (allSame) {
+                            tpa.interpolationType = InterpolationType.NOINTERPOLATION_USE_RAW_DATA;
+                        } else {
+                            if (tpa.stationIds.size() == 1) {
+                                tpa.interpolationType = InterpolationType.NOINTERPOLATION_USE_RAW_DATA;
+                            } else {
+                                tpa.interpolationType = InterpolationType.INTERPOLATION_IDW;
+                            }
+                        }
+                        outTargetPointId2AssociationMap.put(interpId, tpa);
                     }
                 }
-                outTargetPointId2AssociationMap.put(interpId, tpa);
             }
         } else {
             for( Entry<Integer, Coordinate> interpEntry : targetPointsMap.entrySet() ) {
@@ -312,16 +368,16 @@ public class OmsMeasurementsDataCoach extends HMModel {
                 } else {
                     if (tpa.stationIds.size() == 1) {
                         tpa.interpolationType = InterpolationType.NOINTERPOLATION_USE_RAW_DATA;
-                    } else if (tpa.stationIds.size() == 2 || nonZeroCount < 3) {
-                        tpa.interpolationType = InterpolationType.INTERPOLATION_IDW;
-                    } else {
+                    } else if (nonZeroCount >= pMinNonZeroStationsForKrigingNum ) {
                         tpa.interpolationType = InterpolationType.INTERPOLATION_KRIGING;
+                    } else {
+                        tpa.interpolationType = InterpolationType.INTERPOLATION_IDW;
                     }
                 }
                 outTargetPointId2AssociationMap.put(interpId, tpa);
             }
         }
-        
+
         doProcess = inputReader.doProcess;
     }
 }
