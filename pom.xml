@@ -39,7 +39,7 @@
 		<imageio.ext.version>1.4.4</imageio.ext.version>
 		<jts.version>1.18.2</jts.version>
 		<jaiext.version>1.1.23</jaiext.version>
-		<jackson.version>2.13.2</jackson.version>
+		<jackson.version>2.13.2.1</jackson.version>
 
 		<java.awt.headless>true</java.awt.headless>
 		<sun.java2d.d3d>true</sun.java2d.d3d>
