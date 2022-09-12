@@ -31,7 +31,7 @@
 		<c3p0.version>0.9.5.5</c3p0.version>
 		<c3p0.commons.version>0.2.19</c3p0.commons.version>
 		<h2gis.version>1.5.0</h2gis.version>
-		<sqlitejdbc.version>3.32.3.1</sqlitejdbc.version>
+		<sqlitejdbc.version>3.34.0</sqlitejdbc.version>
 		<jt.version>1.6.0</jt.version>
 
 		<netcdf.version>4.6.15</netcdf.version>
@@ -642,7 +642,7 @@
 			<dependency>
 				<groupId>net.java.dev.jna</groupId>
 				<artifactId>jna</artifactId>
-				<version>4.1.0</version>
+				<version>4.2.2</version>
 			</dependency>
 
 			<dependency>

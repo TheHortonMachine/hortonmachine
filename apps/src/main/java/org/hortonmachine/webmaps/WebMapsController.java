@@ -59,11 +59,14 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
     private CRSEnvelope selectedCrsEnv;
 
     public WebMapsController() {
-        setPreferredSize(new Dimension(1400, 750));
+        setPreferredSize(new Dimension(1400, 900));
 
         init();
     }
     private void init() {
+        _callDoneText.setPreferredSize(new Dimension(100, 150));
+        _callDoneText.setLineWrap(true);
+        
         _loadButton.addActionListener(e -> {
             new ExecutorIndeterminateGui(){
                 @Override
@@ -146,6 +149,15 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
                 }.execute();
             }
 
+        });
+        
+        _roiResetButton.addActionListener(e->{
+            readEnvelope = null;
+
+            _northCrsFileLabel.setText("- nv -");
+            _southCrsFileLabel.setText("- nv -");
+            _westCrsFileLabel.setText("- nv -");
+            _eastCrsFileLabel.setText("- nv -");
         });
 
         _outputSaveButton.addActionListener(e -> {
@@ -374,6 +386,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
             GetMapRequest mapRequest = currentWms.getMapRequest(layer, selectedFormat, epsg, imageWidth, imageHeight, env, null,
                     styleImpl);
             GuiUtilities.copyToClipboard(currentWms.getUrl(mapRequest).toString());
+            _callDoneText.setText(currentWms.getUrl(mapRequest).toString());
             BufferedImage image = currentWms.getImage(mapRequest);
             if (image != null) {
                 _previewImageLabel.setIcon(new ImageIcon(image));

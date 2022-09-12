@@ -1,22 +1,24 @@
 package org.hortonmachine.webmaps;
 
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
-
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
-
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 
 
 public class WebMapsView extends JPanel
@@ -38,6 +40,7 @@ public class WebMapsView extends JPanel
    JTextField _layerNameFilterField = new JTextField();
    JTextField _boundsFileField = new JTextField();
    JButton _boundsLoadButton = new JButton();
+   JButton _roiResetButton = new JButton();
    JLabel _northCrsFileLabel = new JLabel();
    JLabel _southCrsFileLabel = new JLabel();
    JLabel _westCrsFileLabel = new JLabel();
@@ -49,6 +52,8 @@ public class WebMapsView extends JPanel
    JButton _outputSaveButton = new JButton();
    JButton _wms2tiffButton = new JButton();
    JLabel _previewImageLabel = new JLabel();
+   JLabel _callDoneLabel = new JLabel();
+   JTextArea _callDoneText = new JTextArea();
 
    /**
     * Default constructor
@@ -191,18 +196,18 @@ public class WebMapsView extends JPanel
       jpanel1.add(_layerTitleLabel,cc.xy(4,11));
 
       _stylesCombo.setName("stylesCombo");
-      TitledBorder titledborder1 = new TitledBorder(null,"Styles",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Styles",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       _stylesCombo.setBorder(titledborder1);
       jpanel1.add(_stylesCombo,cc.xywh(2,13,3,1));
 
       _crsCombo.setName("crsCombo");
-      TitledBorder titledborder2 = new TitledBorder(null,"CRS",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder2 = new TitledBorder(null,"CRS",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       _crsCombo.setBorder(titledborder2);
       jpanel1.add(_crsCombo,cc.xywh(2,17,3,1));
 
       jpanel1.add(createPanel3(),cc.xywh(2,19,3,1));
       _formatsCombo.setName("formatsCombo");
-      TitledBorder titledborder3 = new TitledBorder(null,"Formats",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder3 = new TitledBorder(null,"Formats",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       _formatsCombo.setBorder(titledborder3);
       jpanel1.add(_formatsCombo,cc.xywh(2,15,3,1));
 
@@ -235,7 +240,7 @@ public class WebMapsView extends JPanel
    public JPanel createPanel3()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Bounds",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Bounds",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -280,7 +285,7 @@ public class WebMapsView extends JPanel
    public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Layers & Filter",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Layers & Filter",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:50DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:50DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -299,7 +304,7 @@ public class WebMapsView extends JPanel
    public JPanel createPanel5()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:40DLU:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -315,14 +320,19 @@ public class WebMapsView extends JPanel
       _boundsLoadButton.setText("...");
       jpanel1.add(_boundsLoadButton,cc.xy(5,1));
 
-      addFillComponents(jpanel1,new int[]{ 2,4 },new int[0]);
+      _roiResetButton.setActionCommand("reset");
+      _roiResetButton.setName("roiResetButton");
+      _roiResetButton.setText("reset");
+      jpanel1.add(_roiResetButton,cc.xy(7,1));
+
+      addFillComponents(jpanel1,new int[]{ 2,4,6 },new int[0]);
       return jpanel1;
    }
 
    public JPanel createPanel6()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"File/Export Bounds ",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"File/Export Bounds ",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(0.5),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -367,25 +377,38 @@ public class WebMapsView extends JPanel
    public JPanel createPanel7()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:300PX:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","FILL:300PX:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
       _loadPreviewButton.setActionCommand("Load Preview");
       _loadPreviewButton.setName("loadPreviewButton");
       _loadPreviewButton.setText("Load Preview");
-      jpanel1.add(_loadPreviewButton,cc.xy(2,2));
+      jpanel1.add(_loadPreviewButton,cc.xy(3,6));
 
-      jpanel1.add(createPanel8(),cc.xywh(2,4,1,17));
-      jpanel1.add(createPanel9(),cc.xy(2,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 });
+      jpanel1.add(createPanel8(),cc.xywh(3,8,1,17));
+      jpanel1.add(createPanel9(),cc.xy(3,1));
+      _callDoneLabel.setName("callDoneLabel");
+      _callDoneLabel.setText("Call done:");
+      jpanel1.add(_callDoneLabel,cc.xy(3,3));
+
+      _callDoneText.setName("callDoneText");
+      LineBorder lineborder1 = new LineBorder(new Color(0,0,0),1,false);
+      _callDoneText.setBorder(lineborder1);
+      JScrollPane jscrollpane1 = new JScrollPane();
+      jscrollpane1.setViewportView(_callDoneText);
+      jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+      jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+      jpanel1.add(jscrollpane1,cc.xy(3,4));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24 });
       return jpanel1;
    }
 
    public JPanel createPanel8()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Download Geotiff",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Download Geotiff",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -429,7 +452,7 @@ public class WebMapsView extends JPanel
    public JPanel createPanel9()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(51,51,51));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("CENTER:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
