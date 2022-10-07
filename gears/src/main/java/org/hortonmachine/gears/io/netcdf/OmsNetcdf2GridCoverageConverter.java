@@ -19,6 +19,7 @@ package org.hortonmachine.gears.io.netcdf;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -32,6 +33,7 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.io.remotesensing.ModisInfo;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -55,6 +57,7 @@ import oms3.annotations.UI;
 import ucar.ma2.Array;
 import ucar.ma2.Index;
 import ucar.ma2.IndexIterator;
+import ucar.nc2.Attribute;
 import ucar.nc2.Dimension;
 import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
@@ -63,6 +66,7 @@ import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
 import ucar.nc2.time.CalendarDate;
+import ucar.nc2.time.CalendarDateFormatter;
 import ucar.unidata.geoloc.ProjectionImpl;
 import ucar.unidata.geoloc.ProjectionPoint;
 import ucar.unidata.geoloc.projection.RotatedPole;
@@ -83,6 +87,14 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     @Description(DESCR_pGridName)
     @In
     public String pGridName = null;
+
+    @Description(DESCR_pIncludePattern)
+    @In
+    public String pIncludePattern = null;
+
+    @Description(DESCR_pExcludePattern)
+    @In
+    public String pExcludePattern = null;
 
     @Description(DESCR_pFromTimestep)
     @In
@@ -128,6 +140,8 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     public static final String DESCR_pFromTimestep = "The timestap index from which to start to dump.";
     public static final String DESCR_pGridName = "The name of the variable of the grid to dump.";
     public static final String DESCR_inPath = "The netcdf file or url to dump.";
+    public static final String DESCR_pIncludePattern = "In case of no grid name, an inclusion pattern can be used.";
+    public static final String DESCR_pExcludePattern = "In case of no grid name, an exclusion pattern can be used.";
 
     private ProjectionImpl netcdfProj = null;
     private GridDatatype dumpGrid = null;
@@ -154,6 +168,8 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
 
     private double nodata;
 
+    private ModisInfo modisInfo;
+
     @Initialize
     public void initProcess() throws Exception {
         if (timestepIterator == null) {
@@ -172,13 +188,24 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
             }
 
             GridDataset gds = GridDataset.open(inPath);
+            List<Attribute> globalAttributes = gds.getGlobalAttributes();
+            for( Attribute attribute : globalAttributes ) {
+                if (attribute.getFullName().equals("_MODIS_Date")) {
+                    String dateStr = attribute.getStringValue();
+
+                    modisInfo = new ModisInfo();
+                    CalendarDateFormatter f = new CalendarDateFormatter("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                    CalendarDate dataDate = f.parse(dateStr);
+                    modisInfo.date = dataDate;
+                }
+            }
             List<GridDatatype> grids = gds.getGrids();
-            long count = grids.stream().filter(g -> g.getDimensions().size() > 2).count();
+            long count = grids.stream().filter(g -> g.getDimensions().size() >= 2).count();
             pm.message("Grid definitions found: " + count);
 
             for( GridDatatype grid : grids ) {
                 List<Dimension> dimensions = grid.getDimensions();
-                if (dimensions.size() > 2) {
+                if (dimensions.size() >= 2) {
                     String gridName = grid.getFullName();
                     if (pGridName != null) {
                         if (pGridName.equals(gridName)) {
@@ -186,9 +213,26 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                             break;
                         }
                     } else {
-                        // take first
-                        dumpGrid = grid;
-                        break;
+                        if (pIncludePattern != null) {
+                            // check inclusion and exclusion patterns
+                            boolean canUse = false;
+                            if (gridName.contains(pIncludePattern)) {
+                                if (pExcludePattern != null && gridName.contains(pExcludePattern)) {
+                                    canUse = false;
+                                } else {
+                                    canUse = true;
+                                }
+                            }
+                            if (canUse) {
+                                // take the first that matches
+                                dumpGrid = grid;
+                                break;
+                            }
+                        } else {
+                            // take first
+                            dumpGrid = grid;
+                            break;
+                        }
                     }
                 }
             }
@@ -213,8 +257,14 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 }
                 int datesCount = datesList.size();
                 if (datesCount <= pToTimestep) {
-                    pToTimestep = datesCount;
-                    pm.errorMessage("The dataset contains " + datesCount + " time slices. toTimestep has been set accordingly.");
+                    if (modisInfo == null) {
+                        pToTimestep = datesCount;
+                        pm.errorMessage(
+                                "The dataset contains " + datesCount + " time slices. toTimestep has been set accordingly.");
+                    } else {
+                        datesList.add(modisInfo.date);
+                        datesCount = 1;
+                    }
                 }
 
                 xValues = xAxis.read();

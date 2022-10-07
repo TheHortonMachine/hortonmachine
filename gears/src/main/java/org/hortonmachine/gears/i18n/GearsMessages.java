@@ -880,19 +880,6 @@ public class GearsMessages {
     public static final String GRASSMOSAICLEGACY_P_BOUNDS_DESCRIPTION = "The optional requested boundary coordinates as array of [n, s, w, e].";
     public static final String GRASSMOSAICLEGACY_OUT_GRASS_FILE_DESCRIPTION = "The GRASS file path to which to write to.";
 
-    public static final String OMSMOSAIC_DESCRIPTION = "Module for raster patching.";
-    public static final String OMSMOSAIC_DOCUMENTATION = "OmsMosaic.html";
-    public static final String OMSMOSAIC_KEYWORDS = "OmsMosaic, Raster";
-    public static final String OMSMOSAIC_LABEL = RASTERPROCESSING;
-    public static final String OMSMOSAIC_NAME = "mosaic";
-    public static final int OMSMOSAIC_STATUS = 40;
-    public static final String OMSMOSAIC_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSMOSAIC_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSMOSAIC_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSMOSAIC_IN_FILES_DESCRIPTION = "The list of maps that have to be patched.";
-    public static final String OMSMOSAIC_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
-    public static final String OMSMOSAIC_OUT_RASTER_DESCRIPTION = "The patched map.";
-
     public static final String EXIFGPSWRITER_DESCRIPTION = "Utility class for writing exif tags in jpegs.";
     public static final String EXIFGPSWRITER_DOCUMENTATION = "";
     public static final String EXIFGPSWRITER_KEYWORDS = "IO, Jpeg, Exif, Reading";

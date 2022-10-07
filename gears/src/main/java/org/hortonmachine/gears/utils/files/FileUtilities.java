@@ -464,6 +464,18 @@ public class FileUtilities {
         });
         return files;
     }
+    
+    /**
+     * Create a temporary folder using a prefix.
+     * 
+     * @param prefix the prefix to use.
+     * @return the file pointing to the created folder.
+     * @throws IOException
+     */
+    public static File createTemporaryFolder(String prefix) throws IOException {
+        Path tempDirWithPrefix = Files.createTempDirectory(prefix);
+        return tempDirWithPrefix.toFile();
+    }
 
     /**
      * Checks a path to be a folder.

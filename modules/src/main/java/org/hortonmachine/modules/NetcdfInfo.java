@@ -204,10 +204,10 @@ public class NetcdfInfo extends HMModel {
         i = 0;
         for( GridDatatype grid : grids ) {
             List<Dimension> dimensions = grid.getDimensions();
-            if (dimensions.size() > 2) {
+            if (dimensions.size() >= 2) {
                 String gridName = grid.getFullName();
                 List<Attribute> attributes = grid.getAttributes();
-                sb.append(IND).append(i++).append(")").append(gridName).append(": ").append(NL);
+                sb.append(IND).append(i++).append(") ").append(gridName).append(": ").append(NL);
                 sb.append(IND + IND).append("Attributes:").append(NL);
                 for( Attribute attribute : attributes ) {
                     sb.append(IND + IND + IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue())
@@ -290,7 +290,7 @@ public class NetcdfInfo extends HMModel {
     public static void main( String[] args ) throws Exception {
         NetcdfInfo i = new NetcdfInfo();
         i.doLongitudeShift = true;
-        i.inPath = "/home/hydrologis/Desktop/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
+        i.inPath = "/home/hydrologis/TMP/KLAB/MODIS/MYD09A1.A2022265.h24v03.006.2022274080721.hdf";
 //        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
         i.process();
     }

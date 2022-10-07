@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
-import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_doLongitudeShift;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_inPath;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_outFolder;
+import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pExcludePattern;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pFalseEastingCorrection;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pFalseNorthingCorrection;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pFromTimestep;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pGridName;
+import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pIncludePattern;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pNorthPoleLatitudeCorrection;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pNorthPoleLongitudeCorrection;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pToTimestep;
@@ -66,6 +67,14 @@ public class NetcdfGridDumper extends HMModel {
     @In
     public String pGridName = null;
 
+    @Description(DESCR_pIncludePattern)
+    @In
+    public String pIncludePattern = null;
+
+    @Description(DESCR_pExcludePattern)
+    @In
+    public String pExcludePattern = null;
+    
     @Description(DESCR_pFromTimestep)
     @In
     public Integer pFromTimestep = 0;
@@ -119,7 +128,8 @@ public class NetcdfGridDumper extends HMModel {
             File folderFile = new File(outFolder);
             File inFile = new File(inPath);
             String name = FileUtilities.getNameWithoutExtention(inFile);
-            name = name + "__" + tsString + ".tif";
+            String safeName = FileUtilities.getSafeFileName(pGridName);
+            name = name + "__" + tsString + "__" + safeName + ".tif";
             File outFile = new File(folderFile, name);
             dumpRaster(outRaster, outFile.getAbsolutePath());
         }

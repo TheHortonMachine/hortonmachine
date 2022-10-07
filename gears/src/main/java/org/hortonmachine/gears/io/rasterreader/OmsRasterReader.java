@@ -63,6 +63,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -393,6 +394,18 @@ public class OmsRasterReader extends HMModel {
         reader.process();
         GridCoverage2D geodata = reader.outRaster;
         return geodata;
+    }
+
+    public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
+        OmsRasterReader reader = new OmsRasterReader();
+        reader.file = path;
+        reader.doEnvelope = true;
+        reader.process();
+        GeneralEnvelope env = reader.originalEnvelope;
+        
+        double[] ll = env.getLowerCorner().getCoordinate();
+        double[] ur = env.getUpperCorner().getCoordinate();
+        return new ReferencedEnvelope(ll[0], ur[0], ll[1], ur[1], env.getCoordinateReferenceSystem());
     }
 
 }
