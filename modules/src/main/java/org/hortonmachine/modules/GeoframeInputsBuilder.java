@@ -478,7 +478,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
             // Extracting raster data for each basin
             ReferencedEnvelope basinRefEnvelope = new ReferencedEnvelope(basinEnvelope, crs);
-            GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope);
+            GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope, null);
             WritableRaster clippedWR = CoverageUtilities.renderedImage2IntWritableRaster(clipped.getRenderedImage(), false);
 
             // we need to consider the lakes and lake cuts, so the polygon needs to be used
@@ -507,7 +507,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
             GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
 
-            GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope);
+            GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope, null);
             GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
             File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
             if (!pitFile.exists() || doOverWrite) {
@@ -517,21 +517,21 @@ public class GeoframeInputsBuilder extends HMModel {
             double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
             double avgElev = minMaxAvgSum[2];
 
-            GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope);
+            GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope, null);
             GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
             File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
             if (!skyFile.exists() || doOverWrite) {
                 dumpRaster(cutSky, skyFile.getAbsolutePath());
             }
 
-            GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope);
+            GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope, null);
             GridCoverage2D cutDrain = CoverageUtilities.coverageValuesMapper(clippedDrain, maskCoverage);
             File drainFile = new File(basinFolder, "drain_" + basinNum + ".asc");
             if (!drainFile.exists() || doOverWrite) {
                 dumpRaster(cutDrain, drainFile.getAbsolutePath());
             }
 
-            GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope);
+            GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope, null);
             GridCoverage2D cutNet = CoverageUtilities.coverageValuesMapper(clippedNet, maskCoverage);
             File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
             if (!netFile.exists() || doOverWrite) {

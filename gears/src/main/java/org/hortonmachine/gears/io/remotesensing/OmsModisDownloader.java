@@ -47,10 +47,8 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
-import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.locationtech.jts.geom.Envelope;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -70,13 +68,13 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Download MODIS data and patch dem together to coverages.")
-@Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("modis")
+@Description(OmsModisDownloader.DESCRIPTION)
+@Author(name = OmsModisDownloader.AUTHOR, contact = OmsModisDownloader.CONTACT)
+@Keywords(OmsModisDownloader.KEYWORDS)
 @Label(HMConstants.NETCDF)
-@Name("omsmodisdownloader")
-@Status(40)
-@License("General Public License Version 3 (GPLv3)")
+@Name(OmsModisDownloader.NAME)
+@Status(OmsModisDownloader.STATUS)
+@License(OmsModisDownloader.LICENSE)
 public class OmsModisDownloader extends HMModel implements INetcdfUtils {
     @Description(DESCR_pIncludePattern)
     @In
@@ -127,6 +125,13 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
     @Out
     public GridCoverage2D outRaster;
 
+    public static final int STATUS = 40;
+    public static final String LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String NAME = "omsmodisdownloader";
+    public static final String KEYWORDS = "modis";
+    public static final String CONTACT = "http://www.hydrologis.com";
+    public static final String AUTHOR = "Antonello Andrea";
+    public static final String DESCRIPTION = "Download MODIS data and patch dem together to coverages.";
     public static final String DESCR_pDay = "The download day in format YYYY-MM-DD.";
     public static final String DESCR_pDownloadUrl = "The url to download the data from.";
     public static final String DESCR_pProductPath = "The url path defining the type of product.";
@@ -183,27 +188,27 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         }
 
         String daysListUrl = pDownloadUrl + "/" + pProductPath + "/" + pProduct + "." + pVersion;
-        String daysListPage = getWebpageString(daysListUrl);
-        String[] linesSplit = daysListPage.split("img src=");
-        List<String> datesList = new ArrayList<>();
-        for( String line : linesSplit ) {
-            if (line.contains("\"/icons/folder.gif")) {
-                String tmp = line.split("<a href=.{13}>")[1];
-                String dateString = tmp.split("/</a>")[0];
-                datesList.add(dateString);
-            }
-        }
-        if (datesList.size() == 0) {
-            throw new ModelsIOException("Could not retrieve the available dates at " + daysListUrl, this);
-
-        }
-        Collections.sort(datesList);
-
-        pDay = pDay.replace("-", ".");
-        int todayIndex = datesList.indexOf(pDay);
-        if (todayIndex < 0) {
-            throw new ModelsIOException("Date not available: " + pDay, this);
-        }
+//        String daysListPage = getWebpageString(daysListUrl);
+//        String[] linesSplit = daysListPage.split("img src=");
+//        List<String> datesList = new ArrayList<>();
+//        for( String line : linesSplit ) {
+//            if (line.contains("\"/icons/folder.gif")) {
+//                String tmp = line.split("<a href=.{13}>")[1];
+//                String dateString = tmp.split("/</a>")[0];
+//                datesList.add(dateString);
+//            }
+//        }
+//        if (datesList.size() == 0) {
+//            throw new ModelsIOException("Could not retrieve the available dates at " + daysListUrl, this);
+//
+//        }
+//        Collections.sort(datesList);
+//
+//        pDay = pDay.replace("-", ".");
+//        int todayIndex = datesList.indexOf(pDay);
+//        if (todayIndex < 0) {
+//            throw new ModelsIOException("Date not available: " + pDay, this);
+//        }
 
         pm.message("Extracting day: " + pDay);
         String dayDataUrl = daysListUrl + "/" + pDay;
@@ -247,6 +252,7 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         // now convert files and patch them into a geotiff
         List<GridCoverage2D> coverages = new ArrayList<>();
         int fc = 0;
+        String gridName = null;
         for( File file : downloadedFiles ) {
             OmsNetcdf2GridCoverageConverter converter = new OmsNetcdf2GridCoverageConverter();
             converter.pm = pm;
@@ -256,8 +262,12 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
             converter.initProcess();
             converter.process();
             coverages.add(converter.outRaster);
-            OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_" + fc + ".tif",
-                    converter.outRaster);
+            
+            if(gridName == null) {
+                gridName = converter.selectedGridName;
+            }
+//            OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_" + fc + ".tif",
+//                    converter.outRaster);
             fc++;
         }
 
@@ -266,10 +276,10 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         mosaic.pm = pm;
         mosaic.process();
         outRaster = mosaic.outRaster;
-        OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_patched.tif", outRaster);
+//        OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_patched.tif", outRaster);
 
         outRaster = CoverageUtilities.clipCoverage(outRaster,
-                new ReferencedEnvelope(pRoi, outRaster.getCoordinateReferenceSystem()));
+                new ReferencedEnvelope(pRoi, outRaster.getCoordinateReferenceSystem()), gridName);
 
     }
 
@@ -310,7 +320,7 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         return new int[]{Integer.parseInt(hStr), Integer.parseInt(vStr)};
     }
 
-    private String getWebpageString( String urlString ) throws Exception {
+    public static String getWebpageString( String urlString ) throws Exception {
         URL url = new URL(urlString);
         StringBuilder sb = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()))) {
@@ -320,23 +330,6 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
             }
             return sb.toString();
         }
-    }
-
-    public static void main( String[] args ) throws Exception {
-        OmsModisDownloader md = new OmsModisDownloader();
-        md.pRoi = new Envelope(9.0, 16.0, 43.0, 50.0);
-//        md.pRoi = new Envelope(9.0, 14.0, 43.0, 50.0);
-        md.pProductPath = "MOTA";
-        md.pProduct = "MCD43A4";
-        md.pVersion = "006";
-        md.pDay = "2022-09-26";
-        md.pIncludePattern = "_Band7";
-        md.pExcludePattern = "_Quality_Band7";
-
-        md.pIntermediateDownloadFolder = "/home/hydrologis/TMP/KLAB/MODIS/downloads/";
-        md.process();
-        GridCoverage2D finalRaster = md.outRaster;
-        OmsRasterWriter.writeRaster("/home/hydrologis/TMP/KLAB/MODIS/downloads/final.tif", finalRaster);
     }
 
 }

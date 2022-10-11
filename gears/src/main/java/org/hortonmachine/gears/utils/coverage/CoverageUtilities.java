@@ -379,11 +379,16 @@ public class CoverageUtilities {
      * Clip a coverage to a given envelope.
      * 
      * The region is cut to keep the resolution consistent.
+     * @param newRasterName TODO
      */
-    public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope ) throws Exception {
+    public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope, String newRasterName ) throws Exception {
         RegionMap regionMap = getRegionParamsFromGridCoverage(coverage);
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
+        
+        if(newRasterName==null) {
+            newRasterName = "newraster";
+        }
 
         envelope = envelope.transform(coverage.getCoordinateReferenceSystem(), true);
 
@@ -404,7 +409,7 @@ public class CoverageUtilities {
         Envelope2D writeEnvelope = new Envelope2D(coverage.getCoordinateReferenceSystem(), west, south, east - west,
                 north - south);
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
-        GridCoverage2D clippedCoverage = factory.create("newraster", writableRaster, writeEnvelope);
+        GridCoverage2D clippedCoverage = factory.create(newRasterName, writableRaster, writeEnvelope);
 
         GridGeometry2D destGG = clippedCoverage.getGridGeometry();
         GridGeometry2D sourceGG = coverage.getGridGeometry();

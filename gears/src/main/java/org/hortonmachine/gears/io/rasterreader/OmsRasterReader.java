@@ -221,7 +221,7 @@ public class OmsRasterReader extends HMModel {
 //                        checkNovalues();
                     }
 
-                    boolean crsValid = CrsUtilities.isCrsValid(outRaster.getCoordinateReferenceSystem());
+                    boolean crsValid = CrsUtilities.isCrsValid(originalEnvelope.getCoordinateReferenceSystem());
                     if (!crsValid) {
                         pm.errorMessage(
                                 "The read CRS doesn't seem to be valid. This could lead to unexpected results. Consider adding a .prj file with the proper CRS definition if none is present.");

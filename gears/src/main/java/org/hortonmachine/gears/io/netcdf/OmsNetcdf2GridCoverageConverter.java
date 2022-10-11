@@ -143,6 +143,8 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     public static final String DESCR_pIncludePattern = "In case of no grid name, an inclusion pattern can be used.";
     public static final String DESCR_pExcludePattern = "In case of no grid name, an exclusion pattern can be used.";
 
+    public String selectedGridName = null;
+    
     private ProjectionImpl netcdfProj = null;
     private GridDatatype dumpGrid = null;
 
@@ -239,6 +241,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
             if (dumpGrid != null) {
                 String gridName = dumpGrid.getFullName();
                 pm.message("Dumping grid: " + gridName);
+                selectedGridName = gridName;
 
                 coordSys = dumpGrid.getCoordinateSystem();
                 netcdfProj = coordSys.getProjection();
