@@ -42,8 +42,10 @@ import java.net.CookiePolicy;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -81,6 +83,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import ucar.nc2.time.CalendarDate;
+import ucar.nc2.time.CalendarDateFormatter;
 
 @Description(OmsModisDownloader.DESCRIPTION)
 @Author(name = OmsModisDownloader.AUTHOR, contact = OmsModisDownloader.CONTACT)
@@ -170,14 +174,46 @@ public class ModisDownloader extends HMModel implements INetcdfUtils {
         pDay = pDay.replace("-", ".");
         int todayIndex = datesList.indexOf(pDay);
         if (todayIndex < 0) {
-            throw new ModelsIOException("Date not available: " + pDay, this);
+            StringBuilder sb = new StringBuilder();
+            sb.append("The asked date is not available: " + pDay + "\n");
+            SimpleDateFormat f = new SimpleDateFormat("yyyy.MM.dd");
+            Date pDayDate = f.parse(pDay);
+            pDay = null;
+            long dayDateMillis = pDayDate.getTime();
+            for( int i = 1; i < datesList.size(); i++ ) {
+                String pre = datesList.get(i - 1);
+                String post = datesList.get(i);
+                Date preDate = f.parse(pre);
+                Date postDate = f.parse(post);
+                if (dayDateMillis > preDate.getTime() && dayDateMillis < postDate.getTime()) {
+                    int daysDiff = (int) Math.round((postDate.getTime() - pDayDate.getTime()) / 1000 / 60 / 60 / 24.0);
+                    if (daysDiff < 7) {
+                        // accept only data less than a week away
+                        pDay = f.format(postDate);
+                        todayIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (pDay == null) {
+                sb.append("Unable to retrieve a valid nearby date.");
+                pm.errorMessage(sb.toString());
+                return;
+            } else {
+                sb.append("Using the nearest found date instead: " + pDay);
+                pm.errorMessage(sb.toString());
+            }
         }
+
         List<String> daysToDownload = new ArrayList<>();
         for( int i = todayIndex - pDelta; i <= todayIndex; i++ ) {
             daysToDownload.add(datesList.get(i));
         }
 
-        pm.message("Downloading data of days: " + daysToDownload.size());
+        pm.message("Downloading data of the following available days (" + daysToDownload.size() + "):");
+        for( String day : daysToDownload ) {
+            pm.message("\t" + day);
+        }
 
         for( String day : daysToDownload ) {
             OmsModisDownloader md = new OmsModisDownloader();
@@ -197,7 +233,11 @@ public class ModisDownloader extends HMModel implements INetcdfUtils {
             String gridName = finalRaster.getName().toString();
             gridName = FileUtilities.getSafeFileName(gridName);
             File folder = new File(outFolder);
-            File file = new File(folder, day + "_" + gridName + ".tif");
+            File dayFolderFile = new File(folder, pProductPath + "_" + pProduct + "_" + pVersion + File.separator + day);
+            if (!dayFolderFile.exists()) {
+                dayFolderFile.mkdirs();
+            }
+            File file = new File(dayFolderFile, gridName + ".tif");
             dumpRaster(finalRaster, file.getAbsolutePath());
         }
 

@@ -31,7 +31,6 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -42,8 +41,6 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.netcdf.INetcdfUtils;
 import org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
@@ -67,6 +64,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import ucar.nc2.time.CalendarDate;
+import ucar.nc2.time.CalendarDateFormatter;
 
 @Description(OmsModisDownloader.DESCRIPTION)
 @Author(name = OmsModisDownloader.AUTHOR, contact = OmsModisDownloader.CONTACT)
@@ -188,33 +187,10 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         }
 
         String daysListUrl = pDownloadUrl + "/" + pProductPath + "/" + pProduct + "." + pVersion;
-//        String daysListPage = getWebpageString(daysListUrl);
-//        String[] linesSplit = daysListPage.split("img src=");
-//        List<String> datesList = new ArrayList<>();
-//        for( String line : linesSplit ) {
-//            if (line.contains("\"/icons/folder.gif")) {
-//                String tmp = line.split("<a href=.{13}>")[1];
-//                String dateString = tmp.split("/</a>")[0];
-//                datesList.add(dateString);
-//            }
-//        }
-//        if (datesList.size() == 0) {
-//            throw new ModelsIOException("Could not retrieve the available dates at " + daysListUrl, this);
-//
-//        }
-//        Collections.sort(datesList);
-//
-//        pDay = pDay.replace("-", ".");
-//        int todayIndex = datesList.indexOf(pDay);
-//        if (todayIndex < 0) {
-//            throw new ModelsIOException("Date not available: " + pDay, this);
-//        }
-
-        pm.message("Extracting day: " + pDay);
         String dayDataUrl = daysListUrl + "/" + pDay;
         String dayDataPage = getWebpageString(dayDataUrl);
 
-        pm.beginTask("Extracting day " + pDay + "...", tilesList.size());
+        pm.beginTask("Extracting day " + pDay + "...", tilesList.size() * 2);
         List<File> downloadedFiles = new ArrayList<>();
         String[] tmp = dayDataPage.split("img src");
         for( String line : tmp ) {
@@ -222,7 +198,14 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
                 String fileNameToDownload = line.trim().split("href=\"")[1].split("\"")[0];
                 String downloadUrlPath = dayDataUrl + "/" + fileNameToDownload;
 
-                String downloadPath = pIntermediateDownloadFolder + File.separator + fileNameToDownload;
+                String dayDownloadFolder = pIntermediateDownloadFolder + File.separator + pProductPath + "_" + pProduct + "_"
+                        + pVersion + File.separator + pDay;
+                File dayDownloadFolderFile = new File(dayDownloadFolder);
+                if (!dayDownloadFolderFile.exists()) {
+                    dayDownloadFolderFile.mkdirs();
+                }
+
+                String downloadPath = dayDownloadFolder + File.separator + fileNameToDownload;
                 File downloadFile = new File(downloadPath);
                 if (fileNameToDownload.endsWith(".hdf")) {
                     downloadedFiles.add(downloadFile);
@@ -240,8 +223,8 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
                             fileOS.write(data, 0, byteContent);
                         }
                     }
-                } else {
-                    pm.errorMessage("Not downloading " + fileNameToDownload + " because it already exists.");
+//                } else {
+//                    pm.errorMessage("Not downloading " + fileNameToDownload + " because it already exists.");
                 }
                 pm.worked(1);
             }
@@ -259,11 +242,14 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
             converter.inPath = file.getAbsolutePath();
             converter.pIncludePattern = pIncludePattern;
             converter.pExcludePattern = pExcludePattern;
+            CalendarDateFormatter f = new CalendarDateFormatter("yyyy.MM.dd");
+            CalendarDate forceDate = f.parse(pDay);
+            converter.forcedModisDate = forceDate;
             converter.initProcess();
             converter.process();
             coverages.add(converter.outRaster);
-            
-            if(gridName == null) {
+
+            if (gridName == null) {
                 gridName = converter.selectedGridName;
             }
 //            OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_" + fc + ".tif",

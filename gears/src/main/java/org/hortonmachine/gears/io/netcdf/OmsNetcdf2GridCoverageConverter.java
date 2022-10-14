@@ -125,6 +125,12 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     public GridCoverage2D outRaster;
 
     /**
+     * This date can be used to force MODIS mode reading even if the metadata
+     * do not contain a MODIS date. 
+     */
+    public CalendarDate forcedModisDate;
+
+    /**
      * The current date processed.
      */
     public Date currentDate;
@@ -144,7 +150,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     public static final String DESCR_pExcludePattern = "In case of no grid name, an exclusion pattern can be used.";
 
     public String selectedGridName = null;
-    
+
     private ProjectionImpl netcdfProj = null;
     private GridDatatype dumpGrid = null;
 
@@ -201,6 +207,12 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                     modisInfo.date = dataDate;
                 }
             }
+
+            if (forcedModisDate != null) {
+                modisInfo = new ModisInfo();
+                modisInfo.date = forcedModisDate;
+            }
+
             List<GridDatatype> grids = gds.getGrids();
             long count = grids.stream().filter(g -> g.getDimensions().size() >= 2).count();
             pm.message("Grid definitions found: " + count);
