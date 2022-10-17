@@ -147,7 +147,7 @@ public class OmsExperimentalVariogram extends HMModel {
     public double[][] calculateVariogram( double[][] distanceMatrix, double[] hStation, double mean, double maxDistance ) {
 
         pBins = (pBins == 0) ? 15 : pBins;
-        double binAmplitude = maxDistance / pBins;
+        double binAmplitude = ((int) Math.ceil(maxDistance/ pBins)) ;
 
         // number of distance for each bin
         int iClasses = pBins;// (int) (maxDistance / binAmplitude + 2);

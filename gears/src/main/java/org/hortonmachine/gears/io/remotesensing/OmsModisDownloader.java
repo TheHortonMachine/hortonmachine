@@ -223,8 +223,6 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
                             fileOS.write(data, 0, byteContent);
                         }
                     }
-//                } else {
-//                    pm.errorMessage("Not downloading " + fileNameToDownload + " because it already exists.");
                 }
                 pm.worked(1);
             }
@@ -234,7 +232,6 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
 
         // now convert files and patch them into a geotiff
         List<GridCoverage2D> coverages = new ArrayList<>();
-        int fc = 0;
         String gridName = null;
         for( File file : downloadedFiles ) {
             OmsNetcdf2GridCoverageConverter converter = new OmsNetcdf2GridCoverageConverter();
@@ -252,9 +249,6 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
             if (gridName == null) {
                 gridName = converter.selectedGridName;
             }
-//            OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_" + fc + ".tif",
-//                    converter.outRaster);
-            fc++;
         }
 
         OmsMosaic mosaic = new OmsMosaic();
@@ -262,8 +256,6 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         mosaic.pm = pm;
         mosaic.process();
         outRaster = mosaic.outRaster;
-//        OmsRasterWriter.writeRaster(pIntermediateDownloadFolder + File.separator + "final_patched.tif", outRaster);
-
         outRaster = CoverageUtilities.clipCoverage(outRaster,
                 new ReferencedEnvelope(pRoi, outRaster.getCoordinateReferenceSystem()), gridName);
 

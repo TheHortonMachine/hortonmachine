@@ -19,6 +19,11 @@
 	</properties>
 
 	<dependencies>
+	<dependency>
+  <groupId>org.geotools</groupId>
+  <artifactId>gt-jp2k</artifactId>
+  <version>27.0</version>
+</dependency>
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
