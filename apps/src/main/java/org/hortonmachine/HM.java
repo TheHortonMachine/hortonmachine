@@ -1192,7 +1192,7 @@ public class HM {
                         stmt.executeBatch();
                         lastBatchCount = count;
                         if (updateMessageConsumer != null) {
-                            updateMessageConsumer.accept("Updated pipes: " + count);
+                            updateMessageConsumer.accept("Executed: " + count);
                         }
                     }
                 }

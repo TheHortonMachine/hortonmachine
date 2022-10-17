@@ -17,25 +17,29 @@
  */
 package org.hortonmachine.hmachine.modules.geomorphology.flow;
 
+import static org.hortonmachine.gears.libs.modules.HMConstants.GEOMORPHOLOGY;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORNAMES;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DOCUMENTATION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_KEYWORDS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LABEL;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LICENSE;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_NAME;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_STATUS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_inPit_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_outFlow_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_AUTHORNAMES;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_DOCUMENTATION;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_LABEL;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_LICENSE;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_NAME;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_STATUS;
 
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -48,11 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSFLOWDIRECTIONS_DESCRIPTION)
 @Documentation(OMSFLOWDIRECTIONS_DOCUMENTATION)
@@ -72,6 +71,19 @@ public class OmsFlowDirections extends HMModel {
     public GridCoverage2D outFlow = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+    
+    
+    public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
+    public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
+    public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";
+    public static final String OMSFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
+    public static final String OMSFLOWDIRECTIONS_NAME = "flow";
+    public static final int OMSFLOWDIRECTIONS_STATUS = 40;
+    public static final String OMSFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSFLOWDIRECTIONS_AUTHORNAMES = "David Tarboton, Andrea Antonello";
+    public static final String OMSFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+    public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation map.";
+    public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
 
     /**
      * The novalue needed by OmsFlowDirections.

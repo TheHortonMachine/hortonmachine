@@ -17,16 +17,16 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_AUTHORNAMES;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_KEYWORDS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LABEL;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_LICENSE;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_NAME;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_STATUS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_inPit_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSFLOWDIRECTIONS_outFlow_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_AUTHORNAMES;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_LABEL;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_LICENSE;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_NAME;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_STATUS;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_inPit_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_outFlow_DESCRIPTION;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

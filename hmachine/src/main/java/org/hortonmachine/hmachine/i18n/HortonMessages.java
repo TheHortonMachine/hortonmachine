@@ -719,18 +719,6 @@ public class HortonMessages {
     public static final String OMSSTRAHLERRATIOS_outArea_DESCRIPTION = "The area ratio.";
     public static final String OMSSTRAHLERRATIOS_outLength_DESCRIPTION = "The length ratio.";
 
-    public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
-    public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
-    public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";
-    public static final String OMSFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
-    public static final String OMSFLOWDIRECTIONS_NAME = "flow";
-    public static final int OMSFLOWDIRECTIONS_STATUS = 40;
-    public static final String OMSFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSFLOWDIRECTIONS_AUTHORNAMES = "David Tarboton, Andrea Antonello";
-    public static final String OMSFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation map.";
-    public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
-
     public static final String OMSVARIOGRAM_DESCRIPTION = "Experimental semivariogram algorithm.";
     public static final String OMSVARIOGRAM_DOCUMENTATION = "Experimental semivariogram";
     public static final String OMSVARIOGRAM_KEYWORDS = "Experimental semivariogram, OmsKriging, Hydrology";
