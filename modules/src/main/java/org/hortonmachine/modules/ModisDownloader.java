@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
-import static org.hortonmachine.gears.io.remotesensing.OmsModisDownloader.DESCR_outRaster;
+
+import static org.hortonmachine.gears.io.remotesensing.OmsModisDownloader.DESCR_doMosaicAndClip;
+import static org.hortonmachine.gears.io.remotesensing.OmsModisDownloader.DESCR_doGeotiffs;
 import static org.hortonmachine.gears.io.remotesensing.OmsModisDownloader.DESCR_pDay;
 import static org.hortonmachine.gears.io.remotesensing.OmsModisDownloader.DESCR_pDownloadUrl;
 import static org.hortonmachine.gears.io.remotesensing.OmsModisDownloader.DESCR_pExcludePattern;
@@ -144,6 +146,14 @@ public class ModisDownloader extends HMModel implements INetcdfUtils {
     @In
     public double[] pRoi = null;
 
+    @Description(DESCR_doGeotiffs)
+    @In
+    public boolean doGeotiffs = true;
+
+    @Description(DESCR_doMosaicAndClip)
+    @In
+    public boolean doMosaicAndClip = true;
+
     @Description("The output folder in which to place the final result.")
     @UI(HMConstants.FOLDEROUT_UI_HINT)
     @In
@@ -210,7 +220,7 @@ public class ModisDownloader extends HMModel implements INetcdfUtils {
             daysToDownload.add(datesList.get(i));
         }
 
-        pm.message("Downloading data of the following available days (" + daysToDownload.size() + "):");
+        pm.message("Downloading data of the following days (" + daysToDownload.size() + "):");
         for( String day : daysToDownload ) {
             pm.message("\t" + day);
         }
@@ -228,17 +238,22 @@ public class ModisDownloader extends HMModel implements INetcdfUtils {
             md.pUser = pUser;
             md.pPassword = pPassword;
             md.pIntermediateDownloadFolder = pIntermediateDownloadFolder;
+            md.doGeotiffs = doGeotiffs;
+            md.doMosaicAndClip = doMosaicAndClip;
             md.process();
-            GridCoverage2D finalRaster = md.outRaster;
-            String gridName = finalRaster.getName().toString();
-            gridName = FileUtilities.getSafeFileName(gridName);
-            File folder = new File(outFolder);
-            File dayFolderFile = new File(folder, pProductPath + "_" + pProduct + "_" + pVersion + File.separator + day);
-            if (!dayFolderFile.exists()) {
-                dayFolderFile.mkdirs();
+
+            if (doMosaicAndClip && md.outRaster != null) {
+                GridCoverage2D finalRaster = md.outRaster;
+                String gridName = finalRaster.getName().toString();
+                gridName = FileUtilities.getSafeFileName(gridName);
+                File folder = new File(outFolder);
+                File dayFolderFile = new File(folder, pProductPath + "_" + pProduct + "_" + pVersion + File.separator + day);
+                if (!dayFolderFile.exists()) {
+                    dayFolderFile.mkdirs();
+                }
+                File file = new File(dayFolderFile, gridName + ".tif");
+                dumpRaster(finalRaster, file.getAbsolutePath());
             }
-            File file = new File(dayFolderFile, gridName + ".tif");
-            dumpRaster(finalRaster, file.getAbsolutePath());
         }
 
     }

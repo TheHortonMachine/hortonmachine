@@ -172,15 +172,14 @@ public class OmsMosaic extends HMModel {
             Envelope worldEnv;
             if (referenceGridGeometry == null) {
                 GridCoverage2D coverage = data.getCoverage();
-                
+
                 novalue = HMConstants.getNovalue(coverage);
-                
-                
+
                 worldEnv = FeatureUtilities.envelopeToPolygon(coverage.getEnvelope2D()).getEnvelopeInternal();
                 // take the first as reference
                 crs = coverage.getCoordinateReferenceSystem();
                 referenceGridGeometry = coverage.getGridGeometry();
-                
+
                 RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
                 xRes = regionMap.getXres();
                 yRes = regionMap.getYres();
@@ -189,7 +188,7 @@ public class OmsMosaic extends HMModel {
             } else {
                 worldEnv = FeatureUtilities.envelopeToPolygon(data.getEnvelope()).getEnvelopeInternal();
             }
-            
+
             totalEnvelope.expandToInclude(worldEnv);
 
 //            GridEnvelope2D pixelEnv = referenceGridGeometry.worldToGrid(worldEnv);
@@ -223,14 +222,16 @@ public class OmsMosaic extends HMModel {
         }
         pm.done();
 
-        int endWidth = (int) (totalEnvelope.getWidth()/xRes);
-        int endHeight = (int) (totalEnvelope.getHeight()/yRes);
+        int endWidth = (int) (totalEnvelope.getWidth() / xRes);
+        int endHeight = (int) (totalEnvelope.getHeight() / yRes);
 //        int endWidth = ep - wp;
 //        int endHeight = np - sp;
 
+        referenceGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(totalEnvelope.getMaxY(), totalEnvelope.getMinY(), totalEnvelope.getMaxX(),
+                totalEnvelope.getMinX(), endWidth, endHeight, crs);
+
         pm.message(MessageFormat.format("Output raster will have {0} cols and {1} rows.", endWidth, endHeight));
-        WritableRaster outputWR = CoverageUtilities.createWritableRaster(endWidth, endHeight, null, null,
-                novalue);
+        WritableRaster outputWR = CoverageUtilities.createWritableRaster(endWidth, endHeight, null, null, novalue);
         WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
 //        int offestX = Math.abs(wp);
@@ -251,10 +252,14 @@ public class OmsMosaic extends HMModel {
                         double value = randomIter.getSampleDouble(c, r, 0);
                         Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, itemGG);
                         int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, referenceGridGeometry, null);
-                        
-                        double tmpValue = outputIter.getSampleDouble(colRow[0], colRow[1], 0);
-                        if(HMConstants.isNovalue(tmpValue, novalue)) {
-                            outputIter.setSample(colRow[0], colRow[1], 0, value);
+
+                        try {
+                            double tmpValue = outputIter.getSampleDouble(colRow[0], colRow[1], 0);
+                            if (HMConstants.isNovalue(tmpValue, novalue)) {
+                                outputIter.setSample(colRow[0], colRow[1], 0, value);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
                     pm.worked(1);

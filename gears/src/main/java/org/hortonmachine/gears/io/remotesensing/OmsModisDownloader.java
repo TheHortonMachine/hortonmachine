@@ -120,6 +120,14 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
     @In
     public org.locationtech.jts.geom.Envelope pRoi = null;
 
+    @Description(DESCR_doGeotiffs)
+    @In
+    public boolean doGeotiffs = true;
+
+    @Description(DESCR_doMosaicAndClip)
+    @In
+    public boolean doMosaicAndClip = true;
+
     @Description(DESCR_outRaster)
     @Out
     public GridCoverage2D outRaster;
@@ -136,13 +144,15 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
     public static final String DESCR_pProductPath = "The url path defining the type of product.";
     public static final String DESCR_pProduct = "The url part defining the product.";
     public static final String DESCR_pVersion = "The data version.";
-    public static final String DESCR_pRoiEnvelope = "The envelope in to extract in EPSG:4326.";
+    public static final String DESCR_pRoiEnvelope = "The envelope to extract in EPSG:4326.";
     public static final String DESCR_pIncludePattern = "In case of no grid name, an inclusion pattern can be used.";
     public static final String DESCR_pExcludePattern = "In case of no grid name, an exclusion pattern can be used.";
     public static final String DESCR_outRaster = "The output raster, patched from the downoaded tiles.";
     public static final String DESCR_pUser = "The user registered to the modis website.";
     public static final String DESCR_pPassword = "The user registered to the modis website.";
     public static final String DESCR_pIntermediateDownloadFolder = "A folder in which to download the tiles to be patched.";
+    public static final String DESCR_doMosaicAndClip = "Do the Mosaic and clip over the region of interest.";
+    public static final String DESCR_doGeotiffs = "Convert the downloaded hdf to geotiff.";
 
     private DecimalFormat df = new DecimalFormat("00");
 
@@ -154,6 +164,11 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
         if (pIntermediateDownloadFolder == null) {
             File temporaryFolder = FileUtilities.createTemporaryFolder("hm-modis-downloader");
             pIntermediateDownloadFolder = temporaryFolder.getAbsolutePath();
+        } else {
+            File intermediateDownloadFolder = new File(pIntermediateDownloadFolder);
+            if (!intermediateDownloadFolder.exists()) {
+                intermediateDownloadFolder.mkdirs();
+            }
         }
 
         CookieHandler.setDefault(new CookieManager(null, CookiePolicy.ACCEPT_ALL));
@@ -186,13 +201,14 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
             }
         }
 
-        String daysListUrl = pDownloadUrl + "/" + pProductPath + "/" + pProduct + "." + pVersion;
+        String product = pProductPath + "/" + pProduct + "." + pVersion;
+        String daysListUrl = pDownloadUrl + "/" + product;
         String dayDataUrl = daysListUrl + "/" + pDay;
         String dayDataPage = getWebpageString(dayDataUrl);
 
-        pm.beginTask("Extracting day " + pDay + "...", tilesList.size() * 2);
         List<File> downloadedFiles = new ArrayList<>();
         String[] tmp = dayDataPage.split("img src");
+        pm.beginTask("Extracting day " + pDay + "...", tmp.length);
         for( String line : tmp ) {
             if (line.contains(pProduct) && containsOneOf(line, tilesList) && !line.contains(".jpg")) {
                 String fileNameToDownload = line.trim().split("href=\"")[1].split("\"")[0];
@@ -207,12 +223,9 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
 
                 String downloadPath = dayDownloadFolder + File.separator + fileNameToDownload;
                 File downloadFile = new File(downloadPath);
-                if (fileNameToDownload.endsWith(".hdf")) {
-                    downloadedFiles.add(downloadFile);
-                }
                 if (!downloadFile.exists()) {
-                    pm.message("Downloading: " + fileNameToDownload);
-                    pm.message("from url: " + downloadUrlPath);
+                    pm.message("\tDownloading: " + fileNameToDownload);
+                    pm.message("\tfrom url: " + downloadUrlPath);
 
                     URL downloadUrl = new URL(downloadUrlPath);
                     try (BufferedInputStream inputStream = new BufferedInputStream(downloadUrl.openStream());
@@ -222,42 +235,60 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
                         while( (byteContent = inputStream.read(data, 0, 1024)) != -1 ) {
                             fileOS.write(data, 0, byteContent);
                         }
+                        if (fileNameToDownload.endsWith(".hdf")) {
+                            downloadedFiles.add(downloadFile);
+                        }
                     }
                 }
-                pm.worked(1);
             }
+            pm.worked(1);
         }
-
         pm.done();
+
+        if (downloadedFiles.size() == 0) {
+            pm.errorMessage("Found no data to download for " + product + " in day " + pDay + ".");
+            return;
+        }
 
         // now convert files and patch them into a geotiff
         List<GridCoverage2D> coverages = new ArrayList<>();
         String gridName = null;
-        for( File file : downloadedFiles ) {
-            OmsNetcdf2GridCoverageConverter converter = new OmsNetcdf2GridCoverageConverter();
-            converter.pm = pm;
-            converter.inPath = file.getAbsolutePath();
-            converter.pIncludePattern = pIncludePattern;
-            converter.pExcludePattern = pExcludePattern;
-            CalendarDateFormatter f = new CalendarDateFormatter("yyyy.MM.dd");
-            CalendarDate forceDate = f.parse(pDay);
-            converter.forcedModisDate = forceDate;
-            converter.initProcess();
-            converter.process();
-            coverages.add(converter.outRaster);
+        if (doGeotiffs) {
+            pm.beginTask("Converting hdf to geotiff...", downloadedFiles.size());
+            for( File file : downloadedFiles ) {
+                OmsNetcdf2GridCoverageConverter converter = new OmsNetcdf2GridCoverageConverter();
+                converter.pm = pm;
+                converter.inPath = file.getAbsolutePath();
+                converter.pIncludePattern = pIncludePattern;
+                converter.pExcludePattern = pExcludePattern;
+                CalendarDateFormatter f = new CalendarDateFormatter("yyyy.MM.dd");
+                CalendarDate forceDate = f.parse(pDay);
+                converter.forcedModisDate = forceDate;
+                converter.initProcess();
+                converter.process();
+                coverages.add(converter.outRaster);
 
-            if (gridName == null) {
-                gridName = converter.selectedGridName;
+                if (gridName == null) {
+                    gridName = converter.selectedGridName;
+                }
+                pm.worked(1);
+            }
+            pm.done();
+
+            if (doMosaicAndClip) {
+                if (coverages.size() > 1) {
+                    OmsMosaic mosaic = new OmsMosaic();
+                    mosaic.inCoverages = coverages;
+                    mosaic.pm = pm;
+                    mosaic.process();
+                    outRaster = mosaic.outRaster;
+                } else {
+                    outRaster = coverages.get(0);
+                }
+                outRaster = CoverageUtilities.clipCoverage(outRaster,
+                        new ReferencedEnvelope(pRoi, outRaster.getCoordinateReferenceSystem()), gridName);
             }
         }
-
-        OmsMosaic mosaic = new OmsMosaic();
-        mosaic.inCoverages = coverages;
-        mosaic.pm = pm;
-        mosaic.process();
-        outRaster = mosaic.outRaster;
-        outRaster = CoverageUtilities.clipCoverage(outRaster,
-                new ReferencedEnvelope(pRoi, outRaster.getCoordinateReferenceSystem()), gridName);
 
     }
 
