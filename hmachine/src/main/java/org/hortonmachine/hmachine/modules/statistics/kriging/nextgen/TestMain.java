@@ -43,6 +43,7 @@ public class TestMain {
 
             interpolator.inStationIds2CoordinateMap = mc.outStationIds2CoordinateMap;
             interpolator.inStationIds2ValueMap = mc.outStationIds2ValueMap;
+            interpolator.inPreviousStationIds2ValueMaps = mc.outPreviousStationIds2ValueMaps;
             interpolator.inTargetPointId2AssociationMap = mc.outTargetPointId2AssociationMap;
             interpolator.inTargetPointsIds2CoordinateMap = mc.outTargetPointsIds2CoordinateMap;
 

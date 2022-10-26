@@ -18,9 +18,11 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.nextgen;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -71,7 +73,7 @@ public class OmsExperimentalVariogram extends HMModel {
     @Description("The matrix of distances between stations.")
     @Out
     public double[][] outStationsDistances;
-    
+
     /**
      * Process.
      *
@@ -79,32 +81,44 @@ public class OmsExperimentalVariogram extends HMModel {
      */
     @Execute
     public void process() throws Exception {
-        int iCount = inStationIds2CoordinateMap.size();// xStation.length;
-        double distanceMatrix[][] = new double[iCount][iCount];
+
+        Set<Integer> stationIds = inStationIds2CoordinateMap.keySet();
+
+        List<Coordinate> coordsList = new ArrayList<>();
+        List<Double> valuesList = new ArrayList<>();
+        for( Integer stationId : stationIds ) {
+            double[] values = inStationIds2ValueMap.get(stationId);
+            Coordinate c = inStationIds2CoordinateMap.get(stationId);
+            for( double d : values ) {
+                valuesList.add(d);
+                coordsList.add(c);
+            }
+        }
 
         // Compute the distance matrix
         double maxDistance = 0;
         double mean = 0.0;
-        List<Integer> stationIds = inStationIds2CoordinateMap.keySet().stream().collect(Collectors.toList());
+        int iCount = coordsList.size();// xStation.length;
+        double distanceMatrix[][] = new double[iCount][iCount];
         double[] hStation = new double[iCount];
-        
+
         int row = 0;
-        for( Integer stationId1 : stationIds ) {
+
+        for( int i = 0; i < coordsList.size(); i++ ) {
+            Coordinate c1 = coordsList.get(i);
+            double value = valuesList.get(i);
 //        for( int i = 0; i < iCount - 1; i++ ) {
-            Coordinate c1 = inStationIds2CoordinateMap.get(stationId1);
 //            x1 = xStation[i];
 //            y1 = yStation[i];
-            double value = inStationIds2ValueMap.get(stationId1)[0];
 //            value = hStation[i];
             hStation[row] = value;
 
             mean += value;
 
             int col = 0;
-            for( Integer stationId2 : stationIds ) {
+            for( Coordinate c2 : coordsList ) {
 //            for( int j = 0; j < iCount - 1; j++ ) {
 
-                Coordinate c2 = inStationIds2CoordinateMap.get(stationId2);
 //                x2 = xStation[j];
 //                y2 = yStation[j];
 
@@ -112,10 +126,11 @@ public class OmsExperimentalVariogram extends HMModel {
 //                double dDifY = c2.y - c1.y;
 
                 // Pitagora theorem
-                distanceMatrix[row][col] = c1.distance(c2); // Math.sqrt(dDifX * dDifX + dDifY * dDifY);
+                distanceMatrix[row][col] = c1.distance(c2); // Math.sqrt(dDifX * dDifX + dDifY *
+                                                            // dDifY);
 
                 maxDistance = Math.max(maxDistance, distanceMatrix[row][col]);
-                
+
                 col++;
             }
             row++;
@@ -127,7 +142,7 @@ public class OmsExperimentalVariogram extends HMModel {
         double[][] outResult = calculateVariogram(distanceMatrix, hStation, mean, maxDistance);
 
         outStationsDistances = distanceMatrix;
-        
+
         outExperimentalVariogram = new HashMap<Integer, double[]>();
 
         for( int i = 0; i < outResult.length; i++ ) {
@@ -147,7 +162,7 @@ public class OmsExperimentalVariogram extends HMModel {
     public double[][] calculateVariogram( double[][] distanceMatrix, double[] hStation, double mean, double maxDistance ) {
 
         pBins = (pBins == 0) ? 15 : pBins;
-        double binAmplitude = ((int) Math.ceil(maxDistance/ pBins)) ;
+        double binAmplitude = ((int) Math.ceil(maxDistance / pBins));
 
         // number of distance for each bin
         int iClasses = pBins;// (int) (maxDistance / binAmplitude + 2);

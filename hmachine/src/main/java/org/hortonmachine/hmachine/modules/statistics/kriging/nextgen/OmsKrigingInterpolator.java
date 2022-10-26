@@ -26,7 +26,9 @@ import static org.hortonmachine.gears.libs.modules.Variables.QUARTIC;
 import static org.hortonmachine.gears.libs.modules.Variables.TRIANGULAR;
 import static org.hortonmachine.gears.libs.modules.Variables.TRIWEIGHT;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -67,6 +69,10 @@ public class OmsKrigingInterpolator extends HMModel {
     @Description("Measurement data for current timestep and station ids.")
     @In
     public HashMap<Integer, double[]> inStationIds2ValueMap;
+
+    @Description("Measurement data of the previous timesteps.")
+    @Out
+    public LinkedList<HashMap<Integer, double[]>> inPreviousStationIds2ValueMaps;
 
     @Description("Association of target points with their valid stations and distance.")
     @In
@@ -122,7 +128,23 @@ public class OmsKrigingInterpolator extends HMModel {
                     HashMap<Integer, double[]> validStationIds2ValueMap = new HashMap<>();
                     for( Integer tmpStationId : association.stationIds ) {
                         validStationIds2CoordinateMap.put(tmpStationId, inStationIds2CoordinateMap.get(tmpStationId));
-                        validStationIds2ValueMap.put(tmpStationId, inStationIds2ValueMap.get(tmpStationId));
+
+                        List<Double> allValues = new ArrayList<>();
+                        double[] valueArray = inStationIds2ValueMap.get(tmpStationId);
+                        allValues.add(valueArray[0]);
+                        for( int i = 0; i < inPreviousStationIds2ValueMaps.size(); i++ ) {
+                            if (i > 0) { // because in 0 the current timestep values are kept
+                                double[] tmpValue = inPreviousStationIds2ValueMaps.get(i).get(tmpStationId);
+                                if (tmpValue != null) {
+                                    allValues.add(tmpValue[0]);
+                                }
+                            }
+                        }
+                        double[] finalValues = new double[allValues.size()];
+                        for( int i = 0; i < finalValues.length; i++ ) {
+                            finalValues[i] = allValues.get(i);
+                        }
+                        validStationIds2ValueMap.put(tmpStationId, finalValues);
                     }
 
                     OmsExperimentalVariogram expVariogram = new OmsExperimentalVariogram();

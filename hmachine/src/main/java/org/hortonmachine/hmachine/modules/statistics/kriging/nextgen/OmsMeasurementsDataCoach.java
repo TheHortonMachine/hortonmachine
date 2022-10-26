@@ -18,13 +18,13 @@ package org.hortonmachine.hmachine.modules.statistics.kriging.nextgen;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
-import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -102,6 +102,10 @@ public class OmsMeasurementsDataCoach extends HMModel {
     @In
     public Integer pMinNonZeroStationsForKrigingNum = 3;
 
+    @Description("Fixed number of data of the previous timesteps to keep.")
+    @In
+    public Integer pNumberOfPreviousData = 5;
+
     @Description("Static target points ids to coordinates map for current timestep.")
     @Out
     public HashMap<Integer, Coordinate> outTargetPointsIds2CoordinateMap;
@@ -113,6 +117,10 @@ public class OmsMeasurementsDataCoach extends HMModel {
     @Description("Measurement data for current timestep and station ids.")
     @Out
     public HashMap<Integer, double[]> outStationIds2ValueMap;
+
+    @Description("Measurement data of the previous timesteps.")
+    @Out
+    public LinkedList<HashMap<Integer, double[]>> outPreviousStationIds2ValueMaps = new LinkedList<>();
 
     @Description("Association of target points with their valid stations and distance.")
     @Out
@@ -209,16 +217,24 @@ public class OmsMeasurementsDataCoach extends HMModel {
         ensureOpen();
 
         inputReader.nextRecord();
-        outStationIds2ValueMap = inputReader.outData;
-
+        outStationIds2ValueMap = new HashMap<>();
         // extract all stations that have valid data in the timestep
         List<Integer> stationsToKeep = new ArrayList<>();
-        for( Entry<Integer, double[]> id2Value : outStationIds2ValueMap.entrySet() ) {
+        for( Entry<Integer, double[]> id2Value : inputReader.outData.entrySet() ) {
             Integer id = id2Value.getKey();
             double value = id2Value.getValue()[0];
             if (!HMConstants.isNovalue(value, -9999.0)) {
                 stationsToKeep.add(id);
+                outStationIds2ValueMap.put(id, new double[]{value});
             }
+        }
+        int previousDataCount = 0;
+        if (pNumberOfPreviousData > 0) {
+            previousDataCount = outPreviousStationIds2ValueMaps.size();
+            if (previousDataCount > pNumberOfPreviousData + 1) {
+                outPreviousStationIds2ValueMaps.removeLast();
+            }
+            outPreviousStationIds2ValueMaps.addFirst(outStationIds2ValueMap);
         }
 
         HashMap<Integer, Coordinate> tmpMap = new HashMap<>();
@@ -228,7 +244,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
         outStationIds2CoordinateMap = tmpMap;
 
         outTargetPointId2AssociationMap = new HashMap<>();
-        if (pMaxDistKriging != null && pMaxDistIdw!=null && pMaxClosestStationsNum != null) {
+        if (pMaxDistKriging != null && pMaxDistIdw != null && pMaxClosestStationsNum != null) {
             for( Entry<Integer, Coordinate> interpEntry : targetPointsMap.entrySet() ) {
                 Integer interpId = interpEntry.getKey();
                 Coordinate xyz = interpEntry.getValue();
@@ -271,7 +287,8 @@ public class OmsMeasurementsDataCoach extends HMModel {
                     count++;
                 }
 
-                if (nonZeroCount >= pMinNonZeroStationsForKrigingNum && !allSame) {
+                if (nonZeroCount >= pMinNonZeroStationsForKrigingNum && !allSame
+                        && (pNumberOfPreviousData == 0 || previousDataCount > pNumberOfPreviousData)) {
                     tpa.interpolationType = InterpolationType.INTERPOLATION_KRIGING;
                     outTargetPointId2AssociationMap.put(interpId, tpa);
                 } else {
@@ -368,7 +385,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
                 } else {
                     if (tpa.stationIds.size() == 1) {
                         tpa.interpolationType = InterpolationType.NOINTERPOLATION_USE_RAW_DATA;
-                    } else if (nonZeroCount >= pMinNonZeroStationsForKrigingNum ) {
+                    } else if (nonZeroCount >= pMinNonZeroStationsForKrigingNum) {
                         tpa.interpolationType = InterpolationType.INTERPOLATION_KRIGING;
                     } else {
                         tpa.interpolationType = InterpolationType.INTERPOLATION_IDW;
