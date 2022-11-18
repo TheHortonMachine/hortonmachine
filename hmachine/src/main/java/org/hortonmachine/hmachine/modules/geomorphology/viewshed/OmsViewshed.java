@@ -155,6 +155,9 @@ public class OmsViewshed extends HMModel {
                     if (fieldObj instanceof Number) {
                         Number elevNum = (Number) fieldObj;
                         tmpZ = elevNum.doubleValue();
+                    } else if (isFirst) {
+                        pm.errorMessage(
+                                "Using default height value " + pHeight + ", since field: " + pField + " does not exist.");
                     }
                 }
                 viewPoint3D.z = tmpZ;
@@ -168,8 +171,8 @@ public class OmsViewshed extends HMModel {
                             }
                         }
                     }
-                    calculateViewshed(viewPoint3D, stationColRow, cols, rows, novalue, inIter, tmpViewshedIter, viewAngleIter, maxViewAngleIter,
-                            gg);
+                    calculateViewshed(viewPoint3D, stationColRow, cols, rows, novalue, inIter, tmpViewshedIter, viewAngleIter,
+                            maxViewAngleIter, gg);
                     singleViewpointProcessListener.processViewPoint(viewPoint3D, tmpViewshedWR);
                     for( int r = 0; r < rows; r++ ) {
                         for( int c = 0; c < cols; c++ ) {
@@ -185,8 +188,8 @@ public class OmsViewshed extends HMModel {
                         }
                     }
                 } else {
-                    calculateViewshed(viewPoint3D, stationColRow, cols, rows, novalue, inIter, outViewshedIter, viewAngleIter, maxViewAngleIter,
-                            gg);
+                    calculateViewshed(viewPoint3D, stationColRow, cols, rows, novalue, inIter, outViewshedIter, viewAngleIter,
+                            maxViewAngleIter, gg);
                 }
 
                 isFirst = false;
@@ -212,9 +215,9 @@ public class OmsViewshed extends HMModel {
 //                "/home/hydrologis/data/DTM_calvello/viewangle_max.asc");
     }
 
-    private void calculateViewshed( Coordinate viewPoint3D, int[] stationColRow, int cols, int rows, double novalue, RandomIter inIter,
-            WritableRandomIter outViewshedIter, WritableRandomIter viewAngleIter, WritableRandomIter maxViewAngleIter,
-            GridGeometry2D gg ) {
+    private void calculateViewshed( Coordinate viewPoint3D, int[] stationColRow, int cols, int rows, double novalue,
+            RandomIter inIter, WritableRandomIter outViewshedIter, WritableRandomIter viewAngleIter,
+            WritableRandomIter maxViewAngleIter, GridGeometry2D gg ) {
         double value = CoverageUtilities.getValue(inRaster, viewPoint3D.x, viewPoint3D.y);
         if (!HMConstants.isNovalue(value, novalue)) {
             pm.message("Working on viewpoint: " + viewPoint3D);
