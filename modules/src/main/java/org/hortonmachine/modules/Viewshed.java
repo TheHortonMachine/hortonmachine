@@ -34,6 +34,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OmsViewshed.DESCRIPTION)
 @Documentation(OmsViewshed.DOC)
@@ -57,6 +58,11 @@ public class Viewshed extends HMModel {
     @Description(DESCR_pField)
     @In
     public String pField = "elev";
+    
+    @Description(DESCR_pHeight)
+    @Unit("m")
+    @In
+    public double pHeight = 2.0;
 
     @Description(DESCR_outViewshed)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -70,6 +76,7 @@ public class Viewshed extends HMModel {
         vs.inRaster = getRaster(inRaster);
         vs.inViewPoints = getVector(inViewPoints);
         vs.pField = pField;
+        vs.pHeight = pHeight;
         vs.process();
         dumpRaster(vs.outViewshed, outViewshed);
     }
