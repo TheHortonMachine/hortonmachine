@@ -141,6 +141,14 @@ public class OmsViewshed extends HMModel {
             for( SimpleFeature feature : viewPoints ) {
                 Geometry geom = (Geometry) feature.getDefaultGeometry();
                 Coordinate viewPoint3D = geom.getCoordinate();
+                int[] stationColRow = CoverageUtilities.colRowFromCoordinate(viewPoint3D, gg, null);
+                int stationCol = stationColRow[0];
+                int stationRow = stationColRow[1];
+                if (stationCol - 1 < 0 || stationCol + 1 >= cols || stationRow - 1 < 0 || stationRow + 1 >= rows) {
+                    pm.errorMessage("Ignoring viewpoint on border.");
+                    continue;
+                }
+
                 double tmpZ = pHeight;
                 if (pField != null) {
                     Object fieldObj = feature.getAttribute(pField);
@@ -160,7 +168,7 @@ public class OmsViewshed extends HMModel {
                             }
                         }
                     }
-                    calculateViewshed(viewPoint3D, cols, rows, novalue, inIter, tmpViewshedIter, viewAngleIter, maxViewAngleIter,
+                    calculateViewshed(viewPoint3D, stationColRow, cols, rows, novalue, inIter, tmpViewshedIter, viewAngleIter, maxViewAngleIter,
                             gg);
                     singleViewpointProcessListener.processViewPoint(viewPoint3D, tmpViewshedWR);
                     for( int r = 0; r < rows; r++ ) {
@@ -177,7 +185,7 @@ public class OmsViewshed extends HMModel {
                         }
                     }
                 } else {
-                    calculateViewshed(viewPoint3D, cols, rows, novalue, inIter, outViewshedIter, viewAngleIter, maxViewAngleIter,
+                    calculateViewshed(viewPoint3D, stationColRow, cols, rows, novalue, inIter, outViewshedIter, viewAngleIter, maxViewAngleIter,
                             gg);
                 }
 
@@ -204,7 +212,7 @@ public class OmsViewshed extends HMModel {
 //                "/home/hydrologis/data/DTM_calvello/viewangle_max.asc");
     }
 
-    private void calculateViewshed( Coordinate viewPoint3D, int cols, int rows, double novalue, RandomIter inIter,
+    private void calculateViewshed( Coordinate viewPoint3D, int[] stationColRow, int cols, int rows, double novalue, RandomIter inIter,
             WritableRandomIter outViewshedIter, WritableRandomIter viewAngleIter, WritableRandomIter maxViewAngleIter,
             GridGeometry2D gg ) {
         double value = CoverageUtilities.getValue(inRaster, viewPoint3D.x, viewPoint3D.y);
@@ -214,7 +222,6 @@ public class OmsViewshed extends HMModel {
             double stationY = viewPoint3D.y;
             double stationZ = value + viewPoint3D.z;
 
-            int[] stationColRow = CoverageUtilities.colRowFromCoordinate(viewPoint3D, gg, null);
             int stationCol = stationColRow[0];
             int stationRow = stationColRow[1];
 
