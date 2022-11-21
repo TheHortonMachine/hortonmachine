@@ -84,12 +84,15 @@ org.hortonmachine.modules.Magnitudo
 org.hortonmachine.modules.Mapcalc
 org.hortonmachine.modules.Markoutlets
 org.hortonmachine.modules.MeltonNumber
+org.hortonmachine.modules.ModisDownloader
 org.hortonmachine.modules.Morpher
 org.hortonmachine.modules.Mosaic12
 org.hortonmachine.modules.MultiTca
 org.hortonmachine.modules.Nabla
 org.hortonmachine.modules.NetDiff
 org.hortonmachine.modules.NetNumbering
+org.hortonmachine.modules.NetcdfGridDumper
+org.hortonmachine.modules.NetcdfInfo
 org.hortonmachine.modules.NetworkAttributesBuilder
 org.hortonmachine.modules.PdalConverterLas2Gltf
 org.hortonmachine.modules.PdalFilterElm
@@ -116,6 +119,7 @@ org.hortonmachine.modules.RasterDiff
 org.hortonmachine.modules.RasterExtruder
 org.hortonmachine.modules.RasterGenerator
 org.hortonmachine.modules.RasterMaximaFinder
+org.hortonmachine.modules.RasterMissingValuesFiller
 org.hortonmachine.modules.RasterNull
 org.hortonmachine.modules.RasterReader
 org.hortonmachine.modules.RasterReprojector
@@ -160,9 +164,8 @@ org.hortonmachine.modules.VectorTableJoiner
 org.hortonmachine.modules.VectorTransformer
 org.hortonmachine.modules.VectorWriter
 org.hortonmachine.modules.Vectorizer
+org.hortonmachine.modules.Viewshed
 org.hortonmachine.modules.VoronoiDiagram
 org.hortonmachine.modules.Wateroutlet
 org.hortonmachine.modules.WindowSampler
 org.hortonmachine.modules.Xyz2Raster
-org.hortonmachine.modules.NetcdfInfo
-org.hortonmachine.modules.NetcdfGridDumper
