@@ -51,7 +51,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<postgis.version>2.5.0</postgis.version>
-		<postgresql.jdbc.version>42.3.3</postgresql.jdbc.version>
+		<postgresql.jdbc.version>42.3.8</postgresql.jdbc.version>
 
 		<performRelease>false</performRelease>
 
