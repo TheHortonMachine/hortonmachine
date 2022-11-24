@@ -18,6 +18,8 @@
 package org.hortonmachine.gears.modules.r.rasternull;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
+import static org.hortonmachine.gears.libs.modules.Variables.IDW;
+import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_DESCRIPTION;
@@ -30,12 +32,15 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.IDWInterpolator;
+import org.hortonmachine.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
+import org.hortonmachine.gears.modules.r.interpolation2d.core.TPSInterpolator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Point;
@@ -52,6 +57,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OMSRASTERNULLFILLER_DESCRIPTION)
 @Documentation(OMSRASTERNULLFILLER_DOCUMENTATION)
@@ -71,6 +77,11 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     @In
     public int pValidCellsBuffer = 10;
 
+    @Description(OMSRASTERNULLFILLER_P_MODE_DESCRIPTION)
+    @UI("combo:" + IDW + "," + TPS )// + "," + BIVARIATE )
+    @In
+    public String pMode = IDW;
+
     @Description(OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
@@ -87,15 +98,31 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     public static final String OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION = "The raster to modify.";
     public static final String OMSRASTERNULLFILLER_pValidCellsBuffer_DESCRIPTION = "Number of max cells in distance to consider for the interpolation.";
     public static final String OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION = "The new raster.";
-
-    
+    public static final String OMSRASTERNULLFILLER_P_MODE_DESCRIPTION = "Interpolation mode.";
 
     @SuppressWarnings("unchecked")
     @Execute
     public void process() throws Exception {
         checkNull(inRaster);
+        ISurfaceInterpolator interpolator = null;
+        switch( pMode ) {
+        case TPS:
+            interpolator = new TPSInterpolator(pValidCellsBuffer);
+            pm.message("Interpolating with Thin Plate Spline.");
+            break;
+//        case BIVARIATE:
+//            interpolator = new BivariateInterpolator(pValidCellsBuffer);
+//            pm.message("Interpolating with Bivariate function.");
+//            break;
+        case IDW:
+        default:
+            interpolator = new IDWInterpolator(pValidCellsBuffer);
+            pm.message("Interpolating with Inverse Distance Weight function.");
+            break;
+        }
 
-        try (HMRaster inData = HMRaster.fromGridCoverage(inRaster); HMRaster outData = HMRaster.writableFromTemplate(inRaster, true)) {
+        try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
+                HMRaster outData = HMRaster.writableFromTemplate(inRaster, true)) {
             List<Coordinate> novaluePoints = new ArrayList<>();
             inData.process(pm, "Identifing holes...", ( col, row, value, tcols, trows ) -> {
                 if (inData.isNovalue(value)) {
@@ -105,13 +132,16 @@ public class OmsRasterMissingValuesFiller extends HMModel {
 
             // now find touching points with values
             STRtree touchingPointsTreetree = new STRtree();
+            TreeSet<String> checkSet = new TreeSet<>();
             for( Coordinate noValuePoint : novaluePoints ) {
                 Direction[] orderedDirs = Direction.getOrderedDirs();
                 for( int i = 0; i < orderedDirs.length; i++ ) {
                     Direction direction = orderedDirs[i];
                     int newCol = (int) (noValuePoint.x + direction.col);
                     int newRow = (int) (noValuePoint.y + direction.row);
-                    if (inData.isContained(newCol, newRow)) {
+
+                    boolean added = checkSet.add(newCol + "_" + newRow);
+                    if (added && inData.isContained(newCol, newRow)) {
                         double value = inData.getValue(newCol, newRow);
                         if (!inData.isNovalue(value)) {
                             Coordinate coordinate = new Coordinate(newCol, newRow, value);
@@ -124,15 +154,22 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             touchingPointsTreetree.build();
 
             pm.beginTask("Filling holes...", novaluePoints.size());
-            IDWInterpolator interpolator = new IDWInterpolator(pValidCellsBuffer);
+            int a = 0;
             for( Coordinate noValuePoint : novaluePoints ) {
+                a++;
                 // get points with values in range
                 Envelope env = new Envelope(new Coordinate(noValuePoint.x, noValuePoint.y));
                 env.expandBy(pValidCellsBuffer);
                 List<Coordinate> result = touchingPointsTreetree.query(env);
                 if (result.size() > 3) {
-                    double value = interpolator.getValue(result, noValuePoint);
-                    outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
+                    try {
+                        double value = interpolator.getValue(result, noValuePoint);
+                        outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                        System.out.println(a);
+                    }
                 }
 
                 pm.worked(1);

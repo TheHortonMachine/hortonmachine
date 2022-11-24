@@ -17,6 +17,10 @@
  */
 package org.hortonmachine.gears.modules.r.interpolation2d.core;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.geotools.referencing.operation.matrix.GeneralMatrix;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 
@@ -48,10 +52,28 @@ public class TPSInterpolator implements ISurfaceInterpolator {
     }
 
     public double getValue( Coordinate[] controlPoints, Coordinate interpolated ) {
-        int controlPointsNum = controlPoints.length;
+        List<Coordinate> controlPointsUsed = new ArrayList<>(controlPoints.length);
+        for( Coordinate coordinate : controlPoints ) {
+            double distance = coordinate.distance(interpolated);
+            if (distance <= buffer) {
+                controlPointsUsed.add(coordinate);
+            }
+        }
+
+        return getValueInternal(interpolated, controlPointsUsed);
+    }
+
+    public double getValue( List<Coordinate> controlPoints, Coordinate interpolated ) {
+        List<Coordinate> controlPointsUsed = controlPoints.stream().filter(c -> c.distance(interpolated) <= buffer)
+                .collect(Collectors.toList());
+        return getValueInternal(interpolated, controlPointsUsed);
+    }
+
+    private double getValueInternal( Coordinate interpolated, List<Coordinate> controlPointsUsed ) {
+        int controlPointsNum = controlPointsUsed.size();
         GeneralMatrix v = null;
         try {
-            v = makeMatrix(controlPoints);
+            v = makeMatrix(controlPointsUsed);
         } catch (Exception e) {
             return HMConstants.doubleNovalue;
         }
@@ -61,7 +83,7 @@ public class TPSInterpolator implements ISurfaceInterpolator {
 
         double sum = 0;
         for( int i = 0; i < controlPointsNum; i++ ) {
-            double dist = interpolated.distance(controlPoints[i]);
+            double dist = interpolated.distance(controlPointsUsed.get(i));
             sum = sum + (v.getElement(i, 0) * functionU(dist));
         }
 
@@ -70,8 +92,8 @@ public class TPSInterpolator implements ISurfaceInterpolator {
         return value;
     }
 
-    private GeneralMatrix makeMatrix( Coordinate[] controlPoints ) {
-        int pointsNum = controlPoints.length;
+    private GeneralMatrix makeMatrix( List<Coordinate> controlPoints ) {
+        int pointsNum = controlPoints.size();
         GeneralMatrix L = new GeneralMatrix(pointsNum + 3, pointsNum + 3);
 
         fillKsubMatrix(controlPoints, L);
@@ -116,12 +138,12 @@ public class TPSInterpolator implements ISurfaceInterpolator {
      * @param controlPoints 
      * @param L
      */
-    private void fillKsubMatrix( Coordinate[] controlPoints, GeneralMatrix L ) {
+    private void fillKsubMatrix( List<Coordinate> controlPoints, GeneralMatrix L ) {
         double alfa = 0;
-        int controlPointsNum = controlPoints.length;
+        int controlPointsNum = controlPoints.size();
         for( int i = 0; i < controlPointsNum; i++ ) {
             for( int j = i + 1; j < controlPointsNum; j++ ) {
-                double u = calculateFunctionU(controlPoints[i], controlPoints[j]);
+                double u = calculateFunctionU(controlPoints.get(i), controlPoints.get(j));
                 L.setElement(i, j, u);
                 L.setElement(j, i, u);
                 alfa = alfa + (u * 2); // same for upper and lower part
@@ -134,26 +156,27 @@ public class TPSInterpolator implements ISurfaceInterpolator {
     /**
      * Fill L submatrix (<a href="http://elonen.iki.fi/code/tpsdemo/index.html"> see more here</a>)
      */
-    private void fillPsubMatrix( Coordinate[] controlPoints, GeneralMatrix L ) {
-        int controlPointsNum = controlPoints.length;
+    private void fillPsubMatrix( List<Coordinate> controlPoints, GeneralMatrix L ) {
+        int controlPointsNum = controlPoints.size();
         for( int i = 0; i < controlPointsNum; i++ ) {
             L.setElement(i, i, 0);
 
+            Coordinate c = controlPoints.get(i);
             L.setElement(i, controlPointsNum + 0, 1);
-            L.setElement(i, controlPointsNum + 1, controlPoints[i].x);
-            L.setElement(i, controlPointsNum + 2, controlPoints[i].y);
+            L.setElement(i, controlPointsNum + 1, c.x);
+            L.setElement(i, controlPointsNum + 2, c.y);
 
             L.setElement(controlPointsNum + 0, i, 1);
-            L.setElement(controlPointsNum + 1, i, controlPoints[i].x);
-            L.setElement(controlPointsNum + 2, i, controlPoints[i].y);
+            L.setElement(controlPointsNum + 1, i, c.x);
+            L.setElement(controlPointsNum + 2, i, c.y);
         }
     }
 
     /**
      * Fill O submatrix (<a href="http://elonen.iki.fi/code/tpsdemo/index.html"> see more here</a>)
      */
-    private void fillOsubMatrix( Coordinate[] controlPoints, GeneralMatrix L ) {
-        int controlPointsNum = controlPoints.length;
+    private void fillOsubMatrix( List<Coordinate> controlPoints, GeneralMatrix L ) {
+        int controlPointsNum = controlPoints.size();
         for( int i = controlPointsNum; i < (controlPointsNum + 3); i++ ) {
             for( int j = controlPointsNum; j < (controlPointsNum + 3); j++ ) {
                 L.setElement(i, j, 0);
@@ -167,12 +190,12 @@ public class TPSInterpolator implements ISurfaceInterpolator {
      * @param dim 0 for dx, 1 for dy.
      * @return V Matrix
      */
-    private GeneralMatrix fillVMatrix( int dim, Coordinate[] controlPoints ) {
-        int controlPointsNum = controlPoints.length;
+    private GeneralMatrix fillVMatrix( int dim, List<Coordinate> controlPoints ) {
+        int controlPointsNum = controlPoints.size();
         GeneralMatrix V = new GeneralMatrix(controlPointsNum + 3, 1);
 
         for( int i = 0; i < controlPointsNum; i++ ) {
-            V.setElement(i, 0, controlPoints[i].z);
+            V.setElement(i, 0, controlPoints.get(i).z);
         }
 
         V.setElement(V.getNumRow() - 3, 0, 0);

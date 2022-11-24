@@ -28,6 +28,9 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_NAME;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_STATUS;
+import static org.hortonmachine.gears.libs.modules.Variables.BIVARIATE;
+import static org.hortonmachine.gears.libs.modules.Variables.IDW;
+import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -64,6 +67,11 @@ public class RasterMissingValuesFiller extends HMModel {
     @Description(OMSRASTERNULLFILLER_pValidCellsBuffer_DESCRIPTION)
     @In
     public int pValidCellsBuffer = 10;
+    
+    @Description(OMSRASTERNULLFILLER_P_MODE_DESCRIPTION)
+    @UI("combo:" + IDW + "," + BIVARIATE + "," + TPS)
+    @In
+    public String pMode = IDW;
 
     @Description(OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -76,6 +84,7 @@ public class RasterMissingValuesFiller extends HMModel {
         ormvf.pm = pm;
         ormvf.inRaster = getRaster(inRaster);
         ormvf.pValidCellsBuffer = pValidCellsBuffer;
+        ormvf.pMode = pMode;
         ormvf.process();
         dumpRaster(ormvf.outRaster, outRaster);
     }

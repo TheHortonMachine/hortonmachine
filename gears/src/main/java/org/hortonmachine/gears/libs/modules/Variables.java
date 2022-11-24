@@ -33,6 +33,7 @@ public interface Variables {
 
     public String TPS = "TPS";
     public String IDW = "IDW";
+    public String BIVARIATE = "BIVARIATE";
 
     public String NEAREST_NEIGHTBOUR = "nearest neightbour";
     public String BILINEAR = "bilinear";

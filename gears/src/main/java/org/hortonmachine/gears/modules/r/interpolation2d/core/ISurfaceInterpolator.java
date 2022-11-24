@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.gears.modules.r.interpolation2d.core;
 
+import java.util.List;
+
 import org.locationtech.jts.geom.Coordinate;
 
 /**
@@ -33,7 +35,8 @@ public interface ISurfaceInterpolator {
      * @return the interpolated z value.
      */
     public double getValue( Coordinate[] controlPoints, Coordinate interpolated );
-    
-    
+
+    public double getValue( List<Coordinate> controlPoints, Coordinate interpolated );
+
     public double getBuffer();
 }
