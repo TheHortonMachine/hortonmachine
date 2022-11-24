@@ -88,11 +88,15 @@ public class OmsExperimentalVariogram extends HMModel {
         List<Double> valuesList = new ArrayList<>();
         for( Integer stationId : stationIds ) {
             double[] values = inStationIds2ValueMap.get(stationId);
-            Coordinate c = inStationIds2CoordinateMap.get(stationId);
-            for( double d : values ) {
-                valuesList.add(d);
-                coordsList.add(c);
+            double sum = 0;
+            for( double value : values ) {
+                sum += value;
             }
+            double avg = sum / values.length;
+
+            Coordinate c = inStationIds2CoordinateMap.get(stationId);
+            valuesList.add(avg);
+            coordsList.add(c);
         }
 
         // Compute the distance matrix
