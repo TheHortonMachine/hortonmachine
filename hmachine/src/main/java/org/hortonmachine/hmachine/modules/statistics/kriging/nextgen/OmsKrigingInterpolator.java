@@ -129,20 +129,25 @@ public class OmsKrigingInterpolator extends HMModel {
                     for( Integer tmpStationId : association.stationIds ) {
                         validStationIds2CoordinateMap.put(tmpStationId, inStationIds2CoordinateMap.get(tmpStationId));
 
-                        List<Double> allValues = new ArrayList<>();
+                        double[] finalValues;
                         double[] valueArray = inStationIds2ValueMap.get(tmpStationId);
-                        allValues.add(valueArray[0]);
-                        for( int i = 0; i < inPreviousStationIds2ValueMaps.size(); i++ ) {
-                            if (i > 0) { // because in 0 the current timestep values are kept
-                                double[] tmpValue = inPreviousStationIds2ValueMaps.get(i).get(tmpStationId);
-                                if (tmpValue != null) {
-                                    allValues.add(tmpValue[0]);
+                        if (inPreviousStationIds2ValueMaps != null) {
+                            List<Double> allValues = new ArrayList<>();
+                            allValues.add(valueArray[0]);
+                            for( int i = 0; i < inPreviousStationIds2ValueMaps.size(); i++ ) {
+                                if (i > 0) { // because in 0 the current timestep values are kept
+                                    double[] tmpValue = inPreviousStationIds2ValueMaps.get(i).get(tmpStationId);
+                                    if (tmpValue != null) {
+                                        allValues.add(tmpValue[0]);
+                                    }
                                 }
                             }
-                        }
-                        double[] finalValues = new double[allValues.size()];
-                        for( int i = 0; i < finalValues.length; i++ ) {
-                            finalValues[i] = allValues.get(i);
+                            finalValues = new double[allValues.size()];
+                            for( int i = 0; i < finalValues.length; i++ ) {
+                                finalValues[i] = allValues.get(i);
+                            }
+                        }else {
+                            finalValues = valueArray;
                         }
                         validStationIds2ValueMap.put(tmpStationId, finalValues);
                     }
