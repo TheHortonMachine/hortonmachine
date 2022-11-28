@@ -17,14 +17,17 @@
  */
 package org.hortonmachine.gears.utils.math;
 
-import static java.lang.Math.*;
-import static java.lang.Float.*;
-import static java.lang.Double.*;
+import static java.lang.Double.isNaN;
+import static java.lang.Float.isNaN;
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.exp;
+import static java.lang.Math.log;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 /**
  * Class to help out with numeric issues, mostly due to floating point usage.

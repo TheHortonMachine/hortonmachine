@@ -27,11 +27,17 @@ import static org.hortonmachine.gears.libs.modules.Variables.TRIANGULAR;
 import static org.hortonmachine.gears.libs.modules.Variables.TRIWEIGHT;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
+import java.util.Set;
 
+import org.apache.commons.math3.distribution.NormalDistribution;
+import org.apache.commons.math3.stat.ranking.NaturalRanking;
+import org.apache.commons.math3.stat.ranking.TiesStrategy;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
@@ -146,11 +152,13 @@ public class OmsKrigingInterpolator extends HMModel {
                             for( int i = 0; i < finalValues.length; i++ ) {
                                 finalValues[i] = allValues.get(i);
                             }
-                        }else {
+                        } else {
                             finalValues = valueArray;
                         }
                         validStationIds2ValueMap.put(tmpStationId, finalValues);
                     }
+
+                    normalizeData(validStationIds2ValueMap);
 
                     OmsExperimentalVariogram expVariogram = new OmsExperimentalVariogram();
                     expVariogram.inStationIds2CoordinateMap = validStationIds2CoordinateMap;
@@ -168,6 +176,9 @@ public class OmsKrigingInterpolator extends HMModel {
                     double outRange = theoVariogram.outRange;
                     double outNugget = theoVariogram.outNugget;
 
+                    // TODO after Kriging output data need to be converted back (see normalization
+                    // above)
+
                 } else {
                     throw new RuntimeException("Not implemented yet");
                 }
@@ -179,6 +190,64 @@ public class OmsKrigingInterpolator extends HMModel {
             }
         }
 
+    }
+
+    private void normalizeData( HashMap<Integer, double[]> validStationIds2ValueMap ) {
+        Set<Integer> stationsIdsSet = validStationIds2ValueMap.keySet();
+        List<Double> orderedValues = new ArrayList<Double>();
+        for( Integer id : stationsIdsSet ) {
+            double[] sValues = inStationIds2ValueMap.get(id);
+            for( double sv : sValues ) {
+                orderedValues.add(sv);
+            }
+        }
+        Collections.sort(orderedValues);
+        // calculate ranking
+        double[] orderedValuesArray = new double[orderedValues.size()];
+        for( int i = 0; i < orderedValuesArray.length; i++ ) {
+            orderedValuesArray[i] = orderedValues.get(i);
+        }
+        NaturalRanking nr = new NaturalRanking(TiesStrategy.AVERAGE);
+        double[] rank = nr.rank(orderedValuesArray);
+        List<Double> rankValues = new ArrayList<>();
+        for( int i = 0; i < rank.length; i++ ) {
+            rankValues.add(rank[i]);
+        }
+        List<Double> uniqueRankValues = rankValues.stream().distinct().collect(Collectors.toList());
+        List<Double> uniqueOrderedValues = orderedValues.stream().distinct().collect(Collectors.toList());
+
+        // funzione densita' di prob cumulata dei valori
+        List<Double> cdfWeibullValues = new ArrayList<Double>();
+        for( int i = 0; i < uniqueRankValues.size(); i++ ) {
+            double r = uniqueRankValues.get(i);
+            double v = r / (orderedValuesArray.length + 1);
+            cdfWeibullValues.add(v);
+        }
+
+        // trasformazione da cumulata dei valori in cumulata della normale
+        List<Double> ppfNormal = new ArrayList<Double>();
+        NormalDistribution nd = new NormalDistribution(0, 1);
+        for( int i = 0; i < cdfWeibullValues.size(); i++ ) {
+            double v = nd.inverseCumulativeProbability(cdfWeibullValues.get(i));
+            ppfNormal.add(v);
+        }
+
+        // sostituire dati con cdf
+        for( int i = 0; i < ppfNormal.size(); i++ ) {
+            for( Integer id : stationsIdsSet ) {
+                double[] sValues = inStationIds2ValueMap.get(id);
+                for( int j = 0; j < sValues.length; j++ ) {
+                    Double sv = sValues[j];
+                    int indexOf = uniqueOrderedValues.indexOf(sv);
+                    if (indexOf == -1) {
+                        String collect = uniqueOrderedValues.stream().map(d -> d.toString()).collect(Collectors.joining(","));
+                        throw new IllegalArgumentException("Could not find " + sv + " inside list: " + collect);
+                    }
+                    double ppf = ppfNormal.get(indexOf);
+                    sValues[j] = ppf;
+                }
+            }
+        }
     }
 
     private double getIdwInterpolatedValue( TargetPointAssociation association,
