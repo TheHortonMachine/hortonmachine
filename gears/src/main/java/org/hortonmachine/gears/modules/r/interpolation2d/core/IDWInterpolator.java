@@ -31,10 +31,15 @@ import org.locationtech.jts.geom.Coordinate;
  */
 public class IDWInterpolator implements ISurfaceInterpolator {
 
-    private final double buffer;
+    private double buffer;
+    private boolean useBuffer = false;
 
+    public IDWInterpolator() {
+    }
+    
     public IDWInterpolator( double buffer ) {
         this.buffer = buffer;
+        useBuffer = true;
     }
 
     public double getValue( Coordinate[] controlPoints, Coordinate interpolated ) {
@@ -50,7 +55,7 @@ public class IDWInterpolator implements ISurfaceInterpolator {
              * the index if built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (distance > buffer) {
+            if (useBuffer && distance > buffer) {
                 continue;
             }
             if (distance < 0.00001) {
@@ -81,7 +86,7 @@ public class IDWInterpolator implements ISurfaceInterpolator {
              * the index if built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (distance > buffer) {
+            if (useBuffer && distance > buffer) {
                 continue;
             }
             if (distance < 0.00001) {

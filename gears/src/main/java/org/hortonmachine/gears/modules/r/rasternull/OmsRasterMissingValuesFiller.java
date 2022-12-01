@@ -18,6 +18,8 @@
 package org.hortonmachine.gears.modules.r.rasternull;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
+import static org.hortonmachine.gears.libs.modules.Variables.AVERAGING;
+import static org.hortonmachine.gears.libs.modules.Variables.CATEGORIES;
 import static org.hortonmachine.gears.libs.modules.Variables.IDW;
 import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORCONTACTS;
@@ -32,12 +34,19 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.modules.r.interpolation2d.core.AveragingInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.TPSInterpolator;
@@ -78,7 +87,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     public int pValidCellsBuffer = 10;
 
     @Description(OMSRASTERNULLFILLER_P_MODE_DESCRIPTION)
-    @UI("combo:" + IDW + "," + TPS )// + "," + BIVARIATE )
+    @UI("combo:" + IDW + "," + TPS + "," + AVERAGING + "," + CATEGORIES)
     @In
     public String pMode = IDW;
 
@@ -107,8 +116,16 @@ public class OmsRasterMissingValuesFiller extends HMModel {
         ISurfaceInterpolator interpolator = null;
         switch( pMode ) {
         case TPS:
-            interpolator = new TPSInterpolator(pValidCellsBuffer);
+            interpolator = new TPSInterpolator();
             pm.message("Interpolating with Thin Plate Spline.");
+            break;
+        case AVERAGING:
+            interpolator = new AveragingInterpolator();
+            pm.message("Interpolating by simple averaging.");
+            break;
+        case CATEGORIES:
+            interpolator = new CategoriesInterpolator();
+            pm.message("Interpolating of categories done by most frequent value.");
             break;
 //        case BIVARIATE:
 //            interpolator = new BivariateInterpolator(pValidCellsBuffer);
@@ -116,7 +133,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
 //            break;
         case IDW:
         default:
-            interpolator = new IDWInterpolator(pValidCellsBuffer);
+            interpolator = new IDWInterpolator();
             pm.message("Interpolating with Inverse Distance Weight function.");
             break;
         }
@@ -154,21 +171,19 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             touchingPointsTreetree.build();
 
             pm.beginTask("Filling holes...", novaluePoints.size());
-            int a = 0;
             for( Coordinate noValuePoint : novaluePoints ) {
-                a++;
                 // get points with values in range
                 Envelope env = new Envelope(new Coordinate(noValuePoint.x, noValuePoint.y));
                 env.expandBy(pValidCellsBuffer);
                 List<Coordinate> result = touchingPointsTreetree.query(env);
+                result = result.stream().filter(c -> c.distance(noValuePoint) < pValidCellsBuffer).collect(Collectors.toList());
                 if (result.size() > 3) {
                     try {
                         double value = interpolator.getValue(result, noValuePoint);
+
                         outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
                     } catch (Exception e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
-                        System.out.println(a);
                     }
                 }
 
@@ -180,4 +195,37 @@ public class OmsRasterMissingValuesFiller extends HMModel {
         }
     }
 
+    static public class CategoriesInterpolator implements ISurfaceInterpolator {
+
+        public double getValue( Coordinate[] controlPoints, Coordinate interpolated ) {
+            if (controlPoints.length == 0) {
+                return HMConstants.doubleNovalue;
+            }
+
+            Stream<Coordinate> stream = Stream.of(controlPoints);
+            Entry<Double, Long> entry = stream.map(c -> c.z)
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
+                    .max(Map.Entry.comparingByValue()).get();
+
+            return entry.getKey();
+        }
+
+        public double getValue( List<Coordinate> controlPoints, Coordinate interpolated ) {
+            if (controlPoints.isEmpty()) {
+                return HMConstants.doubleNovalue;
+            }
+
+            Entry<Double, Long> entry = controlPoints.stream().map(c -> c.z)
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream()
+                    .max(Map.Entry.comparingByValue()).get();
+
+            return entry.getKey();
+        }
+
+        @Override
+        public double getBuffer() {
+            return 0;
+        }
+
+    }
 }

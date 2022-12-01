@@ -17,6 +17,10 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.libs.modules.Variables.AVERAGING;
+import static org.hortonmachine.gears.libs.modules.Variables.CATEGORIES;
+import static org.hortonmachine.gears.libs.modules.Variables.IDW;
+import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_DESCRIPTION;
@@ -27,10 +31,8 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_LICENSE;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_NAME;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_P_MODE_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_STATUS;
-import static org.hortonmachine.gears.libs.modules.Variables.BIVARIATE;
-import static org.hortonmachine.gears.libs.modules.Variables.IDW;
-import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -69,7 +71,7 @@ public class RasterMissingValuesFiller extends HMModel {
     public int pValidCellsBuffer = 10;
     
     @Description(OMSRASTERNULLFILLER_P_MODE_DESCRIPTION)
-    @UI("combo:" + IDW + "," + BIVARIATE + "," + TPS)
+    @UI("combo:" + IDW + "," + TPS + "," + AVERAGING + "," + CATEGORIES)
     @In
     public String pMode = IDW;
 

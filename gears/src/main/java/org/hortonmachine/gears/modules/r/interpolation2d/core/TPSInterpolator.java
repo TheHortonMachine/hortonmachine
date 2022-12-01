@@ -17,13 +17,12 @@
  */
 package org.hortonmachine.gears.modules.r.interpolation2d.core;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.geotools.referencing.operation.matrix.GeneralMatrix;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-
 import org.locationtech.jts.geom.Coordinate;
 
 /**
@@ -40,10 +39,15 @@ import org.locationtech.jts.geom.Coordinate;
  */
 public class TPSInterpolator implements ISurfaceInterpolator {
 
-    private final double buffer;
+    private double buffer;
+    private boolean useBuffer = false;
+
+    public TPSInterpolator() {
+    }
 
     public TPSInterpolator( double buffer ) {
         this.buffer = buffer;
+        useBuffer = true;
     }
 
     @Override
@@ -52,20 +56,20 @@ public class TPSInterpolator implements ISurfaceInterpolator {
     }
 
     public double getValue( Coordinate[] controlPoints, Coordinate interpolated ) {
-        List<Coordinate> controlPointsUsed = new ArrayList<>(controlPoints.length);
-        for( Coordinate coordinate : controlPoints ) {
-            double distance = coordinate.distance(interpolated);
-            if (distance <= buffer) {
-                controlPointsUsed.add(coordinate);
-            }
+        Stream<Coordinate> stream = Stream.of(controlPoints);
+        if (useBuffer) {
+            stream = stream.filter(c -> c.distance(interpolated) <= buffer);
         }
-
+        List<Coordinate> controlPointsUsed = stream.collect(Collectors.toList());
         return getValueInternal(interpolated, controlPointsUsed);
     }
 
     public double getValue( List<Coordinate> controlPoints, Coordinate interpolated ) {
-        List<Coordinate> controlPointsUsed = controlPoints.stream().filter(c -> c.distance(interpolated) <= buffer)
-                .collect(Collectors.toList());
+        Stream<Coordinate> stream = controlPoints.stream();
+        if (useBuffer) {
+            stream = stream.filter(c -> c.distance(interpolated) <= buffer);
+        }
+        List<Coordinate> controlPointsUsed = stream.collect(Collectors.toList());
         return getValueInternal(interpolated, controlPointsUsed);
     }
 
