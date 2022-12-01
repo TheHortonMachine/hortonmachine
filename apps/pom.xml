@@ -19,11 +19,11 @@
 	</properties>
 
 	<dependencies>
-	<dependency>
-  <groupId>org.geotools</groupId>
-  <artifactId>gt-jp2k</artifactId>
-  <version>27.0</version>
-</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-jp2k</artifactId>
+			<version>${gt.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
@@ -80,10 +80,8 @@
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-epsg-hsql</artifactId>
 				</exclusion>
-				<!-- <exclusion>
-					<groupId>org.geotools</groupId>
-					<artifactId>gt-netcdf</artifactId>
-				</exclusion> -->
+				<!-- <exclusion> <groupId>org.geotools</groupId> <artifactId>gt-netcdf</artifactId> 
+					</exclusion> -->
 				<exclusion>
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-gtopo30</artifactId>
