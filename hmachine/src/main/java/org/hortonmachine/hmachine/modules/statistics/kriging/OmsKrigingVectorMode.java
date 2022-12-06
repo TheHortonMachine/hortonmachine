@@ -139,7 +139,7 @@ public class OmsKrigingVectorMode extends HMModel {
     @In
     public String linearSystemSolverType = "default";
 
-    @Description("The hashmap withe the interpolated results")
+    @Description("The hashmap with the interpolated results")
     @Out
     public HashMap<Integer, double[]> outData = null;
 

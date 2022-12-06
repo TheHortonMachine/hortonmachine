@@ -16,29 +16,25 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging.nextgen;
 
-import static org.hortonmachine.gears.libs.modules.Variables.*;
-import static org.hortonmachine.gears.libs.modules.Variables.COSINE;
-import static org.hortonmachine.gears.libs.modules.Variables.DISTANCE;
-import static org.hortonmachine.gears.libs.modules.Variables.EPANECHNIKOV;
-import static org.hortonmachine.gears.libs.modules.Variables.GAUSSIAN;
-import static org.hortonmachine.gears.libs.modules.Variables.INVERSE_DISTANCE;
-import static org.hortonmachine.gears.libs.modules.Variables.QUARTIC;
-import static org.hortonmachine.gears.libs.modules.Variables.TRIANGULAR;
-import static org.hortonmachine.gears.libs.modules.Variables.TRIWEIGHT;
+import static org.hortonmachine.gears.libs.modules.Variables.KRIGING_DEFAULT_VARIOGRAM;
+import static org.hortonmachine.gears.libs.modules.Variables.KRIGING_EXPERIMENTAL_VARIOGRAM;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
 import org.apache.commons.math3.stat.ranking.TiesStrategy;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.math.interpolation.LinearArrayInterpolator;
+import org.hortonmachine.gears.utils.math.interpolation.LinearListInterpolator;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
 
@@ -158,7 +154,7 @@ public class OmsKrigingInterpolator extends HMModel {
                         validStationIds2ValueMap.put(tmpStationId, finalValues);
                     }
 
-                    normalizeData(validStationIds2ValueMap);
+                    NormalizationStore store = normalizeData(validStationIds2ValueMap);
 
                     OmsExperimentalVariogram expVariogram = new OmsExperimentalVariogram();
                     expVariogram.inStationIds2CoordinateMap = validStationIds2CoordinateMap;
@@ -178,6 +174,10 @@ public class OmsKrigingInterpolator extends HMModel {
 
                     // TODO after Kriging output data need to be converted back (see normalization
                     // above)
+                    HashMap<Integer, double[]> krigingOutData = null;
+                    // Does this contain just one id and one value? To be checked after Kriging interpolation.
+                    inverseNormalizeData(store, krigingOutData);
+                    
 
                 } else {
                     throw new RuntimeException("Not implemented yet");
@@ -192,7 +192,135 @@ public class OmsKrigingInterpolator extends HMModel {
 
     }
 
-    private void normalizeData( HashMap<Integer, double[]> validStationIds2ValueMap ) {
+    private void inverseNormalizeData( NormalizationStore store, HashMap<Integer, double[]> targetIds2ValueMap ) {
+        Set<Integer> targetIdsSet = targetIds2ValueMap.keySet();
+        List<Double> orderedInterpolatedValues = new ArrayList<Double>();
+        for( Integer id : targetIdsSet ) {
+            double[] sValues = targetIds2ValueMap.get(id);
+            for( double sv : sValues ) {
+                orderedInterpolatedValues.add(sv);
+            }
+        }
+        Collections.sort(orderedInterpolatedValues);
+        // calculate ranking
+        double[] orderedInterpolatedValuesArray = new double[orderedInterpolatedValues.size()];
+        for( int i = 0; i < orderedInterpolatedValuesArray.length; i++ ) {
+            orderedInterpolatedValuesArray[i] = orderedInterpolatedValues.get(i);
+        }
+//        NaturalRanking nr = new NaturalRanking(TiesStrategy.AVERAGE);
+//        double[] rank = nr.rank(orderedInterpolatedValuesArray);
+//        List<Double> rankInterpolatedValues = new ArrayList<>();
+//        for( int i = 0; i < rank.length; i++ ) {
+//            rankInterpolatedValues.add(rank[i]);
+//        }
+//        List<Double> uniqueRankInterpolatedValues = rankInterpolatedValues.stream().distinct().collect(Collectors.toList());
+        // z_star
+        List<Double> uniqueOrderedInterpolatedValues = orderedInterpolatedValues.stream().distinct().collect(Collectors.toList());
+        
+        // funzione densita' di prob cumulata dei valori interpolati -> 
+        // sono distribuiti come una Normale con media 0 e varianza 1
+        List<Double> ppfNormalG = new ArrayList<Double>();
+        NormalDistribution nd = new NormalDistribution(0, 1);
+        for( int i = 0; i < uniqueOrderedInterpolatedValues.size(); i++ ) {
+            double v = nd.cumulativeProbability(uniqueOrderedInterpolatedValues.get(i));
+            ppfNormalG.add(v);
+        }
+        
+        // la F(z) dei dati originali � nota solo in forma discreta, il calcolo dell'inversa F-1(z)
+        // deve essere fatto tramite interpolazione. La tecnica di interpolazione dipende dalla
+        // posizione del valore della G rispetto alla F originale: 
+        // lower tail: F                   -> z_star[G<min(F)] ------- G[G<min(F)]
+        // parte centrale (interpolazione) -> z_star[(G>=min(F))*(G<=max(F))] ------- G[(G>=min(F))*(G<=max(F))]
+        // upper tail                      -> z_star[G>max(F)] ------- G[G>max(F)]
+
+        // Inserisco la F(z) manualmente per questo tentativo...
+        List<Double> cdfOriginalValuesF = store.cdfWeibullValues;
+        List<Double> originalMeasuredValuesZ = store.uniqueOrderedValues;
+        
+        Double maxCdfOriginalValuesF = Collections.max(cdfOriginalValuesF);
+        Double minCdfOriginalValuesF = Collections.min(cdfOriginalValuesF);
+        Double maxCdfOriginalMeasuredValues = Collections.max(originalMeasuredValuesZ);
+        Double minCdfOriginalMeasuredValues = Collections.min(originalMeasuredValuesZ);
+        
+        // create tails for the original values CDF function -> F(z)
+        List<Double> lowerTailInterpolatedValues = new ArrayList<Double>();
+        List<Double> upperTailInterpolatedValues = new ArrayList<Double>();
+        List<Double> middleTailInterpolatedValues = new ArrayList<Double>();
+        double currentInterpolatedValue = Double.NaN;
+        
+        for (int j = 0; j < ppfNormalG.size()-1; j++) {
+            currentInterpolatedValue = uniqueOrderedInterpolatedValues.get(j);
+            if (ppfNormalG.get(j) < minCdfOriginalValuesF) {
+                lowerTailInterpolatedValues.add(currentInterpolatedValue);
+            } else if (ppfNormalG.get(j) > maxCdfOriginalValuesF) {
+                upperTailInterpolatedValues.add(currentInterpolatedValue);
+            } else {
+                middleTailInterpolatedValues.add(currentInterpolatedValue);
+            }
+        }
+        
+        // create tails for the interpolated values CDF function -> G(z)
+        List<Double> lowerTailPpfG = new ArrayList<Double>();
+        List<Double> upperTailPpfG = new ArrayList<Double>();
+        List<Double> middleTailPpfG = new ArrayList<Double>();
+        double currentppfValueG = Double.NaN;
+        
+        for (int j = 0; j < ppfNormalG.size(); j++) {
+            currentppfValueG = ppfNormalG.get(j);
+            if (ppfNormalG.get(j) < minCdfOriginalValuesF) {
+                lowerTailPpfG.add(currentppfValueG);
+            } else if (ppfNormalG.get(j) > maxCdfOriginalValuesF) {
+                upperTailPpfG.add(currentppfValueG);
+            } else {
+                middleTailPpfG.add(currentppfValueG);
+            }
+        }
+        
+        // Calcolo ora la F-1(z) partendo da G nelle tre fasce
+        
+        
+        
+        List<Double> finalInterpolatedValues = new ArrayList<>();
+        
+        // lower tail -> use the expression G(z) = F(z1) [(z-z_min)/ (z1-zmin)]^(omega>1)
+        double omega = 5.0;
+        double z_min = 0.0;
+        for (int i = 0; i < lowerTailPpfG.size(); i++) {
+            double value = lowerTailPpfG.get(i);
+            double inverseInterpolatedLowerG = Math.pow((value/minCdfOriginalValuesF),(1/omega))*(minCdfOriginalMeasuredValues-z_min) + z_min;
+            finalInterpolatedValues.add(inverseInterpolatedLowerG);
+        }
+        // middle tail -> interpolation
+        LinearListInterpolator llInt = new LinearListInterpolator(cdfOriginalValuesF, originalMeasuredValuesZ);
+        for (int i = 0; i < middleTailPpfG.size(); i++) {
+            double value = middleTailPpfG.get(i);
+            double inverseInterpolatedMiddleG = llInt.getInterpolated(value);
+            finalInterpolatedValues.add(inverseInterpolatedMiddleG);
+        }
+        
+        // upper tail -> use the expression z = (-llambda/(upper_tail_G-1))^(1/1.5)
+        double omegaUp = 1.5;
+        for (int i = 0; i < upperTailPpfG.size(); i++) {
+            double value = upperTailPpfG.get(i);
+            double lambda = Math.pow(maxCdfOriginalMeasuredValues,1.5) * (1-maxCdfOriginalValuesF);
+            double inverseInterpolatedUpperG = Math.pow((-lambda / (value - 1)),(1/omegaUp));
+            finalInterpolatedValues.add(inverseInterpolatedUpperG);
+        }
+        
+        
+        for( Entry<Integer, double[]> entry : targetIds2ValueMap.entrySet() ) {
+            double[] value = entry.getValue();
+            int indexOf = uniqueOrderedInterpolatedValues.indexOf(value[0]);
+            Double invNomrValue = finalInterpolatedValues.get(indexOf);
+            value[0] = invNomrValue;
+        }
+        
+        
+    }
+    
+    private NormalizationStore normalizeData( HashMap<Integer, double[]> validStationIds2ValueMap ) {
+        NormalizationStore store = new NormalizationStore();
+        
         Set<Integer> stationsIdsSet = validStationIds2ValueMap.keySet();
         List<Double> orderedValues = new ArrayList<Double>();
         for( Integer id : stationsIdsSet ) {
@@ -214,21 +342,21 @@ public class OmsKrigingInterpolator extends HMModel {
             rankValues.add(rank[i]);
         }
         List<Double> uniqueRankValues = rankValues.stream().distinct().collect(Collectors.toList());
-        List<Double> uniqueOrderedValues = orderedValues.stream().distinct().collect(Collectors.toList());
+        store.uniqueOrderedValues = orderedValues.stream().distinct().collect(Collectors.toList());
 
         // funzione densita' di prob cumulata dei valori
-        List<Double> cdfWeibullValues = new ArrayList<Double>();
+        
         for( int i = 0; i < uniqueRankValues.size(); i++ ) {
             double r = uniqueRankValues.get(i);
             double v = r / (orderedValuesArray.length + 1);
-            cdfWeibullValues.add(v);
+            store.cdfWeibullValues.add(v);
         }
 
         // trasformazione da cumulata dei valori in cumulata della normale
         List<Double> ppfNormal = new ArrayList<Double>();
         NormalDistribution nd = new NormalDistribution(0, 1);
-        for( int i = 0; i < cdfWeibullValues.size(); i++ ) {
-            double v = nd.inverseCumulativeProbability(cdfWeibullValues.get(i));
+        for( int i = 0; i < store.cdfWeibullValues.size(); i++ ) {
+            double v = nd.inverseCumulativeProbability(store.cdfWeibullValues.get(i));
             ppfNormal.add(v);
         }
 
@@ -238,9 +366,9 @@ public class OmsKrigingInterpolator extends HMModel {
                 double[] sValues = inStationIds2ValueMap.get(id);
                 for( int j = 0; j < sValues.length; j++ ) {
                     Double sv = sValues[j];
-                    int indexOf = uniqueOrderedValues.indexOf(sv);
+                    int indexOf = store.uniqueOrderedValues.indexOf(sv);
                     if (indexOf == -1) {
-                        String collect = uniqueOrderedValues.stream().map(d -> d.toString()).collect(Collectors.joining(","));
+                        String collect = store.uniqueOrderedValues.stream().map(d -> d.toString()).collect(Collectors.joining(","));
                         throw new IllegalArgumentException("Could not find " + sv + " inside list: " + collect);
                     }
                     double ppf = ppfNormal.get(indexOf);
@@ -248,6 +376,8 @@ public class OmsKrigingInterpolator extends HMModel {
                 }
             }
         }
+        
+        return store;
     }
 
     private double getIdwInterpolatedValue( TargetPointAssociation association,
@@ -274,4 +404,10 @@ public class OmsKrigingInterpolator extends HMModel {
         double interpolatedValue = sumdValue / sumweight;
         return interpolatedValue;
     }
+    
+    private static class NormalizationStore {
+        private List<Double> uniqueOrderedValues;
+        private List<Double> cdfWeibullValues = new ArrayList<Double>();
+    }
+    
 }
