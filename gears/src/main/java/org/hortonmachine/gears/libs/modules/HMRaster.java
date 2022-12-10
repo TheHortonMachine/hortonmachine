@@ -22,6 +22,7 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 
 import javax.media.jai.iterator.RandomIter;
+import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -111,6 +112,31 @@ public class HMRaster implements AutoCloseable {
                 }
             }
         }
+        return hmRaster;
+    }
+
+    /**
+     * Build a raster using region and crs.
+     * 
+     * @param region the region to use.
+     * @param crs the crs for the raster.
+     * @param noValue the novalue with which to pre-fill the raster.
+     * @return the HMRaster instance.
+     */
+    public static HMRaster writableFromRegionMap( RegionMap region, CoordinateReferenceSystem crs, double noValue ) {
+        HMRaster hmRaster = new HMRaster();
+        hmRaster.isWritable = true;
+        hmRaster.regionMap = region;
+        hmRaster.crs = crs;
+        hmRaster.gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(region, crs);
+        hmRaster.rows = hmRaster.regionMap.getRows();
+        hmRaster.cols = hmRaster.regionMap.getCols();
+        hmRaster.xRes = hmRaster.regionMap.getXres();
+        hmRaster.yRes = hmRaster.regionMap.getYres();
+        hmRaster.novalue = noValue;
+        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, null, null,
+                hmRaster.novalue);
+        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
         return hmRaster;
     }
 
@@ -284,6 +310,36 @@ public class HMRaster implements AutoCloseable {
         if (iter != null) {
             iter.done();
         }
+    }
+
+    /**
+     * Writes the values of the coverage into the current raster.
+     * 
+     * @param pm optional Process monitor.
+     * @param otherRaster the raster to map over the current raster.
+     * @throws IOException 
+     */
+    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
+        if (pm == null)
+            pm = new DummyProgressMonitor();
+        int rows = otherRaster.getRows();
+        int cols = otherRaster.getCols();
+        pm.beginTask("Patch raster...", rows); //$NON-NLS-1$
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                Coordinate coordinate = otherRaster.getWorld(c, r);
+                Point thisPixel = getPixel(coordinate);
+                if (isContained(thisPixel.x, thisPixel.y)) {
+                    double value = otherRaster.getValue(c, r);
+                    if (!isNovalue(value)) {
+                        setValue(thisPixel.x, thisPixel.y, value);
+                    }
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
     }
 
 }

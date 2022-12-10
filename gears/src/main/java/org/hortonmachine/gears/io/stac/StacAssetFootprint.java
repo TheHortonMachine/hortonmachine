@@ -73,7 +73,7 @@ public class StacAssetFootprint extends TestVariables {
 
                     Geometry geometry = stacfeatures.geometries.get(i);
                     String id = stacfeatures.ids.get(i);
-                    String ts = stacfeatures.timestamp.get(i);
+                    String ts = stacfeatures.timestamps.get(i);
 
                     Object[] values = new Object[]{geometry, id, ts};
                     builder.addAll(values);

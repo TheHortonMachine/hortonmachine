@@ -1,27 +1,36 @@
 package org.hortonmachine.gears.io.stac;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.DataSourceException;
 import org.geotools.data.geojson.GeoJSONReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.gce.geotiff.GeoTiffReader;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.http.commons.MultithreadedHttpClient;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.SearchQuery;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.parameter.GeneralParameterValue;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -56,7 +65,15 @@ public class StacAssetDownloaderTest extends TestVariables {
             // System.out.println();
 
             StacFeatures stacfeatures = getUniqueFeatures(fc);
-            int size = stacfeatures.getSize();
+            processStacFeatures(stacfeatures);
+        }
+
+    }
+
+    private void processStacFeatures( StacFeatures stacfeatures )
+            throws TransformException, FactoryException, IOException, DataSourceException, Exception {
+        int size = stacfeatures.getSize();
+        if (size > 0) {
             Geometry coveredAreas = stacfeatures.getCoveredAreas();
             Geometry commonArea = coveredAreas.intersection(intersectionGeometry);
             double coveredArea = commonArea.getArea();
@@ -66,80 +83,95 @@ public class StacAssetDownloaderTest extends TestVariables {
             System.out.println("Region of interest is covered by data in amout of " + percentage + "%");
             System.out.println();
 
-            if (size > 0) {
-                int featureCount = 0;
-                System.out.println("Processing features...");
-                for( int i = 0; i < size; i++ ) {
-                    if (featureCount++ % 10 == 0) {
-                        System.out.println(featureCount + "/" + size);
-                    }
-                    String id = stacfeatures.ids.get(i);
-                    String ts = stacfeatures.timestamp.get(i);
-                    Geometry geometry = stacfeatures.geometries.get(i);
-                    Geometry intersection = geometry.intersection(intersectionGeometry);
-                    Envelope readEnvelope = intersection.getEnvelopeInternal();
+            Integer srid = stacfeatures.epsgs.get(0); // TODO check if this is enough
+            CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(srid);
+            ReferencedEnvelope roiEnvelope = new ReferencedEnvelope(intersectionGeometry.getEnvelopeInternal(),
+                    DefaultGeographicCRS.WGS84).transform(outputCrs, true);
 
-                    double xRes = readEnvelope.getWidth() / downloadCols;
-                    double yRes = readEnvelope.getHeight() / downloadRows;
-                    GeneralParameterValue[] generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(xRes, yRes,
-                            readEnvelope.getMaxY(), readEnvelope.getMinY(), readEnvelope.getMaxX(), readEnvelope.getMinX(),
-                            DefaultGeographicCRS.WGS84);
-                    
-                    HMRaster outRaster = new HMRaster();
+            RegionMap regionMap = RegionMap.fromEnvelopeAndGrid(roiEnvelope, downloadCols, downloadRows);
+            HMRaster outRaster = HMRaster.writableFromRegionMap(regionMap, outputCrs, HMConstants.doubleNovalue);
+            String fileName = null;
 
-                    SimpleFeature feature = stacfeatures.features.get(i);
-                    Map<String, JsonNode> top = (Map<String, JsonNode>) feature.getUserData()
-                            .get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
-                    ObjectNode assets = (ObjectNode) top.get("assets");
+            int featureCount = 0;
+            System.out.println("Processing features...");
+            for( int i = 0; i < size; i++ ) {
+                if (featureCount++ % 10 == 0) {
+                    System.out.println(featureCount + "/" + size);
+                }
+                String id = stacfeatures.ids.get(i);
+                String ts = stacfeatures.timestamps.get(i);
+                int currentSrid = stacfeatures.epsgs.get(i);
+                if (srid != currentSrid) {
+                    throw new IOException("Epsgs are different");
+                }
+                Geometry geometry = stacfeatures.geometries.get(i);
+                Geometry intersection = geometry.intersection(intersectionGeometry);
+                Envelope readEnvelope = intersection.getEnvelopeInternal();
 
-                    Iterator<JsonNode> assetsIterator = assets.elements();
-                    while( assetsIterator.hasNext() ) {
-                        JsonNode assetNode = assetsIterator.next();
-                        JsonNode typeNode = assetNode.get("type");
-                        if (typeNode != null) {
-                            String type = typeNode.textValue();
-                            // we only check cloud optimized datasets here
-                            JsonNode titleNode = assetNode.get("title");
-                            if (titleNode != null) {
-                                String title = titleNode.textValue();
+                CoordinateReferenceSystem dataCrs = CrsUtilities.getCrsFromSrid(currentSrid);
+                ReferencedEnvelope roiEnv = new ReferencedEnvelope(readEnvelope, DefaultGeographicCRS.WGS84).transform(dataCrs,
+                        true);
 
-                                if (title.equals(band) && type.toLowerCase().contains("profile=cloud-optimized")) {
-                                    JsonNode rasterBandNode = assetNode.get("raster:bands");
-                                    if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
-                                        String downloadUrl = assetNode.get("href").textValue();
-                                        BasicAuthURI cogUri = new BasicAuthURI(downloadUrl, false);
-                                        // cogUri.setUser("");
-                                        // cogUri.setPassword("");
-                                        HttpRangeReader rangeReader = new HttpRangeReader(cogUri.getUri(),
-                                                CogImageReadParam.DEFAULT_HEADER_LENGTH);
-                                        CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri,
-                                                new CogImageReaderSpi(), new CogImageInputStreamSpi(),
-                                                rangeReader.getClass().getName());
-                                        GeoTiffReader reader = new GeoTiffReader(inputProvider);
-                                        GridCoverage2D coverage = reader.read(generalParameter);
+                GeneralParameterValue[] generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(downloadCols,
+                        downloadRows, roiEnv.getMaxY(), roiEnv.getMinY(), roiEnv.getMaxX(), roiEnv.getMinX(),
+                        roiEnv.getCoordinateReferenceSystem());
 
-                                        int lastSlash = downloadUrl.lastIndexOf('/');
-                                        String fileName = downloadUrl.substring(lastSlash + 1);
-                                        String downloadName = ts + "__" + id + "__" + fileName;
-                                        System.out.println(downloadName);
+                SimpleFeature feature = stacfeatures.features.get(i);
+                Map<String, JsonNode> top = (Map<String, JsonNode>) feature.getUserData().get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
+                ObjectNode assets = (ObjectNode) top.get("assets");
 
-                                        File downloadFolderFile = new File(downloadFolder);
-                                        File downloadFile = new File(downloadFolderFile, downloadName);
+                Iterator<JsonNode> assetsIterator = assets.elements();
+                while( assetsIterator.hasNext() ) {
+                    JsonNode assetNode = assetsIterator.next();
+                    JsonNode typeNode = assetNode.get("type");
+                    if (typeNode != null) {
+                        String type = typeNode.textValue();
+                        // we only check cloud optimized datasets here
+                        JsonNode titleNode = assetNode.get("title");
+                        if (titleNode != null) {
+                            String title = titleNode.textValue();
 
-                                        OmsRasterWriter.writeRaster(downloadFile.getAbsolutePath(), coverage);
-                                    }
+                            if (title.equals(band) && type.toLowerCase().contains("profile=cloud-optimized")) {
+                                JsonNode rasterBandNode = assetNode.get("raster:bands");
+                                if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
+                                    String downloadUrl = assetNode.get("href").textValue();
+                                    BasicAuthURI cogUri = new BasicAuthURI(downloadUrl, false);
+                                    // cogUri.setUser("");
+                                    // cogUri.setPassword("");
+                                    HttpRangeReader rangeReader = new HttpRangeReader(cogUri.getUri(),
+                                            CogImageReadParam.DEFAULT_HEADER_LENGTH);
+                                    CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
+                                            new CogImageInputStreamSpi(), rangeReader.getClass().getName());
+                                    GeoTiffReader reader = new GeoTiffReader(inputProvider);
+                                    GridCoverage2D coverage = reader.read(generalParameter);
+
+                                    outRaster.mapRaster(null, HMRaster.fromGridCoverage(coverage));
+
+                                    int lastSlash = downloadUrl.lastIndexOf('/');
+                                    fileName = downloadUrl.substring(lastSlash + 1);
+                                    String downloadName = ts + "__" + id + "__" + fileName;
+                                    System.out.println(downloadName);
+
+                                    File downloadFolderFile = new File(downloadFolder);
+                                    File downloadFile = new File(downloadFolderFile, downloadName);
+
+                                    OmsRasterWriter.writeRaster(downloadFile.getAbsolutePath(), coverage);
                                 }
                             }
                         }
-
                     }
 
-//                    System.out.println(assets);
                 }
 
+//                    System.out.println(assets);
             }
-        }
 
+            GridCoverage2D outCoverage = outRaster.buildCoverage(fileName);
+            File downloadFolderFile = new File(downloadFolder);
+            File downloadFile = new File(downloadFolderFile, fileName);
+
+            OmsRasterWriter.writeRaster(downloadFile.getAbsolutePath(), outCoverage);
+        }
     }
 
     public static void main( String[] args ) throws Exception {

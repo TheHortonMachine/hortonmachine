@@ -4,7 +4,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -13,7 +12,6 @@ import java.util.TreeSet;
 import org.geotools.data.geojson.GeoJSONReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -78,13 +76,19 @@ public class TestVariables {
             String createdDateCet = f.getAttribute("created").toString();
             Date dateCet = dateFormatter.parse(createdDateCet);
             String ts = fileNameDateFormatter.format(dateCet);
+            Object epsg = f.getAttribute("proj:epsg");
+            Integer epsgInt = null;
+            if (epsg instanceof Integer) {
+                epsgInt = (Integer) epsg;
+            }
 
-            if (uniqueFeatures.add(ts + " " + id)) {
+            if (epsgInt != null && uniqueFeatures.add(ts + " " + id)) {
                 Geometry geometry = (Geometry) f.getDefaultGeometry();
                 stacFeatures.ids.add(id);
-                stacFeatures.timestamp.add(ts);
+                stacFeatures.timestamps.add(ts);
                 stacFeatures.geometries.add(geometry);
                 stacFeatures.features.add(f);
+                stacFeatures.epsgs.add(epsgInt);
             }
         }
         iterator.close();
@@ -94,9 +98,10 @@ public class TestVariables {
 
     protected static class StacFeatures {
         public List<String> ids = new ArrayList<>();
-        public List<String> timestamp = new ArrayList<>();
+        public List<String> timestamps = new ArrayList<>();
         public List<Geometry> geometries = new ArrayList<>();
         public List<SimpleFeature> features = new ArrayList<>();
+        public List<Integer> epsgs = new ArrayList<>();
 
         public Geometry getCoveredAreas() {
             Geometry union = CascadedPolygonUnion.union(geometries);

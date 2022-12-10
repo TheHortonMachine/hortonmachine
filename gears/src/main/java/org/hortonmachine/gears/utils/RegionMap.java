@@ -43,6 +43,57 @@ import org.locationtech.jts.geom.Envelope;
 public class RegionMap extends HashMap<String, Double> {
     private static final long serialVersionUID = 1L;
 
+    public static RegionMap fromEnvelopeAndGrid( Envelope envelope, int cols, int rows ) {
+        return fromBoundsAndGrid(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY(), cols, rows);
+    }
+
+    public static RegionMap fromBoundsAndGrid( double west, double east, double south, double north, int cols, int rows ) {
+        double width = east - west;
+        double height = north - south;
+        double xRes = width / cols;
+        double yRes = height / rows;
+
+        RegionMap region = new RegionMap();
+        region.put(NORTH, north);
+        region.put(SOUTH, south);
+        region.put(WEST, west);
+        region.put(EAST, east);
+        region.put(XRES, xRes);
+        region.put(YRES, yRes);
+        region.put(ROWS, (double) rows);
+        region.put(COLS, (double) cols);
+        return region;
+    }
+
+    public static RegionMap fromEnvelopeAndResolution( Envelope envelope, double xRes, double yRes ) {
+        return fromBoundsAndResolution(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY(), xRes,
+                yRes);
+    }
+
+    public static RegionMap fromBoundsAndResolution( double west, double east, double south, double north, double xRes,
+            double yRes ) {
+        int cols = (int) Math.round((east - west) / xRes);
+        if (cols < 1)
+            cols = 1;
+        int rows = (int) Math.round((north - south) / yRes);
+        if (rows < 1)
+            rows = 1;
+        double width = east - west;
+        double height = north - south;
+
+        RegionMap region = new RegionMap();
+        region.put(NORTH, north);
+        region.put(SOUTH, south);
+        region.put(WEST, west);
+        region.put(EAST, east);
+        region.put(XRES, xRes);
+        region.put(YRES, yRes);
+        region.put(ROWS, (double) height);
+        region.put(COLS, (double) width);
+        return region;
+
+    }
+
     /**
      * Getter for the region cols.
      * 
@@ -236,7 +287,7 @@ public class RegionMap extends HashMap<String, Double> {
         if (deltaH > 0) {
             newHeight = newHeight - deltaH + originalYres;
         }
-        
+
         double newNorth = newSouth + newHeight;
         double newEast = newWest + newWidth;
 
