@@ -130,6 +130,24 @@
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
+			<artifactId>gt-stac-store</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-tiff</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-cog-reader</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-cog-rangereader-http</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.geotools</groupId>
 			<artifactId>gt-imagemosaic</artifactId>
 		</dependency>
 		<dependency>
