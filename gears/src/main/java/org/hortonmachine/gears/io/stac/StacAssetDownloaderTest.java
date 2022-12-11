@@ -70,6 +70,7 @@ public class StacAssetDownloaderTest extends TestVariables {
 
     }
 
+    @SuppressWarnings("unchecked")
     private void processStacFeatures( StacFeatures stacfeatures )
             throws TransformException, FactoryException, IOException, DataSourceException, Exception {
         int size = stacfeatures.getSize();
@@ -89,7 +90,7 @@ public class StacAssetDownloaderTest extends TestVariables {
                     DefaultGeographicCRS.WGS84).transform(outputCrs, true);
 
             RegionMap regionMap = RegionMap.fromEnvelopeAndGrid(roiEnvelope, downloadCols, downloadRows);
-            HMRaster outRaster = HMRaster.writableFromRegionMap(regionMap, outputCrs, HMConstants.doubleNovalue);
+            HMRaster outRaster = null;
             String fileName = null;
 
             int featureCount = 0;
@@ -134,6 +135,21 @@ public class StacAssetDownloaderTest extends TestVariables {
                             if (title.equals(band) && type.toLowerCase().contains("profile=cloud-optimized")) {
                                 JsonNode rasterBandNode = assetNode.get("raster:bands");
                                 if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
+                                    if (outRaster == null) {
+                                        // pick novalue of first raster and use that for output
+                                        // raster
+                                        Iterator<JsonNode> rbIterator = rasterBandNode.elements();
+                                        while( rbIterator.hasNext() ) {
+                                            JsonNode rbNode = rbIterator.next();
+                                            JsonNode noValueNode = rbNode.get("nodata");
+                                            if (noValueNode != null) {
+                                                double noValue = noValueNode.asDouble();
+                                                outRaster = HMRaster.writableFromRegionMap(regionMap, outputCrs, noValue);
+                                                break;
+                                            }
+                                        }
+                                    }
+
                                     String downloadUrl = assetNode.get("href").textValue();
                                     BasicAuthURI cogUri = new BasicAuthURI(downloadUrl, false);
                                     // cogUri.setUser("");

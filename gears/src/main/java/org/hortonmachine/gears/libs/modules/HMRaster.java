@@ -22,7 +22,6 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 
 import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -138,6 +137,10 @@ public class HMRaster implements AutoCloseable {
                 hmRaster.novalue);
         hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
         return hmRaster;
+    }
+
+    public RegionMap getRegionMap() {
+        return RegionMap.fromRegionMap(regionMap);
     }
 
     /**
@@ -322,17 +325,33 @@ public class HMRaster implements AutoCloseable {
     public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
         if (pm == null)
             pm = new DummyProgressMonitor();
-        int rows = otherRaster.getRows();
-        int cols = otherRaster.getCols();
-        pm.beginTask("Patch raster...", rows); //$NON-NLS-1$
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                Coordinate coordinate = otherRaster.getWorld(c, r);
-                Point thisPixel = getPixel(coordinate);
-                if (isContained(thisPixel.x, thisPixel.y)) {
-                    double value = otherRaster.getValue(c, r);
-                    if (!isNovalue(value)) {
-                        setValue(thisPixel.x, thisPixel.y, value);
+
+        RegionMap otherRegion = otherRaster.getRegionMap();
+        Coordinate lowerLeft = otherRegion.getLowerLeft();
+        Coordinate upperRight = otherRegion.getUpperRight();
+
+        // find grid coordinates in the current region's space
+        Point ll = getPixel(lowerLeft);
+        int fromCol = ll.x;
+        if (fromCol < 0)
+            fromCol = 0;
+        int toRow = ll.y;
+        Point ur = getPixel(upperRight);
+        int toCol = ur.x;
+        int fromRow = ur.y;
+        if (fromRow < 0)
+            fromRow = 0;
+
+        pm.beginTask("Patch raster...", toRow - fromRow); //$NON-NLS-1$
+        // fill the points of the current raster picking form the
+        // other raster via nearest neighbor interpolation
+        for( int r = fromRow; r <= toRow; r++ ) {
+            for( int c = fromCol; c <= toCol; c++ ) {
+                if (isContained(c, r)) {
+                    Coordinate coordinate = getWorld(c, r);
+                    double value = otherRaster.getValue(coordinate);
+                    if (!otherRaster.isNovalue(value)) {
+                        setValue(c, r, value);
                     }
                 }
             }
