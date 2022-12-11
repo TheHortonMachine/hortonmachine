@@ -1,50 +1,33 @@
 package org.hortonmachine.gears.io.stac;
 
-import java.net.URL;
-import java.util.Arrays;
+import java.util.List;
 
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.filter.text.cql2.CQL;
-import org.geotools.http.commons.MultithreadedHttpClient;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.stac.client.STACClient;
-import org.geotools.stac.client.SearchQuery;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
 public class StacAssetFootprint extends TestVariables {
-    @SuppressWarnings({"unchecked"})
     public StacAssetFootprint() throws Exception {
 
-        try (STACClient stacClient = new STACClient(new URL(repoUrl), new MultithreadedHttpClient())) {
-            // i.e. find sentinel data for the day 2022-12-07 in Italy
-            SearchQuery search = new SearchQuery();
-            search.setCollections(Arrays.asList(collectionQuery));
-            search.setDatetime(dateQuery);
-            search.setIntersects(intersectionGeometry);// GeometryUtilities.createPolygonFromEnvelope(italyEnv));
-            search.setFilter(CQL.toFilter(CQL_FILTER));
-            search.setLimit(limit); // limit doesn't seem to work properly
+        try (HMStacManager stacManager = new HMStacManager(repoUrl, new LogProgressMonitor())) {
+            stacManager.open();
 
-            System.out.println("Search collection with query:");
-            System.out.println(search.toString());
-            System.out.println("==============================================================================");
+            HMStacCollection collection = stacManager.getCollectionById(collectionQuery);
 
-            SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+            List<HMStacItem> items = collection.setDayFilter(dayQuery, null).setGeometryFilter(intersectionGeometry)
+                    .setCqlFilter(CQL_FILTER).setLimit(limit).searchItems();
+            int size = items.size();
+            System.out.println("Found " + size + " items matching the query.");
+            System.out.println();
 
-            // TODO the following doesn't work, the size is not retrieved properly
-            // int size = fc.size();
-            // System.out.println("Found " + size + " features matching the query.");
-            // System.out.println();
-
-            StacFeatures stacfeatures = getUniqueFeatures(fc);
-            int size = stacfeatures.getSize();
-            Geometry coveredAreas = stacfeatures.getCoveredAreas();
+            Geometry coveredAreas = HMStacCollection.getCoveredArea(items);
             Geometry commonArea = coveredAreas.intersection(intersectionGeometry);
             double coveredArea = commonArea.getArea();
             double roiArea = intersectionGeometry.getArea();
@@ -64,18 +47,9 @@ public class StacAssetFootprint extends TestVariables {
                 SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                 DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 
-                int featureCount = 0;
                 System.out.println("Processing features...");
-                for( int i = 0; i < size; i++ ) {
-                    if (featureCount++ % 10 == 0) {
-                        System.out.println(featureCount + "/" + size);
-                    }
-
-                    Geometry geometry = stacfeatures.geometries.get(i);
-                    String id = stacfeatures.ids.get(i);
-                    String ts = stacfeatures.timestamps.get(i);
-
-                    Object[] values = new Object[]{geometry, id, ts};
+                for( HMStacItem item : items ) {
+                    Object[] values = new Object[]{item.getGeometry(), item.getId(), item.getTimestamp()};
                     builder.addAll(values);
                     SimpleFeature feature = builder.buildFeature(null);
                     outFC.add(feature);

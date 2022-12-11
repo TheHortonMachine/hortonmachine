@@ -27,7 +27,6 @@ import java.io.PrintStream;
  */
 public class LogProgressMonitor implements IHMProgressMonitor {
 
-    private static final String DOTS = "...";
     private static final String PERC = "%...";
     protected boolean cancelled = false;
     protected String taskName;
@@ -105,14 +104,18 @@ public class LogProgressMonitor implements IHMProgressMonitor {
     }
 
     public void worked( int workDone ) {
+        runningWork = runningWork + workDone;
         if (totalWork == -1) {
-            String msg = DOTS;
-            if (prefix != null) {
-                msg = prefix + msg;
+            if (runningWork % 10 == 0) {
+                String msg = String.valueOf(runningWork);
+                if (prefix != null) {
+                    msg = prefix + msg;
+                }
+                outStream.println(msg);
+            } else {
+                outStream.print(".");
             }
-            outStream.println(msg);
         } else {
-            runningWork = runningWork + workDone;
             // calculate %
             int percentage = (int) (100 * (runningWork / (float) totalWork));
             if (percentage % 10 == 0) {
