@@ -123,21 +123,6 @@ public class HMStacCollection {
         return this;
     }
 
-    /**
-     * Set a limit for the search query.
-     * 
-     * @param limit
-     * @return
-     */
-    public HMStacCollection setLimit( int limit ) {
-        if (limit > 1) {
-            if (search == null)
-                search = new SearchQuery();
-            search.setLimit(limit);
-        }
-        return this;
-    }
-
     public List<HMStacItem> searchItems() throws Exception {
         if (search == null)
             search = new SearchQuery();
@@ -148,13 +133,10 @@ public class HMStacCollection {
         SimpleFeatureIterator iterator = fc.features();
         pm.beginTask("Extracting items...", size);
         List<HMStacItem> stacItems = new ArrayList<>();
-//        TreeSet<String> uniqueItems = new TreeSet<>();
-//        int count = 0;
         while( iterator.hasNext() ) {
             SimpleFeature f = iterator.next();
             HMStacItem item = new HMStacItem(f);
-            if (item.getEpsg() != null) { // && uniqueItems.add(item.getTimestamp() + " " +
-                                          // item.getId())) {
+            if (item.getEpsg() != null) {
                 stacItems.add(item);
             }
             pm.worked(1);
