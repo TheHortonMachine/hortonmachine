@@ -39,6 +39,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMRaster implements AutoCloseable {
+    private String name;
     private RegionMap regionMap;
     private int rows;
     private int cols;
@@ -63,6 +64,7 @@ public class HMRaster implements AutoCloseable {
      */
     public static HMRaster fromGridCoverage( GridCoverage2D coverage ) {
         HMRaster hmRaster = new HMRaster();
+        hmRaster.name = coverage.getName().toString();
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         hmRaster.crs = coverage.getCoordinateReferenceSystem();
         hmRaster.gridGeometry = coverage.getGridGeometry();
@@ -75,8 +77,8 @@ public class HMRaster implements AutoCloseable {
         return hmRaster;
     }
 
-    public static HMRaster writableFromTemplate( GridCoverage2D template ) {
-        return writableFromTemplate(template, false);
+    public static HMRaster writableFromTemplate( String name, GridCoverage2D template ) {
+        return writableFromTemplate(name, template, false);
     }
 
     /**
@@ -88,9 +90,10 @@ public class HMRaster implements AutoCloseable {
      * @param copyValues if <code>true</code>, also copy the values from the template.
      * @return the HMRaster instance.
      */
-    public static HMRaster writableFromTemplate( GridCoverage2D template, boolean copyValues ) {
+    public static HMRaster writableFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
         HMRaster hmRaster = new HMRaster();
         hmRaster.isWritable = true;
+        hmRaster.name = name;
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
         hmRaster.crs = template.getCoordinateReferenceSystem();
         hmRaster.gridGeometry = template.getGridGeometry();
@@ -112,6 +115,40 @@ public class HMRaster implements AutoCloseable {
             }
         }
         return hmRaster;
+    }
+
+    /**
+     * Build a raster using region and crs.
+     * 
+     * @param region the region to use.
+     * @param crs the crs for the raster.
+     * @param noValue the novalue with which to pre-fill the raster.
+     * @return the HMRaster instance.
+     */
+    public static HMRaster writableFromRegionMap( String name, RegionMap region, CoordinateReferenceSystem crs, double noValue ) {
+        HMRaster hmRaster = new HMRaster();
+        hmRaster.name = name;
+        hmRaster.isWritable = true;
+        hmRaster.regionMap = region;
+        hmRaster.crs = crs;
+        hmRaster.gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(region, crs);
+        hmRaster.rows = hmRaster.regionMap.getRows();
+        hmRaster.cols = hmRaster.regionMap.getCols();
+        hmRaster.xRes = hmRaster.regionMap.getXres();
+        hmRaster.yRes = hmRaster.regionMap.getYres();
+        hmRaster.novalue = noValue;
+        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, null, null,
+                hmRaster.novalue);
+        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+        return hmRaster;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public RegionMap getRegionMap() {
+        return RegionMap.fromRegionMap(regionMap);
     }
 
     /**
@@ -269,10 +306,7 @@ public class HMRaster implements AutoCloseable {
      * @return the gridCoverage.
      * @throws IOException
      */
-    public GridCoverage2D buildCoverage( String name ) throws IOException {
-        if (name == null) {
-            name = "hmraster";
-        }
+    public GridCoverage2D buildCoverage() throws IOException {
         if (!isWritable) {
             throw new IOException("The current HMRaster is not writable.");
         }
@@ -284,6 +318,52 @@ public class HMRaster implements AutoCloseable {
         if (iter != null) {
             iter.done();
         }
+    }
+
+    /**
+     * Writes the values of the coverage into the current raster.
+     * 
+     * @param pm optional Process monitor.
+     * @param otherRaster the raster to map over the current raster.
+     * @throws IOException 
+     */
+    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
+        if (pm == null)
+            pm = new DummyProgressMonitor();
+
+        RegionMap otherRegion = otherRaster.getRegionMap();
+        Coordinate lowerLeft = otherRegion.getLowerLeft();
+        Coordinate upperRight = otherRegion.getUpperRight();
+
+        // find grid coordinates in the current region's space
+        Point ll = getPixel(lowerLeft);
+        int fromCol = ll.x;
+        if (fromCol < 0)
+            fromCol = 0;
+        int toRow = ll.y;
+        Point ur = getPixel(upperRight);
+        int toCol = ur.x;
+        int fromRow = ur.y;
+        if (fromRow < 0)
+            fromRow = 0;
+
+        pm.beginTask("Patch raster...", toRow - fromRow); //$NON-NLS-1$
+        // fill the points of the current raster picking form the
+        // other raster via nearest neighbor interpolation
+        for( int r = fromRow; r <= toRow; r++ ) {
+            for( int c = fromCol; c <= toCol; c++ ) {
+                if (isContained(c, r)) {
+                    Coordinate coordinate = getWorld(c, r);
+                    double value = otherRaster.getValue(coordinate);
+                    if (!otherRaster.isNovalue(value)) {
+                        setValue(c, r, value);
+                    }
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
     }
 
 }

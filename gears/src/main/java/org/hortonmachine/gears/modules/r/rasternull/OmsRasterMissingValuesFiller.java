@@ -139,7 +139,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
         }
 
         try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
-                HMRaster outData = HMRaster.writableFromTemplate(inRaster, true)) {
+                HMRaster outData = HMRaster.writableFromTemplate("nulled", inRaster, true)) {
             List<Coordinate> novaluePoints = new ArrayList<>();
             inData.process(pm, "Identifing holes...", ( col, row, value, tcols, trows ) -> {
                 if (inData.isNovalue(value)) {
@@ -191,7 +191,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             }
             pm.done();
 
-            outRaster = outData.buildCoverage("nulled");
+            outRaster = outData.buildCoverage();
         }
     }
 

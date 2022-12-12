@@ -26,13 +26,17 @@ import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
 
+import java.awt.geom.AffineTransform;
 import java.util.HashMap;
 
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.geometry.Envelope2D;
+import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.geometry.DirectPosition;
 
 /**
  * Map containing a region definition, having utility methods to get the values.
@@ -42,6 +46,110 @@ import org.locationtech.jts.geom.Envelope;
  */
 public class RegionMap extends HashMap<String, Double> {
     private static final long serialVersionUID = 1L;
+
+    public static RegionMap fromEnvelopeAndGrid( Envelope envelope, int cols, int rows ) {
+        return fromBoundsAndGrid(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY(), cols, rows);
+    }
+
+    public static RegionMap fromBoundsAndGrid( double west, double east, double south, double north, int cols, int rows ) {
+        double width = east - west;
+        double height = north - south;
+        double xRes = width / cols;
+        double yRes = height / rows;
+
+        RegionMap region = new RegionMap();
+        region.put(NORTH, north);
+        region.put(SOUTH, south);
+        region.put(WEST, west);
+        region.put(EAST, east);
+        region.put(XRES, xRes);
+        region.put(YRES, yRes);
+        region.put(ROWS, (double) rows);
+        region.put(COLS, (double) cols);
+        return region;
+    }
+
+    public static RegionMap fromEnvelopeAndResolution( Envelope envelope, double xRes, double yRes ) {
+        return fromBoundsAndResolution(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY(), xRes,
+                yRes);
+    }
+
+    public static RegionMap fromBoundsAndResolution( double west, double east, double south, double north, double xRes,
+            double yRes ) {
+        int cols = (int) Math.round((east - west) / xRes);
+        if (cols < 1)
+            cols = 1;
+        int rows = (int) Math.round((north - south) / yRes);
+        if (rows < 1)
+            rows = 1;
+        double width = east - west;
+        double height = north - south;
+
+        RegionMap region = new RegionMap();
+        region.put(NORTH, north);
+        region.put(SOUTH, south);
+        region.put(WEST, west);
+        region.put(EAST, east);
+        region.put(XRES, xRes);
+        region.put(YRES, yRes);
+        region.put(ROWS, (double) height);
+        region.put(COLS, (double) width);
+        return region;
+    }
+
+    /**
+     * Clone a ReagionMap.
+     * 
+     * @param other the region to duplicate.
+     * @return the duplicated region.
+     */
+    public static RegionMap fromRegionMap( RegionMap other ) {
+        RegionMap region = new RegionMap();
+        region.put(NORTH, other.getNorth());
+        region.put(SOUTH, other.getSouth());
+        region.put(WEST, other.getWest());
+        region.put(EAST, other.getEast());
+        region.put(XRES, other.getXres());
+        region.put(YRES, other.getYres());
+        region.put(ROWS, (double) other.getRows());
+        region.put(COLS, (double) other.getCols());
+        return region;
+    }
+
+    /**
+     * Create the region from a coverage {@link GridGeometry2D}.
+     * 
+     * @param gridGeometry the grid geometry to use.
+     * @return the generated region.
+     */
+    public static RegionMap fromGridGeometry( GridGeometry2D gridGeometry ) {
+        RegionMap envelopeParams = new RegionMap();
+
+        Envelope2D envelope = gridGeometry.getEnvelope2D();
+        DirectPosition lowerCorner = envelope.getLowerCorner();
+        double[] westSouth = lowerCorner.getCoordinate();
+        DirectPosition upperCorner = envelope.getUpperCorner();
+        double[] eastNorth = upperCorner.getCoordinate();
+
+        GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
+        int height = gridRange.height;
+        int width = gridRange.width;
+
+        AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
+        double xRes = XAffineTransform.getScaleX0(gridToCRS);
+        double yRes = XAffineTransform.getScaleY0(gridToCRS);
+
+        envelopeParams.put(NORTH, eastNorth[1]);
+        envelopeParams.put(SOUTH, westSouth[1]);
+        envelopeParams.put(WEST, westSouth[0]);
+        envelopeParams.put(EAST, eastNorth[0]);
+        envelopeParams.put(XRES, xRes);
+        envelopeParams.put(YRES, yRes);
+        envelopeParams.put(ROWS, (double) height);
+        envelopeParams.put(COLS, (double) width);
+
+        return envelopeParams;
+    }
 
     /**
      * Getter for the region cols.
@@ -164,6 +272,20 @@ public class RegionMap extends HashMap<String, Double> {
     public double getHeight() {
         return getNorth() - getSouth();
     }
+    
+    /**
+     * @return the coordinate of the lower left corner.
+     */
+    public Coordinate getLowerLeft() {
+        return new Coordinate(getWest(), getSouth());
+    }
+
+    /**
+     * @return the coordinate of the upper right corner.
+     */
+    public Coordinate getUpperRight() {
+        return new Coordinate(getEast(), getNorth());
+    }
 
     /**
      * Snaps a geographic point to be on the region grid.
@@ -189,6 +311,7 @@ public class RegionMap extends HashMap<String, Double> {
 
         return new Coordinate(xsnap, ysnap);
     }
+    
 
     /**
      * Create the envelope of the region borders.
@@ -236,18 +359,14 @@ public class RegionMap extends HashMap<String, Double> {
         if (deltaH > 0) {
             newHeight = newHeight - deltaH + originalYres;
         }
-        
+
         double newNorth = newSouth + newHeight;
         double newEast = newWest + newWidth;
 
         int rows = (int) ((newHeight) / originalYres);
         int cols = (int) ((newWidth) / originalXres);
 
-        double newXres = (newWidth) / cols;
-        double newYres = (newHeight) / rows;
-
-        RegionMap regionMap = CoverageUtilities.makeRegionParamsMap(newNorth, newSouth, newWest, newEast, newXres, newYres, cols,
-                rows);
+        RegionMap regionMap = RegionMap.fromBoundsAndGrid(newNorth, newSouth, newWest, newEast, cols, rows);
         return regionMap;
     }
 
