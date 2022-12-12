@@ -23,9 +23,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 public class TestVariables {
 
     static String repoUrl = "https://earth-search.aws.element84.com/v1";
+//    static String repoUrl = "https://earth-search.aws.element84.com/v0";
 
     // search by collection name
     static String collectionQuery = "sentinel-2-l2a";
+//    static String collectionQuery = "sentinel-s2-l2a-cogs";
     // and by date range
     static String dayQuery = "2022-12-07";
     static String dateQuery = dayQuery + "T00:00:00.000000Z/" + dayQuery + "T23:59:59.999999Z";
@@ -40,7 +42,7 @@ public class TestVariables {
 
     static boolean shortInfo = false;
 
-    static int limit = 1;
+    static int limit = -1;
 
     static String CQL_FILTER = "eo:cloud_cover < 25";
 

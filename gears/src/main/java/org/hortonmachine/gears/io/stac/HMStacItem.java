@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.geotools.data.geojson.GeoJSONReader;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 

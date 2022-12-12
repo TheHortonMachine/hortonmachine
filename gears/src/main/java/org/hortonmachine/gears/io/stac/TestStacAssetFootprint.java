@@ -13,8 +13,8 @@ import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-public class StacAssetFootprint extends TestVariables {
-    public StacAssetFootprint() throws Exception {
+public class TestStacAssetFootprint extends TestVariables {
+    public TestStacAssetFootprint() throws Exception {
 
         try (HMStacManager stacManager = new HMStacManager(repoUrl, new LogProgressMonitor())) {
             stacManager.open();
@@ -25,14 +25,12 @@ public class StacAssetFootprint extends TestVariables {
                     .setCqlFilter(CQL_FILTER).setLimit(limit).searchItems();
             int size = items.size();
             System.out.println("Found " + size + " items matching the query.");
-            System.out.println();
 
             Geometry coveredAreas = HMStacCollection.getCoveredArea(items);
             Geometry commonArea = coveredAreas.intersection(intersectionGeometry);
             double coveredArea = commonArea.getArea();
             double roiArea = intersectionGeometry.getArea();
             int percentage = (int) Math.round(coveredArea * 100 / roiArea);
-            System.out.println("Found " + size + " unique features matching the query.");
             System.out.println("Region of interest is covered by data in amout of " + percentage + "%");
             System.out.println();
 
@@ -47,7 +45,7 @@ public class StacAssetFootprint extends TestVariables {
                 SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                 DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 
-                System.out.println("Processing features...");
+                System.out.println("Processing items...");
                 for( HMStacItem item : items ) {
                     Object[] values = new Object[]{item.getGeometry(), item.getId(), item.getTimestamp()};
                     builder.addAll(values);
@@ -68,7 +66,7 @@ public class StacAssetFootprint extends TestVariables {
     }
 
     public static void main( String[] args ) throws Exception {
-        new StacAssetFootprint();
+        new TestStacAssetFootprint();
     }
 
 }

@@ -39,6 +39,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMRaster implements AutoCloseable {
+    private String name;
     private RegionMap regionMap;
     private int rows;
     private int cols;
@@ -63,6 +64,7 @@ public class HMRaster implements AutoCloseable {
      */
     public static HMRaster fromGridCoverage( GridCoverage2D coverage ) {
         HMRaster hmRaster = new HMRaster();
+        hmRaster.name = coverage.getName().toString();
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         hmRaster.crs = coverage.getCoordinateReferenceSystem();
         hmRaster.gridGeometry = coverage.getGridGeometry();
@@ -75,8 +77,8 @@ public class HMRaster implements AutoCloseable {
         return hmRaster;
     }
 
-    public static HMRaster writableFromTemplate( GridCoverage2D template ) {
-        return writableFromTemplate(template, false);
+    public static HMRaster writableFromTemplate( String name, GridCoverage2D template ) {
+        return writableFromTemplate(name, template, false);
     }
 
     /**
@@ -88,9 +90,10 @@ public class HMRaster implements AutoCloseable {
      * @param copyValues if <code>true</code>, also copy the values from the template.
      * @return the HMRaster instance.
      */
-    public static HMRaster writableFromTemplate( GridCoverage2D template, boolean copyValues ) {
+    public static HMRaster writableFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
         HMRaster hmRaster = new HMRaster();
         hmRaster.isWritable = true;
+        hmRaster.name = name;
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
         hmRaster.crs = template.getCoordinateReferenceSystem();
         hmRaster.gridGeometry = template.getGridGeometry();
@@ -122,8 +125,9 @@ public class HMRaster implements AutoCloseable {
      * @param noValue the novalue with which to pre-fill the raster.
      * @return the HMRaster instance.
      */
-    public static HMRaster writableFromRegionMap( RegionMap region, CoordinateReferenceSystem crs, double noValue ) {
+    public static HMRaster writableFromRegionMap( String name, RegionMap region, CoordinateReferenceSystem crs, double noValue ) {
         HMRaster hmRaster = new HMRaster();
+        hmRaster.name = name;
         hmRaster.isWritable = true;
         hmRaster.regionMap = region;
         hmRaster.crs = crs;
@@ -137,6 +141,10 @@ public class HMRaster implements AutoCloseable {
                 hmRaster.novalue);
         hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
         return hmRaster;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public RegionMap getRegionMap() {
@@ -298,10 +306,7 @@ public class HMRaster implements AutoCloseable {
      * @return the gridCoverage.
      * @throws IOException
      */
-    public GridCoverage2D buildCoverage( String name ) throws IOException {
-        if (name == null) {
-            name = "hmraster";
-        }
+    public GridCoverage2D buildCoverage() throws IOException {
         if (!isWritable) {
             throw new IOException("The current HMRaster is not writable.");
         }

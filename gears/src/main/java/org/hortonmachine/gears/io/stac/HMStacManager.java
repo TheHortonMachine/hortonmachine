@@ -25,7 +25,7 @@ public class HMStacManager implements AutoCloseable {
     private STACClient stacClient;
     private IHMProgressMonitor pm;
 
-    public HMStacManager( String catalogUrl , IHMProgressMonitor pm) {
+    public HMStacManager( String catalogUrl, IHMProgressMonitor pm ) {
         this.catalogUrl = catalogUrl;
         this.pm = pm;
     }
@@ -43,17 +43,21 @@ public class HMStacManager implements AutoCloseable {
         checkOpen();
         STACLandingPage landingPage = stacClient.getLandingPage();
         List<String> conformance = landingPage.getConformance();
-        StringBuilder sb = new StringBuilder();
-        sb.append("Collections: " + STACConformance.COLLECTIONS.matches(conformance)).append("\n");
-        sb.append("Features: " + STACConformance.FEATURES.matches(conformance)).append("\n");
-        sb.append("Item search: " + STACConformance.ITEM_SEARCH.matches(conformance)).append("\n");
-        sb.append("Fields: " + STACConformance.FIELDS.matches(conformance)).append("\n");
-        sb.append("Query: " + STACConformance.QUERY.matches(conformance)).append("\n");
-        sb.append("Sort: " + STACConformance.SORT.matches(conformance)).append("\n");
-        sb.append("Filter: " + STACConformance.FILTER.matches(conformance)).append("\n");
-        sb.append("Features: " + FeaturesConformance.CORE.matches(conformance)).append("\n");
-        sb.append("Features Geojson: " + FeaturesConformance.GEOJSON.matches(conformance));
-        return sb.toString();
+        if (conformance != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("Collections: " + STACConformance.COLLECTIONS.matches(conformance)).append("\n");
+            sb.append("Features: " + STACConformance.FEATURES.matches(conformance)).append("\n");
+            sb.append("Item search: " + STACConformance.ITEM_SEARCH.matches(conformance)).append("\n");
+            sb.append("Fields: " + STACConformance.FIELDS.matches(conformance)).append("\n");
+            sb.append("Query: " + STACConformance.QUERY.matches(conformance)).append("\n");
+            sb.append("Sort: " + STACConformance.SORT.matches(conformance)).append("\n");
+            sb.append("Filter: " + STACConformance.FILTER.matches(conformance)).append("\n");
+            sb.append("Features: " + FeaturesConformance.CORE.matches(conformance)).append("\n");
+            sb.append("Features Geojson: " + FeaturesConformance.GEOJSON.matches(conformance));
+            return sb.toString();
+        } else {
+            return "No confromance information available.";
+        }
     }
 
     private void checkOpen() throws Exception {

@@ -1,27 +1,37 @@
 package org.hortonmachine.gears.io.stac;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.stac.client.Collection;
 import org.geotools.stac.client.CollectionExtent;
 import org.geotools.stac.client.CollectionExtent.TemporalExtents;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.SearchQuery;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @SuppressWarnings({"rawtypes"})
 /**
@@ -35,11 +45,12 @@ public class HMStacCollection {
     private Collection collection;
     private SearchQuery search;
     private IHMProgressMonitor pm;
-    private int limit = -1;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
         this.collection = collection;
+        if (pm == null)
+            pm = new DummyProgressMonitor();
         this.pm = pm;
     }
 
@@ -60,6 +71,13 @@ public class HMStacCollection {
 
         // better to get the bounds from the collection directly
         return collection.getBounds();
+    }
+
+    public List<Date> getTemporalBounds() {
+        CollectionExtent extent = collection.getExtent();
+        TemporalExtents temporal = extent.getTemporal();
+        List<List<Date>> interval = temporal.getInterval();
+        return interval.get(0); // TODO check how to make this better
     }
 
     /**
@@ -112,10 +130,11 @@ public class HMStacCollection {
      * @return
      */
     public HMStacCollection setLimit( int limit ) {
-        this.limit = limit;
-        if (search == null)
-            search = new SearchQuery();
-        search.setLimit(limit);
+        if (limit > 1) {
+            if (search == null)
+                search = new SearchQuery();
+            search.setLimit(limit);
+        }
         return this;
     }
 
@@ -125,18 +144,17 @@ public class HMStacCollection {
         search.setCollections(Arrays.asList(getId()));
 
         SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+        int size = fc.size();
         SimpleFeatureIterator iterator = fc.features();
-        pm.beginTask("Extracting unique features...", IHMProgressMonitor.UNKNOWN);
+        pm.beginTask("Extracting items...", size);
         List<HMStacItem> stacItems = new ArrayList<>();
-        TreeSet<String> uniqueItems = new TreeSet<>();
-        int count = 0;
+//        TreeSet<String> uniqueItems = new TreeSet<>();
+//        int count = 0;
         while( iterator.hasNext() ) {
-            if (limit > 0 && count > limit) {
-                break;
-            }
             SimpleFeature f = iterator.next();
             HMStacItem item = new HMStacItem(f);
-            if (item.getEpsg() != null && uniqueItems.add(item.getTimestamp() + " " + item.getId())) {
+            if (item.getEpsg() != null) { // && uniqueItems.add(item.getTimestamp() + " " +
+                                          // item.getId())) {
                 stacItems.add(item);
             }
             pm.worked(1);
@@ -146,17 +164,63 @@ public class HMStacCollection {
         return stacItems;
     }
 
+    /**
+     * Read all the raster of a certain band from the items list and merge them to a single raster sized on the given region and resolution.
+     * 
+     * @param latLongRegionMap the region to use for the final raster.
+     * @param bandName the name o the band to extract.
+     * @param items the list of items containing the various assets to read from.
+     * @return the final raster.
+     * @throws Exception
+     */
+    public static HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
+            IHMProgressMonitor pm ) throws Exception {
+        Integer srid = items.get(0).getEpsg();
+        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(srid);
+        ReferencedEnvelope roiEnvelope = new ReferencedEnvelope(latLongRegionMap.toEnvelope(), DefaultGeographicCRS.WGS84)
+                .transform(outputCrs, true);
+        Polygon latLongRegionGeometry = GeometryUtilities.createPolygonFromEnvelope(roiEnvelope);
+
+        int cols = latLongRegionMap.getCols();
+        int rows = latLongRegionMap.getRows();
+
+        HMRaster outRaster = null;
+        String fileName = null;
+        pm.beginTask("Reading " + bandName + "...", items.size());
+        for( HMStacItem item : items ) {
+            int currentSrid = item.getEpsg();
+            if (srid != currentSrid) {
+                throw new IOException("Epsgs are different");
+            }
+            Geometry geometry = item.getGeometry();
+            Geometry intersection = geometry.intersection(latLongRegionGeometry);
+            Envelope readEnvelope = intersection.getEnvelopeInternal();
+
+            CoordinateReferenceSystem dataCrs = CrsUtilities.getCrsFromSrid(currentSrid);
+            ReferencedEnvelope roiEnv = new ReferencedEnvelope(readEnvelope, DefaultGeographicCRS.WGS84).transform(dataCrs, true);
+
+            RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnv.getMinX(), roiEnv.getMaxX(), roiEnv.getMinY(),
+                    roiEnv.getMaxY(), cols, rows);
+
+            HMStacAsset asset = item.getAssets().stream().filter(as -> as.getTitle().equals(bandName)).findFirst().get();
+            int lastSlash = asset.getAssetUrl().lastIndexOf('/');
+            fileName = asset.getAssetUrl().substring(lastSlash + 1);
+            if (outRaster == null) {
+                outRaster = HMRaster.writableFromRegionMap(fileName, latLongRegionMap, outputCrs, asset.getNoValue());
+            }
+            GridCoverage2D readRaster = asset.readRaster(readRegion);
+            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster));
+            pm.worked(1);
+        }
+        pm.done();
+
+        return outRaster;
+    }
+
     public static Geometry getCoveredArea( List<HMStacItem> items ) {
         List<Geometry> geometries = items.stream().map(item -> item.getGeometry()).collect(Collectors.toList());
         Geometry union = CascadedPolygonUnion.union(geometries);
         return union;
-    }
-
-    public List<Date> getTemporalBounds() {
-        CollectionExtent extent = collection.getExtent();
-        TemporalExtents temporal = extent.getTemporal();
-        List<List<Date>> interval = temporal.getInterval();
-        return interval.get(0); // TODO check how to make this better
     }
 
     @Override
