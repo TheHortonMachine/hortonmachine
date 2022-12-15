@@ -81,6 +81,10 @@ public class HMRaster implements AutoCloseable {
         return writableFromTemplate(name, template, false);
     }
 
+    public static HMRaster writableIntegerFromTemplate( String name, GridCoverage2D template ) {
+        return writableIntegerFromTemplate(name, template, false);
+    }
+
     /**
      * Build a raster using an existing geotools gridCoverage as template.
      * 
@@ -90,6 +94,34 @@ public class HMRaster implements AutoCloseable {
      * @param copyValues if <code>true</code>, also copy the values from the template.
      * @return the HMRaster instance.
      */
+
+    public static HMRaster writableIntegerFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
+        HMRaster hmRaster = new HMRaster();
+        hmRaster.isWritable = true;
+        hmRaster.name = name;
+        hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
+        hmRaster.crs = template.getCoordinateReferenceSystem();
+        hmRaster.gridGeometry = template.getGridGeometry();
+        hmRaster.rows = hmRaster.regionMap.getRows();
+        hmRaster.cols = hmRaster.regionMap.getCols();
+        hmRaster.xRes = hmRaster.regionMap.getXres();
+        hmRaster.yRes = hmRaster.regionMap.getYres();
+        hmRaster.novalue = HMConstants.getNovalue(template);
+        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Integer.class, null,
+                hmRaster.novalue);
+        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+
+        if (copyValues) {
+            RandomIter inIter = CoverageUtilities.getRandomIterator(template);
+            for( int r = 0; r < hmRaster.rows; r++ ) {
+                for( int c = 0; c < hmRaster.cols; c++ ) {
+                    ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSample(c, r, 0));
+                }
+            }
+        }
+        return hmRaster;
+    }
+    
     public static HMRaster writableFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
         HMRaster hmRaster = new HMRaster();
         hmRaster.isWritable = true;
@@ -231,6 +263,15 @@ public class HMRaster implements AutoCloseable {
      * @throws IOException
      */
     public void setValue( int col, int row, double value ) throws IOException {
+        if (!isWritable) {
+            throw new IOException("The current HMRaster is not writable.");
+        }
+        if (isContained(col, row)) {
+            ((WritableRandomIter) iter).setSample(col, row, 0, value);
+        }
+    }
+
+    public void setValue( int col, int row, int value ) throws IOException {
         if (!isWritable) {
             throw new IOException("The current HMRaster is not writable.");
         }
