@@ -17,28 +17,29 @@
  */
 package org.hortonmachine.gears.modules.r.rasterdiff;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_IN_RASTER1_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_IN_RASTER2_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_STATUS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_LABEL;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_LICENSE;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_NAME;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_STATUS;
 
 import java.awt.image.WritableRaster;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -51,12 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSRASTERDIFF_DESCRIPTION)
 @Documentation(OMSRASTERDIFF_DOCUMENTATION)
@@ -87,6 +82,21 @@ public class OmsRasterDiff extends HMModel {
     @Description(OMSRASTERDIFF_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
+
+    public static final String OMSRASTERDIFF_DESCRIPTION = "Raster diff module.";
+    public static final String OMSRASTERDIFF_DOCUMENTATION = "";
+    public static final String OMSRASTERDIFF_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
+    public static final String OMSRASTERDIFF_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERDIFF_NAME = "rdiff";
+    public static final int OMSRASTERDIFF_STATUS = 5;
+    public static final String OMSRASTERDIFF_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERDIFF_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERDIFF_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERDIFF_IN_RASTER1_DESCRIPTION = "The input raster.";
+    public static final String OMSRASTERDIFF_IN_RASTER2_DESCRIPTION = "The raster to subtract.";
+    public static final String OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION = "The threshold, under which to set novalue.";
+    public static final String OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION = "Allow negative values.";
+    public static final String OMSRASTERDIFF_OUT_RASTER_DESCRIPTION = "The output raster.";
 
     @Execute
     public void process() throws Exception {
