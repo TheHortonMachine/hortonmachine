@@ -20,6 +20,8 @@ package org.hortonmachine.gears.libs.modules;
 import java.awt.Point;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
@@ -51,7 +53,7 @@ public class HMRaster implements AutoCloseable {
     private CoordinateReferenceSystem crs;
     private double xRes;
     private double yRes;
-    private static GridCoverage2D originalCoverage;
+    private GridCoverage2D originalCoverage;
 
     public static interface RasterProcessor {
         void processCell( int col, int row, double value, int cols, int rows ) throws Exception;
@@ -64,8 +66,8 @@ public class HMRaster implements AutoCloseable {
      * @return the HMRaster instance.
      */
     public static HMRaster fromGridCoverage( String name, GridCoverage2D coverage ) {
-        HMRaster.originalCoverage = coverage;
         HMRaster hmRaster = new HMRaster();
+        hmRaster.originalCoverage = coverage;
         hmRaster.name = name != null ? name : coverage.getName().toString();
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         hmRaster.crs = coverage.getCoordinateReferenceSystem();
@@ -414,6 +416,49 @@ public class HMRaster implements AutoCloseable {
         }
         pm.done();
 
+    }
+
+    /**
+     * Get the values surrounding the current col/row.
+     * 
+     * @param distance the radius of the window to take. 
+     * @param doCircular if <code>true</code> the window used is circular.
+     * @return the read window as a list of coordinates x (col), y (row),z (raster value).
+     */
+    public List<Coordinate> getSurroundingCells( int currentCol, int currentRow, int distance, boolean doCircular ) {
+        List<Coordinate> coords = new ArrayList<>();
+        Coordinate current = new Coordinate(currentCol, currentRow);
+        for( int r = -distance; r <= distance; r++ ) {
+            int tmpRow = currentRow + r;
+            for( int c = -distance; c <= distance; c++ ) {
+                int tmpCol = currentCol + c;
+
+                if (tmpCol == currentCol && tmpRow == currentRow) {
+                    continue;
+                }
+
+                if (isContained(tmpCol, tmpRow)) {
+                    Coordinate check = new Coordinate(tmpCol, tmpRow);
+                    if (doCircular && check.distance(current) > distance) {
+                        continue;
+                    }
+                    double value = getValue(tmpCol, tmpRow);
+                    check.z = value;
+                    coords.add(check);
+                }
+            }
+        }
+        return coords;
+    }
+
+    public void printData() {
+        for( int row = 0; row < rows; row++ ) {
+            for( int col = 0; col < cols; col++ ) {
+                double value = getValue(col, row);
+                System.out.print(value + " ");
+            }
+            System.out.println();
+        }
     }
 
 }

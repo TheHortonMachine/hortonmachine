@@ -31,14 +31,17 @@ import org.locationtech.jts.geom.Coordinate;
  */
 public class IDWInterpolator implements ISurfaceInterpolator {
 
-    private double buffer;
+    private double maxDistance;
+    private double minDistance;
     private boolean useBuffer = false;
+
 
     public IDWInterpolator() {
     }
     
-    public IDWInterpolator( double buffer ) {
-        this.buffer = buffer;
+    public IDWInterpolator( double minDistance, double maxDistance ) {
+        this.minDistance = minDistance;
+        this.maxDistance = maxDistance;
         useBuffer = true;
     }
 
@@ -55,7 +58,7 @@ public class IDWInterpolator implements ISurfaceInterpolator {
              * the index if built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (useBuffer && distance > buffer) {
+            if (useBuffer && (distance > maxDistance || distance < minDistance)) {
                 continue;
             }
             if (distance < 0.00001) {
@@ -86,7 +89,7 @@ public class IDWInterpolator implements ISurfaceInterpolator {
              * the index if built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (useBuffer && distance > buffer) {
+            if (useBuffer && (distance > maxDistance || distance < minDistance)) {
                 continue;
             }
             if (distance < 0.00001) {
@@ -102,10 +105,4 @@ public class IDWInterpolator implements ISurfaceInterpolator {
         double value = sumdValue / sumweight;
         return value;
     }
-
-    @Override
-    public double getBuffer() {
-        return buffer;
-    }
-
 }

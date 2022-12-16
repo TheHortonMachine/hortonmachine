@@ -128,9 +128,9 @@ public class OmsHoleFiller extends HMModel {
 
         ISurfaceInterpolator interpolator;
         if (pMode.equals(IDW)) {
-            interpolator = new IDWInterpolator(pBuffer);
+            interpolator = new IDWInterpolator(0, pBuffer);
         } else {
-            interpolator = new TPSInterpolator(pBuffer);
+            interpolator = new TPSInterpolator(0, pBuffer);
         }
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);

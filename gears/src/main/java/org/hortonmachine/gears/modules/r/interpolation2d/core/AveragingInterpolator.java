@@ -30,14 +30,20 @@ import org.locationtech.jts.geom.Coordinate;
  */
 public class AveragingInterpolator implements ISurfaceInterpolator {
 
-    private double buffer;
+    private double maxDistance;
+    private double minDistance;
     private boolean useBuffer = false;
 
     public AveragingInterpolator() {
     }
 
-    public AveragingInterpolator( double buffer ) {
-        this.buffer = buffer;
+    /**
+     * @param minDistance min distance allowed. Put to 0 to ignore.
+     * @param maxDistance max distance allowed.
+     */
+    public AveragingInterpolator( double minDistance, double maxDistance ) {
+        this.minDistance = minDistance;
+        this.maxDistance = maxDistance;
         useBuffer = true;
     }
 
@@ -54,7 +60,7 @@ public class AveragingInterpolator implements ISurfaceInterpolator {
              * the index is built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (useBuffer && distance > buffer) {
+            if (useBuffer && (distance > maxDistance || distance < minDistance)) {
                 continue;
             }
 
@@ -79,7 +85,7 @@ public class AveragingInterpolator implements ISurfaceInterpolator {
              * the index is built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (useBuffer && distance > buffer) {
+            if (useBuffer && distance > maxDistance) {
                 continue;
             }
 
@@ -89,11 +95,6 @@ public class AveragingInterpolator implements ISurfaceInterpolator {
 
         double value = sumdValue / count;
         return value;
-    }
-
-    @Override
-    public double getBuffer() {
-        return buffer;
     }
 
 }

@@ -33,6 +33,7 @@ public interface Variables {
 
     public String TPS = "TPS";
     public String IDW = "IDW";
+    public String LDW = "LDW";
     public String BIVARIATE = "BIVARIATE";
     public String AVERAGING = "AVERAGING";
     public String CATEGORIES = "CATEGORIES";

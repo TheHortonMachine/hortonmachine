@@ -39,26 +39,23 @@ import org.locationtech.jts.geom.Coordinate;
  */
 public class TPSInterpolator implements ISurfaceInterpolator {
 
-    private double buffer;
+    private double maxDistance;
+    private double minDistance;
     private boolean useBuffer = false;
 
     public TPSInterpolator() {
     }
 
-    public TPSInterpolator( double buffer ) {
-        this.buffer = buffer;
+    public TPSInterpolator( double minDistance, double maxDistance ) {
+        this.minDistance = minDistance;
+        this.maxDistance = maxDistance;
         useBuffer = true;
-    }
-
-    @Override
-    public double getBuffer() {
-        return buffer;
     }
 
     public double getValue( Coordinate[] controlPoints, Coordinate interpolated ) {
         Stream<Coordinate> stream = Stream.of(controlPoints);
         if (useBuffer) {
-            stream = stream.filter(c -> c.distance(interpolated) <= buffer);
+            stream = stream.filter(c -> isValidDistance(c.distance(interpolated)));
         }
         List<Coordinate> controlPointsUsed = stream.collect(Collectors.toList());
         return getValueInternal(interpolated, controlPointsUsed);
@@ -67,10 +64,17 @@ public class TPSInterpolator implements ISurfaceInterpolator {
     public double getValue( List<Coordinate> controlPoints, Coordinate interpolated ) {
         Stream<Coordinate> stream = controlPoints.stream();
         if (useBuffer) {
-            stream = stream.filter(c -> c.distance(interpolated) <= buffer);
+            stream = stream.filter(c -> isValidDistance(c.distance(interpolated)));
         }
         List<Coordinate> controlPointsUsed = stream.collect(Collectors.toList());
         return getValueInternal(interpolated, controlPointsUsed);
+    }
+
+    private boolean isValidDistance( double distance ) {
+        if (useBuffer && (distance > maxDistance || distance < minDistance)) {
+            return false;
+        }
+        return true;
     }
 
     private double getValueInternal( Coordinate interpolated, List<Coordinate> controlPointsUsed ) {

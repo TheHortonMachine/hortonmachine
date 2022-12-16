@@ -21,6 +21,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 import static org.hortonmachine.gears.libs.modules.Variables.AVERAGING;
 import static org.hortonmachine.gears.libs.modules.Variables.CATEGORIES;
 import static org.hortonmachine.gears.libs.modules.Variables.IDW;
+import static org.hortonmachine.gears.libs.modules.Variables.LDW;
 import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORNAMES;
@@ -32,6 +33,7 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_NAME;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_STATUS;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +51,7 @@ import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.AveragingInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
+import org.hortonmachine.gears.modules.r.interpolation2d.core.LinearDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.TPSInterpolator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -76,18 +79,31 @@ import oms3.annotations.UI;
 @Name(OMSRASTERNULLFILLER_NAME)
 @Status(OMSRASTERNULLFILLER_STATUS)
 @License(OMSRASTERNULLFILLER_LICENSE)
+@SuppressWarnings("unchecked")
 public class OmsRasterMissingValuesFiller extends HMModel {
 
     @Description(OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION)
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTERNULLFILLER_pValidCellsBuffer_DESCRIPTION)
+    @Description(OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION)
     @In
-    public int pValidCellsBuffer = 10;
+    public GridCoverage2D inMask;
+
+    @Description(OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION)
+    @In
+    public int pMinDistance = 0;
+
+    @Description(OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION)
+    @In
+    public int pMaxDistance = 10;
+
+    @Description(OMSRASTERNULLFILLER_doUseOnlyBorderValues_DESCRIPTION)
+    @In
+    public boolean doUseOnlyBorderValues = false;
 
     @Description(OMSRASTERNULLFILLER_P_MODE_DESCRIPTION)
-    @UI("combo:" + IDW + "," + TPS + "," + AVERAGING + "," + CATEGORIES)
+    @UI("combo:" + IDW + "," + LDW + "," + TPS + "," + AVERAGING + "," + CATEGORIES)
     @In
     public String pMode = IDW;
 
@@ -104,12 +120,14 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     public static final String OMSRASTERNULLFILLER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTERNULLFILLER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERNULLFILLER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION = "The raster to modify.";
-    public static final String OMSRASTERNULLFILLER_pValidCellsBuffer_DESCRIPTION = "Number of max cells in distance to consider for the interpolation.";
+    public static final String OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION = "The raster in which to fill missing values.";
+    public static final String OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION = "An optional raster mask on which to fill missing data.";
+    public static final String OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION = "The min distance to consider for the interpolation (in cells).";
+    public static final String OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION = "The max distance to consider for the interpolation (in cells).";
     public static final String OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION = "The new raster.";
     public static final String OMSRASTERNULLFILLER_P_MODE_DESCRIPTION = "Interpolation mode.";
+    public static final String OMSRASTERNULLFILLER_doUseOnlyBorderValues_DESCRIPTION = "Use only border values to interpolate (as opposed to all in the min.max range).";
 
-    @SuppressWarnings("unchecked")
     @Execute
     public void process() throws Exception {
         checkNull(inRaster);
@@ -127,6 +145,10 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             interpolator = new CategoriesInterpolator();
             pm.message("Interpolating of categories done by most frequent value.");
             break;
+        case LDW:
+            interpolator = new LinearDWInterpolator();
+            pm.message("Interpolating with Linear Distance Weight function.");
+            break;
 //        case BIVARIATE:
 //            interpolator = new BivariateInterpolator(pValidCellsBuffer);
 //            pm.message("Interpolating with Bivariate function.");
@@ -140,6 +162,12 @@ public class OmsRasterMissingValuesFiller extends HMModel {
 
         try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
                 HMRaster outData = HMRaster.writableFromTemplate("nulled", inRaster, true)) {
+
+            HMRaster mask = null;
+            if (inMask != null) {
+                mask = HMRaster.fromGridCoverage(inMask);
+            }
+
             List<Coordinate> novaluePoints = new ArrayList<>();
             inData.process(pm, "Identifing holes...", ( col, row, value, tcols, trows ) -> {
                 if (inData.isNovalue(value)) {
@@ -147,52 +175,99 @@ public class OmsRasterMissingValuesFiller extends HMModel {
                 }
             });
 
-            // now find touching points with values
-            STRtree touchingPointsTreetree = new STRtree();
-            TreeSet<String> checkSet = new TreeSet<>();
-            for( Coordinate noValuePoint : novaluePoints ) {
-                Direction[] orderedDirs = Direction.getOrderedDirs();
-                for( int i = 0; i < orderedDirs.length; i++ ) {
-                    Direction direction = orderedDirs[i];
-                    int newCol = (int) (noValuePoint.x + direction.col);
-                    int newRow = (int) (noValuePoint.y + direction.row);
-
-                    boolean added = checkSet.add(newCol + "_" + newRow);
-                    if (added && inData.isContained(newCol, newRow)) {
-                        double value = inData.getValue(newCol, newRow);
-                        if (!inData.isNovalue(value)) {
-                            Coordinate coordinate = new Coordinate(newCol, newRow, value);
-                            Point p = gf.createPoint(coordinate);
-                            touchingPointsTreetree.insert(p.getEnvelopeInternal(), coordinate);
-                        }
-                    }
-                }
+            if (doUseOnlyBorderValues) {
+                processUsingOnlyBorderValues(interpolator, inData, mask, outData, novaluePoints);
+            } else {
+                processUsingAllValues(interpolator, inData, mask, outData, novaluePoints);
             }
-            touchingPointsTreetree.build();
-
-            pm.beginTask("Filling holes...", novaluePoints.size());
-            for( Coordinate noValuePoint : novaluePoints ) {
-                // get points with values in range
-                Envelope env = new Envelope(new Coordinate(noValuePoint.x, noValuePoint.y));
-                env.expandBy(pValidCellsBuffer);
-                List<Coordinate> result = touchingPointsTreetree.query(env);
-                result = result.stream().filter(c -> c.distance(noValuePoint) < pValidCellsBuffer).collect(Collectors.toList());
-                if (result.size() > 3) {
-                    try {
-                        double value = interpolator.getValue(result, noValuePoint);
-
-                        outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                pm.worked(1);
-            }
-            pm.done();
-
-            outRaster = outData.buildCoverage();
         }
+    }
+
+    private void processUsingAllValues( ISurfaceInterpolator interpolator, HMRaster inData, HMRaster mask, HMRaster outData,
+            List<Coordinate> novaluePoints ) throws IOException {
+        // now find touching points with values
+        pm.beginTask("Filling holes...", novaluePoints.size());
+        for( Coordinate noValuePoint : novaluePoints ) {
+            if (mask != null && mask.isNovalue(mask.getValue((int) noValuePoint.x, (int) noValuePoint.y))) {
+                // do not fill when the mask does not have value
+                pm.worked(1);
+                continue;
+            }
+
+            List<Coordinate> result = inData.getSurroundingCells((int) noValuePoint.x, (int) noValuePoint.y, pMaxDistance, true);
+            result = result.stream().filter(c -> !inData.isNovalue(c.z) && c.distance(noValuePoint) > pMinDistance)
+                    .collect(Collectors.toList());
+            if (result.size() > 3) {
+                try {
+                    double value = interpolator.getValue(result, noValuePoint);
+                    outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
+        outRaster = outData.buildCoverage();
+    }
+
+    private void processUsingOnlyBorderValues( ISurfaceInterpolator interpolator, HMRaster inData, HMRaster mask,
+            HMRaster outData, List<Coordinate> novaluePoints ) throws IOException {
+        // now find touching points with values
+        STRtree touchingPointsTreetree = new STRtree();
+        TreeSet<String> checkSet = new TreeSet<>();
+        for( Coordinate noValuePoint : novaluePoints ) {
+            Direction[] orderedDirs = Direction.getOrderedDirs();
+            for( int i = 0; i < orderedDirs.length; i++ ) {
+                Direction direction = orderedDirs[i];
+                int newCol = (int) (noValuePoint.x + direction.col);
+                int newRow = (int) (noValuePoint.y + direction.row);
+
+                boolean added = checkSet.add(newCol + "_" + newRow);
+                if (added && inData.isContained(newCol, newRow)) {
+                    double value = inData.getValue(newCol, newRow);
+                    if (!inData.isNovalue(value)) {
+                        Coordinate coordinate = new Coordinate(newCol, newRow, value);
+                        Point p = gf.createPoint(coordinate);
+                        touchingPointsTreetree.insert(p.getEnvelopeInternal(), coordinate);
+                    }
+                }
+            }
+        }
+        touchingPointsTreetree.build();
+
+        pm.beginTask("Filling holes...", novaluePoints.size());
+        for( Coordinate noValuePoint : novaluePoints ) {
+            if (mask != null && mask.isNovalue(mask.getValue((int) noValuePoint.x, (int) noValuePoint.y))) {
+                // do not fill when the mask does not have value
+                pm.worked(1);
+                continue;
+            }
+            // get points with values in range
+            Envelope env = new Envelope(new Coordinate(noValuePoint.x, noValuePoint.y));
+            env.expandBy(pMaxDistance);
+            List<Coordinate> result = touchingPointsTreetree.query(env);
+            result = result.stream().filter(c -> isValid(c.distance(noValuePoint))).collect(Collectors.toList());
+
+            if (result.size() > 3) {
+                try {
+                    double value = interpolator.getValue(result, noValuePoint);
+                    outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+
+            pm.worked(1);
+        }
+        pm.done();
+
+        outRaster = outData.buildCoverage();
+    }
+
+    private boolean isValid( double distance ) {
+        return distance < pMaxDistance && distance > pMinDistance;
     }
 
     static public class CategoriesInterpolator implements ISurfaceInterpolator {
@@ -220,11 +295,6 @@ public class OmsRasterMissingValuesFiller extends HMModel {
                     .max(Map.Entry.comparingByValue()).get();
 
             return entry.getKey();
-        }
-
-        @Override
-        public double getBuffer() {
-            return 0;
         }
 
     }

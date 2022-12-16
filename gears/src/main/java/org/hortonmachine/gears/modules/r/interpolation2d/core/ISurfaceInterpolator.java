@@ -38,5 +38,4 @@ public interface ISurfaceInterpolator {
 
     public double getValue( List<Coordinate> controlPoints, Coordinate interpolated );
 
-    public double getBuffer();
 }
