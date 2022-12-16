@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.gears.io.geopaparazzi.geopap4;
+package org.hortonmachine.gears.utils.time;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;

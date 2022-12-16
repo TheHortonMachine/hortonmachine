@@ -28,6 +28,8 @@ import java.sql.Statement;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.hortonmachine.gears.utils.time.ETimeUtilities;
+
 /**
  * @author Andrea Antonello (www.hydrologis.com)
  */

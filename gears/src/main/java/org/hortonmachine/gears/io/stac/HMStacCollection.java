@@ -81,18 +81,17 @@ public class HMStacCollection {
     }
 
     /**
-     * Set days filter for search query;
+     * Set temporal filter for search query;
      * 
-     * @param startDay
-     * @param endDay
+     * @param startTimestamp
+     * @param endTimestamp
      * @return the current collection.
      */
-    public HMStacCollection setDayFilter( String startDay, String endDay ) {
+    public HMStacCollection setTimestampFilter( Date startTimestamp, Date endTimestamp ) {
         if (search == null)
             search = new SearchQuery();
-        if (endDay == null)
-            endDay = startDay;
-        search.setDatetime(startDay + "T00:00:00.000000Z/" + endDay + "T23:59:59.999999Z");
+        search.setDatetime(HMStacUtils.filterTimestampFormatter.format(startTimestamp) + "/"
+                + HMStacUtils.filterTimestampFormatter.format(endTimestamp));
         return this;
     }
 
@@ -145,6 +144,8 @@ public class HMStacCollection {
         pm.done();
         return stacItems;
     }
+    
+    
 
     /**
      * Read all the raster of a certain band from the items list and merge them to a single raster sized on the given region and resolution.

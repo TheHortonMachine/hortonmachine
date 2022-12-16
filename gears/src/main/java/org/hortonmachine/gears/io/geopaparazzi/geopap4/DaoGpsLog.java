@@ -41,6 +41,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogs
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsPropertiesTableFields;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.GpsLogsTableFields;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTableFields;
+import org.hortonmachine.gears.utils.time.ETimeUtilities;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)

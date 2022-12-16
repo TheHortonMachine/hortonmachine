@@ -51,6 +51,7 @@ public class HMRaster implements AutoCloseable {
     private CoordinateReferenceSystem crs;
     private double xRes;
     private double yRes;
+    private static GridCoverage2D originalCoverage;
 
     public static interface RasterProcessor {
         void processCell( int col, int row, double value, int cols, int rows ) throws Exception;
@@ -62,9 +63,10 @@ public class HMRaster implements AutoCloseable {
      * @param coverage the coverage to use.
      * @return the HMRaster instance.
      */
-    public static HMRaster fromGridCoverage( GridCoverage2D coverage ) {
+    public static HMRaster fromGridCoverage( String name, GridCoverage2D coverage ) {
+        HMRaster.originalCoverage = coverage;
         HMRaster hmRaster = new HMRaster();
-        hmRaster.name = coverage.getName().toString();
+        hmRaster.name = name != null ? name : coverage.getName().toString();
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         hmRaster.crs = coverage.getCoordinateReferenceSystem();
         hmRaster.gridGeometry = coverage.getGridGeometry();
@@ -75,6 +77,10 @@ public class HMRaster implements AutoCloseable {
         hmRaster.novalue = HMConstants.getNovalue(coverage);
         hmRaster.iter = CoverageUtilities.getRandomIterator(coverage);
         return hmRaster;
+    }
+
+    public static HMRaster fromGridCoverage( GridCoverage2D coverage ) {
+        return fromGridCoverage(null, coverage);
     }
 
     public static HMRaster writableFromTemplate( String name, GridCoverage2D template ) {
@@ -121,7 +127,7 @@ public class HMRaster implements AutoCloseable {
         }
         return hmRaster;
     }
-    
+
     public static HMRaster writableFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
         HMRaster hmRaster = new HMRaster();
         hmRaster.isWritable = true;
@@ -348,6 +354,9 @@ public class HMRaster implements AutoCloseable {
      * @throws IOException
      */
     public GridCoverage2D buildCoverage() throws IOException {
+        if (originalCoverage != null) {
+            return originalCoverage;
+        }
         if (!isWritable) {
             throw new IOException("The current HMRaster is not writable.");
         }

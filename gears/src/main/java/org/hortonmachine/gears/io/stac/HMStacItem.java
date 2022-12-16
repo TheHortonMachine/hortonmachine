@@ -6,11 +6,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.geojson.GeoJSONReader;
-import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.time.ETimeUtilities;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -24,18 +34,25 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @SuppressWarnings("unchecked")
 public class HMStacItem {
     private String id;
-    private String timestamp;
     private Geometry geometry;
     private SimpleFeature feature;
     private Integer epsg;
+    private Date dateCet;
+    private Date creationDateCet;
 
     HMStacItem( SimpleFeature feature ) throws Exception {
         this.feature = feature;
         Map<String, JsonNode> top = (Map<String, JsonNode>) feature.getUserData().get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
         id = top.get("id").textValue();
-        String createdDateCet = feature.getAttribute("created").toString();
-        Date dateCet = HMStacUtils.dateFormatter.parse(createdDateCet);
-        timestamp = HMStacUtils.fileNameDateFormatter.format(dateCet);
+
+        String dateCetStr = feature.getAttribute("datetime").toString();
+        if (dateCetStr != null) {
+            dateCet = HMStacUtils.dateFormatter.parse(dateCetStr);
+        }
+        String creationDateCetStr = feature.getAttribute("created").toString();
+        if (creationDateCetStr != null) {
+            creationDateCet = HMStacUtils.dateFormatter.parse(creationDateCetStr);
+        }
         Object epsgObj = feature.getAttribute("proj:epsg");
         if (epsgObj instanceof Integer) {
             epsg = (Integer) epsgObj;
@@ -48,7 +65,11 @@ public class HMStacItem {
     }
 
     public String getTimestamp() {
-        return timestamp;
+        return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(dateCet);
+    }
+
+    public String getCreationTimestamp() {
+        return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(creationDateCet);
     }
 
     public Geometry getGeometry() {
@@ -80,25 +101,23 @@ public class HMStacItem {
         StringBuilder sb = new StringBuilder();
         sb.append("id = " + id).append("\n");
         sb.append("geom = " + geometry).append("\n");
-        sb.append("timestamp = " + timestamp).append("\n");
+        sb.append("timestamp = " + getTimestamp()).append("\n");
+        sb.append("creation timestamp = " + getCreationTimestamp()).append("\n");
         String metadataSummary = getMetadataSummary(feature, "");
         sb.append(metadataSummary);
         return sb.toString();
     }
 
+    public HMStacAsset getAssetForBand( String bandName ) {
+        return getAssets().stream().filter(as -> as.getTitle().equals(bandName)).findFirst().get();
+    }
+
     private String getMetadataSummary( SimpleFeature f, String indent ) {
         StringBuilder sb = new StringBuilder();
         sb.append(indent + getAttribute(f, "updated"));
-        sb.append(indent + getAttribute(f, "datetime"));
         sb.append(indent + getAttribute(f, "platform"));
         sb.append(indent + getAttribute(f, "constellation"));
-        sb.append(indent + getAttribute(f, "eo:cloud_cover"));
         sb.append(indent + getAttribute(f, "proj:epsg"));
-        sb.append(indent + getAttribute(f, "view:sun_azimuth"));
-        sb.append(indent + getAttribute(f, "view:sun_elevation"));
-        sb.append(indent + getAttribute(f, "s2:nodata_pixel_percentage"));
-        sb.append(indent + getAttribute(f, "s2:cloud_shadow_percentage"));
-        sb.append(indent + getAttribute(f, "s2:water_percentage"));
         return sb.toString();
     }
 
