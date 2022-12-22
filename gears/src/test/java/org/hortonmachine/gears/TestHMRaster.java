@@ -71,4 +71,61 @@ public class TestHMRaster extends HMTestCase {
         }
     }
 
+    public void testMapping() throws Exception {
+        double[][] initial = new double[][]{//
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+        double[][] map1 = new double[][]{//
+                {1, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {2, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+        double[][] map2 = new double[][]{//
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, 3, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, 4, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        GridCoverage2D initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
+        GridCoverage2D m1GC = CoverageUtilities.buildCoverageWithNovalue("m1", map1, envelopeParams, crs, true, NaN);
+        GridCoverage2D m2GC = CoverageUtilities.buildCoverageWithNovalue("m2", map2, envelopeParams, crs, true, NaN);
+
+        HMRaster initR = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
+        HMRaster m1R = HMRaster.fromGridCoverage(m1GC);
+        HMRaster m2R = HMRaster.fromGridCoverage(m2GC);
+        initR.mapRaster(null, m1R, true);
+        initR.mapRaster(null, m2R, true);
+
+        HMRaster countRaster = initR.getCountRaster();
+
+        assertEquals(2, countRaster.getIntValue(1, 1));
+        assertEquals(5.0, initR.getValue(1, 1));
+        assertEquals(1, countRaster.getIntValue(2, 2));
+        assertEquals(4.0, initR.getValue(2, 2));
+        assertTrue(initR.isNovalue(initR.getValue(5, 5)));
+        assertFalse(countRaster.isNovalue(countRaster.getValue(5, 5)));
+        
+        initR.applyCountAverage(null);
+        
+        assertEquals(2.5, initR.getValue(1, 1));
+        assertEquals(4.0, initR.getValue(2, 2));
+        assertTrue(initR.isNovalue(initR.getValue(5, 5)));
+    }
+
 }

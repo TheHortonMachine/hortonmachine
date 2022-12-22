@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -92,7 +93,8 @@ public class OmsRasterTransitionClasses extends HMModel {
 
         try (HMRaster r1 = HMRaster.fromGridCoverage(inPreviousRaster);
                 HMRaster r2 = HMRaster.fromGridCoverage(inNextRaster);
-                HMRaster transition = HMRaster.writableIntegerFromTemplate("transition", inPreviousRaster)) {
+                HMRaster transition = new HMRasterWritableBuilder().setName("transition").setDoInteger(true)
+                        .setTemplate(inPreviousRaster).build()) {
 
             double novalue = r1.getNovalue();
 

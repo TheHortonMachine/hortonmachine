@@ -55,6 +55,12 @@ public class HMRaster implements AutoCloseable {
     private double yRes;
     private GridCoverage2D originalCoverage;
 
+    /**
+     * Raster map that can be initialized and used to count occurrences per cell.
+     * This count can then be used to average the summ of multiple occurrences.
+     */
+    private HMRaster countRaster = null;
+
     public static interface RasterProcessor {
         void processCell( int col, int row, double value, int cols, int rows ) throws Exception;
     }
@@ -85,103 +91,108 @@ public class HMRaster implements AutoCloseable {
         return fromGridCoverage(null, coverage);
     }
 
-    public static HMRaster writableFromTemplate( String name, GridCoverage2D template ) {
-        return writableFromTemplate(name, template, false);
-    }
-
-    public static HMRaster writableIntegerFromTemplate( String name, GridCoverage2D template ) {
-        return writableIntegerFromTemplate(name, template, false);
-    }
-
-    /**
-     * Build a raster using an existing geotools gridCoverage as template.
-     * 
-     *  <p>Region, crs, novalue and grid geomatry are taken from the template coverage.
-     * 
-     * @param template the coverage to use as template.
-     * @param copyValues if <code>true</code>, also copy the values from the template.
-     * @return the HMRaster instance.
-     */
-
-    public static HMRaster writableIntegerFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
-        HMRaster hmRaster = new HMRaster();
-        hmRaster.isWritable = true;
-        hmRaster.name = name;
-        hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
-        hmRaster.crs = template.getCoordinateReferenceSystem();
-        hmRaster.gridGeometry = template.getGridGeometry();
-        hmRaster.rows = hmRaster.regionMap.getRows();
-        hmRaster.cols = hmRaster.regionMap.getCols();
-        hmRaster.xRes = hmRaster.regionMap.getXres();
-        hmRaster.yRes = hmRaster.regionMap.getYres();
-        hmRaster.novalue = HMConstants.getNovalue(template);
-        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Integer.class, null,
-                hmRaster.novalue);
-        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
-
-        if (copyValues) {
-            RandomIter inIter = CoverageUtilities.getRandomIterator(template);
-            for( int r = 0; r < hmRaster.rows; r++ ) {
-                for( int c = 0; c < hmRaster.cols; c++ ) {
-                    ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSample(c, r, 0));
-                }
-            }
-        }
-        return hmRaster;
-    }
-
-    public static HMRaster writableFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
-        HMRaster hmRaster = new HMRaster();
-        hmRaster.isWritable = true;
-        hmRaster.name = name;
-        hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
-        hmRaster.crs = template.getCoordinateReferenceSystem();
-        hmRaster.gridGeometry = template.getGridGeometry();
-        hmRaster.rows = hmRaster.regionMap.getRows();
-        hmRaster.cols = hmRaster.regionMap.getCols();
-        hmRaster.xRes = hmRaster.regionMap.getXres();
-        hmRaster.yRes = hmRaster.regionMap.getYres();
-        hmRaster.novalue = HMConstants.getNovalue(template);
-        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, null, null,
-                hmRaster.novalue);
-        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
-
-        if (copyValues) {
-            RandomIter inIter = CoverageUtilities.getRandomIterator(template);
-            for( int r = 0; r < hmRaster.rows; r++ ) {
-                for( int c = 0; c < hmRaster.cols; c++ ) {
-                    ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSampleDouble(c, r, 0));
-                }
-            }
-        }
-        return hmRaster;
-    }
-
-    /**
-     * Build a raster using region and crs.
-     * 
-     * @param region the region to use.
-     * @param crs the crs for the raster.
-     * @param noValue the novalue with which to pre-fill the raster.
-     * @return the HMRaster instance.
-     */
-    public static HMRaster writableFromRegionMap( String name, RegionMap region, CoordinateReferenceSystem crs, double noValue ) {
-        HMRaster hmRaster = new HMRaster();
-        hmRaster.name = name;
-        hmRaster.isWritable = true;
-        hmRaster.regionMap = region;
-        hmRaster.crs = crs;
-        hmRaster.gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(region, crs);
-        hmRaster.rows = hmRaster.regionMap.getRows();
-        hmRaster.cols = hmRaster.regionMap.getCols();
-        hmRaster.xRes = hmRaster.regionMap.getXres();
-        hmRaster.yRes = hmRaster.regionMap.getYres();
-        hmRaster.novalue = noValue;
-        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, null, null,
-                hmRaster.novalue);
-        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
-        return hmRaster;
-    }
+//    public static HMRaster writableFromTemplate( String name, GridCoverage2D template ) {
+//        return writableFromTemplate(name, template, false);
+//    }
+//
+//    /**
+//     * Build a raster using an existing geotools gridCoverage as template.
+//     * 
+//     *  <p>Region, crs, novalue and grid geomatry are taken from the template coverage.
+//     * 
+//     * @param template the coverage to use as template.
+//     * @param copyValues if <code>true</code>, also copy the values from the template.
+//     * @return the HMRaster instance.
+//     */
+//    public static HMRaster writableFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
+//        return writableFromTemplate(name, template, null, copyValues);
+//    }
+//
+//    public static HMRaster writableFromTemplate( String name, GridCoverage2D template, Class< ? > type, boolean copyValues ) {
+//        if (type == null) {
+//            type = Double.class;
+//        }
+//        HMRaster hmRaster = new HMRaster();
+//        hmRaster.isWritable = true;
+//        hmRaster.name = name;
+//        hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
+//        hmRaster.crs = template.getCoordinateReferenceSystem();
+//        hmRaster.gridGeometry = template.getGridGeometry();
+//        hmRaster.rows = hmRaster.regionMap.getRows();
+//        hmRaster.cols = hmRaster.regionMap.getCols();
+//        hmRaster.xRes = hmRaster.regionMap.getXres();
+//        hmRaster.yRes = hmRaster.regionMap.getYres();
+//        hmRaster.novalue = HMConstants.getNovalue(template);
+//        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, type, null,
+//                hmRaster.novalue);
+//        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+//
+//        if (copyValues) {
+//            RandomIter inIter = CoverageUtilities.getRandomIterator(template);
+//            if (type.isAssignableFrom(Double.class)) {
+//                for( int r = 0; r < hmRaster.rows; r++ ) {
+//                    for( int c = 0; c < hmRaster.cols; c++ ) {
+//                        ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSampleDouble(c, r, 0));
+//                    }
+//                }
+//            } else if (type.isAssignableFrom(Integer.class)) {
+//                for( int r = 0; r < hmRaster.rows; r++ ) {
+//                    for( int c = 0; c < hmRaster.cols; c++ ) {
+//                        ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSample(c, r, 0));
+//                    }
+//                }
+//            }
+//        }
+//        return hmRaster;
+//    }
+//
+//    public static HMRaster writableIntegerFromTemplate( String name, GridCoverage2D template ) {
+//        return writableIntegerFromTemplate(name, template, false);
+//    }
+//
+//    public static HMRaster writableIntegerFromTemplate( String name, GridCoverage2D template, boolean copyValues ) {
+//        return writableFromTemplate(name, template, Integer.class, copyValues);
+//    }
+//
+//    /**
+//     * Build a raster using region and crs.
+//     * 
+//     * @param name the name for the raster.
+//     * @param region the region to use.
+//     * @param crs the crs for the raster.
+//     * @param noValue the novalue with which to pre-fill the raster.
+//     * @return the HMRaster instance.
+//     */
+//    public static HMRaster writableFromRegionMap( String name, RegionMap region, CoordinateReferenceSystem crs, double noValue ) {
+//        return writableFromRegionMap(name, region, crs, null, noValue);
+//    }
+//
+//    public static HMRaster writableIntegerFromRegionMap( String name, RegionMap region, CoordinateReferenceSystem crs,
+//            int noValue ) {
+//        return writableFromRegionMap(name, region, crs, Integer.class, noValue);
+//    }
+//
+//    public static HMRaster writableFromRegionMap( String name, RegionMap region, CoordinateReferenceSystem crs, Class< ? > type,
+//            double noValue ) {
+//        if (type == null) {
+//            type = Double.class;
+//        }
+//        HMRaster hmRaster = new HMRaster();
+//        hmRaster.name = name;
+//        hmRaster.isWritable = true;
+//        hmRaster.regionMap = region;
+//        hmRaster.crs = crs;
+//        hmRaster.gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(region, crs);
+//        hmRaster.rows = hmRaster.regionMap.getRows();
+//        hmRaster.cols = hmRaster.regionMap.getCols();
+//        hmRaster.xRes = hmRaster.regionMap.getXres();
+//        hmRaster.yRes = hmRaster.regionMap.getYres();
+//        hmRaster.novalue = noValue;
+//        hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, type, null,
+//                hmRaster.novalue);
+//        hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+//        return hmRaster;
+//    }
 
     public String getName() {
         return name;
@@ -263,6 +274,43 @@ public class HMRaster implements AutoCloseable {
     }
 
     /**
+     * Get the value in a given world coordinate. 
+     * 
+     * @param coordinate the world coordinate, assumed to be in the reference system of the raster.
+     * @return the value.
+     */
+    public double getValue( Coordinate coordinate ) {
+        int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
+        return getValue(colRow[0], colRow[1]);
+    }
+
+    /**
+     * Get the value in a given col and row position.
+     * 
+     * @param col
+     * @param row
+     * @return the value of the raster or novalue if the point lies outside the bounds.
+     */
+    public int getIntValue( int col, int row ) {
+        if (isContained(col, row)) {
+            return iter.getSample(col, row, 0);
+        } else {
+            return (int) novalue;
+        }
+    }
+
+    /**
+     * Get the value in a given world coordinate. 
+     * 
+     * @param coordinate the world coordinate, assumed to be in the reference system of the raster.
+     * @return the value.
+     */
+    public int getIntValue( Coordinate coordinate ) {
+        int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
+        return getIntValue(colRow[0], colRow[1]);
+    }
+
+    /**
      * If the raster is writable, set a value in a given col and row position.
      * 
      * @param col
@@ -289,23 +337,12 @@ public class HMRaster implements AutoCloseable {
     }
 
     /**
-     * Get the value in a given world coordinate. 
-     * 
-     * @param coordinate the world coordinate, assumed to be in the reference system of the raster.
-     * @return the value.
-     */
-    public double getValue( Coordinate coordinate ) {
-        int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
-        return getValue(colRow[0], colRow[1]);
-    }
-
-    /**
      * Get the grid space coordinate from a world coordinate.
      * 
      * @param coordinate the world coordinate, assumed to be in the reference system of the raster.
      * @return the grid space point.
      */
-    public Point getPixel( Coordinate coordinate ) {
+    public Point getCell( Coordinate coordinate ) {
         Point p = new Point();
         CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, p);
         return p;
@@ -373,13 +410,26 @@ public class HMRaster implements AutoCloseable {
     }
 
     /**
-     * Writes the values of the coverage into the current raster.
+     * Writes the values of the coverage into the current raster, summing multiple occurrences.
      * 
      * @param pm optional Process monitor.
      * @param otherRaster the raster to map over the current raster.
+     * @param valuesCountRaster a bit matrix that tracks how many values per pixels are recorded (they are summed, so the number is needed for averaging).
      * @throws IOException 
      */
     public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
+        mapRaster(pm, otherRaster, false);
+    }
+
+    /**
+     * Writes the values of the coverage into the current raster, summing multiple occurrences.
+     * 
+     * @param pm optional Process monitor.
+     * @param otherRaster the raster to map over the current raster.
+     * @param valuesCountRaster a bit matrix that tracks how many values per pixels are recorded (they are summed, so the number is needed for averaging).
+     * @throws IOException
+     */
+    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster, boolean doValuesCountRaster ) throws IOException {
         if (pm == null)
             pm = new DummyProgressMonitor();
 
@@ -388,16 +438,21 @@ public class HMRaster implements AutoCloseable {
         Coordinate upperRight = otherRegion.getUpperRight();
 
         // find grid coordinates in the current region's space
-        Point ll = getPixel(lowerLeft);
+        Point ll = getCell(lowerLeft);
         int fromCol = ll.x;
         if (fromCol < 0)
             fromCol = 0;
         int toRow = ll.y;
-        Point ur = getPixel(upperRight);
+        Point ur = getCell(upperRight);
         int toCol = ur.x;
         int fromRow = ur.y;
         if (fromRow < 0)
             fromRow = 0;
+
+        if (doValuesCountRaster && countRaster == null) {
+            countRaster = new HMRasterWritableBuilder().setName("valuescount").setDoInteger(true).setRegion(regionMap).setCrs(crs)
+                    .setInitialValue(0).build();
+        }
 
         pm.beginTask("Patch raster...", toRow - fromRow); //$NON-NLS-1$
         // fill the points of the current raster picking form the
@@ -408,14 +463,58 @@ public class HMRaster implements AutoCloseable {
                     Coordinate coordinate = getWorld(c, r);
                     double value = otherRaster.getValue(coordinate);
                     if (!otherRaster.isNovalue(value)) {
-                        setValue(c, r, value);
+                        if (countRaster != null) {
+                            int count = countRaster.getIntValue(c, r);
+                            count++;
+                            countRaster.setValue(c, r, count);
+                        }
+                        double newValue = getValue(c, r);
+                        if (!isNovalue(newValue)) {
+                            newValue = newValue + value;
+                        } else {
+                            newValue = value;
+                        }
+                        setValue(c, r, newValue);
                     }
                 }
             }
             pm.worked(1);
         }
         pm.done();
+    }
 
+    /**
+     * @return the raster that contains the occurrences of data per cell.
+     */
+    public HMRaster getCountRaster() {
+        return countRaster;
+    }
+
+    /**
+     * Apply averaging based on the {@link #countRaster} map. <b>Note that this modifies the original raster.</b>
+     * 
+     * <p>This only makes sense if multiple mapping of the raster occurred (using {@link #mapRaster(IHMProgressMonitor, HMRaster, boolean)}. 
+     * 
+     * @param pm and optional progress monitor.
+     * @throws Exception
+     */
+    public void applyCountAverage( IHMProgressMonitor pm ) throws Exception {
+        if (pm == null)
+            pm = new DummyProgressMonitor();
+
+        pm.beginTask("Averaging raster...", rows);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double value = getValue(c, r);
+                if (!isNovalue(value)) {
+                    int count = countRaster.getIntValue(c, r);
+                    double newValue = value / count;
+                    setValue(c, r, newValue);
+                }
+            }
+            pm.worked(1);
+        }
+        pm.done();
     }
 
     /**
@@ -458,6 +557,135 @@ public class HMRaster implements AutoCloseable {
                 System.out.print(value + " ");
             }
             System.out.println();
+        }
+    }
+
+    public static class HMRasterWritableBuilder {
+        private String name = "newraster";
+
+        private GridCoverage2D template = null;
+
+        private boolean copyValues = false;
+
+        private boolean doInteger = false;
+
+        private RegionMap region;
+
+        private CoordinateReferenceSystem crs;
+
+        private Double noValue = null;
+
+        private Double initialValue = null;
+
+        private Integer initialIntValue = null;
+
+        public HMRasterWritableBuilder setName( String name ) {
+            this.name = name;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setTemplate( GridCoverage2D template ) {
+            this.template = template;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setCopyValues( boolean copyValues ) {
+            this.copyValues = copyValues;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setDoInteger( boolean doInteger ) {
+            this.doInteger = doInteger;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setRegion( RegionMap region ) {
+            this.region = region;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setCrs( CoordinateReferenceSystem crs ) {
+            this.crs = crs;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setNoValue( double noValue ) {
+            this.noValue = noValue;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setInitialValue( double initialNovalue ) {
+            this.initialValue = initialNovalue;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setInitialValue( int initialNovalue ) {
+            this.initialIntValue = initialNovalue;
+            return this;
+        }
+
+        public HMRaster build() {
+            if (template != null) {
+                HMRaster hmRaster = new HMRaster();
+                hmRaster.isWritable = true;
+                hmRaster.name = name;
+                hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
+                hmRaster.crs = template.getCoordinateReferenceSystem();
+                hmRaster.gridGeometry = template.getGridGeometry();
+                hmRaster.rows = hmRaster.regionMap.getRows();
+                hmRaster.cols = hmRaster.regionMap.getCols();
+                hmRaster.xRes = hmRaster.regionMap.getXres();
+                hmRaster.yRes = hmRaster.regionMap.getYres();
+                hmRaster.novalue = noValue != null ? noValue : HMConstants.getNovalue(template);
+
+                if (doInteger) {
+                    hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Integer.class,
+                            null, initialIntValue != null ? initialIntValue : hmRaster.novalue);
+                } else {
+                    hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Double.class,
+                            null, initialValue != null ? initialValue : hmRaster.novalue);
+                }
+                hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+
+                if (copyValues) {
+                    RandomIter inIter = CoverageUtilities.getRandomIterator(template);
+                    if (!doInteger) {
+                        for( int r = 0; r < hmRaster.rows; r++ ) {
+                            for( int c = 0; c < hmRaster.cols; c++ ) {
+                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSampleDouble(c, r, 0));
+                            }
+                        }
+                    } else {
+                        for( int r = 0; r < hmRaster.rows; r++ ) {
+                            for( int c = 0; c < hmRaster.cols; c++ ) {
+                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSample(c, r, 0));
+                            }
+                        }
+                    }
+                }
+                return hmRaster;
+            } else {
+                HMRaster hmRaster = new HMRaster();
+                hmRaster.name = name;
+                hmRaster.isWritable = true;
+                hmRaster.regionMap = region;
+                hmRaster.crs = crs;
+                hmRaster.gridGeometry = CoverageUtilities.gridGeometryFromRegionParams(region, crs);
+                hmRaster.rows = hmRaster.regionMap.getRows();
+                hmRaster.cols = hmRaster.regionMap.getCols();
+                hmRaster.xRes = hmRaster.regionMap.getXres();
+                hmRaster.yRes = hmRaster.regionMap.getYres();
+                hmRaster.novalue = noValue != null ? noValue : HMConstants.doubleNovalue;
+                if (doInteger) {
+                    hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Integer.class,
+                            null, initialIntValue != null ? initialIntValue : hmRaster.novalue);
+                } else {
+                    hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Double.class,
+                            null, initialValue != null ? initialValue : hmRaster.novalue);
+                }
+                hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+                return hmRaster;
+            }
         }
     }
 

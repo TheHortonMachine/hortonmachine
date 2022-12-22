@@ -48,6 +48,7 @@ import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.AveragingInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
@@ -161,7 +162,8 @@ public class OmsRasterMissingValuesFiller extends HMModel {
         }
 
         try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
-                HMRaster outData = HMRaster.writableFromTemplate("nulled", inRaster, true)) {
+                HMRaster outData = new HMRasterWritableBuilder().setName("nulled").setTemplate(inRaster).setCopyValues(true)
+                        .build();) {
 
             HMRaster mask = null;
             if (inMask != null) {

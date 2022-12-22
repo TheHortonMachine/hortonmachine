@@ -20,6 +20,7 @@ import org.geotools.stac.client.CollectionExtent.TemporalExtents;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.SearchQuery;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -144,8 +145,6 @@ public class HMStacCollection {
         pm.done();
         return stacItems;
     }
-    
-    
 
     /**
      * Read all the raster of a certain band from the items list and merge them to a single raster sized on the given region and resolution.
@@ -168,6 +167,7 @@ public class HMStacCollection {
         int rows = latLongRegionMap.getRows();
 
         HMRaster outRaster = null;
+
         String fileName = null;
         pm.beginTask("Reading " + bandName + "...", items.size());
         for( HMStacItem item : items ) {
@@ -189,10 +189,11 @@ public class HMStacCollection {
             int lastSlash = asset.getAssetUrl().lastIndexOf('/');
             fileName = asset.getAssetUrl().substring(lastSlash + 1);
             if (outRaster == null) {
-                outRaster = HMRaster.writableFromRegionMap(fileName, latLongRegionMap, outputCrs, asset.getNoValue());
+                outRaster = new HMRasterWritableBuilder().setName(fileName).setRegion(latLongRegionMap).setCrs(outputCrs)
+                        .setNoValue(asset.getNoValue()).build();
             }
             GridCoverage2D readRaster = asset.readRaster(readRegion);
-            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster));
+            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), true);
             pm.worked(1);
         }
         pm.done();

@@ -110,4 +110,16 @@ public class RasterMissingValuesFiller extends HMModel {
         ormvf.process();
         dumpRaster(ormvf.outRaster, outRaster);
     }
+
+    public static void main( String[] args ) throws Exception {
+        RasterMissingValuesFiller r = new RasterMissingValuesFiller();
+        r.inRaster = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/senegal_agb_moved.tif";
+        r.inMask = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/Global_Mangrove_Watch_2010_30m_4326_v2.tif";
+        r.outRaster = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/interpolated.tif";
+        r.pMinDistance = 4;
+        r.pMaxDistance = 10;
+        r.doUseOnlyBorderValues = false;
+        r.pMode = LDW;
+        r.process();
+    }
 }
