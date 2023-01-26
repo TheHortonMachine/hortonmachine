@@ -58,9 +58,8 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.GridFormatFinder;
+import org.geotools.data.FileDataStore;
+import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -70,7 +69,6 @@ import org.geotools.map.MapContent;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.lite.StreamingRenderer;
-import org.geotools.util.factory.Hints;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -316,7 +314,13 @@ public class HM {
     public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
-        return OmsVectorReader.readEnvelope(path);
+        FileDataStore dataStore = FileDataStoreFinder.getDataStore(new File(path));
+        if( dataStore != null ){
+            return OmsVectorReader.readEnvelope(path);
+        }else{
+            // try raster
+            return OmsRasterReader.readEnvelope(path);    
+        }
     }
 
     public static GridCoverage2D readRaster( String source ) throws Exception {
