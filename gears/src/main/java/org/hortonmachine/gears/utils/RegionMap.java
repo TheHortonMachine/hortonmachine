@@ -34,6 +34,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -272,7 +273,7 @@ public class RegionMap extends HashMap<String, Double> {
     public double getHeight() {
         return getNorth() - getSouth();
     }
-    
+
     /**
      * @return the coordinate of the lower left corner.
      */
@@ -311,7 +312,6 @@ public class RegionMap extends HashMap<String, Double> {
 
         return new Coordinate(xsnap, ysnap);
     }
-    
 
     /**
      * Create the envelope of the region borders.
@@ -398,6 +398,49 @@ public class RegionMap extends HashMap<String, Double> {
         sb.append("Yres = ").append(getYres());
 
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals( Object o ) {
+        if (o instanceof RegionMap) {
+            RegionMap otherMap = (RegionMap) o;
+            return NumericsUtilities.dEq(getNorth(), otherMap.getNorth())
+                    && NumericsUtilities.dEq(getSouth(), otherMap.getSouth())
+                    && NumericsUtilities.dEq(getEast(), otherMap.getEast())
+                    && NumericsUtilities.dEq(getWest(), otherMap.getWest())
+                    && NumericsUtilities.dEq(getXres(), otherMap.getXres())
+                    && NumericsUtilities.dEq(getYres(), otherMap.getYres())
+                    && NumericsUtilities.dEq(getCols(), otherMap.getCols())
+                    && NumericsUtilities.dEq(getRows(), otherMap.getRows());
+        }
+        return false;
+    }
+
+    public boolean equalsBounds( Object o ) {
+        if (o instanceof RegionMap) {
+            RegionMap otherMap = (RegionMap) o;
+            return NumericsUtilities.dEq(getNorth(), otherMap.getNorth())
+                    && NumericsUtilities.dEq(getSouth(), otherMap.getSouth())
+                    && NumericsUtilities.dEq(getEast(), otherMap.getEast())
+                    && NumericsUtilities.dEq(getWest(), otherMap.getWest());
+        }
+        return false;
+    }
+
+    public boolean equalsResolution( Object o ) {
+        if (o instanceof RegionMap) {
+            RegionMap otherMap = (RegionMap) o;
+            return NumericsUtilities.dEq(getXres(), otherMap.getXres()) && NumericsUtilities.dEq(getYres(), otherMap.getYres());
+        }
+        return false;
+    }
+
+    public boolean equalsColsRows( Object o ) {
+        if (o instanceof RegionMap) {
+            RegionMap otherMap = (RegionMap) o;
+            return NumericsUtilities.dEq(getCols(), otherMap.getCols()) && NumericsUtilities.dEq(getRows(), otherMap.getRows());
+        }
+        return false;
     }
 
 }

@@ -108,7 +108,9 @@ public class RasterTransitionClasses extends HMModel {
             sb.append(newClass).append(";").append(from).append(";").append(to).append(";").append(count).append("\n");
         }
 
-        FileUtilities.writeFile(sb.toString(), new File(outTransition));
+        if(outTransition != null) {
+            FileUtilities.writeFile(sb.toString(), new File(outTransition));
+        }
 
     }
 
