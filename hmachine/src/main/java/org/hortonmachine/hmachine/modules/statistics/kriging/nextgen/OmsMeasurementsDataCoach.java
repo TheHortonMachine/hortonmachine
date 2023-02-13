@@ -244,6 +244,12 @@ public class OmsMeasurementsDataCoach extends HMModel {
         outStationIds2CoordinateMap = tmpMap;
 
         outTargetPointId2AssociationMap = new HashMap<>();
+        outTargetPointsIds2CoordinateMap = new HashMap<>();
+        HashMap<Integer, Coordinate> tmpTargetsMap = new HashMap<>();
+        for( Integer id : stationsToKeep ) {
+        	tmpMap.put(id, allStationsMap.get(id));
+        }
+        outStationIds2CoordinateMap = tmpMap;
         if (pMaxDistKriging != null && pMaxDistIdw != null && pMaxClosestStationsNum != null) {
             for( Entry<Integer, Coordinate> interpEntry : targetPointsMap.entrySet() ) {
                 Integer interpId = interpEntry.getKey();
@@ -291,6 +297,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
                         && (pNumberOfPreviousData == 0 || previousDataCount > pNumberOfPreviousData)) {
                     tpa.interpolationType = InterpolationType.INTERPOLATION_KRIGING;
                     outTargetPointId2AssociationMap.put(interpId, tpa);
+                    outTargetPointsIds2CoordinateMap.put(interpId, xyz);
                 } else {
                     // if not enough stations for kriging, we redo the stations extraction
                     // using the max dist for IDW
@@ -344,6 +351,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
                             }
                         }
                         outTargetPointId2AssociationMap.put(interpId, tpa);
+                        outTargetPointsIds2CoordinateMap.put(interpId, xyz);
                     }
                 }
             }
@@ -392,6 +400,7 @@ public class OmsMeasurementsDataCoach extends HMModel {
                     }
                 }
                 outTargetPointId2AssociationMap.put(interpId, tpa);
+                outTargetPointsIds2CoordinateMap.put(interpId, xyz);
             }
         }
 

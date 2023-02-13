@@ -16,12 +16,9 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kriging;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -34,7 +31,6 @@ import org.hortonmachine.gears.utils.math.matrixes.ColumnVector;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.hortonmachine.hmachine.modules.statistics.kriging.nextgen.TargetPointAssociation;
 import org.hortonmachine.hmachine.modules.statistics.kriging.utils.SimpleLinearSystemSolverFactory;
 import org.hortonmachine.hmachine.modules.statistics.kriging.utils.StationsSelection;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
@@ -63,29 +59,39 @@ import oms3.annotations.Status;
 @Name("kriging")
 @Status()
 @License("General Public License Version 3 (GPLv3)")
-public class OmsKrigingVectorMode extends HMModel {
-	
-	public Coordinate pTargetCoordinate = null; 
+public class OmsKrigingVectorModeOrig extends HMModel {
 
-    @Description("Valid station ids to coordinates map for current timestep.")
+    @Description("The .shp of the measurement point, containing the position of the stations.")
     @In
-    public HashMap<Integer, Coordinate> inStationIds2CoordinateMap;
+    public SimpleFeatureCollection inStations = null;
 
-    @Description("The HM with the measured data to be interpolated.")
+    @Description("The field of the vector of stations, defining the id.")
     @In
-    public HashMap<Integer, double[]> inStationIds2ValueMap = null;
-   
+    public String fStationsid = null;
+
+    @Description("The field of the vector of stations, defining the elevation.")
+    @In
+    public String fStationsZ = null;
+
     @Description("The type of theoretical semivariogram: " + ITheoreticalVariogram.TYPES)
     @In
     public String pSemivariogramType = null;
 
-//    @Description("Target points ids to coordinates map for current timestep.")
-//    @In
-//    public HashMap<Integer, Coordinate> inTargetPointsIds2CoordinateMap;
-//    
-//    @Description("Target points ids to stations association.")
-//    @In
-//    public HashMap<Integer, TargetPointAssociation> inTargetPointId2AssociationMap;
+    @Description("The HM with the measured data to be interpolated.")
+    @In
+    public HashMap<Integer, double[]> inData = null;
+
+    @Description("The vector of the points in which the data have to be interpolated.")
+    @In
+    public SimpleFeatureCollection inInterpolate = null;
+
+    @Description("The field of the interpolated vector points, defining the id.")
+    @In
+    public String fInterpolateid = null;
+
+    @Description("The field of the interpolated vector points, defining the elevation.")
+    @In
+    public String fPointZ = null;
 
     @Description("Include zeros in computations (default is true).")
     @In
@@ -102,6 +108,16 @@ public class OmsKrigingVectorMode extends HMModel {
     @Description("Is the nugget if the models runs with the gaussian variogram.")
     @In
     public double nugget;
+
+    @Description("In the case of kriging with neighbor, maxdist is the maximum distance "
+            + "within the algorithm has to consider the stations")
+    @In
+    public double maxdist;
+
+    @Description("In the case of kriging with neighbor, inNumCloserStations is the number "
+            + "of stations the algorithm has to consider")
+    @In
+    public int inNumCloserStations;
 
     @Description("Switch for detrended mode.")
     @In
@@ -123,13 +139,16 @@ public class OmsKrigingVectorMode extends HMModel {
     @In
     public String linearSystemSolverType = "default";
 
-    @Description("The value of the interpolated results")
+    @Description("The hashmap with the interpolated results")
     @Out
-    public Double outInterpolatedValue = null;
+    public HashMap<Integer, double[]> outData = null;
 
     private static final double TOLL = 1.0d * 10E-8;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
+
+    /** The id of the cosidered station */
+    int id;
 
     /**
      * Executing ordinary kriging.
@@ -146,41 +165,60 @@ public class OmsKrigingVectorMode extends HMModel {
     @Execute
     public void executeKriging() throws Exception {
 
-//        verifyInput();
+        verifyInput();
 
-//        LinkedHashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = null;
+        LinkedHashMap<Integer, Coordinate> pointsToInterpolateId2Coordinates = null;
 
-//        pointsToInterpolateId2Coordinates = getCoordinate(0, inInterpolate, fInterpolateid);
+        pointsToInterpolateId2Coordinates = getCoordinate(0, inInterpolate, fInterpolateid);
 
+        Set<Integer> pointsToInterpolateIdSet = pointsToInterpolateId2Coordinates.keySet();
+        Iterator<Integer> idIterator = pointsToInterpolateIdSet.iterator();
 
-//        int j = 0;
+        int j = 0;
 
-//        double[] result = new double[inTargetPointsIds2CoordinateMap.size()];
-//        int[] idArray = new int[inTargetPointsIds2CoordinateMap.size()];
+        double[] result = new double[pointsToInterpolateId2Coordinates.size()];
+        int[] idArray = new int[pointsToInterpolateId2Coordinates.size()];
 
-//        for (Entry<Integer, Coordinate> entry : inTargetPointsIds2CoordinateMap.entrySet()) {
-//			Integer targetId = entry.getKey();
-//			Coordinate targetCoordinate = entry.getValue();
+        while( idIterator.hasNext() ) {
 
             double sum = 0.;
-//            idArray[j] = targetId;
-//
-//            TargetPointAssociation targetPointAssociation = inTargetPointId2AssociationMap.get(targetId);
+            id = idIterator.next();
+            idArray[j] = id;
 
-            int stationCount = inStationIds2CoordinateMap.size();
-            double[] xStations = new double[stationCount];
-            double[] yStations = new double[stationCount];
-            double[] zStations = new double[stationCount];
-            double[] hStations = new double[stationCount];
-            int i = 0;
-            for (Entry<Integer, Coordinate> entry : inStationIds2CoordinateMap.entrySet()) {
-            	Coordinate stationCoordinate = entry.getValue();
-            	xStations[i] = stationCoordinate.x;
-            	yStations[i] = stationCoordinate.y;
-            	zStations[i] = stationCoordinate.getZ();
-				hStations[i] = inStationIds2ValueMap.get(entry.getKey())[0];
-				i++;
-			}
+            Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
+
+            /**
+             * StationsSelection is an external class that allows the 
+             * selection of the stations involved in the study.
+             * It is possible to define if to include stations with zero values,
+             * station in a define neighborhood or within a max distance from 
+             * the considered point.
+             */
+
+            StationsSelection stations = new StationsSelection();
+
+            stations.idx = coordinate.x;
+            stations.idy = coordinate.y;
+            stations.inStations = inStations;
+            stations.inData = inData;
+            stations.doIncludezero = doIncludezero;
+            stations.maxdist = maxdist;
+            stations.inNumCloserStations = inNumCloserStations;
+            stations.fStationsid = fStationsid;
+            stations.fStationsZ = fStationsZ;
+
+            stations.execute();
+
+            double[] xStations = stations.xStationInitialSet;
+            double[] yStations = stations.yStationInitialSet;
+            double[] zStations = stations.zStationInitialSet;
+            double[] hStations = stations.hStationInitialSet;
+            boolean areAllEquals = stations.areAllEquals;
+            int n1 = xStations.length - 1;
+
+            xStations[n1] = coordinate.x;
+            yStations[n1] = coordinate.y;
+            zStations[n1] = coordinate.getZ();
 
             double[] hresiduals = hStations;
 
@@ -211,75 +249,87 @@ public class OmsKrigingVectorMode extends HMModel {
 
             }
 
+            if (n1 != 0) {
 
-            double h0 = 0.0;
-            int n1 = xStations.length - 1;
+                if (!areAllEquals && n1 > 1) {
+                    pm.beginTask(msg.message("kriging.working"), pointsToInterpolateId2Coordinates.size());
 
-            /*
-             * calculating the covariance matrix.
-             */
-            double[][] covarianceMatrix = covMatrixCalculating(xStations, yStations, zStations, n1);
+                    double h0 = 0.0;
 
-            double[] knownTerm = knownTermsCalculation(xStations, yStations, zStations, n1);
+                    /*
+                     * calculating the covariance matrix.
+                     */
+                    double[][] covarianceMatrix = covMatrixCalculating(xStations, yStations, zStations, n1);
 
-            /*
-             * solve the linear system, where the result is the weight (moltiplicativeFactor).
-             */
-            ColumnVector solution = SimpleLinearSystemSolverFactory.solve(knownTerm, covarianceMatrix,
-                    linearSystemSolverType);
+                    double[] knownTerm = knownTermsCalculation(xStations, yStations, zStations, n1);
 
-            double[] moltiplicativeFactor = solution.copyValues1D();
+                    /*
+                     * solve the linear system, where the result is the weight (moltiplicativeFactor).
+                     */
+                    ColumnVector solution = SimpleLinearSystemSolverFactory.solve(knownTerm, covarianceMatrix,
+                            linearSystemSolverType);
 
-            for( int k = 0; k < n1 ; k++ ) {
-                h0 = h0 + moltiplicativeFactor[k] * hresiduals[k];
+                    double[] moltiplicativeFactor = solution.copyValues1D();
 
-                // sum is computed to check that
-                // the sum of all the weights is 1
-                sum = sum + moltiplicativeFactor[k];
+                    for( int k = 0; k < n1; k++ ) {
+                        h0 = h0 + moltiplicativeFactor[k] * hresiduals[k];
+
+                        // sum is computed to check that
+                        // the sum of all the weights is 1
+                        sum = sum + moltiplicativeFactor[k];
+
+                    }
+
+                    double trend = (doDetrended) ? coordinate.getZ() * trend_coefficient + trend_intercept : 0;
+                    h0 = h0 + trend;
+
+                    result[j] = h0;
+                    j++;
+
+                    if (Math.abs(sum - 1) >= TOLL) {
+                        throw new ModelsRuntimeException("Error in the coffeicients calculation",
+                                this.getClass().getSimpleName());
+                    }
+                    pm.worked(1);
+                } else if (n1 == 1 || areAllEquals) {
+
+                    double tmp = hresiduals[0];
+                    pm.message(msg.message("kriging.setequalsvalue"));
+                    pm.beginTask(msg.message("kriging.working"), pointsToInterpolateId2Coordinates.size());
+                    result[j] = tmp;
+                    j++;
+                    n1 = 0;
+                    pm.worked(1);
+
+                }
+
+                pm.done();
+
+            } else {
+
+                pm.errorMessage("No value for this time step");
+
+                double[] value = inData.values().iterator().next();
+                result[j] = value[0];
+                j++;
 
             }
 
-            double trend = (doDetrended) ? pTargetCoordinate.getZ() * trend_coefficient + trend_intercept : 0;
-            h0 = h0 + trend;
+        }
 
-            if (Math.abs(sum - 1) >= TOLL) {
-                throw new ModelsRuntimeException("Error in the coffeicients calculation",
-                        this.getClass().getSimpleName());
-            }
-            outInterpolatedValue = h0;
-        
-//            if (n1 != 0) {
-//
-//                if (!areAllEquals && n1 > 1) {} else if (n1 == 1 || areAllEquals) {
-//
-//                    double tmp = hresiduals[0];
-//                    pm.message(msg.message("kriging.setequalsvalue"));
-//                    pm.beginTask(msg.message("kriging.working"), pointsToInterpolateId2Coordinates.size());
-//                    result[j] = tmp;
-//                    j++;
-//                    n1 = 0;
-//                    pm.worked(1);
-//
-//                }
-//
-//                pm.done();
-//
-//            } else {
-//
-//                pm.errorMessage("No value for this time step");
-//
-//                double[] value = inStationIds2ValueMap.values().iterator().next();
-//                result[j] = value[0];
-//                j++;
-//
-//            }
-
-//        }
-
-//        storeResult(result, idArray);
+        storeResult(result, idArray);
 
     }
 
+    /**
+     * Verify the input of the model.
+     */
+    private void verifyInput() {
+        if (inData == null || inStations == null) {
+            throw new NullPointerException(msg.message("kriging.stationProblem"));
+        }
+
+    }
 
     /**
      * Round.
@@ -298,6 +348,44 @@ public class OmsKrigingVectorMode extends HMModel {
         return (double) tmp / factor;
     }
 
+    /**
+     * Extract the coordinate of a FeatureCollection in a HashMap with an ID as
+     * a key.
+     *
+     * @param nStaz the number of the stations
+     * @param collection is the collection of the considered points 
+     * @param idField the field containing the id of the stations 
+     * @return the coordinate of the station
+     * @throws Exception if a field of elevation isn't the same of the collection
+     */
+    private LinkedHashMap<Integer, Coordinate> getCoordinate( int nStaz, SimpleFeatureCollection collection, String idField )
+            throws Exception {
+        LinkedHashMap<Integer, Coordinate> id2CoordinatesMcovarianceMatrix = new LinkedHashMap<Integer, Coordinate>();
+        FeatureIterator<SimpleFeature> iterator = collection.features();
+        Coordinate coordinate = null;
+        try {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                int name = ((Number) feature.getAttribute(idField)).intValue();
+                coordinate = ((Geometry) feature.getDefaultGeometry()).getCentroid().getCoordinate();
+                double z = 0;
+                if (fPointZ != null) {
+                    try {
+                        z = ((Number) feature.getAttribute(fPointZ)).doubleValue();
+                    } catch (NullPointerException e) {
+                        pm.errorMessage(msg.message("kriging.noPointZ"));
+                        throw new Exception(msg.message("kriging.noPointZ"));
+                    }
+                }
+                coordinate.setZ(z);
+                id2CoordinatesMcovarianceMatrix.put(name, coordinate);
+            }
+        } finally {
+            iterator.close();
+        }
+
+        return id2CoordinatesMcovarianceMatrix;
+    }
 
     /**
      * Covariance matrix calculation.
@@ -387,18 +475,18 @@ public class OmsKrigingVectorMode extends HMModel {
         return vgmResult;
     }
 
-//    /**
-//     * Store the result in a HashMcovarianceMatrix (if the mode is 0 or 1).
-//     *
-//     * @param result the result
-//     * @param id            the associated id of the calculating points.
-//     * @throws SchemaException the schema exception
-//     */
-//    private void storeResult( double[] result, int[] id ) throws SchemaException {
-//        outData = new HashMap<Integer, double[]>();
-//        for( int i = 0; i < result.length; i++ ) {
-//            outData.put(id[i], new double[]{result[i]});
-//        }
-//    }
+    /**
+     * Store the result in a HashMcovarianceMatrix (if the mode is 0 or 1).
+     *
+     * @param result the result
+     * @param id            the associated id of the calculating points.
+     * @throws SchemaException the schema exception
+     */
+    private void storeResult( double[] result, int[] id ) throws SchemaException {
+        outData = new HashMap<Integer, double[]>();
+        for( int i = 0; i < result.length; i++ ) {
+            outData.put(id[i], new double[]{result[i]});
+        }
+    }
 
 }

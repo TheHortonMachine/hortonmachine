@@ -35,8 +35,11 @@ import org.apache.commons.math3.stat.ranking.TiesStrategy;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.math.interpolation.LinearArrayInterpolator;
 import org.hortonmachine.gears.utils.math.interpolation.LinearListInterpolator;
+import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingVectorMode;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
+
+import com.mongodb.client.MongoChangeStreamCursor;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,7 +53,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Measurements data coach.")
+@Description("Kriging Interpolator data coach.")
 //@Documentation("Kriging.html")
 @Author(name = "Silvia Franceschi, Andrea Antonello")
 @Keywords("Kriging, Variogram, Interpolation")
@@ -167,14 +170,36 @@ public class OmsKrigingInterpolator extends HMModel {
                     theoVariogram.inExperimentalVariogramMap = outExperimentalVariogram;
                     theoVariogram.pTheoreticalVariogramType = pTheoreticalVariogramType;
                     theoVariogram.process();
-                    HashMap<Integer, double[]> outTheoreticalVariogram = theoVariogram.outTheoreticalVariogram;
+//                    HashMap<Integer, double[]> outTheoreticalVariogram = theoVariogram.outTheoreticalVariogram;
                     double outSill = theoVariogram.outSill;
                     double outRange = theoVariogram.outRange;
                     double outNugget = theoVariogram.outNugget;
-
+                    
+                    OmsKrigingVectorMode krigingVector = new OmsKrigingVectorMode();
+                    krigingVector.inStationIds2CoordinateMap = validStationIds2CoordinateMap;
+                    krigingVector.pSemivariogramType = pTheoreticalVariogramType;
+                    krigingVector.inStationIds2ValueMap = inStationIds2ValueMap;
+                    krigingVector.pTargetCoordinate = inTargetPointsIds2CoordinateMap.get(targetId);
+                    
+//                    krigingVector.inTargetPointsIds2CoordinateMap = inTargetPointsIds2CoordinateMap;
+//                    krigingVector.inTargetPointId2AssociationMap = inTargetPointId2AssociationMap;
+                    krigingVector.doIncludezero = true;
+                    krigingVector.range = outRange;
+                    krigingVector.sill = outSill;
+                    krigingVector.nugget = outNugget;
+                    krigingVector.doDetrended = false;
+//                    krigingVector.trend_intercept =;
+//                    krigingVector.trend_coefficient = ;
+                    krigingVector.regressionOrder = 1;
+                    krigingVector.linearSystemSolverType = "default";
+                    		
+                    krigingVector.executeKriging();
+                    
+                    Double krigingOutData = krigingVector.outInterpolatedValue;
+                    
+                    
                     // TODO after Kriging output data need to be converted back (see normalization
                     // above)
-                    HashMap<Integer, double[]> krigingOutData = null;
                     // Does this contain just one id and one value? To be checked after Kriging interpolation.
                     inverseNormalizeData(store, krigingOutData);
                     
@@ -279,7 +304,6 @@ public class OmsKrigingInterpolator extends HMModel {
         // Calcolo ora la F-1(z) partendo da G nelle tre fasce
         
         
-        
         List<Double> finalInterpolatedValues = new ArrayList<>();
         
         // lower tail -> use the expression G(z) = F(z1) [(z-z_min)/ (z1-zmin)]^(omega>1)
@@ -361,7 +385,7 @@ public class OmsKrigingInterpolator extends HMModel {
         }
 
         // sostituire dati con cdf
-        for( int i = 0; i < ppfNormal.size(); i++ ) {
+//        for( int i = 0; i < ppfNormal.size(); i++ ) {
             for( Integer id : stationsIdsSet ) {
                 double[] sValues = inStationIds2ValueMap.get(id);
                 for( int j = 0; j < sValues.length; j++ ) {
@@ -375,7 +399,7 @@ public class OmsKrigingInterpolator extends HMModel {
                     sValues[j] = ppf;
                 }
             }
-        }
+//        }
         
         return store;
     }

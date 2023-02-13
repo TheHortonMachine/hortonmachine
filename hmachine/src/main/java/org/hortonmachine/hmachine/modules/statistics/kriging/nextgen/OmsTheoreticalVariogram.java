@@ -82,10 +82,15 @@ public class OmsTheoreticalVariogram extends HMModel {
         Collection<double[]> allValues = inExperimentalVariogramMap.values();
         double maxVariance = Double.NEGATIVE_INFINITY;
         double minDistance = Double.POSITIVE_INFINITY;
-        for( double[] ds : allValues ) {
-            maxVariance = Math.max(ds[1], maxVariance);
-            minDistance = Math.min(ds[0], minDistance);
-        }
+//        for( double[] ds : allValues ) {
+        int count  = 0;
+        for( double[] ds : allValues ) { 
+                 if(count != 0){
+                    maxVariance = Math.max(ds[1], maxVariance); 
+                    minDistance = Math.min(ds[0], minDistance); 
+                 } 
+                count++;
+         }
         double initSill = 0.8 * maxVariance;
         double initRange = 1.2 * minDistance;
         double initNugget = 0.0;
@@ -93,6 +98,9 @@ public class OmsTheoreticalVariogram extends HMModel {
         VariogramFunction variogramFunction = new VariogramFunction(pTheoreticalVariogramType);
         VariogramFunctionFitter fitter = new VariogramFunctionFitter(variogramFunction, initSill, initRange, initNugget);
         double[] sillRangeNugget = fitter.fit(allValues);
+        outSill = sillRangeNugget[0];
+        outRange = sillRangeNugget[1];
+        outNugget = sillRangeNugget[2];
 
         for( Entry<Integer, double[]> entry : inExperimentalVariogramMap.entrySet() ) {
             Integer id = entry.getKey();

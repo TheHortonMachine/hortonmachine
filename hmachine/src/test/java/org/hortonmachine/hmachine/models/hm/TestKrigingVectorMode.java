@@ -112,7 +112,7 @@ public class TestKrigingVectorMode {
         while( inputReader.doProcess ) {
             inputReader.nextRecord();
             HashMap<Integer, double[]> id2ValueMap = inputReader.outData;
-            kriging.inData = id2ValueMap;
+            kriging.inStationIds2ValueMap = id2ValueMap;
             kriging.executeKriging();
             HashMap<Integer, double[]> result = kriging.outData;
 

@@ -200,6 +200,12 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                         } else {
                             initialAet = Math.min(pet, rain - runoff);
                         }
+
+                        Double d = new Double(initialAet);
+                        if (d == null) {
+                        	System.out.println(initialAet);
+						}
+                        
                         li = rain - runoff - initialAet;
                     }
                     double lAvailable = Math.min(pGamma * li, li);
@@ -257,6 +263,10 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                                     }
                                     liCC = rain - runoff - aetCC;
                                 }
+                                Double d = new Double(aetCC);
+                                if (d == null) {
+                                	System.out.println(aetCC);
+								}
                                 double lAvailableCC = Math.min(pGamma * liCC, liCC);
                                 cell.setDoubleValueInMap(outLiAvailableIter, lAvailableCC);
                                 cell.setDoubleValueInMap(outLiIter, liCC);

@@ -216,6 +216,7 @@ public class OmsExperimentalVariogram extends HMModel {
         for( int i = 0; i < pBins; i++ ) {
 
             contaNONzero = (iPointsInClass[i] == 0) ? contaNONzero : contaNONzero + 1;
+//            System.out.println(iPointsInClass[i]);
 
             // Compute the semivariance
             m_dSemivar[i] = (iPointsInClass[i] == 0) ? 0 : m_dSemivar[i] / (2. * iPointsInClass[i]);
