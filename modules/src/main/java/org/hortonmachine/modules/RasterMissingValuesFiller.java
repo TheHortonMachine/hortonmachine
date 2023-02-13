@@ -20,11 +20,13 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.libs.modules.Variables.AVERAGING;
 import static org.hortonmachine.gears.libs.modules.Variables.CATEGORIES;
 import static org.hortonmachine.gears.libs.modules.Variables.IDW;
+import static org.hortonmachine.gears.libs.modules.Variables.LDW;
 import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_KEYWORDS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_LABEL;
@@ -33,7 +35,9 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_P_MODE_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_STATUS;
-import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.*;
+import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_doUseOnlyBorderValues_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -66,12 +70,25 @@ public class RasterMissingValuesFiller extends HMModel {
     @In
     public String inRaster;
 
-    @Description(OMSRASTERNULLFILLER_pValidCellsBuffer_DESCRIPTION)
+    @Description(OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public int pValidCellsBuffer = 10;
-    
+    public String inMask;
+
+    @Description(OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION)
+    @In
+    public int pMinDistance = 0;
+
+    @Description(OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION)
+    @In
+    public int pMaxDistance = 10;
+
+    @Description(OMSRASTERNULLFILLER_doUseOnlyBorderValues_DESCRIPTION)
+    @In
+    public boolean doUseOnlyBorderValues = false;
+
     @Description(OMSRASTERNULLFILLER_P_MODE_DESCRIPTION)
-    @UI("combo:" + IDW + "," + TPS + "," + AVERAGING + "," + CATEGORIES)
+    @UI("combo:" + IDW + "," + LDW + "," + TPS + "," + AVERAGING + "," + CATEGORIES)
     @In
     public String pMode = IDW;
 
@@ -85,9 +102,24 @@ public class RasterMissingValuesFiller extends HMModel {
         OmsRasterMissingValuesFiller ormvf = new OmsRasterMissingValuesFiller();
         ormvf.pm = pm;
         ormvf.inRaster = getRaster(inRaster);
-        ormvf.pValidCellsBuffer = pValidCellsBuffer;
+        ormvf.inMask = getRaster(inMask);
+        ormvf.pMinDistance = pMinDistance;
+        ormvf.pMaxDistance = pMaxDistance;
+        ormvf.doUseOnlyBorderValues = doUseOnlyBorderValues;
         ormvf.pMode = pMode;
         ormvf.process();
         dumpRaster(ormvf.outRaster, outRaster);
+    }
+
+    public static void main( String[] args ) throws Exception {
+        RasterMissingValuesFiller r = new RasterMissingValuesFiller();
+        r.inRaster = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/senegal_agb_moved.tif";
+        r.inMask = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/Global_Mangrove_Watch_2010_30m_4326_v2.tif";
+        r.outRaster = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/interpolated.tif";
+        r.pMinDistance = 4;
+        r.pMaxDistance = 10;
+        r.doUseOnlyBorderValues = false;
+        r.pMode = LDW;
+        r.process();
     }
 }

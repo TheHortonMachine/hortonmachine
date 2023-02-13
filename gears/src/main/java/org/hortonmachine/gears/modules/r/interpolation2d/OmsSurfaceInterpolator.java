@@ -195,9 +195,9 @@ public class OmsSurfaceInterpolator extends HMModel {
         coordinatesSpatialTree.build();
 
         if (pMode.equals(IDW)) {
-            interpolator = new IDWInterpolator(pBuffer);
+            interpolator = new IDWInterpolator(0, pBuffer);
         } else {
-            interpolator = new TPSInterpolator(pBuffer);
+            interpolator = new TPSInterpolator(0, pBuffer);
         }
 
         WritableRaster interpolatedWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);

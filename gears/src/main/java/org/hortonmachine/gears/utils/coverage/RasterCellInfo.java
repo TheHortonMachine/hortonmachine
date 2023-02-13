@@ -4,6 +4,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.StringUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 
 public class RasterCellInfo {
@@ -42,6 +43,20 @@ public class RasterCellInfo {
         return values;
     }
 
+    /**
+     * @return true if all values are the same.
+     */
+    public boolean allEqual() {
+        double[] values = getValues();
+        double v1 = values[0];
+        for( int i = 1; i < values.length; i++ ) {
+            if (!NumericsUtilities.dEq(v1, values[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void setBufferCells( int bufferCells ) {
         this.bufferCells = bufferCells;
     }
@@ -56,11 +71,11 @@ public class RasterCellInfo {
         double fromLon = lon - xres * bufferCells;
         double toLon = lon + xres * bufferCells;
         double fromLat = lat + yres * bufferCells;
-        double toLat = lat - yres * bufferCells;
-        
+        double toLat = lat - yres * bufferCells - yres;
+
         StringBuilder sepSb = new StringBuilder();
         sepSb.append("+");
-        for( int i = 0; i < cellChars+2; i++ ) {
+        for( int i = 0; i < cellChars + 2; i++ ) {
             sepSb.append("-");
         }
         sepSb.append("+");

@@ -24,24 +24,20 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.locationtech.jts.geom.Coordinate;
 
 /**
- * Implementation of a simple averaging Interpolation.
+ * A linear distance weighted Interpolation.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class AveragingInterpolator implements ISurfaceInterpolator {
+public class LinearDWInterpolator implements ISurfaceInterpolator {
 
     private double maxDistance;
     private double minDistance;
     private boolean useBuffer = false;
 
-    public AveragingInterpolator() {
+    public LinearDWInterpolator() {
     }
 
-    /**
-     * @param minDistance min distance allowed. Put to 0 to ignore.
-     * @param maxDistance max distance allowed.
-     */
-    public AveragingInterpolator( double minDistance, double maxDistance ) {
+    public LinearDWInterpolator( double minDistance, double maxDistance ) {
         this.minDistance = minDistance;
         this.maxDistance = maxDistance;
         useBuffer = true;
@@ -53,22 +49,26 @@ public class AveragingInterpolator implements ISurfaceInterpolator {
         }
 
         double sumdValue = 0;
-        int count = 0;
+        double sumweight = 0;
         for( Coordinate coordinate : controlPoints ) {
             double distance = coordinate.distance(interpolated);
             /*
-             * the index is built on envelope, we need a radius check.
+             * the index if built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
             if (useBuffer && (distance > maxDistance || distance < minDistance)) {
                 continue;
             }
+            if (distance < 0.00001) {
+                distance = 0.00001;
+            }
 
-            sumdValue += coordinate.z;
-            count++;
+            sumdValue = sumdValue + coordinate.z * distance;
+
+            sumweight = sumweight + distance;
         }
 
-        double value = sumdValue / count;
+        double value = sumdValue / sumweight;
         return value;
     }
 
@@ -78,22 +78,28 @@ public class AveragingInterpolator implements ISurfaceInterpolator {
         }
 
         double sumdValue = 0;
-        int count = 0;
+        double sumweight = 0;
+
         for( Coordinate coordinate : controlPoints ) {
             double distance = coordinate.distance(interpolated);
             /*
-             * the index is built on envelope, we need a radius check.
+             * the index if built on envelope, we need a radius check.
              * If not near, do not consider it.
              */
-            if (useBuffer && distance > maxDistance) {
+            if (useBuffer && (distance > maxDistance || distance < minDistance)) {
                 continue;
             }
+            if (distance < 0.00001) {
+                distance = 0.00001;
+            }
+            double weight = (1 / Math.pow(distance, 2));
 
-            sumdValue += coordinate.z;
-            count++;
+            sumdValue = sumdValue + coordinate.z * weight;
+
+            sumweight = sumweight + weight;
         }
 
-        double value = sumdValue / count;
+        double value = sumdValue / sumweight;
         return value;
     }
 

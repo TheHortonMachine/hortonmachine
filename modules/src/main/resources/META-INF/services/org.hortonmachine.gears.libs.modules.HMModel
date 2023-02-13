@@ -169,3 +169,4 @@ org.hortonmachine.modules.VoronoiDiagram
 org.hortonmachine.modules.Wateroutlet
 org.hortonmachine.modules.WindowSampler
 org.hortonmachine.modules.Xyz2Raster
+org.hortonmachine.modules.RasterTransitionClasses

@@ -628,6 +628,12 @@ public class CoverageUtilities {
         return regionParams;
     }
 
+    /**
+     * @param gridGeometry
+     * @return
+     * 
+     * @deprecated Use {@link RegionMap#fromGridGeometry(GridGeometry2D)}
+     */
     public static RegionMap gridGeometry2RegionParamsMap( GridGeometry2D gridGeometry ) {
         RegionMap envelopeParams = new RegionMap();
 
@@ -657,6 +663,19 @@ public class CoverageUtilities {
         return envelopeParams;
     }
 
+    /**
+     * @param north
+     * @param south
+     * @param west
+     * @param east
+     * @param xRes
+     * @param yRes
+     * @param width
+     * @param height
+     * @return
+     * 
+     * @deprecated Use {@link RegionMap#fromBoundsAndResolution(double, double, double, double, double, double)}
+     */
     public static RegionMap makeRegionParamsMap( double north, double south, double west, double east, double xRes, double yRes,
             int width, int height ) {
         RegionMap envelopeParams = new RegionMap();

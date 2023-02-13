@@ -125,6 +125,9 @@ public class OmsScsRunoff extends HMModel {
                 }else {
                     eventNum = defaultEvents;
                 }
+                if(eventNum == 0 && rain != 0) {
+                    eventNum = 1; // we have at least one event
+                }
                 boolean isNet = !isNovalue(net, netNv) && net != 0.0;
 
                 double runoff = calculateRunoff(rain, cn, isNet, eventNum);

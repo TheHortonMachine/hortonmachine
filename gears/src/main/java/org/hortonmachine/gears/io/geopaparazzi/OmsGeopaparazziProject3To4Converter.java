@@ -68,13 +68,13 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoImages;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoLog;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoMetadata;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoNotes;
-import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

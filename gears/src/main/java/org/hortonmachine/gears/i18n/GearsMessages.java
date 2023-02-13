@@ -456,21 +456,6 @@ public class GearsMessages {
     public static final String OMSRASTERCORRECTOR_P_CORRECTIONS_DESCRIPTION = "The values to correct as a CSV list of triplets (format is col1,row1,value1,col2,row2,value2...).";
     public static final String OMSRASTERCORRECTOR_OUT_RASTER_DESCRIPTION = "The output raster.";
 
-    public static final String OMSRASTERDIFF_DESCRIPTION = "Raster diff module.";
-    public static final String OMSRASTERDIFF_DOCUMENTATION = "";
-    public static final String OMSRASTERDIFF_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
-    public static final String OMSRASTERDIFF_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERDIFF_NAME = "rdiff";
-    public static final int OMSRASTERDIFF_STATUS = 5;
-    public static final String OMSRASTERDIFF_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERDIFF_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERDIFF_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERDIFF_IN_RASTER1_DESCRIPTION = "The input raster.";
-    public static final String OMSRASTERDIFF_IN_RASTER2_DESCRIPTION = "The raster to subtract.";
-    public static final String OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION = "The threshold, under which to set novalue.";
-    public static final String OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION = "Allow negative values.";
-    public static final String OMSRASTERDIFF_OUT_RASTER_DESCRIPTION = "The output raster.";
-
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION = "Module to do coverage resolution resampling.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION = "";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS = "IO, Coverage, Raster, Convert";

@@ -28,11 +28,11 @@ import javax.swing.text.BadLocationException;
 
 import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.gears.io.geopaparazzi.geopap4.ETimeUtilities;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.DataUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.hortonmachine.gui.console.ProcessLogConsoleController;
 import org.hortonmachine.gui.spatialtoolbox.core.SpatialToolboxConstants;
 import org.hortonmachine.gui.spatialtoolbox.core.StageScriptExecutor;

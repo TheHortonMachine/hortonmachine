@@ -65,7 +65,7 @@ public class TestInverseNormalScore {
             ppfNormalG.add(v);
         }
         
-        // la F(z) dei dati originali è nota solo in forma discreta, il calcolo dell'inversa F-1(z)
+        // la F(z) dei dati originali nota solo in forma discreta, il calcolo dell'inversa F-1(z)
         // deve essere fatto tramite interpolazione. La tecnica di interpolazione dipende dalla
         // posizione del valore della G rispetto alla F originale: 
         // lower tail: F                   -> z_star[G<min(F)] ------- G[G<min(F)]

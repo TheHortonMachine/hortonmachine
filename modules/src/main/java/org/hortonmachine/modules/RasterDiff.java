@@ -17,20 +17,20 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_IN_RASTER1_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_IN_RASTER2_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERDIFF_STATUS;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_IN_RASTER1_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_IN_RASTER2_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_LABEL;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_LICENSE;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_NAME;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

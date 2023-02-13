@@ -225,7 +225,7 @@ public class OmsBobTheBuilder extends HMModel {
         if (pMaxbuffer < 0)
             pMaxbuffer = Math.max(vectorBounds.getWidth(), vectorBounds.getHeight());
 
-        IDWInterpolator interpolator = new IDWInterpolator(pMaxbuffer);
+        IDWInterpolator interpolator = new IDWInterpolator(0, pMaxbuffer);
         final GridCoordinates2D gridCoord = new GridCoordinates2D();
         RandomIter rasterizedIter = CoverageUtilities.getRandomIterator(outRasterized);
         pm.beginTask("Interpolating...", cols);
