@@ -287,11 +287,10 @@ public class DatabaseViewer extends DatabaseController {
     protected List<Action> makeLeafActions( final LeafLevel selectedLeaf ) {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateValueAction(guiBridge, this));
-        
+
         return actions;
     }
-    
-    
+
     protected List<Action> makeColumnActions( final ColumnLevel selectedColumn ) {
 
         List<Action> actions = new ArrayList<>();
@@ -396,7 +395,8 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getOpenInSldEditorAction(selectedTable, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getOpenInGformsEditorAction(selectedTable, this));
         }
-        if (selectedTable.tableName.equals(LogDb.TABLE_MESSAGES)) {
+        boolean isSmash = selectedTable.tableName.equals("debug");
+        if (selectedTable.tableName.equals(LogDb.TABLE_MESSAGES) || isSmash) {
             actions.add(new AbstractAction("Show HTML report"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -404,12 +404,34 @@ public class DatabaseViewer extends DatabaseController {
                         String sql = "select  " + LogDb.type_NAME + ", " + LogDb.TimeStamp_NAME + ", " + LogDb.tag_NAME + ","
                                 + LogDb.message_NAME + " from " + LogDb.TABLE_MESSAGES + " order by " + LogDb.TimeStamp_NAME
                                 + " desc";
-
+                        if (isSmash) {
+                            sql = "select level, ts, \"GPLOG\", msg from debug order by ts desc";
+                        }
+                        String _sql = sql;
                         LinkedHashMap<String, List<Message>> day2MessageMap = new LinkedHashMap<>();
                         currentConnectedSqlDatabase.execOnConnection(connection -> {
-                            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                                 while( rs.next() ) {
-                                    int type = rs.getInt(1);
+
+                                    int type;
+                                    if (isSmash) {
+                                        String typeStr = rs.getString(1);
+                                        if (typeStr.contains("info")) {
+                                            type = EMessageType.INFO.getCode();
+                                        } else if (typeStr.contains("debug")) {
+                                            type = EMessageType.DEBUG.getCode();
+                                        } else if (typeStr.contains("warning")) {
+                                            type = EMessageType.WARNING.getCode();
+                                        } else if (typeStr.contains("error")) {
+                                            type = EMessageType.ERROR.getCode();
+                                        } else if (typeStr.contains("access")) {
+                                            type = EMessageType.ACCESS.getCode();
+                                        } else {
+                                            type = EMessageType.INFO.getCode();
+                                        }
+                                    } else {
+                                        type = rs.getInt(1);
+                                    }
                                     long ts = rs.getLong(2);
                                     String tag = rs.getString(3);
                                     if (tag == null)
