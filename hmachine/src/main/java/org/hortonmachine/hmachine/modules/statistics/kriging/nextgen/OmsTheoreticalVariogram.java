@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.hmachine.modules.statistics.kriging.utils.MaxDistance;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.VariogramFunction;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.VariogramFunctionFitter;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
@@ -82,25 +83,63 @@ public class OmsTheoreticalVariogram extends HMModel {
         Collection<double[]> allValues = inExperimentalVariogramMap.values();
         double maxVariance = Double.NEGATIVE_INFINITY;
         double minDistance = Double.POSITIVE_INFINITY;
+        double maxDistance = Double.NEGATIVE_INFINITY;
 //        for( double[] ds : allValues ) {
         int count  = 0;
+        int countNuggetValues  = 0;
+        int countSillValues  = 0;
+        double meanFirstThreeVariogramValues = 0.0;
+        double meanLastFiveVariogramValues = 0.0;
         for( double[] ds : allValues ) { 
                  if(count != 0){
                     maxVariance = Math.max(ds[1], maxVariance); 
                     minDistance = Math.min(ds[0], minDistance); 
+                    maxDistance = Math.max(ds[0], maxVariance);
+                    if (count <= 3) {
+                    	meanFirstThreeVariogramValues = meanFirstThreeVariogramValues + ds[1];
+						countNuggetValues ++;
+                    }
+                    if (count >= allValues.size() - 5) {
+                    	meanLastFiveVariogramValues = meanLastFiveVariogramValues + ds[1];
+						countSillValues ++;
+					}
                  } 
                 count++;
          }
-        double initSill = 0.8 * maxVariance;
-        double initRange = 1.2 * minDistance;
-        double initNugget = 0.0;
+        
+        double defaultRange = maxDistance / 3.0;
+        double defaultNugget = meanFirstThreeVariogramValues / countNuggetValues;
+    	double defaultSill = meanLastFiveVariogramValues / countSillValues;
+    	
+//        double initSill = 0.8 * maxVariance;
+//        double initRange = 1.2 * minDistance;
+//        double initNugget = 0.0;
+        double initSill = defaultSill;
+        double initRange = defaultRange;
+        double initNugget = defaultNugget;
 
         VariogramFunction variogramFunction = new VariogramFunction(pTheoreticalVariogramType);
         VariogramFunctionFitter fitter = new VariogramFunctionFitter(variogramFunction, initSill, initRange, initNugget);
+        
         double[] sillRangeNugget = fitter.fit(allValues);
-        outSill = sillRangeNugget[0];
-        outRange = sillRangeNugget[1];
-        outNugget = sillRangeNugget[2];
+        /*
+         * If the fitting procedure returns a null object -> proceed with the default parameters:
+         * the range parameter is taken as 1/3 of the maximum sample variogram distance 
+         * the nugget parameter is taken as the mean of the first three sample variogram values 
+         * the partial sill is taken as the mean of the last five sample variogram values.
+         */
+
+        if (sillRangeNugget == null || sillRangeNugget.length == 0) {
+        	System.out.println("Fitting procedure did not converged, using default parameters.");
+        	outRange = defaultRange;
+        	outNugget = defaultNugget;
+        	outSill = defaultSill;
+			
+		} else {
+			outSill = sillRangeNugget[0];
+			outRange = sillRangeNugget[1];
+			outNugget = sillRangeNugget[2];
+		}
 
         for( Entry<Integer, double[]> entry : inExperimentalVariogramMap.entrySet() ) {
             Integer id = entry.getKey();

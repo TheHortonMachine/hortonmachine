@@ -110,6 +110,7 @@ public class OmsKrigingInterpolator extends HMModel {
     @Execute
     public void process() throws Exception {
         outTargetIds2ValueMap = new HashMap<>();
+        
         for( Entry<Integer, TargetPointAssociation> targetId2AssociationEntry : inTargetPointId2AssociationMap.entrySet() ) {
             Integer targetId = targetId2AssociationEntry.getKey();
             TargetPointAssociation association = targetId2AssociationEntry.getValue();
@@ -201,8 +202,8 @@ public class OmsKrigingInterpolator extends HMModel {
                     // TODO after Kriging output data need to be converted back (see normalization
                     // above)
                     // Does this contain just one id and one value? To be checked after Kriging interpolation.
-                    inverseNormalizeData(store, krigingOutData);
-                    
+//                    
+                    outTargetIds2ValueMap.put(targetId, new double [] {krigingOutData} );
 
                 } else {
                     throw new RuntimeException("Not implemented yet");
@@ -214,7 +215,9 @@ public class OmsKrigingInterpolator extends HMModel {
                 break;
             }
         }
-
+        	//TODO: integrate the inverse normalization (check store variable!!)
+        
+//        inverseNormalizeData(store, krigingOutData);
     }
 
     private void inverseNormalizeData( NormalizationStore store, HashMap<Integer, double[]> targetIds2ValueMap ) {
