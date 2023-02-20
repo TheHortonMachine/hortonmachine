@@ -79,12 +79,14 @@ public class DefaultTables {
                 "4000      255 255 255  10000     255 255 255";
         map.put(EColorTables.bathymetric.name(), bath);
 
-        String elev = "0 191 191 \n" + //
-                "0 255 0 \n" + //
-                "255 255 0 \n" + //
-                "255 127 0\n" + //
-                "191 127 63 \n" + //
-                "20 21 20\n";
+        String elev = hexToColortable(//
+                "#00bfbf",
+                "#00ff00",
+                "#ffff00",
+                "#ff7f00",
+                "#bf7f3f",
+                "#141514"
+                );
         map.put(EColorTables.elev.name(), elev);
 
         String flow = "1 255 255 0\n" + //
