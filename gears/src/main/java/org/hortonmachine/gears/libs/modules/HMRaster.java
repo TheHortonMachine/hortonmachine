@@ -236,6 +236,13 @@ public class HMRaster implements AutoCloseable {
     public double getNovalue() {
         return novalue;
     }
+    
+    /**
+     * @return the {@link CoordinateReferenceSystem} of the raster.
+     */
+    public CoordinateReferenceSystem getCrs() {
+        return crs;
+    }
 
     /**
      * Check if a given value is a novalue for this raster.

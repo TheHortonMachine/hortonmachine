@@ -23,14 +23,18 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 import java.util.HashMap;
+import java.util.stream.IntStream;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.ModelsSupporter;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.time.EggClock;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
@@ -59,7 +63,7 @@ public class OmsPitfiller extends HMModel {
     @Description(OMSPITFILLER_outPit_DESCRIPTION)
     @Out
     public GridCoverage2D outPit = null;
-    
+
     public static final String OMSPITFILLER_DESCRIPTION = "It fills the depression points present within a DEM.";
     public static final String OMSPITFILLER_DOCUMENTATION = "OmsPitfiller.html";
     public static final String OMSPITFILLER_KEYWORDS = "Dem manipulation, Geomorphology, OmsDrainDir";
@@ -78,8 +82,6 @@ public class OmsPitfiller extends HMModel {
      * The novalue needed by PitFiller.
      */
     public static final double PITNOVALUE = -1.0;
-    private WritableRandomIter pitIter;
-    private RandomIter elevationIter = null;
 
     private int nCols;
     private int nRows;
@@ -100,6 +102,7 @@ public class OmsPitfiller extends HMModel {
      * The number of unresolved pixel in dir matrix (which haven't a drainage direction).
      */
     private int currentPitsCount;
+    private int initialPitsCount;
     /**
      * Vector where the program memorizes the index of the elevation matrix whose point doesn't drain
      * in any D8 cells.
@@ -137,6 +140,11 @@ public class OmsPitfiller extends HMModel {
     private int[][] DIR_WITHFLOW_EXITING_INVERTED = ModelsSupporter.DIR_WITHFLOW_EXITING_INVERTED;
     private double et, emin;
 
+    private HMRaster elevRaster;
+    private HMRaster pitRaster;
+
+    private double novalue;
+
     /**
      * The pitfiller algorithm.
      * 
@@ -148,54 +156,58 @@ public class OmsPitfiller extends HMModel {
             return;
         }
         checkNull(inElev);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        nCols = regionMap.getCols();
+        nRows = regionMap.getRows();
+        xRes = regionMap.getXres();
+        yRes = regionMap.getYres();
 
-        elevationIter = CoverageUtilities.getRandomIterator(inElev);
+        elevRaster = HMRaster.fromGridCoverage(inElev);
+        novalue = elevRaster.getNovalue();
 
-        // output raster
-        WritableRaster pitRaster = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, null);
-        pitIter = CoverageUtilities.getWritableRandomIterator(pitRaster);
+        try {
+            pitRaster = new HMRaster.HMRasterWritableBuilder().setName("pitfiller").setCrs(elevRaster.getCrs())
+                    .setRegion(regionMap).setNoValue(novalue).build();
 
-        for( int i = 0; i < nRows; i++ ) {
-            if (pm.isCanceled()) {
-                return;
-            }
-            for( int j = 0; j < nCols; j++ ) {
-                double value = elevationIter.getSampleDouble(j, i, 0);
-                if (!isNovalue(value)) {
-                    pitIter.setSample(j, i, 0, value);
-                } else {
-                    pitIter.setSample(j, i, 0, PITNOVALUE);
-                }
-            }
-        }
-
-        flood();
-        if (pm.isCanceled()) {
-            return;
-        }
-
-        for( int i = 0; i < nRows; i++ ) {
-            if (pm.isCanceled()) {
-                return;
-            }
-            for( int j = 0; j < nCols; j++ ) {
-                if (dir[j][i] == 0) {
+            for( int i = 0; i < nRows; i++ ) {
+                if (pm.isCanceled()) {
                     return;
                 }
-                double value = pitIter.getSampleDouble(j, i, 0);
-                if (value == PITNOVALUE || isNovalue(value)) {
-                    pitIter.setSample(j, i, 0, doubleNovalue);
+                for( int j = 0; j < nCols; j++ ) {
+
+                    double value = elevRaster.getValue(j, i);
+                    if (!elevRaster.isNovalue(value)) {
+                        pitRaster.setValue(j, i, value);
+                    } else {
+                        pitRaster.setValue(j, i, PITNOVALUE);
+                    }
                 }
             }
-        }
-        pitIter.done();
 
-        outPit = CoverageUtilities.buildCoverage("pitfiller", pitRaster, regionMap, inElev.getCoordinateReferenceSystem());
+            flood();
+            if (pm.isCanceled()) {
+                return;
+            }
+
+            for( int i = 0; i < nRows; i++ ) {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                for( int j = 0; j < nCols; j++ ) {
+                    if (dir[j][i] == 0) {
+                        return;
+                    }
+                    double value = pitRaster.getValue(j, i);
+                    if (pitRaster.isNovalue(value)) {
+                        pitRaster.setValue(j, i, novalue);
+                    }
+                }
+            }
+            outPit = pitRaster.buildCoverage();
+        } finally {
+            elevRaster.close();
+            pitRaster.close();
+        }
     }
 
     /**
@@ -273,32 +285,33 @@ public class OmsPitfiller extends HMModel {
          * Initialise internal pointers, if the point is an invalid value then set the dir value to
          * -1 else to 0
          */
-        pm.message(msg.message("pitfiller.initpointers"));
+        pm.beginTask("Initialize internal pointers...", (lastRow - firstRow));
         for( int r = firstRow; r < lastRow; r++ ) {
             if (pm.isCanceled()) {
                 return;
             }
             for( int c = firstCol; c < lastCol; c++ ) {
                 if (r == firstRow || r == lastRow - 1 || c == firstCol || c == lastCol - 1
-                        || isNovalue(pitIter.getSampleDouble(c, r, 0))) {
+                        || pitRaster.isNovalue(pitRaster.getValue(c, r))) {
                     dir[c][r] = -1;
                 } else {
                     dir[c][r] = 0;
                 }
             }
+            pm.worked(1);
         }
-
-        pm.message(msg.message("pitfiller.setpos"));
+        pm.done();
 
         /* Set positive slope directions - store unresolved on stack */
         currentPitsCount = 0;
+        pm.beginTask("Set positive slope directions...", lastRow - firstRow -2);
         for( int r = (firstRow + 1); r < (lastRow - 1); r++ ) {
             if (pm.isCanceled()) {
                 return;
             }
             for( int c = (firstCol + 1); c < (lastCol - 1); c++ ) {
-                double pitValue = pitIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(pitValue)) {
+                double pitValue = pitRaster.getValue(c, r);
+                if (!pitRaster.isNovalue(pitValue)) {
                     // set the value in the dir matrix (D8 matrix)
                     setDirection(pitValue, r, c, dir, directionFactor);
                 }
@@ -310,38 +323,28 @@ public class OmsPitfiller extends HMModel {
                     addPitToStack(r, c);
                 }
             }
+            pm.worked(1);
         }
+        pm.done();
 
         /* routine to drain flats to neighbors */
+        pm.message("First flats resolution...");
         int stillPitsCount = resolveFlats(currentPitsCount);
         if (stillPitsCount == -1) {
+            pm.message("OmsPitfiller finished...");
             return;
         }
-
-        // for( int i = 0; i < currentPitRows.length; i++ ) {
-        // int r = currentPitRows[i];
-        // int c = currentPitCols[i];
-        // System.out.println("row/cols = " + r + "/" + c);
-        // }
+        pm.message("Done.");
+        initialPitsCount = currentPitsCount;
 
         int n = currentPitsCount;
-        pm.message(msg.message("pitfiller.numpit") + n);
         int np1 = n;
         int nt = (int) (np1 * 1 - per / 100);
 
-        /* initialize apool to zero */
-        // for( int i = firstRow; i < lastRow; i++ ) {
-        // if (pm.isCanceled()) {
-        // return;
-        // }
-        // for( int j = firstCol; j < lastCol; j++ ) {
-        // apool[j][i] = 0;
-        // }
-        // }
+        pm.message("Pits filled: 0 of " + initialPitsCount);
 
-        pm.message(msg.message("pitfiller.main"));
-        pm.message(msg.message("pitfiller.perc"));
-        pm.message("0%");
+        int iteration = 0;
+
         /* store unresolved stack location in apool for easy deletion */
         while( currentPitsCount > 0 ) {
             if (pm.isCanceled()) {
@@ -366,13 +369,14 @@ public class OmsPitfiller extends HMModel {
                 }
                 r = ipool[ip];
                 c = jpool[ip];
+                double pitValue = pitRaster.getValue(c, r);
                 for( int k = 1; k <= 8; k++ ) {
                     int jn = c + DIR_WITHFLOW_EXITING_INVERTED[k][0];
                     int in = r + DIR_WITHFLOW_EXITING_INVERTED[k][1];
                     // if the point isn't in this pool but on the edge then
                     // check the minimun elevation edge
                     if (apool[jn][in] != pooln) {
-                        et = max2(pitIter.getSampleDouble(c, r, 0), pitIter.getSampleDouble(jn, in, 0));
+                        et = Math.max(pitValue, pitRaster.getValue(jn, in));
                         if (nf == 0) {
                             emin = et;
                             nf = 1;
@@ -392,7 +396,8 @@ public class OmsPitfiller extends HMModel {
                 }
                 r = ipool[k];
                 c = jpool[k];
-                if (pitIter.getSampleDouble(c, r, 0) <= emin) {
+                double pitValue = pitRaster.getValue(c, r);
+                if (pitValue <= emin) {
                     if (dir[c][r] > 0) { /* Can be in pool, but not flat */
                         dir[c][r] = 0;
                         addPitToStack(r, c);
@@ -401,7 +406,7 @@ public class OmsPitfiller extends HMModel {
                     for( int ip = 1; ip <= 8; ip++ ) {
                         int jn = c + DIR_WITHFLOW_EXITING_INVERTED[ip][0];
                         int in = r + DIR_WITHFLOW_EXITING_INVERTED[ip][1];
-                        if ((pitIter.getSampleDouble(jn, in, 0) > pitIter.getSampleDouble(c, r, 0)) && (dir[jn][in] > 0)) {
+                        if ((pitRaster.getValue(jn, in) > pitValue) && (dir[jn][in] > 0)) {
                             /*
                              * Only zero direction of neighbors that are higher - because lower or
                              * equal may be a pour point in a pit that must not be disrupted
@@ -410,7 +415,7 @@ public class OmsPitfiller extends HMModel {
                             addPitToStack(in, jn);
                         }
                     }
-                    pitIter.setSample(c, r, 0, emin);
+                    pitRaster.setValue(c, r, emin);
                 }
                 apool[c][r] = 0;
             }
@@ -421,8 +426,8 @@ public class OmsPitfiller extends HMModel {
                 if (pm.isCanceled()) {
                     return;
                 }
-                setDirection(pitIter.getSampleDouble(currentPitCols[ip], currentPitRows[ip], 0), currentPitRows[ip],
-                        currentPitCols[ip], dir, directionFactor);
+                setDirection(pitRaster.getValue(currentPitCols[ip], currentPitRows[ip]), currentPitRows[ip], currentPitCols[ip],
+                        dir, directionFactor);
 
                 if (dir[currentPitCols[ip]][currentPitRows[ip]] == 0) {
                     ni++;
@@ -435,12 +440,17 @@ public class OmsPitfiller extends HMModel {
 
             stillPitsCount = resolveFlats(ni);
             if (stillPitsCount == -1) {
+                pm.message("OmsPitfiller finished...");
                 return;
             }
-            // System.out.println(nis);
+
+            if (iteration++ > 100) {
+                iteration = 0;
+                pm.message("Pits filled: " + (initialPitsCount - currentPitsCount) + " of " + initialPitsCount);
+            }
             if (currentPitsCount < nt) {
-                if (per % 10 == 0)
-                    pm.message((int) per + "%");
+//                if (per % 10 == 0)
+//                    pm.message((int) per + "%");
                 per = per + 1;
                 nt = (int) (np1 * (1 - per / 100));
             }
@@ -500,17 +510,17 @@ public class OmsPitfiller extends HMModel {
                 dn[ip] = 0;
             }
 
-            for( int k = 1; k <= 8; k++ ) {
-                for( int pitIndex = 1; pitIndex <= pitsCount; pitIndex++ ) {
-                    double elevDelta = pitIter.getSampleDouble(currentPitCols[pitIndex], currentPitRows[pitIndex], 0)
-                            - pitIter.getSampleDouble(currentPitCols[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][0],
-                                    currentPitRows[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][1], 0);
+            IntStream.range(1, pitsCount + 1).parallel().forEach(pitIndex -> {
+                for( int k = 1; k <= 8; k++ ) {
+                    double elevDelta = pitRaster.getValue(currentPitCols[pitIndex], currentPitRows[pitIndex])
+                            - pitRaster.getValue(currentPitCols[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][0],
+                                    currentPitRows[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][1]);
                     if ((elevDelta >= 0.)
                             && ((dir[currentPitCols[pitIndex] + DIR_WITHFLOW_EXITING_INVERTED[k][0]][currentPitRows[pitIndex]
                                     + DIR_WITHFLOW_EXITING_INVERTED[k][1]] != 0) && (dn[pitIndex] == 0)))
                         dn[pitIndex] = k;
                 }
-            }
+            });
             stillPitsCount = 1; /* location of point on stack with lowest elevation */
             for( int pitIndex = 1; pitIndex <= pitsCount; pitIndex++ ) {
                 if (dn[pitIndex] > 0) {
@@ -519,8 +529,8 @@ public class OmsPitfiller extends HMModel {
                     currentPitsCount++;
                     currentPitRows[currentPitsCount] = currentPitRows[pitIndex];
                     currentPitCols[currentPitsCount] = currentPitCols[pitIndex];
-                    if (pitIter.getSampleDouble(currentPitCols[currentPitsCount], currentPitRows[currentPitsCount], 0) < pitIter
-                            .getSampleDouble(currentPitCols[stillPitsCount], currentPitRows[stillPitsCount], 0))
+                    if (pitRaster.getValue(currentPitCols[currentPitsCount], currentPitRows[currentPitsCount]) < pitRaster
+                            .getValue(currentPitCols[stillPitsCount], currentPitRows[stillPitsCount]))
                         stillPitsCount = currentPitsCount;
                 }
             }
@@ -559,12 +569,13 @@ public class OmsPitfiller extends HMModel {
                 ipool[npool] = row;
                 jpool[npool] = col;
 
+                double pitValue = pitRaster.getValue(col, row);
                 for( int k = 1; k <= 8; k++ ) {
                     in = row + DIR_WITHFLOW_EXITING_INVERTED[k][1];
                     jn = col + DIR_WITHFLOW_EXITING_INVERTED[k][0];
                     /* test if neighbor drains towards cell excluding boundaries */
-                    if (((dir[jn][in] > 0) && ((dir[jn][in] - k == 4) || (dir[jn][in] - k == -4))) || ((dir[jn][in] == 0)
-                            && (pitIter.getSampleDouble(jn, in, 0) >= pitIter.getSampleDouble(col, row, 0)))) {
+                    if (((dir[jn][in] > 0) && ((dir[jn][in] - k == 4) || (dir[jn][in] - k == -4)))
+                            || ((dir[jn][in] == 0) && (pitRaster.getValue(jn, in) >= pitValue))) {
                         /* so that adjacent flats get included */
                         npool = pool(in, jn, npool);
                     }
@@ -573,14 +584,6 @@ public class OmsPitfiller extends HMModel {
             }
         }
         return npool;
-    }
-
-    private double max2( double e1, double e2 ) {
-        double em;
-        em = e1;
-        if (e2 > em)
-            em = e2;
-        return em;
     }
 
     /**
@@ -605,8 +608,8 @@ public class OmsPitfiller extends HMModel {
         for( int k = 1; k <= 8; k++ ) {
             int cn = col + DIR_WITHFLOW_EXITING_INVERTED[k][0];
             int rn = row + DIR_WITHFLOW_EXITING_INVERTED[k][1];
-            double pitN = pitIter.getSampleDouble(cn, rn, 0);
-            if (isNovalue(pitN)) {
+            double pitN = pitRaster.getValue(cn, rn);
+            if (pitRaster.isNovalue(pitN)) {
                 dir[col][row] = -1;
                 break;
             }
