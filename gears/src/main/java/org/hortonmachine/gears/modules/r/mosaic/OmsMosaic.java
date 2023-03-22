@@ -55,6 +55,7 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -134,16 +135,16 @@ public class OmsMosaic extends HMModel {
             throw new ModelsIllegalargumentException("No input data have been provided.", this, pm);
         }
         int count = 0;
-        List<FileOrCoverage> dataList = new ArrayList<>();
+        List<FileOrRaster> dataList = new ArrayList<>();
         if (inFiles != null) {
             for( File file : inFiles ) {
-                dataList.add(new FileOrCoverage(file));
+                dataList.add(new FileOrRaster(file));
                 count++;
             }
         }
         if (inCoverages != null) {
             for( GridCoverage2D coverage : inCoverages ) {
-                dataList.add(new FileOrCoverage(coverage));
+                dataList.add(new FileOrRaster(HMRaster.fromGridCoverage(coverage)));
                 count++;
             }
         }
@@ -152,181 +153,79 @@ public class OmsMosaic extends HMModel {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this, pm);
         }
 
-        GridGeometry2D referenceGridGeometry = null;
-
-//        double n = Double.MIN_VALUE;
-//        double s = Double.MAX_VALUE;
-//        double e = Double.MIN_VALUE;
-//        double w = Double.MAX_VALUE;
-//        int np = Integer.MIN_VALUE;
-//        int sp = Integer.MAX_VALUE;
-//        int ep = Integer.MIN_VALUE;
-//        int wp = Integer.MAX_VALUE;
+        HMRaster referenceRaster = null;
 
         pm.beginTask("Calculating final bounds...", count);
-        double novalue = 0;
         double xRes = 0;
         double yRes = 0;
         Envelope totalEnvelope = new Envelope();
-        for( FileOrCoverage data : dataList ) {
+        for( FileOrRaster data : dataList ) {
             Envelope worldEnv;
-            if (referenceGridGeometry == null) {
-                GridCoverage2D coverage = data.getCoverage();
+            if (referenceRaster == null) {
+                HMRaster raster = data.getRaster();
 
-                novalue = HMConstants.getNovalue(coverage);
-
-                worldEnv = FeatureUtilities.envelopeToPolygon(coverage.getEnvelope2D()).getEnvelopeInternal();
+                worldEnv = raster.getRegionMap().toEnvelope();
                 // take the first as reference
-                crs = coverage.getCoordinateReferenceSystem();
-                referenceGridGeometry = coverage.getGridGeometry();
+                crs = raster.getCrs();
+                referenceRaster = raster;
 
-                RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+                RegionMap regionMap = raster.getRegionMap();
                 xRes = regionMap.getXres();
                 yRes = regionMap.getYres();
 
                 pm.message("Using crs: " + CrsUtilities.getCodeFromCrs(crs));
             } else {
-                worldEnv = FeatureUtilities.envelopeToPolygon(data.getEnvelope()).getEnvelopeInternal();
+                worldEnv = data.getEnvelope();
             }
 
             totalEnvelope.expandToInclude(worldEnv);
 
-//            GridEnvelope2D pixelEnv = referenceGridGeometry.worldToGrid(worldEnv);
-//
-//            int minPX = (int) pixelEnv.getMinX();
-//            int minPY = (int) pixelEnv.getMinY();
-//            int maxPX = (int) pixelEnv.getMaxX();
-//            int maxPY = (int) pixelEnv.getMaxY();
-//            if (minPX < wp)
-//                wp = minPX;
-//            if (minPY < sp)
-//                sp = minPY;
-//            if (maxPX > ep)
-//                ep = maxPX;
-//            if (maxPY > np)
-//                np = maxPY;
-//
-//            double minWX = worldEnv.getMinX();
-//            double minWY = worldEnv.getMinY();
-//            double maxWX = worldEnv.getMaxX();
-//            double maxWY = worldEnv.getMaxY();
-//            if (minWX < w)
-//                w = minWX;
-//            if (minWY < s)
-//                s = minWY;
-//            if (maxWX > e)
-//                e = maxWX;
-//            if (maxWY > n)
-//                n = maxWY;
             pm.worked(1);
         }
         pm.done();
 
         int endWidth = (int) (totalEnvelope.getWidth() / xRes);
         int endHeight = (int) (totalEnvelope.getHeight() / yRes);
-//        int endWidth = ep - wp;
-//        int endHeight = np - sp;
-
-        referenceGridGeometry = CoverageUtilities.gridGeometryFromRegionValues(totalEnvelope.getMaxY(), totalEnvelope.getMinY(), totalEnvelope.getMaxX(),
-                totalEnvelope.getMinX(), endWidth, endHeight, crs);
+        RegionMap newRegion = RegionMap.fromEnvelopeAndGrid(totalEnvelope, endWidth, endHeight);
+        HMRaster outHMRaster = new HMRaster.HMRasterWritableBuilder().setCrs(crs).setName("mosaic").setRegion(newRegion).build();
 
         pm.message(MessageFormat.format("Output raster will have {0} cols and {1} rows.", endWidth, endHeight));
-        WritableRaster outputWR = CoverageUtilities.createWritableRaster(endWidth, endHeight, null, null, novalue);
-        WritableRandomIter outputIter = RandomIterFactory.createWritable(outputWR, null);
 
-//        int offestX = Math.abs(wp);
-//        int offestY = Math.abs(sp);
         int index = 1;
-        for( FileOrCoverage data : dataList ) {
-            GridCoverage2D coverage = data.getCoverage();
-            GridGeometry2D itemGG = coverage.getGridGeometry();
-            RenderedImage renderedImage = coverage.getRenderedImage();
-            RandomIter randomIter = RandomIterFactory.create(renderedImage, null);
-            try {
-                RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
-                int rows = regionMap.getRows();
-                int cols = regionMap.getCols();
-                pm.beginTask("Patch map " + index++, rows); //$NON-NLS-1$
-                for( int r = 0; r < rows; r++ ) {
-                    for( int c = 0; c < cols; c++ ) {
-                        double value = randomIter.getSampleDouble(c, r, 0);
-                        Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, itemGG);
-                        int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, referenceGridGeometry, null);
+        for( FileOrRaster data : dataList ) {
+            HMRaster raster = data.getRaster();
 
-                        try {
-                            double tmpValue = outputIter.getSampleDouble(colRow[0], colRow[1], 0);
-                            if (HMConstants.isNovalue(tmpValue, novalue)) {
-                                outputIter.setSample(colRow[0], colRow[1], 0, value);
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    pm.worked(1);
-                }
-                pm.done();
-            } finally {
-                randomIter.done();
-            }
+            pm.message("Patch map " + index++);
+            outHMRaster.mapRaster(pm, raster, true);
 
-//            Envelope2D env = coverage.getEnvelope2D();
-//
-//            GridEnvelope2D repEnv = referenceGridGeometry.worldToGrid(env);
-//
-//            GridGeometry2D tmpGG = coverage.getGridGeometry();
-//            GridEnvelope2D tmpEnv = tmpGG.worldToGrid(env);
-//
-//            int startX = (int) (repEnv.getMinX() + offestX);
-//            int startY = (int) (repEnv.getMinY() + offestY);
-//
-//            double tmpW = tmpEnv.getWidth();
-//            double tmpH = tmpEnv.getHeight();
-//            pm.beginTask("Patch map " + index++, (int) tmpW); //$NON-NLS-1$
-//            for( int y = 0; y < tmpH; y++ ) {
-//                for( int x = 0; x < tmpW; x++ ) {
-//                    double value = randomIter.getSampleDouble(x, y, 0);
-//                    outputIter.setSample(x + startX, y + startY, 0, value);
-//                }
-//                pm.worked(1);
-//            }
-//            pm.done();
-//            randomIter.done();
         }
-
-        HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
-        envelopeParams.put(NORTH, totalEnvelope.getMaxY());
-        envelopeParams.put(SOUTH, totalEnvelope.getMinY());
-        envelopeParams.put(WEST, totalEnvelope.getMinX());
-        envelopeParams.put(EAST, totalEnvelope.getMaxX());
-
-        outRaster = CoverageUtilities.buildCoverage("patch", outputWR, envelopeParams, crs); //$NON-NLS-1$
+        outHMRaster.applyCountAverage(pm);
+        outRaster = outHMRaster.buildCoverage();
 
     }
 
-    static class FileOrCoverage {
+    static class FileOrRaster {
         private File file;
-        private GridCoverage2D coverage;
+        private HMRaster raster;
 
-        public FileOrCoverage( File file ) {
+        public FileOrRaster( File file ) {
             this.file = file;
         }
-        public Envelope2D getEnvelope() throws Exception {
+        public Envelope getEnvelope() throws Exception {
             if (file != null) {
-                ReferencedEnvelope env = OmsRasterReader.readEnvelope(file.getAbsolutePath());
-                return new Envelope2D(env.getCoordinateReferenceSystem(), env.getMinX(), env.getMinY(), env.getWidth(),
-                        env.getHeight());
+                return OmsRasterReader.readEnvelope(file.getAbsolutePath());
             } else {
-                return coverage.getEnvelope2D();
+                return raster.getRegionMap().toEnvelope();
             }
         }
-        public GridCoverage2D getCoverage() throws Exception {
+        public HMRaster getRaster() throws Exception {
             if (file != null) {
-                return OmsRasterReader.readRaster(file.getAbsolutePath());
+                return HMRaster.fromGridCoverage(OmsRasterReader.readRaster(file.getAbsolutePath()));
             }
-            return coverage;
+            return raster;
         }
-        public FileOrCoverage( GridCoverage2D coverage ) {
-            this.coverage = coverage;
+        public FileOrRaster( HMRaster raster ) {
+            this.raster = raster;
         }
     }
 

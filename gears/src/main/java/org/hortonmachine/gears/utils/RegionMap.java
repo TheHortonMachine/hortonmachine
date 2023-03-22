@@ -83,8 +83,6 @@ public class RegionMap extends HashMap<String, Double> {
         int rows = (int) Math.round((north - south) / yRes);
         if (rows < 1)
             rows = 1;
-        double width = east - west;
-        double height = north - south;
 
         RegionMap region = new RegionMap();
         region.put(NORTH, north);
@@ -93,8 +91,8 @@ public class RegionMap extends HashMap<String, Double> {
         region.put(EAST, east);
         region.put(XRES, xRes);
         region.put(YRES, yRes);
-        region.put(ROWS, (double) height);
-        region.put(COLS, (double) width);
+        region.put(ROWS, (double) rows);
+        region.put(COLS, (double) cols);
         return region;
     }
 
