@@ -30,6 +30,7 @@ import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirec
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_STATUS;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -89,7 +90,6 @@ public class OmsFlowDirections extends HMModel {
      * The novalue needed by OmsFlowDirections.
      */
     public static final double FLOWNOVALUE = -1.0;
-    public static final double MINELEV = 0.0;
 
     // the hydrologic variables
     /* define directions */
@@ -147,7 +147,7 @@ public class OmsFlowDirections extends HMModel {
                     if (!pitRaster.isNovalue(pitValue)) {
                         elevations[col][row] = pitValue;
                     } else {
-                        elevations[col][row] = MINELEV;
+                        elevations[col][row] = pMinElev;
                     }
                 }
             }
@@ -156,25 +156,27 @@ public class OmsFlowDirections extends HMModel {
 
             // it is necessary to transpose the dir matrix and than it's possible to
             // write the output
-            double[][] transposedFlow = new double[dir[0].length][dir.length];
+            double novalue = pitRaster.getNovalue();
+            HMRaster outFlowRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inPit).setNoValue(novalue).build();
             for( int i = 0; i < dir[0].length; i++ ) {
                 if (pm.isCanceled()) {
                     return;
                 }
                 for( int j = 0; j < dir.length; j++ ) {
                     if (dir[j][i] == 0) {
-                        return;
+                        throw new ModelsIllegalargumentException("Should never happen", this);
                     }
                     if (dir[j][i] != FLOWNOVALUE) {
-                        transposedFlow[i][j] = dir[j][i];
+                        outFlowRaster.setValue(j,i,dir[j][i]);
                     } else {
-                        transposedFlow[i][j] = doubleNovalue;
+                        outFlowRaster.setValue(j,i,novalue);
                     }
                 }
             }
+            
 
-            outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap,
-                    inPit.getCoordinateReferenceSystem(), true);
+            outFlow = outFlowRaster.buildCoverage();
+            outFlowRaster.close();
 
         } finally {
             pitRaster.close();
@@ -260,7 +262,7 @@ public class OmsFlowDirections extends HMModel {
             }
             for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
                 if (dir[j][i] == 0) {
-                    if (elevations[j][i] > MINELEV) {
+                    if (elevations[j][i] > pMinElev) {
                         set(i, j, fact);
                         if (dir[j][i] == 0) {
                             n++;
@@ -337,7 +339,7 @@ public class OmsFlowDirections extends HMModel {
                 int r = row + i;
                 int c = col + j;
                 if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    if (elevations[r][c] <= MINELEV) {
+                    if (elevations[r][c] <= pMinElev) {
                         return false;
                     }
                 }
@@ -707,7 +709,7 @@ public class OmsFlowDirections extends HMModel {
         {
             in = i + d1[k];
             jn = j + d2[k];
-            if (elevations[jn][in] <= MINELEV) {
+            if (elevations[jn][in] <= pMinElev) {
                 continue;
             }
 
@@ -731,7 +733,7 @@ public class OmsFlowDirections extends HMModel {
             in = i + d1[k];
             jn = j + d2[k];
             /* if(elev[jn][in] <= mval) dir[j][i] = -1; */
-            if (elevations[jn][in] <= MINELEV) {
+            if (elevations[jn][in] <= pMinElev) {
                 continue;
             }
             if (dir[j][i] != -1) {
