@@ -19,7 +19,6 @@ package org.hortonmachine.hmachine.modules.geomorphology.flow;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.GEOMORPHOLOGY;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_DESCRIPTION;
@@ -30,14 +29,10 @@ import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirec
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_NAME;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_STATUS;
 
-import java.awt.image.RenderedImage;
-import java.util.HashMap;
-
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
@@ -65,14 +60,18 @@ public class OmsFlowDirections extends HMModel {
     @Description(OMSFLOWDIRECTIONS_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
+    
+    @Description(OMSFLOWDIRECTIONS_P_MINELEV_DESCRIPTION)
+    @In
+    public double pMinElev = 0.0;
+    
 
     @Description(OMSFLOWDIRECTIONS_outFlow_DESCRIPTION)
     @Out
     public GridCoverage2D outFlow = null;
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
-    
-    
+
     public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
     public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
     public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";
@@ -84,20 +83,20 @@ public class OmsFlowDirections extends HMModel {
     public static final String OMSFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
     public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation map.";
     public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSFLOWDIRECTIONS_P_MINELEV_DESCRIPTION = "The min elevation considered. Defaults to 0.";
 
     /**
      * The novalue needed by OmsFlowDirections.
      */
     public static final double FLOWNOVALUE = -1.0;
-
-    private RandomIter pitfillerIter;
+    public static final double MINELEV = 0.0;
 
     // the hydrologic variables
     /* define directions */
     private int[] d1 = new int[]{(int) FLOWNOVALUE, 0, -1, -1, -1, 0, 1, 1, 1};
     private int[] d2 = new int[]{(int) FLOWNOVALUE, 1, 1, 0, -1, -1, -1, 0, 1};
 
-    private int i1, i2, n1, n2, nx, ny;
+    private int i1, i2, n1, n2, cols, rows;
 
     private int[] is, js, dn;
 
@@ -111,9 +110,11 @@ public class OmsFlowDirections extends HMModel {
 
     private final double ndv = FLOWNOVALUE;
 
-    private double dx, dy;
+    private double xRes, yRes;
 
     private double[][] elevations;
+
+    private HMRaster pitRaster;
 
     @Execute
     public void process() throws Exception {
@@ -121,60 +122,63 @@ public class OmsFlowDirections extends HMModel {
             return;
         }
         checkNull(inPit);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
-        nx = regionMap.get(CoverageUtilities.COLS).intValue();
-        ny = regionMap.get(CoverageUtilities.ROWS).intValue();
-        dx = regionMap.get(CoverageUtilities.XRES);
-        dy = regionMap.get(CoverageUtilities.YRES);
 
-        RenderedImage pitfillerRI = inPit.getRenderedImage();
-        // input iterator
-        pitfillerIter = RandomIterFactory.create(pitfillerRI, null);
+        pitRaster = HMRaster.fromGridCoverage(inPit);
+        try {
+            RegionMap regionMap = pitRaster.getRegionMap();
+            cols = regionMap.getCols();
+            rows = regionMap.getRows();
+            xRes = regionMap.getXres();
+            yRes = regionMap.getYres();
 
-        i1 = 0;
-        i2 = 0;
-        n1 = nx;
-        n2 = ny;
+            i1 = 0;
+            i2 = 0;
+            n1 = cols;
+            n2 = rows;
 
-        elevations = new double[nx][ny];
+            elevations = new double[cols][rows];
 
-        for( int row = 0; row < ny; row++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int col = 0; col < nx; col++ ) {
-                double pitValue = pitfillerIter.getSampleDouble(col, row, 0);
-                if (!isNovalue(pitValue)) {
-                    elevations[col][row] = pitValue;
-                } else {
-                    elevations[col][row] = FLOWNOVALUE;
-                }
-            }
-        }
-
-        setdfnoflood();
-
-        // it is necessary to transpose the dir matrix and than it's possible to
-        // write the output
-        double[][] transposedFlow = new double[dir[0].length][dir.length];
-        for( int i = 0; i < dir[0].length; i++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int j = 0; j < dir.length; j++ ) {
-                if (dir[j][i] == 0) {
+            for( int row = 0; row < rows; row++ ) {
+                if (pm.isCanceled()) {
                     return;
                 }
-                if (dir[j][i] != FLOWNOVALUE) {
-                    transposedFlow[i][j] = dir[j][i];
-                } else {
-                    transposedFlow[i][j] = doubleNovalue;
+                for( int col = 0; col < cols; col++ ) {
+                    double pitValue = pitRaster.getValue(col, row);
+                    if (!pitRaster.isNovalue(pitValue)) {
+                        elevations[col][row] = pitValue;
+                    } else {
+                        elevations[col][row] = MINELEV;
+                    }
                 }
             }
-        }
 
-        outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap,
-                inPit.getCoordinateReferenceSystem(), true);
+            setdfnoflood();
+
+            // it is necessary to transpose the dir matrix and than it's possible to
+            // write the output
+            double[][] transposedFlow = new double[dir[0].length][dir.length];
+            for( int i = 0; i < dir[0].length; i++ ) {
+                if (pm.isCanceled()) {
+                    return;
+                }
+                for( int j = 0; j < dir.length; j++ ) {
+                    if (dir[j][i] == 0) {
+                        return;
+                    }
+                    if (dir[j][i] != FLOWNOVALUE) {
+                        transposedFlow[i][j] = dir[j][i];
+                    } else {
+                        transposedFlow[i][j] = doubleNovalue;
+                    }
+                }
+            }
+
+            outFlow = CoverageUtilities.buildCoverage("flowdirections", transposedFlow, regionMap,
+                    inPit.getCoordinateReferenceSystem(), true);
+
+        } finally {
+            pitRaster.close();
+        }
     }
 
     /**
@@ -184,7 +188,7 @@ public class OmsFlowDirections extends HMModel {
         int n;
         double[] fact = new double[9];
 
-        dir = new int[nx][ny];
+        dir = new int[cols][rows];
 
         pm.message(msg.message("flow.initbound"));
 
@@ -201,7 +205,7 @@ public class OmsFlowDirections extends HMModel {
         pm.message(msg.message("flow.initpointers"));
         /* initialize internal pointers */
         for( int col = (i2 + 1); col < (n2 - 1); col++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int row = (i1 + 1); row < (n1 - 1); row++ ) {
@@ -222,7 +226,7 @@ public class OmsFlowDirections extends HMModel {
 
         /* Direction factors */
         for( int k = 1; k <= 8; k++ ) {
-            fact[k] = 1.0 / (Math.sqrt(d1[k] * dy * d1[k] * dy + d2[k] * d2[k] * dx * dx));
+            fact[k] = 1.0 / (Math.sqrt(d1[k] * yRes * d1[k] * yRes + d2[k] * d2[k] * xRes * xRes));
         }
 
         // Compute contrib area using overlayed directions for direction setting
@@ -237,7 +241,7 @@ public class OmsFlowDirections extends HMModel {
         }
 
         for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
@@ -251,12 +255,12 @@ public class OmsFlowDirections extends HMModel {
         /* Set positive slope directions */
         n = 0;
         for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
                 if (dir[j][i] == 0) {
-                    if (elevations[j][i] > FLOWNOVALUE) {
+                    if (elevations[j][i] > MINELEV) {
                         set(i, j, fact);
                         if (dir[j][i] == 0) {
                             n++;
@@ -282,7 +286,7 @@ public class OmsFlowDirections extends HMModel {
          */
         if (n > 0) {
             int iter = 1;
-            int[][] spos = new int[nx][ny];
+            int[][] spos = new int[cols][rows];
             dn = new int[n];
             is = new int[n];
             js = new int[n];
@@ -293,7 +297,7 @@ public class OmsFlowDirections extends HMModel {
             /* Put unresolved pixels on stack */
             int ip = 0;
             for( int i = i2; i < n2; i++ ) {
-                if (isCanceled(pm)) {
+                if (pm.isCanceled()) {
                     return;
                 }
                 for( int j = i1; j < n1; j++ ) {
@@ -314,7 +318,7 @@ public class OmsFlowDirections extends HMModel {
             flatrout(n, sloc, s, spos, iter, elev2, elev2, fact, n);
             /* The direction 19 was used to flag pits. Set these to 0 */
             for( int i = i2; i < n2; i++ ) {
-                if (isCanceled(pm)) {
+                if (pm.isCanceled()) {
                     return;
                 }
                 for( int j = i1; j < n1; j++ ) {
@@ -333,7 +337,7 @@ public class OmsFlowDirections extends HMModel {
                 int r = row + i;
                 int c = col + j;
                 if (r >= 0 && r < rows && c >= 0 && c < cols) {
-                    if (elevations[r][c] <= FLOWNOVALUE) {
+                    if (elevations[r][c] <= MINELEV) {
                         return false;
                     }
                 }
@@ -384,7 +388,7 @@ public class OmsFlowDirections extends HMModel {
             /* Put unresolved pixels on new stacks - keeping in same positions */
             ipp = 0;
             for( int ip = 0; ip < n; ip++ ) {
-                if (isCanceled(pm)) {
+                if (pm.isCanceled()) {
                     return;
                 }
                 if (dir[js[sloc[ip]]][is[sloc[ip]]] == 0) {
@@ -480,13 +484,13 @@ public class OmsFlowDirections extends HMModel {
         nincold = 0;
 
         while( done < 1 ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             done = 1;
             ninc = 0;
             for( int ip = 0; ip < n; ip++ ) {
-                if (isCanceled(pm)) {
+                if (pm.isCanceled()) {
                     return;
                 }
                 for( int k = 1; k <= 8; k++ ) {
@@ -512,7 +516,7 @@ public class OmsFlowDirections extends HMModel {
                 }
             }
             for( int ip = 0; ip < n; ip++ ) {
-                if (isCanceled(pm)) {
+                if (pm.isCanceled()) {
                     return;
                 }
                 s2[sloc[ip]] = s2[sloc[ip]] + dn[sloc[ip]];
@@ -552,7 +556,7 @@ public class OmsFlowDirections extends HMModel {
         nincold = -1;
 
         while( done < 1 ) {
-            if (isCanceled(pm)) {
+            if (pm.isCanceled()) {
                 return;
             }
             done = 1;
@@ -645,7 +649,7 @@ public class OmsFlowDirections extends HMModel {
         /*
          * con is a flag that signifies possible contaminatin of area due to edge effects
          */
-        if (i != 0 && i != ny - 1 && j != 0 && j != nx - 1 && dir[j][i] > -1)
+        if (i != 0 && i != rows - 1 && j != 0 && j != cols - 1 && dir[j][i] > -1)
         /* not on boundary */
         {
             if (arr[j][i] == 0) // not touched yet
@@ -703,7 +707,7 @@ public class OmsFlowDirections extends HMModel {
         {
             in = i + d1[k];
             jn = j + d2[k];
-            if (elevations[jn][in] <= FLOWNOVALUE) {
+            if (elevations[jn][in] <= MINELEV) {
                 continue;
             }
 
@@ -727,7 +731,7 @@ public class OmsFlowDirections extends HMModel {
             in = i + d1[k];
             jn = j + d2[k];
             /* if(elev[jn][in] <= mval) dir[j][i] = -1; */
-            if (elevations[jn][in] <= FLOWNOVALUE) {
+            if (elevations[jn][in] <= MINELEV) {
                 continue;
             }
             if (dir[j][i] != -1) {

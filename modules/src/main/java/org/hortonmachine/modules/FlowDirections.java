@@ -24,6 +24,7 @@ import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirec
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_LABEL;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_LICENSE;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_NAME;
+import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_P_MINELEV_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_STATUS;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_inPit_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_outFlow_DESCRIPTION;
@@ -55,6 +56,10 @@ public class FlowDirections extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
+    
+    @Description(OMSFLOWDIRECTIONS_P_MINELEV_DESCRIPTION)
+    @In
+    public double pMinElev = 0.0;
 
     @Description(OMSFLOWDIRECTIONS_outFlow_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -65,6 +70,7 @@ public class FlowDirections extends HMModel {
     public void process() throws Exception {
         OmsFlowDirections omsflowdirections = new OmsFlowDirections();
         omsflowdirections.inPit = getRaster(inPit);
+        omsflowdirections.pMinElev = pMinElev;
         omsflowdirections.pm = pm;
         omsflowdirections.doProcess = doProcess;
         omsflowdirections.doReset = doReset;

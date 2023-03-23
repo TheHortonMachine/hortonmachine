@@ -100,6 +100,8 @@ public class OmsRasterSubsampler extends HMModel {
         outHMRaster.mapRaster(pm, raster);
         
         outRaster = outHMRaster.buildCoverage();
+        raster.close();
+        outHMRaster.close();
     }
 
 }

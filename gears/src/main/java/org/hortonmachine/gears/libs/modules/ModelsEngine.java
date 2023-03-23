@@ -1005,6 +1005,20 @@ public class ModelsEngine {
         }
     }
 
+    public static boolean isSourcePixel( HMRaster flowRaster, int col, int row ) {
+        double flowDirection = flowRaster.getValue(col, row);
+        if (flowDirection < 9.0 && flowDirection > 0.0) {
+            for( int k = 1; k <= 8; k++ ) {
+                if (flowRaster.getValue(col + dirIn[k][1], row + dirIn[k][0]) == dirIn[k][2]) {
+                    return false;
+                }
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /**
      * Returns the flow direction value for a given point as indexes (i, j) of the dir matrix.
      *

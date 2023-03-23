@@ -153,26 +153,21 @@ public class OmsMosaic extends HMModel {
             throw new ModelsIllegalargumentException("The patching module needs at least two maps to be patched.", this, pm);
         }
 
-        HMRaster referenceRaster = null;
-
         pm.beginTask("Calculating final bounds...", count);
         double xRes = 0;
         double yRes = 0;
         Envelope totalEnvelope = new Envelope();
         for( FileOrRaster data : dataList ) {
             Envelope worldEnv;
-            if (referenceRaster == null) {
+            if (crs == null) {
                 HMRaster raster = data.getRaster();
 
                 worldEnv = raster.getRegionMap().toEnvelope();
                 // take the first as reference
                 crs = raster.getCrs();
-                referenceRaster = raster;
-
                 RegionMap regionMap = raster.getRegionMap();
                 xRes = regionMap.getXres();
                 yRes = regionMap.getYres();
-
                 pm.message("Using crs: " + CrsUtilities.getCodeFromCrs(crs));
             } else {
                 worldEnv = data.getEnvelope();
@@ -198,9 +193,12 @@ public class OmsMosaic extends HMModel {
             pm.message("Patch map " + index++);
             outHMRaster.mapRaster(pm, raster, true);
 
+            raster.close();
+
         }
         outHMRaster.applyCountAverage(pm);
         outRaster = outHMRaster.buildCoverage();
+        outHMRaster.close();
 
     }
 

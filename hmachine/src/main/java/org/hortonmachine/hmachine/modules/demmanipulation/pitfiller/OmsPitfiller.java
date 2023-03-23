@@ -444,7 +444,7 @@ public class OmsPitfiller extends HMModel {
                 return;
             }
 
-            if (iteration++ > 100) {
+            if (iteration++ > 1000) {
                 iteration = 0;
                 pm.message("Pits filled: " + (initialPitsCount - currentPitsCount) + " of " + initialPitsCount);
             }
