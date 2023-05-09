@@ -76,7 +76,7 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
             Coordinate[] coordinates = ((Geometry) sectionFeature.getDefaultGeometry()).getCoordinates();
 
             Object attribute = sectionFeature.getAttribute(LWFields.GAUKLER);
-            Double ks=null;
+            Double ks = null;
             if (attribute != null) {
                 ks = ((Number) attribute).doubleValue();
             }
@@ -88,11 +88,11 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
                 position.z = profilePoint.getElevation();
                 coordinate3dList.add(position);
             }
-            LineString line3d = gf.createLineString(coordinate3dList.toArray(new Coordinate[0]));
-            Geometry crossPoint = line3d.intersection(riverLine);
-            Coordinate crossPointCoordinate = crossPoint.getCoordinate();
-
             try {
+                LineString line3d = gf.createLineString(coordinate3dList.toArray(new Coordinate[0]));
+                Geometry crossPoint = line3d.intersection(riverLine);
+                Coordinate crossPointCoordinate = crossPoint.getCoordinate();
+
                 double crossPointIndex = indexedLine.indexOf(crossPointCoordinate);
 
                 int[] colRow = CoverageUtilities.colRowFromCoordinate(crossPointCoordinate, gridGeometry, null);
@@ -102,8 +102,8 @@ public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor 
                 if (netPoint != null)
                     riverPointsList.add(netPoint);
             } catch (Exception e) {
-                System.out.println(crossPoint);
-                System.out.println(riverLine);
+//                System.out.println(crossPoint);
+//                System.out.println(riverLine);
                 throw e;
             }
             monitor.worked(1);

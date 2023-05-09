@@ -1,54 +1,94 @@
 package org.hortonmachine.hmachine.models.hm;
-///*
-// * JGrass - Free Open Source Java GIS http://www.jgrass.org 
-// * (C) HydroloGIS - www.hydrologis.com 
-// * 
-// * This library is free software; you can redistribute it and/or modify it under
-// * the terms of the GNU Library General Public License as published by the Free
-// * Software Foundation; either version 2 of the License, or (at your option) any
-// * later version.
-// * 
-// * This library is distributed in the hope that it will be useful, but WITHOUT
-// * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-// * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
-// * details.
-// * 
-// * You should have received a copy of the GNU Library General Public License
-// * along with this library; if not, write to the Free Foundation, Inc., 59
-// * Temple Place, Suite 330, Boston, MA 02111-1307 USA
-// */
-//package org.hortonmachine.hmachine.models.hm;
-//
-//import org.geotools.coverage.grid.GridCoverage2D;
-//import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-//import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-//import org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity;
-//import org.hortonmachine.hmachine.utils.HMTestCase;
-///**
-// * Test for the {@link OmsKernelDensity} module.
-// * 
-// * @author Andrea Antonello (www.hydrologis.com)
-// */
-//public class TestKernelDensity extends HMTestCase {
-//    public void testDebrisTrigger() throws Exception {
-//
-//        String baseFolder = "";
-//        String inRasterPath1 = baseFolder + "net_triggers";
-//        String outRasterPath = baseFolder + "triggers_density_triang";
-//
-//        GridCoverage2D elev = OmsRasterReader.readRaster(inRasterPath1);
-//
-//        OmsKernelDensity dt = new OmsKernelDensity();
-//        dt.inMap = elev;
-//        dt.pKernel = 7;
-//        dt.pRadius = 10;
-//        dt.doConstant = true;
-//        dt.pm = pm;
-//        dt.process();
-//
-//        GridCoverage2D density = dt.outDensity;
-//
-//        OmsRasterWriter.writeRaster(outRasterPath, density);
-//
-//    }
-//}
+/*
+ * JGrass - Free Open Source Java GIS http://www.jgrass.org 
+ * (C) HydroloGIS - www.hydrologis.com 
+ * 
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Library General Public License as published by the Free
+ * Software Foundation; either version 2 of the License, or (at your option) any
+ * later version.
+ * 
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU Library General Public License
+ * along with this library; if not, write to the Free Foundation, Inc., 59
+ * Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ */
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity;
+import org.hortonmachine.hmachine.utils.HMTestCase;
+import org.hortonmachine.hmachine.utils.HMTestMaps;
+import org.jaitools.media.jai.kernel.KernelFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+/**
+ * Test for the {@link OmsKernelDensity} module.
+ * 
+ * @author Andrea Antonello (www.hydrologis.com)
+ */
+public class TestKernelDensity extends HMTestCase {
+    public void testKernelDensity() throws Exception {
+
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+
+        RegionMap envelopeParams = RegionMap.fromBoundsAndGrid(1640000.0, 1640200.0, 5140000.0, 5140160.0, 20, 16);
+
+        System.out.println(envelopeParams);
+
+        double[][] map16x20 = {{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},};
+
+        HMRaster coverage = new HMRaster.HMRasterWritableBuilder().setCrs(crs).setData(map16x20).setName("kd_test").setNoValue(-9999.0)
+                .setRegion(envelopeParams).build();
+
+        OmsKernelDensity dt = new OmsKernelDensity();
+        dt.inMap = coverage.buildCoverage();
+        dt.pKernel = OmsKernelDensity.getCodeForType(KernelFactory.ValueType.GAUSSIAN);
+        dt.pRadius = 3;
+        dt.pm = pm;
+        dt.process();
+
+        GridCoverage2D density = dt.outDensity;
+        
+        double[][] gaussian = new double[][] {
+            {-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.2419707179069519,0.0,0.0,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,1.179611712694168,1.435405671596527,1.677376389503479,1.435405671596527,1.435405671596527,1.435405671596527,1.435405671596527,1.179611712694168,0.8774268329143524,0.5579788386821747,0.255793958902359,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,1.6493405401706696,1.997916340827942,2.015179455280304,2.239887058734894,1.9515254199504852,1.6957314610481262,1.6957314610481262,1.3935465812683105,1.0365573465824127,0.6591741144657135,0.3021848797798157,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,2.0173123478889465,2.6473586559295654,2.9561142921447754,2.952983409166336,3.1228866577148438,2.5323401391506195,2.0345754623413086,1.7151274681091309,1.3377442359924316,0.9388019442558289,0.5614187121391296,0.2419707179069519,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,1.7129945755004883,2.375299572944641,2.707456946372986,2.7526828050613403,2.6916166841983795,2.7840426564216614,1.9515254199504852,1.3935465812683105,1.0365573465824127,0.6591741144657135,0.3021848797798157,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,1.7237673103809357,2.1118429005146027,2.492357015609741,2.8041203916072845,2.794541895389557,2.4312908947467804,2.5237168669700623,1.919347107410431,1.3613682687282562,0.5579788386821747,0.255793958902359,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,0.4977646768093109,1.0883111953735352,1.2378559410572052,1.6011069416999817,1.8664793968200684,2.1126948595046997,2.3538136184215546,2.331576943397522,1.7410304248332977,1.1159576773643494,0.511587917804718,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,0.0,0.255793958902359,1.0883111953735352,0.9958852231502533,1.3591362237930298,1.9730844795703888,2.375299572944641,2.1451821625232697,2.0129005312919617,1.318348228931427,0.6043697595596313,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,0.0,0.0,0.255793958902359,1.0883111953735352,1.479826658964157,2.1797887682914734,2.4053879380226135,2.232219159603119,1.8720990419387817,1.6356331706047058,1.1228374242782593,0.4839414358139038,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,0.0,0.0,0.0,0.255793958902359,0.8463404774665833,1.280806988477707,1.997916340827942,2.081528127193451,1.7709298133850098,1.318348228931427,0.6043697595596313,0.0,0.0,0.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0},
+            {-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0,-9999.0}
+        };
+        
+        checkMatrixEqual(density.getRenderedImage(), gaussian, 0.00001);
+
+    }
+}

@@ -17,19 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_AUTHORCONTACTS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_AUTHORNAMES;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_KEYWORDS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_LABEL;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_LICENSE;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_NAME;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_STATUS;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_doConstant_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_inMap_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_outDensity_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_pKernel_DESCRIPTION;
-import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSKERNELDENSITY_pRadius_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

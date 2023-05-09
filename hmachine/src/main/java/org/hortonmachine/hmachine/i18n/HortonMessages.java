@@ -688,21 +688,6 @@ public class HortonMessages {
     public static final String OMSADIGE_outDischarge_DESCRIPTION = "The superficial discharge for every basin id.";
     public static final String OMSADIGE_outSubdischarge_DESCRIPTION = "The sub-superficial discharge for every basin id.";
 
-    public static final String OMSKERNELDENSITY_DESCRIPTION = "Kernel Density Estimator (based on the Jaitools project).";
-    public static final String OMSKERNELDENSITY_DOCUMENTATION = "";
-    public static final String OMSKERNELDENSITY_KEYWORDS = "Kernel Density, Raster";
-    public static final String OMSKERNELDENSITY_LABEL = "Raster Processing";
-    public static final String OMSKERNELDENSITY_NAME = "kerneldenisty";
-    public static final int OMSKERNELDENSITY_STATUS = 5;
-    public static final String OMSKERNELDENSITY_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSKERNELDENSITY_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSKERNELDENSITY_AUTHORCONTACTS = "http://jaitools.org, www.hydrologis.com";
-    public static final String OMSKERNELDENSITY_inMap_DESCRIPTION = "The input map.";
-    public static final String OMSKERNELDENSITY_pKernel_DESCRIPTION = "The kernel to use.";
-    public static final String OMSKERNELDENSITY_pRadius_DESCRIPTION = "The kernel radius to use in cells (default = 10).";
-    public static final String OMSKERNELDENSITY_doConstant_DESCRIPTION = "Use a constant value for the existing input map values instead of the real map value (default = false).";
-    public static final String OMSKERNELDENSITY_outDensity_DESCRIPTION = "The kernel density estimation.";
-
     public static final String OMSSTRAHLERRATIOS_DESCRIPTION = "Calculates the OmsStrahler ratios.";
     public static final String OMSSTRAHLERRATIOS_DOCUMENTATION = "";
     public static final String OMSSTRAHLERRATIOS_KEYWORDS = "Network, OmsStrahler";

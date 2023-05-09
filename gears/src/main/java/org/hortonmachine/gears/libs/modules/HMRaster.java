@@ -22,6 +22,7 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.WritableRandomIter;
@@ -61,8 +62,12 @@ public class HMRaster implements AutoCloseable {
      */
     private HMRaster countRaster = null;
 
-    public static interface RasterProcessor {
+    public static interface RasterCellProcessor {
         void processCell( int col, int row, double value, int cols, int rows ) throws Exception;
+    }
+
+    public static interface RasterRowProcessor {
+        void processRow( int row, int cols, int rows ) throws Exception;
     }
 
     /**
@@ -236,7 +241,7 @@ public class HMRaster implements AutoCloseable {
     public double getNovalue() {
         return novalue;
     }
-    
+
     /**
      * @return the {@link CoordinateReferenceSystem} of the raster.
      */
@@ -374,7 +379,7 @@ public class HMRaster implements AutoCloseable {
      * @param processName optional process name.
      * @param processor the processor object.
      */
-    public void process( IHMProgressMonitor pm, String processName, RasterProcessor processor ) throws Exception {
+    public void process( IHMProgressMonitor pm, String processName, RasterCellProcessor processor ) throws Exception {
         if (processName == null)
             processName = "Processing...";
         if (pm == null)
@@ -389,6 +394,33 @@ public class HMRaster implements AutoCloseable {
             }
             pm.worked(1);
         }
+        pm.done();
+    }
+
+    public void processByRow( IHMProgressMonitor pm, String processName, RasterRowProcessor processor, boolean doParallel )
+            throws Exception {
+        if (processName == null)
+            processName = "Processing...";
+        if (pm == null)
+            pm = new DummyProgressMonitor();
+        pm.beginTask(processName, rows);
+        
+        IntStream rowsStream = IntStream.range(0, rows);
+        if(doParallel) {
+            rowsStream = rowsStream.parallel();
+        }
+        IHMProgressMonitor _pm = pm;
+        rowsStream.forEach(row ->{
+            if (!_pm.isCanceled()) {
+                try {
+                    processor.processRow(row, cols, rows);
+                    _pm.worked(1);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } 
+        });
         pm.done();
     }
 
@@ -585,6 +617,8 @@ public class HMRaster implements AutoCloseable {
         private Double initialValue = null;
 
         private Integer initialIntValue = null;
+        
+        private double[][] dataMatrix = null;
 
         public HMRasterWritableBuilder setName( String name ) {
             this.name = name;
@@ -628,6 +662,11 @@ public class HMRaster implements AutoCloseable {
 
         public HMRasterWritableBuilder setInitialValue( int initialNovalue ) {
             this.initialIntValue = initialNovalue;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setData( double[][] dataMatrix) {
+            this.dataMatrix = dataMatrix;
             return this;
         }
 
@@ -691,6 +730,14 @@ public class HMRaster implements AutoCloseable {
                             null, initialValue != null ? initialValue : hmRaster.novalue);
                 }
                 hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
+                
+                if (dataMatrix!=null) {
+                    for( int r = 0; r < hmRaster.rows; r++ ) {
+                        for( int c = 0; c < hmRaster.cols; c++ ) {
+                            ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, dataMatrix[r][c]);
+                        }
+                    }
+                }
                 return hmRaster;
             }
         }
