@@ -12,6 +12,8 @@ import javax.media.jai.KernelJAI;
 import java.io.IOException;
 import java.util.stream.IntStream;
 
+import static org.hortonmachine.gears.modules.r.summary.OmsRasterSummary.getMinMax;
+
 public class OmsStructuralSimilarity extends HMModel {
 
 
@@ -63,12 +65,16 @@ public class OmsStructuralSimilarity extends HMModel {
 
             HMRaster covarianceRaster = windowCovariance(inRaster1,inRaster2,meanRaster1,meanRaster2);
 
+            //TODO: check that maps to be compared are of the same dimensions.
             int cols = meanRaster1.getCols();
             int rows = meanRaster1.getRows();
+            
+            double[] range1 = getMinMax(inMap1);
+            double[] range2 = getMinMax(inMap2);
+            double range = Math.max(range1[1],range2[1]) - Math.min(range1[0],range2[0]);
 
-            // TODO: replace 0.0 by the value range among the two comparable rasters.
-            double c1 = Math.pow(pK1 * 0.0,2);
-            double c2 = Math.pow(pK2 * 0.0,2);
+            double c1 = Math.pow(pK1 * range,2);
+            double c2 = Math.pow(pK2 * range,2);
             double c3 = 0.5*c2;
 
             HMRaster outputSSRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inMap1).build();
@@ -201,7 +207,7 @@ public class OmsStructuralSimilarity extends HMModel {
             throw new ModelsRuntimeException(errorMessage, this);
         }
 
-        return HMRaster.fromGridCoverage(outputRaster.buildCoverage());
+        return outputRaster;
     }
 
     private HMRaster windowVariance(HMRaster inRaster, HMRaster meanRaster) throws Exception {
@@ -264,7 +270,7 @@ public class OmsStructuralSimilarity extends HMModel {
             throw new ModelsRuntimeException(errorMessage, this);
         }
 
-        return HMRaster.fromGridCoverage(outputRaster.buildCoverage());
+        return outputRaster;
     }
 
 
@@ -323,7 +329,7 @@ public class OmsStructuralSimilarity extends HMModel {
             throw new ModelsRuntimeException(errorMessage, this);
         }
 
-        return HMRaster.fromGridCoverage(outputRaster.buildCoverage());
+        return outputRaster;
 
     }
 
@@ -357,7 +363,7 @@ public class OmsStructuralSimilarity extends HMModel {
         }
         return type;
     }
-    
+
     public static int getCodeForType( KernelFactory.ValueType type ) {
         switch( type ) {
             case BINARY:
