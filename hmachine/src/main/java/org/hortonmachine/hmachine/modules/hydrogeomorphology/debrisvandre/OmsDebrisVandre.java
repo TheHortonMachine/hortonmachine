@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.hmachine.modules.hydrogeomorphology.debrisvandre;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.utils.geometry.GeometryUtilities.distance3d;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSDEBRISVANDRE_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSDEBRISVANDRE_AUTHORNAMES;
@@ -41,15 +40,37 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSDEBRISVANDRE_out
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSDEBRISVANDRE_pDistance_DESCRIPTION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSDEBRISVANDRE_pMode_DESCRIPTION;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.StringUtilities;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -62,30 +83,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.StringUtilities;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
 
 @Description(OMSDEBRISVANDRE_DESCRIPTION)
 @Author(name = OMSDEBRISVANDRE_AUTHORNAMES, contact = OMSDEBRISVANDRE_AUTHORCONTACTS)
@@ -166,7 +163,8 @@ public class OmsDebrisVandre extends HMModel {
 
     private GeometryFactory gf = GeometryUtilities.gf();
 
-    private TreeSet<String> processedtriggersMap = new TreeSet<String>();
+//    private TreeSet<String> processedtriggersMap = new TreeSet<String>();
+    private SortedSet<String> processedtriggersSet = Collections.synchronizedSortedSet(new TreeSet<String>());
 
     private List<java.awt.Point> obstaclesSet = new ArrayList<java.awt.Point>();
     private boolean useObstacles = false;
@@ -177,47 +175,42 @@ public class OmsDebrisVandre extends HMModel {
      * If after that condition, the slope gets greater than the angle again
      * the delta elevation of the Vandre equation has to be reset to 0.
      */
-    private boolean wasBetweenSlopes = false;
+//    private boolean wasBetweenSlopes = false;
+
+    private HMRaster outSoilRaster;
+
+    private HMRaster soilRaster;
+    private HMRaster netRaster;
+    private HMRaster flowRaster;
+
+    private AtomicInteger featureIndex = new AtomicInteger();
 
     private int cols;
 
     private int rows;
 
-    private WritableRaster outSoilWR;
-
-    private WritableRandomIter outSoilIter;
-
-    private RandomIter soilIter;
-    private RandomIter netIter;
-
-    private double xRes;
-
-    private double yRes;
-
-    private WritableRandomIter flowIter;
-
     @Execute
     public void process() throws Exception {
         checkNull(inFlow, inTriggers, inSlope);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        flowRaster = HMRaster.fromGridCoverage(inFlow);
+
+        RegionMap regionMap = flowRaster.getRegionMap();
         cols = regionMap.getCols();
         rows = regionMap.getRows();
-        xRes = regionMap.getXres();
-        yRes = regionMap.getYres();
+        double xRes = regionMap.getXres();
+        double yRes = regionMap.getYres();
 
         if (inSoil != null) {
             if (inNet == null) {
                 throw new ModelsIllegalargumentException("If the soil map is supplied also the network map is needed.", this, pm);
             }
-            outSoilWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
-            outSoilIter = RandomIterFactory.createWritable(outSoilWR, null);
 
-            RenderedImage soilRI = inSoil.getRenderedImage();
-            soilIter = RandomIterFactory.create(soilRI, null);
+            outSoilRaster = new HMRaster.HMRasterWritableBuilder().setName("soil").setRegion(regionMap)
+                    .setCrs(flowRaster.getCrs()).build();
 
-            RenderedImage netRI = inNet.getRenderedImage();
-            netIter = RandomIterFactory.create(netRI, null);
+            soilRaster = HMRaster.fromGridCoverage(inSoil);
+            netRaster = HMRaster.fromGridCoverage(inNet);
         }
         switch( pMode ) {
         case 1:
@@ -244,276 +237,326 @@ public class OmsDebrisVandre extends HMModel {
             useObstacles = true;
         }
 
-        RenderedImage elevRI = inElev.getRenderedImage();
-        RandomIter elevIter = RandomIterFactory.create(elevRI, null);
+        HMRaster elevRaster = HMRaster.fromGridCoverage(inElev);
+        HMRaster triggerRaster = HMRaster.fromGridCoverage(inTriggers);
+        HMRaster slopeRaster = HMRaster.fromGridCoverage(inSlope);
 
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, false);
-        flowIter = RandomIterFactory.createWritable(flowWR, null);
+//        HMRaster flowRasterWritable = new HMRaster.HMRasterWritableBuilder().setTemplate(inFlow).setCopyValues(true).build();
 
-        RenderedImage triggerRI = inTriggers.getRenderedImage();
-        RandomIter triggerIter = RandomIterFactory.create(triggerRI, null);
+        try {
+            outPaths = new DefaultFeatureCollection();
+            outIndexedTriggers = new DefaultFeatureCollection();
 
-        RenderedImage slopeRI = inSlope.getRenderedImage();
-        RandomIter slopeIter = RandomIterFactory.create(slopeRI, null);
+            SimpleFeatureType triggersType = createTriggersType();
+            SimpleFeatureType pathsType = createPathType();
 
-        outPaths = new DefaultFeatureCollection();
-        outIndexedTriggers = new DefaultFeatureCollection();
+            /*
+             * FIXME the common paths are extracted many times, not good
+             */
+            pm.beginTask("Extracting paths...", rows);
 
-        SimpleFeatureType triggersType = createTriggersType();
-        SimpleFeatureType pathsType = createPathType();
+//            IntStream.range(0, rows).parallel().forEach(r -> {
+//                try {
+//                    calculatePaths(r, gridGeometry, elevRaster, triggerRaster, slopeRaster, triggersType, pathsType);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
 
-        int featureIndex = 0;
+            for( int r = 0; r < rows; r++ ) {
+                pm.message("Processing row "+ r + " of " + rows);
+                calculatePaths(r, gridGeometry, elevRaster, triggerRaster, slopeRaster, triggersType, pathsType);
+            }
+            pm.done();
 
-        /*
-         * FIXME the common paths are extracted many times, not good
-         */
-        pm.beginTask("Extracting paths...", cols);
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double netflowValue = flowIter.getSampleDouble(c, r, 0);
-                if (isNovalue(netflowValue)) {
+            if (inSoil != null) {
+                /*
+                 * make volume
+                 */
+                for( int r = 0; r < rows; r++ ) {
+                    for( int c = 0; c < cols; c++ ) {
+                        double value = outSoilRaster.getValue(c, r);
+                        if (outSoilRaster.isNovalue(value)) {
+                            continue;
+                        }
+                        value = value * xRes * yRes;
+                        outSoilRaster.setValue(c, r, value);
+                    }
+                }
+                outSoil = outSoilRaster.buildCoverage();
+            }
+        } finally {
+
+            elevRaster.close();
+            triggerRaster.close();
+            slopeRaster.close();
+            flowRaster.close();
+
+            if (outSoilRaster != null)
+                outSoilRaster.close();
+            if (soilRaster != null)
+                soilRaster = HMRaster.fromGridCoverage(inSoil);
+            if (netRaster != null)
+                netRaster = HMRaster.fromGridCoverage(inNet);
+        }
+    }
+    
+    private synchronized double getFlow(int col, int row) {
+        return flowRaster.getValue(col, row);
+    }
+
+    private void calculatePaths( int row, GridGeometry2D gridGeometry, HMRaster elevRaster, HMRaster triggerRaster,
+            HMRaster slopeRaster, SimpleFeatureType triggersType, SimpleFeatureType pathsType ) throws IOException {
+        for( int c = 0; c < cols; c++ ) {
+//            if(c % 100 == 0)
+//                pm.message("ROW: "+ row + "COL: " + c);
+            double netflowValue = getFlow(c, row);
+            if (flowRaster.isNovalue(netflowValue)) {
+                continue;
+            }
+            
+            boolean isSourcePixel = ModelsEngine.isSourcePixel(flowRaster, c, row);
+            if (isSourcePixel) {
+                // pm.message("NEW SOURCE: " + c + "/" + r);
+                // start navigating down until you find a debris trigger
+                int[] flowDirColRow = new int[]{c, row};
+                if (!moveToNextTriggerpoint(triggerRaster, flowDirColRow)) {
+                    // we reached the exit
                     continue;
                 }
-                if (ModelsEngine.isSourcePixel(flowIter, c, r)) {
-                    // pm.message("NEW SOURCE: " + c + "/" + r);
-                    // start navigating down until you find a debris trigger
-                    int[] flowDirColRow = new int[]{c, r};
-                    if (!moveToNextTriggerpoint(triggerIter, flowIter, flowDirColRow)) {
-                        // we reached the exit
-                        continue;
+
+                int triggerCol = flowDirColRow[0];
+                int triggerRow = flowDirColRow[1];
+
+                /*
+                 * analyze for this trigger, after that, continue with the next one down
+                 */
+                double flowValue = 0;
+                int extIter = 0;
+                int maxExtIter = rows * cols;
+                do {
+                    if(extIter++ > maxExtIter) {
+                        throw new ModelsIllegalargumentException(
+                                "Unable to converge, lost in a loop. There might be problems in the consistency of your data.", this,
+                                pm);   
                     }
-
-                    int triggerCol = flowDirColRow[0];
-                    int triggerRow = flowDirColRow[1];
-
                     /*
-                     * analyze for this trigger, after that, continue with the next one down
+                     * check if this trigger was already processed, wich can happen if the same path is run
+                     * after a confluence
                      */
-                    double flowValue = 0;
-                    do {
+                    String triggerId = StringUtilities.joinStrings(null, String.valueOf(triggerCol), "_",
+                            String.valueOf(triggerRow));
+                    if (processedtriggersSet.add(triggerId)) {
+                        // trigger point has never been touched, process it
+
+                        // pm.message(StringUtilities.joinStrings(null, "TRIGGER: ",
+                        // String.valueOf(triggerCol), "/",
+                        // String.valueOf(triggerRow)));
+                        List<Coordinate> pathCoordinates = new ArrayList<Coordinate>();
                         /*
-                         * check if this trigger was already processed, wich can happen if the same path is run
-                         * after a confluence
+                         * the pathCondition defines if the current point (pathCoordinates)
+                         * contributes mass to the defined path. 
                          */
-                        String triggerId = StringUtilities.joinStrings(null, String.valueOf(triggerCol), "_",
-                                String.valueOf(triggerRow));
-                        if (processedtriggersMap.add(triggerId)) {
-                            // trigger point has never been touched, process it
+                        List<Boolean> isBetweenSlopesCondition = new ArrayList<Boolean>();
+                        Coordinate triggerCoord = CoverageUtilities.coordinateFromColRow(flowDirColRow[0], flowDirColRow[1],
+                                gridGeometry);
+                        double elevationValue = elevRaster.getValue(flowDirColRow[0], flowDirColRow[1]);
+                        flowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
+                        triggerCoord.z = elevationValue;
+                        pathCoordinates.add(triggerCoord);
+                        isBetweenSlopesCondition.add(false);
 
-                            // pm.message(StringUtilities.joinStrings(null, "TRIGGER: ",
-                            // String.valueOf(triggerCol), "/",
-                            // String.valueOf(triggerRow)));
-                            List<Coordinate> pathCoordinates = new ArrayList<Coordinate>();
-                            /*
-                             * the pathCondition defines if the current point (pathCoordinates)
-                             * contributes mass to the defined path. 
-                             */
-                            List<Boolean> isBetweenSlopesCondition = new ArrayList<Boolean>();
-                            Coordinate triggerCoord = CoverageUtilities.coordinateFromColRow(flowDirColRow[0], flowDirColRow[1],
-                                    gridGeometry);
-                            double elevationValue = elevIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                            flowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                            triggerCoord.z = elevationValue;
-                            pathCoordinates.add(triggerCoord);
-                            isBetweenSlopesCondition.add(false);
+                        /*
+                         * found a trigger, start recording and analizing, once created 
+                         */
+                        double slopeValue;
+                        double triggerValue;
 
-                            /*
-                             * found a trigger, start recording and analizing, once created 
-                             */
-                            double slopeValue;
-                            double triggerValue;
+                        double lengthWithDegreeLessThanTogglePoint = 0;
+                        double deltaElevWithDegreeLessThanTogglePoint = 0;
+                        boolean wasBetweenSlopes = false;
+                        boolean isMoving = true; // in the triggerpoint we assume it is
+                                                 // moving
+                        
+                        int maxIter = rows*cols; // exaggerate
+                        int iter = 0;
+                        while( isMoving ) {
+                            if(iter++ > maxIter) {
+                                throw new ModelsIllegalargumentException(
+                                        "Unable to converge, lost in a loop. There might be problems in the consistency of your data.", this,
+                                        pm);   
+                            }
+                            // go one down
+                            if (!ModelsEngine.go_downstream(flowDirColRow, flowValue))
+                                throw new ModelsIllegalargumentException(
+                                        "Unable to go downstream. There might be problems in the consistency of your data.", this,
+                                        pm);
 
-                            double lengthWithDegreeLessThanTogglePoint = 0;
-                            double deltaElevWithDegreeLessThanTogglePoint = 0;
-                            wasBetweenSlopes = false;
-                            boolean isMoving = true; // in the triggerpoint we assume it is moving
-                            while( isMoving ) {
-                                // go one down
-                                if (!ModelsEngine.go_downstream(flowDirColRow, flowValue))
-                                    throw new ModelsIllegalargumentException(
-                                            "Unable to go downstream. There might be problems in the consistency of your data.",
-                                            this, pm);
-
-                                if (useObstacles) {
-                                    /*
-                                     * if we land on a point in which an obstacle stops the path, 
-                                     * add the point and stop the path geometry.
-                                     */
-                                    java.awt.Point currentPoint = new java.awt.Point(flowDirColRow[0], flowDirColRow[1]);
-                                    if (obstaclesSet.contains(currentPoint)) {
-                                        pm.message("Found obstacle in " + currentPoint.x + "/" + currentPoint.y);
-                                        // we are passing an obstacle
-                                        break;
-                                    }
-                                }
-
-                                elevationValue = elevIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                                slopeValue = slopeIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                                triggerValue = triggerIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                                flowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                                if (flowValue == 10) {
+                            if (useObstacles) {
+                                /*
+                                 * if we land on a point in which an obstacle stops the path, 
+                                 * add the point and stop the path geometry.
+                                 */
+                                java.awt.Point currentPoint = new java.awt.Point(flowDirColRow[0], flowDirColRow[1]);
+                                if (obstaclesSet.contains(currentPoint)) {
+                                    pm.message("Found obstacle in " + currentPoint.x + "/" + currentPoint.y);
+                                    // we are passing an obstacle
                                     break;
                                 }
+                            }
 
-                                // pm.message("---> " + flowDirColRow[0] + "/" + flowDirColRow[1]);
+                            elevationValue = elevRaster.getValue(flowDirColRow[0], flowDirColRow[1]);
+                            slopeValue = slopeRaster.getValue(flowDirColRow[0], flowDirColRow[1]);
+                            triggerValue = triggerRaster.getValue(flowDirColRow[0], flowDirColRow[1]);
+                            flowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
+                            if (flowValue == 10) {
+                                break;
+                            }
 
-                                /*
-                                 * add the current coordinate to the path
-                                 */
-                                Coordinate tmpCoord = CoverageUtilities.coordinateFromColRow(flowDirColRow[0], flowDirColRow[1],
-                                        gridGeometry);
-                                tmpCoord.z = elevationValue;
-                                pathCoordinates.add(tmpCoord);
-                                int size = pathCoordinates.size();
-                                Coordinate c1 = pathCoordinates.get(size - 1);
-                                Coordinate c2 = pathCoordinates.get(size - 2);
-
-                                // length is calculated when slowing down starts (between slopes)
-                                if (wasBetweenSlopes) {
-                                    lengthWithDegreeLessThanTogglePoint = lengthWithDegreeLessThanTogglePoint
-                                            + distance3d(c1, c2, null);
-                                    isBetweenSlopesCondition.add(true);
-                                    // when between slopes, delta elev is constant
-                                } else {
-                                    deltaElevWithDegreeLessThanTogglePoint = deltaElevWithDegreeLessThanTogglePoint
-                                            + Math.abs(c1.z - c2.z);
-                                    isBetweenSlopesCondition.add(false);
-                                }
-
-                                /*
-                                 * and check if we will move on
-                                 */
-                                if (!isNovalue(triggerValue) || slopeValue >= toggleDegrees) {
-                                    /*
-                                     * in the cases in which we:
-                                     *  - have a trigger value
-                                     *  - the slope is major than the toggleDegrees
-                                     *  
-                                     *  => we move
-                                     */
-                                    isMoving = true;
-                                    if (wasBetweenSlopes) {
-                                        /*
-                                         * if we came into this condition from being between the slopes
-                                         * we have to reset the elevation delta used by Vandre, since
-                                         * the debris will get speed again. 
-                                         */
-                                        deltaElevWithDegreeLessThanTogglePoint = 0.0;
-                                        lengthWithDegreeLessThanTogglePoint = 0.0;
-                                        wasBetweenSlopes = false;
-                                        // pm.message("--> RE-ENTERING IN STEEP PART AFTER BETWEEN
-                                        // SLOPES CONDITION");
-                                    }
-                                } else if (slopeValue <= minDegrees) {
-                                    /*
-                                     * supposed to be stopped if below minDegrees. We add the coordinate
-                                     * which will be the last.
-                                     */
-                                    isMoving = false;
-                                } else if (slopeValue > minDegrees && slopeValue < toggleDegrees) {
-                                    /*
-                                     * in this case we need to check on the base of the Vandre equation 
-                                     * with the chosen criterias
-                                     */
-                                    double w = alphaVandre * deltaElevWithDegreeLessThanTogglePoint;
-                                    if (lengthWithDegreeLessThanTogglePoint > w) {
-                                        // debris stops
-                                        isMoving = false;
-                                    } else {
-                                        isMoving = true;
-                                        wasBetweenSlopes = true;
-                                    }
-                                } else if (isNovalue(elevationValue) || isNovalue(slopeValue) || isNovalue(triggerValue)
-                                        || isNovalue(flowValue)) {
-                                    if (isNovalue(elevationValue)) {
-                                        pm.errorMessage("Found an elevation novalue along the way");
-                                    }
-                                    if (isNovalue(slopeValue)) {
-                                        pm.errorMessage("Found a slope novalue along the way");
-                                    }
-                                    if (isNovalue(triggerValue)) {
-                                        pm.errorMessage("Found a trigger novalue along the way");
-                                    }
-                                    if (isNovalue(flowValue)) {
-                                        pm.errorMessage("Found a flow novalue along the way");
-                                    }
-                                    isMoving = false;
-                                } else {
-                                    throw new RuntimeException();
-                                }
-                            } // while isMoving
+                            // pm.message("---> " + flowDirColRow[0] + "/" +
+                            // flowDirColRow[1]);
 
                             /*
-                             * create the trigger and linked path geometry 
+                             * add the current coordinate to the path
                              */
-                            if (pathCoordinates.size() > 2) {
-                                Point triggerPoint = gf.createPoint(pathCoordinates.get(0));
-                                LineString pathLine = gf.createLineString(pathCoordinates.toArray(new Coordinate[0]));
+                            Coordinate tmpCoord = CoverageUtilities.coordinateFromColRow(flowDirColRow[0], flowDirColRow[1],
+                                    gridGeometry);
+                            tmpCoord.z = elevationValue;
+                            pathCoordinates.add(tmpCoord);
+                            int size = pathCoordinates.size();
+                            Coordinate c1 = pathCoordinates.get(size - 1);
+                            Coordinate c2 = pathCoordinates.get(size - 2);
 
-                                if (inSoil != null) {
-                                    cumulateSoil(pathCoordinates, isBetweenSlopesCondition);
+                            // length is calculated when slowing down starts (between
+                            // slopes)
+                            if (wasBetweenSlopes) {
+                                lengthWithDegreeLessThanTogglePoint = lengthWithDegreeLessThanTogglePoint
+                                        + distance3d(c1, c2, null);
+                                isBetweenSlopesCondition.add(true);
+                                // when between slopes, delta elev is constant
+                            } else {
+                                deltaElevWithDegreeLessThanTogglePoint = deltaElevWithDegreeLessThanTogglePoint
+                                        + Math.abs(c1.z - c2.z);
+                                isBetweenSlopesCondition.add(false);
+                            }
+
+                            /*
+                             * and check if we will move on
+                             */
+                            if (!triggerRaster.isNovalue(triggerValue) || slopeValue >= toggleDegrees) {
+                                /*
+                                 * in the cases in which we:
+                                 *  - have a trigger value
+                                 *  - the slope is major than the toggleDegrees
+                                 *  
+                                 *  => we move
+                                 */
+                                isMoving = true;
+                                if (wasBetweenSlopes) {
+                                    /*
+                                     * if we came into this condition from being between the slopes
+                                     * we have to reset the elevation delta used by Vandre, since
+                                     * the debris will get speed again. 
+                                     */
+                                    deltaElevWithDegreeLessThanTogglePoint = 0.0;
+                                    lengthWithDegreeLessThanTogglePoint = 0.0;
+                                    wasBetweenSlopes = false;
+                                    // pm.message("--> RE-ENTERING IN STEEP PART AFTER
+                                    // BETWEEN
+                                    // SLOPES CONDITION");
                                 }
+                            } else if (slopeValue <= minDegrees) {
+                                /*
+                                 * supposed to be stopped if below minDegrees. We add the coordinate
+                                 * which will be the last.
+                                 */
+                                isMoving = false;
+                            } else if (slopeValue > minDegrees && slopeValue < toggleDegrees) {
+                                /*
+                                 * in this case we need to check on the base of the Vandre equation 
+                                 * with the chosen criterias
+                                 */
+                                double w = alphaVandre * deltaElevWithDegreeLessThanTogglePoint;
+                                if (lengthWithDegreeLessThanTogglePoint > w) {
+                                    // debris stops
+                                    isMoving = false;
+                                } else {
+                                    isMoving = true;
+                                    wasBetweenSlopes = true;
+                                }
+                            } else if (elevRaster.isNovalue(elevationValue) || slopeRaster.isNovalue(slopeValue)
+                                    || triggerRaster.isNovalue(triggerValue) || flowRaster.isNovalue(flowValue)) {
+                                if (elevRaster.isNovalue(elevationValue)) {
+                                    pm.errorMessage("Found an elevation novalue along the way");
+                                }
+                                if (slopeRaster.isNovalue(slopeValue)) {
+                                    pm.errorMessage("Found a slope novalue along the way");
+                                }
+                                if (triggerRaster.isNovalue(triggerValue)) {
+                                    pm.errorMessage("Found a trigger novalue along the way");
+                                }
+                                if (flowRaster.isNovalue(flowValue)) {
+                                    pm.errorMessage("Found a flow novalue along the way");
+                                }
+                                isMoving = false;
+                            } else {
+                                throw new RuntimeException();
+                            }
+                        } // while isMoving
 
-                                int id = featureIndex;
+                        /*
+                         * create the trigger and linked path geometry 
+                         */
+                        if (pathCoordinates.size() > 2) {
+                            Point triggerPoint = gf.createPoint(pathCoordinates.get(0));
+                            LineString pathLine = gf.createLineString(pathCoordinates.toArray(new Coordinate[0]));
 
+                            if (inSoil != null) {
+                                cumulateSoil(pathCoordinates, isBetweenSlopesCondition);
+                            }
+
+                            int id = featureIndex.getAndIncrement();
+
+                            synchronized (outPaths) {
                                 SimpleFeatureBuilder builder = new SimpleFeatureBuilder(pathsType);
                                 Object[] values = new Object[]{pathLine, id};
                                 builder.addAll(values);
                                 SimpleFeature pathFeature = builder.buildFeature(null);
                                 ((DefaultFeatureCollection) outPaths).add(pathFeature);
+                            }
 
-                                builder = new SimpleFeatureBuilder(triggersType);
-                                values = new Object[]{triggerPoint, id};
+                            synchronized (outIndexedTriggers) {
+                                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(triggersType);
+                                Object[] values = new Object[]{triggerPoint, id};
                                 builder.addAll(values);
                                 SimpleFeature triggerFeature = builder.buildFeature(null);
                                 ((DefaultFeatureCollection) outIndexedTriggers).add(triggerFeature);
-
-                                featureIndex++;
                             }
 
                         }
 
-                        /*
-                         * we have to go back and start again from after the trigger that 
-                         * created the previous calculus 
-                         */
-                        flowDirColRow[0] = triggerCol;
-                        flowDirColRow[1] = triggerRow;
-                        // search for the next trigger
-                        if (!moveToNextTriggerpoint(triggerIter, flowIter, flowDirColRow)) {
-                            // we reached the exit
-                            break;
-                        }
-                        triggerCol = flowDirColRow[0];
-                        triggerRow = flowDirColRow[1];
-                        flowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                    } while( flowValue != 10 );
-
-                } // isSource
-
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        if (inSoil != null) {
-            /*
-             * make volume
-             */
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    double value = outSoilIter.getSampleDouble(c, r, 0);
-                    if (isNovalue(value)) {
-                        continue;
                     }
-                    value = value * xRes * yRes;
-                    outSoilIter.setSample(c, r, 0, value);
-                }
-            }
-            outSoil = CoverageUtilities.buildCoverage("cumulatedsoil", outSoilWR, regionMap,
-                    inSoil.getCoordinateReferenceSystem());
+
+                    /*
+                     * we have to go back and start again from after the trigger that 
+                     * created the previous calculus 
+                     */
+                    flowDirColRow[0] = triggerCol;
+                    flowDirColRow[1] = triggerRow;
+                    // search for the next trigger
+                    if (!moveToNextTriggerpoint(triggerRaster, flowDirColRow)) {
+                        // we reached the exit
+                        break;
+                    }
+                    triggerCol = flowDirColRow[0];
+                    triggerRow = flowDirColRow[1];
+                    flowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
+                } while( flowValue != 10 );
+
+            } // isSource
+
         }
+        pm.worked(1);
     }
 
     /**
@@ -522,8 +565,9 @@ public class OmsDebrisVandre extends HMModel {
      * @param pathCoordinates the coordinates of the path to be cumulated.
      * @param isBetweenSlopesCondition conditions defining in which points the path does
      *                  contribute mass.
+     * @throws IOException 
      */
-    private void cumulateSoil( List<Coordinate> pathCoordinates, List<Boolean> isBetweenSlopesCondition ) {
+    private void cumulateSoil( List<Coordinate> pathCoordinates, List<Boolean> isBetweenSlopesCondition ) throws IOException {
         // pm.beginTask("Cumulate Soil...", pathCoordinates.size());
 
         java.awt.Point point = new java.awt.Point();
@@ -537,7 +581,7 @@ public class OmsDebrisVandre extends HMModel {
         for( int i = 0; i < pathCoordinates.size(); i++ ) {
             Coordinate coordinate = pathCoordinates.get(i);
             CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, point);
-            double net = netIter.getSampleDouble(point.x, point.y, 0);
+            double net = netRaster.getValue(point.x, point.y);
 
             if (previousCoordinate != null) {
                 distance = distance + coordinate.distance(previousCoordinate);
@@ -549,7 +593,7 @@ public class OmsDebrisVandre extends HMModel {
                 return;
             }
 
-            if (!isNovalue(net)) {
+            if (!netRaster.isNovalue(net)) {
                 // if path gets into the network, it has to be considered
                 break;
             }
@@ -565,32 +609,32 @@ public class OmsDebrisVandre extends HMModel {
 
             boolean isBetweenSlopes = isBetweenSlopesCondition.get(i);
 
-            double soil = soilIter.getSampleDouble(point.x, point.y, 0);
-            if (isNovalue(soil)) {
+            double soil = soilRaster.getValue(point.x, point.y);
+            if (soilRaster.isNovalue(soil)) {
                 throw new ModelsIllegalargumentException("The soil map needs to cover the whole paths.", this, pm);
             }
-            double net = netIter.getSampleDouble(point.x, point.y, 0);
-            if (!isNovalue(net)) {
+            double net = netRaster.getValue(point.x, point.y);
+            if (!netRaster.isNovalue(net)) {
                 isBetweenSlopes = true;
             }
 
-            double cumulated = outSoilIter.getSampleDouble(point.x, point.y, 0);
+            double cumulated = outSoilRaster.getValue(point.x, point.y);
 
             if (isBetweenSlopes) {
-                if (isNovalue(cumulated)) {
-                    outSoilIter.setSample(point.x, point.y, 0, previousCumulated);
+                if (outSoilRaster.isNovalue(cumulated)) {
+                    outSoilRaster.setValue(point.x, point.y, previousCumulated);
                 } else {
                     double newCumulated = cumulated + previousCumulated;
-                    outSoilIter.setSample(point.x, point.y, 0, newCumulated);
+                    outSoilRaster.setValue(point.x, point.y, newCumulated);
                 }
             } else {
-                if (isNovalue(cumulated)) {
+                if (outSoilRaster.isNovalue(cumulated)) {
                     double newCumulated = soil + previousCumulated;
-                    outSoilIter.setSample(point.x, point.y, 0, newCumulated);
+                    outSoilRaster.setValue(point.x, point.y, newCumulated);
                     previousCumulated = newCumulated;
                 } else {
                     double newCumulated = cumulated + previousCumulated;
-                    outSoilIter.setSample(point.x, point.y, 0, newCumulated);
+                    outSoilRaster.setValue(point.x, point.y, newCumulated);
                 }
             }
 
@@ -602,28 +646,28 @@ public class OmsDebrisVandre extends HMModel {
 
             int[] flowDirColRow = new int[]{point.x, point.y};
 
-            double net = netIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-            double tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
+            double net = netRaster.getValue(flowDirColRow[0], flowDirColRow[1]);
+            double tmpFlowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
 
             // handle the last point of the path only if it was inside the net...
-            if (!isNovalue(net)) {
+            if (!netRaster.isNovalue(net)) {
                 // first move to the next point
                 if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
                     throw new ModelsIllegalargumentException(
                             "Unable to go downstream [col/row]: " + flowDirColRow[0] + "/" + flowDirColRow[1], this, pm);
-                tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                while( !isNovalue(tmpFlowValue) && tmpFlowValue != 10 ) {
-                    double cumulated = outSoilIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
-                    if (isNovalue(cumulated)) {
+                tmpFlowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
+                while( !flowRaster.isNovalue(tmpFlowValue) && tmpFlowValue != 10 ) {
+                    double cumulated = outSoilRaster.getValue(flowDirColRow[0], flowDirColRow[1]);
+                    if (outSoilRaster.isNovalue(cumulated)) {
                         cumulated = 0.0;
                     }
                     double newCumulated = cumulated + previousCumulated;
-                    outSoilIter.setSample(flowDirColRow[0], flowDirColRow[1], 0, newCumulated);
+                    outSoilRaster.setValue(flowDirColRow[0], flowDirColRow[1], newCumulated);
 
                     if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
                         throw new ModelsIllegalargumentException(
                                 "Unable to go downstream [col/row]: " + flowDirColRow[0] + "/" + flowDirColRow[1], this, pm);
-                    tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
+                    tmpFlowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
                 }
 
             }
@@ -634,20 +678,20 @@ public class OmsDebrisVandre extends HMModel {
     /**
      * Moves the flowDirColRow variable to the next trigger point.
      * 
-     * @param triggerIter
+     * @param triggerRaster
      * @param flowDirColRow
      * @return <code>true</code> if a new trigger was found, <code>false</code> if the exit was reached.
      */
-    private boolean moveToNextTriggerpoint( RandomIter triggerIter, RandomIter flowIter, int[] flowDirColRow ) {
-        double tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
+    private boolean moveToNextTriggerpoint( HMRaster triggerRaster, int[] flowDirColRow ) {
+        double tmpFlowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
         if (tmpFlowValue == 10) {
             return false;
         }
         if (!ModelsEngine.go_downstream(flowDirColRow, tmpFlowValue))
             throw new ModelsIllegalargumentException("Unable to go downstream: " + flowDirColRow[0] + "/" + flowDirColRow[1],
                     this, pm);
-        while( isNovalue(triggerIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0)) ) {
-            tmpFlowValue = flowIter.getSampleDouble(flowDirColRow[0], flowDirColRow[1], 0);
+        while( triggerRaster.isNovalue(triggerRaster.getValue(flowDirColRow[0], flowDirColRow[1])) ) {
+            tmpFlowValue = getFlow(flowDirColRow[0], flowDirColRow[1]);
             if (tmpFlowValue == 10) {
                 return false;
             }
