@@ -1,7 +1,10 @@
 package org.hortonmachine.gears.io.stac;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +22,7 @@ import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -42,8 +46,20 @@ public class HMStacItem {
 
     HMStacItem( SimpleFeature feature ) throws Exception {
         this.feature = feature;
-        Map<String, JsonNode> top = (Map<String, JsonNode>) feature.getUserData().get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
-        id = top.get("id").textValue();
+        Map<Object, Object> userData = feature.getUserData();
+        if (userData != null) {
+            Map<String, JsonNode> top = (Map<String, JsonNode>) userData.get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
+            if (top != null) {
+                JsonNode idNode = top.get("id");
+                if (idNode != null) {
+                    id = idNode.textValue();
+                }
+            }
+        }
+        if (id == null) {
+            String fid = feature.getID();
+            id = fid;
+        }
 
         String dateCetStr = feature.getAttribute("datetime").toString();
         if (dateCetStr != null) {
@@ -82,15 +98,22 @@ public class HMStacItem {
 
     public List<HMStacAsset> getAssets() {
         List<HMStacAsset> assetsList = new ArrayList<>();
-        Map<String, JsonNode> top = (Map<String, JsonNode>) feature.getUserData().get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
-        ObjectNode assets = (ObjectNode) top.get("assets");
+        Map<Object, Object> userData = feature.getUserData();
+        if (userData != null) {
+            Map<String, JsonNode> top = (Map<String, JsonNode>) userData.get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
+            if (top != null) {
+                ObjectNode assets = (ObjectNode) top.get("assets");
 
-        Iterator<JsonNode> assetsIterator = assets.elements();
-        while( assetsIterator.hasNext() ) {
-            JsonNode assetNode = assetsIterator.next();
-            HMStacAsset hmAsset = new HMStacAsset(assetNode);
-            if (hmAsset.isValid()) {
-                assetsList.add(hmAsset);
+                if (assets != null) {
+                    Iterator<JsonNode> assetsIterator = assets.elements();
+                    while( assetsIterator.hasNext() ) {
+                        JsonNode assetNode = assetsIterator.next();
+                        HMStacAsset hmAsset = new HMStacAsset(assetNode);
+                        if (hmAsset.isValid()) {
+                            assetsList.add(hmAsset);
+                        }
+                    }
+                }
             }
         }
         return assetsList;
@@ -127,6 +150,15 @@ public class HMStacItem {
             return name + " = " + attribute.toString() + "\n";
         }
         return "";
+    }
+
+    public static HashMap<String, Object> getAttributesMap( SimpleFeature f ) {
+        HashMap<String, Object> map = new HashMap<>();
+        Collection<Property> properties = f.getProperties();
+        for( Property property : properties ) {
+            map.put(property.getName().getLocalPart(), property.getValue());
+        }
+        return map;
     }
 
 }

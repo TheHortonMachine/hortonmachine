@@ -136,8 +136,10 @@ public class HMStacCollection {
         while( iterator.hasNext() ) {
             SimpleFeature f = iterator.next();
             HMStacItem item = new HMStacItem(f);
-            if (item.getEpsg() != null) {
+            if (item.getId() != null && item.getEpsg() != null) {
                 stacItems.add(item);
+            } else if (item.getId() == null) {
+                pm.errorMessage("Unable to get id of item: " + item.toString());
             }
             pm.worked(1);
         }
