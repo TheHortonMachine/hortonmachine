@@ -129,16 +129,10 @@ public class HMStacCollection {
         search.setCollections(Arrays.asList(getId()));
 
         SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
-        int size = fc.size();
         SimpleFeatureIterator iterator = fc.features();
-        // disabled because the size of the collection is not the
-        // actual size of the items retrieved on demand
-        // pm.beginTask("Extracting items...", size);
+        pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
-        int count = 0;
-        int lastCount = 0;
         try {
-            pm.message("Extracting STAC items...");
             while( iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
                 HMStacItem item = new HMStacItem(f);
@@ -147,20 +141,11 @@ public class HMStacCollection {
                 } else if (item.getId() == null) {
                     pm.errorMessage("Unable to get id of item: " + item.toString());
                 }
-                // pm.worked(1);
-                count++;
-                if (count % 10 == 0) {
-                    pm.message("..." + (count));
-                    lastCount = count;
-                }
+                pm.worked(1);
             }
         } finally {
             iterator.close();
         }
-        if (count != lastCount) {
-            pm.message("..." + (count));
-        }
-        // pm.done();
         pm.message("Done.");
         return stacItems;
     }

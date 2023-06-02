@@ -23,6 +23,10 @@ import java.io.PrintStream;
 /**
  * A progress monitor that sends progress to log.
  * 
+ * <p>
+ * If size is set to -1, instead of printing percentages from 0-100,
+ * the count of teh items is given in 10 intervals.
+ * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class LogProgressMonitor implements IHMProgressMonitor {
