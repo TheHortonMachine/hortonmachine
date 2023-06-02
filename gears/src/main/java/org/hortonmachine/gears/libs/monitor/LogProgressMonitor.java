@@ -118,14 +118,15 @@ public class LogProgressMonitor implements IHMProgressMonitor {
         } else {
             // calculate %
             int percentage = (int) (100 * (runningWork / (float) totalWork));
-            if (percentage % 10 == 0) {
-                String msg = percentage + PERC;
+            int nearestTen = (int) Math.round(percentage/10.0) * 10;
+            if (percentage >= nearestTen) {
+                String msg = nearestTen + PERC;
                 if (prefix != null) {
                     msg = prefix + msg;
                 }
-                if (percentage != lastPercentage) {
+                if (nearestTen != lastPercentage) {
                     outStream.println(msg);
-                    lastPercentage = percentage;
+                    lastPercentage = nearestTen;
                 }
             }
         }

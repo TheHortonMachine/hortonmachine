@@ -131,20 +131,37 @@ public class HMStacCollection {
         SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
         int size = fc.size();
         SimpleFeatureIterator iterator = fc.features();
-        pm.beginTask("Extracting items...", size);
+        // disabled because the size of the collection is not the
+        // actual size of the items retrieved on demand
+        // pm.beginTask("Extracting items...", size);
         List<HMStacItem> stacItems = new ArrayList<>();
-        while( iterator.hasNext() ) {
-            SimpleFeature f = iterator.next();
-            HMStacItem item = new HMStacItem(f);
-            if (item.getId() != null && item.getEpsg() != null) {
-                stacItems.add(item);
-            } else if (item.getId() == null) {
-                pm.errorMessage("Unable to get id of item: " + item.toString());
+        int count = 0;
+        int lastCount = 0;
+        try {
+            pm.message("Extracting STAC items...");
+            while( iterator.hasNext() ) {
+                SimpleFeature f = iterator.next();
+                HMStacItem item = new HMStacItem(f);
+                if (item.getId() != null && item.getEpsg() != null) {
+                    stacItems.add(item);
+                } else if (item.getId() == null) {
+                    pm.errorMessage("Unable to get id of item: " + item.toString());
+                }
+                // pm.worked(1);
+                count++;
+                if (count % 10 == 0) {
+                    pm.message("..." + (count));
+                    lastCount = count;
+                }
             }
-            pm.worked(1);
+        } finally {
+            iterator.close();
         }
-        iterator.close();
-        pm.done();
+        if (count != lastCount) {
+            pm.message("..." + (count));
+        }
+        // pm.done();
+        pm.message("Done.");
         return stacItems;
     }
 
