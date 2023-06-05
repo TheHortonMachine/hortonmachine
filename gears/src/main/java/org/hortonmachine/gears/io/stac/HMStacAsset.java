@@ -41,33 +41,35 @@ public class HMStacAsset {
             type = typeNode.textValue();
             // we only check cloud optimized datasets here
             JsonNode titleNode = assetNode.get("title");
+            title = "undefined title";
             if (titleNode != null) {
                 title = titleNode.textValue();
-                if (type.toLowerCase().contains("profile=cloud-optimized")) {
-                    JsonNode rasterBandNode = assetNode.get("raster:bands");
-                    if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
-                        assetUrl = assetNode.get("href").textValue();
+            }
+            if (type.toLowerCase().contains("profile=cloud-optimized")) {
+                JsonNode rasterBandNode = assetNode.get("raster:bands");
+                if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
+                    assetUrl = assetNode.get("href").textValue();
 
-                        Iterator<JsonNode> rbIterator = rasterBandNode.elements();
-                        while( rbIterator.hasNext() ) {
-                            JsonNode rbNode = rbIterator.next();
-                            JsonNode noValueNode = rbNode.get("nodata");
-                            if (noValueNode != null) {
-                                noValue = noValueNode.asDouble();
-                            }
-                            JsonNode resolNode = rbNode.get("spatial_resolution");
-                            if (resolNode != null) {
-                                resolution = resolNode.asDouble();
-                            }
+                    Iterator<JsonNode> rbIterator = rasterBandNode.elements();
+                    while( rbIterator.hasNext() ) {
+                        JsonNode rbNode = rbIterator.next();
+                        JsonNode noValueNode = rbNode.get("nodata");
+                        if (noValueNode != null) {
+                            noValue = noValueNode.asDouble();
                         }
-                    } else {
-                        isValid = false;
-                        nonValidReason = "raster bands metadata missing";
+                        JsonNode resolNode = rbNode.get("spatial_resolution");
+                        if (resolNode != null) {
+                            resolution = resolNode.asDouble();
+                        }
                     }
                 } else {
                     isValid = false;
-                    nonValidReason = "title information not available";
+                    nonValidReason = "raster bands metadata missing";
                 }
+//                } else {
+//                    isValid = false;
+//                    nonValidReason = "title information not available";
+//                }
             } else {
                 isValid = false;
                 nonValidReason = "not a COG";
@@ -76,6 +78,19 @@ public class HMStacAsset {
             nonValidReason = "type information not available";
             isValid = false;
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("title = " + title).append("\n");
+        sb.append("type = " + type).append("\n");
+        sb.append("url = " + assetUrl).append("\n");
+        sb.append("isValid = " + isValid).append("\n");
+        if (!isValid) {
+            sb.append("nonValidReason = " + nonValidReason).append("\n");
+        }
+        return sb.toString();
     }
 
     /**
