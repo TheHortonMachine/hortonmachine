@@ -29,6 +29,7 @@ import javax.media.jai.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -404,13 +405,13 @@ public class HMRaster implements AutoCloseable {
         if (pm == null)
             pm = new DummyProgressMonitor();
         pm.beginTask(processName, rows);
-        
+
         IntStream rowsStream = IntStream.range(0, rows);
-        if(doParallel) {
+        if (doParallel) {
             rowsStream = rowsStream.parallel();
         }
         IHMProgressMonitor _pm = pm;
-        rowsStream.forEach(row ->{
+        rowsStream.forEach(row -> {
             if (!_pm.isCanceled()) {
                 try {
                     processor.processRow(row, cols, rows);
@@ -419,7 +420,7 @@ public class HMRaster implements AutoCloseable {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-            } 
+            }
         });
         pm.done();
     }
@@ -451,13 +452,27 @@ public class HMRaster implements AutoCloseable {
     /**
      * Writes the values of the coverage into the current raster, summing multiple occurrences.
      * 
+     * <p> In this case a bit matrix that tracks how many values per pixels are recorded is created 
+     * and accessible through {@link #getCountRaster()}. 
+     * Sine the values are summed, the number is needed for averaging.
+     * 
      * @param pm optional Process monitor.
      * @param otherRaster the raster to map over the current raster.
-     * @param valuesCountRaster a bit matrix that tracks how many values per pixels are recorded (they are summed, so the number is needed for averaging).
      * @throws IOException 
      */
-    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
-        mapRaster(pm, otherRaster, false);
+    public void mapRasterSum( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
+        mapRaster(pm, otherRaster, 0);
+    }
+
+    /**
+     * Writes the values of the coverage into the current raster, only where the current does not have values.
+     * 
+     * @param pm optional Process monitor.
+     * @param otherRaster the raster to map over the current raster.
+     * @throws IOException 
+     */
+    public void mapRasterSubst( IHMProgressMonitor pm, HMRaster otherRaster ) throws IOException {
+        mapRaster(pm, otherRaster, 1);
     }
 
     /**
@@ -466,11 +481,17 @@ public class HMRaster implements AutoCloseable {
      * @param pm optional Process monitor.
      * @param otherRaster the raster to map over the current raster.
      * @param valuesCountRaster a bit matrix that tracks how many values per pixels are recorded (they are summed, so the number is needed for averaging).
+     * @param mergeMode optional merge mode parameter. null/0 = sum of both, 1 = place other only in novalues
      * @throws IOException
      */
-    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster, boolean doValuesCountRaster ) throws IOException {
+    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster, Integer mergeMode ) throws IOException {
         if (pm == null)
             pm = new DummyProgressMonitor();
+
+        int _mergeMode = 0;
+        if (mergeMode != null) {
+            _mergeMode = mergeMode;
+        }
 
         RegionMap otherRegion = otherRaster.getRegionMap();
         Coordinate lowerLeft = otherRegion.getLowerLeft();
@@ -488,7 +509,7 @@ public class HMRaster implements AutoCloseable {
         if (fromRow < 0)
             fromRow = 0;
 
-        if (doValuesCountRaster && countRaster == null) {
+        if (_mergeMode == 0 && countRaster == null) {
             countRaster = new HMRasterWritableBuilder().setName("valuescount").setDoInteger(true).setRegion(regionMap).setCrs(crs)
                     .setInitialValue(0).build();
         }
@@ -500,20 +521,27 @@ public class HMRaster implements AutoCloseable {
             for( int c = fromCol; c <= toCol; c++ ) {
                 if (isContained(c, r)) {
                     Coordinate coordinate = getWorld(c, r);
-                    double value = otherRaster.getValue(coordinate);
-                    if (!otherRaster.isNovalue(value)) {
+                    double otherRasterValue = otherRaster.getValue(coordinate);
+                    if (!otherRaster.isNovalue(otherRasterValue)) {
                         if (countRaster != null) {
                             int count = countRaster.getIntValue(c, r);
                             count++;
                             countRaster.setValue(c, r, count);
                         }
-                        double newValue = getValue(c, r);
-                        if (!isNovalue(newValue)) {
-                            newValue = newValue + value;
+                        double thisRasterValue = getValue(c, r);
+
+                        boolean thisIsNovalue = isNovalue(thisRasterValue);
+                        if (thisIsNovalue) {
+                            // if the current is novalue, then use the other
+                            thisRasterValue = otherRasterValue;
+                        } else if (_mergeMode == 0) {
+                            // thisvalue is NOT novalue + mergemode is sum
+                            thisRasterValue = thisRasterValue + otherRasterValue;
                         } else {
-                            newValue = value;
+                            thisRasterValue = otherRasterValue;
+//                            throw new ModelsRuntimeException("This should never happen.", this);
                         }
-                        setValue(c, r, newValue);
+                        setValue(c, r, thisRasterValue);
                     }
                 }
             }
@@ -617,7 +645,7 @@ public class HMRaster implements AutoCloseable {
         private Double initialValue = null;
 
         private Integer initialIntValue = null;
-        
+
         private double[][] dataMatrix = null;
 
         public HMRasterWritableBuilder setName( String name ) {
@@ -665,7 +693,7 @@ public class HMRaster implements AutoCloseable {
             return this;
         }
 
-        public HMRasterWritableBuilder setData( double[][] dataMatrix) {
+        public HMRasterWritableBuilder setData( double[][] dataMatrix ) {
             this.dataMatrix = dataMatrix;
             return this;
         }
@@ -730,8 +758,8 @@ public class HMRaster implements AutoCloseable {
                             null, initialValue != null ? initialValue : hmRaster.novalue);
                 }
                 hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
-                
-                if (dataMatrix!=null) {
+
+                if (dataMatrix != null) {
                     for( int r = 0; r < hmRaster.rows; r++ ) {
                         for( int c = 0; c < hmRaster.cols; c++ ) {
                             ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, dataMatrix[r][c]);

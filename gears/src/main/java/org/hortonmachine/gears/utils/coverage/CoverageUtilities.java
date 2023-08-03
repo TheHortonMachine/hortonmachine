@@ -381,12 +381,13 @@ public class CoverageUtilities {
      * The region is cut to keep the resolution consistent.
      * @param newRasterName TODO
      */
-    public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope, String newRasterName ) throws Exception {
+    public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope, String newRasterName )
+            throws Exception {
         RegionMap regionMap = getRegionParamsFromGridCoverage(coverage);
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
-        
-        if(newRasterName==null) {
+
+        if (newRasterName == null) {
             newRasterName = "newraster";
         }
 
@@ -1531,16 +1532,21 @@ public class CoverageUtilities {
         RandomIter maskIter = RandomIterFactory.create(maskMap.getRenderedImage(), null);
         WritableRaster writableRaster = createWritableRaster(cs, rs, null, null, HMConstants.doubleNovalue);
         WritableRandomIter outIter = RandomIterFactory.createWritable(writableRaster, null);
-
-        for( int r = 0; r < rs; r++ ) {
-            for( int c = 0; c < cs; c++ ) {
-                if (!isNovalue(maskIter.getSampleDouble(c, r, 0))) {
-                    // if not nv, put the value from the valueMap in the new map
-                    double value = valuesIter.getSampleDouble(c, r, 0);
-                    if (!isNovalue(value))
-                        outIter.setSample(c, r, 0, value);
+        try {
+            for( int r = 0; r < rs; r++ ) {
+                for( int c = 0; c < cs; c++ ) {
+                    if (!isNovalue(maskIter.getSampleDouble(c, r, 0))) {
+                        // if not nv, put the value from the valueMap in the new map
+                        double value = valuesIter.getSampleDouble(c, r, 0);
+                        if (!isNovalue(value))
+                            outIter.setSample(c, r, 0, value);
+                    }
                 }
             }
+        } finally {
+            valuesIter.done();
+            maskIter.done();
+            outIter.done();
         }
 
         GridCoverage2D outCoverage = buildCoverage("mapped", writableRaster, maskRegionMap, //$NON-NLS-1$
@@ -1888,7 +1894,7 @@ public class CoverageUtilities {
                 int count = 0;
                 for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
                     count++;
-                    if(count % 10 == 0)
+                    if (count % 10 == 0)
                         pm.message("   -> " + count + " of " + size);
                     Integer basinId = entry.getKey();
                     List<Geometry> value = entry.getValue();
@@ -1899,7 +1905,7 @@ public class CoverageUtilities {
                         bigPolygons.add(geometryN);
                     }
                 }
-                
+
             }
             pm.worked(1);
         }

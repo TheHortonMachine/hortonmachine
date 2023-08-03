@@ -353,7 +353,12 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
         IGeometryParser gp = getType().getGeometryParser();
         return execOnConnection(connection -> {
             QueryResult queryResult = new QueryResult();
-            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+            String _sql = sql;
+            String lowerSql = _sql.trim().toLowerCase();
+            if (limit > 0 && lowerSql.startsWith("select") && !lowerSql.contains("limit")) {
+                _sql = _sql + " limit " + limit;
+            }
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(_sql)) {
                 IHMResultSetMetaData rsmd = rs.getMetaData();
                 int columnCount = rsmd.getColumnCount();
                 int geometryIndex = -1;

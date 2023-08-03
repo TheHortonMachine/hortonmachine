@@ -109,8 +109,8 @@ public class TestHMRaster extends HMTestCase {
         HMRaster initR = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
         HMRaster m1R = HMRaster.fromGridCoverage(m1GC);
         HMRaster m2R = HMRaster.fromGridCoverage(m2GC);
-        initR.mapRaster(null, m1R, true);
-        initR.mapRaster(null, m2R, true);
+        initR.mapRasterSum(null, m1R);
+        initR.mapRasterSum(null, m2R);
 
         HMRaster countRaster = initR.getCountRaster();
 

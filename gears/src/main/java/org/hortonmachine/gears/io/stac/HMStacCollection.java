@@ -197,7 +197,7 @@ public class HMStacCollection {
                         .setNoValue(asset.getNoValue()).build();
             }
             GridCoverage2D readRaster = asset.readRaster(readRegion);
-            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), true);
+            outRaster.mapRasterSum(null, HMRaster.fromGridCoverage(readRaster));
             pm.worked(1);
         }
         pm.done();

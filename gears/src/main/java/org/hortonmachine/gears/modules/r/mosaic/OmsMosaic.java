@@ -191,7 +191,7 @@ public class OmsMosaic extends HMModel {
             HMRaster raster = data.getRaster();
 
             pm.message("Patch map " + index++);
-            outHMRaster.mapRaster(pm, raster, true);
+            outHMRaster.mapRasterSum(pm, raster);
 
             raster.close();
 

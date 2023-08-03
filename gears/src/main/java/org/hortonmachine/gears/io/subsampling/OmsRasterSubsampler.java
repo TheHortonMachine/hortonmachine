@@ -93,12 +93,14 @@ public class OmsRasterSubsampler extends HMModel {
 
         double newEast = regionMap.getEast() - xRest;
         double newSouth = regionMap.getSouth() + yRest;
-        
-        RegionMap newRegionMap = RegionMap.fromBoundsAndResolution(regionMap.getWest(), newEast, newSouth, regionMap.getNorth(), newXRes, newYRes);
-        
-        HMRaster outHMRaster = new HMRaster.HMRasterWritableBuilder().setCrs(raster.getCrs()).setName("subsampled").setRegion(newRegionMap).build();
-        outHMRaster.mapRaster(pm, raster);
-        
+
+        RegionMap newRegionMap = RegionMap.fromBoundsAndResolution(regionMap.getWest(), newEast, newSouth, regionMap.getNorth(),
+                newXRes, newYRes);
+
+        HMRaster outHMRaster = new HMRaster.HMRasterWritableBuilder().setCrs(raster.getCrs()).setName("subsampled")
+                .setRegion(newRegionMap).setNoValue(raster.getNovalue()).build();
+        outHMRaster.mapRasterSubst(pm, raster);
+
         outRaster = outHMRaster.buildCoverage();
         raster.close();
         outHMRaster.close();
