@@ -1,6 +1,5 @@
 package org.hortonmachine.gears.io.stac;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -12,7 +11,9 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.stac.client.Collection;
 import org.geotools.stac.client.CollectionExtent;
@@ -33,6 +34,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 @SuppressWarnings({"rawtypes"})
 /**
@@ -135,8 +137,8 @@ public class HMStacCollection {
         try {
             while( iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
-                HMStacItem item = new HMStacItem(f);
-                if (item.getId() != null && item.getEpsg() != null) {
+                HMStacItem item = HMStacItem.fromSimpleFeature(f);
+                if (item != null && item.getId() != null && item.getEpsg() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {
                     pm.errorMessage("Unable to get id of item: " + item.toString());
@@ -156,16 +158,29 @@ public class HMStacCollection {
      * @param latLongRegionMap the region to use for the final raster.
      * @param bandName the name o the band to extract.
      * @param items the list of items containing the various assets to read from.
+     * @param allowTransform if true, allows datasets of different projections to be transformed and merged together.
      * @return the final raster.
      * @throws Exception
      */
     public static HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
-            IHMProgressMonitor pm ) throws Exception {
-        Integer srid = items.get(0).getEpsg();
-        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(srid);
-        ReferencedEnvelope roiEnvelope = new ReferencedEnvelope(latLongRegionMap.toEnvelope(), DefaultGeographicCRS.WGS84)
-                .transform(outputCrs, true);
-        Polygon latLongRegionGeometry = GeometryUtilities.createPolygonFromEnvelope(roiEnvelope);
+            boolean allowTransform, IHMProgressMonitor pm ) throws Exception {
+
+        if (!allowTransform) {
+            List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
+            if (epsgs.size() > 1) {
+                throw new IllegalArgumentException(
+                        "Multiple epsg detected when no transform allowed: " + epsgs.stream().collect(Collectors.joining(",")));
+            }
+        }
+
+        // use the first srid as the output srid.
+        Integer firstItemSrid = items.get(0).getEpsg();
+        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
+        ReferencedEnvelope roiEnvelopeFirstItemCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
+                DefaultGeographicCRS.WGS84).transform(outputCrs, true);
+        Polygon roiGeometryFirstItemCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstItemCrs);
+
+        CoordinateReferenceSystem firstItemCRS = CRS.decode("EPSG:" + firstItemSrid);
 
         int cols = latLongRegionMap.getCols();
         int rows = latLongRegionMap.getRows();
@@ -176,26 +191,34 @@ public class HMStacCollection {
         pm.beginTask("Reading " + bandName + "...", items.size());
         for( HMStacItem item : items ) {
             int currentSrid = item.getEpsg();
-            if (srid != currentSrid) {
-                throw new IOException("Epsgs are different");
-            }
+            CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
-            Geometry intersection = geometry.intersection(latLongRegionGeometry);
-            Envelope readEnvelope = intersection.getEnvelopeInternal();
+//            Geometry intersection = geometry.intersection(latLongRegionGeometry);
+//            Envelope readEnvelope = intersection.getEnvelopeInternal();
 
-            CoordinateReferenceSystem dataCrs = CrsUtilities.getCrsFromSrid(currentSrid);
-            ReferencedEnvelope roiEnv = new ReferencedEnvelope(readEnvelope, DefaultGeographicCRS.WGS84).transform(dataCrs, true);
+            if (firstItemSrid != currentSrid) {
+                // geometry is in 4326. Convert to first item CRS to gain proper intersection
+                MathTransform transform = CRS.findMathTransform(DefaultGeographicCRS.WGS84, firstItemCRS);
+                geometry = JTS.transform(geometry, transform);
+            }
+            Geometry intersectionFirstItemCrs = geometry.intersection(roiGeometryFirstItemCrs);
+            Envelope currentItemReadEnvelopeFIrstItemCrs = intersectionFirstItemCrs.getEnvelopeInternal();
 
-            RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnv.getMinX(), roiEnv.getMaxX(), roiEnv.getMinY(),
-                    roiEnv.getMaxY(), cols, rows);
+            ReferencedEnvelope roiEnvCurrentItemCrs = new ReferencedEnvelope(currentItemReadEnvelopeFIrstItemCrs, firstItemCRS)
+                    .transform(currentItemCRS, true);
+
+            RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentItemCrs.getMinX(), roiEnvCurrentItemCrs.getMaxX(),
+                    roiEnvCurrentItemCrs.getMinY(), roiEnvCurrentItemCrs.getMaxY(), cols, rows);
 
             HMStacAsset asset = item.getAssets().stream().filter(as -> as.getTitle().equals(bandName)).findFirst().get();
             int lastSlash = asset.getAssetUrl().lastIndexOf('/');
             fileName = asset.getAssetUrl().substring(lastSlash + 1);
             if (outRaster == null) {
-                outRaster = new HMRasterWritableBuilder().setName(fileName).setRegion(latLongRegionMap).setCrs(outputCrs)
+                outRaster = new HMRasterWritableBuilder().setName(fileName)
+                        .setRegion(RegionMap.fromEnvelopeAndGrid(roiEnvelopeFirstItemCrs, cols, rows)).setCrs(outputCrs)
                         .setNoValue(asset.getNoValue()).build();
             }
+
             GridCoverage2D readRaster = asset.readRaster(readRegion);
             outRaster.mapRasterSum(null, HMRaster.fromGridCoverage(readRaster));
             pm.worked(1);

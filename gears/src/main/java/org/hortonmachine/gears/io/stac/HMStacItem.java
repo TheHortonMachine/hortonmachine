@@ -1,6 +1,5 @@
 package org.hortonmachine.gears.io.stac;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -9,22 +8,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.geojson.GeoJSONReader;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.libs.modules.HMRaster;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -44,36 +36,59 @@ public class HMStacItem {
     private Date dateCet;
     private Date creationDateCet;
 
-    HMStacItem( SimpleFeature feature ) throws Exception {
-        this.feature = feature;
+    private HMStacItem() {
+    }
+
+    public static HMStacItem fromSimpleFeature( SimpleFeature feature ) throws Exception {
+        HMStacItem stacItem = new HMStacItem();
+        stacItem.feature = feature;
         Map<Object, Object> userData = feature.getUserData();
         if (userData != null) {
             Map<String, JsonNode> top = (Map<String, JsonNode>) userData.get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
             if (top != null) {
                 JsonNode idNode = top.get("id");
                 if (idNode != null) {
-                    id = idNode.textValue();
+                    stacItem.id = idNode.textValue();
                 }
             }
         }
-        if (id == null) {
+        if (stacItem.id == null) {
             String fid = feature.getID();
-            id = fid;
+            stacItem.id = fid;
         }
 
-        String dateCetStr = feature.getAttribute("datetime").toString();
-        if (dateCetStr != null) {
-            dateCet = HMStacUtils.dateFormatter.parse(dateCetStr);
+        Object datetimeObject = feature.getAttribute("datetime");
+        if (datetimeObject != null) {
+            String dateCetStr = datetimeObject.toString();
+            if (dateCetStr != null) {
+                stacItem.dateCet = HMStacUtils.dateFormatter.parse(dateCetStr);
+            }
         }
-        String creationDateCetStr = feature.getAttribute("created").toString();
-        if (creationDateCetStr != null) {
-            creationDateCet = HMStacUtils.dateFormatter.parse(creationDateCetStr);
+        Object createdObject = feature.getAttribute("created");
+        if (createdObject != null) {
+            String creationDateCetStr = createdObject.toString();
+            if (creationDateCetStr != null) {
+                stacItem.creationDateCet = HMStacUtils.dateFormatter.parse(creationDateCetStr);
+            }
         }
+        stacItem.geometry = (Geometry) feature.getDefaultGeometry();
+
         Object epsgObj = feature.getAttribute("proj:epsg");
         if (epsgObj instanceof Integer) {
-            epsg = (Integer) epsgObj;
+            stacItem.epsg = (Integer) epsgObj;
+
+            CoordinateReferenceSystem geometryCrs = feature.getFeatureType().getCoordinateReferenceSystem();
+            CoordinateReferenceSystem itemCRS = CRS.decode("EPSG:" + stacItem.epsg);
+            
+            if(!CRS.equalsIgnoreMetadata(geometryCrs, itemCRS)) {
+                // update geometry with the data crs geometry
+                MathTransform transform = CRS.findMathTransform(geometryCrs, itemCRS);
+                stacItem.geometry = JTS.transform(stacItem.geometry, transform);
+            }
+            
         }
-        geometry = (Geometry) feature.getDefaultGeometry();
+
+        return stacItem;
     }
 
     public String getId() {
@@ -88,10 +103,16 @@ public class HMStacItem {
         return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(creationDateCet);
     }
 
+    /**
+     * @return the data geiometry in the data CRS (from {@link #getEpsg()}).
+     */
     public Geometry getGeometry() {
         return geometry;
     }
 
+    /**
+     * @return the epsg code defined in proj:epsg. 
+     */
     public Integer getEpsg() {
         return epsg;
     }
