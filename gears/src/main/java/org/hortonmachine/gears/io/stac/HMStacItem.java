@@ -104,7 +104,7 @@ public class HMStacItem {
     }
 
     /**
-     * @return the data geiometry in the data CRS (from {@link #getEpsg()}).
+     * @return the data geometry in the data CRS (from {@link #getEpsg()}).
      */
     public Geometry getGeometry() {
         return geometry;

@@ -193,12 +193,9 @@ public class HMStacCollection {
             int currentSrid = item.getEpsg();
             CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
-//            Geometry intersection = geometry.intersection(latLongRegionGeometry);
-//            Envelope readEnvelope = intersection.getEnvelopeInternal();
 
             if (firstItemSrid != currentSrid) {
-                // geometry is in 4326. Convert to first item CRS to gain proper intersection
-                MathTransform transform = CRS.findMathTransform(DefaultGeographicCRS.WGS84, firstItemCRS);
+                MathTransform transform = CRS.findMathTransform(currentItemCRS, firstItemCRS);
                 geometry = JTS.transform(geometry, transform);
             }
             Geometry intersectionFirstItemCrs = geometry.intersection(roiGeometryFirstItemCrs);
