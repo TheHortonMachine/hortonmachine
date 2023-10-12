@@ -25,11 +25,13 @@ import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.coverage.ProfilePoint;
 import org.hortonmachine.gears.utils.features.FeatureMate;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.opengis.referencing.operation.TransformException;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -37,6 +39,7 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.linearref.LengthIndexedLine;
 
 /**
@@ -77,6 +80,7 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
         GridGeometry2D gridGeometry = elevation.getGridGeometry();
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevation);
         Envelope envelope = regionMap.toEnvelope();
+        Polygon envPolygon = GeometryUtilities.createPolygonFromEnvelope(envelope);
 
         riverPointsList = new ArrayList<RiverPoint>();
         LengthIndexedLine indexedLine = new LengthIndexedLine(riverLine);
@@ -91,6 +95,28 @@ public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {
             // TODO extract with point before and after in order to have more regular sections
             Coordinate leftPoint = indexedLine.extractPoint(runningLength, sectionsWidth);
             Coordinate rightPoint = indexedLine.extractPoint(runningLength, -sectionsWidth);
+            
+            LineString line = gf.createLineString(new Coordinate[] {leftPoint, rightPoint});
+            if(!envelope.intersects(leftPoint) || !envelope.intersects(rightPoint)) {
+                Geometry intersectionGeom = envPolygon.intersection(line);
+                if (intersectionGeom.isEmpty()) {
+                    runningLength = runningLength + sectionsInterval;
+                    monitor.worked(1);
+                    continue;
+                }
+                if (intersectionGeom instanceof LineString) {
+                    LineString trimLine = (LineString) intersectionGeom;
+                    Coordinate[] coordinates = trimLine.getCoordinates();
+                    if (coordinates.length == 2) {                        
+                        leftPoint = coordinates[0];
+                        rightPoint = coordinates[1];
+                    } else {
+                        monitor.errorMessage("Unable to handle region intersection coordinates.");
+                    }
+                }
+            }
+            
+            
             if (envelope.intersects(leftPoint) && envelope.intersects(rightPoint)) {
                 RiverPoint netPoint = getNetworkPoint(riverLine, elevIter, gridGeometry, runningLength, null, leftPoint,
                         rightPoint);

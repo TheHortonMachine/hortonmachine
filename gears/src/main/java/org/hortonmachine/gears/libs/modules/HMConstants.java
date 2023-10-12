@@ -62,11 +62,21 @@ public class HMConstants {
         }
         return nv;
     }
+    
     public static int getIntNovalue( GridCoverage2D gc ) {
         Double nvObj = CoverageUtilities.getNovalue(gc);
         int nv = HMConstants.intNovalue;
         if (nvObj != null) {
             nv = nvObj.intValue();
+        }
+        return nv;
+    }
+    
+    public static short getShortNovalue( GridCoverage2D gc ) {
+        Double nvObj = CoverageUtilities.getNovalue(gc);
+        short nv = HMConstants.shortNovalue;
+        if (nvObj != null) {
+            nv = nvObj.shortValue();
         }
         return nv;
     }

@@ -46,6 +46,7 @@ import java.util.Map.Entry;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.media.jai.ROI;
 import javax.media.jai.ROIShape;
@@ -64,6 +65,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.Envelope2D;
@@ -74,12 +76,15 @@ import org.geotools.process.ProcessException;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.features.FastLiteShape;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -381,9 +386,9 @@ public class CoverageUtilities {
      * The region is cut to keep the resolution consistent.
      * @param newRasterName TODO
      */
-    public static GridCoverage2D clipCoverage( GridCoverage2D coverage, ReferencedEnvelope envelope, String newRasterName )
+    public static GridCoverage2D clipCoverage( HMRaster raster, ReferencedEnvelope envelope, String newRasterName )
             throws Exception {
-        RegionMap regionMap = getRegionParamsFromGridCoverage(coverage);
+        RegionMap regionMap = raster.getRegionMap();
         double xRes = regionMap.getXres();
         double yRes = regionMap.getYres();
 
@@ -391,11 +396,11 @@ public class CoverageUtilities {
             newRasterName = "newraster";
         }
 
-        envelope = envelope.transform(coverage.getCoordinateReferenceSystem(), true);
+        envelope = envelope.transform(raster.getCrs(), true);
 
         // snap the envelope to the grid in order to properly crop the raster
         RegionMap subRegion = regionMap.toSubRegion(envelope);
-        envelope = new ReferencedEnvelope(subRegion.toEnvelope(), coverage.getCoordinateReferenceSystem());
+        envelope = new ReferencedEnvelope(subRegion.toEnvelope(), raster.getCrs());
 
         double west = envelope.getMinX();
         double south = envelope.getMinY();
@@ -404,28 +409,22 @@ public class CoverageUtilities {
 
         int cols = (int) ((east - west) / xRes);
         int rows = (int) ((north - south) / yRes);
-        ComponentSampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, 1, cols, new int[]{0});
 
-        WritableRaster writableRaster = RasterFactory.createWritableRaster(sampleModel, null);
-        Envelope2D writeEnvelope = new Envelope2D(coverage.getCoordinateReferenceSystem(), west, south, east - west,
-                north - south);
-        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
-        GridCoverage2D clippedCoverage = factory.create(newRasterName, writableRaster, writeEnvelope);
+        ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north, raster.getCrs());
+        RegionMap clipRegion = RegionMap.fromEnvelopeAndGrid(writeEnvelope, cols, rows);
 
-        GridGeometry2D destGG = clippedCoverage.getGridGeometry();
-        GridGeometry2D sourceGG = coverage.getGridGeometry();
+        try (HMRaster clipRaster = new HMRaster.HMRasterWritableBuilder().setRegion(clipRegion).setCrs(raster.getCrs())
+                .setName(newRasterName).build()) {
 
-        RandomIter iter = getRandomIterator(coverage);
-        for( int y = 0; y < rows; y++ ) {
-            for( int x = 0; x < cols; x++ ) {
-                DirectPosition world = destGG.gridToWorld(new GridCoordinates2D(x, y));
-                GridCoordinates2D sourceGrid = sourceGG.worldToGrid(world);
-                double value = iter.getSampleDouble(sourceGrid.x, sourceGrid.y, 0);
-                writableRaster.setSample(x, y, 0, value);
+            for( int y = 0; y < rows; y++ ) {
+                for( int x = 0; x < cols; x++ ) {
+                    Coordinate worldC = clipRaster.getWorld(x, y);
+                    double value = raster.getValue(worldC);
+                    clipRaster.setValue(x, y, value);
+                }
             }
+            return clipRaster.buildCoverage();
         }
-        iter.done();
-        return clippedCoverage;
     }
 
     /**
@@ -1922,6 +1921,103 @@ public class CoverageUtilities {
                 }
             }
         }
+        return polygons;
+    }
+
+    public static List<Polygon> gridcoverageToValuesAggregatedPolygons( HMRaster raster, IHMProgressMonitor pm )
+            throws Exception {
+        if (pm == null) {
+            pm = new DummyProgressMonitor();
+        }
+        IHMProgressMonitor _pm = pm;
+        int rows = raster.getRows();
+        int cols = raster.getCols();
+        double xres = raster.getXRes();
+        double yres = raster.getYRes();
+        double north = raster.getRegionMap().getNorth();
+        double west = raster.getRegionMap().getWest();
+
+        GeometryFactory gf = GeometryUtilities.gf();
+
+        List<Geometry> bigPolygons = new ArrayList<Geometry>();
+
+        pm.beginTask("Generate values matrix...", rows);
+        double[][] matrix = new double[rows][cols];
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                double value = raster.getValue(c, r);
+                matrix[r][c] = value;
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
+        pm.beginTask("Vectorizing raster cells...", rows);
+        IntStream.range(0, rows).parallel().forEach(r -> {
+            List<Polygon> polygons = new ArrayList<Polygon>();
+
+            for( int c = 0; c < cols; c++ ) {
+                double w = west + xres * c;
+                double e = w + xres;
+                double n = north - yres * r;
+                double s = n - yres;
+
+                Coordinate[] coords = new Coordinate[5];
+                coords[0] = new Coordinate(w, n);
+                coords[1] = new Coordinate(e, n);
+                coords[2] = new Coordinate(e, s);
+                coords[3] = new Coordinate(w, s);
+                coords[4] = new Coordinate(w, n);
+
+                LinearRing linearRing = gf.createLinearRing(coords);
+                Polygon polygon = gf.createPolygon(linearRing, null);
+                polygons.add(polygon);
+                polygon.setUserData(matrix[r][c]);
+            }
+            Map<Integer, List<Geometry>> collected = polygons.parallelStream()
+                    .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
+                    .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
+            polygons = new ArrayList<Polygon>();
+            for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
+                Integer basinId = entry.getKey();
+                List<Geometry> value = entry.getValue();
+                Geometry tmpGeom = CascadedPolygonUnion.union(value);
+
+                synchronized (bigPolygons) {
+                    for( int i = 0; i < tmpGeom.getNumGeometries(); i++ ) {
+                        Polygon geometryN = (Polygon) tmpGeom.getGeometryN(i);
+                        geometryN.setUserData(basinId);
+                        bigPolygons.add(geometryN);
+                    }
+                }
+            }
+
+            _pm.worked(1);
+        });
+        pm.done();
+
+        // final aggregation
+        Map<Integer, List<Geometry>> finalAggregated = bigPolygons.parallelStream()
+                .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
+                .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
+
+        List<Polygon> polygons = new ArrayList<Polygon>();
+
+        pm.beginTask("Aggregating polygons...", finalAggregated.size());
+        for( Entry<Integer, List<Geometry>> item : finalAggregated.entrySet() ) {
+            List<Geometry> geoms = item.getValue();
+            Geometry union = CascadedPolygonUnion.union(geoms);
+            int id = item.getKey();
+
+            for( int i = 0; i < union.getNumGeometries(); i++ ) {
+                Polygon geometryN = (Polygon) union.getGeometryN(i);
+                geometryN.setUserData(id);
+                polygons.add(geometryN);
+            }
+            pm.worked(1);
+        }
+        pm.done();
+
         return polygons;
     }
 

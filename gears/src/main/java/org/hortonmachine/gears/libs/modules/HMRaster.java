@@ -50,6 +50,8 @@ public class HMRaster implements AutoCloseable {
     private int rows;
     private int cols;
     private double novalue = HMConstants.doubleNovalue;
+    private int intNovalue = HMConstants.intNovalue;
+    private short shortNovalue = HMConstants.shortNovalue;
     private RandomIter iter;
     private boolean isWritable = false;
     private GridGeometry2D gridGeometry;
@@ -91,6 +93,8 @@ public class HMRaster implements AutoCloseable {
         hmRaster.xRes = hmRaster.regionMap.getXres();
         hmRaster.yRes = hmRaster.regionMap.getYres();
         hmRaster.novalue = HMConstants.getNovalue(coverage);
+        hmRaster.intNovalue = (int) HMConstants.getNovalue(coverage);
+        hmRaster.shortNovalue = (short) HMConstants.getNovalue(coverage);
         hmRaster.iter = CoverageUtilities.getRandomIterator(coverage);
         return hmRaster;
     }
@@ -105,6 +109,10 @@ public class HMRaster implements AutoCloseable {
 
     public RegionMap getRegionMap() {
         return RegionMap.fromRegionMap(regionMap);
+    }
+
+    public GridGeometry2D getGridGeometry() {
+        return gridGeometry;
     }
 
     /**
@@ -159,6 +167,14 @@ public class HMRaster implements AutoCloseable {
         return HMConstants.isNovalue(valueToCheck, novalue);
     }
 
+    public boolean isNovalue( int valueToCheck ) {
+        return HMConstants.isNovalue(valueToCheck, intNovalue);
+    }
+
+    public boolean isNovalue( short valueToCheck ) {
+        return HMConstants.isNovalue(valueToCheck, shortNovalue);
+    }
+
     /**
      * Check if a given grid coordinate is inside the raster bounds.
      * 
@@ -207,7 +223,7 @@ public class HMRaster implements AutoCloseable {
         if (isContained(col, row)) {
             return iter.getSample(col, row, 0);
         } else {
-            return (int) novalue;
+            return intNovalue;
         }
     }
 
@@ -220,6 +236,32 @@ public class HMRaster implements AutoCloseable {
     public int getIntValue( Coordinate coordinate ) {
         int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
         return getIntValue(colRow[0], colRow[1]);
+    }
+
+    /**
+     * Get the value in a given col and row position.
+     * 
+     * @param col
+     * @param row
+     * @return the value of the raster or novalue if the point lies outside the bounds.
+     */
+    public short getShortValue( int col, int row ) {
+        if (isContained(col, row)) {
+            return (short) iter.getSample(col, row, 0);
+        } else {
+            return shortNovalue;
+        }
+    }
+
+    /**
+     * Get the value in a given world coordinate. 
+     * 
+     * @param coordinate the world coordinate, assumed to be in the reference system of the raster.
+     * @return the value.
+     */
+    public short getShortValue( Coordinate coordinate ) {
+        int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
+        return getShortValue(colRow[0], colRow[1]);
     }
 
     /**
@@ -240,6 +282,15 @@ public class HMRaster implements AutoCloseable {
     }
 
     public void setValue( int col, int row, int value ) throws IOException {
+        if (!isWritable) {
+            throw new IOException("The current HMRaster is not writable.");
+        }
+        if (isContained(col, row)) {
+            ((WritableRandomIter) iter).setSample(col, row, 0, value);
+        }
+    }
+
+    public void setValue( int col, int row, short value ) throws IOException {
         if (!isWritable) {
             throw new IOException("The current HMRaster is not writable.");
         }
@@ -526,6 +577,25 @@ public class HMRaster implements AutoCloseable {
         return coords;
     }
 
+    /**
+     * In the case this is a flowdirections map gets all surrounding cells that <b>DO</b> flow into the given cell.
+     * 
+     * @return the [x,y] of the cells that flow into the given cell.
+     */
+    public List<int[]> getEnteringFlowCells( int col, int row ) {
+        ArrayList<int[]> enteringNodes = new ArrayList<>();
+        Direction[] orderedDirs = Direction.getOrderedDirs();
+        for( Direction direction : orderedDirs ) {
+            int newCol = col + direction.col;
+            int newRow = row + direction.row;
+            short flowValue = getShortValue(newCol, newRow);
+            if (flowValue == direction.getEnteringFlow()) {
+                enteringNodes.add(new int[]{newCol, newRow});
+            }
+        }
+        return enteringNodes;
+    }
+
     public void printData() {
         for( int row = 0; row < rows; row++ ) {
             for( int col = 0; col < cols; col++ ) {
@@ -539,11 +609,13 @@ public class HMRaster implements AutoCloseable {
     public static class HMRasterWritableBuilder {
         private String name = "newraster";
 
-        private GridCoverage2D template = null;
+        private HMRaster template = null;
 
         private boolean copyValues = false;
 
         private boolean doInteger = false;
+
+        private boolean doShort = false;
 
         private RegionMap region;
 
@@ -555,6 +627,8 @@ public class HMRaster implements AutoCloseable {
 
         private Integer initialIntValue = null;
 
+        private Short initialShortValue = null;
+
         private double[][] dataMatrix = null;
 
         public HMRasterWritableBuilder setName( String name ) {
@@ -563,6 +637,11 @@ public class HMRaster implements AutoCloseable {
         }
 
         public HMRasterWritableBuilder setTemplate( GridCoverage2D template ) {
+            this.template = HMRaster.fromGridCoverage(template);
+            return this;
+        }
+
+        public HMRasterWritableBuilder setTemplate( HMRaster template ) {
             this.template = template;
             return this;
         }
@@ -574,6 +653,11 @@ public class HMRaster implements AutoCloseable {
 
         public HMRasterWritableBuilder setDoInteger( boolean doInteger ) {
             this.doInteger = doInteger;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setDoShort( boolean doShort ) {
+            this.doShort = doShort;
             return this;
         }
 
@@ -592,13 +676,18 @@ public class HMRaster implements AutoCloseable {
             return this;
         }
 
-        public HMRasterWritableBuilder setInitialValue( double initialNovalue ) {
-            this.initialValue = initialNovalue;
+        public HMRasterWritableBuilder setInitialValue( double initialValue ) {
+            this.initialValue = initialValue;
             return this;
         }
 
-        public HMRasterWritableBuilder setInitialValue( int initialNovalue ) {
-            this.initialIntValue = initialNovalue;
+        public HMRasterWritableBuilder setInitialValue( int initialValue ) {
+            this.initialIntValue = initialValue;
+            return this;
+        }
+
+        public HMRasterWritableBuilder setInitialValue( short initialValue ) {
+            this.initialShortValue = initialValue;
             return this;
         }
 
@@ -612,18 +701,23 @@ public class HMRaster implements AutoCloseable {
                 HMRaster hmRaster = new HMRaster();
                 hmRaster.isWritable = true;
                 hmRaster.name = name;
-                hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(template);
-                hmRaster.crs = template.getCoordinateReferenceSystem();
+                hmRaster.regionMap = template.getRegionMap();
+                hmRaster.crs = template.getCrs();
                 hmRaster.gridGeometry = template.getGridGeometry();
                 hmRaster.rows = hmRaster.regionMap.getRows();
                 hmRaster.cols = hmRaster.regionMap.getCols();
                 hmRaster.xRes = hmRaster.regionMap.getXres();
                 hmRaster.yRes = hmRaster.regionMap.getYres();
-                hmRaster.novalue = noValue != null ? noValue : HMConstants.getNovalue(template);
+                hmRaster.novalue = noValue != null ? noValue : template.getNovalue();
+                hmRaster.intNovalue = noValue != null ? noValue.intValue() : (int) template.getNovalue();
+                hmRaster.shortNovalue = noValue != null ? noValue.shortValue() : (short) template.getNovalue();
 
                 if (doInteger) {
                     hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Integer.class,
-                            null, initialIntValue != null ? initialIntValue : hmRaster.novalue);
+                            null, initialIntValue != null ? initialIntValue : hmRaster.intNovalue);
+                } else if (doShort) {
+                    hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Short.class,
+                            null, initialShortValue != null ? initialShortValue : hmRaster.shortNovalue);
                 } else {
                     hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Double.class,
                             null, initialValue != null ? initialValue : hmRaster.novalue);
@@ -631,17 +725,23 @@ public class HMRaster implements AutoCloseable {
                 hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
 
                 if (copyValues) {
-                    RandomIter inIter = CoverageUtilities.getRandomIterator(template);
-                    if (!doInteger) {
+//                    RandomIter inIter = CoverageUtilities.getRandomIterator(template);
+                    if (doInteger) {
                         for( int r = 0; r < hmRaster.rows; r++ ) {
                             for( int c = 0; c < hmRaster.cols; c++ ) {
-                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSampleDouble(c, r, 0));
+                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.getValue(c, r));
+                            }
+                        }
+                    } else if (doShort) {
+                        for( int r = 0; r < hmRaster.rows; r++ ) {
+                            for( int c = 0; c < hmRaster.cols; c++ ) {
+                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, (short) template.getValue(c, r));
                             }
                         }
                     } else {
                         for( int r = 0; r < hmRaster.rows; r++ ) {
                             for( int c = 0; c < hmRaster.cols; c++ ) {
-                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, inIter.getSample(c, r, 0));
+                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.getValue(c, r));
                             }
                         }
                     }
@@ -659,9 +759,15 @@ public class HMRaster implements AutoCloseable {
                 hmRaster.xRes = hmRaster.regionMap.getXres();
                 hmRaster.yRes = hmRaster.regionMap.getYres();
                 hmRaster.novalue = noValue != null ? noValue : HMConstants.doubleNovalue;
+                hmRaster.intNovalue = noValue != null ? noValue.intValue() : HMConstants.intNovalue;
+                hmRaster.shortNovalue = noValue != null ? noValue.shortValue() : HMConstants.shortNovalue;
+
                 if (doInteger) {
                     hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Integer.class,
-                            null, initialIntValue != null ? initialIntValue : hmRaster.novalue);
+                            null, initialIntValue != null ? initialIntValue : hmRaster.intNovalue);
+                } else if (doShort) {
+                    hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Short.class,
+                            null, initialShortValue != null ? initialShortValue : hmRaster.shortNovalue);
                 } else {
                     hmRaster.writableRaster = CoverageUtilities.createWritableRaster(hmRaster.cols, hmRaster.rows, Double.class,
                             null, initialValue != null ? initialValue : hmRaster.novalue);

@@ -107,7 +107,7 @@ public class LogProgressMonitor implements IHMProgressMonitor {
     public void subTask( String name ) {
     }
 
-    public void worked( int workDone ) {
+    public synchronized void worked( int workDone ) {
         runningWork = runningWork + workDone;
         if (totalWork == -1) {
             if (runningWork % 10 == 0) {

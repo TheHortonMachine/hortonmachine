@@ -148,453 +148,511 @@ public class GeoframeInputsBuilder extends HMModel {
     public void process() throws Exception {
         checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins, outFolder);
 
-        GridCoverage2D subBasins = getRaster(inBasins);
+        try (HMRaster subBasins = HMRaster.fromGridCoverage(getRaster(inBasins));
+                HMRaster pit = HMRaster.fromGridCoverage(getRaster(inPitfiller));
+                HMRaster sky = HMRaster.fromGridCoverage(getRaster(inSkyview));
+                HMRaster drain = HMRaster.fromGridCoverage(getRaster(inDrain));
+                HMRaster net = HMRaster.fromGridCoverage(getRaster(inNet));
+                HMRaster tca = HMRaster.fromGridCoverage(getRaster(inTca));) {
 
-        // first check if topology and subbasins are the same for consistency
-        if (inGeoframeTopology != null) {
-            TreeSet<Integer> subBasinsSet = new TreeSet<>();
-            HMRaster subBasinsRaster = HMRaster.fromGridCoverage(subBasins);
-            subBasinsRaster.process(pm, "Check basin ids...", ( col, row, value, cols, rows ) -> {
-                if (!subBasinsRaster.isNovalue(value)) {
-                    subBasinsSet.add((int) value);
+            // first check if topology and subbasins are the same for consistency
+            if (inGeoframeTopology != null) {
+                TreeSet<Integer> subBasinsSet = new TreeSet<>();
+                subBasins.process(pm, "Check basin ids...", ( col, row, value, cols, rows ) -> {
+                    if (!subBasins.isNovalue(value)) {
+                        subBasinsSet.add((int) value);
+                    }
+                });
+                TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
+                List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
+                for( String line : topologyLines ) {
+                    String[] lineSplit = line.trim().split("\\s+");
+                    if (lineSplit.length != 2) {
+                        throw new ModelsIllegalargumentException("The topology file format is not recognised for line: " + line,
+                                this);
+                    }
+                    int currentBasinId = Integer.parseInt(lineSplit[0]);
+                    int childBasinId = Integer.parseInt(lineSplit[1]);
+                    topologyBasinsSet.add(childBasinId);
+                    topologyBasinsSet.add(currentBasinId);
                 }
-            });
-            TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
-            List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
-            for( String line : topologyLines ) {
-                String[] lineSplit = line.trim().split("\\s+");
-                if (lineSplit.length != 2) {
-                    throw new ModelsIllegalargumentException("The topology file format is not recognised for line: " + line,
-                            this);
+                topologyBasinsSet.remove(0);
+                if (subBasinsSet.size() != topologyBasinsSet.size()) {
+                    printSubbasins(subBasinsSet, topologyBasinsSet);
+                    throw new ModelsIllegalargumentException("The topology basins and raster subbasins differ: "
+                            + topologyBasinsSet.size() + " vs. " + subBasinsSet.size(), this);
+                } else {
+                    // also check the numbers
+                    for( Integer topoId : topologyBasinsSet ) {
+                        if (!subBasinsSet.contains(topoId)) {
+                            printSubbasins(subBasinsSet, topologyBasinsSet);
+                            throw new ModelsIllegalargumentException(
+                                    "The topology basins contain an id that is not available in the raster subbasins: " + topoId,
+                                    this);
+                        }
+                    }
                 }
-                int currentBasinId = Integer.parseInt(lineSplit[0]);
-                int childBasinId = Integer.parseInt(lineSplit[1]);
-                topologyBasinsSet.add(childBasinId);
-                topologyBasinsSet.add(currentBasinId);
+                pm.message("Found basin ids between " + subBasinsSet.first() + " and " + subBasinsSet.last());
             }
-            if (subBasinsSet.size() != topologyBasinsSet.size()) {
-                throw new ModelsIllegalargumentException("The topology basins and raster subbasins differ: "
-                        + topologyBasinsSet.size() + " vs. " + subBasinsSet.size(), this);
-            } else {
-                // also check the numbers
-                for( Integer topoId : topologyBasinsSet ) {
-                    if (!subBasinsSet.contains(topoId)) {
-                        throw new ModelsIllegalargumentException(
-                                "The topology basins contain an id that is not available in the raster subbasins: " + topoId,
+
+            CoordinateReferenceSystem crs = subBasins.getCrs();
+            List<Polygon> cells = CoverageUtilities.gridcoverageToValuesAggregatedPolygons(subBasins, pm);
+//            SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(subBasins.getCrs(),
+//                    (Polygon[]) polygons.toArray(new Polygon[polygons.size()]));
+//
+//            OmsVectorWriter.writeVector("/storage/lavori_tmp/UNITN/dati_lombardia_3laghi/bacini_vettoriali.shp", fc);
+//        List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null, true, pm);
+
+            List<Geometry> lakesList = new ArrayList<>();
+            if (inLakes != null) {
+                SimpleFeatureCollection lakesFC = getVector(inLakes);
+                List<SimpleFeature> lakesFList = FeatureUtilities.featureCollectionToList(lakesFC);
+                // remove those that don't even cover the raster envelope
+                Polygon rasterBounds = FeatureUtilities.envelopeToPolygon(pit.getRegionMap().toEnvelope());
+                for( SimpleFeature lakeF : lakesFList ) {
+                    Geometry lakeGeom = (Geometry) lakeF.getDefaultGeometry();
+                    Envelope env = lakeGeom.getEnvelopeInternal();
+                    if (rasterBounds.getEnvelopeInternal().intersects(env)) {
+                        // TODO would be good to check with basin geom
+                        lakesList.add(lakeGeom);
+                    }
+                }
+            }
+
+            OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
+            netAttributesBuilder.pm = pm;
+            netAttributesBuilder.inDem = pit.buildCoverage();
+            netAttributesBuilder.inFlow = drain.buildCoverage();
+            netAttributesBuilder.inTca = tca.buildCoverage();
+            netAttributesBuilder.inNet = net.buildCoverage();
+            netAttributesBuilder.doHack = true;
+            netAttributesBuilder.onlyDoSimpleGeoms = false;
+            netAttributesBuilder.process();
+            SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
+
+            String userDataField = useHack ? NetworkChannel.HACKNAME : NetworkChannel.PFAFNAME;
+            List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, userDataField);
+
+            Map<Integer, List<Geometry>> collected = cells.parallelStream()
+                    .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
+                    .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
+
+            SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCrs());
+            SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCrs());
+            SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCrs());
+
+            DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
+            DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
+
+            StringBuilder csvText = new StringBuilder();
+            csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview\n");
+
+            // aggregate basins and check for lakes
+            Map<Integer, Geometry> basinId2geomMap = new HashMap<>();
+            pm.beginTask("Join basin cells...", collected.size());
+            int maxBasinNum = 0;
+            for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
+                int basinNum = entry.getKey();
+                maxBasinNum = Math.max(maxBasinNum, basinNum);
+
+                List<Geometry> polygons = entry.getValue();
+                Geometry basin = CascadedPolygonUnion.union(polygons);
+
+                // extract largest basin
+                double maxArea = Double.NEGATIVE_INFINITY;
+                Geometry maxPolygon = basin;
+                int numGeometries = basin.getNumGeometries();
+                if (numGeometries > 1) {
+                    for( int i = 0; i < numGeometries; i++ ) {
+                        Geometry geometryN = basin.getGeometryN(i);
+                        double area = geometryN.getArea();
+                        if (area > maxArea) {
+                            maxArea = area;
+                            maxPolygon = geometryN;
+                        }
+                    }
+                }
+
+                // if lakes are available, they can't completely contain a basin
+                // and can't be completely contained in a basin
+                for( Geometry lakeGeom : lakesList ) {
+                    if (maxPolygon.contains(lakeGeom)) {
+                        throw new ModelsIllegalargumentException("A basin can't completely contain a lake. Check your data.",
                                 this);
                     }
                 }
-            }
-        }
-
-        CoordinateReferenceSystem crs = subBasins.getCoordinateReferenceSystem();
-        List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null, true, pm);
-
-        GridCoverage2D pit = getRaster(inPitfiller);
-        GridCoverage2D sky = getRaster(inSkyview);
-        GridCoverage2D drain = getRaster(inDrain);
-        GridCoverage2D net = getRaster(inNet);
-        GridCoverage2D tca = getRaster(inTca);
-
-        List<Geometry> lakesList = new ArrayList<>();
-        if (inLakes != null) {
-            SimpleFeatureCollection lakesFC = getVector(inLakes);
-            List<SimpleFeature> lakesFList = FeatureUtilities.featureCollectionToList(lakesFC);
-            // remove those that don't even cover the raster envelope
-            Polygon rasterBounds = FeatureUtilities.envelopeToPolygon(pit.getEnvelope2D());
-            for( SimpleFeature lakeF : lakesFList ) {
-                Geometry lakeGeom = (Geometry) lakeF.getDefaultGeometry();
-                Envelope env = lakeGeom.getEnvelopeInternal();
-                if (rasterBounds.getEnvelopeInternal().intersects(env)) {
-                    // TODO would be good to check with basin geom
-                    lakesList.add(lakeGeom);
+                if (maxPolygon.isValid() && !maxPolygon.isEmpty()) {
+                    basinId2geomMap.put(basinNum, maxPolygon);
+                } else {
+                    pm.errorMessage("Not adding basin polygon: valid=" + maxPolygon.isValid() + " empyt=" + maxPolygon.isEmpty());
                 }
+                pm.worked(1);
             }
-        }
+            pm.done();
 
-        OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
-        netAttributesBuilder.pm = pm;
-        netAttributesBuilder.inDem = pit;
-        netAttributesBuilder.inFlow = drain;
-        netAttributesBuilder.inTca = tca;
-        netAttributesBuilder.inNet = net;
-        netAttributesBuilder.doHack = true;
-        netAttributesBuilder.onlyDoSimpleGeoms = false;
-        netAttributesBuilder.process();
-        SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
-
-        String userDataField = useHack ? NetworkChannel.HACKNAME : NetworkChannel.PFAFNAME;
-        List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, userDataField);
-
-        Map<Integer, List<Geometry>> collected = cells.parallelStream()
-                .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
-                .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
-
-        SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCoordinateReferenceSystem());
-        SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCoordinateReferenceSystem());
-        SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCoordinateReferenceSystem());
-
-        DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
-        DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
-
-        StringBuilder csvText = new StringBuilder();
-        csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview\n");
-
-        // aggregate basins and check for lakes
-        Map<Integer, Geometry> basinId2geomMap = new HashMap<>();
-        pm.beginTask("Join basin cells...", collected.size());
-        int maxBasinNum = 0;
-        for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
-            int basinNum = entry.getKey();
-            maxBasinNum = Math.max(maxBasinNum, basinNum);
-
-            List<Geometry> polygons = entry.getValue();
-            Geometry basin = CascadedPolygonUnion.union(polygons);
-
-            // extract largest basin
-            double maxArea = Double.NEGATIVE_INFINITY;
-            Geometry maxPolygon = basin;
-            int numGeometries = basin.getNumGeometries();
-            if (numGeometries > 1) {
-                for( int i = 0; i < numGeometries; i++ ) {
-                    Geometry geometryN = basin.getGeometryN(i);
-                    double area = geometryN.getArea();
-                    if (area > maxArea) {
-                        maxArea = area;
-                        maxPolygon = geometryN;
-                    }
-                }
-            }
-
-            // if lakes are available, they can't completely contain a basin
-            // and can't be completely contained in a basin
+            // if lakes are available, they have to contain at least one confluence
             for( Geometry lakeGeom : lakesList ) {
-                if (maxPolygon.contains(lakeGeom)) {
-                    throw new ModelsIllegalargumentException("A basin can't completely contain a lake. Check your data.", this);
-                }
-            }
-            if (maxPolygon.isValid() && !maxPolygon.isEmpty()) {
-                basinId2geomMap.put(basinNum, maxPolygon);
-            } else {
-                pm.errorMessage("Not adding basin polygon: valid=" + maxPolygon.isValid() + " empyt=" + maxPolygon.isEmpty());
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        // if lakes are available, they have to contain at least one confluence
-        for( Geometry lakeGeom : lakesList ) {
-            PreparedGeometry preparedLake = PreparedGeometryFactory.prepare(lakeGeom);
-            boolean hasPoint = false;
-            for( Geometry netGeom : netGeometries ) {
-                LineString line = (LineString) netGeom;
-                Point startPoint = line.getStartPoint();
-                Point endPoint = line.getEndPoint();
-                if (preparedLake.contains(startPoint) || preparedLake.contains(endPoint)) {
-                    hasPoint = true;
-                    break;
-                }
-            }
-
-            if (!hasPoint) {
-                throw new ModelsIllegalargumentException("A lake has to contain at least one confluence. Check your data.", this);
-            }
-        }
-
-        // if lakes are available, we need to find the basins that intersect and cut the basins on
-        // them
-        List<Integer> lakesIdList = new ArrayList<>();
-        if (!lakesList.isEmpty()) {
-            List<Basin> allBasins = new ArrayList<>();
-            int nextBasinNum = maxBasinNum + 1;
-            Basin rootBasin = getRootBasin(basinId2geomMap, allBasins);
-            if (rootBasin != null) {
-                List<Basin> nullGeomBasins = allBasins.parallelStream().filter(tmpBasin -> tmpBasin.basinGeometry == null)
-                        .collect(Collectors.toList());
-                if (nullGeomBasins.size() > 0) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("The following basins have corrupted or null geometries:");
-                    for( Basin nullBasin : nullGeomBasins ) {
-                        sb.append(nullBasin).append("\n");
+                PreparedGeometry preparedLake = PreparedGeometryFactory.prepare(lakeGeom);
+                boolean hasPoint = false;
+                for( Geometry netGeom : netGeometries ) {
+                    LineString line = (LineString) netGeom;
+                    Point startPoint = line.getStartPoint();
+                    Point endPoint = line.getEndPoint();
+                    if (preparedLake.contains(startPoint) || preparedLake.contains(endPoint)) {
+                        hasPoint = true;
+                        break;
                     }
-                    sb.append("Unexpected behaviour could occurr, better check your input data.");
-                    pm.errorMessage(sb.toString());
                 }
 
-                pm.beginTask("Handle lake-basin intersections...", lakesList.size());
-                for( Geometry lakeGeom : lakesList ) {
-                    Basin outBasin = findFirstIntersecting(rootBasin, lakeGeom);
-                    if (outBasin != null) {
-                        // found the out basin. All others intersecting will drain into this
-                        List<Basin> intersectingBasins = allBasins.parallelStream().filter(tmpBasin -> {
-                            if (tmpBasin.basinGeometry == null) {
-                                return false;
-                            }
-                            boolean isNotOutBasin = tmpBasin.id != outBasin.id;
-                            boolean intersectsLake = tmpBasin.basinGeometry.intersects(lakeGeom);
-                            return isNotOutBasin && intersectsLake;
-                        }).collect(Collectors.toList());
+                if (!hasPoint) {
+                    throw new ModelsIllegalargumentException("A lake has to contain at least one confluence. Check your data.",
+                            this);
+                }
+            }
 
-                        // of the intersecting find those that are completely contained
-                        List<Basin> completelyContainedBasins = new ArrayList<>();
-                        List<Basin> justIntersectingBasins = new ArrayList<>();
-                        intersectingBasins.forEach(interBasin -> {
-                            if (lakeGeom.contains(interBasin.basinGeometry)) {
-                                completelyContainedBasins.add(interBasin);
-                            } else {
-                                justIntersectingBasins.add(interBasin);
-                            }
-                        });
-                        intersectingBasins = justIntersectingBasins;
+            // if lakes are available, we need to find the basins that intersect and cut the basins
+            // on
+            // them
+            List<Integer> lakesIdList = new ArrayList<>();
+            if (!lakesList.isEmpty()) {
+                List<Basin> allBasins = new ArrayList<>();
+                int nextBasinNum = maxBasinNum + 1;
+                Basin rootBasin = getRootBasin(basinId2geomMap, allBasins);
+                if (rootBasin != null) {
+                    List<Basin> nullGeomBasins = allBasins.parallelStream().filter(tmpBasin -> tmpBasin.basinGeometry == null)
+                            .collect(Collectors.toList());
+                    if (nullGeomBasins.size() > 0) {
+                        StringBuilder sb = new StringBuilder();
+                        sb.append("The following basins have corrupted or null geometries:");
+                        for( Basin nullBasin : nullGeomBasins ) {
+                            sb.append(nullBasin).append("\n");
+                        }
+                        sb.append("Unexpected behaviour could occurr, better check your input data.");
+                        pm.errorMessage(sb.toString());
+                    }
 
-                        // create a new basin based on the lake
-                        Basin lakeBasin = new Basin();
-                        lakeBasin.basinGeometry = lakeGeom;
-                        lakeBasin.id = nextBasinNum++;
-                        lakesIdList.add(lakeBasin.id);
-                        lakeBasin.downStreamBasin = outBasin;
-                        lakeBasin.downStreamBasinId = outBasin.id;
-                        lakeBasin.upStreamBasins.addAll(intersectingBasins);
-                        basinId2geomMap.put(lakeBasin.id, lakeBasin.basinGeometry);
-
-                        // then disconnect completely contained basins up and down linking them to
-                        // the lake
-                        for( Basin containedBasin : completelyContainedBasins ) {
-                            for( Basin tmpBasin : allBasins ) {
-                                if (tmpBasin.id != containedBasin.id) {
-                                    // find basins that drain into the fully contained and relink
-                                    // them to the lake
-                                    if (tmpBasin.downStreamBasinId == containedBasin.id) {
-                                        tmpBasin.downStreamBasinId = lakeBasin.id;
-                                        tmpBasin.downStreamBasin = lakeBasin;
-                                    }
-                                    // find basins in which the completely contained drains into and
-                                    // relink with lake
-                                    Basin removeBasin = null;
-                                    for( Basin tmpUpBasin : tmpBasin.upStreamBasins ) {
-                                        if (tmpUpBasin.id == containedBasin.id) {
-                                            removeBasin = tmpUpBasin;
-                                        }
-                                    }
-                                    if (removeBasin != null) {
-                                        tmpBasin.upStreamBasins.remove(removeBasin);
-                                        tmpBasin.upStreamBasins.add(lakeBasin);
-                                    }
+                    pm.beginTask("Handle lake-basin intersections...", lakesList.size());
+                    for( Geometry lakeGeom : lakesList ) {
+                        Basin outBasin = findFirstIntersecting(rootBasin, lakeGeom);
+                        if (outBasin != null) {
+                            // found the out basin. All others intersecting will drain into this
+                            List<Basin> intersectingBasins = allBasins.parallelStream().filter(tmpBasin -> {
+                                if (tmpBasin.basinGeometry == null) {
+                                    return false;
                                 }
-                            }
-                            // at this point the containedBasin should be orphan
-                            containedBasin.downStreamBasin = null;
-                            containedBasin.upStreamBasins = null;
-                            basinId2geomMap.remove(containedBasin.id);
-                        }
+                                boolean isNotOutBasin = tmpBasin.id != outBasin.id;
+                                boolean intersectsLake = tmpBasin.basinGeometry.intersects(lakeGeom);
+                                return isNotOutBasin && intersectsLake;
+                            }).collect(Collectors.toList());
 
-                        // handle interaction with downstream basin
-                        outBasin.upStreamBasins.removeAll(lakeBasin.upStreamBasins);
-                        outBasin.upStreamBasins.add(lakeBasin);
-                        Geometry geomToCut = basinId2geomMap.get(outBasin.id);
-                        Geometry newGeom;
-                        try {
-                            newGeom = geomToCut.difference(lakeGeom);
-                        } catch (Exception e) {
-                            File folder = new File(outFolder);
-                            File errorFile = new File(folder, "errors." + HMConstants.GPKG + "#error_basin_" + outBasin.id);
+                            // of the intersecting find those that are completely contained
+                            List<Basin> completelyContainedBasins = new ArrayList<>();
+                            List<Basin> justIntersectingBasins = new ArrayList<>();
+                            intersectingBasins.forEach(interBasin -> {
+                                if (lakeGeom.contains(interBasin.basinGeometry)) {
+                                    completelyContainedBasins.add(interBasin);
+                                } else {
+                                    justIntersectingBasins.add(interBasin);
+                                }
+                            });
+                            intersectingBasins = justIntersectingBasins;
 
-                            String message = "An error occurred during intersection between basin and lake geometries. IGNORING LAKE.\nGeometries written to: "
-                                    + errorFile;
+                            // create a new basin based on the lake
+                            Basin lakeBasin = new Basin();
+                            lakeBasin.basinGeometry = lakeGeom;
+                            lakeBasin.id = nextBasinNum++;
+                            lakesIdList.add(lakeBasin.id);
+                            lakeBasin.downStreamBasin = outBasin;
+                            lakeBasin.downStreamBasinId = outBasin.id;
+                            lakeBasin.upStreamBasins.addAll(intersectingBasins);
+                            basinId2geomMap.put(lakeBasin.id, lakeBasin.basinGeometry);
 
-                            pm.errorMessage(message);
-
-                            geomToCut.setUserData("basin_" + outBasin.id);
-                            lakeGeom.setUserData("lake");
-                            SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs, geomToCut, lakeGeom);
-                            OmsVectorWriter.writeVector(errorFile.getAbsolutePath(), fc);
-
-                            continue;
-                        }
-                        outBasin.basinGeometry = newGeom;
-                        basinId2geomMap.put(outBasin.id, newGeom);
-
-                        // handle interaction with upstream basins
-                        intersectingBasins.forEach(iBasin -> {
-                            iBasin.downStreamBasin = lakeBasin;
-                            iBasin.downStreamBasinId = lakeBasin.id;
-
-                            Geometry basinGeomToCut = basinId2geomMap.get(iBasin.id);
-                            Geometry newBasinGeom = basinGeomToCut.difference(lakeGeom);
-                            basinId2geomMap.put(iBasin.id, newBasinGeom);
-                        });
-
-                        // we also need to cut the streams on the lakes
-                        List<Geometry> cutNetGeometries = new ArrayList<>();
-                        for( Geometry netGeom : netGeometries ) {
-                            if (netGeom.intersects(lakeGeom)) {
-                                Geometry difference = netGeom.difference(lakeGeom);
-                                if (!difference.isEmpty()) {
-                                    if (difference.getNumGeometries() > 1) {
-                                        // choose longest
-                                        Geometry longest = null;
-                                        double maxLength = -1;
-                                        for( int i = 0; i < difference.getNumGeometries(); i++ ) {
-                                            Geometry geometryN = difference.getGeometryN(i);
-                                            double l = geometryN.getLength();
-                                            if (l > maxLength) {
-                                                maxLength = l;
-                                                longest = geometryN;
+                            // then disconnect completely contained basins up and down linking them
+                            // to
+                            // the lake
+                            for( Basin containedBasin : completelyContainedBasins ) {
+                                for( Basin tmpBasin : allBasins ) {
+                                    if (tmpBasin.id != containedBasin.id) {
+                                        // find basins that drain into the fully contained and
+                                        // relink
+                                        // them to the lake
+                                        if (tmpBasin.downStreamBasinId == containedBasin.id) {
+                                            tmpBasin.downStreamBasinId = lakeBasin.id;
+                                            tmpBasin.downStreamBasin = lakeBasin;
+                                        }
+                                        // find basins in which the completely contained drains into
+                                        // and
+                                        // relink with lake
+                                        Basin removeBasin = null;
+                                        if (tmpBasin.upStreamBasins != null) {
+                                            for( Basin tmpUpBasin : tmpBasin.upStreamBasins ) {
+                                                if (tmpUpBasin.id == containedBasin.id) {
+                                                    removeBasin = tmpUpBasin;
+                                                }
                                             }
                                         }
-                                        difference = longest;
+                                        if (removeBasin != null) {
+                                            tmpBasin.upStreamBasins.remove(removeBasin);
+                                            tmpBasin.upStreamBasins.add(lakeBasin);
+                                        }
                                     }
-                                    cutNetGeometries.add(difference);
-                                    difference.setUserData(netGeom.getUserData());
                                 }
-                            } else {
-                                cutNetGeometries.add(netGeom);
+                                // at this point the containedBasin should be orphan
+                                containedBasin.downStreamBasin = null;
+                                containedBasin.upStreamBasins = null;
+                                basinId2geomMap.remove(containedBasin.id);
                             }
+
+                            // handle interaction with downstream basin
+                            outBasin.upStreamBasins.removeAll(lakeBasin.upStreamBasins);
+                            outBasin.upStreamBasins.add(lakeBasin);
+                            Geometry geomToCut = basinId2geomMap.get(outBasin.id);
+                            Geometry newGeom;
+                            try {
+                                newGeom = geomToCut.difference(lakeGeom);
+                            } catch (Exception e) {
+                                File folder = new File(outFolder);
+                                File errorFile = new File(folder, "errors." + HMConstants.GPKG + "#error_basin_" + outBasin.id);
+
+                                String message = "An error occurred during intersection between basin and lake geometries. IGNORING LAKE.\nGeometries written to: "
+                                        + errorFile;
+
+                                pm.errorMessage(message);
+
+                                geomToCut.setUserData("basin_" + outBasin.id);
+                                lakeGeom.setUserData("lake");
+                                SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs, geomToCut,
+                                        lakeGeom);
+                                OmsVectorWriter.writeVector(errorFile.getAbsolutePath(), fc);
+
+                                continue;
+                            }
+                            outBasin.basinGeometry = newGeom;
+                            basinId2geomMap.put(outBasin.id, newGeom);
+
+                            // handle interaction with upstream basins
+                            intersectingBasins.forEach(iBasin -> {
+                                iBasin.downStreamBasin = lakeBasin;
+                                iBasin.downStreamBasinId = lakeBasin.id;
+
+                                Geometry basinGeomToCut = basinId2geomMap.get(iBasin.id);
+                                Geometry newBasinGeom = basinGeomToCut.difference(lakeGeom);
+                                basinId2geomMap.put(iBasin.id, newBasinGeom);
+                            });
+
+                            // we also need to cut the streams on the lakes
+                            List<Geometry> cutNetGeometries = new ArrayList<>();
+                            for( Geometry netGeom : netGeometries ) {
+                                if (netGeom.intersects(lakeGeom)) {
+                                    Geometry difference = netGeom.difference(lakeGeom);
+                                    if (!difference.isEmpty()) {
+                                        if (difference.getNumGeometries() > 1) {
+                                            // choose longest
+                                            Geometry longest = null;
+                                            double maxLength = -1;
+                                            for( int i = 0; i < difference.getNumGeometries(); i++ ) {
+                                                Geometry geometryN = difference.getGeometryN(i);
+                                                double l = geometryN.getLength();
+                                                if (l > maxLength) {
+                                                    maxLength = l;
+                                                    longest = geometryN;
+                                                }
+                                            }
+                                            difference = longest;
+                                        }
+                                        cutNetGeometries.add(difference);
+                                        difference.setUserData(netGeom.getUserData());
+                                    }
+                                } else {
+                                    cutNetGeometries.add(netGeom);
+                                }
+                            }
+                            netGeometries = cutNetGeometries;
                         }
-                        netGeometries = cutNetGeometries;
+                    }
+
+                    // finally rewrite the topology file.
+
+                    File topoFile = new File(inGeoframeTopology);
+                    String topoFilename = FileUtilities.getNameWithoutExtention(topoFile);
+                    File newTopoFile = new File(topoFile.getParentFile(), topoFilename + "_lakes.txt");
+                    List<String> topology = new ArrayList<>();
+                    StringBuilder errorSb = new StringBuilder("Not adding again: \n");
+                    writeTopology(topology, rootBasin, errorSb);
+                    StringBuilder sb = new StringBuilder();
+                    topology.forEach(record -> sb.append(record).append("\n"));
+
+                    String error = errorSb.toString();
+                    if (!error.isBlank()) {
+                        sb.append("\n\n\n").append(error);
+                    }
+
+                    FileUtilities.writeFile(sb.toString(), newTopoFile);
+
+                } else {
+                    pm.errorMessage("Unable to find the basin topology.");
+                }
+            }
+
+            pm.beginTask("Extract vector basins...", basinId2geomMap.size());
+            List<Geometry> _netGeometries = netGeometries;
+            basinId2geomMap.entrySet().stream().forEach(entry -> {
+                try {
+                    extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder, basinCentroidsBuilder,
+                            singleNetBuilder, allBasinsFC, allNetworksFC, csvText, lakesIdList, entry);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+//            for( Entry<Integer, Geometry> entry : basinId2geomMap.entrySet() ) {
+//                extractBasin(subBasins, pit, sky, drain, net, crs, netGeometries, basinsBuilder, basinCentroidsBuilder,
+//                        singleNetBuilder, allBasinsFC, allNetworksFC, csvText, lakesIdList, entry);
+//            }
+            pm.done();
+
+            File folder = new File(outFolder);
+            File basinShpFile = new File(folder, "subbasins_complete.shp");
+            if (!basinShpFile.exists() || doOverWrite) {
+                dumpVector(allBasinsFC, basinShpFile.getAbsolutePath());
+            }
+            File netShpFile = new File(folder, "network_complete.shp");
+            if (!netShpFile.exists() || doOverWrite) {
+                dumpVector(allNetworksFC, netShpFile.getAbsolutePath());
+            }
+            File csvFile = new File(folder, "subbasins.csv");
+            if (!csvFile.exists() || doOverWrite) {
+                FileUtilities.writeFile(csvText.toString(), csvFile);
+            }
+        }
+    }
+
+    private void extractBasin( HMRaster subBasins, HMRaster pit, HMRaster sky, HMRaster drain, HMRaster net,
+            CoordinateReferenceSystem crs, List<Geometry> netGeometries, SimpleFeatureBuilder basinsBuilder,
+            SimpleFeatureBuilder basinCentroidsBuilder, SimpleFeatureBuilder singleNetBuilder,
+            DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection allNetworksFC, StringBuilder csvText,
+            List<Integer> lakesIdList, Entry<Integer, Geometry> entry ) throws Exception, ModelsIOException {
+        int basinNum = entry.getKey();
+//        pm.message("Processing basin " + basinNum + "...");
+        Geometry basinPolygon = entry.getValue();
+
+        double mainNetLength = 0; // for lakes ==0
+        List<LineString> netPieces = new ArrayList<>();
+        List<Integer> checkValueList = new ArrayList<>();
+
+        boolean isLake = lakesIdList.contains(basinNum);
+        if (!isLake) {
+            // get network pieces inside basin
+            int minCheckValue = Integer.MAX_VALUE;
+            HashMap<Integer, List<LineString>> checkValueList4Lines = new HashMap<>();
+            for( Geometry netGeom : netGeometries ) {
+                if (netGeom.intersects(basinPolygon)) {
+                    LengthIndexedLine lil = new LengthIndexedLine(netGeom);
+                    Coordinate centerCoord = lil.extractPoint(0.5);
+                    double value = subBasins.getValue(centerCoord);
+                    if ((int) value == basinNum) {
+                        Object userData = netGeom.getUserData();
+
+                        int checkValue;
+                        if (useHack) {
+                            checkValue = Integer.parseInt(userData.toString());
+                        } else {
+                            String pfaf = userData.toString();
+                            PfafstetterNumber p = new PfafstetterNumber(pfaf);
+                            checkValue = p.getOrder();
+                        }
+                        minCheckValue = Math.min(minCheckValue, checkValue);
+                        checkValueList.add(checkValue);
+                        List<LineString> list = checkValueList4Lines.get(checkValue);
+                        if (list == null) {
+                            list = new ArrayList<>();
+                        }
+                        list.add((LineString) netGeom);
+                        checkValueList4Lines.put(checkValue, list);
+
+                        netPieces.add((LineString) netGeom);
+
                     }
                 }
-
-                // finally rewrite the topology file.
-
-                File topoFile = new File(inGeoframeTopology);
-                String topoFilename = FileUtilities.getNameWithoutExtention(topoFile);
-                File newTopoFile = new File(topoFile.getParentFile(), topoFilename + "_lakes.txt");
-                List<String> topology = new ArrayList<>();
-                writeTopology(topology, rootBasin);
-                StringBuilder sb = new StringBuilder();
-                topology.forEach(record -> sb.append(record).append("\n"));
-                FileUtilities.writeFile(sb.toString(), newTopoFile);
-
-            } else {
-                pm.errorMessage("Unable to find the basin topology.");
+            }
+            if (minCheckValue != Integer.MAX_VALUE) {
+                List<LineString> minCheckValueLines = checkValueList4Lines.get(minCheckValue);
+                for( LineString minCheckValueLine : minCheckValueLines ) {
+                    mainNetLength += minCheckValueLine.getLength();
+                }
             }
         }
 
-        pm.beginTask("Extract vector basins...", basinId2geomMap.size());
-        for( Entry<Integer, Geometry> entry : basinId2geomMap.entrySet() ) {
-            int basinNum = entry.getKey();
-            pm.message("Processing basin " + basinNum + "...");
-            Geometry basinPolygon = entry.getValue();
+        Envelope basinEnvelope = basinPolygon.getEnvelopeInternal();
 
-            double mainNetLength = 0; // for lakes ==0
-            List<LineString> netPieces = new ArrayList<>();
-            List<Integer> checkValueList = new ArrayList<>();
+        Point basinCentroid = basinPolygon.getCentroid();
+        double areaM2 = basinPolygon.getArea();
+        double areaKm2 = areaM2 / 1000000.0;
 
-            boolean isLake = lakesIdList.contains(basinNum);
-            if (!isLake) {
-                // get network pieces inside basin
-                int minCheckValue = Integer.MAX_VALUE;
-                HashMap<Integer, List<LineString>> checkValueList4Lines = new HashMap<>();
-                for( Geometry netGeom : netGeometries ) {
-                    if (netGeom.intersects(basinPolygon)) {
-                        LengthIndexedLine lil = new LengthIndexedLine(netGeom);
-                        Coordinate centerCoord = lil.extractPoint(0.5);
-                        double value = CoverageUtilities.getValue(subBasins, centerCoord);
-                        if ((int) value == basinNum) {
-                            Object userData = netGeom.getUserData();
+        Coordinate point = basinCentroid.getCoordinate();
+        double elev = pit.getValue(point);
+        double skyview = sky.getValue(point);
 
-                            int checkValue;
-                            if (useHack) {
-                                checkValue = Integer.parseInt(userData.toString());
-                            } else {
-                                String pfaf = userData.toString();
-                                PfafstetterNumber p = new PfafstetterNumber(pfaf);
-                                checkValue = p.getOrder();
-                            }
-                            minCheckValue = Math.min(minCheckValue, checkValue);
-                            checkValueList.add(checkValue);
-                            List<LineString> list = checkValueList4Lines.get(checkValue);
-                            if (list == null) {
-                                list = new ArrayList<>();
-                            }
-                            list.add((LineString) netGeom);
-                            checkValueList4Lines.put(checkValue, list);
+        // Extracting raster data for each basin
+        ReferencedEnvelope basinRefEnvelope = new ReferencedEnvelope(basinEnvelope, crs);
+        GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope, null);
+        WritableRaster clippedWR = CoverageUtilities.renderedImage2IntWritableRaster(clipped.getRenderedImage(), false);
 
-                            netPieces.add((LineString) netGeom);
-
-                        }
-                    }
-                }
-                if (minCheckValue != Integer.MAX_VALUE) {
-                    List<LineString> minCheckValueLines = checkValueList4Lines.get(minCheckValue);
-                    for( LineString minCheckValueLine : minCheckValueLines ) {
-                        mainNetLength += minCheckValueLine.getLength();
-                    }
+        // we need to consider the lakes and lake cuts, so the polygon needs to be used
+        PreparedGeometry preparedBasinPolygon = PreparedGeometryFactory.prepare(basinPolygon);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(clipped);
+        GridGeometry2D clippedGG = clipped.getGridGeometry();
+        int cols = regionMap.getCols();
+        int rows = regionMap.getRows();
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, clippedGG);
+                if (preparedBasinPolygon.intersects(GeometryUtilities.gf().createPoint(coord))) {
+                    clippedWR.setSample(c, r, 0, basinNum);
+                    // TODO check
+                    // int value = clippedWR.getSample(c, r, 0);
+                    // if (value != basinNum) {
+                    // clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
+                    // }
+                } else {
+                    clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
                 }
             }
+        }
 
-            Envelope basinEnvelope = basinPolygon.getEnvelopeInternal();
+        File basinFolder = makeBasinFolder(basinNum);
 
-            Point basinCentroid = basinPolygon.getCentroid();
-            double areaM2 = basinPolygon.getArea();
-            double areaKm2 = areaM2 / 1000000.0;
+        GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
 
-            Coordinate point = basinCentroid.getCoordinate();
-            double elev = CoverageUtilities.getValue(pit, point);
-            double skyview = CoverageUtilities.getValue(sky, point);
+        GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope, null);
+        GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
+        File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
+        if (!pitFile.exists() || doOverWrite) {
+            dumpRaster(cutPit, pitFile.getAbsolutePath());
+        }
 
-            // Extracting raster data for each basin
-            ReferencedEnvelope basinRefEnvelope = new ReferencedEnvelope(basinEnvelope, crs);
-            GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope, null);
-            WritableRaster clippedWR = CoverageUtilities.renderedImage2IntWritableRaster(clipped.getRenderedImage(), false);
+        double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
+        double avgElev = minMaxAvgSum[2];
 
-            // we need to consider the lakes and lake cuts, so the polygon needs to be used
-            PreparedGeometry preparedBasinPolygon = PreparedGeometryFactory.prepare(basinPolygon);
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(clipped);
-            GridGeometry2D clippedGG = clipped.getGridGeometry();
-            int cols = regionMap.getCols();
-            int rows = regionMap.getRows();
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, clippedGG);
-                    if (preparedBasinPolygon.intersects(GeometryUtilities.gf().createPoint(coord))) {
-                        clippedWR.setSample(c, r, 0, basinNum);
-                        // TODO check
-                        // int value = clippedWR.getSample(c, r, 0);
-                        // if (value != basinNum) {
-                        // clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
-                        // }
-                    } else {
-                        clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
-                    }
-                }
-            }
+        GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope, null);
+        GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
+        File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
+        if (!skyFile.exists() || doOverWrite) {
+            dumpRaster(cutSky, skyFile.getAbsolutePath());
+        }
 
-            File basinFolder = makeBasinFolder(basinNum);
+        GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope, null);
+        GridCoverage2D cutDrain = CoverageUtilities.coverageValuesMapper(clippedDrain, maskCoverage);
+        File drainFile = new File(basinFolder, "drain_" + basinNum + ".asc");
+        if (!drainFile.exists() || doOverWrite) {
+            dumpRaster(cutDrain, drainFile.getAbsolutePath());
+        }
 
-            GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
-
-            GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope, null);
-            GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
-            File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
-            if (!pitFile.exists() || doOverWrite) {
-                dumpRaster(cutPit, pitFile.getAbsolutePath());
-            }
-
-            double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
-            double avgElev = minMaxAvgSum[2];
-
-            GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope, null);
-            GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
-            File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
-            if (!skyFile.exists() || doOverWrite) {
-                dumpRaster(cutSky, skyFile.getAbsolutePath());
-            }
-
-            GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope, null);
-            GridCoverage2D cutDrain = CoverageUtilities.coverageValuesMapper(clippedDrain, maskCoverage);
-            File drainFile = new File(basinFolder, "drain_" + basinNum + ".asc");
-            if (!drainFile.exists() || doOverWrite) {
-                dumpRaster(cutDrain, drainFile.getAbsolutePath());
-            }
-
-            GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope, null);
-            GridCoverage2D cutNet = CoverageUtilities.coverageValuesMapper(clippedNet, maskCoverage);
-            File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
-            if (!netFile.exists() || doOverWrite) {
-                dumpRaster(cutNet, netFile.getAbsolutePath());
-            }
+        GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope, null);
+        GridCoverage2D cutNet = CoverageUtilities.coverageValuesMapper(clippedNet, maskCoverage);
+        File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
+        if (!netFile.exists() || doOverWrite) {
+            dumpRaster(cutNet, netFile.getAbsolutePath());
+        }
 
 //            OmsRescaledDistance rescaledDistance1 = new OmsRescaledDistance();
 //            rescaledDistance1.pm = pm;
@@ -620,84 +678,83 @@ public class GeoframeInputsBuilder extends HMModel {
 //                dumpRaster(rescaledDistance.outRescaled, rescaledRatioFile.getAbsolutePath());
 //            }
 
-            // finalize feature writing
+        // finalize feature writing
 
-            // BASINS
-            Geometry dumpBasin = basinPolygon;
-            if (basinPolygon instanceof Polygon) {
-                dumpBasin = GeometryUtilities.gf().createMultiPolygon(new Polygon[]{(Polygon) basinPolygon});
-            }
-            Object[] basinValues = new Object[]{dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
-                    skyview, isLake ? 1 : 0};
-            basinsBuilder.addAll(basinValues);
-            SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
-            allBasinsFC.add(basinFeature);
-
-            // dump single subbasin
-            DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
-            singleBasin.add(basinFeature);
-            File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
-            if (!basinShpFile.exists() || doOverWrite) {
-                dumpVector(singleBasin, basinShpFile.getAbsolutePath());
-            }
-
-            Object[] centroidValues = new Object[]{basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2,
-                    mainNetLength, skyview};
-            basinCentroidsBuilder.addAll(centroidValues);
-            SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
-
-            // dump single centroid
-            DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
-            singleCentroid.add(basinCentroidFeature);
-            File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
-            if (!centroidShpFile.exists() || doOverWrite) {
-                dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
-            }
-
-            // CHANNELS
-            if (!netPieces.isEmpty()) {
-                DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
-                for( int i = 0; i < netPieces.size(); i++ ) {
-                    LineString netLine = netPieces.get(i);
-                    Integer checkValue = checkValueList.get(i);
-                    Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength(), checkValue};
-                    singleNetBuilder.addAll(netValues);
-                    SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
-
-                    allNetworksFC.add(singleNetFeature);
-                    singleNet.add(singleNetFeature);
-                }
-                File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
-                if (!netShpFile.exists() || doOverWrite) {
-                    dumpVector(singleNet, netShpFile.getAbsolutePath());
-                }
-            }
-
-            csvText.append(basinNum).append(";");
-            csvText.append(point.x).append(";");
-            csvText.append(point.y).append(";");
-            csvText.append(elev).append(";");
-            csvText.append(avgElev).append(";");
-            csvText.append(areaKm2).append(";");
-            csvText.append(mainNetLength).append(";");
-            csvText.append(skyview).append("\n");
-
-            pm.worked(1);
+        // BASINS
+        Geometry dumpBasin = basinPolygon;
+        if (basinPolygon instanceof Polygon) {
+            dumpBasin = GeometryUtilities.gf().createMultiPolygon(new Polygon[]{(Polygon) basinPolygon});
         }
-        pm.done();
+        Object[] basinValues = new Object[]{dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength, skyview,
+                isLake ? 1 : 0};
+        basinsBuilder.addAll(basinValues);
+        SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
+        allBasinsFC.add(basinFeature);
 
-        File folder = new File(outFolder);
-        File basinShpFile = new File(folder, "subbasins_complete.shp");
+        // dump single subbasin
+        DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
+        singleBasin.add(basinFeature);
+        File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
         if (!basinShpFile.exists() || doOverWrite) {
-            dumpVector(allBasinsFC, basinShpFile.getAbsolutePath());
+            dumpVector(singleBasin, basinShpFile.getAbsolutePath());
         }
-        File netShpFile = new File(folder, "network_complete.shp");
-        if (!netShpFile.exists() || doOverWrite) {
-            dumpVector(allNetworksFC, netShpFile.getAbsolutePath());
+
+        Object[] centroidValues = new Object[]{basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
+                skyview};
+        basinCentroidsBuilder.addAll(centroidValues);
+        SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
+
+        // dump single centroid
+        DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
+        singleCentroid.add(basinCentroidFeature);
+        File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
+        if (!centroidShpFile.exists() || doOverWrite) {
+            dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
         }
-        File csvFile = new File(folder, "subbasins.csv");
-        if (!csvFile.exists() || doOverWrite) {
-            FileUtilities.writeFile(csvText.toString(), csvFile);
+
+        // CHANNELS
+        if (!netPieces.isEmpty()) {
+            DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
+            for( int i = 0; i < netPieces.size(); i++ ) {
+                LineString netLine = netPieces.get(i);
+                Integer checkValue = checkValueList.get(i);
+                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength(), checkValue};
+                singleNetBuilder.addAll(netValues);
+                SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
+
+                allNetworksFC.add(singleNetFeature);
+                singleNet.add(singleNetFeature);
+            }
+            File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
+            if (!netShpFile.exists() || doOverWrite) {
+                dumpVector(singleNet, netShpFile.getAbsolutePath());
+            }
+        }
+
+        csvText.append(basinNum).append(";");
+        csvText.append(point.x).append(";");
+        csvText.append(point.y).append(";");
+        csvText.append(elev).append(";");
+        csvText.append(avgElev).append(";");
+        csvText.append(areaKm2).append(";");
+        csvText.append(mainNetLength).append(";");
+        csvText.append(skyview).append("\n");
+
+        pm.worked(1);
+    }
+
+    private void printSubbasins( TreeSet<Integer> subBasinsSet, TreeSet<Integer> topologyBasinsSet ) {
+        pm.message("Basins in subbasins but not in topology:");
+        for( Integer subbasinId : subBasinsSet ) {
+            if (!topologyBasinsSet.contains(subbasinId)) {
+                pm.message("\t->" + subbasinId);
+            }
+        }
+        pm.message("Basins in topology but not in subbasins:");
+        for( Integer topologyIdId : topologyBasinsSet ) {
+            if (!subBasinsSet.contains(topologyIdId)) {
+                pm.message("\t->" + topologyIdId);
+            }
         }
 
     }
@@ -720,7 +777,7 @@ public class GeoframeInputsBuilder extends HMModel {
         return newGeom;
     }
 
-    private void writeTopology( List<String> topology, Basin basin ) {
+    private void writeTopology( List<String> topology, Basin basin, StringBuilder errorSb ) {
         int downid = 0;
         if (basin.downStreamBasin != null) {
             downid = basin.downStreamBasinId;
@@ -728,13 +785,14 @@ public class GeoframeInputsBuilder extends HMModel {
         String record = basin.id + " " + downid;
         if (!topology.contains(record)) {
             topology.add(record);
+
+            for( Basin upBasin : basin.upStreamBasins ) {
+                writeTopology(topology, upBasin, errorSb);
+            }
         } else {
-            System.out.println("Not adding again: " + record);
+            errorSb.append("  ->").append(record).append("\n");
         }
 
-        for( Basin upBasin : basin.upStreamBasins ) {
-            writeTopology(topology, upBasin);
-        }
     }
 
     private Basin findFirstIntersecting( Basin basin, Geometry lakeGeom ) {

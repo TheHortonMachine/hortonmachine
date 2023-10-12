@@ -61,11 +61,10 @@ public class OmsFlowDirections extends HMModel {
     @Description(OMSFLOWDIRECTIONS_inPit_DESCRIPTION)
     @In
     public GridCoverage2D inPit = null;
-    
+
     @Description(OMSFLOWDIRECTIONS_P_MINELEV_DESCRIPTION)
     @In
     public double pMinElev = 0.0;
-    
 
     @Description(OMSFLOWDIRECTIONS_outFlow_DESCRIPTION)
     @Out
@@ -157,26 +156,26 @@ public class OmsFlowDirections extends HMModel {
             // it is necessary to transpose the dir matrix and than it's possible to
             // write the output
             double novalue = pitRaster.getNovalue();
-            HMRaster outFlowRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inPit).setNoValue(novalue).build();
-            for( int i = 0; i < dir[0].length; i++ ) {
-                if (pm.isCanceled()) {
-                    return;
-                }
-                for( int j = 0; j < dir.length; j++ ) {
-                    if (dir[j][i] == 0) {
-                        throw new ModelsIllegalargumentException("Should never happen", this);
+            try (HMRaster outFlowRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inPit).setDoShort(true)
+                    .setNoValue(novalue).build()) {
+                for( int i = 0; i < dir[0].length; i++ ) {
+                    if (pm.isCanceled()) {
+                        return;
                     }
-                    if (dir[j][i] != FLOWNOVALUE) {
-                        outFlowRaster.setValue(j,i,dir[j][i]);
-                    } else {
-                        outFlowRaster.setValue(j,i,novalue);
+                    for( int j = 0; j < dir.length; j++ ) {
+                        if (dir[j][i] == 0) {
+                            throw new ModelsIllegalargumentException("Should never happen", this);
+                        }
+                        if (dir[j][i] != FLOWNOVALUE) {
+                            outFlowRaster.setValue(j, i, dir[j][i]);
+                        } else {
+                            outFlowRaster.setValue(j, i, novalue);
+                        }
                     }
                 }
-            }
-            
 
-            outFlow = outFlowRaster.buildCoverage();
-            outFlowRaster.close();
+                outFlow = outFlowRaster.buildCoverage();
+            }
 
         } finally {
             pitRaster.close();

@@ -323,6 +323,9 @@ public class TestSpatialDbsMain {
         String polygonStr = "POLYGON ((71 70, 40 70, 40 40, 5 40, 5 15, 15 15, 15 4, 50 4, 71 70))";
         Geometry geom = new WKTReader().read(polygonStr);
         checkReadWrite(geom);
+        polygonStr = "MULTIPOLYGON (((6.9 45.9, 8.4 45.9, 8.4 44.3, 6.9 44.3, 6.9 45.9)), ((9.1 46.3, 10.8 46.3, 10.8 44.6, 9.1 44.6, 9.1 46.3)))";
+        geom = new WKTReader().read(polygonStr);
+        checkReadWrite(geom);
 
         String gCollWKT = "GEOMETRYCOLLECTION (" //
                 + " POLYGON ((10 42, 11.9 42, 11.9 40, 10 40, 10 42)), "

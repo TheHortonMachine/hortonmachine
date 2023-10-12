@@ -336,12 +336,18 @@ public class SpatialDbsImportUtils {
                 int count = 0;
                 int batchCount = 0;
                 try {
+                    long fidBkp = 0;
                     while( featureIterator.hasNext() ) {
                         SimpleFeature f = (SimpleFeature) featureIterator.next();
 
                         int shift = 1;
                         if (_hasFid) {
-                            long featureId = FeatureUtilities.getFeatureId(f);
+                            long featureId = fidBkp++;
+                            try {
+                                featureId = FeatureUtilities.getFeatureId(f);
+                            } catch (Exception e) {
+                                // ignore
+                            }
                             pStmt.setLong(1, featureId);
                             shift = 2;
                         }

@@ -117,7 +117,7 @@ public class DefaultTables {
                 "10000 255 0 255\n" + //
                 "100000 255 0 0\n" + //
                 "1000000 110 0 0\n" + //
-                "10000000 0 0 0\n";
+                "1000000000 0 0 0\n";
         map.put(EColorTables.tca.name(), tca);
 
         String sea = "-30000.0 255 255 255 -8000.0 255 255 255\n" + //

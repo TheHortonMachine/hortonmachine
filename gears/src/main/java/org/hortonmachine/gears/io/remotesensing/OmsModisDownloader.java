@@ -43,6 +43,7 @@ import org.hortonmachine.gears.io.netcdf.INetcdfUtils;
 import org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -285,7 +286,7 @@ public class OmsModisDownloader extends HMModel implements INetcdfUtils {
                 } else {
                     outRaster = coverages.get(0);
                 }
-                outRaster = CoverageUtilities.clipCoverage(outRaster,
+                outRaster = CoverageUtilities.clipCoverage(HMRaster.fromGridCoverage(outRaster),
                         new ReferencedEnvelope(pRoi, outRaster.getCoordinateReferenceSystem()), gridName);
             }
         }

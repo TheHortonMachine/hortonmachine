@@ -21,6 +21,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOG
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -139,9 +140,15 @@ public class OmsRiverSectionsExtractor extends HMModel {
         gf = GeometryUtilities.gf();
 
         List<SimpleFeature> riverFeatures = FeatureUtilities.featureCollectionToList(inRiver);
-        SimpleFeature riverFeature = riverFeatures.get(0);
-
-        Geometry geometry = (Geometry) riverFeature.getDefaultGeometry();
+        
+        Geometry geometry;
+        if (riverFeatures.size() == 1) {            
+            geometry = (Geometry) riverFeatures.get(0).getDefaultGeometry();
+        } else {
+            List<LineString> lines = riverFeatures.stream().map(f -> (LineString) ((Geometry) f.getDefaultGeometry()).getGeometryN(0)).collect(Collectors.toList()); 
+            geometry = GeometryUtilities.mergeLinestrings(lines).get(0);
+        }
+        
         Coordinate[] riverCoordinates = geometry.getCoordinates();
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
@@ -212,25 +219,27 @@ public class OmsRiverSectionsExtractor extends HMModel {
 
     public static void main( String[] args ) throws Exception {
 
-        String base = "D:\\lavori_tmp\\2018_idraulico_sadole\\sadole1D\\2018_04_11_data\\progetto_10\\";
-        String baseRaster = "D:\\Dropbox\\hydrologis\\lavori\\2018_projects\\02_idraulico_sadole\\dati_trent2D\\stato_progetto\\";
+        String base = "/storage/lavori_tmp/SILLI/ciclabile_moena/";
+        
+        double dist = 10.0;
+        double width = 15.0;
 
 
         OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
-        ex.inElev = OmsRasterReader.readRaster(baseRaster + "dtm_sadole_proj_09.asc");
-        ex.inRiver = OmsVectorReader.readVector(base + "net_final_slope_03.shp");
+        ex.inElev = OmsRasterReader.readRaster(base + "lidarMoenaSmall.asc");
+        ex.inRiver = OmsVectorReader.readVector(base + "trattoAvisioCiclabile.shp");
 //        ex.inSections = OmsVectorReader.readVector(base + "sadole_sections_progetto.shp");
-        ex.pSectionsWidth = 25.0;
-        ex.pSectionsIntervalDistance = 10.0;
+        ex.pSectionsWidth = width;
+        ex.pSectionsIntervalDistance = dist;
 //        ex.inRiverPoints = OmsVectorReader.readVector(base + "net_point_slope.shp");
         ex.process();
         SimpleFeatureCollection outSections2 = ex.outSections;
         SimpleFeatureCollection outSectionsPoints2 = ex.outSectionPoints;
         SimpleFeatureCollection outRiverPoints2 = ex.outRiverPoints;
 
-        OmsVectorWriter.writeVector(base + "sadole_sections_prj_10.shp", outSections2);
-        OmsVectorWriter.writeVector(base + "sadole_sectionpoints_prj_10.shp", outSectionsPoints2);
-        OmsVectorWriter.writeVector(base + "sadole_riverpoints_prj_10.shp", outRiverPoints2);
+        OmsVectorWriter.writeVector(base + "moena_ciclabile.gpkg#sections_" + ((int)dist), outSections2);
+        OmsVectorWriter.writeVector(base + "moena_ciclabile.gpkg#sectionpoints_" + ((int)dist), outSectionsPoints2);
+        OmsVectorWriter.writeVector(base + "moena_ciclabile.gpkg#riverpoints_" + ((int)dist), outRiverPoints2);
 
         // OmsRiverSectionsExtractor ex = new OmsRiverSectionsExtractor();
         // ex.inElev = OmsRasterReader.readRaster(base + "dtm_04.asc");

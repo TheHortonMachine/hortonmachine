@@ -38,9 +38,16 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSKYVIEW_outSky_D
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.media.jai.RasterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -52,11 +59,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSSKYVIEW_DESCRIPTION)
 @Author(name = OMSSKYVIEW_AUTHORNAMES, contact = OMSSKYVIEW_AUTHORCONTACTS)
@@ -78,8 +80,6 @@ public class OmsSkyview extends HMModel {
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     private double maxSlope;
-    private double azimuth;
-    private double elevation;
     private int minX = 0;
     private int minY = 0;
     private int rows = 0;
@@ -130,7 +130,7 @@ public class OmsSkyview extends HMModel {
 
     }
 
-    protected WritableRaster normalVector( WritableRaster pitWR, double res ) {
+    private WritableRaster normalVector( WritableRaster pitWR, double res ) {
 
         /*
          * Initialize the Image of the normal vector in the central point of the
@@ -234,20 +234,22 @@ public class OmsSkyview extends HMModel {
 
         normalVectorWR = normalVector(pitWR, res);
 
-        WritableRaster skyviewFactorWR = CoverageUtilities.createWritableRaster(cols, rows, null, pitWR.getSampleModel(),
-                0.0);
+        WritableRaster skyviewFactorWR = CoverageUtilities.createWritableRaster(cols, rows, null, pitWR.getSampleModel(), 0.0);
         pm.beginTask(msg.message("skyview.calculating"), 35);
+        List<Integer> anglesList = new ArrayList<>();
         for( int i = 0; i < 360 - 10; i = i + 10 ) {
-            azimuth = Math.toRadians(i * 1.0);
+            anglesList.add(i);
+        }
+        anglesList.parallelStream().forEach(i -> {
+            double azimuth = Math.toRadians(i * 1.0);
             WritableRaster skyViewWR = CoverageUtilities.createWritableRaster(cols, rows, null, pitWR.getSampleModel(),
                     Math.toRadians(maxSlope));
             for( int j = (int) maxSlope; j >= 0; j-- ) {
-
-                elevation = Math.toRadians(j * 1.0);
-                double[] sunVector = calcSunVector();
+                double elevation = Math.toRadians(j * 1.0);
+                double[] sunVector = calcSunVector(azimuth, elevation);
                 double[] inverseSunVector = calcInverseSunVector(sunVector);
                 double[] normalSunVector = calcNormalSunVector(sunVector);
-                calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, skyViewWR, res);
+                calculateFactor(rows, cols, sunVector, inverseSunVector, normalSunVector, pitWR, skyViewWR, res, elevation);
 
             }
             for( int t = normalVectorWR.getMinY(); t < normalVectorWR.getMinY() + normalVectorWR.getHeight(); t++ ) {
@@ -257,14 +259,17 @@ public class OmsSkyview extends HMModel {
                 }
             }
 
-            for( int q = 0; q < skyviewFactorWR.getWidth(); q++ ) {
-                for( int k = 0; k < skyviewFactorWR.getHeight(); k++ ) {
-                    double tmp = skyviewFactorWR.getSampleDouble(q, k, 0);
-                    skyviewFactorWR.setSample(q, k, 0, tmp + skyViewWR.getSampleDouble(q, k, 0));
+            synchronized (skyviewFactorWR) {
+                for( int q = 0; q < skyviewFactorWR.getWidth(); q++ ) {
+                    for( int k = 0; k < skyviewFactorWR.getHeight(); k++ ) {
+                        double tmp = skyviewFactorWR.getSampleDouble(q, k, 0);
+                        skyviewFactorWR.setSample(q, k, 0, tmp + skyViewWR.getSampleDouble(q, k, 0));
+                    }
                 }
             }
             pm.worked(1);
-        }
+
+        });
         pm.done();
         return skyviewFactorWR;
     }
@@ -280,9 +285,10 @@ public class OmsSkyview extends HMModel {
      * @param normalSunVector
      * @param inverseSunVector
      * @param sunVector
+     * @param elevation 
      */
-    protected WritableRaster shadow( int x, int y, WritableRaster tmpWR, WritableRaster pitWR, double res,
-            double[] normalSunVector, double[] inverseSunVector, double[] sunVector ) {
+    private WritableRaster shadow( int x, int y, WritableRaster tmpWR, WritableRaster pitWR, double res, double[] normalSunVector,
+            double[] inverseSunVector, double[] sunVector, double elevation ) {
         int n = 0;
         double zcompare = -Double.MAX_VALUE;
         double dx = (inverseSunVector[0] * n);
@@ -314,8 +320,8 @@ public class OmsSkyview extends HMModel {
 
     }
 
-    protected void calculateFactor( int h, int w, double[] sunVector, double[] inverseSunVector, double[] normalSunVector,
-            WritableRaster demWR, WritableRaster skyViewWR, double dx ) {
+    private void calculateFactor( int h, int w, double[] sunVector, double[] inverseSunVector, double[] normalSunVector,
+            WritableRaster demWR, WritableRaster skyViewWR, double dx, double elevation ) {
 
         double casx = 1e6 * sunVector[0];
         double casy = 1e6 * sunVector[1];
@@ -336,16 +342,16 @@ public class OmsSkyview extends HMModel {
 
         int j = f_j;
         for( int i = 0; i < skyViewWR.getWidth(); i++ ) {
-            shadow(i, j, skyViewWR, demWR, dx, normalSunVector, inverseSunVector, sunVector);
+            shadow(i, j, skyViewWR, demWR, dx, normalSunVector, inverseSunVector, sunVector, elevation);
         }
         int i = f_i;
         for( int k = 0; k < skyViewWR.getHeight(); k++ ) {
-            shadow(i, k, skyViewWR, demWR, dx, normalSunVector, inverseSunVector, sunVector);
+            shadow(i, k, skyViewWR, demWR, dx, normalSunVector, inverseSunVector, sunVector, elevation);
         }
 
     }
 
-    protected double[] calcSunVector() {
+    private double[] calcSunVector( double azimuth, double elevation ) {
         return new double[]{sin(azimuth) * cos(elevation), -cos(azimuth) * cos(elevation), sin(elevation)};
     }
 

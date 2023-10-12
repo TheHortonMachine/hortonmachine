@@ -24,6 +24,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.shortNovalue;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -121,6 +122,10 @@ public class OmsExtractBasin extends HMModel {
     @In
     public boolean doSmoothing = false;
 
+    @Description(OMSEXTRACTBASIN_doHighSpeed_DESCRIPTION)
+    @In
+    public boolean doHighSpeed= false;
+
     @Description(OMSEXTRACTBASIN_outArea_DESCRIPTION)
     @Out
     public double outArea = 0;
@@ -153,6 +158,7 @@ public class OmsExtractBasin extends HMModel {
     public static final String OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION = "A buffer to consider for network snapping.";
     public static final String OMSEXTRACTBASIN_doVector_DESCRIPTION = "Flag to enable vector basin extraction.";
     public static final String OMSEXTRACTBASIN_doSmoothing_DESCRIPTION = "Flag to enable vector basin smoothing.";
+    public static final String OMSEXTRACTBASIN_doHighSpeed_DESCRIPTION = "Enable high speed extraction. This requires -xss to be set high (ex -Xss1024g) on the JVM for huge basins.";
     public static final String OMSEXTRACTBASIN_outArea_DESCRIPTION = "The area of the extracted basin.";
     public static final String OMSEXTRACTBASIN_outBasin_DESCRIPTION = "The extracted basin mask.";
     public static final String OMSEXTRACTBASIN_outOutlet_DESCRIPTION = "The optional outlet point vector map.";
@@ -220,33 +226,47 @@ public class OmsExtractBasin extends HMModel {
             runningNode.setIntValueInMap(basinIter, 1);
             outArea++;
 
-            ConcurrentLinkedQueue<FlowNode> enteringNodes = new ConcurrentLinkedQueue<>(runningNode.getEnteringNodes());
-            pm.beginTask(msg.message("wateroutlet.extracting"), -1);
-            while( enteringNodes.size() > 0 ) {
-                if (pm.isCanceled()) {
-                    return;
-                }
+            if (doHighSpeed) {
+                pm.beginTask("Gathering basin cells...", -1);
+                List<FlowNode> allBasinNodes = new ArrayList<>(1000000);
+                collectNodes(runningNode, allBasinNodes);
+                pm.done();
 
-                ConcurrentLinkedQueue<FlowNode> newEnteringNodes = new ConcurrentLinkedQueue<>();
-                enteringNodes.parallelStream().forEach(flowNode -> {
+                pm.beginTask("Set basin values...", allBasinNodes.size());
+                for( FlowNode tmpNode : allBasinNodes ) {
+                    tmpNode.setIntValueInMap(basinIter, 1);
+                    pm.worked(1);
+                }
+                pm.done();
+            } else {
+                ConcurrentLinkedQueue<FlowNode> enteringNodes = new ConcurrentLinkedQueue<>(runningNode.getEnteringNodes());
+                pm.beginTask(msg.message("wateroutlet.extracting"), -1);
+                while( enteringNodes.size() > 0 ) {
                     if (pm.isCanceled()) {
                         return;
                     }
-                    if (!alreadyWarned && flowNode.touchesBound()) {
-                        pm.errorMessage(MessageFormat.format(
-                                "WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
-                                flowNode.col, flowNode.row));
-                        alreadyWarned = true;
-                    }
-                    flowNode.setIntValueInMap(basinIter, 1);
-                    outArea++;
 
-                    List<FlowNode> newEntering = flowNode.getEnteringNodes();
-                    newEnteringNodes.addAll(newEntering);
-                });
-                enteringNodes = newEnteringNodes;
+                    ConcurrentLinkedQueue<FlowNode> newEnteringNodes = new ConcurrentLinkedQueue<>();
+                    enteringNodes.parallelStream().forEach(flowNode -> {
+                        if (pm.isCanceled()) {
+                            return;
+                        }
+                        if (!alreadyWarned && flowNode.touchesBound()) {
+                            pm.errorMessage(MessageFormat.format(
+                                    "WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
+                                    flowNode.col, flowNode.row));
+                            alreadyWarned = true;
+                        }
+                        flowNode.setIntValueInMap(basinIter, 1);
+                        outArea++;
+
+                        List<FlowNode> newEntering = flowNode.getEnteringNodes();
+                        newEnteringNodes.addAll(newEntering);
+                    });
+                    enteringNodes = newEnteringNodes;
+                }
+                pm.done();
             }
-            pm.done();
 
             outArea = outArea * xRes * yRes;
             outBasin = CoverageUtilities.buildCoverageWithNovalue("basin", basinWR, regionMap, crs, shortNovalue);
@@ -255,6 +275,21 @@ public class OmsExtractBasin extends HMModel {
         } finally {
             flowIter.done();
             basinIter.done();
+        }
+    }
+
+    private void collectNodes( FlowNode currentNode, List<FlowNode> allNodes ) {
+        if (!alreadyWarned && currentNode.touchesBound()) {
+            pm.errorMessage(MessageFormat.format(
+                    "WARNING: touched boundaries in col/row = {0}/{1}. You might consider to review your processing region.",
+                    currentNode.col, currentNode.row));
+            alreadyWarned = true;
+        }
+        outArea++;
+        List<FlowNode> enteringNodes = currentNode.getEnteringNodes();
+        for( FlowNode flowNode : enteringNodes ) {
+            allNodes.add(flowNode);
+            collectNodes(flowNode, allNodes);
         }
     }
 

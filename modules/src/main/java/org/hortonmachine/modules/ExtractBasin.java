@@ -25,6 +25,7 @@ import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.Oms
 import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_LICENSE;
 import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_NAME;
 import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_STATUS;
+import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_doHighSpeed_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_doSmoothing_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_inFlow_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin.OMSEXTRACTBASIN_inNetwork_DESCRIPTION;
@@ -87,6 +88,10 @@ public class ExtractBasin extends HMModel {
     @Description(OMSEXTRACTBASIN_doSmoothing_DESCRIPTION)
     @In
     public boolean doSmoothing = false;
+    
+    @Description(OMSEXTRACTBASIN_doHighSpeed_DESCRIPTION)
+    @In
+    public boolean doHighSpeed= false;
 
     @Description(OMSEXTRACTBASIN_outArea_DESCRIPTION)
     @Out
@@ -121,6 +126,7 @@ public class ExtractBasin extends HMModel {
         }
         extractbasin.doVector = doVector;
         extractbasin.doSmoothing = doSmoothing;
+        extractbasin.doHighSpeed = doHighSpeed;
         extractbasin.pm = pm;
         extractbasin.doProcess = doProcess;
         extractbasin.doReset = doReset;

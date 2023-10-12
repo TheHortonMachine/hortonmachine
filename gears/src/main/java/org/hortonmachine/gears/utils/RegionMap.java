@@ -364,7 +364,7 @@ public class RegionMap extends HashMap<String, Double> {
         int rows = (int) ((newHeight) / originalYres);
         int cols = (int) ((newWidth) / originalXres);
 
-        RegionMap regionMap = RegionMap.fromBoundsAndGrid(newNorth, newSouth, newWest, newEast, cols, rows);
+        RegionMap regionMap = RegionMap.fromBoundsAndGrid(newWest, newEast, newSouth, newNorth,  cols, rows);
         return regionMap;
     }
 
