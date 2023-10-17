@@ -6,6 +6,9 @@ import java.util.List;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.w3c.dom.Node;
 
+/**
+ * This class represents the capabilities of a Web Coverage Service (WCS).
+ */
 public class WcsCapabilities implements XmlHelper.XmlVisitor {
 
     String version;
