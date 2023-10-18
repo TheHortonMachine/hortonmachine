@@ -162,16 +162,29 @@ public class XmlHelper {
                 }
             }
         }
-
-        // Node child = node.getFirstChild();
-        // while (child != null) {
-        //     String nodeName = child.getNodeName();
-        //     if (nodeName.toLowerCase().contains(lowerCaseName)) {
-        //         return child;
-        //     }
-        //     child = child.getNextSibling();
-        // }
         return null;
+    }
+
+    /**
+     * Recursively finds all nodes with a given name (case-insensitive) in the given node's subtree.
+     * 
+     * @param node the root node of the subtree to search
+     * @param lowerCaseName the name of the nodes to find, in lowercase
+     * @param foundNodes a list to which all found nodes will be added
+     */
+    public static void findNodes(Node node, String lowerCaseName, List<Node> foundNodes) {
+        lowerCaseName = lowerCaseName.toLowerCase();
+
+        NodeList childNodes = node.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node childNode = childNodes.item(i);
+            String nodeName = childNode.getNodeName();
+            if (nodeName.toLowerCase().endsWith(lowerCaseName)) {
+                foundNodes.add(childNode);
+            } else {
+                findNodes(childNode, lowerCaseName, foundNodes);
+            }
+        }
     }
 
     public static String findAttribute(Node node, String lowerCaseName) {
@@ -242,5 +255,7 @@ public class XmlHelper {
         }
         return indentation.toString();
     }
+
+   
 
 }

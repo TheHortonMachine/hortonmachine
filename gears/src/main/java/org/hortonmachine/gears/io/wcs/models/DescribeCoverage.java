@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.io.wcs.models;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -143,6 +144,30 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
 
         Node serviceParametersNode = XmlHelper.findNode(node, "ServiceParameters");
         nativeFormat = XmlHelper.findFirstTextInChildren(serviceParametersNode, "nativeFormat");
+    }
+
+    public String toString(){
+        String s = "";
+        s += "envelope: " + envelope + "\n";
+        s += "axisLabels: " + Arrays.toString(axisLabels) + "\n";
+        s += "uomLabels: " + Arrays.toString(uomLabels) + "\n";
+        s += "srsDimension: " + srsDimension + "\n";
+        s += "rectifiedGridId: " + rectifiedGridId + "\n";
+        s += "rectifiedGridDimension: " + rectifiedGridDimension + "\n";
+        s += "gridEnvelope: " + gridEnvelope + "\n";
+        s += "gridAxisLabels: " + Arrays.toString(gridAxisLabels) + "\n";
+        s += "lowerLeftCellCenter: " + lowerLeftCellCenter + "\n";
+        s += "lowerLeftCellCenterId: " + lowerLeftCellCenterId + "\n";
+        s += "lowerLeftCellCenterSrid: " + lowerLeftCellCenterSrid + "\n";
+        s += "xRes: " + xRes + "\n";
+        s += "yRes: " + yRes + "\n";
+        s += "xRotation: " + xRotation + "\n";
+        s += "yRotation: " + yRotation + "\n";
+        s += "novalue: " + novalue + "\n";
+        s += "uom: " + uom + "\n";
+        s += "range: " + range + "\n";
+        s += "nativeFormat: " + nativeFormat + "\n";
+        return s;
     }
 
 }

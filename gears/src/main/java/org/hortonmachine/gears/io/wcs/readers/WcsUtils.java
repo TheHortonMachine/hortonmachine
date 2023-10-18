@@ -8,19 +8,21 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class WcsUtils {
 
-
     /**
      * Returns the SRID (Spatial Reference ID) from a given SRS wcs url, or null.
      * 
-     * <p>Example urls handled are:
+     * <p>
+     * Example urls handled are:
      * <ul>
      * <li>http://www.opengis.net/def/crs/EPSG/0/25832</li>
      * <li>http://www.opengis.net/def/crs/EPSG/0/EPSG:25832</li>
      * </ul>
      * </p>
      * </br>
+     * 
      * @param srsName the SRS name to extract the SRID from
-     * @return the SRID as an Integer, or null if the SRID cannot be extracted from the SRS name
+     * @return the SRID as an Integer, or null if the SRID cannot be extracted from
+     *         the SRS name
      */
     public static Integer getSridFromSrsName(String srsName) {
         int index = srsName.lastIndexOf("EPSG:");
@@ -45,5 +47,9 @@ public class WcsUtils {
         if (srid != null)
             return CrsUtilities.getCrsFromSrid(srid);
         return null;
+    }
+
+    public static String nsWCS2(String tag) {
+        return "{http://www.opengis.net/wcs/2.0}" + tag;
     }
 }

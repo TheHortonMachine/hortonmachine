@@ -12,9 +12,11 @@ import org.w3c.dom.Node;
  * This class represents the capabilities of a Web Coverage Service (WCS).
  */
 public class WcsCapabilities implements XmlHelper.XmlVisitor {
-    String version;
-    Identification identification;
-    Map<String, CoverageSummary> layerId2CoverageSummaryMap = new HashMap<>();
+    private String version;
+    private Identification identification;
+    private ServiceMetadata serviceMetadata;
+    private OperationsMetadata operationsMetadata;
+    private Map<String, CoverageSummary> layerId2CoverageSummaryMap = new HashMap<>();
     
     @Override
     public boolean checkElementName(String name) {
@@ -29,12 +31,30 @@ public class WcsCapabilities implements XmlHelper.XmlVisitor {
         
         identification = new Identification();
         XmlHelper.apply(node, identification);
+
+        serviceMetadata = new ServiceMetadata();
+        XmlHelper.apply(node, serviceMetadata);
+
+        operationsMetadata = new OperationsMetadata();
+        XmlHelper.apply(node, operationsMetadata);
         
         List<CoverageSummary> coverageSummaries = new ArrayList<>();
         XmlHelper.apply(node, new CoverageSummary(coverageSummaries));
         for (CoverageSummary coverageSummary : coverageSummaries) {
             layerId2CoverageSummaryMap.put(coverageSummary.coverageId, coverageSummary);
         }
+    }
+
+    public Identification getIdentification() {
+        return identification;
+    }
+
+    public ServiceMetadata getServiceMetadata() {
+        return serviceMetadata;
+    }
+
+    public OperationsMetadata getOperationsMetadata() {
+        return operationsMetadata;
     }
 
     public String getVersion() {
@@ -53,6 +73,10 @@ public class WcsCapabilities implements XmlHelper.XmlVisitor {
         String s = "WcsCapabilities [\n";
         s += "version=" + version + "\n";
         s += identification;
+        s += "\n****************************************************************************************\n";
+        s += serviceMetadata;
+        s += "\n****************************************************************************************\n";
+        s += operationsMetadata;
         s += "\n****************************************************************************************\n";
         for (CoverageSummary coverageSummary : layerId2CoverageSummaryMap.values()) {
             s += coverageSummary;

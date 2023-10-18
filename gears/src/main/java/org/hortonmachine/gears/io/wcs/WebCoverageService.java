@@ -11,6 +11,7 @@ import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
 public class WebCoverageService {
     WcsCapabilities wcsCapabilities;
     private String url;
+    private String baseUrl;
     private String version;
     private String xml;
     private String cookies;
@@ -39,6 +40,9 @@ public class WebCoverageService {
         if (wcsCapabilities != null)
             return;
         WCSCapabilitiesReader reader = new WCSCapabilitiesReader(version, cookies, auth, timeout, headers);
+        if (url.indexOf('?') != -1) {
+            baseUrl = url.split("\\?")[0];
+        }
         wcsCapabilities = reader.read(url, timeout);
         if(version == null)
             version = wcsCapabilities.getVersion();
@@ -53,8 +57,32 @@ public class WebCoverageService {
     public DescribeCoverage getDescribeCoverage(CoverageSummary coverageSummary) throws Exception {
         init();
         DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageSummary.coverageId, cookies, auth, timeout, headers);
-        DescribeCoverage dc = reader.read(url, timeout);
+     
+        String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageUrl();
+        if(describeCoverageUrl == null)
+            describeCoverageUrl = baseUrl;
+     
+        DescribeCoverage dc = reader.read(describeCoverageUrl, timeout);
         return dc;
+    }
+
+    /**
+     *  <p>example 2.0.1 URL
+     *  http://earthserver.pml.ac.uk/rasdaman/ows?
+     *      &SERVICE=WCS
+     *      &VERSION=2.0.1
+     *      &REQUEST=GetCoverage
+     *      &COVERAGEID=V2_monthly_CCI_chlor_a_insitu_test
+     *      &SUBSET=Lat(40,50)
+     *      &SUBSET=Long(-10,0)
+     *      &SUBSET=ansi(144883,145000)
+     *      &FORMAT=application/netcdf
+     *
+     * @throws Exception
+     */
+    public void getCoverage() throws Exception {
+        init();
+
     }
 
     public static void main(String[] args) throws Exception {
