@@ -82,6 +82,7 @@ public class XmlHelper {
      *         found
      */
     public static String findFirstTextInChildren(Node node, String lowerCaseName) {
+        lowerCaseName = lowerCaseName.toLowerCase();
         Node child = node.getFirstChild();
         while (child != null) {
             String nodeName = child.getNodeName();
@@ -119,6 +120,7 @@ public class XmlHelper {
      * @return a list of all text values of the matching child nodes
      */
     public static List<String> findAllTextsInChildren(Node node, String lowerCaseName) {
+        lowerCaseName = lowerCaseName.toLowerCase();
         List<String> values = new ArrayList<>();
         Node child = node.getFirstChild();
         while (child != null) {
@@ -145,18 +147,35 @@ public class XmlHelper {
     }
 
     public static Node findNode(Node node, String lowerCaseName) {
-        Node child = node.getFirstChild();
-        while (child != null) {
-            String nodeName = child.getNodeName();
-            if (nodeName.toLowerCase().contains(lowerCaseName)) {
-                return child;
+        lowerCaseName = lowerCaseName.toLowerCase();
+
+        NodeList childNodes = node.getChildNodes();
+        for (int i = 0; i < childNodes.getLength(); i++) {
+            Node childNode = childNodes.item(i);
+            String nodeName = childNode.getNodeName();
+            if (nodeName.toLowerCase().endsWith(lowerCaseName)) {
+                return childNode;
+            } else {
+                Node foundNode = findNode(childNode, lowerCaseName);
+                if (foundNode != null) {
+                    return foundNode;
+                }
             }
-            child = child.getNextSibling();
         }
+
+        // Node child = node.getFirstChild();
+        // while (child != null) {
+        //     String nodeName = child.getNodeName();
+        //     if (nodeName.toLowerCase().contains(lowerCaseName)) {
+        //         return child;
+        //     }
+        //     child = child.getNextSibling();
+        // }
         return null;
     }
 
     public static String findAttribute(Node node, String lowerCaseName) {
+        lowerCaseName = lowerCaseName.toLowerCase();
         if (node.hasAttributes()) {
             NamedNodeMap attributes = node.getAttributes();
             for (int i = 0; i < attributes.getLength(); i++) {
@@ -169,8 +188,8 @@ public class XmlHelper {
         return null;
     }
 
-    public void browseXML() {
-        browseXMLTree(rootNode, 0);
+    public void printTree() {
+        printTree(rootNode, 0);
     }
 
     /**
@@ -180,7 +199,7 @@ public class XmlHelper {
      * @param level   The level of indentation
      * @param visitor The visitor to use
      */
-    public void browseXMLTree(Node node, int level) {
+    public void printTree(Node node, int level) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             System.out.println(getIndentation(level) + "Element: " + node.getNodeName());
             if (node.hasAttributes()) {
@@ -197,7 +216,7 @@ public class XmlHelper {
 
         Node child = node.getFirstChild();
         while (child != null) {
-            browseXMLTree(child, level + 1);
+            printTree(child, level + 1);
             child = child.getNextSibling();
         }
     }

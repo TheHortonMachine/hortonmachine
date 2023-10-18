@@ -1,14 +1,12 @@
 package org.hortonmachine.gears.io.wcs.models;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.io.wcs.readers.WcsUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
@@ -18,13 +16,13 @@ public class CoverageSummary implements XmlHelper.XmlVisitor {
      */
     private List<CoverageSummary> coverageSummaries;
 
-    private String title;
-    private String abstract_;
-    private List<String> keywords = new ArrayList<>();
-    private String coverageId;
-    private String coverageSubtype;
-    private ReferencedEnvelope boundingBox;
-    private ReferencedEnvelope wgs84BoundingBox;
+    public String title;
+    public String abstract_;
+    public List<String> keywords = new ArrayList<>();
+    public String coverageId;
+    public String coverageSubtype;
+    public ReferencedEnvelope boundingBox;
+    public ReferencedEnvelope wgs84BoundingBox;
 
     public CoverageSummary(List<CoverageSummary> coverageSummaries) {
         this.coverageSummaries = coverageSummaries;
@@ -49,16 +47,8 @@ public class CoverageSummary implements XmlHelper.XmlVisitor {
         Node bboxNode = XmlHelper.findNode(node, "boundingbox");
         if (bboxNode != null) {
             String crsStr = XmlHelper.findAttribute(bboxNode, "crs");
-            // extract srid from crs
-            CoordinateReferenceSystem crs = null;
-            if (crsStr != null) {
-                int index = crsStr.lastIndexOf("EPSG:");
-                if (index != -1) {
-                    String sridStr = crsStr.substring(index + 5);
-                    int srid = Integer.parseInt(sridStr);
-                    crs = CrsUtilities.getCrsFromSrid(srid);
-                }
-            }
+            
+            CoordinateReferenceSystem crs = WcsUtils.getCrsFromSrsName(crsStr);
             String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
             String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
             cs.boundingBox = new ReferencedEnvelope(

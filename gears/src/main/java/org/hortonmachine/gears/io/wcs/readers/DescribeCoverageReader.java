@@ -1,7 +1,16 @@
-package org.hortonmachine.gears.io.wcs;
+package org.hortonmachine.gears.io.wcs.readers;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.hortonmachine.gears.io.wcs.Authentication;
+import org.hortonmachine.gears.io.wcs.XmlHelper;
+import org.hortonmachine.gears.io.wcs.models.DescribeCoverage;
+import org.hortonmachine.gears.io.wcs.models.WcsCapabilities;
 
 
 /**
@@ -88,20 +97,21 @@ public class DescribeCoverageReader {
         // return service_url.split('?')[0] + '?' + urlqs
     }
 
-    // def read(self, service_url, timeout=30):
-    // """Get and parse a Describe Coverage document, returning an
-    // elementtree tree
+    public DescribeCoverage read(String service_url, int timeout) throws Exception{
+        String request = descCov_url(service_url);
 
-    // @type service_url: string
-    // @param service_url: The base url, to which is appended the service,
-    // version, and request parameters
-    // @rtype: elementtree tree
-    // @return: An elementtree tree representation of the capabilities document
-    // """
+        HttpClient httpClient = HttpClientBuilder.create().build();
+        HttpGet getCapabilitiesRequest = new HttpGet(request);
+        HttpResponse response = httpClient.execute(getCapabilitiesRequest);
 
-    // request = self.descCov_url(service_url)
-    // u = openURL(request, cookies=self.cookies, timeout=timeout, auth=self.auth,
-    // headers=self.headers)
-    // return etree.fromstring(u.read())
+        XmlHelper xmlHelper = XmlHelper.fromStream(response.getEntity().getContent());
+
+        // xmlHelper.printTree();
+
+        DescribeCoverage describeCoverage = new DescribeCoverage();
+        XmlHelper.apply(xmlHelper.getRootNode(), describeCoverage);
+
+        return describeCoverage;
+    }
 
 }

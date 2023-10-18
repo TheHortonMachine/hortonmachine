@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs;
+package org.hortonmachine.gears.io.wcs.readers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +7,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.hortonmachine.gears.io.wcs.Authentication;
+import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.hortonmachine.gears.io.wcs.models.WcsCapabilities;
 
 /**
@@ -29,7 +31,7 @@ public class WCSCapabilitiesReader {
         this.headers = headers;
     }
 
-    String capabilities_url(String service_url){
+    public String capabilities_url(String service_url){
     // """Return a capabilities url
     // @type service_url: string
     // @param service_url: base url of WCS service
@@ -83,7 +85,7 @@ public class WCSCapabilitiesReader {
         return service_url.split("\\?")[0] + "?" + urlqs;
     }
 
-    WcsCapabilities read(String service_url, int timeout) throws Exception{
+    public WcsCapabilities read(String service_url, int timeout) throws Exception{
         // """Get and parse a WCS capabilities document, returning an
         // elementtree tree
 
