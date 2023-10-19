@@ -67,15 +67,23 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
             uomLabels = uomLabelsStr.split(spaceRegex);
         }
 
+        int lonPosition = 0;
+        int latPosition = 1;
+        if(gridAxisLabels != null){
+            int[] lonLatPositions = WcsUtils.getLonLatPositions(gridAxisLabels);
+            lonPosition = lonLatPositions[0];
+            latPosition = lonLatPositions[1];
+        }
+
         String lowerCorner = XmlHelper.findFirstTextInChildren(envelopeNode, "lowerCorner");
         String upperCorner = XmlHelper.findFirstTextInChildren(envelopeNode, "upperCorner");
         String[] lowerCornerSplit = lowerCorner.split(spaceRegex);
         String[] upperCornerSplit = upperCorner.split(spaceRegex);
         envelope = new ReferencedEnvelope(
-                Double.parseDouble(lowerCornerSplit[0]),
-                Double.parseDouble(upperCornerSplit[0]),
-                Double.parseDouble(lowerCornerSplit[1]),
-                Double.parseDouble(upperCornerSplit[1]),
+                Double.parseDouble(lowerCornerSplit[lonPosition]),
+                Double.parseDouble(upperCornerSplit[lonPosition]),
+                Double.parseDouble(lowerCornerSplit[latPosition]),
+                Double.parseDouble(upperCornerSplit[latPosition]),
                 crs);
 
         Node domainSetNode = XmlHelper.findNode(node, "domainSet");
@@ -92,10 +100,10 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
         String gridEnvelopeHighStr = XmlHelper.findFirstTextInChildren(gridEnvelopeNode, "high");
         String[] gridEnvelopeLowSplit = gridEnvelopeLowStr.split(spaceRegex);
         String[] gridEnvelopeHighSplit = gridEnvelopeHighStr.split(spaceRegex);
-        int x1 = Integer.parseInt(gridEnvelopeLowSplit[0]);
-        int y1 = Integer.parseInt(gridEnvelopeLowSplit[1]);
-        int x2 = Integer.parseInt(gridEnvelopeHighSplit[0]);
-        int y2 = Integer.parseInt(gridEnvelopeHighSplit[1]);
+        int x1 = Integer.parseInt(gridEnvelopeLowSplit[lonPosition]);
+        int x2 = Integer.parseInt(gridEnvelopeHighSplit[lonPosition]);
+        int y1 = Integer.parseInt(gridEnvelopeLowSplit[latPosition]);
+        int y2 = Integer.parseInt(gridEnvelopeHighSplit[latPosition]);
         gridEnvelope = new GridEnvelope2D(x1, y1, x2 - x1, y2 - y1);
 
         axisLabelsStr = XmlHelper.findFirstTextInChildren(rectifiedGridNode, "axisLabels");

@@ -18,7 +18,16 @@ public interface IWebCoverageService {
 
     String getCapabilitiesUrl();
 
-    void getCoverage(String outputFilePath, CoverageReaderParameters parameters,
+    /**
+     * Retrieves a coverage from the web coverage service and saves it to the specified output file path.
+     *
+     * @param outputFilePath the file path where the coverage will be saved
+     * @param parameters the parameters used to read the coverage
+     * @param additionalParameters additional parameters to be included in the request
+     * @return the url used to do the getCoverage request
+     * @throws Exception if an error occurs while retrieving or saving the coverage
+     */
+    String getCoverage(String outputFilePath, CoverageReaderParameters parameters,
             HashMap<String, String> additonalParameters)
             throws Exception;
 

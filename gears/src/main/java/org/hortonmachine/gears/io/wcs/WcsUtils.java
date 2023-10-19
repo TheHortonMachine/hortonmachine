@@ -1,5 +1,9 @@
 package org.hortonmachine.gears.io.wcs;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -51,5 +55,57 @@ public class WcsUtils {
 
     public static String nsWCS2(String tag) {
         return "{http://www.opengis.net/wcs/2.0}" + tag;
+    }
+
+    /**
+     * Orders the given axis labels by putting the "long", "lon", "x" axis label first and the "lat", "y" axis label second.
+     * 
+     * @param axisLabels the axis labels to order
+     * @return the ordered axis labels
+     * @throws IllegalArgumentException if the "long", "lon", "x" or "lat", "y" axis labels are not found in the given axis labels
+     */
+    public static String[] orderLabels(String[] axisLabels) {
+        String[] ordered = new String[2];
+
+        int[] lonLatPositions = getLonLatPositions(axisLabels);
+        ordered[0] = axisLabels[lonLatPositions[0]];
+        ordered[1] = axisLabels[lonLatPositions[1]];
+        
+        if (ordered[0] == null || ordered[1] == null) {
+            throw new IllegalArgumentException("Could not find lat/lon or x/y axis labels in coverage description");
+        }
+        return ordered;
+    }
+
+    public static int[] getLonLatPositions(String[] axisLabels) {
+        int[] positions = new int[2];
+        List<String> possibleEastingLCLabels = getPossibleEastingLCLabels();
+        List<String> possibleNorthingLCLabels = getPossibleNorthingLCLabels();
+        boolean foundEasting = false;
+        boolean foundNorthing = false;
+        for (int i = 0; i < axisLabels.length; i++) {
+            String label = axisLabels[i].toLowerCase();
+            if (possibleEastingLCLabels.contains(label)) {
+                positions[0] = i;
+                foundEasting = true;
+            } else if (possibleNorthingLCLabels.contains(label)) {
+                positions[1] = i;
+                foundNorthing = true;
+            }
+        }
+        if (!foundEasting || !foundNorthing) {
+            throw new IllegalArgumentException("Could not find lat/lon or x/y axis labels in coverage description");
+        }
+        return positions;
+    }
+
+    private static List<String> getPossibleEastingLCLabels(){
+        List<String> labels = Arrays.asList("long", "lon", "x");
+        return labels;
+    }
+    
+    private static List<String> getPossibleNorthingLCLabels(){
+        List<String> labels = Arrays.asList("lat", "y");
+        return labels;
     }
 }

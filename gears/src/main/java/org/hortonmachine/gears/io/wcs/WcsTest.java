@@ -26,6 +26,17 @@ public class WcsTest {
      *
      * @throws Exception
      */
+        
+        // https://www.wcs.nrw.de/geobasis/wcs_nw_dgm
+        //      ?VERSION=2.0.1
+        //      &SERVICE=wcs
+        //      &REQUEST=GetCoverage
+        //      &COVERAGEID=nw_dgm
+        //      &FORMAT=image/tiff
+        //      &SUBSET=x(372511,374511)
+        //      &SUBSET=y(5613116,5615116)
+        //      &SCALEFACTOR=1
+        //      &SUBSETTINGCRS=EPSG:25832
 
         // http://ogcdev.bgs.ac.uk/geoserver/OneGDev/wcs?
         //     service=WCS
@@ -76,14 +87,16 @@ public class WcsTest {
 
         // get coverage
         String coverageId = "OneGDev__AegeanLevantineSeas-MCol";
-        ReferencedEnvelope env = new ReferencedEnvelope(26.51071, 29.45505, 34.54889, 37.31744, DefaultGeographicCRS.WGS84);
+        ReferencedEnvelope env = new ReferencedEnvelope(26.51071, 29.45505, 35.5, 36.0, DefaultGeographicCRS.WGS84);
 
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
         parameters.format("image/tiff");
         parameters.bbox(env);
         
         File file = new File(outFolder, coverageId + "_bbox_parameter.tiff");
-        service.getCoverage(file.getAbsolutePath(), parameters, null);
+        String url = service.getCoverage(file.getAbsolutePath(), parameters, null);
+
+        System.out.println("Coverage url: " + url);
 
         
         // WebCoverageService201 wcs = new WebCoverageService201(SERVICE_URL, "2.0.1");

@@ -116,7 +116,7 @@ public class WebCoverageService201 implements IWebCoverageService {
     }
 
     @Override
-    public void getCoverage(String outputFilePath, CoverageReaderParameters parameters, HashMap<String, String> additonalParameters)
+    public String getCoverage(String outputFilePath, CoverageReaderParameters parameters, HashMap<String, String> additonalParameters)
             throws Exception {
         init();
         String url = wcsCapabilities.getOperationsMetadata().getGetCoverageUrl();
@@ -164,6 +164,7 @@ public class WebCoverageService201 implements IWebCoverageService {
             e.printStackTrace();
         }
 
+        return finalUrl;
     }
 
 

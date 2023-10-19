@@ -6,8 +6,10 @@ import java.util.HashMap;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
+import org.hortonmachine.gears.utils.CrsUtilities;
 
 /**
  * A builder class for getCoverage call parameters.
@@ -69,9 +71,14 @@ public class CoverageReaderParameters {
                 String[] axisLabels = describeCoverage.gridAxisLabels;
                  //     &subset=Lat(34.54889,37.31744)
                 //     &subset=Long(26.51071,29.45505)
-                String[] lonLatLabelsOrdered = orderLabels(axisLabels);
+                String[] lonLatLabelsOrdered = WcsUtils.orderLabels(axisLabels);
                 url += "&subset=" + lonLatLabelsOrdered[0] + "(" + requestEnvelope.getMinX() + "," + requestEnvelope.getMaxX() + ")";
                 url += "&subset=" + lonLatLabelsOrdered[1] + "(" + requestEnvelope.getMinY() + "," + requestEnvelope.getMaxY() + ")";
+
+                String usedSrid = CrsUtilities.getCodeFromCrs(requestEnvelope.getCoordinateReferenceSystem());
+                if (usedSrid != null)
+                    url += "&SUBSETTINGCRS=" + usedSrid;
+                
             }
             
 
@@ -111,29 +118,5 @@ public class CoverageReaderParameters {
 
     }
 
-    private String[] orderLabels(String[] axisLabels) {
-        String[] ordered = new String[2];
-        
-        // if one of the axes is named long, lon or x, then put it
-        // into position 0 of the ordered array
-        for (String label : axisLabels) {
-            if (label.toLowerCase().equals("long") || label.toLowerCase().equals("lon") || label.toLowerCase().equals("x")) {
-                ordered[0] = label;
-                break;
-            }
-        }
-        // if one of the axes is named lat or y, then put it
-        // into position 1 of the ordered array
-        for (String label : axisLabels) {
-            if (label.toLowerCase().equals("lat") || label.toLowerCase().equals("y")) {
-                ordered[1] = label;
-                break;
-            }
-        }
-        // one of the ordered stayed null, break
-        if (ordered[0] == null || ordered[1] == null) {
-            throw new IllegalArgumentException("Could not find lat/lon or x/y axis labels in coverage description");
-        }
-        return ordered;
-    }
+
 }
