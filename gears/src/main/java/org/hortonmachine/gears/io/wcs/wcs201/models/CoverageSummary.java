@@ -1,12 +1,12 @@
-package org.hortonmachine.gears.io.wcs.models;
+package org.hortonmachine.gears.io.wcs.wcs201.models;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.io.wcs.readers.WcsUtils;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
@@ -44,32 +44,67 @@ public class CoverageSummary implements XmlHelper.XmlVisitor {
         cs.coverageId = XmlHelper.findFirstTextInChildren(node, "coverageid");
         cs.coverageSubtype = XmlHelper.findFirstTextInChildren(node, "coveragesubtype");
 
-        Node bboxNode = XmlHelper.findNode(node, "boundingbox");
-        if (bboxNode != null) {
-            String crsStr = XmlHelper.findAttribute(bboxNode, "crs");
-            
-            CoordinateReferenceSystem crs = WcsUtils.getCrsFromSrsName(crsStr);
-            String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
-            String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
-            cs.boundingBox = new ReferencedEnvelope(
-                    Double.parseDouble(lowerCorner.split(" ")[0]),
-                    Double.parseDouble(upperCorner.split(" ")[0]),
-                    Double.parseDouble(lowerCorner.split(" ")[1]),
-                    Double.parseDouble(upperCorner.split(" ")[1]),
-                    crs);
+        List<Node> bboxNodes = new ArrayList<>();
+        XmlHelper.findNodes(node, "boundingbox", bboxNodes);
+
+        if (!bboxNodes.isEmpty()) {
+            for (Node bboxNode : bboxNodes) {
+                String nodeName = bboxNode.getNodeName();
+
+                if (nodeName.toLowerCase().contains("wgs84")) {
+                    String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
+                    String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
+                    cs.wgs84BoundingBox = new ReferencedEnvelope(
+                            Double.parseDouble(lowerCorner.split(" ")[0]),
+                            Double.parseDouble(upperCorner.split(" ")[0]),
+                            Double.parseDouble(lowerCorner.split(" ")[1]),
+                            Double.parseDouble(upperCorner.split(" ")[1]),
+                            DefaultGeographicCRS.WGS84);
+                } else {
+                    String crsStr = XmlHelper.findAttribute(bboxNode, "crs");
+
+                    CoordinateReferenceSystem crs = WcsUtils.getCrsFromSrsName(crsStr);
+
+                    String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
+                    String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
+                    cs.boundingBox = new ReferencedEnvelope(
+                            Double.parseDouble(lowerCorner.split(" ")[0]),
+                            Double.parseDouble(upperCorner.split(" ")[0]),
+                            Double.parseDouble(lowerCorner.split(" ")[1]),
+                            Double.parseDouble(upperCorner.split(" ")[1]),
+                            crs);
+                }
+            }
+
         }
-        // now the same with wgs84BoundingBox
-        Node wgs84BboxNode = XmlHelper.findNode(node, "wgs84boundingbox");
-        if (wgs84BboxNode != null) {
-            String lowerCorner = XmlHelper.findFirstTextInChildren(wgs84BboxNode, "lowercorner");
-            String upperCorner = XmlHelper.findFirstTextInChildren(wgs84BboxNode, "uppercorner");
-            cs.wgs84BoundingBox = new ReferencedEnvelope(
-                    Double.parseDouble(lowerCorner.split(" ")[0]),
-                    Double.parseDouble(upperCorner.split(" ")[0]),
-                    Double.parseDouble(lowerCorner.split(" ")[1]),
-                    Double.parseDouble(upperCorner.split(" ")[1]),
-                    DefaultGeographicCRS.WGS84);
-        }
+
+        // if (bboxNode != null) {
+
+        //     String crsStr = XmlHelper.findAttribute(bboxNode, "crs");
+
+        //     CoordinateReferenceSystem crs = WcsUtils.getCrsFromSrsName(crsStr);
+
+        //     String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
+        //     String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
+        //     cs.boundingBox = new ReferencedEnvelope(
+        //             Double.parseDouble(lowerCorner.split(" ")[0]),
+        //             Double.parseDouble(upperCorner.split(" ")[0]),
+        //             Double.parseDouble(lowerCorner.split(" ")[1]),
+        //             Double.parseDouble(upperCorner.split(" ")[1]),
+        //             crs);
+        // }
+        // // now the same with wgs84BoundingBox
+        // Node wgs84BboxNode = XmlHelper.findNode(node, "wgs84boundingbox");
+        // if (wgs84BboxNode != null) {
+        //     String lowerCorner = XmlHelper.findFirstTextInChildren(wgs84BboxNode, "lowercorner");
+        //     String upperCorner = XmlHelper.findFirstTextInChildren(wgs84BboxNode, "uppercorner");
+        //     cs.wgs84BoundingBox = new ReferencedEnvelope(
+        //             Double.parseDouble(lowerCorner.split(" ")[0]),
+        //             Double.parseDouble(upperCorner.split(" ")[0]),
+        //             Double.parseDouble(lowerCorner.split(" ")[1]),
+        //             Double.parseDouble(upperCorner.split(" ")[1]),
+        //             DefaultGeographicCRS.WGS84);
+        // }
 
         coverageSummaries.add(cs);
     }

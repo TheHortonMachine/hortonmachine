@@ -8,8 +8,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.Authentication;
+import org.hortonmachine.gears.io.wcs.IWcsCapabilities;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.io.wcs.models.WcsCapabilities;
 
 /**
  * Read and parses WCS capabilities document into a a dictionary structure.
@@ -20,6 +20,7 @@ public class WCSCapabilitiesReader {
     private Authentication auth;
     private int timeout;
     private String headers;
+    private XmlHelper xmlHelper;
 
     public WCSCapabilitiesReader(String version, String cookies, Authentication auth, int timeout, String headers) {
         this.version = version;
@@ -31,7 +32,7 @@ public class WCSCapabilitiesReader {
         this.headers = headers;
     }
 
-    public String capabilities_url(String service_url){
+    public static String capabilities_url(String service_url, String version){
     // """Return a capabilities url
     // @type service_url: string
     // @param service_url: base url of WCS service
@@ -85,27 +86,49 @@ public class WCSCapabilitiesReader {
         return service_url.split("\\?")[0] + "?" + urlqs;
     }
 
-    public WcsCapabilities read(String service_url, int timeout) throws Exception{
-        // """Get and parse a WCS capabilities document, returning an
-        // elementtree tree
-
-        // @type service_url: string
-        // @param service_url: The base url, to which is appended the service,
-        // version, and request parameters
-        // @rtype: elementtree tree
-        // @return: An elementtree tree representation of the capabilities document
-        // """
-
-        String request = capabilities_url(service_url);
+    public XmlHelper getXmlHelper(String service_url, int timeout) throws Exception{
+        if(xmlHelper != null){
+            return xmlHelper;
+        }
+        String request = capabilities_url(service_url, version);
 
         HttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet getCapabilitiesRequest = new HttpGet(request);
         HttpResponse response = httpClient.execute(getCapabilitiesRequest);
 
-        XmlHelper xmlHelper = XmlHelper.fromStream(response.getEntity().getContent());
+        xmlHelper = XmlHelper.fromStream(response.getEntity().getContent());
 
-        WcsCapabilities wcsCapabilities = new WcsCapabilities();
-        XmlHelper.apply(xmlHelper.getRootNode(), wcsCapabilities);
+        return xmlHelper;
+    }
+
+    public String getVersion(String service_url, int timeout) throws Exception{
+        if (this.version != null) {
+            return version;
+        }
+        getXmlHelper(service_url, timeout);
+        String version = XmlHelper.findAttribute(xmlHelper.getRootNode(), "version");
+        if (this.version == null) {
+            this.version = version;
+        }
+        return version;
+    }
+
+    public IWcsCapabilities read(String service_url, int timeout) throws Exception{
+        XmlHelper xmlHelper = getXmlHelper(service_url, timeout);
+
+        IWcsCapabilities wcsCapabilities = null;
+        if ( version.equals("2.0.1")){
+            wcsCapabilities = new org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities();
+            XmlHelper.apply(xmlHelper.getRootNode(), wcsCapabilities);
+        } else if ( version == null) {
+            // no version supplied, get default
+            version = getVersion(service_url, timeout);
+        }
+
+        if (wcsCapabilities == null)
+            throw new Exception("Unsupported WCS version: " + version);
+            
+        this.version = wcsCapabilities.getVersion();
 
         return wcsCapabilities;
     }

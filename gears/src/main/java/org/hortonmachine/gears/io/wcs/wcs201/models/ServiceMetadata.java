@@ -1,9 +1,10 @@
-package org.hortonmachine.gears.io.wcs.models;
+package org.hortonmachine.gears.io.wcs.wcs201.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.io.wcs.readers.WcsUtils;
 import org.w3c.dom.Node;
 
 public class ServiceMetadata implements XmlHelper.XmlVisitor {
@@ -23,17 +24,25 @@ public class ServiceMetadata implements XmlHelper.XmlVisitor {
     public void visit(Node node) {
         supportedFormats = XmlHelper.findAllTextsInChildren(node, "formatSupported");
 
-        Node crsMetadataNode = XmlHelper.findNode(node, "CrsMetadata");
-        List<String> supportedCrss = XmlHelper.findAllTextsInChildren(crsMetadataNode, "crsSupported");
-        if (!supportedCrss.isEmpty()) {
-            supportedSrids = new int[supportedCrss.size()];
-            for (int i = 0; i < supportedCrss.size(); i++) {
-                supportedSrids[i] = WcsUtils.getSridFromSrsName(supportedCrss.get(i));
+        List<Node> supportedCrsNodes = new ArrayList<>();
+        XmlHelper.findNodes(node,  "crsSupported", supportedCrsNodes);
+        if (!supportedCrsNodes.isEmpty()) {
+            supportedSrids = new int[supportedCrsNodes.size()];
+            for (int i = 0; i < supportedCrsNodes.size(); i++) {
+                String textContent = supportedCrsNodes.get(i).getTextContent();
+                supportedSrids[i] = WcsUtils.getSridFromSrsName(textContent);
             }
         }
         
-        Node extensionNode = XmlHelper.findNode(node, "Extension");
-        supportedInterpolations = XmlHelper.findAllTextsInChildren(extensionNode, "interpolationSupported");
+        List<Node> interpolationSupportedNodes = new ArrayList<>();
+        XmlHelper.findNodes(node,  "interpolationSupported", interpolationSupportedNodes);
+        if (!interpolationSupportedNodes.isEmpty()) {
+            supportedInterpolations = new ArrayList<>();
+            for (int i = 0; i < interpolationSupportedNodes.size(); i++) {
+                String textContent = interpolationSupportedNodes.get(i).getTextContent();
+                supportedInterpolations.add(textContent);
+            }
+        }
     }
 
     public List<String> getSupportedFormats() {

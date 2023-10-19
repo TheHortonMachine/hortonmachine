@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.models;
+package org.hortonmachine.gears.io.wcs.wcs201.models;
 
 import java.util.ArrayList;
 import java.util.List;

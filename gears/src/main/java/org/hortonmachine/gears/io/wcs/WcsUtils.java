@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.readers;
+package org.hortonmachine.gears.io.wcs;
 
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;

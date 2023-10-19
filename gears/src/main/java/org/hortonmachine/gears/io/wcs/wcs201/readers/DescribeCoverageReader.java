@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.readers;
+package org.hortonmachine.gears.io.wcs.wcs201.readers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,8 +9,8 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.Authentication;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.io.wcs.models.DescribeCoverage;
-import org.hortonmachine.gears.io.wcs.models.WcsCapabilities;
+import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
+import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
 
 
 /**

@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.models;
+package org.hortonmachine.gears.io.wcs.wcs201.models;
 
 import java.util.Arrays;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.List;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.Range;
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.io.wcs.readers.WcsUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
@@ -60,7 +60,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
         }
         String axisLabelsStr = XmlHelper.findAttribute(envelopeNode, "axisLabels");
         if (axisLabelsStr != null) {
-            axisLabels = axisLabelsStr.split(spaceRegex);
+            gridAxisLabels = axisLabelsStr.split(spaceRegex);
         }
         String uomLabelsStr = XmlHelper.findAttribute(envelopeNode, "uomLabels");
         if (uomLabelsStr != null) {
@@ -100,7 +100,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
 
         axisLabelsStr = XmlHelper.findFirstTextInChildren(rectifiedGridNode, "axisLabels");
         if (axisLabelsStr != null) {
-            gridAxisLabels = axisLabelsStr.split(spaceRegex);
+            axisLabels = axisLabelsStr.split(spaceRegex);
         }
 
         Node originNode = XmlHelper.findNode(rectifiedGridNode, "origin");
@@ -129,24 +129,32 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
         Node dataRecordNode = XmlHelper.findNode(rangeTypeNode, "DataRecord");
         Node fieldNode = XmlHelper.findNode(dataRecordNode, "field");
         Node nilValueNode = XmlHelper.findNode(dataRecordNode, "nilValue");
-        String nilValueStr = nilValueNode.getFirstChild().getNodeValue();
-        // String nilValueStr = XmlHelper.findFirstTextInChildren(nilValueNode, "nilValue");
-        if (nilValueStr != null) {
-            novalue = Double.parseDouble(nilValueStr);
+        if (nilValueNode != null) {
+            String nilValueStr = nilValueNode.getFirstChild().getNodeValue();
+            // String nilValueStr = XmlHelper.findFirstTextInChildren(nilValueNode,
+            // "nilValue");
+            if (nilValueStr != null) {
+                novalue = Double.parseDouble(nilValueStr);
+            }
         }
         Node uomNode = XmlHelper.findNode(fieldNode, "uom");
-        uom = XmlHelper.findAttribute(uomNode, "code");
+        if (uomNode != null)
+            uom = XmlHelper.findAttribute(uomNode, "code");
 
         Node allowedValuesNode = XmlHelper.findNode(fieldNode, "AllowedValues");
-        String rangeStr = XmlHelper.findFirstTextInChildren(allowedValuesNode, "interval");
-        String[] rangeSplit = rangeStr.split(spaceRegex);
-        range = new Range<Double>(Double.class, Double.parseDouble(rangeSplit[0]), Double.parseDouble(rangeSplit[1]));
-
+        if (allowedValuesNode != null){
+            String rangeStr = XmlHelper.findFirstTextInChildren(allowedValuesNode, "interval");
+            if (rangeStr != null){
+                String[] rangeSplit = rangeStr.split(spaceRegex);
+                range = new Range<Double>(Double.class, Double.parseDouble(rangeSplit[0]), Double.parseDouble(rangeSplit[1]));
+            }
+        }
         Node serviceParametersNode = XmlHelper.findNode(node, "ServiceParameters");
-        nativeFormat = XmlHelper.findFirstTextInChildren(serviceParametersNode, "nativeFormat");
+        if (serviceParametersNode != null)
+            nativeFormat = XmlHelper.findFirstTextInChildren(serviceParametersNode, "nativeFormat");
     }
 
-    public String toString(){
+    public String toString() {
         String s = "";
         s += "envelope: " + envelope + "\n";
         s += "axisLabels: " + Arrays.toString(axisLabels) + "\n";

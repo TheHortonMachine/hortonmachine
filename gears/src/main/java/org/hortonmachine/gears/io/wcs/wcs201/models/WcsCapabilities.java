@@ -1,17 +1,18 @@
-package org.hortonmachine.gears.io.wcs.models;
+package org.hortonmachine.gears.io.wcs.wcs201.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hortonmachine.gears.io.wcs.IWcsCapabilities;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.w3c.dom.Node;
 
 /**
  * This class represents the capabilities of a Web Coverage Service (WCS).
  */
-public class WcsCapabilities implements XmlHelper.XmlVisitor {
+public class WcsCapabilities implements XmlHelper.XmlVisitor, IWcsCapabilities {
     private String version;
     private Identification identification;
     private ServiceMetadata serviceMetadata;
@@ -57,10 +58,12 @@ public class WcsCapabilities implements XmlHelper.XmlVisitor {
         return operationsMetadata;
     }
 
+    @Override
     public String getVersion() {
         return version;
     }
 
+    @Override
     public List<String> getCoverageIds(){
         return new ArrayList<>(layerId2CoverageSummaryMap.keySet());
     }
