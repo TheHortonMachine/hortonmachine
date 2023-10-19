@@ -19,8 +19,9 @@ public class CoverageReaderParameters {
     private String wcsVersion = null;
     public String method = "Get";
     public ReferencedEnvelope bbox = null;
-
     public String format = null;
+    public Double scaleFactor = null;
+
     public String time = null;
     public String store = null;
     public String rangesubset = null;
@@ -45,6 +46,11 @@ public class CoverageReaderParameters {
 
     public CoverageReaderParameters format(String format){
         this.format = format;
+        return this;
+    }
+
+    public CoverageReaderParameters scaleFactor(Double scaleFactor){
+        this.scaleFactor = scaleFactor;
         return this;
     }
 
@@ -78,8 +84,10 @@ public class CoverageReaderParameters {
                 String usedSrid = CrsUtilities.getCodeFromCrs(requestEnvelope.getCoordinateReferenceSystem());
                 if (usedSrid != null)
                     url += "&SUBSETTINGCRS=" + usedSrid;
-                
+
             }
+            if (this.scaleFactor != null)
+                url += "&SCALEFACTOR=" + this.scaleFactor;
             
 
             

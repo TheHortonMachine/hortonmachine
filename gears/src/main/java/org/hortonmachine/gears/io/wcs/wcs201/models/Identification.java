@@ -75,6 +75,10 @@ public class Identification implements XmlHelper.XmlVisitor {
         accessConstraints = XmlHelper.findFirstTextInChildren(node, "accessconstraints");
     }
 
+    public boolean supportsScaling(){
+        return profiles.stream().anyMatch(p -> p.toLowerCase().contains("scaling") && p.toLowerCase().contains("wcs_service-extension"));
+    }
+
     public String toString(){
         String s = "";
         s += "title: " + title + "\n";

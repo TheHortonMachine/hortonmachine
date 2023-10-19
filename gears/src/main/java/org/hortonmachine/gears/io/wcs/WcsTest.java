@@ -83,8 +83,6 @@ public class WcsTest {
             System.out.println("\t" + format);
         }
 
-        
-
         // get coverage
         String coverageId = "OneGDev__AegeanLevantineSeas-MCol";
         ReferencedEnvelope env = new ReferencedEnvelope(26.51071, 29.45505, 35.5, 36.0, DefaultGeographicCRS.WGS84);
@@ -92,8 +90,9 @@ public class WcsTest {
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
         parameters.format("image/tiff");
         parameters.bbox(env);
+        parameters.scaleFactor(0.5);
         
-        File file = new File(outFolder, coverageId + "_bbox_parameter.tiff");
+        File file = new File(outFolder, coverageId + "_bbox_parameter_scale05.tiff");
         String url = service.getCoverage(file.getAbsolutePath(), parameters, null);
 
         System.out.println("Coverage url: " + url);
