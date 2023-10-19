@@ -21,15 +21,9 @@ public class CoverageReaderParameters {
     public ReferencedEnvelope bbox = null;
     public String format = null;
     public Double scaleFactor = null;
+    public int[] rowsCols = null;
 
-    public String time = null;
-    public String store = null;
-    public String rangesubset = null;
-    public String gridbaseCRS = null;
-    public String gridtype = null;
-    public String gridCS = null;
-    public String gridorigin = null;
-    public String gridoffsets = null;
+
     private IWebCoverageService service;
 
 
@@ -54,6 +48,11 @@ public class CoverageReaderParameters {
         return this;
     }
 
+    public CoverageReaderParameters rowsCols(int[] rowsCols){
+        this.rowsCols = rowsCols;
+        return this;
+    }
+
 
 
     public String toUrl(HashMap<String, String> additionalParams) throws Exception {
@@ -62,12 +61,14 @@ public class CoverageReaderParameters {
         url += "&version=" + this.wcsVersion;
         url += "&request=GetCoverage";
         if (this.wcsVersion.equals("2.0.1")) {
+            WebCoverageService201 wcs = (WebCoverageService201) service;
+
             url += "&COVERAGEID=" + this.identifier;
             if (this.format != null)
                 url += "&format=" + this.format;
             if (this.bbox != null){
                 // need to get axis labels
-                DescribeCoverage describeCoverage = ((WebCoverageService201) service).getDescribeCoverage(this.identifier);
+                DescribeCoverage describeCoverage = wcs.getDescribeCoverage(this.identifier);
                 ReferencedEnvelope dataEnvelope = describeCoverage.envelope;
                 ReferencedEnvelope requestEnvelope = bbox;
                 if(!CRS.equalsIgnoreMetadata(dataEnvelope.getCoordinateReferenceSystem(), bbox.getCoordinateReferenceSystem())){
@@ -75,8 +76,6 @@ public class CoverageReaderParameters {
                 }
 
                 String[] axisLabels = describeCoverage.gridAxisLabels;
-                 //     &subset=Lat(34.54889,37.31744)
-                //     &subset=Long(26.51071,29.45505)
                 String[] lonLatLabelsOrdered = WcsUtils.orderLabels(axisLabels);
                 url += "&subset=" + lonLatLabelsOrdered[0] + "(" + requestEnvelope.getMinX() + "," + requestEnvelope.getMaxX() + ")";
                 url += "&subset=" + lonLatLabelsOrdered[1] + "(" + requestEnvelope.getMinY() + "," + requestEnvelope.getMaxY() + ")";
@@ -88,6 +87,22 @@ public class CoverageReaderParameters {
             }
             if (this.scaleFactor != null)
                 url += "&SCALEFACTOR=" + this.scaleFactor;
+            if (this.rowsCols != null){
+                // we need to check if the service supports scaling
+                boolean supportsScaling = wcs.getCapabilities().getIdentification().supportsScaling();
+                
+                
+                if(supportsScaling){
+                    DescribeCoverage describeCoverage = wcs.getDescribeCoverage(this.identifier);
+                    String[] gridAxisLabels = describeCoverage.gridAxisLabels;
+                    int[] lonLatPositions = WcsUtils.getLonLatPositions(gridAxisLabels);
+
+                    String[] axisLabels = describeCoverage.axisLabels;
+                    url += "&SCALESIZE=" + axisLabels[lonLatPositions[0]] + "(" + this.rowsCols[1] + "),"+ axisLabels[lonLatPositions[1]] + "(" + this.rowsCols[0] + ")";
+                    // url += "&WIDTH=" + this.rowsCols[1];
+                    // url += "&HEIGHT=" + this.rowsCols[0];
+                }
+            }
             
 
             
@@ -95,24 +110,6 @@ public class CoverageReaderParameters {
             url += "&identifier=" + this.identifier;
             if (this.bbox != null)
                 url += "&boundingbox=" + this.bbox;
-            if (this.time != null)
-                url += "&timesequence=" + this.time;
-            if (this.format != null)
-                url += "&format=" + this.format;
-            if (this.store != null)
-                url += "&store=" + this.store;
-            if (this.rangesubset != null)
-                url += "&RangeSubset=" + this.rangesubset;
-            if (this.gridbaseCRS != null)
-                url += "&gridbaseCRS=" + this.gridbaseCRS;
-            if (this.gridtype != null)
-                url += "&gridtype=" + this.gridtype;
-            if (this.gridCS != null)
-                url += "&gridCS=" + this.gridCS;
-            if (this.gridorigin != null)
-                url += "&gridorigin=" + this.gridorigin;
-            if (this.gridoffsets != null)
-                url += "&gridoffsets=" + this.gridoffsets;
 
         } else {
             throw new UnsupportedEncodingException("Unsupported WCS version: " + this.wcsVersion);

@@ -100,12 +100,12 @@ public class WcsUtils {
     }
 
     private static List<String> getPossibleEastingLCLabels(){
-        List<String> labels = Arrays.asList("long", "lon", "x");
+        List<String> labels = Arrays.asList("long", "lon", "x", "e");
         return labels;
     }
     
     private static List<String> getPossibleNorthingLCLabels(){
-        List<String> labels = Arrays.asList("lat", "y");
+        List<String> labels = Arrays.asList("lat", "y", "n");
         return labels;
     }
 }
