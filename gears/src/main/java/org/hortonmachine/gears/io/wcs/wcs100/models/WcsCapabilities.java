@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.wcs201.models;
+package org.hortonmachine.gears.io.wcs.wcs100.models;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,30 +16,26 @@ import org.w3c.dom.Node;
 public class WcsCapabilities implements IWcsCapabilities {
     private String version;
     private Identification identification;
-    private ServiceMetadata serviceMetadata;
     private OperationsMetadata operationsMetadata;
     private Map<String, ICoverageSummary> layerId2CoverageSummaryMap = new HashMap<>();
-    
+
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:Capabilities") || name.endsWith(":Capabilities"))
-        return true;
+        if (name.equals("wcs:WCS_Capabilities") || name.endsWith(":WCS_Capabilities"))
+            return true;
         return false;
     }
-    
+
     @Override
     public void visit(Node node) throws Exception {
         version = XmlHelper.findAttribute(node, "version");
-        
+
         identification = new Identification();
         XmlHelper.apply(node, identification);
 
-        serviceMetadata = new ServiceMetadata();
-        XmlHelper.apply(node, serviceMetadata);
-
         operationsMetadata = new OperationsMetadata();
         XmlHelper.apply(node, operationsMetadata);
-        
+
         List<ICoverageSummary> coverageSummaries = new ArrayList<>();
         XmlHelper.apply(node, new CoverageSummary(coverageSummaries));
         for (ICoverageSummary coverageSummary : coverageSummaries) {
@@ -49,10 +45,6 @@ public class WcsCapabilities implements IWcsCapabilities {
 
     public Identification getIdentification() {
         return identification;
-    }
-
-    public ServiceMetadata getServiceMetadata() {
-        return serviceMetadata;
     }
 
     public OperationsMetadata getOperationsMetadata() {
@@ -65,11 +57,11 @@ public class WcsCapabilities implements IWcsCapabilities {
     }
 
     @Override
-    public List<String> getCoverageIds(){
+    public List<String> getCoverageIds() {
         return new ArrayList<>(layerId2CoverageSummaryMap.keySet());
     }
 
-    public ICoverageSummary getCoverageSummaryById(String coverageId){
+    public ICoverageSummary getCoverageSummaryById(String coverageId) {
         return layerId2CoverageSummaryMap.get(coverageId);
     }
 
@@ -77,8 +69,6 @@ public class WcsCapabilities implements IWcsCapabilities {
         String s = "WcsCapabilities [\n";
         s += "version=" + version + "\n";
         s += identification;
-        s += "\n****************************************************************************************\n";
-        s += serviceMetadata;
         s += "\n****************************************************************************************\n";
         s += operationsMetadata;
         s += "\n****************************************************************************************\n";

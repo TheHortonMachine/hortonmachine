@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.IWcsCapabilities;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.w3c.dom.Node;
@@ -12,46 +13,38 @@ import org.w3c.dom.Node;
 /**
  * This class represents the capabilities of a Web Coverage Service (WCS).
  */
-public class WcsCapabilities implements XmlHelper.XmlVisitor, IWcsCapabilities {
+public class WcsCapabilities implements IWcsCapabilities {
     private String version;
     private Identification identification;
-    private ServiceMetadata serviceMetadata;
     private OperationsMetadata operationsMetadata;
-    private Map<String, CoverageSummary> layerId2CoverageSummaryMap = new HashMap<>();
-    
+    private Map<String, ICoverageSummary> layerId2CoverageSummaryMap = new HashMap<>();
+
     @Override
     public boolean checkElementName(String name) {
         if (name.equals("wcs:Capabilities") || name.endsWith(":Capabilities"))
-        return true;
+            return true;
         return false;
     }
-    
+
     @Override
-    public void visit(Node node) {
+    public void visit(Node node) throws Exception {
         version = XmlHelper.findAttribute(node, "version");
-        
+
         identification = new Identification();
         XmlHelper.apply(node, identification);
 
-        serviceMetadata = new ServiceMetadata();
-        XmlHelper.apply(node, serviceMetadata);
-
         operationsMetadata = new OperationsMetadata();
         XmlHelper.apply(node, operationsMetadata);
-        
-        List<CoverageSummary> coverageSummaries = new ArrayList<>();
+
+        List<ICoverageSummary> coverageSummaries = new ArrayList<>();
         XmlHelper.apply(node, new CoverageSummary(coverageSummaries));
-        for (CoverageSummary coverageSummary : coverageSummaries) {
-            layerId2CoverageSummaryMap.put(coverageSummary.coverageId, coverageSummary);
+        for (ICoverageSummary coverageSummary : coverageSummaries) {
+            layerId2CoverageSummaryMap.put(coverageSummary.getCoverageId(), coverageSummary);
         }
     }
 
     public Identification getIdentification() {
         return identification;
-    }
-
-    public ServiceMetadata getServiceMetadata() {
-        return serviceMetadata;
     }
 
     public OperationsMetadata getOperationsMetadata() {
@@ -64,11 +57,11 @@ public class WcsCapabilities implements XmlHelper.XmlVisitor, IWcsCapabilities {
     }
 
     @Override
-    public List<String> getCoverageIds(){
+    public List<String> getCoverageIds() {
         return new ArrayList<>(layerId2CoverageSummaryMap.keySet());
     }
 
-    public CoverageSummary getCoverageSummaryById(String coverageId){
+    public ICoverageSummary getCoverageSummaryById(String coverageId) {
         return layerId2CoverageSummaryMap.get(coverageId);
     }
 
@@ -77,11 +70,9 @@ public class WcsCapabilities implements XmlHelper.XmlVisitor, IWcsCapabilities {
         s += "version=" + version + "\n";
         s += identification;
         s += "\n****************************************************************************************\n";
-        s += serviceMetadata;
-        s += "\n****************************************************************************************\n";
         s += operationsMetadata;
         s += "\n****************************************************************************************\n";
-        for (CoverageSummary coverageSummary : layerId2CoverageSummaryMap.values()) {
+        for (ICoverageSummary coverageSummary : layerId2CoverageSummaryMap.values()) {
             s += coverageSummary;
         }
         s += "\n****************************************************************************************\n";

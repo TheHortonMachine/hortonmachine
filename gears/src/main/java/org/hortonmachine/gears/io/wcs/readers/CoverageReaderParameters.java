@@ -5,15 +5,20 @@ import java.util.HashMap;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
+import org.hortonmachine.gears.io.wcs.wcs100.WebCoverageService100;
+import org.hortonmachine.gears.io.wcs.wcs111.WebCoverageService111;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
-import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
-import org.hortonmachine.gears.io.wcs.wcs201.models.ServiceMetadata;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 /**
  * A builder class for getCoverage call parameters.
@@ -29,14 +34,13 @@ public class CoverageReaderParameters {
     public int[] rowsCols = null;
     public Integer outputSrid = null;
 
-
     private IWebCoverageService service;
 
-
     /**
-     * Constructs a new instance of CoverageReaderParameters with the given parameters.
+     * Constructs a new instance of CoverageReaderParameters with the given
+     * parameters.
      *
-     * @param service the web coverage service to use for reading the coverage
+     * @param service    the web coverage service to use for reading the coverage
      * @param coverageId the identifier of the coverage to read
      * @throws Exception if an error occurs while constructing the parameters
      */
@@ -49,12 +53,15 @@ public class CoverageReaderParameters {
     /**
      * Set a request bounding box.
      * 
-     * <p>Note that if the requested envelope is not in the same CRS as the data, it will be transformed to the data CRS.</p>
+     * <p>
+     * Note that if the requested envelope is not in the same CRS as the data, it
+     * will be transformed to the data CRS.
+     * </p>
      * 
      * @param requestedEnvelope the envelope requested.
      * @return the builder instance.
      */
-    public CoverageReaderParameters bbox(Envelope requestedEnvelope, Integer requestedEnvelopeSrid ){
+    public CoverageReaderParameters bbox(Envelope requestedEnvelope, Integer requestedEnvelopeSrid) {
         this.requestedEnvelope = requestedEnvelope;
         this.requestedEnvelopeSrid = requestedEnvelopeSrid;
         return this;
@@ -63,13 +70,14 @@ public class CoverageReaderParameters {
     /**
      * Set the format of the output coverage.
      * 
-     * <p>{@link ServiceMetadata#getSupportedFormats()} can be used to get the list of supported formats.</p>
-     * <p>{@link DescribeCoverage#nativeFormat} can be used to get the native format of the coverage.</p>
+     * <p>
+     * Supported by versions: 1.1.1, 2.0.1.
+     * </p>
      * 
      * @param format the format of the output.
      * @return the builder instance.
      */
-    public CoverageReaderParameters format(String format){
+    public CoverageReaderParameters format(String format) {
         this.format = format;
         return this;
     }
@@ -77,28 +85,45 @@ public class CoverageReaderParameters {
     /**
      * Set a scalefactor to be applied to the coverage.
      * 
-     * <p>Scalefactor is a double value that is applied to the coverage. It is used to reduce the size of the output coverage.</p>
-     * <p>Scalefactor is supported by versions: 2.0.1.</p>
-     * <p>A scalefactor of 0.5 will reduce the size to half and hence double the resolution.</p>
-     * <p>Scalefactor is not a parameter that gives fine grained control over the output coverage. If you need more control, use {@link #rowsCols(int[])}.</p>
+     * <p>
+     * Scalefactor is a double value that is applied to the coverage. It is used to
+     * reduce the size of the output coverage.
+     * </p>
+     * <p>
+     * Scalefactor is supported by versions: 2.0.1.
+     * </p>
+     * <p>
+     * A scalefactor of 0.5 will reduce the size to half and hence double the
+     * resolution.
+     * </p>
+     * <p>
+     * Scalefactor is not a parameter that gives fine grained control over the
+     * output coverage. If you need more control, use {@link #rowsCols(int[])}.
+     * </p>
      * 
      * @param scaleFactor the scalefactor to be applied.
      * @return the builder instance.
      */
-    public CoverageReaderParameters scaleFactor(Double scaleFactor){
+    public CoverageReaderParameters scaleFactor(Double scaleFactor) {
         this.scaleFactor = scaleFactor;
         return this;
     }
 
     /**
-     * Define the number of rows (height) and columns (width) of the output coverage.
+     * Define the number of rows (height) and columns (width) of the output
+     * coverage.
      * 
-     * <p>Setting this parameter will override the scalefactor parameter.</p>
+     * <p>
+     * Setting this parameter will override the scalefactor parameter.
+     * </p>
+     * <p>
+     * Supported by versions: 1.1.1, 2.0.1.
+     * </p>
      * 
      * @param rowsCols an array containing the number of rows and columns.
      * @return the builder instance.
      */
-    public CoverageReaderParameters rowsCols(int[] rowsCols){
+    public CoverageReaderParameters rowsCols(int[] rowsCols) {
         this.rowsCols = rowsCols;
         return this;
     }
@@ -106,18 +131,24 @@ public class CoverageReaderParameters {
     /**
      * Set the output CRS of the coverage.
      * 
+     * <p>
+     * Supported by versions: 2.0.1.
+     * </p>
+     * 
      * @param outputSrid the srid of the output CRS.
      * @return the builder instance.
      */
-    public CoverageReaderParameters outputSrid(Integer outputSrid){
+    public CoverageReaderParameters outputSrid(Integer outputSrid) {
         this.outputSrid = outputSrid;
         return this;
     }
 
     /**
-     * Constructs a URL string for a WCS GetCoverage request based on the parameters set in this object.
+     * Constructs a URL string for a WCS GetCoverage request based on the parameters
+     * set in this object.
      * 
-     * @param additionalParams a HashMap containing additional parameters to include in the URL
+     * @param additionalParams a HashMap containing additional parameters to include
+     *                         in the URL
      * @return a URL string for a WCS GetCoverage request
      * @throws Exception if something goes wrong while constructing the URL
      */
@@ -128,11 +159,10 @@ public class CoverageReaderParameters {
         url += "&request=GetCoverage";
         if (this.wcsVersion.equals("2.0.1")) {
             url = build201Url(url);
-        } else if (this.wcsVersion.equals("1.1.0")) {
-            url += "&identifier=" + this.identifier;
-            if (this.requestedEnvelope != null)
-                url += "&boundingbox=" + this.requestedEnvelope;
-
+        } else if (this.wcsVersion.equals("1.1.1") || this.wcsVersion.equals("1.1.0")) {
+            url = build111(url);
+        } else if (this.wcsVersion.equals("1.0.0")) {
+            url = build100(url);
         } else {
             throw new UnsupportedEncodingException("Unsupported WCS version: " + this.wcsVersion);
         }
@@ -145,56 +175,156 @@ public class CoverageReaderParameters {
 
     }
 
+    private String build100(String url)
+            throws Exception, NoSuchAuthorityCodeException, FactoryException, TransformException {
+        WebCoverageService100 wcs = (WebCoverageService100) service;
+
+        url += "&coverage=" + this.identifier;
+        if (this.format != null)
+            url += "&format=" + this.format;
+        
+        Envelope finalRequestEnvelope = requestedEnvelope;
+        ICoverageSummary coverageSummary = wcs.getCoverageSummary(this.identifier);
+        ReferencedEnvelope dataEnvelope = coverageSummary.getWgs84BoundingBox();
+        if (this.requestedEnvelope != null) {
+            if (requestedEnvelopeSrid != 4326) {
+                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
+                        CRS.decode("EPSG:" + requestedEnvelopeSrid));
+                finalRequestEnvelope = requestedReferenceEnvelope.transform(DefaultGeographicCRS.WGS84, true);
+            }
+            // if the requested envelope is partially outside the data envelope, we need to
+            // clip it
+            if (!dataEnvelope.contains(finalRequestEnvelope)) {
+                Logger.INSTANCE.w(
+                        "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
+                finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
+            }    
+        } else {
+            // since bbox is mandatory, we use the data envelope
+            finalRequestEnvelope = dataEnvelope;
+            requestedEnvelopeSrid = 4326;
+        }
+
+        double minx = finalRequestEnvelope.getMinX();
+        double miny = finalRequestEnvelope.getMinY();
+        double maxx = finalRequestEnvelope.getMaxX();
+        double maxy = finalRequestEnvelope.getMaxY();
+        url += "&BBOX=" + minx + "," + miny + "," + maxx + "," + maxy;
+
+        if (this.requestedEnvelopeSrid != null)
+            url += "&CRS=EPSG:" + requestedEnvelopeSrid; // TODO use the supplied srid + this.requestedEnvelopeSrid;
+
+        if (this.rowsCols != null) {
+            url += "&WIDTH=" + this.rowsCols[1];
+            url += "&HEIGHT=" + this.rowsCols[0];
+        }
+        return url;
+    }
+    
+    private String build111(String url)
+            throws Exception, NoSuchAuthorityCodeException, FactoryException, TransformException {
+        WebCoverageService111 wcs = (WebCoverageService111) service;
+
+        url += "&identifiers=" + this.identifier;
+        url += "&identifier=" + this.identifier;
+        if (this.format != null)
+            url += "&format=" + this.format;
+        
+        // BOUNDINGBOX is a mandatory parameter (at least until TIME is not implemented)
+        Envelope finalRequestEnvelope = requestedEnvelope;
+        ICoverageSummary coverageSummary = wcs.getCoverageSummary(this.identifier);
+        ReferencedEnvelope dataEnvelope = coverageSummary.getWgs84BoundingBox();
+        if (this.requestedEnvelope != null) {
+            if (requestedEnvelopeSrid != 4326) {
+                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
+                        CRS.decode("EPSG:" + requestedEnvelopeSrid));
+                finalRequestEnvelope = requestedReferenceEnvelope.transform(DefaultGeographicCRS.WGS84, true);
+            }
+            // if the requested envelope is partially outside the data envelope, we need to
+            // clip it
+            if (!dataEnvelope.contains(finalRequestEnvelope)) {
+                Logger.INSTANCE.w(
+                        "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
+                finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
+            }    
+        } else {
+            // since bbox is mandatory, we use the data envelope
+            finalRequestEnvelope = dataEnvelope;
+        }
+
+        double minx = finalRequestEnvelope.getMinX();
+        double miny = finalRequestEnvelope.getMinY();
+        double maxx = finalRequestEnvelope.getMaxX();
+        double maxy = finalRequestEnvelope.getMaxY();
+        url += "&BOUNDINGBOX=" + minx + "," + miny + "," + maxx + "," + maxy + ",urn:ogc:def:crs:EPSG::4326";
+
+        if (this.requestedEnvelopeSrid != null)
+            url += "&CRS=EPSG:" + this.requestedEnvelopeSrid;
+
+        if (this.rowsCols != null) {
+            url += "&WIDTH=" + this.rowsCols[1];
+            url += "&HEIGHT=" + this.rowsCols[0];
+        }
+        return url;
+    }
+
     private String build201Url(String url) throws Exception {
         WebCoverageService201 wcs = (WebCoverageService201) service;
         url += "&COVERAGEID=" + this.identifier;
         if (this.format != null)
             url += "&format=" + this.format;
         IDescribeCoverage describeCoverage = null;
-        if (this.requestedEnvelope != null){
+        if (this.requestedEnvelope != null) {
             // need to get axis labels
             describeCoverage = wcs.getDescribeCoverage(this.identifier);
             Envelope dataEnvelope = describeCoverage.getCoverageEnvelope();
             Envelope finalRequestEnvelope = requestedEnvelope;
-            if(describeCoverage.getCoverageEnvelopeSrid()!=null && requestedEnvelopeSrid != describeCoverage.getCoverageEnvelopeSrid()){
-                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope, CRS.decode("EPSG:" + requestedEnvelopeSrid));
-                CoordinateReferenceSystem finalRequestCrs = CRS.decode("EPSG:" + describeCoverage.getCoverageEnvelopeSrid());
+            if (describeCoverage.getCoverageEnvelopeSrid() != null
+                    && requestedEnvelopeSrid != describeCoverage.getCoverageEnvelopeSrid()) {
+                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
+                        CRS.decode("EPSG:" + requestedEnvelopeSrid));
+                CoordinateReferenceSystem finalRequestCrs = CRS
+                        .decode("EPSG:" + describeCoverage.getCoverageEnvelopeSrid());
                 finalRequestEnvelope = requestedReferenceEnvelope.transform(finalRequestCrs, true);
-                
+
                 String sridNs = WcsUtils.nsCRS_WCS2(describeCoverage.getCoverageEnvelopeSrid());
                 url += "&SUBSETTINGCRS=" + sridNs;
             }
 
-            // if the requested envelope is partially outside the data envelope, we need to clip it
+            // if the requested envelope is partially outside the data envelope, we need to
+            // clip it
             if (!dataEnvelope.contains(finalRequestEnvelope)) {
-                Logger.INSTANCE.w("Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
+                Logger.INSTANCE.w(
+                        "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
                 finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
             }
 
             String[] axisLabels = describeCoverage.getGridAxisLabels();
             String[] lonLatLabelsOrdered = WcsUtils.orderLabels(axisLabels);
-            url += "&subset=" + lonLatLabelsOrdered[0] + "(" + finalRequestEnvelope.getMinX() + "," + finalRequestEnvelope.getMaxX() + ")";
-            url += "&subset=" + lonLatLabelsOrdered[1] + "(" + finalRequestEnvelope.getMinY() + "," + finalRequestEnvelope.getMaxY() + ")";
-
+            url += "&subset=" + lonLatLabelsOrdered[0] + "(" + finalRequestEnvelope.getMinX() + ","
+                    + finalRequestEnvelope.getMaxX() + ")";
+            url += "&subset=" + lonLatLabelsOrdered[1] + "(" + finalRequestEnvelope.getMinY() + ","
+                    + finalRequestEnvelope.getMaxY() + ")";
 
         }
         // scalefactor and row/cols excludes each other, give priority to row/cols
         boolean hasRowCols = false;
-        if (this.rowsCols != null){
+        if (this.rowsCols != null) {
             // we need to check if the service supports scaling
             boolean supportsScaling = wcs.getCapabilities().getIdentification().supportsScaling();
-            if(supportsScaling){
-                if(describeCoverage == null)
+            if (supportsScaling) {
+                if (describeCoverage == null)
                     describeCoverage = wcs.getDescribeCoverage(this.identifier);
                 String[] gridAxisLabels = describeCoverage.getGridAxisLabels();
                 int[] lonLatPositions = WcsUtils.getLonLatPositions(gridAxisLabels);
 
                 String[] axisLabels = describeCoverage.getAxisLabels();
-                url += "&SCALESIZE=" + axisLabels[lonLatPositions[0]] + "(" + this.rowsCols[1] + "),"+ axisLabels[lonLatPositions[1]] + "(" + this.rowsCols[0] + ")";
+                url += "&SCALESIZE=" + axisLabels[lonLatPositions[0]] + "(" + this.rowsCols[1] + "),"
+                        + axisLabels[lonLatPositions[1]] + "(" + this.rowsCols[0] + ")";
                 hasRowCols = true;
             }
-        } 
-        if (this.scaleFactor != null && !hasRowCols) 
+        }
+        if (this.scaleFactor != null && !hasRowCols)
             url += "&SCALEFACTOR=" + this.scaleFactor;
 
         if (this.outputSrid != null) {
@@ -203,6 +333,5 @@ public class CoverageReaderParameters {
         }
         return url;
     }
-
 
 }

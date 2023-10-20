@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 
@@ -13,11 +14,15 @@ public interface IWebCoverageService {
 
     List<String> getCoverageIds() throws Exception;
 
+    ICoverageSummary getCoverageSummary(String coverageId) throws Exception;
+
     List<String> getSupportedFormats() throws Exception;
 
     int[] getSupportedSrids() throws Exception;
 
     String getCapabilitiesUrl();
+
+    IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception;
 
     /**
      * Retrieves a coverage from the web coverage service and saves it to the specified output file path.
@@ -67,16 +72,18 @@ public interface IWebCoverageService {
         }
 
         if (version.equals("1.0.0")) {
-            // TODO
-        } else if (version.equals("1.1.0")) {
-            // TODO
-        } else if (version.equals("1.1.1")) {
-            // TODO
+            return new org.hortonmachine.gears.io.wcs.wcs100.WebCoverageService100(url, version, xml, cookies, timeout,
+                    auth, headers);
+        } else if (version.equals("1.1.1") || version.equals("1.1.0")) {
+            return new org.hortonmachine.gears.io.wcs.wcs111.WebCoverageService111(url, version, xml, cookies, timeout,
+                    auth, headers);
         } else if (version.equals("2.0.1")) {
             return new org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201(url, version, xml, cookies, timeout,
                     auth, headers);
         }
         return null;
     }
+
+    public void dumpCoverageFootprints(String outFolder) throws Exception;
 
 }

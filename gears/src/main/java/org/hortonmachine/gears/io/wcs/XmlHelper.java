@@ -20,7 +20,7 @@ public class XmlHelper {
     public interface XmlVisitor {
         boolean checkElementName(String name);
 
-        void visit(Node node);
+        void visit(Node node) throws Exception;
     }
 
     private Node rootNode;
@@ -62,7 +62,7 @@ public class XmlHelper {
         return new XmlHelper(xmlStream);
     }
 
-    public static void apply(Node node, XmlVisitor visitor) {
+    public static void apply(Node node, XmlVisitor visitor) throws Exception {
         if (visitor != null && visitor.checkElementName(node.getNodeName())) {
             visitor.visit(node);
         }
@@ -163,6 +163,19 @@ public class XmlHelper {
             }
         }
         return null;
+    }
+
+    public static Node findNodeInTree(Node node, String... lowerCaseNames) {
+        Node currentNode = node;
+        for (String name : lowerCaseNames) {
+            name = name.toLowerCase();
+            Node foundNode = findNode(currentNode, name);
+            if (foundNode == null) {
+                return null;
+            }
+            currentNode = foundNode;
+        }
+        return currentNode;
     }
 
     /**

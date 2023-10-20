@@ -10,7 +10,6 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.Authentication;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
 
 
 /**
@@ -108,7 +107,16 @@ public class DescribeCoverageReader {
 
         // xmlHelper.printTree();
 
-        DescribeCoverage describeCoverage = new DescribeCoverage();
+        IDescribeCoverage describeCoverage = null;
+
+        if (version.equals("1.0.0")) {
+            describeCoverage = new  org.hortonmachine.gears.io.wcs.wcs100.models.DescribeCoverage();
+        } else if (version.equals("2.0.0") || version.equals("2.0.1")) {
+            describeCoverage = new org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage();
+        } else if (version.equals("1.1.0") || version.equals("1.1.1")) {
+            describeCoverage = new org.hortonmachine.gears.io.wcs.wcs111.models.DescribeCoverage();
+        }
+
         XmlHelper.apply(xmlHelper.getRootNode(), describeCoverage);
 
         return describeCoverage;

@@ -1,12 +1,15 @@
-package org.hortonmachine.gears.io.wcs.wcs111.models;
+package org.hortonmachine.gears.io.wcs.wcs100.models;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
 public class CoverageSummary implements ICoverageSummary {
@@ -20,18 +23,19 @@ public class CoverageSummary implements ICoverageSummary {
     private List<String> keywords = new ArrayList<>();
     private String coverageId;
     private ReferencedEnvelope wgs84BoundingBox;
+    private ReferencedEnvelope boundingBox;
 
     public CoverageSummary(List<ICoverageSummary> coverageSummaries) {
         this.coverageSummaries = coverageSummaries;
     }
 
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:CoverageSummary") || name.endsWith(":CoverageSummary"))
+        if (name.equals("wcs:CoverageOfferingBrief") || name.endsWith(":CoverageOfferingBrief"))
             return true;
         return false;
     }
 
-    public void visit(Node node) {
+    public void visit(Node node) throws Exception {
         CoverageSummary cs = new CoverageSummary(null);
         cs.title = XmlHelper.findFirstTextInChildren(node, "label");
         cs.abstract_ = XmlHelper.findFirstTextInChildren(node, "description");
@@ -40,18 +44,32 @@ public class CoverageSummary implements ICoverageSummary {
         cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
         cs.coverageId = XmlHelper.findFirstTextInChildren(node, "name");
 
-        Node bboxNode = XmlHelper.findNode(node, "WGS84BoundingBox");
-
+        Node bboxNode = XmlHelper.findNode(node, "lonLatEnvelope");
         if (bboxNode != null) {
-            String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
-            String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
-            cs.wgs84BoundingBox = new ReferencedEnvelope(
-                    Double.parseDouble(lowerCorner.split(" ")[0]),
-                    Double.parseDouble(upperCorner.split(" ")[0]),
-                    Double.parseDouble(lowerCorner.split(" ")[1]),
-                    Double.parseDouble(upperCorner.split(" ")[1]),
-                    DefaultGeographicCRS.WGS84);
+            List<Node> posNodes = new ArrayList<>();
+            XmlHelper.findNodes(bboxNode, "pos", posNodes);
+
+            String lowerCorner = null;
+            String upperCorner = null;
+            for (Node posNode : posNodes) {
+                if (lowerCorner == null) {
+                    lowerCorner = posNode.getTextContent();
+                } else if (upperCorner == null) {
+                    upperCorner = posNode.getTextContent();
+                }
+            }
+
+            if (lowerCorner != null && upperCorner != null) {
+                CoordinateReferenceSystem crs = DefaultGeographicCRS.WGS84;
+                cs.wgs84BoundingBox = new ReferencedEnvelope(
+                        Double.parseDouble(lowerCorner.split(" ")[0]),
+                        Double.parseDouble(upperCorner.split(" ")[0]),
+                        Double.parseDouble(lowerCorner.split(" ")[1]),
+                        Double.parseDouble(upperCorner.split(" ")[1]),
+                        crs);
+            }
         }
+
         coverageSummaries.add(cs);
     }
 

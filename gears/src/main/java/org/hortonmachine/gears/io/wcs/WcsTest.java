@@ -56,47 +56,61 @@ public class WcsTest {
 
         String outFolder = "/home/hydrologis/TMP/KLAB/WCS/DUMPS/";
 
-        // String SERVICE_URL = "https://geoservices9.civis.bz.it/geoserver/ows"; // ?service=WCS&version=2.0.1&request=GetCapabilities";
-        String SERVICE_URL = "http://ogcdev.bgs.ac.uk/geoserver/OneGDev/wcs";
+        String SERVICE_URL = "https://geoservices9.civis.bz.it/geoserver/ows"; // ?service=WCS&version=2.0.1&request=GetCapabilities";
+        // String coverageId = "p_bz-Elevation__DigitalTerrainModel-2.5m";
+        String coverageId = "p_bz-Elevation:DigitalElevationModel-2.5m";
 
-        IWebCoverageService service = IWebCoverageService.getServiceForVersion(SERVICE_URL, null);
+        Envelope env = new Envelope(10.5, 12.5, 46.5, 47.0);
+        // String SERVICE_URL = "http://ogcdev.bgs.ac.uk/geoserver/OneGDev/wcs";
+        // String coverageId = "OneGDev:AegeanLevantineSeas-MCol";
+        // Envelope env = new Envelope(26.51071, 29.45505, 35.5, 36.0);
+
+        String version = "1.0.0";
+
+        IWebCoverageService service = IWebCoverageService.getServiceForVersion(SERVICE_URL, version);
 
         System.out.println( service.getVersion());
+
+        // service.dumpCoverageFootprints(outFolder);
 
         // print list of coverage ids
         System.out.println("Coverage ids:");
         List<String> coverageIds = service.getCoverageIds();
-        for (String coverageId : coverageIds) {
-            System.out.println("\t" + coverageId);
+        for (String cid : coverageIds) {
+            System.out.println("\t" + cid);
         }
 
         // print supported srids
         System.out.println("Supported srids:");
         int[] supportedSrids = service.getSupportedSrids();
-        for (int srid : supportedSrids) {
-            System.out.println("\t" + srid);
-        }
+        if (supportedSrids != null) 
+            for (int srid : supportedSrids) {
+                System.out.println("\t" + srid);
+            }
 
         // print supported formats
         System.out.println("Supported formats:");
         List<String> supportedFormats = service.getSupportedFormats();
-        for (String format : supportedFormats) {
-            System.out.println("\t" + format);
-        }
+        if (supportedFormats != null)
+            for (String format : supportedFormats) {
+                System.out.println("\t" + format);
+            }
 
+            
+        // describe coverage
+        IDescribeCoverage describeCoverage = service.getDescribeCoverage(coverageId); 
+        System.out.println(describeCoverage);
+            
+            
         // get coverage
-        // String coverageId = "p_bz-Elevation__DigitalTerrainModel-2.5m";
-        String coverageId = "OneGDev__AegeanLevantineSeas-MCol";
-        Envelope env = new Envelope(26.51071, 29.45505, 35.5, 36.0);
-
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
         parameters.format("image/tiff");
-        parameters.bbox(env, 4326);
+        // parameters.bbox(env, 4326);
         // parameters.scaleFactor(0.01);
-        parameters.rowsCols(new int[] { 100, 100 });
+        parameters.rowsCols(new int[] { 1000, 1000 }); // TODO in case of 100 a check on gridenvelope needs to be done
         parameters.outputSrid(32633);
         
-        File file = new File(outFolder, coverageId + "_bbox_parameter_scale05_100x100_32633.tiff");
+        File file = new File(outFolder, coverageId + "_v100.tiff");
         String url = service.getCoverage(file.getAbsolutePath(), parameters, null);
 
         System.out.println("Coverage url: " + url);

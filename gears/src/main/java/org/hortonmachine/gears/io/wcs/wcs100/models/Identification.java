@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.wcs111.models;
+package org.hortonmachine.gears.io.wcs.wcs100.models;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,29 +11,29 @@ public class Identification implements XmlHelper.XmlVisitor {
     String abstract_;
     List<String> keywords = new ArrayList<>();
 
-    String serviceType;
-    List<String> supportedVersions = new ArrayList<>();
+    // String serviceType;
+    // List<String> supportedVersions = new ArrayList<>();
 
     String fees;
     String accessConstraints;
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("ows:ServiceIdentification") || name.endsWith(":ServiceIdentification"))
+        if (name.equals("wcs:Service") || name.endsWith(":Service"))
             return true;
         return false;
     }
 
     @Override
     public void visit(Node node) {
-        title = XmlHelper.findFirstTextInChildren(node, "title");
-        abstract_ = XmlHelper.findFirstTextInChildren(node, "abstract");
+        title = XmlHelper.findFirstTextInChildren(node, "label");
+        abstract_ = XmlHelper.findFirstTextInChildren(node, "description");
 
         Node keywordsNode = XmlHelper.findNode(node, "keywords");
         keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
 
-        serviceType = XmlHelper.findFirstTextInChildren(node, "servicetype");
-        supportedVersions = XmlHelper.findAllTextsInChildren(node, "servicetypeversion");
+        // serviceType = XmlHelper.findFirstTextInChildren(node, "servicetype");
+        // supportedVersions = XmlHelper.findAllTextsInChildren(node, "servicetypeversion");
 
         fees = XmlHelper.findFirstTextInChildren(node, "fees");
         accessConstraints = XmlHelper.findFirstTextInChildren(node, "accessconstraints");
@@ -48,12 +48,12 @@ public class Identification implements XmlHelper.XmlVisitor {
             for (String keyword : keywords) {
                 s += "\t\t" + keyword + "\n";
             }
-        s += "serviceType: " + serviceType + "\n";
-        s += "supportedVersions: \n";
-        if (supportedVersions != null && supportedVersions.size() > 0)
-            for (String sv : supportedVersions) {
-                s += "\t\t" + sv + "\n";
-            }
+        // s += "serviceType: " + serviceType + "\n";
+        // s += "supportedVersions: \n";
+        // if (supportedVersions != null && supportedVersions.size() > 0)
+        //     for (String sv : supportedVersions) {
+        //         s += "\t\t" + sv + "\n";
+        //     }
         s += "fees: " + fees + "\n";
         s += "accessConstraints: " + accessConstraints + "\n";
 

@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.io.wcs.wcs201;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -14,14 +15,24 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.io.wcs.Authentication;
+import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.readers.DescribeCoverageReader;
 import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
 import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 public class WebCoverageService201 implements IWebCoverageService {
     WcsCapabilities wcsCapabilities;
@@ -70,6 +81,12 @@ public class WebCoverageService201 implements IWebCoverageService {
     }
 
     @Override
+    public ICoverageSummary getCoverageSummary(String coverageId) throws Exception {
+        init();
+        return wcsCapabilities.getCoverageSummaryById(coverageId);
+    }
+
+    @Override
     public List<String> getSupportedFormats() throws Exception {
         init();
         return wcsCapabilities.getServiceMetadata().getSupportedFormats();
@@ -102,6 +119,7 @@ public class WebCoverageService201 implements IWebCoverageService {
         return wcsCapabilities;
     }
 
+    @Override
     public IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception {
         init();
         DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
@@ -173,6 +191,70 @@ public class WebCoverageService201 implements IWebCoverageService {
         }
 
         return finalUrl;
+    }
+
+    @Override
+    public void dumpCoverageFootprints(String outFolder) throws Exception {
+        File outFolderFile = new File(outFolder);
+        if (!outFolderFile.exists())
+            outFolderFile.mkdirs();
+        String gpkgName = "wcs_footprints.gpkg";
+
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+        SimpleFeatureTypeBuilder b = null;
+        SimpleFeatureBuilder builder = null;
+        String name = "wgs84footprints_coveragesummary";
+        for (String id : getCoverageIds()) {
+            ICoverageSummary coverageSummary = getCoverageSummary(id);
+            ReferencedEnvelope wgs84BoundingBox = coverageSummary.getWgs84BoundingBox();
+            if (b == null || builder == null) {
+                b = new SimpleFeatureTypeBuilder();
+                b.setName(name);
+                b.setCRS(wgs84BoundingBox.getCoordinateReferenceSystem());
+                b.add("the_geom", Polygon.class);
+                b.add("coverageid", String.class);
+                SimpleFeatureType type = b.buildFeatureType();
+                builder = new SimpleFeatureBuilder(type);
+            }
+
+            Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(wgs84BoundingBox);
+            Object[] values = new Object[] { polygon, id };
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+            fc.add(feature);
+        }
+        File gpkgFile = new File(outFolderFile, gpkgName);
+        OmsVectorWriter.writeVector(gpkgFile.getAbsolutePath() + "#" + name, fc);
+
+        
+        fc = new DefaultFeatureCollection();
+        b = null;
+        builder = null;
+        name = "data_footprints_coveragesummary";
+        for (String id : getCoverageIds()) {
+            ICoverageSummary coverageSummary = getCoverageSummary(id);
+            ReferencedEnvelope boundingBox = coverageSummary.getBoundingBox();
+            if (b == null || builder == null) {
+                b = new SimpleFeatureTypeBuilder();
+                b.setName(name);
+                b.setCRS(boundingBox.getCoordinateReferenceSystem());
+                b.add("the_geom", Polygon.class);
+                b.add("coverageid", String.class);
+                SimpleFeatureType type = b.buildFeatureType();
+                builder = new SimpleFeatureBuilder(type);
+            }
+
+            Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(boundingBox);
+            Object[] values = new Object[] { polygon, id };
+            builder.addAll(values);
+            SimpleFeature feature = builder.buildFeature(null);
+            fc.add(feature);
+        }
+        gpkgFile = new File(outFolderFile, gpkgName);
+        OmsVectorWriter.writeVector(gpkgFile.getAbsolutePath() + "#" + name, fc);
+
+
+
     }
 
 }

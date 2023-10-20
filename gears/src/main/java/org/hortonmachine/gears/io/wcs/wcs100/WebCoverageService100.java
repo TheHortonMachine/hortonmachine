@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.wcs111;
+package org.hortonmachine.gears.io.wcs.wcs100;
 
 import java.io.File;
 import java.io.InputStream;
@@ -29,13 +29,13 @@ import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.readers.DescribeCoverageReader;
 import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
-import org.hortonmachine.gears.io.wcs.wcs111.models.WcsCapabilities;
+import org.hortonmachine.gears.io.wcs.wcs100.models.WcsCapabilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 
-public class WebCoverageService111 implements IWebCoverageService {
+public class WebCoverageService100 implements IWebCoverageService {
     WcsCapabilities wcsCapabilities;
     private String url;
     private String baseUrl;
@@ -47,11 +47,11 @@ public class WebCoverageService111 implements IWebCoverageService {
     private String headers;
     private WCSCapabilitiesReader reader;
 
-    public WebCoverageService111(String url, String version) throws Exception {
+    public WebCoverageService100(String url, String version) throws Exception {
         this(url, version, null, null, 30, null, null);
     }
 
-    public WebCoverageService111(String url, String version, String xml, String cookies, int timeout,
+    public WebCoverageService100(String url, String version, String xml, String cookies, int timeout,
             Authentication auth,
             String headers) throws Exception {
         this.url = url;
