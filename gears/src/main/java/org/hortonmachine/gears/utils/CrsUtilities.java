@@ -197,8 +197,13 @@ public class CrsUtilities {
         return code;
     }
 
-    public static int getSrid( CoordinateReferenceSystem crs ) throws FactoryException {
-        Integer epsg = CRS.lookupEpsgCode(crs, true);
+    public static Integer getSrid( CoordinateReferenceSystem crs ) throws FactoryException {
+        Integer epsg = null;
+        try {
+            epsg = CRS.lookupEpsgCode(crs, true);
+        } catch (Exception e) {
+            // ignore and return null
+        }
         return epsg;
     }
 

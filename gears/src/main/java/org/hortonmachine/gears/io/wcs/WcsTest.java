@@ -55,8 +55,8 @@ public class WcsTest {
 
         String outFolder = "/home/hydrologis/TMP/KLAB/WCS/DUMPS/";
 
-        String SERVICE_URL = "https://geoservices9.civis.bz.it/geoserver/ows"; // ?service=WCS&version=2.0.1&request=GetCapabilities";
-        // String SERVICE_URL = "http://ogcdev.bgs.ac.uk/geoserver/OneGDev/wcs";
+        // String SERVICE_URL = "https://geoservices9.civis.bz.it/geoserver/ows"; // ?service=WCS&version=2.0.1&request=GetCapabilities";
+        String SERVICE_URL = "http://ogcdev.bgs.ac.uk/geoserver/OneGDev/wcs";
 
         IWebCoverageService service = IWebCoverageService.getServiceForVersion(SERVICE_URL, null);
 
@@ -84,17 +84,18 @@ public class WcsTest {
         }
 
         // get coverage
-        String coverageId = "p_bz-Elevation__DigitalTerrainModel-2.5m";
-        // String coverageId = "OneGDev__AegeanLevantineSeas-MCol";
-        // ReferencedEnvelope env = new ReferencedEnvelope(26.51071, 29.45505, 35.5, 36.0, DefaultGeographicCRS.WGS84);
+        // String coverageId = "p_bz-Elevation__DigitalTerrainModel-2.5m";
+        String coverageId = "OneGDev__AegeanLevantineSeas-MCol";
+        ReferencedEnvelope env = new ReferencedEnvelope(26.51071, 29.45505, 35.5, 36.0, DefaultGeographicCRS.WGS84);
 
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
         parameters.format("image/tiff");
-        // parameters.bbox(env);
+        parameters.bbox(env);
         // parameters.scaleFactor(0.01);
         parameters.rowsCols(new int[] { 100, 100 });
+        parameters.outputSrid(32633);
         
-        File file = new File(outFolder, coverageId + "_bbox_parameter_scale05_100x100.tiff");
+        File file = new File(outFolder, coverageId + "_bbox_parameter_scale05_100x100_32633.tiff");
         String url = service.getCoverage(file.getAbsolutePath(), parameters, null);
 
         System.out.println("Coverage url: " + url);

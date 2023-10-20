@@ -56,6 +56,10 @@ public class WcsUtils {
     public static String nsWCS2(String tag) {
         return "{http://www.opengis.net/wcs/2.0}" + tag;
     }
+    
+    public static String nsCRS_WCS2(int epsgSrid) {
+        return "http://www.opengis.net/def/crs/EPSG/0/" + epsgSrid;
+    }
 
     /**
      * Orders the given axis labels by putting the "long", "lon", "x" axis label first and the "lat", "y" axis label second.
@@ -100,12 +104,12 @@ public class WcsUtils {
     }
 
     private static List<String> getPossibleEastingLCLabels(){
-        List<String> labels = Arrays.asList("long", "lon", "x", "e");
+        List<String> labels = Arrays.asList("long", "lon", "x", "e", "xaxis", "x-axis", "x_axis", "long_axis", "long-axis", "lon_axis", "lon-axis", "easting", "easting_axis", "easting-axis", "e_axis");
         return labels;
     }
-    
+
     private static List<String> getPossibleNorthingLCLabels(){
-        List<String> labels = Arrays.asList("lat", "y", "n");
+        List<String> labels = Arrays.asList("lat", "y", "n", "yaxis", "y-axis", "y_axis", "lat_axis", "lat-axis", "lat_axis", "northing", "northing_axis", "northing-axis", "n_axis");
         return labels;
     }
 }
