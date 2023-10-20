@@ -3,6 +3,7 @@ package org.hortonmachine.gears.io.wcs;
 import java.util.HashMap;
 import java.util.List;
 
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 
@@ -28,6 +29,20 @@ public interface IWebCoverageService {
      * @throws Exception if an error occurs while retrieving or saving the coverage
      */
     String getCoverage(String outputFilePath, CoverageReaderParameters parameters,
+            HashMap<String, String> additonalParameters)
+            throws Exception;
+    
+    /**
+     * Retrieves a GridCoverage2D object from the Web Coverage Service (WCS) using the provided parameters.
+     * 
+     * <P>Note that this still needs to save an intermediate file to disk, so it is not as efficient as one might think.</P>
+     *
+     * @param parameters the parameters used to read the coverage from the WCS
+     * @param additonalParameters additional parameters to be included in the request
+     * @return the GridCoverage2D object retrieved from the WCS
+     * @throws Exception if an error occurs while retrieving the coverage
+     */
+    GridCoverage2D getCoverage(CoverageReaderParameters parameters,
             HashMap<String, String> additonalParameters)
             throws Exception;
 

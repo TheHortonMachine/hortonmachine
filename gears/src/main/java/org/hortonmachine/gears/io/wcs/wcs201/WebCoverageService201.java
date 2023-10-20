@@ -1,9 +1,7 @@
 package org.hortonmachine.gears.io.wcs.wcs201;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
@@ -15,11 +13,12 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.wcs.Authentication;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
-import org.hortonmachine.gears.io.wcs.wcs201.models.CoverageSummary;
 import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
 import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
 import org.hortonmachine.gears.io.wcs.wcs201.readers.DescribeCoverageReader;
@@ -40,7 +39,8 @@ public class WebCoverageService201 implements IWebCoverageService {
         this(url, version, null, null, 30, null, null);
     }
 
-    public WebCoverageService201(String url, String version, String xml, String cookies, int timeout, Authentication auth,
+    public WebCoverageService201(String url, String version, String xml, String cookies, int timeout,
+            Authentication auth,
             String headers) throws Exception {
         this.url = url;
         this.version = version;
@@ -64,19 +64,19 @@ public class WebCoverageService201 implements IWebCoverageService {
     }
 
     @Override
-    public List<String> getCoverageIds() throws Exception{
+    public List<String> getCoverageIds() throws Exception {
         init();
         return wcsCapabilities.getCoverageIds();
     }
 
     @Override
-    public List<String> getSupportedFormats() throws Exception{
+    public List<String> getSupportedFormats() throws Exception {
         init();
         return wcsCapabilities.getServiceMetadata().getSupportedFormats();
     }
 
     @Override
-    public int[] getSupportedSrids() throws Exception{
+    public int[] getSupportedSrids() throws Exception {
         init();
         return wcsCapabilities.getServiceMetadata().getSupportedSrids();
     }
@@ -93,7 +93,7 @@ public class WebCoverageService201 implements IWebCoverageService {
     }
 
     @Override
-    public String getCapabilitiesUrl(){
+    public String getCapabilitiesUrl() {
         return WCSCapabilitiesReader.capabilities_url(url, version);
     }
 
@@ -116,7 +116,24 @@ public class WebCoverageService201 implements IWebCoverageService {
     }
 
     @Override
-    public String getCoverage(String outputFilePath, CoverageReaderParameters parameters, HashMap<String, String> additonalParameters)
+    public GridCoverage2D getCoverage(CoverageReaderParameters parameters,
+            HashMap<String, String> additonalParameters)
+            throws Exception {
+        // create a tmp file for the coverage
+        Path tempFile = Files.createTempFile("wcs", ".tif");
+        String outputFilePath = tempFile.toString();
+
+        // force tiff format
+        parameters.format("image/tiff");
+
+        getCoverage(outputFilePath, parameters, additonalParameters);
+
+        return OmsRasterReader.readRaster(outputFilePath);
+    }
+
+    @Override
+    public String getCoverage(String outputFilePath, CoverageReaderParameters parameters,
+            HashMap<String, String> additonalParameters)
             throws Exception {
         init();
         String url = wcsCapabilities.getOperationsMetadata().getGetCoverageUrl();
@@ -124,8 +141,6 @@ public class WebCoverageService201 implements IWebCoverageService {
             url = baseUrl;
 
         String paramsUrl = parameters.toUrl(additonalParameters);
-
-        // String encparamsUrl = URLEncoder.encode(paramsUrl, "UTF-8");
         String finalUrl = url + "?" + paramsUrl;
 
         // make the request
@@ -142,30 +157,22 @@ public class WebCoverageService201 implements IWebCoverageService {
 
         HttpRequest request = uriBuilder.GET().build();
 
-        try {
-            // Send the request and retrieve the response
-            HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+        // Send the request and retrieve the response
+        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-            if (response.statusCode() == 200) {
-                // Save the response to a file
-                Path outputPath = Path.of(outputFilePath);
-                Files.copy(response.body(), outputPath, StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("Response saved to " + outputFilePath);
-            } else {
-                InputStream responseStream = response.body();
-                byte[] responseBytes = responseStream.readAllBytes();
-                String responseString = new String(responseBytes);
+        if (response.statusCode() == 200) {
+            // Save the response to a file
+            Path outputPath = Path.of(outputFilePath);
+            Files.copy(response.body(), outputPath, StandardCopyOption.REPLACE_EXISTING);
+        } else {
+            InputStream responseStream = response.body();
+            byte[] responseBytes = responseStream.readAllBytes();
+            String responseString = new String(responseBytes);
 
-                System.err.println("Request failed with status code: " + response.statusCode());
-                System.err.println("Call done: " + finalUrl);
-                System.err.println("Message: " + responseString);
-            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            throw new Exception("Error while retrieving coverage" + responseString + " \nwith URL:" + finalUrl);
         }
 
         return finalUrl;
     }
-
 
 }

@@ -9,11 +9,13 @@ import org.geotools.util.Range;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
 public class DescribeCoverage implements XmlHelper.XmlVisitor {
-    public ReferencedEnvelope envelope;
+    public Envelope envelope;
+    public Integer envelopeSrid;
     public String[] axisLabels;
     public String[] uomLabels;
     public int srsDimension;
@@ -53,7 +55,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
 
         String srsName = XmlHelper.findAttribute(envelopeNode, "srsName");
 
-        CoordinateReferenceSystem crs = WcsUtils.getCrsFromSrsName(srsName);
+        envelopeSrid = WcsUtils.getSridFromSrsName(srsName);
         String srsDimensionStr = XmlHelper.findAttribute(envelopeNode, "srsDimension");
         if (srsDimensionStr != null) {
             srsDimension = Integer.parseInt(srsDimensionStr);
@@ -79,12 +81,12 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
         String upperCorner = XmlHelper.findFirstTextInChildren(envelopeNode, "upperCorner");
         String[] lowerCornerSplit = lowerCorner.split(spaceRegex);
         String[] upperCornerSplit = upperCorner.split(spaceRegex);
-        envelope = new ReferencedEnvelope(
+        envelope = new Envelope(
                 Double.parseDouble(lowerCornerSplit[lonPosition]),
                 Double.parseDouble(upperCornerSplit[lonPosition]),
                 Double.parseDouble(lowerCornerSplit[latPosition]),
-                Double.parseDouble(upperCornerSplit[latPosition]),
-                crs);
+                Double.parseDouble(upperCornerSplit[latPosition])
+                );
 
         Node domainSetNode = XmlHelper.findNode(node, "domainSet");
         Node rectifiedGridNode = XmlHelper.findNode(domainSetNode, "RectifiedGrid");
@@ -165,6 +167,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor {
     public String toString() {
         String s = "";
         s += "envelope: " + envelope + "\n";
+        s += "envelopeSrid: " + envelopeSrid + "\n";
         s += "axisLabels: " + Arrays.toString(axisLabels) + "\n";
         s += "uomLabels: " + Arrays.toString(uomLabels) + "\n";
         s += "srsDimension: " + srsDimension + "\n";

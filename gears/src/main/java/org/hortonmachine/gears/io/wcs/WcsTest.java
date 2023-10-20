@@ -6,6 +6,7 @@ import java.util.List;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
+import org.locationtech.jts.geom.Envelope;
 
 public class WcsTest {
 
@@ -86,11 +87,11 @@ public class WcsTest {
         // get coverage
         // String coverageId = "p_bz-Elevation__DigitalTerrainModel-2.5m";
         String coverageId = "OneGDev__AegeanLevantineSeas-MCol";
-        ReferencedEnvelope env = new ReferencedEnvelope(26.51071, 29.45505, 35.5, 36.0, DefaultGeographicCRS.WGS84);
+        Envelope env = new Envelope(26.51071, 29.45505, 35.5, 36.0);
 
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
         parameters.format("image/tiff");
-        parameters.bbox(env);
+        parameters.bbox(env, 4326);
         // parameters.scaleFactor(0.01);
         parameters.rowsCols(new int[] { 100, 100 });
         parameters.outputSrid(32633);

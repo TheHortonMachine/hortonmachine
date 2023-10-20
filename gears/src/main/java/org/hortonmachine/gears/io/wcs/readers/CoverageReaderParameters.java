@@ -5,12 +5,15 @@ import java.util.HashMap;
 
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
 import org.hortonmachine.gears.io.wcs.wcs201.models.ServiceMetadata;
 import org.hortonmachine.gears.utils.CrsUtilities;
+import org.locationtech.jts.geom.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A builder class for getCoverage call parameters.
@@ -19,7 +22,8 @@ public class CoverageReaderParameters {
     public String identifier = null;
     private String wcsVersion = null;
     public String method = "Get";
-    public ReferencedEnvelope bbox = null;
+    public Envelope requestedEnvelope = null;
+    public Integer requestedEnvelopeSrid = null;
     public String format = null;
     public Double scaleFactor = null;
     public int[] rowsCols = null;
@@ -50,8 +54,9 @@ public class CoverageReaderParameters {
      * @param requestedEnvelope the envelope requested.
      * @return the builder instance.
      */
-    public CoverageReaderParameters bbox(ReferencedEnvelope requestedEnvelope ){
-        bbox = requestedEnvelope;
+    public CoverageReaderParameters bbox(Envelope requestedEnvelope, Integer requestedEnvelopeSrid ){
+        this.requestedEnvelope = requestedEnvelope;
+        this.requestedEnvelopeSrid = requestedEnvelopeSrid;
         return this;
     }
 
@@ -125,8 +130,8 @@ public class CoverageReaderParameters {
             url = build201Url(url);
         } else if (this.wcsVersion.equals("1.1.0")) {
             url += "&identifier=" + this.identifier;
-            if (this.bbox != null)
-                url += "&boundingbox=" + this.bbox;
+            if (this.requestedEnvelope != null)
+                url += "&boundingbox=" + this.requestedEnvelope;
 
         } else {
             throw new UnsupportedEncodingException("Unsupported WCS version: " + this.wcsVersion);
@@ -145,25 +150,31 @@ public class CoverageReaderParameters {
         url += "&COVERAGEID=" + this.identifier;
         if (this.format != null)
             url += "&format=" + this.format;
-        if (this.bbox != null){
+        if (this.requestedEnvelope != null){
             // need to get axis labels
             DescribeCoverage describeCoverage = wcs.getDescribeCoverage(this.identifier);
-            ReferencedEnvelope dataEnvelope = describeCoverage.envelope;
-            ReferencedEnvelope requestEnvelope = bbox;
-            if(!CRS.equalsIgnoreMetadata(dataEnvelope.getCoordinateReferenceSystem(), bbox.getCoordinateReferenceSystem())){
-                requestEnvelope = bbox.transform(dataEnvelope.getCoordinateReferenceSystem(), true);
+            Envelope dataEnvelope = describeCoverage.envelope;
+            Envelope finalRequestEnvelope = requestedEnvelope;
+            if(describeCoverage.envelopeSrid!=null && requestedEnvelopeSrid != describeCoverage.envelopeSrid){
+                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope, CRS.decode("EPSG:" + requestedEnvelopeSrid));
+                CoordinateReferenceSystem finalRequestCrs = CRS.decode("EPSG:" + describeCoverage.envelopeSrid);
+                finalRequestEnvelope = requestedReferenceEnvelope.transform(finalRequestCrs, true);
+                
+                String sridNs = WcsUtils.nsCRS_WCS2(describeCoverage.envelopeSrid);
+                url += "&SUBSETTINGCRS=" + sridNs;
+            }
+
+            // if the requested envelope is partially outside the data envelope, we need to clip it
+            if (!dataEnvelope.contains(finalRequestEnvelope)) {
+                Logger.INSTANCE.w("Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
+                finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
             }
 
             String[] axisLabels = describeCoverage.gridAxisLabels;
             String[] lonLatLabelsOrdered = WcsUtils.orderLabels(axisLabels);
-            url += "&subset=" + lonLatLabelsOrdered[0] + "(" + requestEnvelope.getMinX() + "," + requestEnvelope.getMaxX() + ")";
-            url += "&subset=" + lonLatLabelsOrdered[1] + "(" + requestEnvelope.getMinY() + "," + requestEnvelope.getMaxY() + ")";
+            url += "&subset=" + lonLatLabelsOrdered[0] + "(" + finalRequestEnvelope.getMinX() + "," + finalRequestEnvelope.getMaxX() + ")";
+            url += "&subset=" + lonLatLabelsOrdered[1] + "(" + finalRequestEnvelope.getMinY() + "," + finalRequestEnvelope.getMaxY() + ")";
 
-            Integer usedSrid = CrsUtilities.getSrid(requestEnvelope.getCoordinateReferenceSystem());
-            if (usedSrid != null){
-                String sridNs = WcsUtils.nsCRS_WCS2(usedSrid);
-                url += "&SUBSETTINGCRS=" + sridNs;
-            }
 
         }
         // scalefactor and row/cols excludes each other, give priority to row/cols
