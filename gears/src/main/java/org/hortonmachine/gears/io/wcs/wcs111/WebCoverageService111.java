@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.wcs201;
+package org.hortonmachine.gears.io.wcs.wcs111;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -21,9 +21,9 @@ import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.readers.DescribeCoverageReader;
 import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
-import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
+import org.hortonmachine.gears.io.wcs.wcs111.models.WcsCapabilities;
 
-public class WebCoverageService201 implements IWebCoverageService {
+public class WebCoverageService111 implements IWebCoverageService {
     WcsCapabilities wcsCapabilities;
     private String url;
     private String baseUrl;
@@ -35,11 +35,11 @@ public class WebCoverageService201 implements IWebCoverageService {
     private String headers;
     private WCSCapabilitiesReader reader;
 
-    public WebCoverageService201(String url, String version) throws Exception {
+    public WebCoverageService111(String url, String version) throws Exception {
         this(url, version, null, null, 30, null, null);
     }
 
-    public WebCoverageService201(String url, String version, String xml, String cookies, int timeout,
+    public WebCoverageService111(String url, String version, String xml, String cookies, int timeout,
             Authentication auth,
             String headers) throws Exception {
         this.url = url;

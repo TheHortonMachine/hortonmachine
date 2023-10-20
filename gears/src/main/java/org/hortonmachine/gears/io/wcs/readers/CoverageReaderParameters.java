@@ -6,12 +6,12 @@ import java.util.HashMap;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
 import org.hortonmachine.gears.io.wcs.wcs201.models.ServiceMetadata;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -150,17 +150,18 @@ public class CoverageReaderParameters {
         url += "&COVERAGEID=" + this.identifier;
         if (this.format != null)
             url += "&format=" + this.format;
+        IDescribeCoverage describeCoverage = null;
         if (this.requestedEnvelope != null){
             // need to get axis labels
-            DescribeCoverage describeCoverage = wcs.getDescribeCoverage(this.identifier);
-            Envelope dataEnvelope = describeCoverage.envelope;
+            describeCoverage = wcs.getDescribeCoverage(this.identifier);
+            Envelope dataEnvelope = describeCoverage.getCoverageEnvelope();
             Envelope finalRequestEnvelope = requestedEnvelope;
-            if(describeCoverage.envelopeSrid!=null && requestedEnvelopeSrid != describeCoverage.envelopeSrid){
+            if(describeCoverage.getCoverageEnvelopeSrid()!=null && requestedEnvelopeSrid != describeCoverage.getCoverageEnvelopeSrid()){
                 ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope, CRS.decode("EPSG:" + requestedEnvelopeSrid));
-                CoordinateReferenceSystem finalRequestCrs = CRS.decode("EPSG:" + describeCoverage.envelopeSrid);
+                CoordinateReferenceSystem finalRequestCrs = CRS.decode("EPSG:" + describeCoverage.getCoverageEnvelopeSrid());
                 finalRequestEnvelope = requestedReferenceEnvelope.transform(finalRequestCrs, true);
                 
-                String sridNs = WcsUtils.nsCRS_WCS2(describeCoverage.envelopeSrid);
+                String sridNs = WcsUtils.nsCRS_WCS2(describeCoverage.getCoverageEnvelopeSrid());
                 url += "&SUBSETTINGCRS=" + sridNs;
             }
 
@@ -170,7 +171,7 @@ public class CoverageReaderParameters {
                 finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
             }
 
-            String[] axisLabels = describeCoverage.gridAxisLabels;
+            String[] axisLabels = describeCoverage.getGridAxisLabels();
             String[] lonLatLabelsOrdered = WcsUtils.orderLabels(axisLabels);
             url += "&subset=" + lonLatLabelsOrdered[0] + "(" + finalRequestEnvelope.getMinX() + "," + finalRequestEnvelope.getMaxX() + ")";
             url += "&subset=" + lonLatLabelsOrdered[1] + "(" + finalRequestEnvelope.getMinY() + "," + finalRequestEnvelope.getMaxY() + ")";
@@ -183,11 +184,12 @@ public class CoverageReaderParameters {
             // we need to check if the service supports scaling
             boolean supportsScaling = wcs.getCapabilities().getIdentification().supportsScaling();
             if(supportsScaling){
-                DescribeCoverage describeCoverage = wcs.getDescribeCoverage(this.identifier);
-                String[] gridAxisLabels = describeCoverage.gridAxisLabels;
+                if(describeCoverage == null)
+                    describeCoverage = wcs.getDescribeCoverage(this.identifier);
+                String[] gridAxisLabels = describeCoverage.getGridAxisLabels();
                 int[] lonLatPositions = WcsUtils.getLonLatPositions(gridAxisLabels);
 
-                String[] axisLabels = describeCoverage.axisLabels;
+                String[] axisLabels = describeCoverage.getAxisLabels();
                 url += "&SCALESIZE=" + axisLabels[lonLatPositions[0]] + "(" + this.rowsCols[1] + "),"+ axisLabels[lonLatPositions[1]] + "(" + this.rowsCols[0] + ")";
                 hasRowCols = true;
             }

@@ -1,15 +1,17 @@
-package org.hortonmachine.gears.io.wcs.wcs201.models;
+package org.hortonmachine.gears.io.wcs.wcs111.models;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.Range;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
 public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage {
@@ -37,6 +39,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
     public Range<Double> range;
 
     public String nativeFormat;
+
 
     @Override
     public boolean checkElementName(String name) {
@@ -163,27 +166,6 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
             nativeFormat = XmlHelper.findFirstTextInChildren(serviceParametersNode, "nativeFormat");
     }
 
-
-    @Override
-    public Envelope getCoverageEnvelope() {
-        return envelope;
-    }
-
-    @Override
-    public Integer getCoverageEnvelopeSrid() {
-        return envelopeSrid;
-    }
-
-    @Override
-    public String[] getAxisLabels() {
-        return axisLabels;
-    }
-
-    @Override
-    public String[] getGridAxisLabels() {
-        return gridAxisLabels;
-    }
-
     public String toString() {
         String s = "";
         s += "envelope: " + envelope + "\n";
@@ -207,6 +189,26 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
         s += "range: " + range + "\n";
         s += "nativeFormat: " + nativeFormat + "\n";
         return s;
+    }
+
+    @Override
+    public Envelope getCoverageEnvelope() {
+        return envelope;
+    }
+
+    @Override
+    public Integer getCoverageEnvelopeSrid() {
+        return envelopeSrid;
+    }
+
+    @Override
+    public String[] getAxisLabels() {
+        return axisLabels;
+    }
+
+    @Override
+    public String[] getGridAxisLabels() {
+        return gridAxisLabels;
     }
 
 }

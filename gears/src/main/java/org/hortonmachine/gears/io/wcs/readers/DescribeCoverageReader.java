@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.wcs.wcs201.readers;
+package org.hortonmachine.gears.io.wcs.readers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,9 +8,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.Authentication;
+import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage;
-import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
 
 
 /**
@@ -97,7 +97,7 @@ public class DescribeCoverageReader {
         // return service_url.split('?')[0] + '?' + urlqs
     }
 
-    public DescribeCoverage read(String service_url, int timeout) throws Exception{
+    public IDescribeCoverage read(String service_url, int timeout) throws Exception{
         String request = descCov_url(service_url);
 
         HttpClient httpClient = HttpClientBuilder.create().build();
