@@ -83,13 +83,11 @@ public class WebCoverageService111 implements IWebCoverageService {
 
     @Override
     public ICoverageSummary getCoverageSummary(String coverageId) throws Exception {
-        init();
         return wcsCapabilities.getCoverageSummaryById(coverageId);
     }
 
     @Override
     public List<String> getSupportedFormats() throws Exception {
-        init();
         return null;
     }
 
@@ -120,6 +118,15 @@ public class WebCoverageService111 implements IWebCoverageService {
         return wcsCapabilities;
     }
 
+    @Override
+    public String getDescribeCoverageUrl(String coverageId) throws Exception {
+        init();
+        DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
+                timeout, headers);
+        return reader.descCov_url(coverageId);
+    }
+
+    @Override
     public IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception {
         init();
         DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,

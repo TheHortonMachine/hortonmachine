@@ -8,7 +8,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.locationtech.jts.geom.Envelope;
 import org.w3c.dom.Node;
 
 public class CoverageSummary implements ICoverageSummary {
@@ -22,7 +22,8 @@ public class CoverageSummary implements ICoverageSummary {
     private List<String> keywords = new ArrayList<>();
     private String coverageId;
     private String coverageSubtype;
-    private ReferencedEnvelope boundingBox;
+    private Envelope boundingBox;
+    private Integer boundingBoxSrid;
     private ReferencedEnvelope wgs84BoundingBox;
 
     public CoverageSummary(List<ICoverageSummary> coverageSummaries) {
@@ -41,9 +42,18 @@ public class CoverageSummary implements ICoverageSummary {
         cs.abstract_ = XmlHelper.findFirstTextInChildren(node, "abstract");
 
         Node keywordsNode = XmlHelper.findNode(node, "keywords");
-        cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        if(keywordsNode != null) {
+        	cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        }
         cs.coverageId = XmlHelper.findFirstTextInChildren(node, "coverageid");
         cs.coverageSubtype = XmlHelper.findFirstTextInChildren(node, "coveragesubtype");
+        
+        if ( cs.title == null ) {
+        	cs.title = cs.coverageId;
+        }
+        if ( cs.abstract_ == null ) {
+        	cs.abstract_ = cs.coverageId;
+        }
 
         List<Node> bboxNodes = new ArrayList<>();
         XmlHelper.findNodes(node, "boundingbox", bboxNodes);
@@ -63,17 +73,15 @@ public class CoverageSummary implements ICoverageSummary {
                             DefaultGeographicCRS.WGS84);
                 } else {
                     String crsStr = XmlHelper.findAttribute(bboxNode, "crs");
-
-                    CoordinateReferenceSystem crs = WcsUtils.getCrsFromSrsName(crsStr);
+                    cs.boundingBoxSrid = WcsUtils.getSridFromSrsName(crsStr);
 
                     String lowerCorner = XmlHelper.findFirstTextInChildren(bboxNode, "lowercorner");
                     String upperCorner = XmlHelper.findFirstTextInChildren(bboxNode, "uppercorner");
-                    cs.boundingBox = new ReferencedEnvelope(
+                    cs.boundingBox = new Envelope(
                             Double.parseDouble(lowerCorner.split(" ")[0]),
                             Double.parseDouble(upperCorner.split(" ")[0]),
                             Double.parseDouble(lowerCorner.split(" ")[1]),
-                            Double.parseDouble(upperCorner.split(" ")[1]),
-                            crs);
+                            Double.parseDouble(upperCorner.split(" ")[1]));
                 }
             }
 
@@ -99,8 +107,13 @@ public class CoverageSummary implements ICoverageSummary {
     }
 
     @Override
-    public ReferencedEnvelope getBoundingBox() {
+    public Envelope getBoundingBox() {
         return boundingBox;
+    }
+
+    @Override
+    public Integer getBoundingBoxSrid() {
+        return boundingBoxSrid;
     }
 
     @Override

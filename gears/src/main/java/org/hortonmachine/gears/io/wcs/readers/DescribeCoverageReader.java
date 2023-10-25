@@ -9,6 +9,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.Authentication;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 
 
@@ -46,7 +47,7 @@ public class DescribeCoverageReader {
         List<String[]> qs = new ArrayList<>();
         List<String> params = new ArrayList<>();
         if (service_url.indexOf('?') != -1) {
-            String string = service_url.split("?")[1];
+            String string = service_url.split("\\?")[1];
             // qs = parse_qsl()
             for (String pair : string.split("&")) {
                 String[] kv = pair.split("=");
@@ -54,6 +55,8 @@ public class DescribeCoverageReader {
                 params.add(kv[0]);
             }
         }
+        
+        
 
         if (!params.contains("service")) {
             qs.add(new String[] { "service", "WCS" });
@@ -99,11 +102,7 @@ public class DescribeCoverageReader {
     public IDescribeCoverage read(String service_url, int timeout) throws Exception{
         String request = descCov_url(service_url);
 
-        HttpClient httpClient = HttpClientBuilder.create().build();
-        HttpGet getCapabilitiesRequest = new HttpGet(request);
-        HttpResponse response = httpClient.execute(getCapabilitiesRequest);
-
-        XmlHelper xmlHelper = XmlHelper.fromStream(response.getEntity().getContent());
+        XmlHelper xmlHelper = WcsUtils.getXmlHelperForRequest(request);
 
         // xmlHelper.printTree();
 

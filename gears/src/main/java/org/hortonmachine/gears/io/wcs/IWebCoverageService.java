@@ -4,25 +4,84 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 
 public interface IWebCoverageService {
 
-    String getVersion() throws Exception;
-
-    List<String> getCoverageIds() throws Exception;
-
-    ICoverageSummary getCoverageSummary(String coverageId) throws Exception;
-
-    List<String> getSupportedFormats() throws Exception;
-
-    int[] getSupportedSrids() throws Exception;
-
     String getCapabilitiesUrl();
 
+    /**
+     * Returns the version of the Web Coverage Service, as read from the 
+     * capabilities document.
+     *
+     * @return the version of the Web Coverage Service
+     * @throws Exception if an error occurs while retrieving the version
+     */
+    String getVersion() throws Exception;
+
+    /**
+     * Returns a list of coverage IDs available in the Web Coverage Service.
+     *
+     * @return a list of coverage IDs as read from the capabilities document
+     * @throws Exception if an error occurs while retrieving the coverage IDs
+     */
+    List<String> getCoverageIds() throws Exception;
+
+    /**
+     * Returns a summary of the coverage with the given ID.
+     * 
+     * <p>The summary is read from the capabilities document. For more
+     * information, getting the describe coverage document is recommended.</p>
+     *
+     * @param coverageId the ID of the coverage to retrieve the summary for
+     * @return the coverage summary
+     * @throws Exception if an error occurs while retrieving the summary
+     */
+    ICoverageSummary getCoverageSummary(String coverageId) throws Exception;
+
+    /**
+     * Returns a DescribeCoverage object for the specified coverage ID.
+     *
+     * @param coverageId the ID of the coverage to describe
+     * @return the DescribeCoverage object for the specified coverage ID
+     * @throws Exception if an error occurs while retrieving the DescribeCoverage object
+     */
     IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception;
+
+    /**
+     * Returns the URL for a DescribeCoverage request for the specified coverage ID.
+     *
+     * @param coverageId the ID of the coverage to describe
+     * @return the URL for a DescribeCoverage request for the specified coverage ID
+     * @throws Exception if an error occurs while constructing the URL
+     */
+    String getDescribeCoverageUrl(String coverageId) throws Exception;
+
+    /**
+     * Returns a list of supported formats for the Web Coverage Service, if
+     * the capabilities document contains the information (ex. for 2.0.1).
+     * 
+     * <p>If null is returned, the supported formats should be retrieved from
+     * the DescribeCoverage document of the single coverage.</p>
+     *
+     * @return a list of supported formats, else null.
+     * @throws Exception if an error occurs while retrieving the supported formats
+     */
+    List<String> getSupportedFormats() throws Exception;
+
+    /**
+     * Returns an array of supported SRIDs (Spatial Reference IDs) by the
+     * Web Coverage Service, if the capabilities document contains the 
+     * information (ex. for 2.0.1).
+     *
+     * <p>If null is returned, the supported formats should be retrieved from
+     * the DescribeCoverage document of the single coverage.</p>
+     * 
+     * @return an array of supported SRIDs
+     * @throws Exception if an error occurs while retrieving the supported SRIDs
+     */
+    int[] getSupportedSrids() throws Exception;
 
     /**
      * Retrieves a coverage from the web coverage service and saves it to the specified output file path.

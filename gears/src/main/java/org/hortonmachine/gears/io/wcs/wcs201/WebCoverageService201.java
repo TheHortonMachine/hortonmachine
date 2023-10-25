@@ -1,16 +1,8 @@
 package org.hortonmachine.gears.io.wcs.wcs201;
 
 import java.io.File;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
-import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 
@@ -19,17 +11,20 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.io.wcs.Authentication;
 import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.IWebCoverageService;
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.readers.DescribeCoverageReader;
 import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
 import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
@@ -120,12 +115,25 @@ public class WebCoverageService201 implements IWebCoverageService {
     }
 
     @Override
+    public String getDescribeCoverageUrl(String coverageId) throws Exception {
+        init();
+        DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
+                timeout, headers);
+        
+        String describeCoverageBaseUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageBaseUrl();
+        if (describeCoverageBaseUrl == null)
+            describeCoverageBaseUrl = baseUrl;
+
+        return reader.descCov_url(describeCoverageBaseUrl);
+    }
+
+    @Override
     public IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception {
         init();
         DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
                 timeout, headers);
 
-        String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageUrl();
+        String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageBaseUrl();
         if (describeCoverageUrl == null)
             describeCoverageUrl = baseUrl;
 
@@ -154,41 +162,43 @@ public class WebCoverageService201 implements IWebCoverageService {
             HashMap<String, String> additonalParameters)
             throws Exception {
         init();
-        String url = wcsCapabilities.getOperationsMetadata().getGetCoverageUrl();
+        String url = wcsCapabilities.getOperationsMetadata().getGetCoverageBaseUrl();
         if (url == null)
             url = baseUrl;
 
         String paramsUrl = parameters.toUrl(additonalParameters);
-        String finalUrl = url + "?" + paramsUrl;
+        String sep = "?";
+        if (url.indexOf('?') != -1)
+            sep = "&";
+        String finalUrl = url + sep + paramsUrl;
 
-        // make the request
-        Builder uriBuilder = HttpRequest.newBuilder()
-                .uri(URI.create(finalUrl));
-        if (auth != null) {
-            // Create an HTTP client with basic authentication
-            String credentials = auth.username + ":" + auth.password;
-            String base64Credentials = Base64.getEncoder().encodeToString(credentials.getBytes());
-            uriBuilder.header("Authorization", "Basic " + base64Credentials);
-        }
+        WcsUtils.requestToFile(finalUrl, outputFilePath);
 
-        HttpClient client = HttpClient.newBuilder().build();
+        // // make the request
+        // Builder uriBuilder = HttpRequest.newBuilder()
+        //         .uri(URI.create(finalUrl));
+        // if (auth != null) {
+        //     // Create an HTTP client with basic authentication
+        //     String credentials = auth.username + ":" + auth.password;
+        //     String base64Credentials = Base64.getEncoder().encodeToString(credentials.getBytes());
+        //     uriBuilder.header("Authorization", "Basic " + base64Credentials);
+        // }
+        // HttpClient client = HttpClient.newBuilder().build();
+        // HttpRequest request = uriBuilder.GET().build();
+        // // Send the request and retrieve the response
+        // HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
-        HttpRequest request = uriBuilder.GET().build();
+        // if (response.statusCode() == 200) {
+        //     // Save the response to a file
+        //     Path outputPath = Path.of(outputFilePath);
+        //     Files.copy(response.body(), outputPath, StandardCopyOption.REPLACE_EXISTING);
+        // } else {
+        //     InputStream responseStream = response.body();
+        //     byte[] responseBytes = responseStream.readAllBytes();
+        //     String responseString = new String(responseBytes);
 
-        // Send the request and retrieve the response
-        HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-
-        if (response.statusCode() == 200) {
-            // Save the response to a file
-            Path outputPath = Path.of(outputFilePath);
-            Files.copy(response.body(), outputPath, StandardCopyOption.REPLACE_EXISTING);
-        } else {
-            InputStream responseStream = response.body();
-            byte[] responseBytes = responseStream.readAllBytes();
-            String responseString = new String(responseBytes);
-
-            throw new Exception("Error while retrieving coverage" + responseString + " \nwith URL:" + finalUrl);
-        }
+        //     throw new Exception("Error while retrieving coverage" + responseString + " \nwith URL:" + finalUrl);
+        // }
 
         return finalUrl;
     }
@@ -226,18 +236,17 @@ public class WebCoverageService201 implements IWebCoverageService {
         File gpkgFile = new File(outFolderFile, gpkgName);
         OmsVectorWriter.writeVector(gpkgFile.getAbsolutePath() + "#" + name, fc);
 
-        
         fc = new DefaultFeatureCollection();
         b = null;
         builder = null;
         name = "data_footprints_coveragesummary";
         for (String id : getCoverageIds()) {
             ICoverageSummary coverageSummary = getCoverageSummary(id);
-            ReferencedEnvelope boundingBox = coverageSummary.getBoundingBox();
+            Envelope boundingBox = coverageSummary.getBoundingBox();
             if (b == null || builder == null) {
                 b = new SimpleFeatureTypeBuilder();
                 b.setName(name);
-                b.setCRS(boundingBox.getCoordinateReferenceSystem());
+                b.setCRS(CRS.decode("EPSG:" + coverageSummary.getBoundingBoxSrid()));
                 b.add("the_geom", Polygon.class);
                 b.add("coverageid", String.class);
                 SimpleFeatureType type = b.buildFeatureType();
@@ -252,8 +261,6 @@ public class WebCoverageService201 implements IWebCoverageService {
         }
         gpkgFile = new File(outFolderFile, gpkgName);
         OmsVectorWriter.writeVector(gpkgFile.getAbsolutePath() + "#" + name, fc);
-
-
 
     }
 

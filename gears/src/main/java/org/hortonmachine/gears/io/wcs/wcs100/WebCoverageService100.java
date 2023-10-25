@@ -89,13 +89,11 @@ public class WebCoverageService100 implements IWebCoverageService {
 
     @Override
     public List<String> getSupportedFormats() throws Exception {
-        init();
         return null;
     }
 
     @Override
     public int[] getSupportedSrids() throws Exception {
-        init();
         return null;
     }
 
@@ -120,12 +118,26 @@ public class WebCoverageService100 implements IWebCoverageService {
         return wcsCapabilities;
     }
 
+    @Override
+    public String getDescribeCoverageUrl(String coverageId) throws Exception {
+        init();
+        DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
+        timeout, headers);
+
+        String describeCoverageBaseUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageBaseUrl();
+        if (describeCoverageBaseUrl == null)
+            describeCoverageBaseUrl = baseUrl;
+
+        return reader.descCov_url(describeCoverageBaseUrl);
+    }
+
+    @Override
     public IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception {
         init();
         DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
                 timeout, headers);
 
-        String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageUrl();
+        String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageBaseUrl();
         if (describeCoverageUrl == null)
             describeCoverageUrl = baseUrl;
 
@@ -154,7 +166,7 @@ public class WebCoverageService100 implements IWebCoverageService {
             HashMap<String, String> additonalParameters)
             throws Exception {
         init();
-        String url = wcsCapabilities.getOperationsMetadata().getGetCoverageUrl();
+        String url = wcsCapabilities.getOperationsMetadata().getGetCoverageBaseUrl();
         if (url == null)
             url = baseUrl;
 

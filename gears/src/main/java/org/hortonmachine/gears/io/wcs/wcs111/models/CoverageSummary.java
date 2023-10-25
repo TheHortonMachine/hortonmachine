@@ -7,6 +7,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
+import org.locationtech.jts.geom.Envelope;
 import org.w3c.dom.Node;
 
 public class CoverageSummary implements ICoverageSummary {
@@ -70,8 +71,13 @@ public class CoverageSummary implements ICoverageSummary {
     }
 
     @Override
-    public ReferencedEnvelope getBoundingBox() {
+    public Envelope getBoundingBox() {
         return wgs84BoundingBox;
+    }
+
+    @Override
+    public Integer getBoundingBoxSrid() {
+        return 4326;
     }
 
     @Override

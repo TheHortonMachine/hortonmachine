@@ -83,6 +83,7 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+import org.hortonmachine.gears.io.wcs.Wcs;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.GridNode;
@@ -261,6 +262,9 @@ public class HM {
         sb.append("\tdumpRaster( GridCoverage2D raster, String source )").append("\n");
         sb.append("Write a geotools vector to file:").append("\n");
         sb.append("\tdumpVector( SimpleFeatureCollection vector, String source )").append("\n");
+        sb.append("Open WCS service:").append("\n");
+        sb.append("\twcs( String url )").append("\n");
+        sb.append("\twcs( String url, String version )").append("\n");
 
         sb.append("\n");
         sb.append("Dialogs").append("\n");
@@ -1783,6 +1787,16 @@ public class HM {
         renderer.paint(g2d, imageBounds, ref);
 
         return dumpImage;
+    }
+
+    public static Wcs wcs(String url, String version) throws Exception {
+        Wcs wcs = new Wcs(url, version);
+        return wcs;
+    }
+
+    public static Wcs wcs(String url) throws Exception {
+        Wcs wcs = new Wcs(url);
+        return wcs;
     }
 
 }

@@ -182,7 +182,7 @@ public class CoverageReaderParameters {
         url += "&coverage=" + this.identifier;
         if (this.format != null)
             url += "&format=" + this.format;
-        
+
         Envelope finalRequestEnvelope = requestedEnvelope;
         ICoverageSummary coverageSummary = wcs.getCoverageSummary(this.identifier);
         ReferencedEnvelope dataEnvelope = coverageSummary.getWgs84BoundingBox();
@@ -198,7 +198,7 @@ public class CoverageReaderParameters {
                 Logger.INSTANCE.w(
                         "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
                 finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
-            }    
+            }
         } else {
             // since bbox is mandatory, we use the data envelope
             finalRequestEnvelope = dataEnvelope;
@@ -220,7 +220,7 @@ public class CoverageReaderParameters {
         }
         return url;
     }
-    
+
     private String build111(String url)
             throws Exception, NoSuchAuthorityCodeException, FactoryException, TransformException {
         WebCoverageService111 wcs = (WebCoverageService111) service;
@@ -229,7 +229,7 @@ public class CoverageReaderParameters {
         url += "&identifier=" + this.identifier;
         if (this.format != null)
             url += "&format=" + this.format;
-        
+
         // BOUNDINGBOX is a mandatory parameter (at least until TIME is not implemented)
         Envelope finalRequestEnvelope = requestedEnvelope;
         ICoverageSummary coverageSummary = wcs.getCoverageSummary(this.identifier);
@@ -246,7 +246,7 @@ public class CoverageReaderParameters {
                 Logger.INSTANCE.w(
                         "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
                 finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
-            }    
+            }
         } else {
             // since bbox is mandatory, we use the data envelope
             finalRequestEnvelope = dataEnvelope;
@@ -273,37 +273,58 @@ public class CoverageReaderParameters {
         url += "&COVERAGEID=" + this.identifier;
         if (this.format != null)
             url += "&format=" + this.format;
-        IDescribeCoverage describeCoverage = null;
-        if (this.requestedEnvelope != null) {
-            // need to get axis labels
-            describeCoverage = wcs.getDescribeCoverage(this.identifier);
-            Envelope dataEnvelope = describeCoverage.getCoverageEnvelope();
-            Envelope finalRequestEnvelope = requestedEnvelope;
-            if (describeCoverage.getCoverageEnvelopeSrid() != null
-                    && requestedEnvelopeSrid != describeCoverage.getCoverageEnvelopeSrid()) {
-                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
-                        CRS.decode("EPSG:" + requestedEnvelopeSrid));
-                CoordinateReferenceSystem finalRequestCrs = CRS
-                        .decode("EPSG:" + describeCoverage.getCoverageEnvelopeSrid());
-                finalRequestEnvelope = requestedReferenceEnvelope.transform(finalRequestCrs, true);
-
-                String sridNs = WcsUtils.nsCRS_WCS2(describeCoverage.getCoverageEnvelopeSrid());
-                url += "&SUBSETTINGCRS=" + sridNs;
+        IDescribeCoverage describeCoverage = wcs.getDescribeCoverage(this.identifier);
+        if (this.requestedEnvelope == null) {
+            ICoverageSummary coverageSummary = wcs.getCoverageSummary(this.identifier);
+            Envelope boundingBox = coverageSummary.getBoundingBox();
+            if (boundingBox != null) {
+                this.requestedEnvelope = boundingBox;
+            } else {
+                this.requestedEnvelope = describeCoverage.getCoverageEnvelope();
             }
+
+            Integer boundingBoxSrid = coverageSummary.getBoundingBoxSrid();
+            if (boundingBoxSrid != null) {
+                this.requestedEnvelopeSrid = boundingBoxSrid;
+            } else {
+                this.requestedEnvelopeSrid = describeCoverage.getCoverageEnvelopeSrid();
+            }
+        }
+        if (this.requestedEnvelope != null) {
+            // Envelope dataEnvelope = describeCoverage.getCoverageEnvelope();
+            Envelope finalRequestEnvelope = requestedEnvelope;
+            // if (describeCoverage.getCoverageEnvelopeSrid() != null
+            // && requestedEnvelopeSrid != describeCoverage.getCoverageEnvelopeSrid()) {
+            // ReferencedEnvelope requestedReferenceEnvelope = new
+            // ReferencedEnvelope(requestedEnvelope,
+            // CRS.decode("EPSG:" + requestedEnvelopeSrid));
+            // CoordinateReferenceSystem finalRequestCrs = CRS
+            // .decode("EPSG:" + describeCoverage.getCoverageEnvelopeSrid());
+            // finalRequestEnvelope = requestedReferenceEnvelope.transform(finalRequestCrs,
+            // true);
+
+            // String sridNs =
+            // WcsUtils.nsCRS_WCS2(describeCoverage.getCoverageEnvelopeSrid());
+            // url += "&SUBSETTINGCRS=" + sridNs;
+            // }
+            String sridNs = WcsUtils.nsCRS_WCS2(requestedEnvelopeSrid);
+            url += "&SUBSETTINGCRS=" + sridNs;
 
             // if the requested envelope is partially outside the data envelope, we need to
             // clip it
-            if (!dataEnvelope.contains(finalRequestEnvelope)) {
-                Logger.INSTANCE.w(
-                        "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
-                finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
-            }
+            // if (!dataEnvelope.contains(finalRequestEnvelope)) {
+            // Logger.INSTANCE.w(
+            // "Requested envelope is partially outside the data envelope. Clipping
+            // requested envelope to data envelope.");
+            // finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
+            // }
 
-            String[] axisLabels = describeCoverage.getGridAxisLabels();
+            // need to get axis labels to create a subset properly
+            String[] axisLabels = describeCoverage.getWorldAxisLabels();
             String[] lonLatLabelsOrdered = WcsUtils.orderLabels(axisLabels);
-            url += "&subset=" + lonLatLabelsOrdered[0] + "(" + finalRequestEnvelope.getMinX() + ","
+            url += "&SUBSET=" + lonLatLabelsOrdered[0] + "(" + finalRequestEnvelope.getMinX() + ","
                     + finalRequestEnvelope.getMaxX() + ")";
-            url += "&subset=" + lonLatLabelsOrdered[1] + "(" + finalRequestEnvelope.getMinY() + ","
+            url += "&SUBSET=" + lonLatLabelsOrdered[1] + "(" + finalRequestEnvelope.getMinY() + ","
                     + finalRequestEnvelope.getMaxY() + ")";
 
         }
@@ -315,12 +336,16 @@ public class CoverageReaderParameters {
             if (supportsScaling) {
                 if (describeCoverage == null)
                     describeCoverage = wcs.getDescribeCoverage(this.identifier);
-                String[] gridAxisLabels = describeCoverage.getGridAxisLabels();
-                int[] lonLatPositions = WcsUtils.getLonLatPositions(gridAxisLabels);
+                String[] worldAxisLabels = describeCoverage.getWorldAxisLabels();
+                int[] lonLatPositions = WcsUtils.getLonLatPositions(worldAxisLabels);
 
-                String[] axisLabels = describeCoverage.getAxisLabels();
-                url += "&SCALESIZE=" + axisLabels[lonLatPositions[0]] + "(" + this.rowsCols[1] + "),"
-                        + axisLabels[lonLatPositions[1]] + "(" + this.rowsCols[0] + ")";
+                String[] gridAxisLabels = describeCoverage.getGridAxisLabels();
+                String firstAxis = gridAxisLabels[lonLatPositions[0]];
+                firstAxis = WcsUtils.nsGRIDAXIS_WCS2(firstAxis);
+                String secondAxis = gridAxisLabels[lonLatPositions[1]];
+                secondAxis = WcsUtils.nsGRIDAXIS_WCS2(secondAxis);
+                url += "&SCALESIZE=" + firstAxis + "(" + this.rowsCols[1] + "),"
+                        + secondAxis + "(" + this.rowsCols[0] + ")";
                 hasRowCols = true;
             }
         }

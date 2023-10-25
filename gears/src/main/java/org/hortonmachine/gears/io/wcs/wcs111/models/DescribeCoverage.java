@@ -14,17 +14,17 @@ import org.locationtech.jts.geom.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
-public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage {
+public class DescribeCoverage implements IDescribeCoverage {
     public Envelope envelope;
     public Integer envelopeSrid;
-    public String[] axisLabels;
+    public String[] gridAxisLabels;
     public String[] uomLabels;
     public int srsDimension;
 
     public String rectifiedGridId;
     public int rectifiedGridDimension;
     public GridEnvelope2D gridEnvelope;
-    public String[] gridAxisLabels;
+    public String[] worldAxisLabels;
 
     public Coordinate lowerLeftCellCenter;
     public String lowerLeftCellCenterId;
@@ -64,7 +64,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
         }
         String axisLabelsStr = XmlHelper.findAttribute(envelopeNode, "axisLabels");
         if (axisLabelsStr != null) {
-            gridAxisLabels = axisLabelsStr.split(spaceRegex);
+            worldAxisLabels = axisLabelsStr.split(spaceRegex);
         }
         String uomLabelsStr = XmlHelper.findAttribute(envelopeNode, "uomLabels");
         if (uomLabelsStr != null) {
@@ -73,8 +73,8 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
 
         int lonPosition = 0;
         int latPosition = 1;
-        if(gridAxisLabels != null){
-            int[] lonLatPositions = WcsUtils.getLonLatPositions(gridAxisLabels);
+        if(worldAxisLabels != null){
+            int[] lonLatPositions = WcsUtils.getLonLatPositions(worldAxisLabels);
             lonPosition = lonLatPositions[0];
             latPosition = lonLatPositions[1];
         }
@@ -112,7 +112,7 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
 
         axisLabelsStr = XmlHelper.findFirstTextInChildren(rectifiedGridNode, "axisLabels");
         if (axisLabelsStr != null) {
-            axisLabels = axisLabelsStr.split(spaceRegex);
+            gridAxisLabels = axisLabelsStr.split(spaceRegex);
         }
 
         Node originNode = XmlHelper.findNode(rectifiedGridNode, "origin");
@@ -170,13 +170,13 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
         String s = "";
         s += "envelope: " + envelope + "\n";
         s += "envelopeSrid: " + envelopeSrid + "\n";
-        s += "axisLabels: " + Arrays.toString(axisLabels) + "\n";
+        s += "axisLabels: " + Arrays.toString(gridAxisLabels) + "\n";
         s += "uomLabels: " + Arrays.toString(uomLabels) + "\n";
         s += "srsDimension: " + srsDimension + "\n";
         s += "rectifiedGridId: " + rectifiedGridId + "\n";
         s += "rectifiedGridDimension: " + rectifiedGridDimension + "\n";
         s += "gridEnvelope: " + gridEnvelope + "\n";
-        s += "gridAxisLabels: " + Arrays.toString(gridAxisLabels) + "\n";
+        s += "gridAxisLabels: " + Arrays.toString(worldAxisLabels) + "\n";
         s += "lowerLeftCellCenter: " + lowerLeftCellCenter + "\n";
         s += "lowerLeftCellCenterId: " + lowerLeftCellCenterId + "\n";
         s += "lowerLeftCellCenterSrid: " + lowerLeftCellCenterSrid + "\n";
@@ -202,13 +202,27 @@ public class DescribeCoverage implements XmlHelper.XmlVisitor, IDescribeCoverage
     }
 
     @Override
-    public String[] getAxisLabels() {
-        return axisLabels;
-    }
-
-    @Override
     public String[] getGridAxisLabels() {
         return gridAxisLabels;
     }
 
+    @Override
+    public String[] getWorldAxisLabels() {
+        return worldAxisLabels;
+    }
+
+    @Override
+    public List<String> getSupportedFormats() throws Exception {
+        return null;
+    }
+
+    @Override
+    public String getNativeFormat() throws Exception {
+        return nativeFormat;
+    }
+
+    @Override
+    public int[] getSupportedSrids() throws Exception {
+        return null;
+    }
 }

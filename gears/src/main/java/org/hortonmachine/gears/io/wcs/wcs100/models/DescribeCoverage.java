@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
+import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.locationtech.jts.geom.Envelope;
 import org.w3c.dom.Node;
@@ -12,7 +13,10 @@ public class DescribeCoverage implements IDescribeCoverage {
     public Envelope envelope;
     public Integer envelopeSrid;
 
-
+    public List<String> supportedFormats;
+    public String nativeFormat;
+    public int[] supportedSrids;
+    public List<String> supportedInterpolations;
 
     @Override
     public boolean checkElementName(String name) {
@@ -53,7 +57,31 @@ public class DescribeCoverage implements IDescribeCoverage {
             }
         }
 
-
+        Node formatNode = XmlHelper.findNode(node, "supportedFormats");
+        supportedFormats = XmlHelper.findAllTextsInChildren(formatNode, "formats");
+        
+        
+        Node crsNode = XmlHelper.findNode(node, "supportedCRSs");
+        List<Node> supportedCrsNodes = new ArrayList<>();
+        XmlHelper.findNodes(crsNode,  "requestResponseCRSs", supportedCrsNodes);
+        if (!supportedCrsNodes.isEmpty()) {
+            supportedSrids = new int[supportedCrsNodes.size()];
+            for (int i = 0; i < supportedCrsNodes.size(); i++) {
+                String textContent = supportedCrsNodes.get(i).getTextContent();
+                supportedSrids[i] = WcsUtils.getSridFromSrsName(textContent);
+            }
+        }
+        
+        Node interpolationsNode = XmlHelper.findNode(node, "supportedInterpolations");
+        List<Node> interpolationSupportedNodes = new ArrayList<>();
+        XmlHelper.findNodes(interpolationsNode,  "interpolationMethod", interpolationSupportedNodes);
+        if (!interpolationSupportedNodes.isEmpty()) {
+            supportedInterpolations = new ArrayList<>();
+            for (int i = 0; i < interpolationSupportedNodes.size(); i++) {
+                String textContent = interpolationSupportedNodes.get(i).getTextContent();
+                supportedInterpolations.add(textContent);
+            }
+        }
 
     }
 
@@ -61,6 +89,21 @@ public class DescribeCoverage implements IDescribeCoverage {
         String s = "";
         s += "envelope: " + envelope + "\n";
         s += "envelopeSrid: " + envelopeSrid + "\n";
+        s += "supportedFormats: \n";
+        if (supportedFormats != null && supportedFormats.size() > 0)
+            for (String sf : supportedFormats) {
+                s += "\t" + sf + "\n";
+            }
+        s += "supportedSrids: \n";
+        if (supportedSrids != null && supportedSrids.length > 0)
+            for (int srid : supportedSrids) {
+                s += "\t" + srid + "\n";
+            }
+        s += "supportedInterpolations: \n";
+        if (supportedInterpolations != null && supportedInterpolations.size() > 0)
+            for (String si : supportedInterpolations) {
+                s += "\t" + si + "\n";
+            }
         return s;
     }
 
@@ -75,13 +118,28 @@ public class DescribeCoverage implements IDescribeCoverage {
     }
 
     @Override
-    public String[] getAxisLabels() {
+    public String[] getWorldAxisLabels() {
         return null;
     }
 
     @Override
     public String[] getGridAxisLabels() {
         return null;
+    }
+
+    @Override
+    public List<String> getSupportedFormats() throws Exception {
+        return supportedFormats;
+    }
+
+    @Override
+    public String getNativeFormat() throws Exception {
+        return nativeFormat;
+    }
+
+    @Override
+    public int[] getSupportedSrids() throws Exception {
+        return supportedSrids;
     }
 
 }

@@ -29,34 +29,38 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
             if (name.equals("GetCapabilities")) {
                 Node getNode = XmlHelper.findNode(operationNode, "Get");
                 getCapabilitiesUrl = XmlHelper.findAttribute(getNode, "xlink:href");
-                if (getCapabilitiesUrl != null && getCapabilitiesUrl.endsWith("?")) {
-                    getCapabilitiesUrl = getCapabilitiesUrl.substring(0, getCapabilitiesUrl.length() - 1);
-                }
+                getCapabilitiesUrl = removeTrailingRubbish(getCapabilitiesUrl);
             } else if (name.equals("DescribeCoverage")) {
                 Node getNode = XmlHelper.findNode(operationNode, "Get");
                 describeCoverageUrl = XmlHelper.findAttribute(getNode, "xlink:href");
-                if (describeCoverageUrl != null && describeCoverageUrl.endsWith("?")) {
-                    describeCoverageUrl = describeCoverageUrl.substring(0, describeCoverageUrl.length() - 1);
-                }
+                describeCoverageUrl = removeTrailingRubbish(describeCoverageUrl);
             } else if (name.equals("GetCoverage")) {
                 Node getNode = XmlHelper.findNode(operationNode, "Get");
                 getCoverageUrl = XmlHelper.findAttribute(getNode, "xlink:href");
-                if (getCoverageUrl != null && getCoverageUrl.endsWith("?")) {
-                    getCoverageUrl = getCoverageUrl.substring(0, getCoverageUrl.length() - 1);
-                }
+                getCoverageUrl = removeTrailingRubbish(getCoverageUrl);
             }
         }
     }
 
-    public String getGetCapabilitiesUrl() {
+    private String removeTrailingRubbish(String url) {
+        if (url != null && url.endsWith("?")) {
+            url = url.substring(0, url.length() - 1);
+        }
+        if (url != null && url.endsWith("&amp;")) {
+            url = url.substring(0, url.length() - 5);
+        }
+        return url;
+    }
+
+    public String getGetCapabilitiesBaseUrl() {
         return getCapabilitiesUrl;
     }
 
-    public String getDescribeCoverageUrl() {
+    public String getDescribeCoverageBaseUrl() {
         return describeCoverageUrl;
     }
 
-    public String getGetCoverageUrl() {
+    public String getGetCoverageBaseUrl() {
         return getCoverageUrl;
     }
 

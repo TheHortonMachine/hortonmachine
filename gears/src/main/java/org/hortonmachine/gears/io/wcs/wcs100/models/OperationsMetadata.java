@@ -1,8 +1,5 @@
 package org.hortonmachine.gears.io.wcs.wcs100.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -60,15 +57,15 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
         }
     }
 
-    public String getGetCapabilitiesUrl() {
+    public String getGetCapabilitiesBaseUrl() {
         return getCapabilitiesUrl;
     }
 
-    public String getDescribeCoverageUrl() {
+    public String getDescribeCoverageBaseUrl() {
         return describeCoverageUrl;
     }
 
-    public String getGetCoverageUrl() {
+    public String getGetCoverageBaseUrl() {
         return getCoverageUrl;
     }
 
