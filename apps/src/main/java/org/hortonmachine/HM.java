@@ -33,6 +33,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -52,15 +53,18 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.spi.ImageReaderSpi;
+import javax.media.jai.ImageLayout;
 import javax.media.jai.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.geometry.DirectPosition2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridCoverageLayer;
@@ -69,6 +73,10 @@ import org.geotools.map.MapContent;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.lite.StreamingRenderer;
+import org.geotools.styling.ColorMap;
+import org.geotools.styling.RasterSymbolizer;
+import org.geotools.styling.StyleBuilder;
+import org.geotools.styling.StyleFactory;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -104,6 +112,7 @@ import org.hortonmachine.gears.utils.coverage.RasterCellInfo;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.images.ImageGenerator;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -138,6 +147,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.operation.TransformException;
 
 import geoscript.style.Style;
@@ -1349,12 +1359,71 @@ public class HM {
     public static BufferedImage toImage( String fileOrGeometryWkt ) {
         return toImage(fileOrGeometryWkt, 1000, 800);
     }
+
+    public static BufferedImage toImage(GridCoverage2D map) {
+        // StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
+
+        // // HM.styleForColorTable(getRegisteredRasterFormats(), 0, 0, 0);
+        // // RasterSymbolizer sym = sf.getDefaultRasterSymbolizer();
+        // // Style rasterStyle = SLD.wrapSymbolizers(sym);
+
+        // StyleBuilder sB = new StyleBuilder(sf);
+        // RasterSymbolizer rasterSym = sf.createRasterSymbolizer();
+
+        // ColorMap colorMap = sf.createColorMap();
+
+        // RenderedImage renderedImage = map.getRenderedImage();
+
+        GridEnvelope2D gridRange = map.getGridGeometry().getGridRange2D();
+        int width = gridRange.width;
+        int height = gridRange.height;
+
+        // Create an empty BufferedImage
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+
+        // Create an ImageLayout
+        ImageLayout layout = new ImageLayout();
+        layout.setMinX(gridRange.x);
+        layout.setMinY(gridRange.y);
+        layout.setWidth(width);
+        layout.setHeight(height);
+
+        // Render the GridCoverage2D to the BufferedImage
+        map.getRenderedImage().copyData(bufferedImage.getRaster());
+        
+
+        return bufferedImage;
+    }
     
     public static BufferedImage toImage( String fileOrGeometryWkt, int width, int height ) {
         try {
             File file = new File(fileOrGeometryWkt);
             if (file.exists()) {
-                return ImageIO.read(file);
+                if(file.getName().toLowerCase().endsWith(".tif")){
+                    makeSldStyleForRaster("rainbow", file.getAbsolutePath());
+                    // org.geotools.styling.Style style = SldUtilities.getStyleFromRasterFile(file);
+
+                    GridCoverage2D raster = readRaster( file.getAbsolutePath());
+
+                    // MapContent mapContent = new MapContent();
+                    // mapContent.addLayer(new GridCoverageLayer(raster, style, "raster"));
+
+                    // BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+                    // StreamingRenderer renderer = new StreamingRenderer();
+                    // renderer.setMapContent(mapContent);
+
+                    RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
+                    Envelope envelope = region.toEnvelope();
+                    ReferencedEnvelope refEnv = new ReferencedEnvelope(envelope, raster.getCoordinateReferenceSystem());    
+
+                    final ImageGenerator imgGen = new ImageGenerator(null, null);
+                    imgGen.addCoveragePath(file.getAbsolutePath());
+                    imgGen.setLayers();
+                    BufferedImage imageWithCheck = imgGen.getImageWithCheck(refEnv, width, height, 0, null);
+                    return imageWithCheck;
+                }else{
+                    return ImageIO.read(file);
+                }
             } else {
                 // try with wkt geometry
                 Geometry geometry = new WKTReader().read(fileOrGeometryWkt);
