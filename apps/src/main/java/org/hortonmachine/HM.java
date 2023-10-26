@@ -1401,17 +1401,7 @@ public class HM {
             if (file.exists()) {
                 if(file.getName().toLowerCase().endsWith(".tif")){
                     makeSldStyleForRaster("rainbow", file.getAbsolutePath());
-                    // org.geotools.styling.Style style = SldUtilities.getStyleFromRasterFile(file);
-
                     GridCoverage2D raster = readRaster( file.getAbsolutePath());
-
-                    // MapContent mapContent = new MapContent();
-                    // mapContent.addLayer(new GridCoverageLayer(raster, style, "raster"));
-
-                    // BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-                    // StreamingRenderer renderer = new StreamingRenderer();
-                    // renderer.setMapContent(mapContent);
-
                     RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
                     Envelope envelope = region.toEnvelope();
                     ReferencedEnvelope refEnv = new ReferencedEnvelope(envelope, raster.getCoordinateReferenceSystem());    
