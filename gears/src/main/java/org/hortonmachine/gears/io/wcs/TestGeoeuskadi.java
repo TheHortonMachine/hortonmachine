@@ -79,7 +79,7 @@ public class TestGeoeuskadi {
         Envelope env = Wcs.evelope(504787.0, 4734309.0, 536275.0, 4754145.0);
         parameters.bbox(env, 25830);
         // parameters.scaleFactor(0.01);
-        parameters.rowsCols(new int[] { 1000, 1000 }); 
+        parameters.rowsCols(1000, 1000 ); 
         parameters.outputSrid(4326);
 
         File file = new File(outFolder, coverageId + "_1000.tiff");

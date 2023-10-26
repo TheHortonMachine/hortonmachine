@@ -112,7 +112,7 @@ public class WcsTest {
         parameters.format("image/tiff");
         // parameters.bbox(env, 4326);
         // parameters.scaleFactor(0.01);
-        parameters.rowsCols(new int[] { 1000, 1000 }); // TODO in case of 100 a check on gridenvelope needs to be done
+        parameters.rowsCols( 1000, 1000 ); // TODO in case of 100 a check on gridenvelope needs to be done
         parameters.outputSrid(32633);
 
         File file = new File(outFolder, coverageId + "_v100.tiff");

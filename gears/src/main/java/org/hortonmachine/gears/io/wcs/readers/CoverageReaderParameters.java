@@ -33,6 +33,7 @@ public class CoverageReaderParameters {
     public Double scaleFactor = null;
     public int[] rowsCols = null;
     public Integer outputSrid = null;
+    public boolean useExtendedAxisUrl = false;
 
     private IWebCoverageService service;
 
@@ -123,8 +124,23 @@ public class CoverageReaderParameters {
      * @param rowsCols an array containing the number of rows and columns.
      * @return the builder instance.
      */
-    public CoverageReaderParameters rowsCols(int[] rowsCols) {
-        this.rowsCols = rowsCols;
+    public CoverageReaderParameters rowsCols(int rows, int cols) {
+        this.rowsCols = new int[]{rows, cols};
+        return this;
+    }
+
+    /**
+     * Sets whether to use the extended axis URL syntax for GridAxes.
+     * 
+     * <p>Some mapservers require the axis label to be specified with the 
+     * url syntax, e.g. "http://www.opengis.net/def/axis/OGC/1/j" instead of just 
+     * j.
+     *
+     * @param useExtendedAxisUrl whether to use the extended axis URL
+     * @return this CoverageReaderParameters instance
+     */
+    public CoverageReaderParameters useExtendedAxisUrl(boolean useExtendedAxisUrl) {
+        this.useExtendedAxisUrl = useExtendedAxisUrl;
         return this;
     }
 
@@ -341,9 +357,11 @@ public class CoverageReaderParameters {
 
                 String[] gridAxisLabels = describeCoverage.getGridAxisLabels();
                 String firstAxis = gridAxisLabels[lonLatPositions[0]];
-                firstAxis = WcsUtils.nsGRIDAXIS_WCS2(firstAxis);
                 String secondAxis = gridAxisLabels[lonLatPositions[1]];
-                secondAxis = WcsUtils.nsGRIDAXIS_WCS2(secondAxis);
+                if (this.useExtendedAxisUrl) {
+                    firstAxis = WcsUtils.nsGRIDAXIS_WCS2(firstAxis);
+                    secondAxis = WcsUtils.nsGRIDAXIS_WCS2(secondAxis);
+                }
                 url += "&SCALESIZE=" + firstAxis + "(" + this.rowsCols[1] + "),"
                         + secondAxis + "(" + this.rowsCols[0] + ")";
                 hasRowCols = true;

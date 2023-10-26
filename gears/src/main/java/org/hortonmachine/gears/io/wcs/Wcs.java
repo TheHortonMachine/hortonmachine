@@ -89,7 +89,7 @@ public class Wcs {
     public GridCoverage2D getCoverage(String coverageId, Envelope bbox, int srid, int width, int height) throws Exception {
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
         parameters.bbox(bbox, srid);
-        parameters.rowsCols(new int[] { width, height });
+        parameters.rowsCols(width, height );
         return service.getCoverage(parameters, null);
     }
 
@@ -110,10 +110,14 @@ public class Wcs {
         return service.getCoverage(parameters, null);
     }
 
-    public String getCoverage(String coverageId, String path, Envelope bbox, int srid) throws Exception {
-    	CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);
-    	parameters.bbox(bbox, srid);
-    	return service.getCoverage(path, parameters, null);
+    public CoverageReaderParameters getReaderParameters(String coverageId) throws Exception{
+        CoverageReaderParameters parameters =  new CoverageReaderParameters(service, coverageId);
+        parameters.format("image/tiff");
+        return parameters;
+    }
+
+    public String dumpCoverage(String path, CoverageReaderParameters readerParameters) throws Exception {
+    	return service.getCoverage(path, readerParameters, null);
     }
 
 
