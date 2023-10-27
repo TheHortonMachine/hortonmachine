@@ -32,7 +32,8 @@ public class Identification implements XmlHelper.XmlVisitor {
         abstract_ = XmlHelper.findFirstTextInChildren(node, "abstract");
 
         Node keywordsNode = XmlHelper.findNode(node, "keywords");
-        keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        if (keywordsNode != null)
+            keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
 
         serviceType = XmlHelper.findFirstTextInChildren(node, "servicetype");
         supportedVersions = XmlHelper.findAllTextsInChildren(node, "servicetypeversion");

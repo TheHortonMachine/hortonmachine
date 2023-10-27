@@ -66,10 +66,6 @@ public class HMStacAsset {
                     isValid = false;
                     nonValidReason = "raster bands metadata missing";
                 }
-//                } else {
-//                    isValid = false;
-//                    nonValidReason = "title information not available";
-//                }
             } else {
                 isValid = false;
                 nonValidReason = "not a COG";
