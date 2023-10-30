@@ -125,10 +125,11 @@ public class HMStacItem {
                 ObjectNode assets = (ObjectNode) top.get("assets");
 
                 if (assets != null) {
-                    Iterator<JsonNode> assetsIterator = assets.elements();
-                    while( assetsIterator.hasNext() ) {
-                        JsonNode assetNode = assetsIterator.next();
-                        HMStacAsset hmAsset = new HMStacAsset(assetNode);
+                    Iterator<String> assetIds= assets.fieldNames();
+                    while ( assetIds.hasNext() ) {
+                        String assetId = assetIds.next();
+                        JsonNode assetNode = assets.get(assetId);
+                        HMStacAsset hmAsset = new HMStacAsset(assetId, assetNode);
                         if (hmAsset.isValid()) {
                             assetsList.add(hmAsset);
                         }

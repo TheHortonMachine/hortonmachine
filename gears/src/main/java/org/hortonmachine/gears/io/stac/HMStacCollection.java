@@ -207,7 +207,7 @@ public class HMStacCollection {
             RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentItemCrs.getMinX(), roiEnvCurrentItemCrs.getMaxX(),
                     roiEnvCurrentItemCrs.getMinY(), roiEnvCurrentItemCrs.getMaxY(), cols, rows);
 
-            HMStacAsset asset = item.getAssets().stream().filter(as -> as.getTitle().equals(bandName)).findFirst().get();
+            HMStacAsset asset = item.getAssets().stream().filter(as -> as.getId().equals(bandName)).findFirst().get();
             int lastSlash = asset.getAssetUrl().lastIndexOf('/');
             fileName = asset.getAssetUrl().substring(lastSlash + 1);
             if (outRaster == null) {
