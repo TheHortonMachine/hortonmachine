@@ -24,7 +24,7 @@
 	</modules>
 
 	<properties>
-		<gt.version>28.0</gt.version>
+		<gt.version>28.2</gt.version>
 		<groovy.version>3.0.11</groovy.version>
 		<geoscript.version>1.19.0</geoscript.version>
 
