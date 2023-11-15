@@ -19,6 +19,12 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
         cache: 'maven'
+    
+    - name: Import GPG Key
+      uses: crazy-max/ghaction-import-gpg@v1
+      env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
     - name: Build and Deploy Snapshot
       run: |
@@ -27,6 +33,3 @@ jobs:
           -P release \
           -Dmaven.javadoc.skip=true \
           -Dgpg.skip=false
-      env:
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
