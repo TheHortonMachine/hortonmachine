@@ -1,0 +1,32 @@
+name: Build and Release Snapshot
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'  # Adjust the Java version as needed
+        cache: 'maven'
+
+    - name: Build and Deploy Snapshot
+      run: |
+        mvn -B -U clean deploy \
+          -DskipTests=true \
+          -P release \
+          -Dmaven.javadoc.skip=true \
+          -Dgpg.skip=false
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
