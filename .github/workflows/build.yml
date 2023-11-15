@@ -20,13 +20,14 @@ jobs:
         java-version: '11'
         cache: 'maven'
 
-    - name: Build and Deploy Snapshot
+    - name: Build #and Deploy Snapshot
       run: |
-        mvn -B -U clean deploy \
-          -DskipTests=true \
-          -P release \
-          -Dmaven.javadoc.skip=true \
-          -Dgpg.skip=false
-      env:
-        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        mvn -B -U clean package
+      #   mvn -B -U clean deploy \
+      #     -DskipTests=true \
+      #     -P release \
+      #     -Dmaven.javadoc.skip=true \
+      #     -Dgpg.skip=false
+      # env:
+      #   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      #   GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
