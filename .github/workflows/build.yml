@@ -19,24 +19,14 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
         cache: 'maven'
-    
-    - name: Import GPG Key
-      uses: crazy-max/ghaction-import-gpg@v1
-      env:
-          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-    - name: Set up GPG agent
-      run: |
-        echo "$GPG_PRIVATE_KEY" | gpg --batch --import
-        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg.conf
-        gpgconf --kill gpg-agent
 
     - name: Build and Deploy Snapshot
       run: |
-        export GPG_TTY=$(tty)
         mvn -B -U clean deploy \
           -DskipTests=true \
           -P release \
           -Dmaven.javadoc.skip=true \
           -Dgpg.skip=false
+      env:
+        GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
