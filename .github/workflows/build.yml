@@ -19,6 +19,9 @@ jobs:
         distribution: 'temurin'
         java-version: '11'
         cache: 'maven'
+        server-id: ossrh
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
 
     - id: install-secret-key
       name: Install gpg secret key
@@ -41,6 +44,3 @@ jobs:
           -P release \
           -Dmaven.javadoc.skip=true \
           -Dgpg.skip=false
-      # env:
-      #   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
-      #   GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
