@@ -27,6 +27,7 @@ import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
  */
 public class HMStacAsset {
 
+    private String id;
     private String title;
     private String type;
     private String nonValidReason;
@@ -35,7 +36,8 @@ public class HMStacAsset {
     private double noValue = HMConstants.doubleNovalue;
     private double resolution;
 
-    public HMStacAsset( JsonNode assetNode ) {
+    public HMStacAsset( String id, JsonNode assetNode ) {
+        this.id = id;
         JsonNode typeNode = assetNode.get("type");
         if (typeNode != null) {
             type = typeNode.textValue();
@@ -120,6 +122,10 @@ public class HMStacAsset {
 
     public GridCoverage2D readRaster( RegionMap region ) throws Exception {
         return readRaster(region, null, null);
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getTitle() {
