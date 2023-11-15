@@ -25,10 +25,16 @@ jobs:
       env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-          GPG_FLAGS: '--pinentry-mode loopback -q'
+
+    - name: Set up GPG agent
+      run: |
+        echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg.conf
+        gpgconf --kill gpg-agent
 
     - name: Build and Deploy Snapshot
       run: |
+        export GPG_TTY=$(tty)
         mvn -B -U clean deploy \
           -DskipTests=true \
           -P release \
