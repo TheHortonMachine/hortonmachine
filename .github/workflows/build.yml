@@ -25,6 +25,7 @@ jobs:
       env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
           GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+          GPG_FLAGS: '--pinentry-mode loopback -q'
 
     - name: Build and Deploy Snapshot
       run: |
