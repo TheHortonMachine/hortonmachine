@@ -20,14 +20,27 @@ jobs:
         java-version: '11'
         cache: 'maven'
 
-    - name: Build #and Deploy Snapshot
+    - id: install-secret-key
+      name: Install gpg secret key
       run: |
-        mvn -B -U clean package
-      #   mvn -B -U clean deploy \
-      #     -DskipTests=true \
-      #     -P release \
-      #     -Dmaven.javadoc.skip=true \
-      #     -Dgpg.skip=false
+        # Install gpg secret key
+        cat <(echo -e "${{ secrets.GPG_PRIVATE_KEY }}") | gpg --batch --import
+        # Verify gpg secret key
+        gpg --list-secret-keys --keyid-format LONG
+
+    - name: Build and Deploy Snapshot
+      env:
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+      run: |
+        mvn --no-transfer-progress \
+          --batch-mode \
+          -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} \
+          clean deploy \
+          -DskipTests=true \
+          -P release \
+          -Dmaven.javadoc.skip=true \
+          -Dgpg.skip=false
       # env:
       #   GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
       #   GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
