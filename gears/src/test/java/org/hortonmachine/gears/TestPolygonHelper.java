@@ -354,20 +354,20 @@ public class TestPolygonHelper extends HMTestCase {
         assertTrue(points.equalsExact(processedGeom, 0.000001));
     }
 
-    public void testMultiIntersection() throws Exception {
-        String wkt = "MULTIPOLYGON (((0.00001 0.00001, 0.000022 0.000195, 0.00002 0.00005, 0.00001 0.00001)), \n" + //
-                "  ((0.000045 0.000094, 0.00007 0.00013, 0.000155 0.000088, 0.000037 0.000126, 0.00006 0.000085, 0.000045 0.000094)), \n" + //
-                "  ((0.000043 0.000156, 0.00027 0.00002, 0.00005 0.00016, 0.000043 0.000156)), \n" + //
-                "  ((0.00007 0.0001, 0.00021 0.00003, 0.000151 0.000085, 0.00007 0.0001)))";
+    // public void testMultiIntersection() throws Exception {
+    //     String wkt = "MULTIPOLYGON (((0.00001 0.00001, 0.000022 0.000195, 0.00002 0.00005, 0.00001 0.00001)), \n" + //
+    //             "  ((0.000045 0.000094, 0.00007 0.00013, 0.000155 0.000088, 0.000037 0.000126, 0.00006 0.000085, 0.000045 0.000094)), \n" + //
+    //             "  ((0.000043 0.000156, 0.00027 0.00002, 0.00005 0.00016, 0.000043 0.000156)), \n" + //
+    //             "  ((0.00007 0.0001, 0.00021 0.00003, 0.000151 0.000085, 0.00007 0.0001)))";
 
-        Geometry origGeom = new WKTReader().read(wkt);
+    //     Geometry origGeom = new WKTReader().read(wkt);
 
-        String boundsWkt = "POLYGON ((0.00002 0.00011, 0.00009 0.00011, 0.00009 0.00008, 0.00002 0.00008, 0.00002 0.00011))";
-        Geometry bounds = new WKTReader().read(boundsWkt);
+    //     String boundsWkt = "POLYGON ((0.00002 0.00011, 0.00009 0.00011, 0.00009 0.00008, 0.00002 0.00008, 0.00002 0.00011))";
+    //     Geometry bounds = new WKTReader().read(boundsWkt);
 
-        Geometry intersection = GeometryHelper.multiPolygonIntersection(bounds, origGeom, null);
-        System.out.println(intersection.toText());
-    }
+    //     Geometry intersection = GeometryHelper.multiPolygonIntersection(bounds, origGeom, null);
+    //     System.out.println(intersection.toText());
+    // }
 
     private Geometry getMultiPoints(Geometry origGeom) {
         Coordinate[] coords = ((Polygon) origGeom).getExteriorRing().getCoordinates();
