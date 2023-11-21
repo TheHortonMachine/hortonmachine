@@ -294,16 +294,21 @@ public class GeometryHelper {
     }
 
     /**
-     * Perform an intersection between a (possibly) single polygon and a complex multipolygon.
-     * The operation tries to fight against all the odds of a topologyexception, being it due
+     * Perform an intersection between a (possibly) single polygon and a complex
+     * multipolygon.
+     * The operation tries to fight against all the odds of a topologyexception,
+     * being it due
      * to precision, self-intersections, or other issues.
      * 
      * @param referenceGeometry the single geometry to use.
-     * @param multiGeometry    the multipolygon to intersect with.
-     * @param gridResolution an optional grid resolution. If available also snapping the vertices
-     *                      to a grid with that cell size and of the bounds of the reference 
-     *                      geometry is tried.
-     * @return the created intersection geometry or null if no intersection is found.
+     * @param multiGeometry     the multipolygon to intersect with.
+     * @param gridResolution    an optional grid resolution. If available also
+     *                          snapping the vertices
+     *                          to a grid with that cell size and of the bounds of
+     *                          the reference
+     *                          geometry is tried.
+     * @return the created intersection geometry or null if no intersection is
+     *         found.
      */
     public static Geometry multiPolygonIntersection(Geometry referenceGeometry, Geometry multiGeometry,
             Double gridResolution) {
@@ -330,8 +335,8 @@ public class GeometryHelper {
 
                     // clean the geometry up
                     GeometryHelper helper = new GeometryHelper(multiGeometry);
-                    helper.removeSelfIntersections();
                     helper.removeDuplicatePoints();
+                    helper.removeSelfIntersections();
                     try {
                         intersection = referenceGeometry.intersection(helper.getGeometry());
                     } catch (Exception e1) {
@@ -408,7 +413,7 @@ public class GeometryHelper {
             }
 
             // put together the polygons
-            if (intersectionPolygons.size() > 1) {
+            if (intersectionPolygons.size() > 1 || EGeometryType.forGeometry(multiGeometry).isMulti()) {
                 return referenceGeometry.getFactory().createMultiPolygon(
                         intersectionPolygons.toArray(new Polygon[intersectionPolygons.size()]));
             } else if (intersectionPolygons.size() == 1) {
