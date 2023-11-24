@@ -4,8 +4,10 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.h2.command.dml.Merge;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -74,58 +76,145 @@ public class TestHMRaster extends HMTestCase {
     public void testMapping() throws Exception {
         double[][] initial = new double[][]{//
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, 1, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
+                {NaN, 1, 1, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
         double[][] map1 = new double[][]{//
-                {1, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {2, 2, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
         double[][] map2 = new double[][]{//
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, 3, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, 4, 4, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}, //
-                {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN}};
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
+        double[][] map3 = new double[][]{//
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 1, 2, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 3, 1, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
         GridCoverage2D initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
         GridCoverage2D m1GC = CoverageUtilities.buildCoverageWithNovalue("m1", map1, envelopeParams, crs, true, NaN);
         GridCoverage2D m2GC = CoverageUtilities.buildCoverageWithNovalue("m2", map2, envelopeParams, crs, true, NaN);
+        GridCoverage2D m3GC = CoverageUtilities.buildCoverageWithNovalue("m3", map3, envelopeParams, crs, true, NaN);
 
-        HMRaster initR = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
+        MergeMode mode = MergeMode.SUM;
+        HMRaster workingRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
         HMRaster m1R = HMRaster.fromGridCoverage(m1GC);
         HMRaster m2R = HMRaster.fromGridCoverage(m2GC);
-        initR.mapRasterSum(null, m1R);
-        initR.mapRasterSum(null, m2R);
-
-        HMRaster countRaster = initR.getCountRaster();
-
-        assertEquals(2, countRaster.getIntValue(1, 1));
-        assertEquals(5.0, initR.getValue(1, 1));
-        assertEquals(1, countRaster.getIntValue(2, 2));
-        assertEquals(4.0, initR.getValue(2, 2));
-        assertTrue(initR.isNovalue(initR.getValue(5, 5)));
-        assertFalse(countRaster.isNovalue(countRaster.getValue(5, 5)));
+        workingRaster.mapRaster(null, m1R, mode);
+        workingRaster.mapRaster(null, m2R, mode);
+        double[][] expected = new double[][]{//
+            {8, 8, 8, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 9, 9, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 9, 9, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 8, 8, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 8, 8, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 8, 8, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 8, 8, 8, 8, 8, 8, 8, 8, 8}, //
+            {8, 8, 8, 8, 8, 8, 8, 8, 8, 8}};
+            checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
+            
+        mode = MergeMode.AVG;
+        initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
+        workingRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
+        workingRaster.mapRaster(null, m1R, mode);
+        workingRaster.mapRaster(null, m2R, mode);
+        expected = new double[][]{//
+                {4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 3, 3, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 3, 3, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 4, 4, 4, 4, 4, 4, 4, 4, 4}, //
+                {4, 4, 4, 4, 4, 4, 4, 4, 4, 4}};
+        checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
+       
+        mode = MergeMode.SUBSTITUTE;
+        initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
+        workingRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
+        workingRaster.mapRaster(null, m1R, mode);
+        workingRaster.mapRaster(null, m2R, mode);
+        expected = new double[][]{//
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}, //
+                {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
+        checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
         
-        initR.applyCountAverage(null);
+        mode = MergeMode.INSERT_ON_NOVALUE;
+        initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
+        workingRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
+        workingRaster.mapRaster(null, m1R, mode);
+        workingRaster.mapRaster(null, m2R, mode);
+        expected = new double[][]{//
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 1, 1, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 1, 1, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
+        checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
+
+        mode = MergeMode.MOST_POPULAR_VALUE;
+        initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
+        workingRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(initialGC).setCopyValues(true).build();
+        workingRaster.mapRaster(null, m1R, mode);
+        workingRaster.mapRaster(null, m2R, mode);
+        HMRaster m3R = HMRaster.fromGridCoverage(m3GC);
+        workingRaster.mapRaster(null, m3R, mode);
+        expected = new double[][]{//
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 1, 1, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 1, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
+                {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
+        checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
+
         
-        assertEquals(2.5, initR.getValue(1, 1));
-        assertEquals(4.0, initR.getValue(2, 2));
-        assertTrue(initR.isNovalue(initR.getValue(5, 5)));
+
+        // assertEquals(2, countRaster.getIntValue(1, 1));
+        // assertEquals(5.0, initR.getValue(1, 1));
+        // assertEquals(1, countRaster.getIntValue(2, 2));
+        // assertEquals(4.0, initR.getValue(2, 2));
+        // assertTrue(initR.isNovalue(initR.getValue(5, 5)));
+        // assertFalse(countRaster.isNovalue(countRaster.getValue(5, 5)));
+        
+        // // initR.applyCountAverage(null);
+        
+        // assertEquals(2.5, initR.getValue(1, 1));
+        // assertEquals(4.0, initR.getValue(2, 2));
+        // assertTrue(initR.isNovalue(initR.getValue(5, 5)));
     }
 
 }

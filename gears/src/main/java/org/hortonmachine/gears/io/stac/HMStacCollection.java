@@ -22,6 +22,7 @@ import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.SearchQuery;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
+import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -159,11 +160,12 @@ public class HMStacCollection {
      * @param bandName the name o the band to extract.
      * @param items the list of items containing the various assets to read from.
      * @param allowTransform if true, allows datasets of different projections to be transformed and merged together.
+     * @param mergeMode the merge mode to use in case of multiple value per cell.
      * @return the final raster.
      * @throws Exception
      */
     public static HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
-            boolean allowTransform, IHMProgressMonitor pm ) throws Exception {
+            boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
         if (!allowTransform) {
             List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
@@ -217,7 +219,7 @@ public class HMStacCollection {
             }
 
             GridCoverage2D readRaster = asset.readRaster(readRegion);
-            outRaster.mapRasterSum(null, HMRaster.fromGridCoverage(readRaster));
+            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
             pm.worked(1);
         }
         pm.done();

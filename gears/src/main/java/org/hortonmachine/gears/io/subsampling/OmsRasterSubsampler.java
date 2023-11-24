@@ -99,7 +99,7 @@ public class OmsRasterSubsampler extends HMModel {
 
         HMRaster outHMRaster = new HMRaster.HMRasterWritableBuilder().setCrs(raster.getCrs()).setName("subsampled")
                 .setRegion(newRegionMap).setNoValue(raster.getNovalue()).build();
-        outHMRaster.mapRasterSubst(pm, raster);
+        outHMRaster.mapRaster(pm, raster, HMRaster.MergeMode.INSERT_ON_NOVALUE);
 
         outRaster = outHMRaster.buildCoverage();
         raster.close();

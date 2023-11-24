@@ -56,6 +56,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -191,12 +192,11 @@ public class OmsMosaic extends HMModel {
             HMRaster raster = data.getRaster();
 
             pm.message("Patch map " + index++);
-            outHMRaster.mapRasterSum(pm, raster);
+            outHMRaster.mapRaster(pm, raster, MergeMode.AVG);
 
             raster.close();
 
         }
-        outHMRaster.applyCountAverage(pm);
         outRaster = outHMRaster.buildCoverage();
         outHMRaster.close();
 

@@ -31,10 +31,12 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -62,10 +64,46 @@ public class HMRaster implements AutoCloseable {
     private GridCoverage2D originalCoverage;
 
     /**
-     * Raster map that can be initialized and used to count occurrences per cell.
-     * This count can then be used to average the summ of multiple occurrences.
+     * Support Rasters for the aggregation methods.
      */
+    private HMRaster sumRaster = null;
     private HMRaster countRaster = null;
+    private CategoriesInCell[][] categoriesRaster = null;
+
+
+    /**
+     * Enumeration representing the merge modes for combining raster values.
+     * 
+     * <p>These are used in the {@link #mapRaster(IHMProgressMonitor, HMRaster, MergeMode)} method.
+     */
+    public static enum MergeMode {
+        /**
+         * Sum the values of the mapped rasters.
+         */
+        SUM, 
+        
+        /**
+         * Average the values of the mapped rasters.
+         */
+        AVG, 
+        
+        /**
+         * Substitute the values everytime. Last values wins.
+         */
+        SUBSTITUTE,
+
+        /**
+         * Insert the values only if the cell contains novalue. First value wins.
+         */
+        INSERT_ON_NOVALUE,
+
+        /**
+         * Collects all the values in the cell and keeps track of the post present one.
+         * 
+         * <p>This requires the call of {@link #applyMostPopular()} to perform the proper substitution.
+         */
+        MOST_POPULAR_VALUE
+    }
 
     public static interface RasterCellProcessor {
         void processCell( int col, int row, double value, int cols, int rows ) throws Exception;
@@ -402,43 +440,17 @@ public class HMRaster implements AutoCloseable {
     /**
      * Writes the values of the coverage into the current raster, summing multiple occurrences.
      * 
-     * <p> In this case a bit matrix that tracks how many values per pixels are recorded is created 
-     * and accessible through {@link #getCountRaster()}. 
-     * Sine the values are summed, the number is needed for averaging.
-     * 
-     * @param pm optional Process monitor.
-     * @param otherRaster the raster to map over the current raster.
-     * @throws IOException 
-     */
-    public void mapRasterSum( IHMProgressMonitor pm, HMRaster otherRaster ) throws Exception {
-        mapRaster(pm, otherRaster, 0);
-    }
-
-    /**
-     * Writes the values of the coverage into the current raster, only where the current does not have values.
-     * 
-     * @param pm optional Process monitor.
-     * @param otherRaster the raster to map over the current raster.
-     * @throws IOException 
-     */
-    public void mapRasterSubst( IHMProgressMonitor pm, HMRaster otherRaster ) throws Exception {
-        mapRaster(pm, otherRaster, 1);
-    }
-
-    /**
-     * Writes the values of the coverage into the current raster, summing multiple occurrences.
-     * 
      * @param pm optional Process monitor.
      * @param otherRaster the raster to map over the current raster.
      * @param valuesCountRaster a bit matrix that tracks how many values per pixels are recorded (they are summed, so the number is needed for averaging).
-     * @param mergeMode optional merge mode parameter. null/0 = sum of both, 1 = place other only in novalues
+     * @param mergeMode optional merge mode parameter. If null MergeMode.SUM is used.
      * @throws IOException
      */
-    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster, Integer mergeMode ) throws Exception {
+    public void mapRaster( IHMProgressMonitor pm, HMRaster otherRaster, MergeMode mergeMode ) throws Exception {
         if (pm == null)
             pm = new DummyProgressMonitor();
 
-        int _mergeMode = 0;
+        MergeMode _mergeMode = MergeMode.SUM;
         if (mergeMode != null) {
             _mergeMode = mergeMode;
         }
@@ -469,10 +481,15 @@ public class HMRaster implements AutoCloseable {
         if (fromRow < 0)
             fromRow = 0;
 
-        if (_mergeMode == 0 && countRaster == null) {
-            countRaster = new HMRasterWritableBuilder().setName("valuescount").setDoInteger(true).setRegion(regionMap).setCrs(crs)
-                    .setInitialValue(0).build();
+        if (_mergeMode == MergeMode.AVG && sumRaster == null) {
+            // set the current sum and count to the current raster to start with
+            sumRaster = new HMRasterWritableBuilder().setTemplate(this).setCopyValues(true).setName("sum").build();
+            countRaster = new HMRasterWritableBuilder().setName("valuescount").setDoShort(true).setRegion(regionMap).setCrs(crs)
+                    .setInitialValue((short) 1).build();
+        } else if (_mergeMode == MergeMode.MOST_POPULAR_VALUE && categoriesRaster == null) {
+            categoriesRaster = new CategoriesInCell[rows][cols];
         }
+
 
         pm.beginTask("Patch raster...", toRow - fromRow); //$NON-NLS-1$
         // fill the points of the current raster picking form the
@@ -483,60 +500,52 @@ public class HMRaster implements AutoCloseable {
                     Coordinate coordinate = getWorld(c, r);
                     double otherRasterValue = otherRaster.getValue(coordinate);
                     if (!otherRaster.isNovalue(otherRasterValue)) {
-                        if (countRaster != null) {
-                            int count = countRaster.getIntValue(c, r);
-                            count++;
-                            countRaster.setValue(c, r, count);
-                        }
                         double thisRasterValue = getValue(c, r);
 
                         boolean thisIsNovalue = isNovalue(thisRasterValue);
-                        if (thisIsNovalue) {
-                            // if the current is novalue, then use the other
+                        if (!thisIsNovalue && mergeMode == MergeMode.INSERT_ON_NOVALUE){
+                            // value exists already, ignore the new one
+                            continue;
+                        } 
+
+                        if (_mergeMode == MergeMode.SUBSTITUTE || mergeMode == MergeMode.INSERT_ON_NOVALUE) {
+                            // you want to always substitute, use the other
                             thisRasterValue = otherRasterValue;
-                        } else if (_mergeMode == 0) {
-                            // thisvalue is NOT novalue + mergemode is sum
+                        } else if (_mergeMode == MergeMode.SUM) {
+                            // just sum with any previous value
+                            if (thisIsNovalue) {
+                                thisRasterValue = 0;
+                            }
                             thisRasterValue = thisRasterValue + otherRasterValue;
+                        } else if (_mergeMode == MergeMode.AVG) {
+                            double sum = sumRaster.getValue(c, r);
+                            short count = countRaster.getShortValue(c, r);
+                            if(sumRaster.isNovalue(sum)){
+                                sum = 0;
+                                count = 0;
+                            }
+                            sum += otherRasterValue;
+                            sumRaster.setValue(c, r, sum);
+                            count++;
+                            countRaster.setValue(c, r, count);
+                            thisRasterValue = sum / count;
+                        } else if (_mergeMode == MergeMode.MOST_POPULAR_VALUE) {
+                            CategoriesInCell categoriesInCell = categoriesRaster[r][c];
+                            if(categoriesInCell == null){
+                                categoriesInCell = new CategoriesInCell();
+                                if(!thisIsNovalue){
+                                    categoriesInCell.addValue((int) thisRasterValue);
+                                }
+                                categoriesRaster[r][c] = categoriesInCell;
+                            }
+                            categoriesInCell.addValue((int) otherRasterValue);
+                            thisRasterValue = categoriesInCell.mostPresentValue;
                         } else {
-                            thisRasterValue = otherRasterValue;
-//                            throw new ModelsRuntimeException("This should never happen.", this);
+                            // thisRasterValue = otherRasterValue;
+                           throw new ModelsRuntimeException("This should never happen.", this);
                         }
                         setValue(c, r, thisRasterValue);
                     }
-                }
-            }
-            pm.worked(1);
-        }
-        pm.done();
-    }
-
-    /**
-     * @return the raster that contains the occurrences of data per cell.
-     */
-    public HMRaster getCountRaster() {
-        return countRaster;
-    }
-
-    /**
-     * Apply averaging based on the {@link #countRaster} map. <b>Note that this modifies the original raster.</b>
-     * 
-     * <p>This only makes sense if multiple mapping of the raster occurred (using {@link #mapRaster(IHMProgressMonitor, HMRaster, boolean)}. 
-     * 
-     * @param pm and optional progress monitor.
-     * @throws Exception
-     */
-    public void applyCountAverage( IHMProgressMonitor pm ) throws Exception {
-        if (pm == null)
-            pm = new DummyProgressMonitor();
-
-        pm.beginTask("Averaging raster...", rows);
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double value = getValue(c, r);
-                if (!isNovalue(value)) {
-                    int count = countRaster.getIntValue(c, r);
-                    double newValue = value / count;
-                    setValue(c, r, newValue);
                 }
             }
             pm.worked(1);
@@ -604,6 +613,33 @@ public class HMRaster implements AutoCloseable {
             }
             System.out.println();
         }
+    }
+
+    private static class CategoriesInCell {
+        int mostPresentValue = 0;
+        private int valuesCount = 0;
+
+        private int arraySize = 3;
+        private int[] allValues = new int[arraySize];
+
+        void addValue(int value) {
+            allValues[valuesCount] = value;
+            valuesCount++;
+            if (valuesCount == arraySize) {
+                // we need to grow the array
+                int[] newArray = new int[arraySize + 2];
+                System.arraycopy(allValues, 0, newArray, 0, arraySize);
+                arraySize = arraySize + 2;
+                allValues = newArray;
+            }
+            if(valuesCount == 1){
+                mostPresentValue = value;
+            }else{
+                // find the most present value in the array
+                mostPresentValue = NumericsUtilities.getMostPopular(allValues, valuesCount);
+            }
+        }
+
     }
 
     public static class HMRasterWritableBuilder {

@@ -123,4 +123,18 @@ public class TestNumericUtilities extends HMTestCase {
         got = new double[][]{range2Bins};
         checkMatrixEqual(got, expected, DELTA);
     }
+
+    public void testMostPopular() throws Exception {
+        int[] a = new int[]{1, 2, 3, 4, 5, 6, 7, 8, 1, 1, 1};
+        int mostPopular = NumericsUtilities.getMostPopular(a, a.length);
+        assertEquals(1, mostPopular);
+        
+        a = new int[]{1, 2, 2, 3, 4, 5, 6, 7, 8, 1};
+        mostPopular = NumericsUtilities.getMostPopular(a, a.length);
+        assertEquals(1, mostPopular);
+        
+        a = new int[]{1, 2, 2, 3, 4, 5, 6, 7, 8, 1};
+        mostPopular = NumericsUtilities.getMostPopular(a, 5);
+        assertEquals(2, mostPopular);
+    }
 }

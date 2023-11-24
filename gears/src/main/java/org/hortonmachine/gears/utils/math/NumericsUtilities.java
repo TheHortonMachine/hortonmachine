@@ -426,4 +426,31 @@ public class NumericsUtilities {
         return bins;
     }
 
+    /**
+     * Finds the most popular element in an integer array.
+     * 
+     * <p>If two values are equally popular, the first one is returned.</p>
+     * 
+     * @param the array of integers to check.
+     * @param length the length of the array to check. Might be shorter than the array's size
+     * @return the most popular value.
+     */
+    public static int getMostPopular(int[] a, int length) {
+        int maxCount = 1;
+        int popular = a[0];
+        for (int i = 0; i < (length - 1); i++) {
+            int value = a[i];
+            int valueCount = 1;
+            for (int j = 0; j < length; j++) {
+                if (i != j && value == a[j])
+                    valueCount++;
+            }
+            if (valueCount > maxCount) {
+                popular = value;
+                maxCount = valueCount;
+            }
+        }
+        return popular;
+    }
+
 }
