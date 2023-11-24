@@ -200,21 +200,6 @@ public class TestHMRaster extends HMTestCase {
                 {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}, //
                 {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
         checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
-
-        
-
-        // assertEquals(2, countRaster.getIntValue(1, 1));
-        // assertEquals(5.0, initR.getValue(1, 1));
-        // assertEquals(1, countRaster.getIntValue(2, 2));
-        // assertEquals(4.0, initR.getValue(2, 2));
-        // assertTrue(initR.isNovalue(initR.getValue(5, 5)));
-        // assertFalse(countRaster.isNovalue(countRaster.getValue(5, 5)));
-        
-        // // initR.applyCountAverage(null);
-        
-        // assertEquals(2.5, initR.getValue(1, 1));
-        // assertEquals(4.0, initR.getValue(2, 2));
-        // assertTrue(initR.isNovalue(initR.getValue(5, 5)));
     }
 
 }
