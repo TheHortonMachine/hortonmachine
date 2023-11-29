@@ -15,6 +15,7 @@ public class TestStacItem extends HMTestCase {
         HMStacItem item = HMStacItem.fromSimpleFeature(feature);
 
         assertEquals("2020-01-01 00:00:00", item.getTimestamp());
+        assertNull(item.getStartTimestamp(), item.getEndTimestamp());
     }
 
 
@@ -28,7 +29,7 @@ public class TestStacItem extends HMTestCase {
 
         HMStacItem item = HMStacItem.fromSimpleFeature(feature);
 
-        assertEquals("2020-01-01 00:00:00", item.getTimestamp());
+        assertEquals("2020-01-01 00:00:00", item.getTimestamp(), item.getStartTimestamp());
     }
 
     public void testStacItemWithSingleAndDateRangeReturnsDateTime() throws Exception {
@@ -42,6 +43,7 @@ public class TestStacItem extends HMTestCase {
         HMStacItem item = HMStacItem.fromSimpleFeature(feature);
 
         assertEquals("2019-01-01 00:00:00", item.getTimestamp());
+        assertNotSame(item.getTimestamp(), item.getStartTimestamp());
     }
 
     // This case should not happen according to the STAC documentation
@@ -54,6 +56,7 @@ public class TestStacItem extends HMTestCase {
         HMStacItem item = HMStacItem.fromSimpleFeature(feature);
 
         assertNull(item.getTimestamp());
+        assertNull(item.getStartTimestamp(), item.getEndTimestamp());
     }
 
 }
