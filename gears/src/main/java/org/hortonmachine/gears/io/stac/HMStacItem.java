@@ -118,6 +118,20 @@ public class HMStacItem {
         return null;
     }
 
+    public String getStartTimestamp() {
+        if (start != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(start);
+        }
+        return null;
+    }
+
+    public String getEndTimestamp() {
+        if (end != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(end);
+        }
+        return null;
+    }
+
     public String getCreationTimestamp() {
         return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(creationDateCet);
     }
