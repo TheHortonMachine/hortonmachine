@@ -70,7 +70,7 @@ public class HMStacItem {
             stacItem.start = HMStacUtils.dateFormatter.parse(start.toString());
         }
         Object end = feature.getAttribute("end_datetime");
-        if (start != null) {
+        if (end != null) {
             stacItem.end = HMStacUtils.dateFormatter.parse(end.toString());
         }
 
