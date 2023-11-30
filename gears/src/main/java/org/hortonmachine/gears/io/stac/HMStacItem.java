@@ -33,6 +33,8 @@ public class HMStacItem {
     private SimpleFeature feature;
     private Integer epsg;
     private Date dateCet;
+    private Date start;
+    private Date end;
     private Date creationDateCet;
 
     private HMStacItem() {
@@ -63,6 +65,15 @@ public class HMStacItem {
                 stacItem.dateCet = HMStacUtils.dateFormatter.parse(dateCetStr);
             }
         }
+        Object start = feature.getAttribute("start_datetime");
+        if (start != null) {
+            stacItem.start = HMStacUtils.dateFormatter.parse(start.toString());
+        }
+        Object end = feature.getAttribute("end_datetime");
+        if (start != null) {
+            stacItem.end = HMStacUtils.dateFormatter.parse(end.toString());
+        }
+
         Object createdObject = feature.getAttribute("created");
         if (createdObject != null) {
             String creationDateCetStr = createdObject.toString();
@@ -95,7 +106,30 @@ public class HMStacItem {
     }
 
     public String getTimestamp() {
-        return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(dateCet);
+        if (dateCet != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(dateCet);
+        }
+        if (start != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(start);
+        }
+        if (end != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(end);
+        }
+        return null;
+    }
+
+    public String getStartTimestamp() {
+        if (start != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(start);
+        }
+        return null;
+    }
+
+    public String getEndTimestamp() {
+        if (end != null) {
+            return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(end);
+        }
+        return null;
     }
 
     public String getCreationTimestamp() {
