@@ -3,8 +3,6 @@ package org.hortonmachine.gears.utils.geometry;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateArrays;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -16,6 +14,8 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.overlay.snap.GeometrySnapper;
 import org.locationtech.jts.precision.CoordinatePrecisionReducerFilter;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
@@ -319,14 +319,15 @@ public class GeometryHelper {
         referenceHelper.reducePrecision(precisionScale);
         Geometry referenceGeometryScaled = referenceHelper.getGeometry();
 
+        PreparedGeometry preparedReferenceGeometry = PreparedGeometryFactory.prepare(referenceGeometry);
+
         if (EGeometryType.isPolygon(referenceGeometry) && EGeometryType.isPolygon(multiGeometry)) {
             List<Polygon> intersectionPolygons = new ArrayList<>();
             for (int j = 0; j < multiGeometry.getNumGeometries(); j++) {
                 Polygon polygonN = (Polygon) multiGeometry.getGeometryN(j);
-                if (!referenceGeometry.intersects(polygonN)) {
+                if (!preparedReferenceGeometry.intersects(polygonN)) {
                     continue;
                 }
-
                 Geometry intersection = null;
                 try {
                     intersection = referenceGeometry.intersection(polygonN);
@@ -334,14 +335,14 @@ public class GeometryHelper {
                     // try to use some strategies
 
                     // clean the geometry up
-                    GeometryHelper helper = new GeometryHelper(multiGeometry);
+                    GeometryHelper helper = new GeometryHelper(polygonN);
                     helper.removeDuplicatePoints();
                     helper.removeSelfIntersections();
                     try {
                         intersection = referenceGeometry.intersection(helper.getGeometry());
                     } catch (Exception e1) {
                         // still not there, try to check if a different scale might work
-                        Coordinate[] coords = multiGeometry.getCoordinates();
+                        Coordinate[] coords = polygonN.getCoordinates();
                         // are we talking about lat lon geometries?
                         boolean possibleLatLong = true;
                         for (Coordinate c : coords) {
@@ -354,12 +355,12 @@ public class GeometryHelper {
                             // change scale and reduce precision
                             helper.applyScaleFactor(scaleFactor);
                             helper.reducePrecision(precisionScale);
-                            Geometry scaledMultiGeometry = helper.getGeometry();
+                            Geometry scaledPolygonN = helper.getGeometry();
 
                             // try now to intersect
                             try {
                                 Geometry scaledIntersection = referenceGeometryScaled
-                                        .intersection(scaledMultiGeometry);
+                                        .intersection(scaledPolygonN);
                                 // scale back
                                 GeometryHelper scaledIntersectionHelper = new GeometryHelper(scaledIntersection);
                                 scaledIntersectionHelper.applyScaleFactor(1.0 / scaleFactor);

@@ -1,25 +1,19 @@
 package org.hortonmachine.gears;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.net.URL;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.geotools.geometry.jts.WKBReader;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.utils.HMTestCase;
-import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.io.InStream;
-import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.operation.overlay.snap.SnapIfNeededOverlayOp;
-import org.locationtech.jts.precision.GeometryPrecisionReducer;
-import org.locationtech.jts.util.UniqueCoordinateArrayFilter;
 
 /**
  * Test {@link TestPolygonHelper}.
@@ -172,62 +166,22 @@ public class TestPolygonHelper extends HMTestCase {
      * @throws Exception
      */
     // public void testComplexIntersection01() throws Exception {
-    // String referenceGeomWkt = "POLYGON ((-3.220815036000474 42.42936681526999,
-    // -3.220815036000474 43.4990377164616, -1.959365763999526 43.4990377164616,
-    // -1.959365763999526 42.42936681526999, -3.220815036000474
-    // 42.42936681526999))";
-    // Geometry referenceGeom = new WKTReader().read(referenceGeomWkt);
-    // PolygonHelper geomAHelper = new PolygonHelper(referenceGeom);
-    // // geomAHelper.applyScaleFactor(scaleFactor);
-    // // geomAHelper.reducePrecision(100);
-    // referenceGeom = geomAHelper.getGeometry();
+    //     String referenceGeomWkt = "POLYGON ((-3.220815036000474 42.42936681526999, -3.220815036000474 43.4990377164616, -1.959365763999526 43.4990377164616, -1.959365763999526 42.42936681526999, -3.220815036000474 42.42936681526999))";
+    //     Geometry referenceGeom = new WKTReader().read(referenceGeomWkt);
+    //     double cellWidth = 0.008946448737595378;
 
-    // File intersectionGeometriesFile = getFile("error_geoms.csv");
-    // List<String> lines =
-    // FileUtilities.readFileToLinesList(intersectionGeometriesFile.getAbsolutePath());
+    //     SimpleFeatureCollection bioregions = OmsVectorReader.readVector("/home/hydrologis/development/hortonmachine-git/gears/src/test/resources/giant_polygons.gpkg#bioregions");
+    //     AtomicInteger i = new AtomicInteger(0);
+    //     FeatureUtilities.featureCollectionToList(bioregions).forEach(f -> {
+    //         Geometry geom = (Geometry) f.getDefaultGeometry();
+    //         System.out.println("Processing " + i.get() );
+    //         Geometry intersection = GeometryHelper.multiPolygonIntersection(referenceGeom, geom, cellWidth);
+    //         System.out.println("Processed " + i.getAndIncrement() );
+            
+    //     });
 
-    // StringBuilder sb = new StringBuilder("id;sub;wkt;\n");
-    // for (int j = 1; j < lines.size(); j++) {
-    // // System.out.println("processing: " + j);
 
-    // String wkt = lines.get(j);
-    // // remove trailing ;
-    // wkt = wkt.substring(0, wkt.length() - 1);
-    // Geometry geom = new WKTReader().read(wkt);
-
-    // // byte[] bytes =
-    // // FileUtilities.readFileToBytes(geom01File.getAbsolutePath());
-    // // Geometry geom01 = new WKBReader().read(bytes);
-
-    // // loop over geometries and extract only the largest one
-    // // Geometry largestGeom = null;
-    // // double largestArea = 0;
-    // for (int i = 0; i < geom.getNumGeometries(); i++) {
-    // Geometry geometryN = geom.getGeometryN(i);
-
-    // int scaleFactor = 100000;
-    // PolygonHelper helper = new PolygonHelper(geometryN);
-    // helper.removeSelfIntersections();
-    // // helper.applyScaleFactor(scaleFactor);
-    // // helper.removeSelfIntersections();
-    // // helper.reducePrecision(100);
-    // Geometry geometry = helper.getGeometry();
-
-    // if (referenceGeom.intersects(geometry)) {
-    // Geometry intersection = referenceGeom.intersection(geometry);
-    // PolygonHelper helper3 = new PolygonHelper(intersection);
-    // // helper3.applyScaleFactor(1/scaleFactor);
-    // // System.out.println("intersection: " + intersection.toText());
-    // sb.append(j).append(";").append(i).append(";").append(intersection.toText() +
-    // ";\n");
-    // }
-
-    // }
-
-    // }
-    // FileUtilities.writeFile(sb.toString(),
-    // new
-    // File("/home/hydrologis/TMP/JTE_TOPOLOGYERRORS/debug-shapes/error_geoms_intersections.csv"));
+        
     // }
 
     public void testGridSnapping() throws Exception {
@@ -355,20 +309,27 @@ public class TestPolygonHelper extends HMTestCase {
     }
 
     public void testMultiIntersection() throws Exception {
-        String wkt = "MULTIPOLYGON (((0.00001 0.00001, 0.0000227779941111 0.0001959485769541919999, 0.00002035786484561919919191 0.0000509548604999758, 0.00001 0.00001)), \n" + //
-                "  ((0.000045 0.000094, 0.000073624566 0.00013456433333, 0.0001554635545634 0.00008862222, 0.000037 0.000126, 0.00006 0.000085, 0.000045 0.000094)), \n" + //
-                "  ((0.000043 0.000156, 0.00027 0.00002334646111111211, 0.000051212111111212 0.00016112121112121212, 0.000043 0.000156)), \n" + //
+        String wkt = "MULTIPOLYGON (((0.00001 0.00001, 0.0000227779941111 0.0001959485769541919999, 0.00002035786484561919919191 0.0000509548604999758, 0.00001 0.00001)), \n"
+                + //
+                "  ((0.000045 0.000094, 0.000073624566 0.00013456433333, 0.0001554635545634 0.00008862222, 0.000037 0.000126, 0.00006 0.000085, 0.000045 0.000094)), \n"
+                + //
+                "  ((0.000043 0.000156, 0.00027 0.00002334646111111211, 0.000051212111111212 0.00016112121112121212, 0.000043 0.000156)), \n"
+                + //
                 "  ((0.00007 0.0001, 0.0000699999999998 0.0000999999999999, 0.000211119999999 0.0000399999999, 0.000151131231232 0.00008556896899, 0.00007 0.0001)))";
 
         Geometry origGeom = new WKTReader().read(wkt);
 
         double upY = 0.000109277368749999999;
         double leftX = 0.000020994299966511099;
-        String boundsWkt = "POLYGON (("+leftX+" "+upY+", 0.00009 "+upY+", 0.00009 0.00008, "+leftX+" 0.00008, "+leftX+" "+upY+"))";
+        String boundsWkt = "POLYGON ((" + leftX + " " + upY + ", 0.00009 " + upY + ", 0.00009 0.00008, " + leftX
+                + " 0.00008, " + leftX + " " + upY + "))";
         Geometry bounds = new WKTReader().read(boundsWkt);
 
         Geometry intersection = GeometryHelper.multiPolygonIntersection(bounds, origGeom, null);
-        String expected = "MULTIPOLYGON (((0.0000209942999665 0.00010927736875, 0.0000213313415762 0.00010927736875, 0.0000209942999665 0.0000890846805787, 0.0000209942999665 0.00010927736875)), ((0.0000209942999665 0.00010927736875, 0.0000213313415762 0.00010927736875, 0.0000209942999665 0.0000890846805787, 0.0000209942999665 0.00010927736875)), ((0.0000899999999874 0.00010927736875, 0.00009 0.00010927736875, 0.00009 0.000109277368746, 0.0000899999999874 0.00010927736875)), ((0.00009 0.0000964425460354, 0.00009 0.0000914965986251, 0.0000699999999998 0.0000999999999999, 0.00007 0.0001, 0.00009 0.0000964425460354)), ((0.000045 0.000094, 0.0000505439550488 0.0001018564279565, 0.00006 0.000085, 0.000045 0.000094)), ((0.00009 0.0000964425460354, 0.00009 0.0000914965986251, 0.0000699999999998 0.0000999999999999, 0.00007 0.0001, 0.00009 0.0000964425460354)))";
+        String expected = "MULTIPOLYGON (((0.0000209942999665 0.00010927736875, 0.0000213313415762 0.00010927736875, 0.0000209942999665 0.0000890846805787, 0.0000209942999665 0.00010927736875)), \n" + //
+                "  ((0.0000899999999874 0.00010927736875, 0.00009 0.00010927736875, 0.00009 0.000109277368746, 0.0000899999999874 0.00010927736875)), \n" + //
+                "  ((0.000045 0.000094, 0.0000505439550488 0.0001018564279565, 0.00006 0.000085, 0.000045 0.000094)), \n" + //
+                "  ((0.00009 0.0000964425460354, 0.00009 0.0000914965986251, 0.0000699999999998 0.0000999999999999, 0.00007 0.0001, 0.00009 0.0000964425460354)))";
         assertTrue(new WKTReader().read(expected).equalsExact(intersection, 0.000001));
     }
 

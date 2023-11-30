@@ -38,14 +38,19 @@ import java.util.Date;
 public class EggClock {
     private long startTimeMillis;
     private long startSubTimeMillis;
-    private final String preFix;
-    private final String postFix;
+    private String preFix;
+    private String postFix;
 
     private boolean started = false;
 
     public EggClock( String preFix, String postFix ) {
         this.preFix = preFix;
         this.postFix = postFix;
+    }
+
+    public EggClock setPrefix( String preFix ) {
+        this.preFix = preFix;
+        return this;
     }
 
     public void start() {
@@ -125,11 +130,11 @@ public class EggClock {
 
     private void printTimePassedInSeconds( PrintStream pm, long startTimeMillis ) {
         long currentTimeMillis = System.currentTimeMillis();
-        int mins = (int) Math.round((currentTimeMillis - startTimeMillis) / 1000.0);
+        int secs = (int) Math.round((currentTimeMillis - startTimeMillis) / 1000.0);
         if (preFix != null) {
             pm.print(preFix);
         }
-        pm.print(mins);
+        pm.print(secs);
         if (postFix != null) {
             pm.print(postFix);
         }
