@@ -17,13 +17,12 @@
  */
 package org.hortonmachine.gears.modules;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -39,7 +38,7 @@ public class TestRasterDiff extends HMTestCase {
     private GridCoverage2D inRaster2;
 
     protected void setUp() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         int[][] inData = HMTestMaps.flowData;

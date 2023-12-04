@@ -22,7 +22,7 @@ public class TestRaster extends HMTestCase {
         Raster r1 = new Raster(e.getCols(), e.getRows(), e.getXres(), e.getWest(), e.getNorth(), "EPSG:32632");
 
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> eP = HMTestMaps.envelopeParams;
+        RegionMap eP = HMTestMaps.envelopeParams;
         CoordinateReferenceSystem crs = HMTestMaps.crs;
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
 

@@ -19,7 +19,7 @@ package org.hortonmachine.hmachine.models.hm;
 
 import java.io.IOException;
 import java.util.HashMap;
-
+import org.hortonmachine.gears.utils.RegionMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures;
@@ -34,7 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestCurvatures extends HMTestCase {
 
     public void testCurvatures() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] pitfillerData = HMTestMaps.pitData;

@@ -17,14 +17,6 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.COLS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.EAST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.NORTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.ROWS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.SOUTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.buildCoverage;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.createWritableRaster;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
@@ -131,14 +123,14 @@ public class Raster {
         yRes = (north - south) / rows;
 
         regionMap = new RegionMap();
-        regionMap.put(NORTH, north);
-        regionMap.put(SOUTH, south);
-        regionMap.put(WEST, west);
-        regionMap.put(EAST, east);
-        regionMap.put(XRES, xRes);
-        regionMap.put(YRES, yRes);
-        regionMap.put(ROWS, (double) rows);
-        regionMap.put(COLS, (double) cols);
+        regionMap.north = north;
+        regionMap.south = south;
+        regionMap.west = west;
+        regionMap.east = east;
+        regionMap.xres = xRes;
+        regionMap.yres = yRes;
+        regionMap.rows = rows;
+        regionMap.cols = cols;
 
         newWR = createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         iter = RandomIterFactory.createWritable(newWR, null);
@@ -174,14 +166,14 @@ public class Raster {
         south = ulNorthing - height;
 
         regionMap = new RegionMap();
-        regionMap.put(NORTH, north);
-        regionMap.put(SOUTH, south);
-        regionMap.put(WEST, west);
-        regionMap.put(EAST, east);
-        regionMap.put(XRES, res);
-        regionMap.put(YRES, res);
-        regionMap.put(ROWS, (double) rows);
-        regionMap.put(COLS, (double) cols);
+        regionMap.north = north;
+        regionMap.south = south;
+        regionMap.west = west;
+        regionMap.east = east;
+        regionMap.xres = res;
+        regionMap.yres = res;
+        regionMap.rows = rows;
+        regionMap.cols = cols;
 
         makeNew = true;
         newWR = createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);

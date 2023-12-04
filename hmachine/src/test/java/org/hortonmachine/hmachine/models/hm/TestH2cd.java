@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2cd.OmsH2cd;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -35,7 +34,7 @@ public class TestH2cd extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testH2cd() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;

@@ -19,13 +19,13 @@ package org.hortonmachine.gears.modules;
 
 import java.awt.image.RenderedImage;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
@@ -40,7 +40,7 @@ public class TestMapcalc extends HMTestCase {
     public void testMapcalc() throws Exception {
 
         double[][] elevationData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
 
@@ -70,7 +70,7 @@ public class TestMapcalc extends HMTestCase {
     public void testMapcalc2() throws Exception {
 
         int[][] elevationData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("flow", elevationData, envelopeParams, crs, true);
 
@@ -90,7 +90,7 @@ public class TestMapcalc extends HMTestCase {
 
     public void testMapcalc3() throws Exception {
         double[][] elevationData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams, crs, true);
 

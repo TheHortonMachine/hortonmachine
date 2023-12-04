@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsLeastCostFlowDirections;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -35,7 +34,7 @@ public class TestFlowDirectionsLeastCost extends HMTestCase {
 
     public void testFlowDirectionsLeastCost() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D mapCoverage = CoverageUtilities.buildCoverage("elev", mapData, envelopeParams, crs, true);
 

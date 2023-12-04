@@ -19,9 +19,9 @@ package org.hortonmachine.hmachine.models.hm;
 
 import java.awt.image.RenderedImage;
 import java.io.IOException;
-import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.network.hacklength.OmsHackLength;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -36,7 +36,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestHackLength extends HMTestCase {
 
     public void testHacklength() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.mflowData;
@@ -56,7 +56,7 @@ public class TestHackLength extends HMTestCase {
     }
 
     public void testHacklength3d() throws IOException {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] pitData = HMTestMaps.pitData;

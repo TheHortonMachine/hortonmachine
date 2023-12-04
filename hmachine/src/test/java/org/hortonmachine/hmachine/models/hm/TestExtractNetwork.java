@@ -17,15 +17,12 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.Variables;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -46,7 +43,7 @@ public class TestExtractNetwork extends HMTestCase {
     * Test module with mode=0.
     */
     public void testExtractNetwork0() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;
@@ -71,7 +68,7 @@ public class TestExtractNetwork extends HMTestCase {
     */
     public void testExtractNetwork1() throws Exception {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;
@@ -96,7 +93,7 @@ public class TestExtractNetwork extends HMTestCase {
     }
 
     public void testOmsNetworkAttributesBuilder() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;

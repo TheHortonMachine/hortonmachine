@@ -1,9 +1,7 @@
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.utils.PrintUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.gc.OmsGc;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -19,7 +17,7 @@ public class TestGc extends HMTestCase {
 
     @SuppressWarnings("nls")
     public void testGc() {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] slopeData = HMTestMaps.slopeData;

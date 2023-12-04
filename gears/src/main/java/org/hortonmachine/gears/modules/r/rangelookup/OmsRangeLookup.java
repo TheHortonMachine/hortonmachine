@@ -43,6 +43,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import it.geosolutions.jaiext.JAIExt;
@@ -163,7 +164,7 @@ public class OmsRangeLookup extends HMModel {
         pb.setParameter("default", (Double) novalue);
         RenderedImage lookupImg = JAI.create("RLookup", pb);
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         outRaster = CoverageUtilities.buildCoverageWithNovalue("rangelookup", lookupImg, regionMap,
                 inRaster.getCoordinateReferenceSystem(), novalue);
     }

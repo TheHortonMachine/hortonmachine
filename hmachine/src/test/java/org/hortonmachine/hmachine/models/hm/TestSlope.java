@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.slope.OmsSlope;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -34,7 +33,7 @@ public class TestSlope extends HMTestCase {
 
     public void testSlope() throws Exception {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] pitData = HMTestMaps.pitData;
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("elevation", pitData, envelopeParams, crs, true);

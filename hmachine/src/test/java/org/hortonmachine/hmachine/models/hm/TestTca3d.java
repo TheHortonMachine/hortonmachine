@@ -17,10 +17,9 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.tca3d.OmsTca3d;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -35,7 +34,7 @@ public class TestTca3d extends HMTestCase {
     private double N = HMConstants.doubleNovalue;
     public void testTca3d() throws Exception {
         
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] pitfillerData = HMTestMaps.pitData;

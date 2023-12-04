@@ -36,7 +36,7 @@ package org.hortonmachine.hmachine.models.hm;
 //public class TestStrahler extends HMTestCase {
 //
 //    public void testStrahler() throws Exception {
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        double[][] flowData = HMTestMaps.mflowDataBorder;
 //        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);

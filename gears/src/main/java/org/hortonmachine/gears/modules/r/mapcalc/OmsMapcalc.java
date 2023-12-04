@@ -56,6 +56,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.jaitools.imageutils.ImageUtils;
 import it.geosolutions.jaiext.jiffle.Jiffle;
@@ -94,7 +95,7 @@ public class OmsMapcalc extends HMModel {
     @Out
     public GridCoverage2D outRaster = null;
 
-    private HashMap<String, Double> regionParameters = null;
+    private RegionMap regionParameters = null;
 
     private CoordinateReferenceSystem crs;
 
@@ -131,8 +132,8 @@ public class OmsMapcalc extends HMModel {
 
                 jiffleCRS = getTransform(worldBounds, gridBounds);
 
-                double xRes = regionParameters.get(CoverageUtilities.XRES).doubleValue();
-                double yRes = regionParameters.get(CoverageUtilities.YRES).doubleValue();
+                double xRes = regionParameters.xres;
+                double yRes = regionParameters.yres;
                 jiffleRuntime.setWorldByResolution(worldBounds, xRes, yRes);
             }
             RenderedImage renderedImage = mapGC.getRenderedImage();
@@ -143,8 +144,8 @@ public class OmsMapcalc extends HMModel {
         if (regionParameters == null) {
             throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName(), pm);
         }
-        int nCols = regionParameters.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionParameters.get(CoverageUtilities.ROWS).intValue();
+        int nCols = regionParameters.cols;
+        int nRows = regionParameters.rows;
         long pixelsNum = (long) nCols * nRows;
 
         if (pixelsNum < totalCount) {

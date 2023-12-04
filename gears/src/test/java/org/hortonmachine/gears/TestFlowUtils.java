@@ -39,7 +39,7 @@ public class TestFlowUtils extends HMTestCase {
         double[][] mapData = HMTestMaps.mapData;
         int[][] flowData = HMTestMaps.flowData;
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         GridCoverage2D inElev = CoverageUtilities.buildCoverageWithNovalue("elevation", mapData, envelopeParams, crs, true, NaN);
         GridCoverage2D inFlow = CoverageUtilities.buildCoverageWithNovalue("flow", flowData, envelopeParams, crs, true, intNaN);
 

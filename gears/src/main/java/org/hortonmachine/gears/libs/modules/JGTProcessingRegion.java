@@ -26,6 +26,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
@@ -200,14 +201,14 @@ public class JGTProcessingRegion {
      */
     public JGTProcessingRegion( GridCoverage2D gridCoverage ) {
 
-        HashMap<String, Double> regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(gridCoverage);
+        RegionMap regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(gridCoverage);
 
-        west = regionParams.get(CoverageUtilities.WEST);
-        east = regionParams.get(CoverageUtilities.EAST);
-        south = regionParams.get(CoverageUtilities.SOUTH);
-        north = regionParams.get(CoverageUtilities.NORTH);
-        we_res = regionParams.get(CoverageUtilities.XRES);
-        ns_res = regionParams.get(CoverageUtilities.YRES);
+        west = regionParams.west;
+        south = regionParams.south;
+        east = regionParams.east;
+        north = regionParams.north;
+        we_res = regionParams.xres;
+        ns_res = regionParams.yres;
 
         fixRowsAndCols();
         fixResolution();
@@ -728,8 +729,8 @@ public class JGTProcessingRegion {
         return gridGeometry;
     }
 
-    public HashMap<String, Double> getRegionParams() {
-        HashMap<String, Double> paramsMap = CoverageUtilities.makeRegionParamsMap(north, south, west, east, we_res, ns_res, cols,
+    public RegionMap getRegionParams() {
+        RegionMap paramsMap = CoverageUtilities.makeRegionParamsMap(north, south, west, east, we_res, ns_res, cols,
                 rows);
         return paramsMap;
     }

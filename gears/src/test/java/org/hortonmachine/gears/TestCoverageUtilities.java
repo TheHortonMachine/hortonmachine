@@ -133,7 +133,7 @@ public class TestCoverageUtilities extends HMTestCase {
 
     public void testHypsographic() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> eP = HMTestMaps.getEnvelopeparams();
+        RegionMap eP = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, eP, crs, true);
 

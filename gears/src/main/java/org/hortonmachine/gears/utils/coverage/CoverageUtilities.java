@@ -73,6 +73,7 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
 import org.geotools.process.ProcessException;
+import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
@@ -105,6 +106,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.TransformException;
 
 import it.geosolutions.jaiext.range.NoDataContainer;
@@ -484,14 +486,29 @@ public class CoverageUtilities {
         double xRes = XAffineTransform.getScaleX0(gridToCRS);
         double yRes = XAffineTransform.getScaleY0(gridToCRS);
 
-        envelopeParams.put(NORTH, eastNorth[1]);
-        envelopeParams.put(SOUTH, westSouth[1]);
-        envelopeParams.put(WEST, westSouth[0]);
-        envelopeParams.put(EAST, eastNorth[0]);
-        envelopeParams.put(XRES, xRes);
-        envelopeParams.put(YRES, yRes);
-        envelopeParams.put(ROWS, (double) height);
-        envelopeParams.put(COLS, (double) width);
+        CoordinateReferenceSystem crs = gridCoverage.getCoordinateReferenceSystem();
+        // check if crs is geographic
+        if (crs != null && crs instanceof GeographicCRS) {
+            // convert to metric
+            GeodeticCalculator gc = new GeodeticCalculator(crs);
+            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
+            gc.setDestinationGeographicPoint(eastNorth[0],westSouth[1]);
+            double xExtend = gc.getOrthodromicDistance();
+            xRes = xExtend / width;
+            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
+            gc.setDestinationGeographicPoint(westSouth[0],eastNorth[1]);
+            double yExtend = gc.getOrthodromicDistance();
+            yRes = yExtend / height;
+        }
+
+        envelopeParams.north = eastNorth[1];
+        envelopeParams.south = westSouth[1];
+        envelopeParams.west = westSouth[0];
+        envelopeParams.east = eastNorth[0];
+        envelopeParams.xres = xRes;
+        envelopeParams.yres = yRes;
+        envelopeParams.rows = height;
+        envelopeParams.cols = width;
 
         return envelopeParams;
     }
@@ -520,14 +537,14 @@ public class CoverageUtilities {
         double xRes = resolutionLevels[0][0];
         double yRes = resolutionLevels[0][1];
 
-        envelopeParams.put(NORTH, eastNorth[1]);
-        envelopeParams.put(SOUTH, westSouth[1]);
-        envelopeParams.put(WEST, westSouth[0]);
-        envelopeParams.put(EAST, eastNorth[0]);
-        envelopeParams.put(XRES, xRes);
-        envelopeParams.put(YRES, yRes);
-        envelopeParams.put(ROWS, (double) height);
-        envelopeParams.put(COLS, (double) width);
+        envelopeParams.north = eastNorth[1];
+        envelopeParams.south = westSouth[1];
+        envelopeParams.west = westSouth[0];
+        envelopeParams.east = eastNorth[0];
+        envelopeParams.xres = xRes;
+        envelopeParams.yres = yRes;
+        envelopeParams.rows = height;
+        envelopeParams.cols = width;
 
         return envelopeParams;
     }
@@ -553,6 +570,21 @@ public class CoverageUtilities {
         AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
         double xRes = XAffineTransform.getScaleX0(gridToCRS);
         double yRes = XAffineTransform.getScaleY0(gridToCRS);
+        
+        CoordinateReferenceSystem crs = gridCoverage.getCoordinateReferenceSystem();
+        // check if crs is geographic
+        if (crs != null && crs instanceof GeographicCRS) {
+            // convert to metric
+            GeodeticCalculator gc = new GeodeticCalculator(crs);
+            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
+            gc.setDestinationGeographicPoint(eastNorth[0],westSouth[1]);
+            double xExtend = gc.getOrthodromicDistance();
+            xRes = xExtend / width;
+            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
+            gc.setDestinationGeographicPoint(westSouth[0],eastNorth[1]);
+            double yExtend = gc.getOrthodromicDistance();
+            yRes = yExtend / height;
+        }
 
         double[] params = new double[]{eastNorth[1], westSouth[1], westSouth[0], eastNorth[0], xRes, yRes, width, height};
 
@@ -637,7 +669,7 @@ public class CoverageUtilities {
     public static RegionMap gridGeometry2RegionParamsMap( GridGeometry2D gridGeometry ) {
         RegionMap envelopeParams = new RegionMap();
 
-        Envelope envelope = gridGeometry.getEnvelope2D();
+         Envelope2D envelope = gridGeometry.getEnvelope2D();
         DirectPosition lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
         DirectPosition upperCorner = envelope.getUpperCorner();
@@ -651,14 +683,29 @@ public class CoverageUtilities {
         double xRes = XAffineTransform.getScaleX0(gridToCRS);
         double yRes = XAffineTransform.getScaleY0(gridToCRS);
 
-        envelopeParams.put(NORTH, eastNorth[1]);
-        envelopeParams.put(SOUTH, westSouth[1]);
-        envelopeParams.put(WEST, westSouth[0]);
-        envelopeParams.put(EAST, eastNorth[0]);
-        envelopeParams.put(XRES, xRes);
-        envelopeParams.put(YRES, yRes);
-        envelopeParams.put(ROWS, (double) height);
-        envelopeParams.put(COLS, (double) width);
+        CoordinateReferenceSystem crs = envelope.getCoordinateReferenceSystem();
+        // check if crs is geographic
+        if (crs != null && crs instanceof GeographicCRS) {
+            // convert to metric
+            GeodeticCalculator gc = new GeodeticCalculator(crs);
+            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
+            gc.setDestinationGeographicPoint(eastNorth[0],westSouth[1]);
+            double xExtend = gc.getOrthodromicDistance();
+            xRes = xExtend / width;
+            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
+            gc.setDestinationGeographicPoint(westSouth[0],eastNorth[1]);
+            double yExtend = gc.getOrthodromicDistance();
+            yRes = yExtend / height;
+        }
+
+        envelopeParams.north = eastNorth[1];
+        envelopeParams.south = westSouth[1];
+        envelopeParams.west = westSouth[0];
+        envelopeParams.east = eastNorth[0];
+        envelopeParams.xres = xRes;
+        envelopeParams.yres = yRes;
+        envelopeParams.rows = height;
+        envelopeParams.cols = width;
 
         return envelopeParams;
     }
@@ -679,25 +726,25 @@ public class CoverageUtilities {
     public static RegionMap makeRegionParamsMap( double north, double south, double west, double east, double xRes, double yRes,
             int width, int height ) {
         RegionMap envelopeParams = new RegionMap();
-        envelopeParams.put(NORTH, north);
-        envelopeParams.put(SOUTH, south);
-        envelopeParams.put(WEST, west);
-        envelopeParams.put(EAST, east);
-        envelopeParams.put(XRES, xRes);
-        envelopeParams.put(YRES, yRes);
-        envelopeParams.put(ROWS, (double) height);
-        envelopeParams.put(COLS, (double) width);
+        envelopeParams.north = north;
+        envelopeParams.south = south;
+        envelopeParams.west = west;
+        envelopeParams.east = east;
+        envelopeParams.xres = xRes;
+        envelopeParams.yres = yRes;
+        envelopeParams.rows = height;
+        envelopeParams.cols = width;
         return envelopeParams;
     }
 
-    public static GridGeometry2D gridGeometryFromRegionParams( HashMap<String, Double> envelopeParams,
+    public static GridGeometry2D gridGeometryFromRegionParams( RegionMap envelopeParams,
             CoordinateReferenceSystem crs ) {
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
-        int rows = envelopeParams.get(ROWS).intValue();
-        int cols = envelopeParams.get(COLS).intValue();
+        double west = envelopeParams.west;
+        double south = envelopeParams.south;
+        double east = envelopeParams.east;
+        double north = envelopeParams.north;
+        int rows = envelopeParams.rows;
+        int cols = envelopeParams.cols;
 
         return gridGeometryFromRegionValues(north, south, east, west, cols, rows, crs);
     }
@@ -924,14 +971,14 @@ public class CoverageUtilities {
      * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the {@link GridCoverage2D coverage}.
      */
-    public static GridCoverage2D buildCoverage( String name, double[][] dataMatrix, HashMap<String, Double> envelopeParams,
+    public static GridCoverage2D buildCoverage( String name, double[][] dataMatrix, RegionMap envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.doubleNovalue);
     }
 
     public static GridCoverage2D buildCoverageWithNovalue( String name, double[][] dataMatrix,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, boolean matrixIsRowCol, double novalue ) {
+            RegionMap envelopeParams, CoordinateReferenceSystem crs, boolean matrixIsRowCol, double novalue ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, novalue);
     }
@@ -946,20 +993,20 @@ public class CoverageUtilities {
      * @param matrixIsRowCol a flag to tell if the matrix has rowCol or colRow order.
      * @return the {@link GridCoverage2D coverage}.
      */
-    public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix, HashMap<String, Double> envelopeParams,
+    public static GridCoverage2D buildCoverage( String name, float[][] dataMatrix, RegionMap envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.floatNovalue);
     }
 
-    public static GridCoverage2D buildCoverage( String name, int[][] dataMatrix, HashMap<String, Double> envelopeParams,
+    public static GridCoverage2D buildCoverage( String name, int[][] dataMatrix, RegionMap envelopeParams,
             CoordinateReferenceSystem crs, boolean matrixIsRowCol ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.intNovalue);
     }
 
     public static GridCoverage2D buildCoverageWithNovalue( String name, int[][] dataMatrix,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, boolean matrixIsRowCol, int novalue ) {
+            RegionMap envelopeParams, CoordinateReferenceSystem crs, boolean matrixIsRowCol, int novalue ) {
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, matrixIsRowCol);
         return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, novalue);
     }
@@ -973,19 +1020,19 @@ public class CoverageUtilities {
      * @param crs the {@link CoordinateReferenceSystem}.
      * @return the {@link GridCoverage2D coverage}.
      */
-    public static GridCoverage2D buildCoverage( String name, RenderedImage renderedImage, HashMap<String, Double> envelopeParams,
+    public static GridCoverage2D buildCoverage( String name, RenderedImage renderedImage, RegionMap envelopeParams,
             CoordinateReferenceSystem crs ) {
         return buildCoverageWithNovalue(name, renderedImage, envelopeParams, crs, HMConstants.doubleNovalue);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static GridCoverage2D buildCoverageWithNovalue( String name, RenderedImage renderedImage,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, double novalue ) {
+            RegionMap envelopeParams, CoordinateReferenceSystem crs, double novalue ) {
 
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
+        double west = envelopeParams.west;
+        double south = envelopeParams.south;
+        double east = envelopeParams.east;
+        double north = envelopeParams.north;
         Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
 
         final GridSampleDimension[] bands = RenderedSampleDimension.create(name, renderedImage.getData(), null, null, null, null,
@@ -1011,7 +1058,7 @@ public class CoverageUtilities {
      * @return the {@link GridCoverage2D coverage}.
      */
     public static GridCoverage2D buildCoverage( String name, WritableRaster writableRaster,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs ) {
+            RegionMap envelopeParams, CoordinateReferenceSystem crs ) {
         return buildCoverageWithNovalue(name, writableRaster, envelopeParams, crs, HMConstants.doubleNovalue);
     }
 
@@ -1029,11 +1076,11 @@ public class CoverageUtilities {
      */
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static GridCoverage2D buildCoverageWithNovalue( String name, WritableRaster writableRaster,
-            HashMap<String, Double> envelopeParams, CoordinateReferenceSystem crs, double novalue ) {
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
+            RegionMap envelopeParams, CoordinateReferenceSystem crs, double novalue ) {
+        double west = envelopeParams.west;
+        double south = envelopeParams.south;
+        double east = envelopeParams.east;
+        double north = envelopeParams.north;
         Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
         final GridSampleDimension[] bands = RenderedSampleDimension.create(name, writableRaster, null, null, null, null, null);
         final ColorModel model = bands[0].getColorModel(0, bands.length, writableRaster.getSampleModel().getDataType());
@@ -1055,15 +1102,15 @@ public class CoverageUtilities {
      * @return the dummy grod coverage.
      */
     public static GridCoverage2D buildDummyCoverage() {
-        HashMap<String, Double> envelopeParams = new HashMap<String, Double>();
-        envelopeParams.put(NORTH, 1.0);
-        envelopeParams.put(SOUTH, 0.0);
-        envelopeParams.put(WEST, 0.0);
-        envelopeParams.put(EAST, 1.0);
-        envelopeParams.put(XRES, 1.0);
-        envelopeParams.put(YRES, 1.0);
-        envelopeParams.put(ROWS, 1.0);
-        envelopeParams.put(COLS, 1.0);
+        RegionMap envelopeParams = new RegionMap();
+        envelopeParams.north = 1.0;
+        envelopeParams.south = 0.0;
+        envelopeParams.west = 0.0;
+        envelopeParams.east = 1.0;
+        envelopeParams.xres = 1.0;
+        envelopeParams.yres = 1.0;
+        envelopeParams.rows = 1;
+        envelopeParams.cols = 1;
         double[][] dataMatrix = new double[1][1];
         dataMatrix[0][0] = 0;
         WritableRaster writableRaster = createWritableRasterFromMatrix(dataMatrix, true);

@@ -70,5 +70,4 @@ public class Aspect extends HMModel {
         aspect.process();
         dumpRaster(aspect.outAspect, outAspect);
     }
-
 }

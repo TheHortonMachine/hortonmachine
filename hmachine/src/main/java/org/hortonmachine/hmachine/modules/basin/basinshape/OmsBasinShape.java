@@ -32,23 +32,11 @@ import static org.hortonmachine.hmachine.modules.basin.basinshape.OmsBasinShape.
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -62,16 +50,27 @@ import org.geotools.geometry.DirectPosition2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsSupporter;
 import org.hortonmachine.gears.modules.v.vectorize.OmsVectorizer;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OMSBASINSHAPE_DESCRIPTION)
 @Author(name = OMSBASINSHAPE_AUTHORNAMES, contact = OMSBASINSHAPE_AUTHORCONTACTS)
@@ -121,9 +120,9 @@ public class OmsBasinShape extends HMModel {
         }
         checkNull(inBasins);
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
-        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
+        nCols = regionMap.cols;
+        nRows = regionMap.rows;
         // double xRes = regionMap.get(CoverageUtilities.XRES);
         // double yRes = regionMap.get(CoverageUtilities.YRES);
 

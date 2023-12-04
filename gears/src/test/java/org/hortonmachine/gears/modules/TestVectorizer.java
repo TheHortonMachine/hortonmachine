@@ -17,21 +17,19 @@
  */
 package org.hortonmachine.gears.modules;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.gears.modules.v.vectorize.OmsVectorizer;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Geometry;
 
 /**
  * Test for {@link OmsVectorizer}.
@@ -42,7 +40,7 @@ public class TestVectorizer extends HMTestCase {
     public void testVectorizer1() throws Exception {
 
         double[][] inData = HMTestMaps.extractNet0Data;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 
@@ -79,7 +77,7 @@ public class TestVectorizer extends HMTestCase {
 
     public void testVectorizer2() throws Exception {
         double[][] inData = HMTestMaps.extractNet0Data;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 

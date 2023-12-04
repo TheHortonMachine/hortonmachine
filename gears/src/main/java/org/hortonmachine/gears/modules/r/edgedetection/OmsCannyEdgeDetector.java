@@ -35,6 +35,7 @@ import oms3.annotations.Status;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description("Edge detection operations")
@@ -87,7 +88,7 @@ public class OmsCannyEdgeDetector extends HMModel {
         pm.done();
 
         WritableRaster edgesWR = canny.getEdgesRaster();
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
         outMap = CoverageUtilities.buildCoverage("canny", edgesWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
     }
 

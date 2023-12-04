@@ -40,6 +40,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSRASTERCORRECTOR_DESCRIPTION)
@@ -86,7 +87,7 @@ public class OmsRasterCorrector extends HMModel {
             outWR.setSample(col, row, 0, value);
         }
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         outRaster = CoverageUtilities.buildCoverage("corrected", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
     }
 

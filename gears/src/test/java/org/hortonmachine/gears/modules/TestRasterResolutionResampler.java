@@ -17,13 +17,12 @@
  */
 package org.hortonmachine.gears.modules;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Variables;
 import org.hortonmachine.gears.modules.r.transformer.OmsRasterResolutionResampler;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
@@ -36,7 +35,7 @@ public class TestRasterResolutionResampler extends HMTestCase {
     public void testRasterResolutionResampler() throws Exception {
 
         int[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 

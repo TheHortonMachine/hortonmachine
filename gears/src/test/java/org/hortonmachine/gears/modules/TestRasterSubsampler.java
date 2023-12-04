@@ -45,7 +45,7 @@ public class TestRasterSubsampler extends HMTestCase {
     public void testRasterSubsampler() throws Exception {
         
         double[][] dtmData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D raster = CoverageUtilities.buildCoverage("dtm", dtmData, envelopeParams, crs, true);
         
@@ -67,7 +67,7 @@ public class TestRasterSubsampler extends HMTestCase {
     public void testRasterSubsamplerNonFitting() throws Exception {
 
         double[][] dtmData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D raster = CoverageUtilities.buildCoverage("dtm", dtmData, envelopeParams, crs, true);
 

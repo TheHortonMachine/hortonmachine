@@ -84,7 +84,7 @@ public class TestDePitter extends HMTestCase {
 //     {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
 //     {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500} //
 //     };
-//     HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//     RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //     CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //     GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation",
 //     elevationData, envelopeParams, crs, true);

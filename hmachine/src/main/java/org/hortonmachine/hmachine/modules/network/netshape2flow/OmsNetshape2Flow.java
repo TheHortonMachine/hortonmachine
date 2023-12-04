@@ -37,22 +37,10 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_ou
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -66,17 +54,28 @@ import org.geotools.geometry.DirectPosition2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.MultiPoint;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OMSNETSHAPE2FLOW_DESCRIPTION)
 @Author(name = OMSNETSHAPE2FLOW_AUTHORNAMES, contact = OMSNETSHAPE2FLOW_AUTHORCONTACTS)
@@ -123,11 +122,10 @@ public class OmsNetshape2Flow extends HMModel {
             return;
         }
         checkNull(inNet, inGrid);
-        HashMap<String, Double> regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);
-        double res = regionMap.get(CoverageUtilities.XRES);
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-
+        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inGrid);
+        double res = regionMap.xres;
+        int cols = regionMap.cols;
+        int rows = regionMap.rows;
         WritableRaster flowWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
         WritableRaster netWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, HMConstants.doubleNovalue);
 

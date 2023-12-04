@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet;
@@ -36,7 +35,7 @@ public class TestWateroutlet extends HMTestCase {
     public void testWateroutlet() throws Exception {
 
         double[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 
@@ -59,7 +58,7 @@ public class TestWateroutlet extends HMTestCase {
     public void testExtractBasin() throws Exception {
 
         double[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 

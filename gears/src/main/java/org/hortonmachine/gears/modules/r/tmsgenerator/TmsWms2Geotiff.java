@@ -245,14 +245,14 @@ public class TmsWms2Geotiff extends HMModel {
         double yres = (nn - ss) / height;
 
         RegionMap envelopeParams = new RegionMap();
-        envelopeParams.put(CoverageUtilities.NORTH, nn);
-        envelopeParams.put(CoverageUtilities.SOUTH, ss);
-        envelopeParams.put(CoverageUtilities.WEST, ww);
-        envelopeParams.put(CoverageUtilities.EAST, ee);
-        envelopeParams.put(CoverageUtilities.XRES, xres);
-        envelopeParams.put(CoverageUtilities.YRES, yres);
-        envelopeParams.put(CoverageUtilities.ROWS, (double) height);
-        envelopeParams.put(CoverageUtilities.COLS, (double) width);
+        envelopeParams.north = nn;
+        envelopeParams.south = ss;
+        envelopeParams.west = ww;
+        envelopeParams.east = ee;
+        envelopeParams.xres = xres;
+        envelopeParams.yres = yres;
+        envelopeParams.rows =  height;
+        envelopeParams.cols =  width;
 
         GridCoverage2D coverage = CoverageUtilities.buildCoverage("tmsraster", img, envelopeParams, mercatorCrs);
         OmsRasterWriter.writeRaster(outRaster, coverage);

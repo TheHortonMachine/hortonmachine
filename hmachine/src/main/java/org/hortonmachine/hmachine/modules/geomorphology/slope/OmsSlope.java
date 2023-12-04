@@ -35,10 +35,18 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSLOPE_outSlope_D
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.Direction;
+import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -52,14 +60,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.Direction;
-import org.hortonmachine.gears.libs.modules.GridNode;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSSLOPE_DESCRIPTION)
 @Documentation(OMSSLOPE_DOCUMENTATION)
@@ -95,11 +95,11 @@ public class OmsSlope extends HMModel {
             return;
         }
         checkNull(inPit, inFlow);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
-        int nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        double xRes = regionMap.get(CoverageUtilities.XRES);
-        double yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inPit);
+        int nCols = regionMap.cols;
+        int nRows = regionMap.rows;
+        double xRes = regionMap.xres;
+        double yRes = regionMap.yres;
 
         double novalue = HMConstants.getNovalue(inPit);
 

@@ -17,19 +17,17 @@
  */
 package org.hortonmachine.gears.modules;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.modules.Variables;
 import org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Geometry;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link OmsRasterTransformer}.
  * 
@@ -40,7 +38,7 @@ public class TestRasterTransformer extends HMTestCase {
     public void testRasterTransformer() throws Exception {
 
         int[][] flowData = HMTestMaps.flowData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D flowCoverage = CoverageUtilities.buildCoverage("flow", flowData, envelopeParams, crs, true);
 

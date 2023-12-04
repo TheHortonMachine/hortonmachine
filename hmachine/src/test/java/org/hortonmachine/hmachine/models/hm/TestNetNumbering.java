@@ -18,12 +18,11 @@
 package org.hortonmachine.hmachine.models.hm;
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
-import org.hortonmachine.gears.utils.PrintUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -41,7 +40,7 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     public void testNetnumberingMode0() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.mflowDataBorder;
@@ -64,7 +63,7 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     public void testNetnumberingMode1() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.mflowDataBorder;
@@ -90,7 +89,7 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     public void testNetnumberingMode2() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
         File pointsFile = new File(pointURL.toURI());
@@ -126,7 +125,7 @@ public class TestNetNumbering extends HMTestCase {
     }
 
     public void testNetnumberingMode3() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         URL pointURL = this.getClass().getClassLoader().getResource("netNumbering_Point.shp");
         File pointsFile = new File(pointURL.toURI());

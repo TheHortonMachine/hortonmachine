@@ -45,7 +45,7 @@ package org.hortonmachine.gears.modules;
 //    public void testCoverageReprojector() throws Exception {
 //
 //        double[][] elevationData = HMTestMaps.mapData;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        int origRows = envelopeParams.get(CoverageUtilities.ROWS).intValue();
 //        int origCols = envelopeParams.get(CoverageUtilities.COLS).intValue();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
@@ -59,7 +59,7 @@ package org.hortonmachine.gears.modules;
 //
 //        GridCoverage2D outMap = reprojector.outGeodata;
 //
-//        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outMap);
+//        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(outMap);
 //        double west = regionMap.get(CoverageUtilities.WEST);
 //        double south = regionMap.get(CoverageUtilities.SOUTH);
 //        double east = regionMap.get(CoverageUtilities.EAST);

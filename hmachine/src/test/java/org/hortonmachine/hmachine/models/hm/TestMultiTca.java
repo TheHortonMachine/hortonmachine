@@ -1,8 +1,7 @@
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.multitca.OmsMultiTca;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -12,7 +11,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestMultiTca extends HMTestCase {
     public void testMultiTca() throws Exception {
         double[][] pitfillerData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D pitfillerCoverage = CoverageUtilities.buildCoverage("pit", pitfillerData, envelopeParams, crs, true);
 

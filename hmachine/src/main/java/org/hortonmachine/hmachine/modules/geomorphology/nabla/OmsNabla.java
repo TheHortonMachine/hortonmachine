@@ -17,7 +17,8 @@
  */
 package org.hortonmachine.hmachine.modules.geomorphology.nabla;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.*;
+import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNABLA_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNABLA_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNABLA_DESCRIPTION;
@@ -33,10 +34,15 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNABLA_pThres_DES
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,11 +55,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSNABLA_DESCRIPTION)
 @Documentation(OMSNABLA_DOCUMENTATION)
@@ -90,11 +91,11 @@ public class OmsNabla extends HMModel {
             return;
         }
         checkNull(inElev);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        nCols = regionMap.get(CoverageUtilities.COLS).intValue();
-        nRows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        nCols = regionMap.cols;
+        nRows = regionMap.rows;
+        xRes = regionMap.xres;
+        yRes = regionMap.yres;
 
         RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);

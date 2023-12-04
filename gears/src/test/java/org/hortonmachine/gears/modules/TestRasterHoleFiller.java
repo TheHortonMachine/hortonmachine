@@ -18,7 +18,6 @@
 package org.hortonmachine.gears.modules;
 
 import java.awt.image.RenderedImage;
-import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -26,6 +25,7 @@ import org.hortonmachine.gears.libs.modules.Variables;
 import org.hortonmachine.gears.modules.r.holefiller.OmsHoleFiller;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
@@ -48,7 +48,7 @@ public class TestRasterHoleFiller extends HMTestCase {
             {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}};
 
     public void testHoleFiller() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, envelopeParams, crs, true);
 

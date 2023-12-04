@@ -57,6 +57,21 @@ import java.util.List;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.io.eicalculator.EIAltimetry;
+import org.hortonmachine.gears.io.eicalculator.EIAreas;
+import org.hortonmachine.gears.io.eicalculator.EIEnergy;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
+import org.locationtech.jts.geom.Coordinate;
+import org.opengis.referencing.operation.MathTransform;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -67,21 +82,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.CRS;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.io.eicalculator.EIAltimetry;
-import org.hortonmachine.gears.io.eicalculator.EIAreas;
-import org.hortonmachine.gears.io.eicalculator.EIEnergy;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.opengis.referencing.operation.MathTransform;
-
-import org.locationtech.jts.geom.Coordinate;
 
 @Description(OMSENERGYINDEXCALCULATOR_DESCRIPTION)
 @Author(name = OMSENERGYINDEXCALCULATOR_AUTHORNAMES, contact = OMSENERGYINDEXCALCULATOR_AUTHORCONTACTS)
@@ -173,15 +173,15 @@ public class OmsEnergyIndexCalculator extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
-        cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        dx = regionMap.get(CoverageUtilities.XRES);
-        dy = regionMap.get(CoverageUtilities.YRES);
-        double n = regionMap.get(CoverageUtilities.NORTH);
-        double s = regionMap.get(CoverageUtilities.SOUTH);
-        double w = regionMap.get(CoverageUtilities.WEST);
-        double e = regionMap.get(CoverageUtilities.EAST);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inBasins);
+        cols = regionMap.cols;
+        rows = regionMap.rows;
+        dx = regionMap.xres;
+        dy = regionMap.yres;
+        double n = regionMap.north;
+        double s = regionMap.south;
+        double w = regionMap.west;
+        double e = regionMap.east;
 
         double meanX = w + (e - w) / 2.0;
         double meanY = s + (n - s) / 2.0;

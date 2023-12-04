@@ -36,11 +36,16 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_outClasses_DE
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_pTh_DESCRIPTION;
 
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -53,11 +58,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSGC_DESCRIPTION)
 @Documentation(OMSGC_DOCUMENTATION)
@@ -96,7 +96,7 @@ public class OmsGc extends HMModel {
     /**
      * The region map for the simulation.
      */
-    private HashMap<String, Double> regionMap = null;
+    private RegionMap regionMap = null;
 
     @Execute
     public void process() {
@@ -118,8 +118,8 @@ public class OmsGc extends HMModel {
     private WritableRaster[] createGCRaster() {
         // get rows and cols from the active region
 
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
+        int cols = regionMap.cols;
+        int rows = regionMap.rows;
 
         RandomIter slopeIter = CoverageUtilities.getRandomIterator(inSlope);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNetwork);

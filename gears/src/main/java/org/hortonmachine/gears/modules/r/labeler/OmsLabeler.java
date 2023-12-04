@@ -20,10 +20,16 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.utils.BinaryFast;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,12 +41,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.modules.utils.BinaryFast;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description("Connected components labeling operation")
 @Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
@@ -86,7 +86,7 @@ public class OmsLabeler extends HMModel {
         int[] labelsArray = doLabel(data, width, height);
 
         WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height, labelsArray);
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
         outMap = CoverageUtilities.buildCoverage("labeled", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
     }
 

@@ -17,14 +17,13 @@
  */
 package org.hortonmachine.gears.modules;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -38,7 +37,7 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
     public void testRasterCatToFeatureAttribute() throws Exception {
 
         double[][] elevationData = HMTestMaps.outPitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 
@@ -75,7 +74,7 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
     public void testRasterCatToFeatureAttributePolygon() throws Exception {
 
         double[][] elevationData = HMTestMaps.outPitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 

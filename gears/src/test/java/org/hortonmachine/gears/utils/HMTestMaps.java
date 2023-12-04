@@ -102,14 +102,14 @@ public class HMTestMaps {
         double w = 1640650.0;
         double e = 1640950.0;
         envelopeParams = new RegionMap();
-        envelopeParams.put(CoverageUtilities.NORTH, n);
-        envelopeParams.put(CoverageUtilities.SOUTH, s);
-        envelopeParams.put(CoverageUtilities.WEST, w);
-        envelopeParams.put(CoverageUtilities.EAST, e);
-        envelopeParams.put(CoverageUtilities.XRES, 30.0);
-        envelopeParams.put(CoverageUtilities.YRES, 30.0);
-        envelopeParams.put(CoverageUtilities.ROWS, 8.0);
-        envelopeParams.put(CoverageUtilities.COLS, 10.0);
+        envelopeParams.north = n;
+        envelopeParams.south = s;
+        envelopeParams.west = w;
+        envelopeParams.east = e;
+        envelopeParams.xres = 30.0;
+        envelopeParams.yres = 30.0;
+        envelopeParams.rows = 8;
+        envelopeParams.cols = 10;
 
         try {
             crs = CrsUtilities.getCrsFromEpsg("EPSG:32632");

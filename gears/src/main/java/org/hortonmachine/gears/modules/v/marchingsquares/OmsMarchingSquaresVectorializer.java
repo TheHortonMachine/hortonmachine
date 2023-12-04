@@ -35,21 +35,34 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTO
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMARCHINGSQUARESVECTORIALIZER_UI;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.COLS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.ROWS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
 import java.awt.geom.Point2D;
 import java.awt.image.RenderedImage;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Polygon;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -63,24 +76,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LinearRing;
-import org.locationtech.jts.geom.Polygon;
 
 @Description(OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION)
 @Documentation(OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION)
@@ -140,11 +135,11 @@ public class OmsMarchingSquaresVectorializer extends HMModel {
             RenderedImage inputRI = inGeodata.getRenderedImage();
             iter = RandomIterFactory.create(inputRI, null);
 
-            HashMap<String, Double> regionMap = getRegionParamsFromGridCoverage(inGeodata);
-            height = regionMap.get(ROWS).intValue();
-            width = regionMap.get(COLS).intValue();
-            xRes = regionMap.get(XRES);
-            yRes = regionMap.get(YRES);
+            RegionMap regionMap = getRegionParamsFromGridCoverage(inGeodata);
+            height = regionMap.rows;
+            width = regionMap.cols;
+            xRes = regionMap.xres;
+            yRes = regionMap.yres;
             crs = inGeodata.getCoordinateReferenceSystem();
 
             bitSet = new BitSet(width * height);

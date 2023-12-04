@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -35,7 +34,7 @@ public class TestSkyview extends HMTestCase {
 
     public void testSkyview() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs3004();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 

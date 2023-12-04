@@ -42,6 +42,7 @@ import javax.media.jai.iterator.RandomIterFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.interpolation.LinearListInterpolator;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.core.discharge.QReal;
@@ -197,11 +198,11 @@ public class OmsPeakflow extends HMModel {
     public void process() throws Exception {
         checkNull(inRescaledsup);
 
-        HashMap<String, Double> regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRescaledsup);
-        cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-        xRes = regionMap.get(CoverageUtilities.XRES);
-        yRes = regionMap.get(CoverageUtilities.YRES);
+        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRescaledsup);
+        cols = regionMap.cols;
+        rows = regionMap.rows;
+        xRes = regionMap.xres;
+        yRes = regionMap.yres;
 
         RenderedImage supRescaledRI = inRescaledsup.getRenderedImage();
         WritableRaster supRescaledWR = CoverageUtilities.renderedImage2WritableRaster(supRescaledRI, false);

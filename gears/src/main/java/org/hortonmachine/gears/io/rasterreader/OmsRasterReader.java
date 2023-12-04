@@ -61,6 +61,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -289,13 +290,13 @@ public class OmsRasterReader extends HMModel {
             return;
         }
 
-        HashMap<String, Double> envelopeParams = getRegionParamsFromGridCoverage(outRaster);
-        double west = envelopeParams.get(WEST);
-        double south = envelopeParams.get(SOUTH);
-        double east = envelopeParams.get(EAST);
-        double north = envelopeParams.get(NORTH);
-        double xres = envelopeParams.get(XRES);
-        double yres = envelopeParams.get(YRES);
+        RegionMap envelopeParams = getRegionParamsFromGridCoverage(outRaster);
+        double west = envelopeParams.west;
+        double south = envelopeParams.south;
+        double east = envelopeParams.east;
+        double north = envelopeParams.north;
+        double xres = envelopeParams.xres;
+        double yres = envelopeParams.yres;
 
         if (pBounds == null) {
             pBounds = new double[]{north, south, west, east};
@@ -328,7 +329,7 @@ public class OmsRasterReader extends HMModel {
             pRowcol[1] = newCols;
         }
 
-        HashMap<String, Double> newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
+        RegionMap newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
         CoordinateReferenceSystem crs = outRaster.getCoordinateReferenceSystem();
         GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
         outRaster = (GridCoverage2D) Operations.DEFAULT.resample(outRaster, crs, gg, null);
@@ -343,7 +344,7 @@ public class OmsRasterReader extends HMModel {
 //            return;
 //        }
 //        if (!NumericsUtilities.dEq(internalFileNovalue, internalGeodataNovalue)) {
-//            HashMap<String, Double> params = getRegionParamsFromGridCoverage(outRaster);
+//            RegionMap params = getRegionParamsFromGridCoverage(outRaster);
 //            int height = params.get(ROWS).intValue();
 //            int width = params.get(COLS).intValue();
 //            WritableRaster tmpWR = createWritableRaster(width, height, null, null, null);

@@ -37,12 +37,28 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSINSOLATION_tStar
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 
 import javax.media.jai.RasterFactory;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Point;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -54,23 +70,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Point;
 
 @Description(OMSINSOLATION_DESCRIPTION)
 @Author(name = OMSINSOLATION_AUTHORNAMES, contact = OMSINSOLATION_AUTHORCONTACTS)
@@ -127,8 +126,8 @@ public class OmsInsolation extends HMModel {
     public void process() throws Exception { // transform the
         checkNull(inElev, tStartDate, tEndDate);
         // extract some attributes of the map
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        double dx = attribute.get(CoverageUtilities.XRES);
+        RegionMap attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        double dx = attribute.xres;
 
         /*
          * The models use only one value of the latitude. So I have decided to
@@ -138,7 +137,7 @@ public class OmsInsolation extends HMModel {
         CoordinateReferenceSystem sourceCRS = inElev.getCoordinateReferenceSystem2D();
         CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
 
-        double srcPts[] = new double[]{attribute.get(CoverageUtilities.EAST), attribute.get(CoverageUtilities.SOUTH)};
+        double srcPts[] = new double[]{attribute.east, attribute.south};
 
         Coordinate source = new Coordinate(srcPts[0], srcPts[1]);
         Point[] so = new Point[]{GeometryUtilities.gf().createPoint(source)};

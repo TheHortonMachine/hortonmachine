@@ -42,7 +42,7 @@ package org.hortonmachine.gears.modules;
 //public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 //
 //    private void setBounds( OmsScanLineRasterizer rast, GridGeometry2D gridGeom ) {
-//        HashMap<String, Double> envelopeParams = gridGeometry2RegionParamsMap(gridGeom);
+//        RegionMap envelopeParams = gridGeometry2RegionParamsMap(gridGeom);
 //        double west = envelopeParams.get(WEST);
 //        double south = envelopeParams.get(SOUTH);
 //        double east = envelopeParams.get(EAST);
@@ -65,7 +65,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractNet1Data = HMTestMaps.marchingSq1;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
@@ -105,7 +105,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractNet1Data = HMTestMaps.marchingSq2;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractNet1Data, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
@@ -145,7 +145,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq3;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
@@ -194,7 +194,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq4;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
@@ -243,7 +243,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq3;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
@@ -292,7 +292,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq6;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;
@@ -333,7 +333,7 @@ package org.hortonmachine.gears.modules;
 //         * extract vectors
 //         */
 //        double[][] extractData = HMTestMaps.marchingSq7;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D netCoverage = buildCoverage("net", extractData, envelopeParams, crs, true);
 //        GridCoverage2D geodata = netCoverage;

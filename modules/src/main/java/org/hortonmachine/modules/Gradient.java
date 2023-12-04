@@ -88,4 +88,17 @@ public class Gradient extends HMModel {
         dumpRaster(gradient.outSlope, outSlope);
     }
 
+
+    public static void main(String[] args) {
+        Gradient aspect = new Gradient();
+        try {
+            aspect.inElev = "/home/hydrologis/.klab/intermediate_data_dump_folder/20180101_010000/Aspect-model__elevation-obs.tiff";
+            // aspect.doRadiants = false;
+            // aspect.doRound = true;
+            aspect.outSlope = "/home/hydrologis/.klab/intermediate_data_dump_folder/20180101_010000/gradient.tiff";
+            aspect.process();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

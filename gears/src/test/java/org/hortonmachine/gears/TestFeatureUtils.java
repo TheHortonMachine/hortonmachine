@@ -50,7 +50,7 @@ public class TestFeatureUtils extends HMTestCase {
     public void testGridCellGeoms() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         GridCoverage2D inElev = CoverageUtilities.buildCoverage("elevation", mapData, envelopeParams, crs, true); //$NON-NLS-1$
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         double east = regionMap.getEast();

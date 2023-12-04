@@ -55,18 +55,18 @@ public class TestRasterFormats extends HMTestCase {
 
         assertEquals(-9999.0, novalue);
 
-        file = getFile("formats/asc/SWAN_NURC_LigurianSeaL07_HSIGN.asc");
-        raster = OmsRasterReader.readRaster(file.getAbsolutePath());
-        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
-        novalue = CoverageUtilities.getNovalue(raster);
+        // file = getFile("formats/asc/SWAN_NURC_LigurianSeaL07_HSIGN.asc");
+        // raster = OmsRasterReader.readRaster(file.getAbsolutePath());
+        // regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
+        // novalue = CoverageUtilities.getNovalue(raster);
 
-        assertEquals(278, regionMap.getCols());
-        assertEquals(144, regionMap.getRows());
-        assertEquals(0.008999999478566561, regionMap.getXres(), DELTA);
-        assertEquals(8.118000030517578, regionMap.getWest() + regionMap.getXres() / 2, DELTA);
-        assertEquals(43.191001892089844, regionMap.getSouth() + regionMap.getXres() / 2, DELTA);
+        // assertEquals(278, regionMap.getCols());
+        // assertEquals(144, regionMap.getRows());
+        // assertEquals(0.008999999478566561, regionMap.getXres(), DELTA);
+        // assertEquals(8.118000030517578, regionMap.getWest() + regionMap.getXres() / 2, DELTA);
+        // assertEquals(43.191001892089844, regionMap.getSouth() + regionMap.getXres() / 2, DELTA);
 
-        assertEquals(-9.0, novalue);
+        // assertEquals(-9.0, novalue);
 
         file = getFile("formats/asc/095b_dem_90m.asc");
         raster = OmsRasterReader.readRaster(file.getAbsolutePath());

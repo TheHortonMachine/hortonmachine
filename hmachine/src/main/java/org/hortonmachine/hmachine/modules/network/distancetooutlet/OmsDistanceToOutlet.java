@@ -37,6 +37,14 @@ import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -47,14 +55,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSDISTANCETOOUTLET_DESCRIPTION)
 @Author(name = OMSDISTANCETOOUTLET_AUTHORNAMES, contact = OMSDISTANCETOOUTLET_AUTHORCONTACTS)
@@ -97,9 +97,8 @@ public class OmsDistanceToOutlet extends HMModel {
         }
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int cols = regionMap.get(CoverageUtilities.COLS).intValue();
-        int rows = regionMap.get(CoverageUtilities.ROWS).intValue();
-
+        int cols = regionMap.cols;
+        int rows = regionMap.rows;
         RenderedImage flowRI = inFlow.getRenderedImage();
         WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
         WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);

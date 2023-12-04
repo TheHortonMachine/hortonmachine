@@ -25,7 +25,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.media.jai.iterator.WritableRandomIter;
-
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -70,14 +69,14 @@ public class HMTestMaps {
             return;
         }
         envelopeParams = new RegionMap();
-        envelopeParams.put(CoverageUtilities.NORTH, 5140020.0);
-        envelopeParams.put(CoverageUtilities.SOUTH, 5139780.0);
-        envelopeParams.put(CoverageUtilities.WEST, 1640650.0);
-        envelopeParams.put(CoverageUtilities.EAST, 1640950.0);
-        envelopeParams.put(CoverageUtilities.XRES, 30.0);
-        envelopeParams.put(CoverageUtilities.YRES, 30.0);
-        envelopeParams.put(CoverageUtilities.ROWS, 8.0);
-        envelopeParams.put(CoverageUtilities.COLS, 10.0);
+        envelopeParams.north = 5140020.0;
+        envelopeParams.south = 5139780.0;
+        envelopeParams.west = 1640650.0;
+        envelopeParams.east = 1640950.0;
+        envelopeParams.xres = 30.0;
+        envelopeParams.yres = 30.0;
+        envelopeParams.rows = 8;
+        envelopeParams.cols = 10;
 
         try {
             crs = CrsUtilities.getCrsFromEpsg("EPSG:32632", null);

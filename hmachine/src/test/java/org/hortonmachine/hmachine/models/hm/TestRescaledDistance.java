@@ -17,10 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.io.IOException;
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -35,7 +33,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestRescaledDistance extends HMTestCase {
 
     public void testRescaledDistance() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;
@@ -56,7 +54,7 @@ public class TestRescaledDistance extends HMTestCase {
     }
 
     public void testRescaledDistance3D() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         double[][] flowData = HMTestMaps.flowData;

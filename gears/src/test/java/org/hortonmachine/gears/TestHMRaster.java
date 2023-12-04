@@ -1,15 +1,14 @@
 package org.hortonmachine.gears;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.h2.command.dml.Merge;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -26,7 +25,7 @@ public class TestHMRaster extends HMTestCase {
     protected void setUp() throws Exception {
         double[][] mapData = HMTestMaps.mapData;
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         inElev = CoverageUtilities.buildCoverageWithNovalue("elevation", mapData, envelopeParams, crs, true, NaN);
 
     }
@@ -112,7 +111,7 @@ public class TestHMRaster extends HMTestCase {
                 {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         GridCoverage2D initialGC = CoverageUtilities.buildCoverageWithNovalue("init", initial, envelopeParams, crs, true, NaN);
         GridCoverage2D m1GC = CoverageUtilities.buildCoverageWithNovalue("m1", map1, envelopeParams, crs, true, NaN);
         GridCoverage2D m2GC = CoverageUtilities.buildCoverageWithNovalue("m2", map2, envelopeParams, crs, true, NaN);

@@ -1,6 +1,5 @@
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -8,7 +7,7 @@ import org.hortonmachine.gears.io.eicalculator.EIAltimetry;
 import org.hortonmachine.gears.io.eicalculator.EIAreas;
 import org.hortonmachine.gears.io.eicalculator.EIEnergy;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.PrintStreamProgressMonitor;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.energyindexcalculator.OmsEnergyIndexCalculator;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -28,7 +27,7 @@ public class TestEnergyIndexCalculator extends HMTestCase {
      * @throws Exception
      */
     public void testEnergyIndexCalculator() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 
         // PrintStreamProgressMonitor pm = new PrintStreamProgressMonitor(System.out, System.out);

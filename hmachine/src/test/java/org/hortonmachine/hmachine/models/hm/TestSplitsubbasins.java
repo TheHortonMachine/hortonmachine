@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
-import java.util.HashMap;
-
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.demmanipulation.splitsubbasin.OmsSplitSubbasins;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -35,7 +34,7 @@ public class TestSplitsubbasins extends HMTestCase {
     @SuppressWarnings("nls")
     public void testSplitsubbasins() throws Exception {
 
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] drainData = HMTestMaps.drainData1;
         GridCoverage2D drainCoverage = CoverageUtilities.buildCoverage("drain", drainData, envelopeParams, crs, true);

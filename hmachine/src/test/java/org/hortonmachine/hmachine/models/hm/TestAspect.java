@@ -18,7 +18,7 @@
 package org.hortonmachine.hmachine.models.hm;
 
 import java.util.HashMap;
-
+import org.hortonmachine.gears.utils.RegionMap;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.aspect.OmsAspect;
@@ -34,7 +34,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestAspect extends HMTestCase {
     public void testAspectDegrees() throws Exception {
         double[][] pitData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 
@@ -51,7 +51,7 @@ public class TestAspect extends HMTestCase {
 
     public void testAspectRadiants() throws Exception {
         double[][] pitData = HMTestMaps.pitData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D pitCoverage = CoverageUtilities.buildCoverage("pit", pitData, envelopeParams, crs, true);
 

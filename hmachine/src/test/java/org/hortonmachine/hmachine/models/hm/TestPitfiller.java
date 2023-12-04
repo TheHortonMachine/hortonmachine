@@ -20,13 +20,12 @@ package org.hortonmachine.hmachine.models.hm;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.RenderedImage;
-import java.util.HashMap;
 
 import javax.media.jai.iterator.RectIter;
 import javax.media.jai.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.utils.HMTestCase;
@@ -41,7 +40,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 public class TestPitfiller extends HMTestCase {
     public void testPitfiller() throws Exception {
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
 

@@ -36,7 +36,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 //    public void testRasterReprojector() throws Exception {
 //
 //        double[][] inData = HMTestMaps.mapData;
-//        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+//        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
 //        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
 //        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", inData, envelopeParams, crs, true);
 //

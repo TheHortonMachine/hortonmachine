@@ -39,13 +39,13 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.media.jai.RasterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
@@ -90,8 +90,8 @@ public class OmsSkyview extends HMModel {
     public void process() throws Exception {
         checkNull(inElev);
         // extract some attributes of the map
-        HashMap<String, Double> attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        double dx = attribute.get(CoverageUtilities.XRES);
+        RegionMap attribute = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
+        double dx = attribute.xres;
         CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         // extract the raster.
         RenderedImage pitTmpRI = inElev.getRenderedImage();

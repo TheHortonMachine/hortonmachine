@@ -17,17 +17,7 @@
  */
 package org.hortonmachine.gears.utils;
 
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.COLS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.EAST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.NORTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.ROWS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.SOUTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
-
 import java.awt.geom.AffineTransform;
-import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -45,8 +35,16 @@ import org.opengis.geometry.DirectPosition;
  * @author Andrea Antonello (www.hydrologis.com)
  * @since 0.7.2
  */
-public class RegionMap extends HashMap<String, Double> {
-    private static final long serialVersionUID = 1L;
+public class RegionMap {
+    public double west;
+    public double east;
+    public double south;
+    public double north;
+    public double xres;
+    public double yres;
+    public int cols;
+    public int rows;
+
 
     public static RegionMap fromEnvelopeAndGrid( Envelope envelope, int cols, int rows ) {
         return fromBoundsAndGrid(envelope.getMinX(), envelope.getMaxX(), envelope.getMinY(), envelope.getMaxY(), cols, rows);
@@ -59,14 +57,14 @@ public class RegionMap extends HashMap<String, Double> {
         double yRes = height / rows;
 
         RegionMap region = new RegionMap();
-        region.put(NORTH, north);
-        region.put(SOUTH, south);
-        region.put(WEST, west);
-        region.put(EAST, east);
-        region.put(XRES, xRes);
-        region.put(YRES, yRes);
-        region.put(ROWS, (double) rows);
-        region.put(COLS, (double) cols);
+        region.north = north;
+        region.south = south;
+        region.west = west;
+        region.east = east;
+        region.xres = xRes;
+        region.yres = yRes;
+        region.rows = rows;
+        region.cols = cols;
         return region;
     }
 
@@ -85,14 +83,14 @@ public class RegionMap extends HashMap<String, Double> {
             rows = 1;
 
         RegionMap region = new RegionMap();
-        region.put(NORTH, north);
-        region.put(SOUTH, south);
-        region.put(WEST, west);
-        region.put(EAST, east);
-        region.put(XRES, xRes);
-        region.put(YRES, yRes);
-        region.put(ROWS, (double) rows);
-        region.put(COLS, (double) cols);
+        region.north = north;
+        region.south = south;
+        region.west = west;
+        region.east = east;
+        region.xres = xRes;
+        region.yres = yRes;
+        region.rows = rows;
+        region.cols = cols;
         return region;
     }
 
@@ -104,14 +102,14 @@ public class RegionMap extends HashMap<String, Double> {
      */
     public static RegionMap fromRegionMap( RegionMap other ) {
         RegionMap region = new RegionMap();
-        region.put(NORTH, other.getNorth());
-        region.put(SOUTH, other.getSouth());
-        region.put(WEST, other.getWest());
-        region.put(EAST, other.getEast());
-        region.put(XRES, other.getXres());
-        region.put(YRES, other.getYres());
-        region.put(ROWS, (double) other.getRows());
-        region.put(COLS, (double) other.getCols());
+        region.north = other.getNorth();
+        region.south = other.getSouth();
+        region.west = other.getWest();
+        region.east = other.getEast();
+        region.xres = other.getXres();
+        region.yres = other.getYres();
+        region.rows = other.getRows();
+        region.cols = other.getCols();
         return region;
     }
 
@@ -138,94 +136,58 @@ public class RegionMap extends HashMap<String, Double> {
         double xRes = XAffineTransform.getScaleX0(gridToCRS);
         double yRes = XAffineTransform.getScaleY0(gridToCRS);
 
-        envelopeParams.put(NORTH, eastNorth[1]);
-        envelopeParams.put(SOUTH, westSouth[1]);
-        envelopeParams.put(WEST, westSouth[0]);
-        envelopeParams.put(EAST, eastNorth[0]);
-        envelopeParams.put(XRES, xRes);
-        envelopeParams.put(YRES, yRes);
-        envelopeParams.put(ROWS, (double) height);
-        envelopeParams.put(COLS, (double) width);
+        envelopeParams.north = eastNorth[1];
+        envelopeParams.south = westSouth[1];
+        envelopeParams.west = westSouth[0];
+        envelopeParams.east = eastNorth[0];
+        envelopeParams.xres = xRes;
+        envelopeParams.yres = yRes;
+        envelopeParams.rows = height;
+        envelopeParams.cols = width;
 
         return envelopeParams;
     }
 
     /**
      * Getter for the region cols.
-     * 
-     * @return the region cols or -1.
      */
     public int getCols() {
-        Double cols = get(COLS);
-        if (cols != null) {
-            return cols.intValue();
-        }
-        return -1;
+        return cols;
     }
 
     /**
      * Getter for the region rows.
-     * 
-     * @return the region rows or -1.
      */
     public int getRows() {
-        Double rows = get(ROWS);
-        if (rows != null) {
-            return rows.intValue();
-        }
-        return -1;
+        return rows;
     }
 
     /**
      * Getter for the region's north bound.
-     * 
-     * @return the region north bound or {@link HMConstants#doubleNovalue}
      */
     public double getNorth() {
-        Double n = get(NORTH);
-        if (n != null) {
-            return n;
-        }
-        return HMConstants.doubleNovalue;
+        return north;
     }
 
     /**
      * Getter for the region's south bound.
-     * 
-     * @return the region south bound or {@link HMConstants#doubleNovalue}
      */
     public double getSouth() {
-        Double s = get(SOUTH);
-        if (s != null) {
-            return s;
-        }
-        return HMConstants.doubleNovalue;
+        return south;
     }
 
     /**
      * Getter for the region's east bound.
-     * 
-     * @return the region east bound or {@link HMConstants#doubleNovalue}
      */
     public double getEast() {
-        Double e = get(EAST);
-        if (e != null) {
-            return e;
-        }
-        return HMConstants.doubleNovalue;
+        return east;
     }
 
     /**
      * Getter for the region's west bound.
-     * 
-     * @return the region west bound or {@link HMConstants#doubleNovalue}
      */
     public double getWest() {
-        Double w = get(WEST);
-        if (w != null) {
-            return w;
-        }
-        return HMConstants.doubleNovalue;
+        return west;
     }
 
     /**
@@ -234,11 +196,7 @@ public class RegionMap extends HashMap<String, Double> {
      * @return the region's X resolution or {@link HMConstants#doubleNovalue}
      */
     public double getXres() {
-        Double xres = get(XRES);
-        if (xres != null) {
-            return xres;
-        }
-        return HMConstants.doubleNovalue;
+        return xres;
     }
 
     /**
@@ -247,11 +205,7 @@ public class RegionMap extends HashMap<String, Double> {
      * @return the region's Y resolution or {@link HMConstants#doubleNovalue}
      */
     public double getYres() {
-        Double yres = get(YRES);
-        if (yres != null) {
-            return yres;
-        }
-        return HMConstants.doubleNovalue;
+        return yres;
     }
 
     /**

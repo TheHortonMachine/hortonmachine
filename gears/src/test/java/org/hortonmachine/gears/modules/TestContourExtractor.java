@@ -26,6 +26,7 @@ import org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.PrintUtilities;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
@@ -38,7 +39,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
  */
 public class TestContourExtractor extends HMTestCase {
     public void testCountourExtractor() throws Exception {
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         double[][] netData = HMTestMaps.contourExtractorData;
         GridCoverage2D cedCoverage = CoverageUtilities.buildCoverage("ced", netData, envelopeParams, crs, true);

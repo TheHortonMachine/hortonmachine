@@ -43,12 +43,6 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_ST
 import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
 import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
 import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.EAST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.NORTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.SOUTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
@@ -59,6 +53,24 @@ import javax.media.jai.operator.RotateDescriptor;
 import javax.media.jai.operator.ScaleDescriptor;
 import javax.media.jai.operator.TranslateDescriptor;
 import javax.media.jai.operator.TransposeDescriptor;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -73,25 +85,6 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
 
 @Description(OMSRASTERTRANSFORMER_DESCRIPTION)
 @Documentation(OMSRASTERTRANSFORMER_DOCUMENTATION)
@@ -324,14 +317,14 @@ public class OmsRasterTransformer extends HMModel {
 
         if (finalImg != null) {
             RegionMap targetRegion = new RegionMap();
-            targetRegion.put(NORTH, targetEnvelope.getMaxY());
-            targetRegion.put(SOUTH, targetEnvelope.getMinY());
-            targetRegion.put(WEST, targetEnvelope.getMinX());
-            targetRegion.put(EAST, targetEnvelope.getMaxX());
-            targetRegion.put(XRES, sourceRegion.getXres());
-            targetRegion.put(YRES, sourceRegion.getYres());
-            // targetRegion.put(ROWS, (double) height);
-            // targetRegion.put(COLS, (double) width);
+            targetRegion.north = targetEnvelope.getMaxY();
+            targetRegion.south = targetEnvelope.getMinY();
+            targetRegion.west = targetEnvelope.getMinX();
+            targetRegion.east = targetEnvelope.getMaxX();
+            targetRegion.xres = sourceRegion.getXres();
+            targetRegion.yres = sourceRegion.getYres();
+            // targetRegion.rows = (double) height);
+            // targetRegion.cols = (double) width);
 
             CoordinateReferenceSystem crs = inRaster.getCoordinateReferenceSystem();
             outRaster = CoverageUtilities.buildCoverage("out", finalImg, targetRegion, crs);

@@ -196,9 +196,9 @@ public class OmsVectorizer extends HMModel {
         Collection<Polygon> polygonsList = doVectorize(inRaster.getRenderedImage(), args);
         pm.done();
 
-        HashMap<String, Double> regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        double xRes = regionParams.get(CoverageUtilities.XRES);
-        double yRes = regionParams.get(CoverageUtilities.YRES);
+        RegionMap regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        double xRes = regionParams.xres;
+        double yRes = regionParams.yres;
 
         final AffineTransform mt2D = (AffineTransform) inRaster.getGridGeometry().getGridToCRS2D(PixelOrientation.CENTER);
         final AffineTransformation awt2WorldTransformation = new AffineTransformation(mt2D.getScaleX(), mt2D.getShearX(),

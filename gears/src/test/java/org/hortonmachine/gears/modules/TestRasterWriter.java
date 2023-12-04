@@ -19,13 +19,13 @@ package org.hortonmachine.gears.modules;
 
 import java.io.File;
 import java.net.URL;
-import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 /**
@@ -47,7 +47,7 @@ public class TestRasterWriter extends HMTestCase {
         grassPath = new File(testUrl.toURI()).getAbsolutePath() + File.separator + "testout";
 
         double[][] elevationData = HMTestMaps.mapData;
-        HashMap<String, Double> envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         coverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
     }
