@@ -2,12 +2,14 @@ package org.hortonmachine.gears;
 
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -333,6 +335,28 @@ public class TestPolygonHelper extends HMTestCase {
         assertTrue(new WKTReader().read(expected).equalsExact(intersection, 0.000001));
     }
 
+    public void testReportedFailures() throws Exception {
+        String[] names = {
+            "20231229_182746_108_intersection.csv",
+        };
+        Object[] expected = {
+            null,
+        };
+        for (int i = 0; i < expected.length; i++) {
+            String name = names[i];
+            File file = getFile(name);
+            List<String> lines = FileUtilities.readFileToLinesList(file);
+            String mainGeomWkt = lines.get(1).split(";")[0];
+            String intersectingGeomWkt = lines.get(2).split(";")[0];
+            Geometry mainGeom = new WKTReader().read(mainGeomWkt);
+            Geometry intersectingGeom = new WKTReader().read(intersectingGeomWkt);
+
+            Geometry intersection = GeometryHelper.multiPolygonIntersection(mainGeom, intersectingGeom, null);
+            assertEquals(intersection, expected[i]);
+        }
+    }
+
+
     private Geometry getMultiPoints(Geometry origGeom) {
         Coordinate[] coords = ((Polygon) origGeom).getExteriorRing().getCoordinates();
         Geometry multiPoints = origGeom.getFactory().createMultiPointFromCoords(coords);
@@ -346,4 +370,5 @@ public class TestPolygonHelper extends HMTestCase {
         Geometry line = origGeom.getFactory().createLineString(coords2);
         return line;
     }
+    
 }
