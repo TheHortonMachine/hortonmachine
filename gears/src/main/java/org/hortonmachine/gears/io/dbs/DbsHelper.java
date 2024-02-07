@@ -74,7 +74,11 @@ public class DbsHelper {
             tableName = afterFrom.substring(0, nextAp);
         } else {
             int nextSpace = afterFrom.indexOf(' ');
-            tableName = afterFrom.substring(0, nextSpace);
+            if (nextSpace == -1) {
+                tableName = afterFrom;
+            }else {
+                tableName = afterFrom.substring(0, nextSpace);
+            }
         }
 
         if (tableName == null) {
