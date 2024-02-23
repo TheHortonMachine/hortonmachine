@@ -106,6 +106,12 @@ public class OmsNetworkAttributesBuilder extends HMModel {
     @In
     public boolean doHack = false;
 
+    @In
+    public boolean handleDupPfaf = true;
+
+    @In
+    public boolean breakNetworks = true;
+
     @Description(OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outNet = null;
@@ -323,13 +329,14 @@ public class OmsNetworkAttributesBuilder extends HMModel {
                         }
                     }
                 }
-                // TODO add flag to check
-                if (pfafList.contains(pfaf)) {
-                    pfaf = base + index;
-                    startChannel.setPfafstetter(base + index);
-                    index += 2;
+                if (handleDupPfaf){
+                    if (pfafList.contains(pfaf)) {
+                        pfaf = base + index;
+                        startChannel.setPfafstetter(base + index);
+                        index += 2;
+                    }
+                    pfafList.add(pfaf);
                 }
-                pfafList.add(pfaf);
             }
         }
     }
@@ -478,9 +485,10 @@ public class OmsNetworkAttributesBuilder extends HMModel {
                     runningNode = newRunningNode;
                     continue;
                 } else {
-                    // TODO add flag to check
-                    handleOneOrMoreNodes(lineCoordinatesList, hackIndex, checkedNodes, runningNode, coord);
-                    break;
+                    if (breakNetworks){
+                        handleOneOrMoreNodes(lineCoordinatesList, hackIndex, checkedNodes, runningNode, coord);
+                        break;
+                    }                    
                 }
             } else if (checkedNodes.size() == 0) {
                 // it was an exit
