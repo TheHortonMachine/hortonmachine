@@ -89,6 +89,10 @@ public class OmsBasinShape extends HMModel {
     @In
     public GridCoverage2D inBasins = null;
 
+    @Description("Flag to remove extra rectagle from vectorized basins.")
+    @In
+    public boolean doRemoveExtraRectangle = false;
+
     @Description(OMSBASINSHAPE_outBasins_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outBasins = null;
@@ -264,6 +268,7 @@ public class OmsBasinShape extends HMModel {
                     vectorizer.pm = pm;
                     vectorizer.doReset = true;
                     vectorizer.pValue = (double) num;
+                    vectorizer.doRemoveExtraRectangle = doRemoveExtraRectangle;
                     vectorizer.process();
                 } catch (Exception e) {
                     pm.errorMessage(e.getLocalizedMessage());

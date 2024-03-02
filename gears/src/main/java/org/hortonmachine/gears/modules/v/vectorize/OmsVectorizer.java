@@ -41,6 +41,8 @@ import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,18 +54,6 @@ import javax.media.jai.RenderedOp;
 import javax.media.jai.iterator.RandomIter;
 import javax.media.jai.iterator.RandomIterFactory;
 import javax.media.jai.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -81,16 +71,29 @@ import org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.LinearRing;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.util.AffineTransformation;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.metadata.spatial.PixelOrientation;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.util.AffineTransformation;
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OMSVECTORIZER_DESCRIPTION)
 @Documentation(OMSVECTORIZER_DOCUMENTATION)
@@ -144,6 +147,10 @@ public class OmsVectorizer extends HMModel {
 
     private double novalue;
 
+    @Description("Flag to remove extra rectangle")
+    @In
+    public boolean doRemoveExtraRectangle = false;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outVector == null, doReset)) {
@@ -193,7 +200,7 @@ public class OmsVectorizer extends HMModel {
         pm.beginTask("Vectorizing map...", IHMProgressMonitor.UNKNOWN);
         Map<String, Object> args = new HashMap<String, Object>();
         // args.put("outsideValues", Collections.singleton(0));
-        Collection<Polygon> polygonsList = doVectorize(inRaster.getRenderedImage(), args);
+        Collection<Polygon> polygonsList = doVectorize(inRaster.getRenderedImage(), args, doRemoveExtraRectangle);
         pm.done();
 
         RegionMap regionParams = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
@@ -333,7 +340,7 @@ public class OmsVectorizer extends HMModel {
      * @return the generated vectors as JTS Polygons
      */
     @SuppressWarnings("unchecked")
-    private Collection<Polygon> doVectorize( RenderedImage src, Map<String, Object> args ) {
+    private Collection<Polygon> doVectorize( RenderedImage src, Map<String, Object> args, Boolean doRemoveExtraRectangle ) {
         ParameterBlockJAI pb = new ParameterBlockJAI("Vectorize");
         pb.setSource("source0", src);
 
@@ -347,8 +354,60 @@ public class OmsVectorizer extends HMModel {
         RenderedOp dest = JAI.create("Vectorize", pb);
 
         // Get the vectors
-        Object property = dest.getProperty(VectorizeDescriptor.VECTOR_PROPERTY_NAME);
-        return (Collection<Polygon>) property;
+        Collection<Polygon> property = (Collection<Polygon>) dest.getProperty(VectorizeDescriptor.VECTOR_PROPERTY_NAME);
+        
+        if (doRemoveExtraRectangle) {
+            property = removeExtraRectangle(src, property);
+        }
+
+        return property;
+    }
+
+    private Collection<Polygon> removeExtraRectangle(RenderedImage src, Collection<Polygon> property) {
+        // Assuming you have a GeometryFactory instance
+        GeometryFactory geometryFactory = new GeometryFactory();
+
+        Collection<Polygon> updatedPolygons = new ArrayList<>();
+        // Add the rest of the polygons to the updated collection
+        for (Polygon p: property) {    
+            // Get the shell of the first polygon
+            LinearRing shell = (LinearRing) p.getExteriorRing();
+    
+            // Get the coordinates of the shell
+            Coordinate[] coordinates = shell.getCoordinates();
+             // Check if there are more than 4 coordinates
+            if (coordinates.length > 5) {
+                
+                Coordinate firstCoordinate = new Coordinate(0,0);
+                Coordinate secondCoordinate = new Coordinate(0,src.getWidth());
+                Coordinate thirdCoordinate = new Coordinate(src.getHeight(),src.getWidth());
+                Coordinate fourthCoordinate = new Coordinate(src.getHeight(),0);
+
+                Coordinate[] coordinatesToCheck = Arrays.copyOfRange(coordinates, 0, 6);
+                ArrayList<Coordinate> coordinatesToCheck2 = new ArrayList<Coordinate>(){{
+                    add(firstCoordinate);
+                    add(secondCoordinate);
+                    add(thirdCoordinate);
+                    add(fourthCoordinate);
+                }};
+
+                if (Arrays.asList(coordinatesToCheck).containsAll(coordinatesToCheck2)) {
+                    // Create a new shell without the first four points
+                    LinearRing newShell = geometryFactory.createLinearRing(Arrays.copyOfRange(coordinates, 5, coordinates.length));
+
+                    // Create a new polygon with the new shell
+                    Polygon newPolygon = geometryFactory.createPolygon(newShell);
+
+                    // Add the new polygon to the updated collection
+                    updatedPolygons.add(newPolygon);
+                } else{
+                    updatedPolygons.add(p);
+                }
+            } else {
+                updatedPolygons.add(p);
+            }
+        }
+        return updatedPolygons;
     }
 
 }
