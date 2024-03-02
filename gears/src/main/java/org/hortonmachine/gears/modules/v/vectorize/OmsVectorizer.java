@@ -370,28 +370,25 @@ public class OmsVectorizer extends HMModel {
         Collection<Polygon> updatedPolygons = new ArrayList<>();
         // Add the rest of the polygons to the updated collection
         for (Polygon p: property) {    
-            // Get the shell of the first polygon
             LinearRing shell = (LinearRing) p.getExteriorRing();
     
             // Get the coordinates of the shell
             Coordinate[] coordinates = shell.getCoordinates();
              // Check if there are more than 4 coordinates
-            if (coordinates.length > 5) {
+            if (coordinates.length > 4) {
                 
-                Coordinate firstCoordinate = new Coordinate(0,0);
-                Coordinate secondCoordinate = new Coordinate(0,src.getWidth());
-                Coordinate thirdCoordinate = new Coordinate(src.getHeight(),src.getWidth());
-                Coordinate fourthCoordinate = new Coordinate(src.getHeight(),0);
-
-                Coordinate[] coordinatesToCheck = Arrays.copyOfRange(coordinates, 0, 6);
-                ArrayList<Coordinate> coordinatesToCheck2 = new ArrayList<Coordinate>(){{
-                    add(firstCoordinate);
-                    add(secondCoordinate);
-                    add(thirdCoordinate);
-                    add(fourthCoordinate);
+                Coordinate[] coordinatesToCheck = Arrays.copyOfRange(coordinates, 0, 5);
+                ArrayList<Coordinate> rectToCheck = new ArrayList<Coordinate>(){{
+                    add(new Coordinate(0,0));
+                    add(new Coordinate(src.getWidth(), 0));
+                    add(new Coordinate(src.getWidth(), src.getHeight()));
+                    add(new Coordinate(0, src.getHeight()));
                 }};
 
-                if (Arrays.asList(coordinatesToCheck).containsAll(coordinatesToCheck2)) {
+                pm.message("Coordinates to check: " + Arrays.toString(coordinatesToCheck));
+                pm.message("Rect to check: " + rectToCheck);
+
+                if (Arrays.asList(coordinatesToCheck).containsAll(rectToCheck)) {
                     // Create a new shell without the first four points
                     LinearRing newShell = geometryFactory.createLinearRing(Arrays.copyOfRange(coordinates, 5, coordinates.length));
 

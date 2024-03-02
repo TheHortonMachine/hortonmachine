@@ -85,6 +85,14 @@ public class NetworkAttributesBuilder extends HMModel {
     @In
     public String outHack = null;
 
+    @Description("Flag to handle duplicated pfaf.")
+    @In
+    public boolean handleDupPfaf = false;
+
+    @Description("Flag to process the network.")
+    @In
+    public boolean breakNetworks = false;
+
     @Execute
     public void process() throws Exception {
         OmsNetworkAttributesBuilder networkattributesbuilder = new OmsNetworkAttributesBuilder();
@@ -95,6 +103,8 @@ public class NetworkAttributesBuilder extends HMModel {
         networkattributesbuilder.pm = pm;
         networkattributesbuilder.doProcess = doProcess;
         networkattributesbuilder.doReset = doReset;
+        networkattributesbuilder.handleDupPfaf = handleDupPfaf;
+        networkattributesbuilder.breakNetworks = breakNetworks;
         networkattributesbuilder.process();
         dumpVector(networkattributesbuilder.outNet, outNet);
         dumpRaster(networkattributesbuilder.outHack, outHack);

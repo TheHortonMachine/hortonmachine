@@ -68,12 +68,18 @@ public class BasinShape extends HMModel {
     @In
     public String outBasins = null;
 
+    @Description("Flag to remove extra rectagle from vectorized basins.")
+    @In
+    public boolean doRemoveExtraRectangle = false;
+
     @Execute
     public void process() throws Exception {
+
         OmsBasinShape basinShape = new OmsBasinShape();
         basinShape.inElev = getRaster(inElev);
         basinShape.inBasins = getRaster(inBasins);
         basinShape.pm = pm;
+        basinShape.doRemoveExtraRectangle = doRemoveExtraRectangle;
         basinShape.process();
         dumpVector(basinShape.outBasins, outBasins);
     }
