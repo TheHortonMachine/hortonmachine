@@ -107,10 +107,10 @@ public class OmsNetworkAttributesBuilder extends HMModel {
     public boolean doHack = false;
 
     @In
-    public boolean handleDupPfaf = true;
+    public boolean handleDupPfaf = false;
 
     @In
-    public boolean breakNetworks = true;
+    public boolean breakNetworks = false;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION)
     @Out
