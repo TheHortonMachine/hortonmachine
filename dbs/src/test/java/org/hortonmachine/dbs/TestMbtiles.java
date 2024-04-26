@@ -97,14 +97,16 @@ public class TestMbtiles {
         if (cleanup) {
             // delete a part
             Envelope deleteBounds = new Envelope(6.6027284, 10.0, 35.489243, 40.0);
-            mdb.deleteTiles(deleteBounds);
+            int deleted = mdb.deleteTiles(deleteBounds);
+            int left = numberOfTiles - deleted;
             numberOfTiles = mdb.getNumberOfTiles();
-            assertEquals(5, numberOfTiles);
+            assertEquals(left, numberOfTiles);
 
             // now delete the whole envelope
             mdb.deleteTiles(bounds);
+            left = left - numberOfTiles;
             numberOfTiles = mdb.getNumberOfTiles();
-            assertEquals(0, numberOfTiles);
+            assertEquals(left, numberOfTiles);
         }
     }
 

@@ -238,12 +238,14 @@ public class MBTilesDb {
      * Delete the tiles in the given envelope.
      * 
      * @param envelope the envelope.
+     * @return the number of deleted tiles.
      * @throws Exception
      */
-    public synchronized void deleteTiles( Envelope envelope ) throws Exception {
+    public synchronized int deleteTiles( Envelope envelope ) throws Exception {
         // convert the envelope to tile indexes
         int minZoom = getMinZoom();
         int maxZoom = getMaxZoom();
+        int deletedTiles = 0;
         for( int z = minZoom; z <= maxZoom; z++ ) {
             int[] fromTileXY = MercatorUtils.getTileNumber(envelope.getMinY(), envelope.getMinX(), z);
             int[] toTileXY = MercatorUtils.getTileNumber(envelope.getMaxY(), envelope.getMaxX(), z);
@@ -261,9 +263,10 @@ public class MBTilesDb {
             String sql = "delete from " + TABLE_TILES + " where " + COL_TILES_ZOOM_LEVEL + "=" + z + " and " + COL_TILES_TILE_COLUMN
                     + ">=" + minTx + " and " + COL_TILES_TILE_COLUMN + "<=" + maxTx + " and " + COL_TILES_TILE_ROW + ">=" + minTy
                     + " and " + COL_TILES_TILE_ROW + "<=" + maxTy;
-            database.executeInsertUpdateDeleteSql(sql);
+            int tmpDel = database.executeInsertUpdateDeleteSql(sql);
+            deletedTiles += tmpDel;
         }
-
+        return deletedTiles;
     }
 
     /**
