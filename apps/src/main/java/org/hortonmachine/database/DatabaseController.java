@@ -1894,7 +1894,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             return;
                         }
                     } else {
-                        currentConnectedSqlDatabase = dbType.getSpatialDb();
+                        if (dbType.isSpatial()) {
+                            currentConnectedSqlDatabase = dbType.getSpatialDb();
+                        } else {
+                            currentConnectedSqlDatabase = dbType.getDb();
+                        }
                     }
                     currentConnectedSqlDatabase.setCredentials(user, pwd);
                     try {

@@ -44,10 +44,10 @@ public class TestMbtiles {
 
     @Test
     public void testReading() throws Exception {
-        testTestDb(testDb, false);
+        testTestDb(testDb);
     }
 
-    private void testTestDb( ADb db, boolean cleanup) throws Exception {
+    private void testTestDb( ADb db) throws Exception {
         MBTilesDb mdb = new MBTilesDb(db);
         // 6.6027284,35.489243,18.517426,47.085217
         Envelope bounds = mdb.getBounds();
@@ -94,20 +94,27 @@ public class TestMbtiles {
         int numberOfTiles = mdb.getNumberOfTiles();
         assertEquals(11, numberOfTiles);
 
-        if (cleanup) {
-            // delete a part
-            Envelope deleteBounds = new Envelope(6.6027284, 10.0, 35.489243, 40.0);
-            int deleted = mdb.deleteTiles(deleteBounds);
-            int left = numberOfTiles - deleted;
-            numberOfTiles = mdb.getNumberOfTiles();
-            assertEquals(left, numberOfTiles);
+ 
+    }
 
-            // now delete the whole envelope
-            mdb.deleteTiles(bounds);
-            left = left - numberOfTiles;
-            numberOfTiles = mdb.getNumberOfTiles();
-            assertEquals(left, numberOfTiles);
-        }
+    @Test
+    public void testTilesDeletion() throws Exception{
+        URL dataUrl = TestMbtiles.class.getClassLoader().getResource("test.mbtiles");
+        File file = new File(dataUrl.toURI());
+        ADb db = EDb.MBTILES.getDb();
+        db.open(file.getAbsolutePath());
+        MBTilesDb mdb = new MBTilesDb(db);
+        int numberOfTiles = 35;
+        assertEquals(numberOfTiles, mdb.getNumberOfTiles());
+
+        // delete a part
+        Envelope deleteBounds = new Envelope(10.839385986328125 , 11.854248046875, 44.3120574266662 , 44.735027899515465);
+        int deleted = mdb.deleteTiles(deleteBounds);
+        assertEquals(numberOfTiles, deleted);
+        int left = numberOfTiles - deleted;
+        numberOfTiles = mdb.getNumberOfTiles();
+        assertEquals(left, numberOfTiles);
+
     }
 
     @Test
@@ -145,7 +152,7 @@ public class TestMbtiles {
 
         try (ADb toDb = EDb.H2.getDb()) {
             toDb.open(dbPath);
-            testTestDb(toDb, true);
+            testTestDb(toDb);
         }
         new File(dbPath + "." + DB_TYPE.getExtension()).delete();
 

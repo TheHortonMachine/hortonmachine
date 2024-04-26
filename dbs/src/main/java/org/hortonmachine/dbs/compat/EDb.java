@@ -39,6 +39,8 @@ import org.hortonmachine.dbs.utils.SqlName;
 public enum EDb {
     SQLITE(0, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.hm.SqliteDb", false,
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true, false), //
+    MBTILES(0, ".mbtiles", "mbtiles", "org.hortonmachine.dbs.spatialite.hm.SqliteDb", false,
+            "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true, false), //
     SPATIALITE(1, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb", true,
             "org.hortonmachine.dbs.spatialite.SpatialiteSqlTemplates", "jdbc:sqlite:", false, false, false, true, false), //
     H2(2, "", "mv.db", "org.hortonmachine.dbs.h2gis.H2Db", false, "org.hortonmachine.dbs.h2gis.H2GisSqlTemplates", "jdbc:h2:",
@@ -105,7 +107,7 @@ public enum EDb {
     }
 
     public static EDb[] getSpatialTypesDesktop() {
-        return new EDb[]{H2GIS, GEOPACKAGE, SPATIALITE, POSTGIS, MONGODB};
+        return new EDb[]{SQLITE, MBTILES, H2GIS, GEOPACKAGE, SPATIALITE, POSTGIS, MONGODB};
     }
 
     public static EDb[] getSpatialTypesMobile() {

@@ -249,16 +249,16 @@ public class MBTilesDb {
         for( int z = minZoom; z <= maxZoom; z++ ) {
             int[] fromTileXY = MercatorUtils.getTileNumber(envelope.getMinY(), envelope.getMinX(), z);
             int[] toTileXY = MercatorUtils.getTileNumber(envelope.getMaxY(), envelope.getMaxX(), z);
-            int minTx = fromTileXY[1];
-            int minTy = fromTileXY[2];
-            int maxTx = toTileXY[1];
-            int maxTy = toTileXY[2];
-            int[] tmsTileUR = MercatorUtils.osmTile2TmsTile(maxTx, maxTy, z);
-            int[] tmsTileLL = MercatorUtils.osmTile2TmsTile(minTx, minTy, z);
-            minTx = tmsTileLL[0];
-            minTy = tmsTileLL[1];
-            maxTx = tmsTileUR[0];
-            maxTy = tmsTileUR[1];
+            int minTx = Math.min(fromTileXY[1], toTileXY[1]);
+            int minTy = Math.min(fromTileXY[2], toTileXY[2]);
+            int maxTx = Math.max(fromTileXY[1], toTileXY[1]);
+            int maxTy = Math.max(fromTileXY[2], toTileXY[2]);
+            // int[] tmsTileUR = MercatorUtils.osmTile2TmsTile(maxTx, maxTy, z);
+            // int[] tmsTileLL = MercatorUtils.osmTile2TmsTile(minTx, minTy, z);
+            // minTx = tmsTileLL[0];
+            // minTy = tmsTileLL[1];
+            // maxTx = tmsTileUR[0];
+            // maxTy = tmsTileUR[1];
 
             String sql = "delete from " + TABLE_TILES + " where " + COL_TILES_ZOOM_LEVEL + "=" + z + " and " + COL_TILES_TILE_COLUMN
                     + ">=" + minTx + " and " + COL_TILES_TILE_COLUMN + "<=" + maxTx + " and " + COL_TILES_TILE_ROW + ">=" + minTy
