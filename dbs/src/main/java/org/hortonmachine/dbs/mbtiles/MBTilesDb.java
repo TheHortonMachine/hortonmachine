@@ -192,6 +192,10 @@ public class MBTilesDb {
         database.executeInsertUpdateDeleteSql(query);
     }
 
+    public String getDatabasePath() {
+        return database.getDatabasePath();
+    }
+
     private String toMetadataQuery( String key, String value ) {
         StringBuilder sb = new StringBuilder();
         sb.append("INSERT INTO " + TABLE_METADATA + " ");

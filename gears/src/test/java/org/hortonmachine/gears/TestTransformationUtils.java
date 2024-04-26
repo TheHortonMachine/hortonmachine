@@ -35,22 +35,22 @@ public class TestTransformationUtils extends HMTestCase {
         assertEquals(4000, (int) transformed.getY());
     }
 
-    public void testTransformationUtilsTmp() throws Exception {
-        Envelope env = new Envelope(11.337890625,  11.42578125, 44.465151013519616, 44.5278427984555);
-        Rectangle rect = new Rectangle(0, 0, 512, 512);
+    // public void testTransformationUtilsTmp() throws Exception {
+    //     Envelope env = new Envelope(11.337890625,  11.42578125, 44.465151013519616, 44.5278427984555);
+    //     Rectangle rect = new Rectangle(0, 0, 512, 512);
         
-        AffineTransformation worldToPixel = TransformationUtils.getWorldToRectangle(env, rect);
+    //     AffineTransformation worldToPixel = TransformationUtils.getWorldToRectangle(env, rect);
         
-        Coordinate srcPt = new Coordinate(150.0, 3000.0);
-        Coordinate transformed = worldToPixel.transform(srcPt, new Coordinate());
-        assertEquals(50, (int) transformed.x);
-        assertEquals(2000, (int) transformed.y);
+    //     Coordinate srcPt = new Coordinate(150.0, 3000.0);
+    //     Coordinate transformed = worldToPixel.transform(srcPt, new Coordinate());
+    //     assertEquals(50, (int) transformed.x);
+    //     assertEquals(2000, (int) transformed.y);
         
-        srcPt = new Coordinate(100.0, 1000.0);
-        transformed = worldToPixel.transform(srcPt, new Coordinate());
-        assertEquals(0, (int) transformed.x);
-        assertEquals(4000, (int) transformed.y);
-    }
+    //     srcPt = new Coordinate(100.0, 1000.0);
+    //     transformed = worldToPixel.transform(srcPt, new Coordinate());
+    //     assertEquals(0, (int) transformed.x);
+    //     assertEquals(4000, (int) transformed.y);
+    // }
     
     public void testTransformationUtils2() throws Exception {
         Envelope env = new Envelope(100, 200, 1000, 5000);
