@@ -2,6 +2,7 @@ package org.hortonmachine.dbs;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.net.URL;
@@ -43,11 +44,10 @@ public class TestMbtiles {
 
     @Test
     public void testReading() throws Exception {
-        testTestDb(testDb);
-
+        testTestDb(testDb, false);
     }
 
-    private void testTestDb( ADb db ) throws Exception {
+    private void testTestDb( ADb db, boolean cleanup) throws Exception {
         MBTilesDb mdb = new MBTilesDb(db);
         // 6.6027284,35.489243,18.517426,47.085217
         Envelope bounds = mdb.getBounds();
@@ -91,6 +91,21 @@ public class TestMbtiles {
         tileAsBytes = mdb.getTile(17, 20, 5);
         assertNotNull(tileAsBytes);
 
+        int numberOfTiles = mdb.getNumberOfTiles();
+        assertEquals(11, numberOfTiles);
+
+        if (cleanup) {
+            // delete a part
+            Envelope deleteBounds = new Envelope(6.6027284, 10.0, 35.489243, 40.0);
+            mdb.deleteTiles(deleteBounds);
+            numberOfTiles = mdb.getNumberOfTiles();
+            assertEquals(5, numberOfTiles);
+
+            // now delete the whole envelope
+            mdb.deleteTiles(bounds);
+            numberOfTiles = mdb.getNumberOfTiles();
+            assertEquals(0, numberOfTiles);
+        }
     }
 
     @Test
@@ -128,7 +143,7 @@ public class TestMbtiles {
 
         try (ADb toDb = EDb.H2.getDb()) {
             toDb.open(dbPath);
-            testTestDb(toDb);
+            testTestDb(toDb, true);
         }
         new File(dbPath + "." + DB_TYPE.getExtension()).delete();
 

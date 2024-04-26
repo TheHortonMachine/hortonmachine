@@ -51,6 +51,8 @@ public class MBTilesDb {
     public final static String SELECTQUERY = "SELECT " + COL_TILES_TILE_DATA + " from " + TABLE_TILES + " where "
             + COL_TILES_ZOOM_LEVEL + "=? AND " + COL_TILES_TILE_COLUMN + "=? AND " + COL_TILES_TILE_ROW + "=?";
 
+    public final static String COUNT_TILES_QUERY = "SELECT count(*) from " + TABLE_TILES;
+
     private String CREATE_TILES;
 
     // TABLE METADATA (name TEXT, value TEXT);
@@ -229,6 +231,38 @@ public class MBTilesDb {
     }
 
     /**
+     * Delete the tiles in the given envelope.
+     * 
+     * @param envelope the envelope.
+     * @throws Exception
+     */
+    public synchronized void deleteTiles( Envelope envelope ) throws Exception {
+        // convert the envelope to tile indexes
+        int minZoom = getMinZoom();
+        int maxZoom = getMaxZoom();
+        for( int z = minZoom; z <= maxZoom; z++ ) {
+            int[] fromTileXY = MercatorUtils.getTileNumber(envelope.getMinY(), envelope.getMinX(), z);
+            int[] toTileXY = MercatorUtils.getTileNumber(envelope.getMaxY(), envelope.getMaxX(), z);
+            int minTx = fromTileXY[1];
+            int minTy = fromTileXY[2];
+            int maxTx = toTileXY[1];
+            int maxTy = toTileXY[2];
+            int[] tmsTileUR = MercatorUtils.osmTile2TmsTile(maxTx, maxTy, z);
+            int[] tmsTileLL = MercatorUtils.osmTile2TmsTile(minTx, minTy, z);
+            minTx = tmsTileLL[0];
+            minTy = tmsTileLL[1];
+            maxTx = tmsTileUR[0];
+            maxTy = tmsTileUR[1];
+
+            String sql = "delete from " + TABLE_TILES + " where " + COL_TILES_ZOOM_LEVEL + "=" + z + " and " + COL_TILES_TILE_COLUMN
+                    + ">=" + minTx + " and " + COL_TILES_TILE_COLUMN + "<=" + maxTx + " and " + COL_TILES_TILE_ROW + ">=" + minTy
+                    + " and " + COL_TILES_TILE_ROW + "<=" + maxTy;
+            database.executeInsertUpdateDeleteSql(sql);
+        }
+
+    }
+
+    /**
      * Add a list of tiles in batch mode.
      * 
      * @param tilesList the list of tiles.
@@ -282,6 +316,23 @@ public class MBTilesDb {
                 }
             }
             return null;
+        });
+    }
+
+    /**
+     * Get the number of tiles in the database.
+     * 
+     * @return the number of tiles.
+     * @throws Exception
+     */
+    public int getNumberOfTiles() throws Exception {
+        return database.execOnConnection(connection -> {
+            try (IHMStatement statement = connection.createStatement(); IHMResultSet resultSet = statement.executeQuery(COUNT_TILES_QUERY);) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                }
+            }
+            return -1;
         });
     }
 
