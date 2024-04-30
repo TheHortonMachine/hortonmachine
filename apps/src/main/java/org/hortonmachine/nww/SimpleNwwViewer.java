@@ -55,7 +55,7 @@ public class SimpleNwwViewer {
                 onCloseAction = JFrame.EXIT_ON_CLOSE;
             }
 
-            Component nwwComponent = NwwPanel.createNwwPanel(true);
+            Component nwwComponent = NwwPanel.createNwwPanel(false);
             NwwPanel wwjPanel = null;
 
             LayersPanelController layerPanel = null;

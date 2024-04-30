@@ -81,19 +81,18 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         super(makeLevels(gridCoverageFile, getRenderer(gridCoverageFile), tileSize, colorToMakeTransparent));
         this.layerName = FileUtilities.getNameWithoutExtention(gridCoverageFile);
 
-        // ReferencedEnvelope envelope =
-        // OmsVectorReader.readEnvelope(gridCoverageFile.getAbsolutePath());
-        // ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
-        //
-        // double w = envelopeLL.getMinX();
-        // double s = envelopeLL.getMinY();
-        // double e = envelopeLL.getMaxX();
-        // double n = envelopeLL.getMaxY();
-        //
-        // double centerX = w + (e - w) / 2.0;
-        // double centerY = s + (n - s) / 2.0;
-        //
-        // centerCoordinate = new Coordinate(centerX, centerY);
+        ReferencedEnvelope envelope = OmsRasterReader.readEnvelope(gridCoverageFile.getAbsolutePath());
+        ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
+        
+        double w = envelopeLL.getMinX();
+        double s = envelopeLL.getMinY();
+        double e = envelopeLL.getMaxX();
+        double n = envelopeLL.getMaxY();
+        
+        double centerX = w + (e - w) / 2.0;
+        double centerY = s + (n - s) / 2.0;
+        
+        centerCoordinate = new Coordinate(centerX, centerY);
 
         this.setUseTransparentTextures(true);
 
