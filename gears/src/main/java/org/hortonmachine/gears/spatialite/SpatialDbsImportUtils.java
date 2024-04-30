@@ -19,7 +19,9 @@ package org.hortonmachine.gears.spatialite;
 
 import java.io.File;
 import java.sql.Clob;
+import java.sql.Date;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -379,6 +381,12 @@ public class SpatialDbsImportUtils {
                             } else if (object instanceof Clob) {
                                 String string = ((Clob) object).toString();
                                 pStmt.setString(iPlus, string);
+                            } else if (object instanceof Date) {
+                                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                pStmt.setString(iPlus, dateFormatter.format(object));
+                            } else if (object instanceof java.util.Date) {
+                                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                pStmt.setString(iPlus, dateFormatter.format(object));
                             } else {
                                 pStmt.setString(iPlus, object.toString());
                             }
