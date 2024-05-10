@@ -49,9 +49,8 @@ public class HMStacAsset {
             }
             if (type.toLowerCase().contains("profile=cloud-optimized")) {
                 JsonNode rasterBandNode = assetNode.get("raster:bands");
+                assetUrl = assetNode.get("href").textValue();
                 if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
-                    assetUrl = assetNode.get("href").textValue();
-
                     Iterator<JsonNode> rbIterator = rasterBandNode.elements();
                     while( rbIterator.hasNext() ) {
                         JsonNode rbNode = rbIterator.next();
@@ -64,9 +63,6 @@ public class HMStacAsset {
                             resolution = resolNode.asDouble();
                         }
                     }
-                } else {
-                    isValid = false;
-                    nonValidReason = "raster bands metadata missing";
                 }
             } else {
                 isValid = false;

@@ -52,15 +52,14 @@ public class TestStacAsset extends HMTestCase {
         assertEquals("not a COG", asset.getNonValidReason());
     }
 
-    public void testCreateInvalidStacAssetRasterBandsMetadataMissing() throws JsonProcessingException {
+    public void testCreateStacAssetRasterBandsMetadataMissingIsValid() throws JsonProcessingException {
         String assetJSON = "{\"title\":\"Band 1 (coastal) BOA reflectance\",\"type\":\"image/tiff; application=geotiff; profile=cloud-optimized\",\"roles\":[\"data\"],\"gsd\":60,\"eo:bands\":[{\"name\":\"B01\",\"common_name\":\"coastal\",\"center_wavelength\":0.4439,\"full_width_half_max\":0.027}],\"href\":\"https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/33/S/VB/2021/2/S2B_33SVB_20210221_0_L2A/B01.tif\",\"proj:shape\":[1830,1830],\"proj:transform\":[60,0,399960,0,-60,4200000,0,0,1],\"raster:bands\":[]}";
         ObjectMapper mapper = new ObjectMapper();
         JsonNode node = mapper.readTree(assetJSON);
 
         HMStacAsset asset = new HMStacAsset("B01", node);
 
-        assertFalse(asset.isValid());
-        assertEquals("raster bands metadata missing", asset.getNonValidReason());
+        assertTrue(asset.isValid());
     }
 
 }
