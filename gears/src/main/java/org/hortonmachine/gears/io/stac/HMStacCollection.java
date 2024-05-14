@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.io.stac;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -143,12 +144,21 @@ public class HMStacCollection {
         return this;
     }
 
+    private SimpleFeatureCollection queryFeatureCollection() throws IOException {
+        try {
+            return stacClient.search(search, STACClient.SearchMode.POST);
+        } catch (IOException e) {
+            pm.message("POST search query not supported by the endpoint. GET will be tried.");
+        }
+        return stacClient.search(search, STACClient.SearchMode.GET);
+    }
+
     public List<HMStacItem> searchItems() throws Exception {
         if (search == null)
             search = new SearchQuery();
         search.setCollections(Arrays.asList(getId()));
 
-        SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+        SimpleFeatureCollection fc = queryFeatureCollection();
         SimpleFeatureIterator iterator = fc.features();
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
