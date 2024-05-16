@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.filter.IllegalFilterException;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.JTS;
@@ -108,7 +109,23 @@ public class HMStacCollection {
     public HMStacCollection setGeometryFilter( Geometry intersectionGeometry ) {
         if (search == null)
             search = new SearchQuery();
+        else if (search.getBbox() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
         search.setIntersects(intersectionGeometry);
+        return this;
+    }
+
+    /**
+     * Set the geometry bbox filter for search query
+     * @param bbox
+     * @return the current collection.
+     */
+    public HMStacCollection setBboxFilter( double[] bbox ) {
+        if (search == null)
+            search = new SearchQuery();
+        else if (search.getIntersects() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
+        search.setBbox(bbox);
         return this;
     }
 
