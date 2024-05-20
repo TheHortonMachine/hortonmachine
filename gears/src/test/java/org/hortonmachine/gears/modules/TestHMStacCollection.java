@@ -14,6 +14,8 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
+import static org.junit.Assert.assertThrows;
+
 public class TestHMStacCollection extends HMTestCase {
     private GeometryFactory gf = new GeometryFactory();
     private DummyProgressMonitor pm = new DummyProgressMonitor();
@@ -74,5 +76,32 @@ public class TestHMStacCollection extends HMTestCase {
                 .searchItems();
 
         assertTrue(items.isEmpty());
+    }
+
+    public void testSearchCatalogUsingBbox() throws Exception {
+        HMStacCollection collection = manager.getCollectionById("io-lulc-annual-v02");
+        Instant start = Instant.ofEpochMilli(1514764800000L); // 2018-01-01
+        Instant end = start.plus(Duration.ofDays(10));
+        double[] bbox = {0.0, 0.0, 10.0, 10.0};
+
+        List<HMStacItem> items = collection.setTimestampFilter(Date.from(start), Date.from(end))
+                .setBboxFilter(bbox)
+                .searchItems();
+
+        assertTrue(!items.isEmpty());
+    }
+
+    public void testSearchThrowsExceptionUsingBothBboxAndIntersect() throws Exception {
+        HMStacCollection collection = manager.getCollectionById("io-lulc-annual-v02");
+        Instant start = Instant.ofEpochMilli(1514764800000L); // 2018-01-01
+        Instant end = start.plus(Duration.ofDays(10));
+        Polygon bboxPolygon = gf.createPolygon(createBbox(0.0, 0.0, 10.0, 10.0));
+        double[] bbox = {0.0, 0.0, 10.0, 10.0};
+
+        assertThrows(IllegalStateException.class, () -> collection.setTimestampFilter(Date.from(start), Date.from(end))
+                .setGeometryFilter(bboxPolygon)
+                .setBboxFilter(bbox)
+                .searchItems()
+        );
     }
 }
