@@ -1,7 +1,9 @@
 package org.hortonmachine.gears.io.stac;
 
-import java.util.Iterator;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import it.geosolutions.imageio.core.BasicAuthURI;
+import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
+import it.geosolutions.imageioimpl.plugins.cog.*;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -10,18 +12,11 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import it.geosolutions.imageio.core.BasicAuthURI;
-import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
-import it.geosolutions.imageioimpl.plugins.cog.CogImageInputStreamSpi;
-import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
-import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
-import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
+import java.util.Iterator;
 
 /**
  * An asset from a stac item.
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
@@ -87,14 +82,21 @@ public class HMStacAsset {
         return sb.toString();
     }
 
+    private RangeReader createRangeReader(BasicAuthURI cogUri) {
+        if (assetUrl.startsWith("s3://")) {
+            return new S3RangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+        }
+        return new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+    }
+
     /**
      * Read the asset's coverage into a local raster.
-     * 
+     *
      * @param region and optional region to read from.
      * @param user an optional user in case of authentication.
      * @param password an optional password in case of authentication.
-     * @return the read raster from the asset's url..
-     * @throws Exception 
+     * @return the read raster from the asset's url.
+     * @throws Exception
      */
     public GridCoverage2D readRaster( RegionMap region, String user, String password ) throws Exception {
         BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
@@ -102,7 +104,7 @@ public class HMStacAsset {
             cogUri.setUser(user);
             cogUri.setPassword(password);
         }
-        HttpRangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+        RangeReader rangeReader = createRangeReader(cogUri);
         CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
                 new CogImageInputStreamSpi(), rangeReader.getClass().getName());
         GeoTiffReader reader = new GeoTiffReader(inputProvider);
@@ -117,7 +119,7 @@ public class HMStacAsset {
     }
 
     public GridCoverage2D readRaster( RegionMap region ) throws Exception {
-        return readRaster(region, null, null);
+        return readRaster(region, null, null );
     }
 
     public String getId() {

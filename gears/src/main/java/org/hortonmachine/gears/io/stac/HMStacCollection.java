@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.io.stac;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -9,6 +10,7 @@ import java.util.stream.Collectors;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.filter.IllegalFilterException;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.JTS;
@@ -108,7 +110,23 @@ public class HMStacCollection {
     public HMStacCollection setGeometryFilter( Geometry intersectionGeometry ) {
         if (search == null)
             search = new SearchQuery();
+        else if (search.getBbox() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
         search.setIntersects(intersectionGeometry);
+        return this;
+    }
+
+    /**
+     * Set the geometry bbox filter for search query
+     * @param bbox
+     * @return the current collection.
+     */
+    public HMStacCollection setBboxFilter( double[] bbox ) {
+        if (search == null)
+            search = new SearchQuery();
+        else if (search.getIntersects() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
+        search.setBbox(bbox);
         return this;
     }
 
@@ -126,12 +144,21 @@ public class HMStacCollection {
         return this;
     }
 
+    private SimpleFeatureCollection queryFeatureCollection() throws IOException {
+        try {
+            return stacClient.search(search, STACClient.SearchMode.POST);
+        } catch (IOException e) {
+            pm.message("POST search query not supported by the endpoint. GET will be tried.");
+        }
+        return stacClient.search(search, STACClient.SearchMode.GET);
+    }
+
     public List<HMStacItem> searchItems() throws Exception {
         if (search == null)
             search = new SearchQuery();
         search.setCollections(Arrays.asList(getId()));
 
-        SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+        SimpleFeatureCollection fc = queryFeatureCollection();
         SimpleFeatureIterator iterator = fc.features();
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();

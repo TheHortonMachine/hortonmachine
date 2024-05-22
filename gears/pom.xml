@@ -145,7 +145,11 @@
 			<groupId>it.geosolutions.imageio-ext</groupId>
 			<artifactId>imageio-ext-cog-rangereader-http</artifactId>
 		</dependency>
-		
+		<dependency>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-cog-rangereader-s3</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-imagemosaic</artifactId>
