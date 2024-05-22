@@ -5,9 +5,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
-import org.hortonmachine.gears.io.stac.HMStacUtils;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.RegionMap;
+import org.junit.After;
+
+import static org.junit.Assert.assertThrows;
 
 public class TestStacAsset extends HMTestCase {
     private ObjectMapper mapper = new ObjectMapper();
@@ -74,8 +76,10 @@ public class TestStacAsset extends HMTestCase {
         assertNotNull(grid);
     }
 
-    // need setup for AWS credentials in System
-    public void disabledTestReadRasterFromS3() throws Exception {
+    public void testReadRasterFromS3() throws Exception {
+        System.setProperty("aws.accessKeyId", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
+        System.setProperty("aws.secretKey", "AKIAIOSFODNN7EXAMPLE");
+        System.setProperty("iio.s3.aws.region", "us-west-2");
         String assetJSON = "{\"href\":\"s3://sentinel-cogs/sentinel-s2-l2a-cogs/5/C/MK/2018/10/S2B_5CMK_20181020_0_L2A/B01.tif\",\"type\":\"image/tiff; application=geotiff; profile=cloud-optimized\",\"title\":\"rainfall\",\"eo:bands\":[{\"name\":\"rainfall\"}],\"proj:epsg\":4326,\"proj:shape\":[1600,1500],\"proj:transform\":[0.05000000074505806,0,-20,0,-0.05000000074505806,40,0,0,1],\"roles\":[\"data\"]}},\"bbox\":[-20,-40.000001192092896,55.00000111758709,40],\"stac_extensions\":[\"https://stac-extensions.github.io/eo/v1.1.0/schema.json\",\"https://stac-extensions.github.io/projection/v1.1.0/schema.json\"],\"collection\":\"rainfall_chirps_monthly\"}";
         JsonNode node = mapper.readTree(assetJSON);
         String assetId = "rainfall";
@@ -85,5 +89,27 @@ public class TestStacAsset extends HMTestCase {
         GridCoverage2D grid = hmAsset.readRaster(regionMap);
 
         assertNotNull(grid);
+    }
+
+    public void testReadRasterFromS3FailBucketNotInRegion() throws Exception {
+        System.setProperty("aws.accessKeyId", "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY");
+        System.setProperty("aws.secretKey", "AKIAIOSFODNN7EXAMPLE");
+        System.setProperty("iio.s3.aws.region", "us-west-1"); // The bucket is not in this region
+
+        String assetJSON = "{\"href\":\"s3://sentinel-cogs/sentinel-s2-l2a-cogs/5/C/MK/2018/10/S2B_5CMK_20181020_0_L2A/B01.tif\",\"type\":\"image/tiff; application=geotiff; profile=cloud-optimized\",\"title\":\"rainfall\",\"eo:bands\":[{\"name\":\"rainfall\"}],\"proj:epsg\":4326,\"proj:shape\":[1600,1500],\"proj:transform\":[0.05000000074505806,0,-20,0,-0.05000000074505806,40,0,0,1],\"roles\":[\"data\"]}},\"bbox\":[-20,-40.000001192092896,55.00000111758709,40],\"stac_extensions\":[\"https://stac-extensions.github.io/eo/v1.1.0/schema.json\",\"https://stac-extensions.github.io/projection/v1.1.0/schema.json\"],\"collection\":\"rainfall_chirps_monthly\"}";
+        JsonNode node = mapper.readTree(assetJSON);
+        String assetId = "rainfall";
+        HMStacAsset hmAsset = new HMStacAsset(assetId, node);
+        RegionMap regionMap = RegionMap.fromBoundsAndGrid(1640000.0, 1640200.0, 5140000.0, 5140160.0, 20, 16);
+
+        assertThrows(RuntimeException.class, () -> hmAsset.readRaster(regionMap)
+        );
+    }
+
+    @After
+    public void after(){
+        System.clearProperty("aws.accessKeyId");
+        System.clearProperty("aws.secretKey");
+        System.clearProperty("iio.s3.aws.region");
     }
 }
