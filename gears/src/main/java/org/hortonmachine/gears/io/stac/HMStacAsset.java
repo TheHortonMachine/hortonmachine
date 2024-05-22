@@ -1,8 +1,9 @@
 package org.hortonmachine.gears.io.stac;
 
-import java.net.URI;
-import java.util.Iterator;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import it.geosolutions.imageio.core.BasicAuthURI;
+import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
+import it.geosolutions.imageioimpl.plugins.cog.*;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -11,20 +12,11 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import it.geosolutions.imageio.core.BasicAuthURI;
-import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
-import it.geosolutions.imageioimpl.plugins.cog.CogImageInputStreamSpi;
-import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
-import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
-import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
-import it.geosolutions.imageioimpl.plugins.cog.S3RangeReader;
-import it.geosolutions.imageioimpl.plugins.cog.RangeReader;
+import java.util.Iterator;
 
 /**
  * An asset from a stac item.
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
@@ -99,24 +91,18 @@ public class HMStacAsset {
 
     /**
      * Read the asset's coverage into a local raster.
-     * 
+     *
      * @param region and optional region to read from.
      * @param user an optional user in case of authentication.
      * @param password an optional password in case of authentication.
-     * @param awsRegion an optional value for the AWS region in case of S3 authentication.
      * @return the read raster from the asset's url.
-     * @throws Exception 
+     * @throws Exception
      */
-    public GridCoverage2D readRaster( RegionMap region, String user, String password, String awsRegion ) throws Exception {
+    public GridCoverage2D readRaster( RegionMap region, String user, String password ) throws Exception {
         BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
         if (user != null && password != null) {
             cogUri.setUser(user);
             cogUri.setPassword(password);
-        }
-        if (awsRegion != null) {
-            URI uri = cogUri.getUri();
-            URI newUri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), uri.getPath(), "region=" + awsRegion, uri.getFragment());
-            cogUri.setUri(newUri);
         }
         RangeReader rangeReader = createRangeReader(cogUri);
         CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
@@ -133,11 +119,7 @@ public class HMStacAsset {
     }
 
     public GridCoverage2D readRaster( RegionMap region ) throws Exception {
-        return readRaster(region, null, null, null);
-    }
-
-    public GridCoverage2D readRaster( RegionMap region, String awsRegion ) throws Exception {
-        return readRaster(region, null, null, awsRegion);
+        return readRaster(region, null, null );
     }
 
     public String getId() {
