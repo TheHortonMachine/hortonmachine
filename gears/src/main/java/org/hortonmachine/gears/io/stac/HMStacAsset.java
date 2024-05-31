@@ -1,5 +1,7 @@
 package org.hortonmachine.gears.io.stac;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
 import com.fasterxml.jackson.databind.JsonNode;
 import it.geosolutions.imageio.core.BasicAuthURI;
 import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
@@ -12,6 +14,8 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 
 /**
@@ -82,13 +86,6 @@ public class HMStacAsset {
         return sb.toString();
     }
 
-    private RangeReader createRangeReader(BasicAuthURI cogUri) {
-        if (assetUrl.startsWith("s3://")) {
-            return new S3RangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
-        }
-        return new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
-    }
-
     /**
      * Read the asset's coverage into a local raster.
      *
@@ -98,16 +95,22 @@ public class HMStacAsset {
      * @return the read raster from the asset's url.
      * @throws Exception
      */
-    public GridCoverage2D readRaster( RegionMap region, String user, String password ) throws Exception {
+    public GridCoverage2D readRaster( RegionMap region, String user, String password, AmazonS3 s3Client ) throws Exception {
         BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
         if (user != null && password != null) {
             cogUri.setUser(user);
             cogUri.setPassword(password);
         }
-        RangeReader rangeReader = createRangeReader(cogUri);
-        CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
-                new CogImageInputStreamSpi(), rangeReader.getClass().getName());
-        GeoTiffReader reader = new GeoTiffReader(inputProvider);
+        GeoTiffReader reader;
+        if (assetUrl.startsWith("s3://")) {
+            InputStream inputProvider = readS3Raster(cogUri, s3Client);
+            reader = new GeoTiffReader(inputProvider);
+        } else {
+            RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+            CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
+                    new CogImageInputStreamSpi(), rangeReader.getClass().getName());
+            reader = new GeoTiffReader(inputProvider);
+        }
         CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
 
         GeneralParameterValue[] generalParameter = null;
@@ -118,8 +121,18 @@ public class HMStacAsset {
         return coverage;
     }
 
+    public InputStream readS3Raster(BasicAuthURI cogUri, AmazonS3 s3Client ) throws IOException {
+        String[] bucketAndObject = assetUrl.split("://")[1].split("/", 2);
+        S3Object object = s3Client.getObject(bucketAndObject[0], bucketAndObject[1]);
+        return object.getObjectContent();
+    }
+
     public GridCoverage2D readRaster( RegionMap region ) throws Exception {
-        return readRaster(region, null, null );
+        return readRaster(region, null, null, null );
+    }
+
+    public GridCoverage2D readRaster( RegionMap region, AmazonS3 s3Client ) throws Exception {
+        return readRaster(region, null, null, s3Client );
     }
 
     public String getId() {
