@@ -91,7 +91,6 @@ public class TestStacAsset extends HMTestCase {
                 //.withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion("us-west-2")
                 .build();
-        client.listBuckets();
         return client;
     }
 
