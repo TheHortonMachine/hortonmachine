@@ -21,8 +21,14 @@ jobs:
         java-version: '11'
         cache: 'maven'
         server-id: ossrh
-        server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD
+        server-username: ${{ secrets.OSSRH_USERNAME }}
+        server-password: ${{ secrets.OSSRH_TOKEN }}
+
+    - name: Run Tests
+      run: |
+        mvn --no-transfer-progress \
+          --batch-mode \
+          clean verify
 
     - id: install-secret-key
       name: Install gpg secret key
@@ -33,9 +39,6 @@ jobs:
         gpg --list-secret-keys --keyid-format LONG
 
     - name: Build and Deploy Snapshot
-      env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
       run: |
         mvn --no-transfer-progress \
           --batch-mode \
