@@ -43,6 +43,8 @@ jobs:
         mvn --no-transfer-progress \
           --batch-mode \
           -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} \
+          -Dossrh.username=${{ secrets.OSSRH_USERNAME }} \
+          -Dossrh.password=${{ secrets.OSSRH_TOKEN }} \
           clean deploy \
           -DskipTests=true \
           -P release \
