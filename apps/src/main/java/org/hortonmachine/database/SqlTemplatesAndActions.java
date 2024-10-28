@@ -123,6 +123,18 @@ public class SqlTemplatesAndActions {
         };
     }
 
+    public Action getSelectGroupCountOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Select and group-count on column"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String columnName = column.columnName;
+                String tableName = column.parent.tableName;
+                String query = sqlTemplates.selectGroupCountOnColumn(columnName, SqlName.m(tableName));
+                spatialiteViewer.addTextToQueryEditor(query);
+            }
+        };
+    }
+
     public Action getUpdateOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (isNosql) {
             return null;

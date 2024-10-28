@@ -169,7 +169,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     // private static final String RUN_QUERY = "run query";
     private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor";
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
-    private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile";
+    private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile/gpkg";
     protected static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the geometry viewer";
     // private static final String SQL_EDITOR = "SQL Editor";
     private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
@@ -679,7 +679,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             PreferencesHandler.getLastFile(), HMConstants.vectorFileFilter);
                     if (saveFiles != null && saveFiles.length > 0) {
                         try {
-                            PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
+                            String absolutePath = saveFiles[0].getAbsolutePath();
+                            int indexOf = absolutePath.indexOf("#");
+                            if (indexOf > 0) {
+                                absolutePath = absolutePath.substring(0, indexOf);
+                            }
+                            PreferencesHandler.setLastPath(absolutePath);
                         } catch (Exception e1) {
                             Logger.INSTANCE.insertError("", "ERROR", e1);
                         }
@@ -707,7 +712,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 try {
                     if (f_selectedFile != null) {
                         logConsole.beginProcess("Run query");
-                        hadErrors = runQueryToShapefile(sqlText, f_selectedFile, pm);
+                        hadErrors = runQueryToVectorGeofile(sqlText, f_selectedFile, pm);
                     }
                 } catch (Exception ex) {
                     pm.errorMessage(ex.getLocalizedMessage());
@@ -2303,13 +2308,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         return hasError;
     }
 
-    protected boolean runQueryToShapefile( String sqlText, File selectedFile, IHMProgressMonitor pm ) {
+    protected boolean runQueryToVectorGeofile( String sqlText, File selectedFile, IHMProgressMonitor pm ) {
         boolean hasError = false;
         if (sqlText.trim().length() == 0) {
             return false;
         }
         try {
-            pm.beginTask("Run query: " + sqlText + "\ninto shapefile: " + selectedFile, IHMProgressMonitor.UNKNOWN);
+            pm.beginTask("Run query: " + sqlText + "\ninto: " + selectedFile, IHMProgressMonitor.UNKNOWN);
             DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(null, (ASpatialDb) currentConnectedSqlDatabase,
                     sqlText, null);
             OmsVectorWriter.writeVector(selectedFile.getAbsolutePath(), fc);

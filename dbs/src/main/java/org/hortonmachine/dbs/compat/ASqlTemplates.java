@@ -21,7 +21,6 @@ import java.io.File;
 
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
 
 /**
@@ -35,6 +34,12 @@ public abstract class ASqlTemplates {
         String query = "SELECT * FROM " + tableName.fixedDoubleName + " WHERE " + columnName + "=?";
         return query;
     }
+
+    public String selectGroupCountOnColumn(String columnName, SqlName m){
+        String query = "SELECT " + columnName + ", COUNT(*) FROM " + m.fixedDoubleName + " GROUP BY " + columnName;
+        return query;
+    }
+
 
     public String updateOnColumn( SqlName tableName, String columnName ) {
         String query = "UPDATE " + tableName + " SET " + columnName + " = XXX";
@@ -103,5 +108,6 @@ public abstract class ASqlTemplates {
      * @return the string for the current db type.
      */
     public abstract String getFormatTimeSyntax( String timestampField, String formatPattern );
+
 
 }

@@ -226,8 +226,18 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
                         }
                     } else {
                         File selectedFile = fc.getSelectedFile();
+                        // if we save to geopackage or other formats with table name
+                        // we need to trim away after the # from the absolute path 
+                        // just for the check
+                        String absolutePath = selectedFile.getAbsolutePath();
+                        int indexOf = absolutePath.indexOf("#");
+                        if (indexOf > 0) {
+                            absolutePath = absolutePath.substring(0, indexOf);
+                        }
+                        File checkSelectedFile = new File(absolutePath);
                         if (isSave) {
-                            if (!filter.accept(selectedFile)) {
+
+                            if (!filter.accept(checkSelectedFile)) {
                                 String[] allowedExtensions = null;
                                 if (filter instanceof HMFileFilter) {
                                     HMFileFilter hmfilter = (HMFileFilter) filter;
@@ -241,7 +251,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
                                 this.returnValue = null;
                             }
                         }
-                        if (filter.accept(selectedFile) && allowedFiles != null) {
+                        if (filter.accept(checkSelectedFile) && allowedFiles != null) {
                             allowedFiles.add(selectedFile);
                         }
                     }
