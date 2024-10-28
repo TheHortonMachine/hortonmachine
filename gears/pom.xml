@@ -7,7 +7,7 @@
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
 		<relativePath>../pom.xml</relativePath>
-		<version>0.10.8</version>
+		<version>0.10.9-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>hm-gears</artifactId>
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-dbs</artifactId>
-			<version>0.10.8</version>
+			<version>0.10.9-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
@@ -145,7 +145,7 @@
 			<groupId>it.geosolutions.imageio-ext</groupId>
 			<artifactId>imageio-ext-cog-rangereader-http</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-imagemosaic</artifactId>
@@ -203,6 +203,10 @@
 			<artifactId>netcdf4</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.amazonaws</groupId>
+			<artifactId>aws-java-sdk-core</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>

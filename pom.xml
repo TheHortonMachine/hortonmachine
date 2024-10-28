@@ -6,7 +6,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>0.10.8</version>
+	<version>0.10.9-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>The Horton Machine</name>
@@ -55,6 +55,7 @@
 
 		<performRelease>false</performRelease>
 
+		<aws.version>1.12.730</aws.version>
 	</properties>
 
 
@@ -397,7 +398,6 @@
 				<artifactId>imageio-ext-cog-rangereader-http</artifactId>
 				<version>${imageio.ext.version}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>joda-time</groupId>
 				<artifactId>joda-time</artifactId>
@@ -894,6 +894,12 @@
 				<scope>test</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>com.amazonaws</groupId>
+				<artifactId>aws-java-sdk-core</artifactId>
+				<version>${aws.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -1122,6 +1128,8 @@
 					<serverId>ossrh</serverId>
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
+          <username>${env.OSSRH_USERNAME}</username>
+          <password>${env.OSSRH_TOKEN}</password>
 				</configuration>
 			</plugin>
 		</plugins>

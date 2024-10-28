@@ -3,11 +3,12 @@ name: Build and Release Snapshot
 on:
   push:
     branches:
-      - master
 
 jobs:
   build-and-release:
     runs-on: ubuntu-22.04
+
+    if: github.ref == 'refs/heads/master'
 
     steps:
     - name: Checkout code
@@ -20,8 +21,14 @@ jobs:
         java-version: '11'
         cache: 'maven'
         server-id: ossrh
-        server-username: MAVEN_USERNAME
-        server-password: MAVEN_PASSWORD
+        server-username: ${{ secrets.OSSRH_USERNAME }}
+        server-password: ${{ secrets.OSSRH_TOKEN }}
+
+    - name: Run Tests
+      run: |
+        mvn --no-transfer-progress \
+          --batch-mode \
+          clean verify
 
     - id: install-secret-key
       name: Install gpg secret key
@@ -32,15 +39,35 @@ jobs:
         gpg --list-secret-keys --keyid-format LONG
 
     - name: Build and Deploy Snapshot
-      env:
-        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
       run: |
         mvn --no-transfer-progress \
           --batch-mode \
           -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} \
+          -Dossrh.username=${{ secrets.OSSRH_USERNAME }} \
+          -Dossrh.password=${{ secrets.OSSRH_TOKEN }} \
           clean deploy \
           -DskipTests=true \
           -P release \
           -Dmaven.javadoc.skip=true \
           -Dgpg.skip=false
+
+  build-and-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+          cache: 'maven'
+
+      - name: Build and Test Branch
+        run: |
+          mvn --no-transfer-progress \
+            --batch-mode \
+            clean install \
+            -Dmaven.javadoc.skip=true
