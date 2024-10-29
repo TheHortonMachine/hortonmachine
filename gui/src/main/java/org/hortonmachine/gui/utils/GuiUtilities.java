@@ -23,6 +23,7 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
@@ -42,13 +43,13 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -68,7 +69,6 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.DefaultEditorKit;
 
 import org.apache.commons.io.FilenameUtils;
 import org.hortonmachine.dbs.log.Logger;
@@ -259,6 +259,13 @@ public class GuiUtilities {
     }
 
     public static void setDefaultLookAndFeel() {
+        // change fonts only if -Dhm.fontsize=18 is passed
+        String fontSize = System.getProperty("hm.fontsize");
+        if (fontSize != null) {
+            int fs = Integer.parseInt(fontSize);
+            setUIFont(new javax.swing.plaf.FontUIResource("Dialog", Font.PLAIN, fs));
+        }
+
         OSType osType = OsCheck.getOperatingSystemType();
 //        if(osType == OSType.MacOS) {
 //            // set keybindings
@@ -307,9 +314,22 @@ public class GuiUtilities {
 //                }
                 break;
             }
+            
+
 
         } catch (Exception ex) {
             ex.printStackTrace();
+        }
+    }
+    
+    public static void setUIFont(javax.swing.plaf.FontUIResource f) {
+        Enumeration<Object> keys = UIManager.getDefaults().keys();
+        while (keys.hasMoreElements()) {
+            Object key = keys.nextElement();
+            Object value = UIManager.get(key);
+            if (value instanceof javax.swing.plaf.FontUIResource) {
+                UIManager.put(key, f);
+            }
         }
     }
 
