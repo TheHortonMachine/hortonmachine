@@ -906,11 +906,11 @@
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+			<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
 		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+			<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
 
@@ -958,14 +958,14 @@
 			<url>https://maven.geo-solutions.it/</url>
 		</repository>
 
-		<repository>
+	<!--	<repository>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
 			<id>sonatype-nexus-snapshots</id>
 			<name>jgrasstools snapshots</name>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</repository>
+		</repository> -->
 		<repository>
 			<id>jitpack.io</id>
 			<name>jitpack</name>
@@ -1126,10 +1126,10 @@
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
-					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+					<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-          <username>${env.OSSRH_USERNAME}</username>
-          <password>${env.OSSRH_TOKEN}</password>
+                    <username>${env.OSSRH_USERNAME}</username>
+                    <password>${env.OSSRH_TOKEN}</password>
 				</configuration>
 			</plugin>
 		</plugins>
