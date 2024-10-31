@@ -55,7 +55,6 @@
 
 		<performRelease>false</performRelease>
 
-		<aws.version>1.12.730</aws.version>
 	</properties>
 
 
@@ -894,12 +893,6 @@
 				<scope>test</scope>
 			</dependency>
 
-			<dependency>
-				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk-core</artifactId>
-				<version>${aws.version}</version>
-			</dependency>
-
 		</dependencies>
 	</dependencyManagement>
 
@@ -1128,8 +1121,8 @@
 					<serverId>ossrh</serverId>
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-          <username>${env.OSSRH_USERNAME}</username>
-          <password>${env.OSSRH_TOKEN}</password>
+					<username>${env.OSSRH_USERNAME}</username>
+					<password>${env.OSSRH_TOKEN}</password>
 				</configuration>
 			</plugin>
 		</plugins>

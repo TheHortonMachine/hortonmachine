@@ -202,11 +202,6 @@
 			<groupId>edu.ucar</groupId>
 			<artifactId>netcdf4</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-core</artifactId>
-		</dependency>
 	</dependencies>
 
 </project>
