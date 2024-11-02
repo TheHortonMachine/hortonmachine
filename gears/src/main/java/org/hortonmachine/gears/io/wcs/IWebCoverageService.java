@@ -133,7 +133,7 @@ public interface IWebCoverageService {
         if (version.equals("1.0.0")) {
             return new org.hortonmachine.gears.io.wcs.wcs100.WebCoverageService100(url, version, xml, cookies, timeout,
                     auth, headers);
-        } else if (version.equals("1.1.1") || version.equals("1.1.0")) {
+        } else if (version.equals("1.1.2") || version.equals("1.1.1") || version.equals("1.1.0")) {
             return new org.hortonmachine.gears.io.wcs.wcs111.WebCoverageService111(url, version, xml, cookies, timeout,
                     auth, headers);
         } else if (version.equals("2.0.1")) {

@@ -29,7 +29,7 @@ public class CoverageSummary implements ICoverageSummary {
     }
 
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:CoverageOfferingBrief") || name.endsWith(":CoverageOfferingBrief"))
+        if (name.equals("wcs:CoverageOfferingBrief") || name.endsWith("CoverageOfferingBrief"))
             return true;
         return false;
     }
@@ -40,7 +40,9 @@ public class CoverageSummary implements ICoverageSummary {
         cs.abstract_ = XmlHelper.findFirstTextInChildren(node, "description");
 
         Node keywordsNode = XmlHelper.findNode(node, "keywords");
-        cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        if (keywordsNode!=null) {            
+            cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        }
         cs.coverageId = XmlHelper.findFirstTextInChildren(node, "name");
 
         Node bboxNode = XmlHelper.findNode(node, "lonLatEnvelope");

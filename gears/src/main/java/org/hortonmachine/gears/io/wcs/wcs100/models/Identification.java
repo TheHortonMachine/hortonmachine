@@ -19,7 +19,7 @@ public class Identification implements XmlHelper.XmlVisitor {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:Service") || name.endsWith(":Service"))
+        if (name.equals("wcs:Service") || name.endsWith("Service"))
             return true;
         return false;
     }
@@ -30,7 +30,9 @@ public class Identification implements XmlHelper.XmlVisitor {
         abstract_ = XmlHelper.findFirstTextInChildren(node, "description");
 
         Node keywordsNode = XmlHelper.findNode(node, "keywords");
-        keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        if(keywordsNode!=null) {
+            keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        }
 
         // serviceType = XmlHelper.findFirstTextInChildren(node, "servicetype");
         // supportedVersions = XmlHelper.findAllTextsInChildren(node, "servicetypeversion");

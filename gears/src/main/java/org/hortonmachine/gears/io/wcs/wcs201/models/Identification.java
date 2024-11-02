@@ -21,7 +21,7 @@ public class Identification implements XmlHelper.XmlVisitor {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("ows:ServiceIdentification") || name.endsWith(":ServiceIdentification"))
+        if (name.equals("ows:ServiceIdentification") || name.endsWith("ServiceIdentification"))
             return true;
         return false;
     }

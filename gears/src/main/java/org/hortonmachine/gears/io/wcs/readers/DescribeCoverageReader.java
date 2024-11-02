@@ -75,7 +75,7 @@ public class DescribeCoverageReader {
             if (!params.contains("CoverageID")) {
                 qs.add(new String[] { "CoverageID", identifier });
             }
-        } else if (version.equals("1.1.0") || version.equals("1.1.1")) {
+        } else if (version.equals("1.1.2") || version.equals("1.1.0") || version.equals("1.1.1")) {
             // # NOTE: WCS 1.1.0 is ambigous about whether it should be identifier
             // # or identifiers (see tables 9, 10 of specification)
             if (!params.contains("identifiers")) {
@@ -112,7 +112,7 @@ public class DescribeCoverageReader {
             describeCoverage = new  org.hortonmachine.gears.io.wcs.wcs100.models.DescribeCoverage();
         } else if (version.equals("2.0.0") || version.equals("2.0.1")) {
             describeCoverage = new org.hortonmachine.gears.io.wcs.wcs201.models.DescribeCoverage();
-        } else if (version.equals("1.1.0") || version.equals("1.1.1")) {
+        } else if (version.equals("1.1.2") || version.equals("1.1.0") || version.equals("1.1.1")) {
             describeCoverage = new org.hortonmachine.gears.io.wcs.wcs111.models.DescribeCoverage();
         }
 

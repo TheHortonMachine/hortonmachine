@@ -54,9 +54,9 @@ public class WcsTest {
         // &subset=Lat(34.54889,37.31744)
         // &subset=Long(26.51071,29.45505)
 
-        String outFolder = "/Users/hydrologis/TMP/KLAB/WCS/DUMPS/";
+        String outFolder = "C:\\Users\\hydrologis\\Dropbox\\G-ANT\\lavori\\2024_10_30_bilbao_aries\\WCS\\";
 
-        String SERVICE_URL = "https://geoservices9.civis.bz.it/geoserver/ows"; // ?service=WCS&version=2.0.1&request=GetCapabilities";
+        String SERVICE_URL = "https://www.geo.euskadi.eus/WCS_KARTOGRAFIA"; // "https://geoservices9.civis.bz.it/geoserver/ows"; // ?service=WCS&version=2.0.1&request=GetCapabilities";
         // String coverageId = "p_bz-Elevation__DigitalTerrainModel-2.5m";
         String coverageId = "p_bz-Elevation:DigitalElevationModel-2.5m";
 
@@ -65,7 +65,7 @@ public class WcsTest {
         // String coverageId = "OneGDev:AegeanLevantineSeas-MCol";
         // Envelope env = new Envelope(26.51071, 29.45505, 35.5, 36.0);
 
-        String version = "1.0.0";
+        String version = null;// "1.1.1";
 
         IWebCoverageService service = IWebCoverageService.getServiceForVersion(SERVICE_URL, version);
 

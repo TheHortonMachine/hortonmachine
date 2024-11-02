@@ -12,7 +12,7 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:Capability") || name.endsWith(":Capability"))
+        if (name.equals("wcs:Capability") || name.endsWith("Capability"))
             return true;
         return false;
     }
@@ -26,7 +26,7 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node childNode = childNodes.item(i);
             String name = childNode.getNodeName().toLowerCase();
-            if (name.endsWith(":getcapabilities")) {
+            if (name.endsWith("getcapabilities")) {
                 Node getNode = XmlHelper.findNode(childNode, "Get");
                 if (getNode != null) {
                     Node onlineResNode = XmlHelper.findNode(getNode, "OnlineResource");
@@ -35,7 +35,7 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
                         getCapabilitiesUrl = getCapabilitiesUrl.substring(0, getCapabilitiesUrl.length() - 1);
                     }
                 }
-            } else if (name.endsWith(":describecoverage")) {
+            } else if (name.endsWith("describecoverage")) {
                 Node getNode = XmlHelper.findNode(childNode, "Get");
                 if (getNode != null) {
                     Node onlineResNode = XmlHelper.findNode(getNode, "OnlineResource");
@@ -44,7 +44,7 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
                         describeCoverageUrl = describeCoverageUrl.substring(0, describeCoverageUrl.length() - 1);
                     }
                 }
-            } else if (name.endsWith(":getcoverage")) {
+            } else if (name.endsWith("getcoverage")) {
                 Node getNode = XmlHelper.findNode(childNode, "Get");
                 if (getNode != null) {
                     Node onlineResNode = XmlHelper.findNode(getNode, "OnlineResource");

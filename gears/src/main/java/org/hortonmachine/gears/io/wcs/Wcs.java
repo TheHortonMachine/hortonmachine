@@ -64,7 +64,12 @@ public class Wcs {
     }
 
     public IDescribeCoverage describe(String coverageId) throws Exception {
-        return service.getDescribeCoverage(coverageId);
+        try {
+            return service.getDescribeCoverage(coverageId);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public List<String> formats() throws Exception {

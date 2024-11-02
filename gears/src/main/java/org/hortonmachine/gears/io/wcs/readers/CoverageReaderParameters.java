@@ -175,7 +175,7 @@ public class CoverageReaderParameters {
         url += "&request=GetCoverage";
         if (this.wcsVersion.equals("2.0.1")) {
             url = build201Url(url);
-        } else if (this.wcsVersion.equals("1.1.1") || this.wcsVersion.equals("1.1.0")) {
+        } else if (this.wcsVersion.equals("1.1.2") || this.wcsVersion.equals("1.1.1") || this.wcsVersion.equals("1.1.0")) {
             url = build111(url);
         } else if (this.wcsVersion.equals("1.0.0")) {
             url = build100(url);
@@ -200,25 +200,31 @@ public class CoverageReaderParameters {
             url += "&format=" + this.format;
 
         Envelope finalRequestEnvelope = requestedEnvelope;
+        Integer finalRequestEnvelopeSrid = requestedEnvelopeSrid;
         ICoverageSummary coverageSummary = wcs.getCoverageSummary(this.identifier);
-        ReferencedEnvelope dataEnvelope = coverageSummary.getWgs84BoundingBox();
+        ReferencedEnvelope dataEnvelopeWgs84 = coverageSummary.getWgs84BoundingBox();
         if (this.requestedEnvelope != null) {
+            ReferencedEnvelope requestEnvelopeWgs84 = null;
+            // TODO check this next, should not be necessary
+            ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
+                    CRS.decode("EPSG:" + requestedEnvelopeSrid));
             if (requestedEnvelopeSrid != 4326) {
-                ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
-                        CRS.decode("EPSG:" + requestedEnvelopeSrid));
-                finalRequestEnvelope = requestedReferenceEnvelope.transform(DefaultGeographicCRS.WGS84, true);
+                requestEnvelopeWgs84 = requestedReferenceEnvelope.transform(DefaultGeographicCRS.WGS84, true);
+//                finalRequestEnvelopeSrid = 4326;
+            } else {
+                requestEnvelopeWgs84 = requestedReferenceEnvelope;
             }
             // if the requested envelope is partially outside the data envelope, we need to
             // clip it
-            if (!dataEnvelope.contains(finalRequestEnvelope)) {
+            if (!dataEnvelopeWgs84.contains((Envelope) requestEnvelopeWgs84)) {
                 Logger.INSTANCE.w(
                         "Requested envelope is partially outside the data envelope. Clipping requested envelope to data envelope.");
-                finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelope);
+                finalRequestEnvelope = finalRequestEnvelope.intersection(dataEnvelopeWgs84);
             }
         } else {
             // since bbox is mandatory, we use the data envelope
-            finalRequestEnvelope = dataEnvelope;
-            requestedEnvelopeSrid = 4326;
+            finalRequestEnvelope = dataEnvelopeWgs84;
+            finalRequestEnvelopeSrid = 4326;
         }
 
         double minx = finalRequestEnvelope.getMinX();
@@ -227,8 +233,8 @@ public class CoverageReaderParameters {
         double maxy = finalRequestEnvelope.getMaxY();
         url += "&BBOX=" + minx + "," + miny + "," + maxx + "," + maxy;
 
-        if (this.requestedEnvelopeSrid != null)
-            url += "&CRS=EPSG:" + requestedEnvelopeSrid; // TODO use the supplied srid + this.requestedEnvelopeSrid;
+        if (finalRequestEnvelopeSrid != null)
+            url += "&CRS=EPSG:" + finalRequestEnvelopeSrid;
 
         if (this.rowsCols != null) {
             url += "&WIDTH=" + this.rowsCols[1];

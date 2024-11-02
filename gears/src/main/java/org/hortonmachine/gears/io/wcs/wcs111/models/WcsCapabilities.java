@@ -21,7 +21,7 @@ public class WcsCapabilities implements IWcsCapabilities {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:Capabilities") || name.endsWith(":Capabilities"))
+        if (name.equals("wcs:Capabilities") || name.endsWith("Capabilities"))
             return true;
         return false;
     }

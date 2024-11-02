@@ -23,11 +23,12 @@ public class TestGeoeuskadi {
 
     public static void main(String[] args) throws Exception {
 
-        String outFolder = "/Users/hydrologis/TMP/KLAB/WCS/DUMPS/";
+        String outFolder = "C:\\Users\\hydrologis\\Dropbox\\G-ANT\\lavori\\2024_10_30_bilbao_aries\\WCS\\";
 
-        // String SERVICE_URL = "https://geo.hazi.eus/ows";
-        String SERVICE_URL = "https://geo.hazi.eus/S2GEOEUSKADI_RGB/wcs";
-        String coverageId = "S2GEOEUSKADI_RGB__S2A_20160703T110602307Z_RGB"; //S2GEOEUSKADI_RGB:S2A_20150818T110635806Z_RGB";
+         String SERVICE_URL = "https://geo.hazi.eus/ows";
+//        String SERVICE_URL = "https://geo.hazi.eus/S2GEOEUSKADI_RGB/wcs";
+//        String SERVICE_URL = "https://www.geo.euskadi.eus/geoeuskadi/services/U11/WCS_KARTOGRAFIA/MapServer/WCSServer";
+        String coverageId = "0"; //S2GEOEUSKADI_RGB:S2A_20150818T110635806Z_RGB";
         String version = null;
 
         IWebCoverageService service = IWebCoverageService.getServiceForVersion(SERVICE_URL, version);
@@ -66,11 +67,11 @@ public class TestGeoeuskadi {
         }
 
         // describe coverage
-        String describeCoverageUrl = service.getDescribeCoverageUrl(coverageId);
-        System.out.println(describeCoverageUrl);
-
-        IDescribeCoverage describeCoverage = service.getDescribeCoverage(coverageId);
-        System.out.println(describeCoverage);
+//        String describeCoverageUrl = service.getDescribeCoverageUrl(coverageId);
+//        System.out.println(describeCoverageUrl);
+//
+//        IDescribeCoverage describeCoverage = service.getDescribeCoverage(coverageId);
+//        System.out.println(describeCoverage);
 
         // get coverage
         CoverageReaderParameters parameters = new CoverageReaderParameters(service, coverageId);

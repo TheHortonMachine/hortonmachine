@@ -27,19 +27,29 @@ public class CoverageSummary implements ICoverageSummary {
     }
 
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:CoverageSummary") || name.endsWith(":CoverageSummary"))
+        if (name.equals("wcs:CoverageSummary") || name.endsWith("CoverageSummary"))
             return true;
         return false;
     }
 
     public void visit(Node node) {
         CoverageSummary cs = new CoverageSummary(null);
-        cs.title = XmlHelper.findFirstTextInChildren(node, "label");
+        String title = XmlHelper.findFirstTextInChildren(node, "label");
+        if(title == null) {
+            title = XmlHelper.findFirstTextInChildren(node, "title");
+        }
+        cs.title = title;
         cs.abstract_ = XmlHelper.findFirstTextInChildren(node, "description");
 
         Node keywordsNode = XmlHelper.findNode(node, "keywords");
-        cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
-        cs.coverageId = XmlHelper.findFirstTextInChildren(node, "name");
+        if(keywordsNode != null) {
+            cs.keywords = XmlHelper.findAllTextsInChildren(keywordsNode, "keyword");
+        }
+        cs.coverageId = XmlHelper.findFirstTextInChildren(node, "Identifier");
+        if (cs.coverageId == null) {
+            cs.coverageId = XmlHelper.findFirstTextInChildren(node, "name");
+        }
+        
 
         Node bboxNode = XmlHelper.findNode(node, "WGS84BoundingBox");
 

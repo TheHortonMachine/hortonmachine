@@ -21,7 +21,7 @@ public class WcsCapabilities implements IWcsCapabilities {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:WCS_Capabilities") || name.endsWith(":WCS_Capabilities"))
+        if (name.equals("wcs:WCS_Capabilities") || name.endsWith("WCS_Capabilities"))
             return true;
         return false;
     }
@@ -29,7 +29,7 @@ public class WcsCapabilities implements IWcsCapabilities {
     @Override
     public void visit(Node node) throws Exception {
         version = XmlHelper.findAttribute(node, "version");
-
+        
         identification = new Identification();
         XmlHelper.apply(node, identification);
 

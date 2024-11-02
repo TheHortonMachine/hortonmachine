@@ -130,15 +130,22 @@ public class WebCoverageService201 implements IWebCoverageService {
     @Override
     public IDescribeCoverage getDescribeCoverage(String coverageId) throws Exception {
         init();
-        DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
-                timeout, headers);
+        IDescribeCoverage dc;
+        try {
+            DescribeCoverageReader reader = new DescribeCoverageReader(version, coverageId, cookies, auth,
+                    timeout, headers);
 
-        String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageBaseUrl();
-        if (describeCoverageUrl == null)
-            describeCoverageUrl = baseUrl;
+            String describeCoverageUrl = wcsCapabilities.getOperationsMetadata().getDescribeCoverageBaseUrl();
+            if (describeCoverageUrl == null)
+                describeCoverageUrl = baseUrl;
 
-        IDescribeCoverage dc = reader.read(describeCoverageUrl, timeout);
-        return dc;
+            dc = reader.read(describeCoverageUrl, timeout);
+            return dc;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

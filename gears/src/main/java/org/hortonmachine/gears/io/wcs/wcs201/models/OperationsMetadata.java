@@ -14,7 +14,7 @@ public class OperationsMetadata implements XmlHelper.XmlVisitor {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("ows:OperationsMetadata") || name.endsWith(":OperationsMetadata"))
+        if (name.equals("ows:OperationsMetadata") || name.endsWith("OperationsMetadata"))
             return true;
         return false;
     }

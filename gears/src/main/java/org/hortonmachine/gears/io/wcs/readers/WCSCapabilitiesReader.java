@@ -113,7 +113,7 @@ public class WCSCapabilitiesReader {
         if (version.equals("2.0.1")) {
             wcsCapabilities = new org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities();
             XmlHelper.apply(xmlHelper.getRootNode(), wcsCapabilities);
-        } else if (version.equals("1.1.1") || version.equals("1.1.0")) {
+        } else if (version.equals("1.1.2") || version.equals("1.1.1") || version.equals("1.1.0")) {
             wcsCapabilities = new org.hortonmachine.gears.io.wcs.wcs111.models.WcsCapabilities();
             XmlHelper.apply(xmlHelper.getRootNode(), wcsCapabilities);
         } else if (version.equals("1.0.0")) {

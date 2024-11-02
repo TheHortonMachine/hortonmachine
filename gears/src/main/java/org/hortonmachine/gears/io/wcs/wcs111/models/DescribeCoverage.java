@@ -43,7 +43,8 @@ public class DescribeCoverage implements IDescribeCoverage {
 
     @Override
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:CoverageDescription") || name.endsWith(":CoverageDescription"))
+        System.out.println(name);
+        if (name.equals("wcs:CoverageDescription") || name.endsWith("CoverageDescription"))
             return true;
         return false;
     }

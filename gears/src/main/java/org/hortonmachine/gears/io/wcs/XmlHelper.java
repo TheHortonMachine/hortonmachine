@@ -225,7 +225,7 @@ public class XmlHelper {
      * @param level   The level of indentation
      * @param visitor The visitor to use
      */
-    public void printTree(Node node, int level) {
+    public static void printTree(Node node, int level) {
         if (node.getNodeType() == Node.ELEMENT_NODE) {
             System.out.println(getIndentation(level) + "Element: " + node.getNodeName());
             if (node.hasAttributes()) {
@@ -261,7 +261,7 @@ public class XmlHelper {
         return subElements;
     }
 
-    public String getIndentation(int level) {
+    public static String getIndentation(int level) {
         StringBuilder indentation = new StringBuilder();
         for (int i = 0; i < level; i++) {
             indentation.append("  "); // Use two spaces for each level of indentation

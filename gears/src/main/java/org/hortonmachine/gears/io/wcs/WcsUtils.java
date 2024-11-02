@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.io.wcs;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
@@ -167,6 +168,11 @@ public class WcsUtils {
             HttpRequest request = uriBuilder.GET().build();
             // Send the request and retrieve the response
             HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            int status = response.statusCode();
+            if (status >= 400) {
+                String error = "Unable to get data form: " + urlString;
+                throw new IOException(error);
+            }
             xmlHelper = XmlHelper.fromStream(response.body());
 
         } catch (SSLHandshakeException e) {

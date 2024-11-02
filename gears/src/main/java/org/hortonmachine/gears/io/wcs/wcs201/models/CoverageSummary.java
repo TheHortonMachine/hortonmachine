@@ -31,7 +31,7 @@ public class CoverageSummary implements ICoverageSummary {
     }
 
     public boolean checkElementName(String name) {
-        if (name.equals("wcs:CoverageSummary") || name.endsWith(":CoverageSummary"))
+        if (name.equals("wcs:CoverageSummary") || name.endsWith("CoverageSummary"))
             return true;
         return false;
     }
