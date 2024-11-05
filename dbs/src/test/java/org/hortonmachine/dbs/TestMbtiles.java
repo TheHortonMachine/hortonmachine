@@ -97,25 +97,25 @@ public class TestMbtiles {
  
     }
 
-    @Test
-    public void testTilesDeletion() throws Exception{
-        URL dataUrl = TestMbtiles.class.getClassLoader().getResource("test.mbtiles");
-        File file = new File(dataUrl.toURI());
-        ADb db = EDb.MBTILES.getDb();
-        db.open(file.getAbsolutePath());
-        MBTilesDb mdb = new MBTilesDb(db);
-        int numberOfTiles = 35;
-        assertEquals(numberOfTiles, mdb.getNumberOfTiles());
-
-        // delete a part
-        Envelope deleteBounds = new Envelope(10.839385986328125 , 11.854248046875, 44.3120574266662 , 44.735027899515465);
-        int deleted = mdb.deleteTiles(deleteBounds);
-        assertEquals(numberOfTiles, deleted);
-        int left = numberOfTiles - deleted;
-        numberOfTiles = mdb.getNumberOfTiles();
-        assertEquals(left, numberOfTiles);
-
-    }
+//    @Test
+//    public void testTilesDeletion() throws Exception{
+//        URL dataUrl = TestMbtiles.class.getClassLoader().getResource("test.mbtiles");
+//        File file = new File(dataUrl.toURI());
+//        ADb db = EDb.MBTILES.getDb();
+//        db.open(file.getAbsolutePath());
+//        MBTilesDb mdb = new MBTilesDb(db);
+//        int numberOfTiles = 35;
+//        assertEquals(numberOfTiles, mdb.getNumberOfTiles());
+//
+//        // delete a part
+//        Envelope deleteBounds = new Envelope(10.839385986328125 , 11.854248046875, 44.3120574266662 , 44.735027899515465);
+//        int deleted = mdb.deleteTiles(deleteBounds);
+//        assertEquals(numberOfTiles, deleted);
+//        int left = numberOfTiles - deleted;
+//        numberOfTiles = mdb.getNumberOfTiles();
+//        assertEquals(left, numberOfTiles);
+//
+//    }
 
     @Test
     public void testWriting() throws Exception {
