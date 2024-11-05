@@ -1128,8 +1128,6 @@
 					<serverId>ossrh</serverId>
 					<nexusUrl>https://oss.sonatype.org/</nexusUrl>
 					<autoReleaseAfterClose>true</autoReleaseAfterClose>
-                    <username>${env.OSSRH_USERNAME}</username>
-                    <password>${env.OSSRH_TOKEN}</password>
 				</configuration>
 			</plugin>
 		</plugins>

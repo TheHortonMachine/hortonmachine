@@ -40,16 +40,7 @@ jobs:
 
     - name: Build and Deploy Snapshot
       run: |
-        mvn --no-transfer-progress \
-          --batch-mode \
-          -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} \
-          -Dossrh.username=${{ secrets.OSSRH_USERNAME }} \
-          -Dossrh.password=${{ secrets.OSSRH_TOKEN }} \
-          clean deploy \
-          -DskipTests=true \
-          -P release \
-          -Dmaven.javadoc.skip=true \
-          -Dgpg.skip=false
+        mvn deploy
 
   build-and-test:
     runs-on: ubuntu-22.04
