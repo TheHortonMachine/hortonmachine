@@ -21,8 +21,8 @@ jobs:
         java-version: '11'
         cache: 'maven'
         server-id: ossrh
-        server-username: ${{ secrets.OSSRH_USERNAME }}
-        server-password: ${{ secrets.OSSRH_TOKEN }}
+        server-username: MAVEN_USERNAME
+        server-password: MAVEN_PASSWORD
         gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
 
@@ -42,6 +42,8 @@ jobs:
       run: |
         mvn deploy -DskipTests=true -P release -Dmaven.javadoc.skip=true -Dgpg.skip=false
       env:
+        MAVEN_PASSWORD: ${{ secrets.OSSRH_TOKEN }}
+        MAVEN_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
 
   # build-and-test:
