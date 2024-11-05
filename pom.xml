@@ -1150,9 +1150,11 @@
 						<version>1.5</version>
 						<configuration>
 							<gpgArguments>
+								<arg>--batch</arg>
+								<arg>--yes</arg>
+								<arg>--no-tty</arg>
 								<arg>--pinentry-mode</arg>
 								<arg>loopback</arg>
-								<arg>--no-tty</arg>
 							</gpgArguments>
 						</configuration>
 						<executions>
