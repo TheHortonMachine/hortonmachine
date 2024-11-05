@@ -26,9 +26,7 @@ jobs:
 
     - name: Run Tests
       run: |
-        mvn --no-transfer-progress \
-          --batch-mode \
-          clean verify
+        mvn clean verify
 
     - id: install-secret-key
       name: Install gpg secret key
@@ -40,7 +38,7 @@ jobs:
 
     - name: Build and Deploy Snapshot
       run: |
-        mvn deploy -DskipTests=true -Dmaven.javadoc.skip=true
+        mvn deploy -DskipTests=true -P release -Dmaven.javadoc.skip=true -Dgpg.skip=false
 
   # build-and-test:
   #   runs-on: ubuntu-22.04
