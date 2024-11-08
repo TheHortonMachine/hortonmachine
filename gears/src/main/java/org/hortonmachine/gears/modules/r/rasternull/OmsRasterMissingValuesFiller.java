@@ -44,6 +44,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -54,10 +58,15 @@ import org.hortonmachine.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.LinearDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.TPSInterpolator;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.index.strtree.STRtree;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -89,7 +98,11 @@ public class OmsRasterMissingValuesFiller extends HMModel {
 
     @Description(OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION)
     @In
-    public GridCoverage2D inMask;
+    public GridCoverage2D inRasterMask;
+
+    @Description(OMSRASTERNULLFILLER_IN_VECTORMASK_DESCRIPTION)
+    @In
+    public SimpleFeatureCollection inVectorMask;
 
     @Description(OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION)
     @In
@@ -123,6 +136,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     public static final String OMSRASTERNULLFILLER_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION = "The raster in which to fill missing values.";
     public static final String OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION = "An optional raster mask on which to fill missing data.";
+    public static final String OMSRASTERNULLFILLER_IN_VECTORMASK_DESCRIPTION = "An optional vector mask on which to fill missing data.";
     public static final String OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION = "The min distance to consider for the interpolation (in cells).";
     public static final String OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION = "The max distance to consider for the interpolation (in cells).";
     public static final String OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION = "The new raster.";
@@ -166,8 +180,15 @@ public class OmsRasterMissingValuesFiller extends HMModel {
                         .build();) {
 
             HMRaster mask = null;
-            if (inMask != null) {
-                mask = HMRaster.fromGridCoverage(inMask);
+            if (inRasterMask != null) {
+                mask = HMRaster.fromGridCoverage(inRasterMask);
+            }
+
+            PreparedGeometry vectorMask = null;
+            if (inVectorMask != null) {
+                List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(inVectorMask, false, null);
+                Geometry union = CascadedPolygonUnion.union(geoms);
+                vectorMask = PreparedGeometryFactory.prepare(union);
             }
 
             List<Coordinate> novaluePoints = new ArrayList<>();
@@ -176,17 +197,18 @@ public class OmsRasterMissingValuesFiller extends HMModel {
                     novaluePoints.add(new Coordinate(col, row));
                 }
             });
+            pm.message("Found holes:" + novaluePoints.size());
 
             if (doUseOnlyBorderValues) {
-                processUsingOnlyBorderValues(interpolator, inData, mask, outData, novaluePoints);
+                processUsingOnlyBorderValues(interpolator, inData, mask, vectorMask, outData, novaluePoints);
             } else {
-                processUsingAllValues(interpolator, inData, mask, outData, novaluePoints);
+                processUsingAllValues(interpolator, inData, mask, vectorMask, outData, novaluePoints);
             }
         }
     }
 
-    private void processUsingAllValues( ISurfaceInterpolator interpolator, HMRaster inData, HMRaster mask, HMRaster outData,
-            List<Coordinate> novaluePoints ) throws IOException {
+    private void processUsingAllValues( ISurfaceInterpolator interpolator, HMRaster inData, HMRaster mask,
+            PreparedGeometry vectorMask, HMRaster outData, List<Coordinate> novaluePoints ) throws IOException {
         // now find touching points with values
         pm.beginTask("Filling holes...", novaluePoints.size());
         for( Coordinate noValuePoint : novaluePoints ) {
@@ -195,7 +217,15 @@ public class OmsRasterMissingValuesFiller extends HMModel {
                 pm.worked(1);
                 continue;
             }
-
+            if (vectorMask != null) {
+                Coordinate w = inData.getWorld((int) noValuePoint.x, (int) noValuePoint.y);
+                Point nvPoint = gf.createPoint(w);
+                if (!vectorMask.intersects(nvPoint)) {
+                    // do not fill when not in ROI
+                    pm.worked(1);
+                    continue;
+                }
+            }
             List<Coordinate> result = inData.getSurroundingCells((int) noValuePoint.x, (int) noValuePoint.y, pMaxDistance, true);
             result = result.stream().filter(c -> !inData.isNovalue(c.z) && c.distance(noValuePoint) > pMinDistance)
                     .collect(Collectors.toList());
@@ -215,7 +245,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     }
 
     private void processUsingOnlyBorderValues( ISurfaceInterpolator interpolator, HMRaster inData, HMRaster mask,
-            HMRaster outData, List<Coordinate> novaluePoints ) throws IOException {
+            PreparedGeometry vectorMask, HMRaster outData, List<Coordinate> novaluePoints ) throws IOException {
         // now find touching points with values
         STRtree touchingPointsTreetree = new STRtree();
         TreeSet<String> checkSet = new TreeSet<>();
@@ -245,6 +275,14 @@ public class OmsRasterMissingValuesFiller extends HMModel {
                 // do not fill when the mask does not have value
                 pm.worked(1);
                 continue;
+            }
+            if (vectorMask != null) {
+                Point nvPoint = gf.createPoint(noValuePoint);
+                if (!vectorMask.intersects(nvPoint)) {
+                    // do not fill when not in ROI
+                    pm.worked(1);
+                    continue;
+                }
             }
             // get points with values in range
             Envelope env = new Envelope(new Coordinate(noValuePoint.x, noValuePoint.y));
@@ -299,5 +337,26 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             return entry.getKey();
         }
 
+    }
+
+    public static void main( String[] args ) throws Exception {
+        int cells = 5;
+        String mode = "IDW";
+        OmsRasterMissingValuesFiller transformer = new OmsRasterMissingValuesFiller();
+        transformer.inRaster = OmsRasterReader
+                .readRaster("/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/zscore_holes_1.tif");
+//        transformer.inRasterMask = inMask;
+        transformer.inVectorMask = OmsVectorReader.readVector(
+                "/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/fiumi_rappresentabili_buffer.shp");
+        transformer.doUseOnlyBorderValues = false;
+        transformer.pMaxDistance = cells;
+        transformer.pMinDistance = 0;
+        transformer.pMode = mode;
+        transformer.process();
+        GridCoverage2D outGC = transformer.outRaster;
+        OmsRasterWriter.writeRaster(
+                "/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/zscore_holes_1_filled_" + mode
+                        + "_" + cells + ".tif",
+                outGC);
     }
 }

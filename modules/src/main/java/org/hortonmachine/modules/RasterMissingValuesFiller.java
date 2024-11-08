@@ -102,7 +102,7 @@ public class RasterMissingValuesFiller extends HMModel {
         OmsRasterMissingValuesFiller ormvf = new OmsRasterMissingValuesFiller();
         ormvf.pm = pm;
         ormvf.inRaster = getRaster(inRaster);
-        ormvf.inMask = getRaster(inMask);
+        ormvf.inRasterMask = getRaster(inMask);
         ormvf.pMinDistance = pMinDistance;
         ormvf.pMaxDistance = pMaxDistance;
         ormvf.doUseOnlyBorderValues = doUseOnlyBorderValues;

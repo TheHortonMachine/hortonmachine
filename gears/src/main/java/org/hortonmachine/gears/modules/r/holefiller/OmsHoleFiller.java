@@ -118,7 +118,7 @@ public class OmsHoleFiller extends HMModel {
     public static final String OMSHOLEFILLER_IN_RASTER_DESCRIPTION = "The raster to fill holes in.";
     public static final String OMSHOLEFILLER_MODE_DESCRIPTION = "The interpolation mode to use.";
     public static final String OMSHOLEFILLER_P_BUFFER_DESCRIPTION = "The buffer to use for interpolation.";
-    public static final String OMSHOLEFILLER_IN_ROI_DESCRIPTION = "The regions vector map on which to checkc for nulls.";
+    public static final String OMSHOLEFILLER_IN_ROI_DESCRIPTION = "The regions vector map on which to check for nulls.";
 
     public static final String OMSHOLEFILLER_OUT_RASTER_DESCRIPTION = "The new raster.";
 

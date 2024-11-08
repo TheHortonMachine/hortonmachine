@@ -56,6 +56,11 @@ public class GridNode extends Node {
 
     private static DecimalFormat f = new DecimalFormat("0.0000000");
     private List<GridNode> nodes;
+    
+    
+    public GridNode (HMRaster raster, int col, int row) {
+        this(raster.getIter(), raster.getCols(), raster.getRows(), raster.getXRes(), raster.getYRes(), col, row, raster.getNovalue());
+    }
 
     /**
      * The constructor.
@@ -317,12 +322,15 @@ public class GridNode extends Node {
             int tmpCol = col + c;
             for( int r = -delta; r <= delta; r++ ) {
                 int tmpRow = row + r;
-                GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow, doubleNovalue);
-                windowNodes.add(n);
+                if (isInRaster(tmpCol, tmpRow)) {
+                    GridNode n = new GridNode(gridIter, cols, rows, xRes, yRes, tmpCol, tmpRow, doubleNovalue);
+                    windowNodes.add(n);
+                }
             }
         }
         return windowNodes;
     }
+
 
     /**
      * Get the value of the elevation in one of the surrounding direction.

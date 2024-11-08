@@ -70,7 +70,7 @@ public class TestRasterMissingFiller extends HMTestCase {
 
         OmsRasterMissingValuesFiller transformer = new OmsRasterMissingValuesFiller();
         transformer.inRaster = inCoverage;
-        transformer.inMask = inMask;
+        transformer.inRasterMask = inMask;
         transformer.doUseOnlyBorderValues = false;
         transformer.pMaxDistance = 1;
         transformer.pMinDistance = 0;
@@ -99,7 +99,7 @@ public class TestRasterMissingFiller extends HMTestCase {
 
         OmsRasterMissingValuesFiller transformer = new OmsRasterMissingValuesFiller();
         transformer.inRaster = inCoverage;
-        transformer.inMask = inMask2;
+        transformer.inRasterMask = inMask2;
         transformer.doUseOnlyBorderValues = false;
         transformer.pMaxDistance = 1;
         transformer.pMinDistance = 0;
@@ -128,7 +128,7 @@ public class TestRasterMissingFiller extends HMTestCase {
 
         OmsRasterMissingValuesFiller transformer = new OmsRasterMissingValuesFiller();
         transformer.inRaster = inCoverage;
-        transformer.inMask = inMask;
+        transformer.inRasterMask = inMask;
         transformer.doUseOnlyBorderValues = false;
         transformer.pMaxDistance = 3;
         transformer.pMinDistance = 0;

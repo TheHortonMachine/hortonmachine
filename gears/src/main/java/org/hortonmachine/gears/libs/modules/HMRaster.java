@@ -152,6 +152,10 @@ public class HMRaster implements AutoCloseable {
     public GridGeometry2D getGridGeometry() {
         return gridGeometry;
     }
+    
+    public RandomIter getIter() {
+        return iter;
+    }
 
     /**
      * @return the columns of this raster.
