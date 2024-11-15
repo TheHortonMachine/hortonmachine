@@ -1,11 +1,6 @@
 package org.hortonmachine.gears.io.stac;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
-
+import com.amazonaws.services.s3.AmazonS3;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -37,10 +32,17 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
 @SuppressWarnings({"rawtypes"})
 /**
  * A stac collection.
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
@@ -49,6 +51,7 @@ public class HMStacCollection {
     private Collection collection;
     private SearchQuery search;
     private IHMProgressMonitor pm;
+    private AmazonS3 s3Client;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
@@ -86,7 +89,7 @@ public class HMStacCollection {
 
     /**
      * Set temporal filter for search query;
-     * 
+     *
      * @param startTimestamp
      * @param endTimestamp
      * @return the current collection.
@@ -101,20 +104,36 @@ public class HMStacCollection {
 
     /**
      * Set geometry intersection filter for search query;
-     * 
+     *
      * @param intersectionGeometry
      * @return the current collection.
      */
     public HMStacCollection setGeometryFilter( Geometry intersectionGeometry ) {
         if (search == null)
             search = new SearchQuery();
+        else if (search.getBbox() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
         search.setIntersects(intersectionGeometry);
         return this;
     }
 
     /**
+     * Set the geometry bbox filter for search query
+     * @param bbox
+     * @return the current collection.
+     */
+    public HMStacCollection setBboxFilter( double[] bbox ) {
+        if (search == null)
+            search = new SearchQuery();
+        else if (search.getIntersects() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
+        search.setBbox(bbox);
+        return this;
+    }
+
+    /**
      * Set cql filter for search query;
-     * 
+     *
      * @param cqlFilter
      * @return the current collection.
      * @throws CQLException
@@ -126,12 +145,21 @@ public class HMStacCollection {
         return this;
     }
 
+    private SimpleFeatureCollection queryFeatureCollection() throws IOException {
+        try {
+            return stacClient.search(search, STACClient.SearchMode.POST);
+        } catch (IOException e) {
+            pm.message("POST search query not supported by the endpoint. GET will be tried.");
+        }
+        return stacClient.search(search, STACClient.SearchMode.GET);
+    }
+
     public List<HMStacItem> searchItems() throws Exception {
         if (search == null)
             search = new SearchQuery();
         search.setCollections(Arrays.asList(getId()));
 
-        SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+        SimpleFeatureCollection fc = queryFeatureCollection();
         SimpleFeatureIterator iterator = fc.features();
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
@@ -155,7 +183,7 @@ public class HMStacCollection {
 
     /**
      * Read all the raster of a certain band from the items list and merge them to a single raster sized on the given region and resolution.
-     * 
+     *
      * @param latLongRegionMap the region to use for the final raster.
      * @param bandName the name o the band to extract.
      * @param items the list of items containing the various assets to read from.
@@ -164,8 +192,8 @@ public class HMStacCollection {
      * @return the final raster.
      * @throws Exception
      */
-    public static HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
-            boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
+    public HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
+                                            boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
         if (!allowTransform) {
             List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
@@ -218,7 +246,9 @@ public class HMStacCollection {
                         .setNoValue(asset.getNoValue()).build();
             }
 
-            GridCoverage2D readRaster = asset.readRaster(readRegion);
+            GridCoverage2D readRaster = s3Client == null
+                    ? asset.readRaster(readRegion)
+                    : asset.readRaster(readRegion, s3Client);
             outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
             pm.worked(1);
         }
