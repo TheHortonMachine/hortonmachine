@@ -7,6 +7,9 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.RegionMap;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 
@@ -76,10 +79,14 @@ public class TestStacAsset extends HMTestCase {
     }
 
     private S3AsyncClient createDefaultS3Client() {
+        AwsCredentials credentials = AwsBasicCredentials.create(
+                "accessKey",
+                "secretKey"
+        );
         S3AsyncClient client = S3AsyncClient.builder()
                 // We use anonymized credentials for this example.
                 // For testing purposes, add your own credentials and uncomment the following line.
-                //.withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .httpClient(NettyNioAsyncHttpClient.builder().build())
                 .region(Region.US_WEST_2)
                 .build();
         return client;

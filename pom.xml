@@ -936,14 +936,9 @@
 
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
-				<artifactId>ssooidc</artifactId>
+				<artifactId>netty-nio-client</artifactId>
 				<version>${aws.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>software.amazon.awssdk</groupId>
-				<artifactId>apache-client</artifactId>
-				<version>${aws.version}</version>
+				<scope>test</scope>
 				<exclusions>
 					<exclusion>
 						<groupId>commons-logging</groupId>
