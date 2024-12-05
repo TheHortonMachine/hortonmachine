@@ -55,7 +55,7 @@
 
 		<performRelease>false</performRelease>
 
-		<aws.version>1.12.730</aws.version>
+		<aws.version>2.29.14</aws.version>
 	</properties>
 
 
@@ -875,6 +875,24 @@
 				<groupId>edu.ucar</groupId>
 				<artifactId>netcdf4</artifactId>
 				<version>${netcdf.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-java-sdk-s3</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-java-sdk-kms</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>aws-java-sdk-core</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.amazonaws</groupId>
+						<artifactId>jmespath-java</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 			<!-- <dependency> -->
 			<!-- <groupId>edu.ucar</groupId> -->
@@ -895,9 +913,43 @@
 			</dependency>
 
 			<dependency>
-				<groupId>com.amazonaws</groupId>
-				<artifactId>aws-java-sdk-core</artifactId>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>s3</artifactId>
 				<version>${aws.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>software.amazon.awssdk</groupId>
+						<artifactId>netty-nio-client</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>software.amazon.awssdk</groupId>
+						<artifactId>apache-client</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>sso</artifactId>
+				<version>${aws.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>ssooidc</artifactId>
+				<version>${aws.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>software.amazon.awssdk</groupId>
+				<artifactId>apache-client</artifactId>
+				<version>${aws.version}</version>
+				<exclusions>
+					<exclusion>
+						<groupId>commons-logging</groupId>
+						<artifactId>commons-logging</artifactId>
+					</exclusion>
+				</exclusions>
 			</dependency>
 
 		</dependencies>

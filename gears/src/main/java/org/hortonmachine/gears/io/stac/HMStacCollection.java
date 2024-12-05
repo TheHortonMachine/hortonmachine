@@ -1,6 +1,5 @@
 package org.hortonmachine.gears.io.stac;
 
-import com.amazonaws.services.s3.AmazonS3;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -31,6 +30,7 @@ import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class HMStacCollection {
     private Collection collection;
     private SearchQuery search;
     private IHMProgressMonitor pm;
-    private AmazonS3 s3Client;
+    private S3AsyncClient s3Client;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;

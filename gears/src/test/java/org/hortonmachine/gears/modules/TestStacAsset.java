@@ -1,9 +1,5 @@
 package org.hortonmachine.gears.modules;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,6 +7,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.RegionMap;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.s3.S3AsyncClient;
 
 public class TestStacAsset extends HMTestCase {
     private ObjectMapper mapper = new ObjectMapper();
@@ -77,17 +75,12 @@ public class TestStacAsset extends HMTestCase {
         assertNotNull(grid);
     }
 
-    private AmazonS3 createDefaultS3Client(String region) {
-        AWSCredentials credentials = new BasicAWSCredentials(
-                "accessKey",
-                "secretKey"
-        );
-        AmazonS3 client = AmazonS3ClientBuilder
-                .standard()
+    private S3AsyncClient createDefaultS3Client() {
+        S3AsyncClient client = S3AsyncClient.builder()
                 // We use anonymized credentials for this example.
                 // For testing purposes, add your own credentials and uncomment the following line.
                 //.withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion("us-west-2")
+                .region(Region.US_WEST_2)
                 .build();
         return client;
     }
@@ -98,7 +91,7 @@ public class TestStacAsset extends HMTestCase {
         String assetId = "rainfall";
         HMStacAsset hmAsset = new HMStacAsset(assetId, node);
         RegionMap regionMap = RegionMap.fromBoundsAndGrid(1640000.0, 1640200.0, 5140000.0, 5140160.0, 20, 16);
-        AmazonS3 s3Client = createDefaultS3Client("us-west-2");
+        S3AsyncClient s3Client = createDefaultS3Client();
 
         GridCoverage2D grid = hmAsset.readRaster(regionMap, s3Client);
 
