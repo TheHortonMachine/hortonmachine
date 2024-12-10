@@ -9,6 +9,7 @@ import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.RegionMap;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
@@ -78,7 +79,7 @@ public class TestStacAsset extends HMTestCase {
         assertNotNull(grid);
     }
 
-    private S3AsyncClient createDefaultS3Client() {
+    private S3AsyncClient createDefaultS3Client(Region region) {
         AwsCredentials credentials = AwsBasicCredentials.create(
                 "accessKey",
                 "secretKey"
@@ -86,8 +87,9 @@ public class TestStacAsset extends HMTestCase {
         S3AsyncClient client = S3AsyncClient.builder()
                 // We use anonymized credentials for this example.
                 // For testing purposes, add your own credentials and uncomment the following line.
+                //.credentialsProvider(StaticCredentialsProvider.create(credentials))
                 .httpClient(NettyNioAsyncHttpClient.builder().build())
-                .region(Region.US_WEST_2)
+                .region(region)
                 .build();
         return client;
     }
@@ -98,8 +100,8 @@ public class TestStacAsset extends HMTestCase {
         String assetId = "rainfall";
         HMStacAsset hmAsset = new HMStacAsset(assetId, node);
         RegionMap regionMap = RegionMap.fromBoundsAndGrid(1640000.0, 1640200.0, 5140000.0, 5140160.0, 20, 16);
-        S3AsyncClient s3Client = createDefaultS3Client();
 
+        S3AsyncClient s3Client = createDefaultS3Client(Region.of("us-west-2"));
         GridCoverage2D grid = hmAsset.readRaster(regionMap, s3Client);
 
         assertNotNull(grid);

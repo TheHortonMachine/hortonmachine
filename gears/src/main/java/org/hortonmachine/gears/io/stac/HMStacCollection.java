@@ -145,6 +145,11 @@ public class HMStacCollection {
         return this;
     }
 
+    public HMStacCollection setS3Client( S3AsyncClient s3Client ) {
+        this.s3Client = s3Client;
+        return this;
+    }
+
     private SimpleFeatureCollection queryFeatureCollection() throws IOException {
         try {
             return stacClient.search(search, STACClient.SearchMode.POST);
