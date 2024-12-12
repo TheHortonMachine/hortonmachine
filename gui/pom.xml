@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.10.9-SNAPSHOT</version>
+		<version>0.10.9-SNAPSHOT-S3-SDK-2.0</version>
 	</parent>
 
 	<artifactId>hm-gui</artifactId>
@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-modules</artifactId>
-			<version>0.10.9-SNAPSHOT</version>
+			<version>0.10.9-SNAPSHOT-S3-SDK-2.0</version>
 		</dependency>
 
 		<dependency>
