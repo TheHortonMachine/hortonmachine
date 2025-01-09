@@ -50,7 +50,9 @@ public class HMStacAsset {
             if (titleNode != null) {
                 title = titleNode.textValue();
             }
-            if (type.toLowerCase().contains("profile=cloud-optimized")) {
+            if (HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""))) {
+                assetUrl = assetNode.get("href").textValue();
+
                 JsonNode rasterBandNode = assetNode.get("raster:bands");
                 assetUrl = assetNode.get("href").textValue();
                 if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
@@ -69,7 +71,7 @@ public class HMStacAsset {
                 }
             } else {
                 isValid = false;
-                nonValidReason = "not a COG";
+                nonValidReason = "not a valid type";
             }
         } else {
             nonValidReason = "type information not available";
