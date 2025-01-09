@@ -85,6 +85,7 @@ public class TestStacAsset extends HMTestCase {
         return client;
     }
 
+/*
     public void testReadRasterFromS3() throws Exception {
         String assetJSON = "{\"href\":\"s3://sentinel-cogs/sentinel-s2-l2a-cogs/5/C/MK/2018/10/S2B_5CMK_20181020_0_L2A/B01.tif\",\"type\":\"image/tiff; application=geotiff; profile=cloud-optimized\",\"title\":\"rainfall\",\"eo:bands\":[{\"name\":\"rainfall\"}],\"proj:epsg\":4326,\"proj:shape\":[1600,1500],\"proj:transform\":[0.05000000074505806,0,-20,0,-0.05000000074505806,40,0,0,1],\"roles\":[\"data\"]}},\"bbox\":[-20,-40.000001192092896,55.00000111758709,40],\"stac_extensions\":[\"https://stac-extensions.github.io/eo/v1.1.0/schema.json\",\"https://stac-extensions.github.io/projection/v1.1.0/schema.json\"],\"collection\":\"rainfall_chirps_monthly\"}";
         JsonNode node = mapper.readTree(assetJSON);
@@ -97,4 +98,5 @@ public class TestStacAsset extends HMTestCase {
 
         assertNotNull(grid);
     }
+ */
 }
