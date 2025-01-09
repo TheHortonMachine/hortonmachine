@@ -48,10 +48,10 @@ public class HMStacAsset {
                 title = titleNode.textValue();
             }
             if (HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""))) {
+                assetUrl = assetNode.get("href").textValue();
+
                 JsonNode rasterBandNode = assetNode.get("raster:bands");
                 if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
-                    assetUrl = assetNode.get("href").textValue();
-
                     Iterator<JsonNode> rbIterator = rasterBandNode.elements();
                     while( rbIterator.hasNext() ) {
                         JsonNode rbNode = rbIterator.next();
@@ -64,9 +64,6 @@ public class HMStacAsset {
                             resolution = resolNode.asDouble();
                         }
                     }
-                } else {
-                    isValid = false;
-                    nonValidReason = "raster bands metadata missing";
                 }
             } else {
                 isValid = false;
