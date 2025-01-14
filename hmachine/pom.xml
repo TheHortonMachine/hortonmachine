@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.10.9-SNAPSHOT-S3-SDK-2.0</version>
+		<version>0.10.9-S3-SDK-2.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gears</artifactId>
-			<version>0.10.9-SNAPSHOT-S3-SDK-2.0</version>
+			<version>0.10.9-S3-SDK-2.0-SNAPSHOT</version>
 		</dependency>
         
         <dependency>
