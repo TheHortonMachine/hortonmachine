@@ -9,10 +9,8 @@ import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.RegionMap;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
 import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Client;
 
 public class TestStacAsset extends HMTestCase {
     private ObjectMapper mapper = new ObjectMapper();
@@ -70,16 +68,15 @@ public class TestStacAsset extends HMTestCase {
         assertNotNull(grid);
     }
 
-    private S3AsyncClient createDefaultS3Client(Region region) {
+    private S3Client createDefaultS3Client(Region region) {
         AwsCredentials credentials = AwsBasicCredentials.create(
                 "accessKey",
                 "secretKey"
         );
-        S3AsyncClient client = S3AsyncClient.builder()
+        S3Client client = S3Client.builder()
                 // We use anonymized credentials for this example.
                 // For testing purposes, add your own credentials and uncomment the following line.
                 //.credentialsProvider(StaticCredentialsProvider.create(credentials))
-                .httpClient(NettyNioAsyncHttpClient.builder().build())
                 .region(region)
                 .build();
         return client;

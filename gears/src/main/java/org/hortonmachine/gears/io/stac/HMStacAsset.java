@@ -11,16 +11,12 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import software.amazon.awssdk.core.ResponseInputStream;
-import software.amazon.awssdk.core.async.AsyncResponseTransformer;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * An asset from a stac item.
@@ -101,7 +97,7 @@ public class HMStacAsset {
      * @return the read raster from the asset's url.
      * @throws Exception
      */
-    public GridCoverage2D readRaster( RegionMap region, String user, String password, S3AsyncClient s3Client ) throws Exception {
+    public GridCoverage2D readRaster( RegionMap region, String user, String password, S3Client s3Client ) throws Exception {
         BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
         if (user != null && password != null) {
             cogUri.setUser(user);
@@ -131,24 +127,22 @@ public class HMStacAsset {
         return coverage;
     }
 
-    public InputStream readS3Raster(BasicAuthURI cogUri, S3AsyncClient s3Client ) throws IOException {
+    public InputStream readS3Raster(BasicAuthURI cogUri, S3Client s3Client ) throws IOException {
         String[] bucketAndObject = assetUrl.split("://")[1].split("/", 2);
 
-        CompletableFuture<ResponseInputStream<GetObjectResponse>> inputStreamFuture = s3Client.getObject(
+        return s3Client.getObject(
                 GetObjectRequest.builder()
                         .bucket(bucketAndObject[0])
                         .key(bucketAndObject[1])
-                        .build(),
-                AsyncResponseTransformer.toBlockingInputStream()
+                        .build()
         );
-        return inputStreamFuture.join();
     }
 
     public GridCoverage2D readRaster( RegionMap region ) throws Exception {
         return readRaster(region, null, null, null );
     }
 
-    public GridCoverage2D readRaster( RegionMap region, S3AsyncClient s3Client ) throws Exception {
+    public GridCoverage2D readRaster( RegionMap region, S3Client s3Client ) throws Exception {
         return readRaster(region, null, null, s3Client );
     }
 

@@ -30,7 +30,7 @@ import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
-import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class HMStacCollection {
     private Collection collection;
     private SearchQuery search;
     private IHMProgressMonitor pm;
-    private S3AsyncClient s3Client;
+    private S3Client s3Client;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
@@ -145,7 +145,7 @@ public class HMStacCollection {
         return this;
     }
 
-    public HMStacCollection setS3Client( S3AsyncClient s3Client ) {
+    public HMStacCollection setS3Client( S3Client s3Client ) {
         this.s3Client = s3Client;
         return this;
     }
