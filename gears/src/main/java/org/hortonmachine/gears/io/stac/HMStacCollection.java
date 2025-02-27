@@ -262,6 +262,71 @@ public class HMStacCollection {
         return outRaster;
     }
 
+    // TODO merge this method with the one above
+    public static HMRaster readRasterBandOnRegionStatic( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
+                                            boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
+
+        if (!allowTransform) {
+            List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
+            if (epsgs.size() > 1) {
+                throw new IllegalArgumentException(
+                        "Multiple epsg detected when no transform allowed: " + epsgs.stream().collect(Collectors.joining(",")));
+            }
+        }
+
+        // use the first srid as the output srid.
+        Integer firstItemSrid = 4326;// TODO don't hardcode this items.get(0).getEpsg();
+        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
+        ReferencedEnvelope roiEnvelopeFirstItemCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
+                DefaultGeographicCRS.WGS84).transform(outputCrs, true);
+        Polygon roiGeometryFirstItemCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstItemCrs);
+
+        CoordinateReferenceSystem firstItemCRS = CRS.decode("EPSG:" + firstItemSrid);
+
+        int cols = latLongRegionMap.getCols();
+        int rows = latLongRegionMap.getRows();
+
+        HMRaster outRaster = null;
+
+        String fileName = null;
+        pm.beginTask("Reading " + bandName + "...", items.size());
+        for( HMStacItem item : items ) {
+            int currentSrid = 4326;// TODO don't hardcode this item.getEpsg();
+            CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
+            Geometry geometry = item.getGeometry();
+
+            if (firstItemSrid != currentSrid) {
+                MathTransform transform = CRS.findMathTransform(currentItemCRS, firstItemCRS);
+                geometry = JTS.transform(geometry, transform);
+            }
+            Geometry intersectionFirstItemCrs = geometry.intersection(roiGeometryFirstItemCrs);
+            Envelope currentItemReadEnvelopeFIrstItemCrs = intersectionFirstItemCrs.getEnvelopeInternal();
+
+            ReferencedEnvelope roiEnvCurrentItemCrs = new ReferencedEnvelope(currentItemReadEnvelopeFIrstItemCrs, firstItemCRS)
+                    .transform(currentItemCRS, true);
+
+            RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentItemCrs.getMinX(), roiEnvCurrentItemCrs.getMaxX(),
+                    roiEnvCurrentItemCrs.getMinY(), roiEnvCurrentItemCrs.getMaxY(), cols, rows);
+
+            HMStacAsset asset = item.getAssets().stream().filter(as -> as.getId().equals(bandName)).findFirst().get();
+            int lastSlash = asset.getAssetUrl().lastIndexOf('/');
+            fileName = asset.getAssetUrl().substring(lastSlash + 1);
+            if (outRaster == null) {
+                outRaster = new HMRasterWritableBuilder().setName(fileName)
+                        .setRegion(RegionMap.fromEnvelopeAndGrid(roiEnvelopeFirstItemCrs, cols, rows)).setCrs(outputCrs)
+                        .setNoValue(asset.getNoValue()).build();
+            }
+
+            GridCoverage2D readRaster = asset.readRaster(readRegion);
+            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
+            pm.worked(1);
+        }
+        pm.done();
+
+        return outRaster;
+    }
+
+
     public static Geometry getCoveredArea( List<HMStacItem> items ) {
         List<Geometry> geometries = items.stream().map(item -> item.getGeometry()).collect(Collectors.toList());
         Geometry union = CascadedPolygonUnion.union(geometries);
