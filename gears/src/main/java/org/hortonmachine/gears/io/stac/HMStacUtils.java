@@ -32,4 +32,6 @@ public class HMStacUtils {
     final static List<String> ACCEPTED_TYPES = Arrays.asList("image/tiff;application=geotiff", "image/vnd.stac.geotiff",
             "image/tiff;application=geotiff;profile=cloud-optimized", "image/vnd.stac.geotiff;profile=cloud-optimized", "image/vnd.stac.geotiff;cloud-optimized=true",
             "application/geo+json");
+
+    final static List<String> ACCEPTED_EXTENSIONS = Arrays.asList("tif", "tiff", "gtiff");
 }
