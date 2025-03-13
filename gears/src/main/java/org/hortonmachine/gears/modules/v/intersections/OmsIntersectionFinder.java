@@ -30,7 +30,10 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_O
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_STATUS;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -83,6 +86,8 @@ public class OmsIntersectionFinder extends HMModel {
     @Out
     public SimpleFeatureCollection outLinesMap = null;
 
+    public boolean doParallel = false;
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outPointsMap == null && outLinesMap == null, doReset)) {
@@ -124,12 +129,21 @@ public class OmsIntersectionFinder extends HMModel {
 
         List<Geometry> geometriesList = FeatureUtilities.featureCollectionToGeometriesList(inMap, true, null);
 
-        int id = 0;
         pm.beginTask("Checking intersections...", size);
         for( int i = 0; i < size; i++ ) {
             LineString line = (LineString) geometriesList.get(i);
             PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
-            for( int j = i + 1; j < size; j++ ) {
+            
+            List<SimpleFeature> pointsList = Collections.synchronizedList(new ArrayList<>());
+            List<SimpleFeature> linesList = Collections.synchronizedList(new ArrayList<>());
+
+            
+            IntStream stream = IntStream.range(i + 1, size);
+            if( doParallel ) {
+                stream = stream.parallel();
+            }
+            stream.parallel().forEach(j -> {
+
                 LineString otherLine = (LineString) geometriesList.get(j);
 
                 if (preparedLine.intersects(otherLine)) {
@@ -147,14 +161,14 @@ public class OmsIntersectionFinder extends HMModel {
                                     || end1.distance(start2) < NumericsUtilities.D_TOLERANCE
                                     || end1.distance(end2) < NumericsUtilities.D_TOLERANCE) {
                                 // it is the same point
-                                continue;
+                                return;
                             }
                         } else if (numGeometries == 2) {
                             // could still be connected lines
                             if ((start1.distance(end2) < NumericsUtilities.D_TOLERANCE && start2.distance(end1) < NumericsUtilities.D_TOLERANCE)
                                     || (start1.distance(start2) < NumericsUtilities.D_TOLERANCE && end1.distance(end2) < NumericsUtilities.D_TOLERANCE)) {
                                 // it is the same point
-                                continue;
+                                return;
                             }
                         }
                     }
@@ -167,19 +181,29 @@ public class OmsIntersectionFinder extends HMModel {
                             Point p = (Point) geometryN;
                             Object[] values = new Object[]{p};
                             builder.addAll(values);
-                            SimpleFeature feature = builder.buildFeature(pointType.getTypeName() + "." + id++);
-                            ((DefaultFeatureCollection) outPointsMap).add(feature);
+                            SimpleFeature feature = builder.buildFeature(null);
+                            pointsList.add(feature);
+                            // ((DefaultFeatureCollection) outPointsMap).add(feature);
                         } else if (geometryN instanceof LineString) {
                             SimpleFeatureBuilder builder = new SimpleFeatureBuilder(linesType);
                             LineString l = (LineString) geometryN;
                             Object[] values = new Object[]{l};
                             builder.addAll(values);
-                            SimpleFeature feature = builder.buildFeature(linesType.getTypeName() + "." + id++);
-                            ((DefaultFeatureCollection) outLinesMap).add(feature);
+                            SimpleFeature feature = builder.buildFeature(null);
+                            linesList.add(feature);
+                            // ((DefaultFeatureCollection) outLinesMap).add(feature);
                         }
 
                     }
                 }
+            
+            });
+
+            if( !pointsList.isEmpty() ) {
+                ((DefaultFeatureCollection) outPointsMap).addAll(pointsList);
+            }
+            if( !linesList.isEmpty() ) {
+                ((DefaultFeatureCollection) outLinesMap).addAll(linesList);
             }
             pm.worked(1);
         }

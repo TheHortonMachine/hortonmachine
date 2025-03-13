@@ -1377,7 +1377,7 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
 
                     try {
-                        databaseViewer.runQuery("SELECT * FROM pg_stat_activity;", null);
+                        databaseViewer.runQuery("SELECT pid, datname, usename, state, application_name, client_addr, query_start, query FROM pg_stat_activity order by datname, usename;", null);
                     } catch (Exception e1) {
                         GuiUtilities.handleError(databaseViewer, e1);
                         Logger.INSTANCE.e("Error", e1);
@@ -1396,8 +1396,11 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
 
                     try {
+                        ConnectionData connectionData = databaseViewer.currentConnectedSqlDatabase.getConnectionData();
+                        String[] split = connectionData.connectionLabel.split("/");
+                        String dbName = split[split.length - 1];
                         String sql = "SELECT pid, datname, usename FROM  pg_stat_activity "
-                                + "WHERE  state in ('idle', 'idle in transaction', 'idle in transaction (aborted)', 'disabled') "
+                                + "WHERE usename='" + connectionData.user + "' and datname='"+dbName+"' and state in ('idle', 'idle in transaction', 'idle in transaction (aborted)', 'disabled') "
                                 + "order by datname";
                         QueryResult result = databaseViewer.currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(sql, 0);
 
