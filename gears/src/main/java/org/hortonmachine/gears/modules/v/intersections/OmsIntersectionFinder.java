@@ -18,17 +18,7 @@
  */
 package org.hortonmachine.gears.modules.v.intersections;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_STATUS;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +41,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
@@ -77,7 +68,15 @@ public class OmsIntersectionFinder extends HMModel {
     @Description(OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
-
+    
+    @Description(OMSINTERSECTIONFINDER_doParallel_DESCRIPTION)
+    @In
+    public boolean doParallel = false;
+    
+    @Description(OMSINTERSECTIONFINDER_doIgnoreTouches_DESCRIPTION)
+    @In
+    public boolean doIgnoreTouches = false;
+    
     @Description(OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPointsMap = null;
@@ -86,7 +85,22 @@ public class OmsIntersectionFinder extends HMModel {
     @Out
     public SimpleFeatureCollection outLinesMap = null;
 
-    public boolean doParallel = false;
+
+
+    public static final String OMSINTERSECTIONFINDER_DESCRIPTION = "Finds intersection geometries in feature collections";
+    public static final String OMSINTERSECTIONFINDER_DOCUMENTATION = "";
+    public static final String OMSINTERSECTIONFINDER_KEYWORDS = "Vector";
+    public static final String OMSINTERSECTIONFINDER_LABEL = HMConstants.VECTORPROCESSING;
+    public static final String OMSINTERSECTIONFINDER_NAME = "intersectionfinder";
+    public static final int OMSINTERSECTIONFINDER_STATUS = 10;
+    public static final String OMSINTERSECTIONFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
+    public static final String OMSINTERSECTIONFINDER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSINTERSECTIONFINDER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION = "The map to test for intersections.";
+    public static final String OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION = "The intersections points map.";
+    public static final String OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION = "The intersections lines map.";
+    public static final String OMSINTERSECTIONFINDER_doParallel_DESCRIPTION = "Process in parallel.";
+    public static final String OMSINTERSECTIONFINDER_doIgnoreTouches_DESCRIPTION = "Ignore intersections that are just touches.";
 
     @Execute
     public void process() throws Exception {
@@ -147,6 +161,9 @@ public class OmsIntersectionFinder extends HMModel {
                 LineString otherLine = (LineString) geometriesList.get(j);
 
                 if (preparedLine.intersects(otherLine)) {
+                    if (doIgnoreTouches && preparedLine.touches(otherLine)) {
+                        return;
+                    }
                     Geometry intersection = line.intersection(otherLine);
                     int numGeometries = intersection.getNumGeometries();
                     if (numGeometries < 3) {

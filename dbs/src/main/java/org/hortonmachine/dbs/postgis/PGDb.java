@@ -118,8 +118,8 @@ public class PGDb extends ADb {
                 comboPooledDataSource.setUser(user);
                 comboPooledDataSource.setPassword(password);
             }
-            comboPooledDataSource.setMinPoolSize(5);
-            comboPooledDataSource.setMaxPoolSize(50);
+            comboPooledDataSource.setMinPoolSize(minSize);
+            comboPooledDataSource.setMaxPoolSize(maxSize);
             comboPooledDataSource.setInitialPoolSize(5);
             // The pool will acquire one connection at a time when it 
             // needs more connections.

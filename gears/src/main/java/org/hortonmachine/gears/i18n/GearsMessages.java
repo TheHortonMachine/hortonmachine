@@ -630,18 +630,6 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYWRITER_FILE_NOVALUE_DESCRIPTION = "The file novalue.";
     public static final String OMSID2VALUEARRAYWRITER_DATA_DESCRIPTION = "The map of ids and values arrays to write.";
 
-    public static final String OMSINTERSECTIONFINDER_DESCRIPTION = "Finds intersection geometries in feature collections";
-    public static final String OMSINTERSECTIONFINDER_DOCUMENTATION = "";
-    public static final String OMSINTERSECTIONFINDER_KEYWORDS = "Vector";
-    public static final String OMSINTERSECTIONFINDER_LABEL = VECTORPROCESSING;
-    public static final String OMSINTERSECTIONFINDER_NAME = "intersectionfinder";
-    public static final int OMSINTERSECTIONFINDER_STATUS = 10;
-    public static final String OMSINTERSECTIONFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSINTERSECTIONFINDER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSINTERSECTIONFINDER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION = "The map to test for intersections.";
-    public static final String OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION = "The intersections points map.";
-    public static final String OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION = "The intersections lines map.";
 
     public static final String OMSRANGELOOKUP_DESCRIPTION = "Module for raster rangelookup.";
     public static final String OMSRANGELOOKUP_DOCUMENTATION = "OmsRangeLookup.html";

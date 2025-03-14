@@ -3,10 +3,11 @@ name: Build and Release Snapshot
 on:
   push:
     branches:
+      - master
 
 jobs:
   build-and-release:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     if: github.ref == 'refs/heads/master'
 

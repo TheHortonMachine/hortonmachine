@@ -38,6 +38,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.process.raster.ContourProcess;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.GeotoolsProgressMonitorAdapter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.locationtech.jts.geom.Geometry;
