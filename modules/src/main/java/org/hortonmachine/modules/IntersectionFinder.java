@@ -17,17 +17,7 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSINTERSECTIONFINDER_STATUS;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
