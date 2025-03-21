@@ -37,6 +37,7 @@ import org.opengis.feature.type.GeometryDescriptor;
  */
 public class FeatureGeometrySubstitutor {
     private SimpleFeatureType newFeatureType;
+    private int geomIndex = -1;
 
     public FeatureGeometrySubstitutor( SimpleFeatureType oldFeatureType ) throws Exception {
         this(oldFeatureType, null);
@@ -58,13 +59,23 @@ public class FeatureGeometrySubstitutor {
 
         if (newGeometryType == null) {
             b.addAll(oldAttributeDescriptors);
+            int index = 0;
+            for( AttributeDescriptor attributeDescriptor : oldAttributeDescriptors ) {
+                if (attributeDescriptor instanceof GeometryDescriptor) {
+                    geomIndex = index;
+                }
+                index++;
+            }
         } else {
+            int index = 0;
             for( AttributeDescriptor attributeDescriptor : oldAttributeDescriptors ) {
                 if (attributeDescriptor instanceof GeometryDescriptor) {
                     b.add("the_geom", newGeometryType);
+                    geomIndex = index;
                 } else {
                     b.add(attributeDescriptor);
                 }
+                index++;
             }
         }
         newFeatureType = b.buildFeatureType();
@@ -87,7 +98,7 @@ public class FeatureGeometrySubstitutor {
         Object[] attributes = oldFeature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
-        newAttributes[0] = newGeometry;
+        newAttributes[geomIndex] = newGeometry;
         // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(newFeatureType);
         builder.addAll(newAttributes);
