@@ -214,7 +214,7 @@ public class OmsSurfaceInterpolator extends HMModel {
         final double[] eval = new double[1];
         for( int r = 0; r < rows; r++ ) {
             final int row = r;
-            if (doMultiThread) {
+            if (fixedThreadPool != null) {
                 Runnable runner = new Runnable(){
                     public void run() {
                         processing(cols, coordinatesSpatialTree, interpolatedIter, eval, row);
@@ -226,7 +226,7 @@ public class OmsSurfaceInterpolator extends HMModel {
             }
         }
 
-        if (doMultiThread) {
+        if (fixedThreadPool != null) {
             try {
                 fixedThreadPool.shutdown();
                 fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);

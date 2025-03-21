@@ -193,20 +193,4 @@ public class OmsZScore extends HMModel {
         return (centerValue - mean) / stdDev;
     }
 
-
-    public static void main( String[] args ) throws Exception {
-        OmsZScore z = new OmsZScore();
-        z.inGeodata = OmsRasterReader
-                .readRaster("/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/fiume_sarca.tif");
-        z.pSize = 20;
-        z.pThreshold = -1.5;
-        z.doHoles = true;
-        z.process();
-        GridCoverage2D outGC = z.outGeodata;
-        OmsRasterWriter.writeRaster("/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/zscore_holes_1.5.tif",
-                outGC);
-        
-        
-    }
-
 }

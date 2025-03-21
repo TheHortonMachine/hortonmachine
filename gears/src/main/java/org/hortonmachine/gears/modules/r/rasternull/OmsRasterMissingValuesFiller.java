@@ -339,24 +339,4 @@ public class OmsRasterMissingValuesFiller extends HMModel {
 
     }
 
-    public static void main( String[] args ) throws Exception {
-        int cells = 5;
-        String mode = "IDW";
-        OmsRasterMissingValuesFiller transformer = new OmsRasterMissingValuesFiller();
-        transformer.inRaster = OmsRasterReader
-                .readRaster("/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/zscore_holes_1.tif");
-//        transformer.inRasterMask = inMask;
-        transformer.inVectorMask = OmsVectorReader.readVector(
-                "/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/fiumi_rappresentabili_buffer.shp");
-        transformer.doUseOnlyBorderValues = false;
-        transformer.pMaxDistance = cells;
-        transformer.pMinDistance = 0;
-        transformer.pMode = mode;
-        transformer.process();
-        GridCoverage2D outGC = transformer.outRaster;
-        OmsRasterWriter.writeRaster(
-                "/storage/lavori_tmp/GEOLOGICO_TN/20240318_dati_per_Silvia/1_errori_dtm_dbm_fiumi/zscore_holes_1_filled_" + mode
-                        + "_" + cells + ".tif",
-                outGC);
-    }
 }
