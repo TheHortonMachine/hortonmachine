@@ -37,6 +37,7 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -63,10 +64,12 @@ import org.opengis.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.densify.Densifier;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 
 @Description(OMSLINESMOOTHERMCMASTER_DESCRIPTION)
@@ -106,6 +109,8 @@ public class OmsLineSmootherMcMaster extends HMModel {
     @Description(OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
+    
+    public boolean doParallel = false;
 
     private static final double SAMEPOINTTHRESHOLD = 0.1;
     private GeometryFactory gF = GeometryUtilities.gf();
@@ -114,6 +119,8 @@ public class OmsLineSmootherMcMaster extends HMModel {
     private double simplify = -1;
 
     private List<SimpleFeature> linesList;
+
+    private STRtree linesIndex = null;
 
     @Execute
     public void process() throws Exception {
@@ -132,20 +139,36 @@ public class OmsLineSmootherMcMaster extends HMModel {
 
         pm.message("Collecting geometries...");
         linesList = FeatureUtilities.featureCollectionToList(inVector);
+        pm.message("Creating indexes...");
+        linesIndex = FeatureUtilities.featureCollectionToSTRtree(inVector);
         int size = inVector.size();
         FeatureGeometrySubstitutor fGS = new FeatureGeometrySubstitutor(inVector.getSchema());
+
+        List<SimpleFeature> smoothedLines = Collections.synchronizedList(new ArrayList<>(linesList.size()));
+
+
+
         pm.beginTask("Smoothing features...", size);
-        for( SimpleFeature line : linesList ) {
+        
+        Stream<SimpleFeature> stream;
+        if(doParallel) {
+            stream = linesList.parallelStream();
+        }else {
+            stream = linesList.stream();
+        }
+        stream.forEach(line -> {
             Geometry geometry = (Geometry) line.getDefaultGeometry();
             List<LineString> lsList = smoothGeometries(geometry);
             if (lsList.size() != 0) {
                 LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
                 SimpleFeature newFeature = fGS.substituteGeometry(line, multiLineString);
-                ((DefaultFeatureCollection) outVector).add(newFeature);
+                smoothedLines.add(newFeature);
             }
             pm.worked(1);
-        }
+        });
+        
+        ((DefaultFeatureCollection) outVector).addAll(smoothedLines);
         pm.done();
     }
 
@@ -202,12 +225,16 @@ public class OmsLineSmootherMcMaster extends HMModel {
      * @return true if the geometry is alone in the space, i.e. not connected at
      *              one of the ends to any other geometry.
      */
+    @SuppressWarnings("unchecked")
     private boolean isAlone( Geometry geometryN ) {
         Coordinate[] coordinates = geometryN.getCoordinates();
         if (coordinates.length > 1) {
             Coordinate first = coordinates[0];
             Coordinate last = coordinates[coordinates.length - 1];
-            for( SimpleFeature line : linesList ) {
+            Envelope env = geometryN.getEnvelopeInternal();
+            env.expandBy(SAMEPOINTTHRESHOLD*3/2);
+            List<SimpleFeature> nearLinesList = linesIndex.query(env);
+            for( SimpleFeature line : nearLinesList ) {
                 Geometry lineGeom = (Geometry) line.getDefaultGeometry();
                 int numGeometries = lineGeom.getNumGeometries();
                 for( int i = 0; i < numGeometries; i++ ) {

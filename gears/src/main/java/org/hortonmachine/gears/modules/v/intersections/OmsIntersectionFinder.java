@@ -18,12 +18,37 @@
  */
 package org.hortonmachine.gears.modules.v.intersections;
 
-import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.*;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_LABEL;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_LICENSE;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_NAME;
+import static org.hortonmachine.gears.modules.v.intersections.OmsIntersectionFinder.OMSINTERSECTIONFINDER_STATUS;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
+
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.opengis.feature.simple.SimpleFeature;
+import org.opengis.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -35,26 +60,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.prep.PreparedGeometry;
-import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
 @Description(OMSINTERSECTIONFINDER_DESCRIPTION)
 @Author(name = OMSINTERSECTIONFINDER_AUTHORNAMES, contact = OMSINTERSECTIONFINDER_AUTHORCONTACTS)
@@ -68,15 +73,15 @@ public class OmsIntersectionFinder extends HMModel {
     @Description(OMSINTERSECTIONFINDER_IN_MAP_DESCRIPTION)
     @In
     public SimpleFeatureCollection inMap = null;
-    
+
     @Description(OMSINTERSECTIONFINDER_doParallel_DESCRIPTION)
     @In
-    public boolean doParallel = false;
-    
+    public boolean doParallel = true;
+
     @Description(OMSINTERSECTIONFINDER_doIgnoreTouches_DESCRIPTION)
     @In
     public boolean doIgnoreTouches = false;
-    
+
     @Description(OMSINTERSECTIONFINDER_OUT_POINTS_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outPointsMap = null;
@@ -84,8 +89,6 @@ public class OmsIntersectionFinder extends HMModel {
     @Description(OMSINTERSECTIONFINDER_OUT_LINES_MAP_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outLinesMap = null;
-
-
 
     public static final String OMSINTERSECTIONFINDER_DESCRIPTION = "Finds intersection geometries in feature collections";
     public static final String OMSINTERSECTIONFINDER_DOCUMENTATION = "";
@@ -147,17 +150,15 @@ public class OmsIntersectionFinder extends HMModel {
         for( int i = 0; i < size; i++ ) {
             LineString line = (LineString) geometriesList.get(i);
             PreparedGeometry preparedLine = PreparedGeometryFactory.prepare(line);
-            
-            List<SimpleFeature> pointsList = Collections.synchronizedList(new ArrayList<>());
-            List<SimpleFeature> linesList = Collections.synchronizedList(new ArrayList<>());
 
-            
+            List<SimpleFeature> pointsList = Collections.synchronizedList(new ArrayList<>(1000));
+            List<SimpleFeature> linesList = Collections.synchronizedList(new ArrayList<>(1000));
+
             IntStream stream = IntStream.range(i + 1, size);
-            if( doParallel ) {
+            if (doParallel) {
                 stream = stream.parallel();
             }
             stream.parallel().forEach(j -> {
-
                 LineString otherLine = (LineString) geometriesList.get(j);
 
                 if (preparedLine.intersects(otherLine)) {
@@ -182,8 +183,10 @@ public class OmsIntersectionFinder extends HMModel {
                             }
                         } else if (numGeometries == 2) {
                             // could still be connected lines
-                            if ((start1.distance(end2) < NumericsUtilities.D_TOLERANCE && start2.distance(end1) < NumericsUtilities.D_TOLERANCE)
-                                    || (start1.distance(start2) < NumericsUtilities.D_TOLERANCE && end1.distance(end2) < NumericsUtilities.D_TOLERANCE)) {
+                            if ((start1.distance(end2) < NumericsUtilities.D_TOLERANCE
+                                    && start2.distance(end1) < NumericsUtilities.D_TOLERANCE)
+                                    || (start1.distance(start2) < NumericsUtilities.D_TOLERANCE
+                                            && end1.distance(end2) < NumericsUtilities.D_TOLERANCE)) {
                                 // it is the same point
                                 return;
                             }
@@ -213,13 +216,13 @@ public class OmsIntersectionFinder extends HMModel {
 
                     }
                 }
-            
+
             });
 
-            if( !pointsList.isEmpty() ) {
+            if (!pointsList.isEmpty()) {
                 ((DefaultFeatureCollection) outPointsMap).addAll(pointsList);
             }
-            if( !linesList.isEmpty() ) {
+            if (!linesList.isEmpty()) {
                 ((DefaultFeatureCollection) outLinesMap).addAll(linesList);
             }
             pm.worked(1);

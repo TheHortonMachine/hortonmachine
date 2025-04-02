@@ -31,6 +31,7 @@ import static org.hortonmachine.gears.modules.r.zscore.OmsZScore.OMSZSCORE_STATU
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.modules.GridNode;
@@ -38,6 +39,13 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -71,6 +79,7 @@ public class OmsZScore extends HMModel {
     public static final String OMSZSCORE_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSZSCORE_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSZSCORE_IN_GEODATA_DESCRIPTION = "The input coverage.";
+    public static final String OMSZSCORE_IN_MASK_DESCRIPTION = "An optional vector mask.";
     public static final String OMSZSCORE_P_WINSIZE_DESCRIPTION = "The windows size in cells.";
     public static final String OMSZSCORE_P_THRESHOLD_DESCRIPTION = "The score threshold.";
     public static final String OMSZSCORE_DO_HOLES_DESCRIPTION = "Make holes in the original map.";
@@ -79,6 +88,10 @@ public class OmsZScore extends HMModel {
     @Description(OMSZSCORE_IN_GEODATA_DESCRIPTION)
     @In
     public GridCoverage2D inGeodata;
+
+    @Description(OMSZSCORE_IN_MASK_DESCRIPTION)
+    @In
+    public SimpleFeatureCollection inVectorMask;
 
     @Description(OMSZSCORE_P_WINSIZE_DESCRIPTION)
     @In
@@ -101,9 +114,15 @@ public class OmsZScore extends HMModel {
         checkNull(inGeodata);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inGeodata);
-
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
+
+        PreparedGeometry vectorMask = null;
+        if (inVectorMask != null) {
+            List<Geometry> geoms = FeatureUtilities.featureCollectionToGeometriesList(inVectorMask, false, null);
+            Geometry union = CascadedPolygonUnion.union(geoms);
+            vectorMask = PreparedGeometryFactory.prepare(union);
+        }
 
         HMRaster inRaster = HMRaster.fromGridCoverage(inGeodata);
         HMRaster outRaster;
@@ -112,6 +131,8 @@ public class OmsZScore extends HMModel {
         } else {
             outRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inGeodata).setInitialValue(0.0).build();
         }
+
+
 
 //        inRaster.processByRow(pm, "Processing...", (row, ncols,  nrows) -> {
 //            for( int c = 0; c < cols; c++ ) {
@@ -136,6 +157,15 @@ public class OmsZScore extends HMModel {
             for( int c = 0; c < cols; c++ ) {
                 GridNode cell = new GridNode(inRaster, c, r);
                 if (cell.isValid()) {
+                    if (vectorMask != null) {
+                        Coordinate w = inRaster.getWorld(c, r);
+                        Point nvPoint = gf.createPoint(w);
+                        if (!vectorMask.intersects(nvPoint)) {
+                            // do not fill when not in ROI
+                            pm.worked(1);
+                            continue;
+                        }
+                    }
 
                     List<GridNode> windowNodes = cell.getWindow(pSize);
                     double[] neighbors = windowNodes.stream().filter(n -> n.isValid()).map(n -> n.elevation)
