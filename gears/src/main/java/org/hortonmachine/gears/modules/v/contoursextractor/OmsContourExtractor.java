@@ -87,6 +87,8 @@ public class OmsContourExtractor extends HMModel {
     @Out
     public SimpleFeatureCollection outGeodata = null;
 
+    public boolean doPrintLevels = false;
+
     public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Module that extracts contour lines from a raster.";
     public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
     public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Raster, Vector";
@@ -114,10 +116,10 @@ public class OmsContourExtractor extends HMModel {
         }
 
         List<Double> contourIntervals = new ArrayList<Double>();
-        pm.message("Adding levels:");
+        if(doPrintLevels) pm.message("Adding levels:");
         for( double level = pMin; level <= pMax; level += pInterval ) {
             contourIntervals.add(level);
-            pm.message("-> " + level);
+            if(doPrintLevels) pm.message("-> " + level);
         }
         double[] levels = new double[contourIntervals.size()];
         for( int i = 0; i < levels.length; i++ ) {

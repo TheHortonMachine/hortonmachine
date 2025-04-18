@@ -481,6 +481,8 @@ public class CoverageUtilities {
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
         int height = gridRange.height;
         int width = gridRange.width;
+        int startX = gridRange.x;
+        int startY = gridRange.y;
 
         AffineTransform gridToCRS = (AffineTransform) gridGeometry.getGridToCRS();
         double xRes = XAffineTransform.getScaleX0(gridToCRS);
@@ -509,6 +511,8 @@ public class CoverageUtilities {
         envelopeParams.yres = yRes;
         envelopeParams.rows = height;
         envelopeParams.cols = width;
+        envelopeParams.startCol = startX;
+        envelopeParams.startRow = startY;
 
         return envelopeParams;
     }

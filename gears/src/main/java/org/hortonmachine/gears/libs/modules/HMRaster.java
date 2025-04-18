@@ -51,6 +51,8 @@ public class HMRaster implements AutoCloseable {
     private RegionMap regionMap;
     private int rows;
     private int cols;
+    private int startRow;
+    private int startCol;
     private double novalue = HMConstants.doubleNovalue;
     private int intNovalue = HMConstants.intNovalue;
     private short shortNovalue = HMConstants.shortNovalue;
@@ -126,6 +128,8 @@ public class HMRaster implements AutoCloseable {
         hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         hmRaster.crs = coverage.getCoordinateReferenceSystem();
         hmRaster.gridGeometry = coverage.getGridGeometry();
+        hmRaster.startRow = hmRaster.regionMap.startRow;
+        hmRaster.startCol = hmRaster.regionMap.startCol;
         hmRaster.rows = hmRaster.regionMap.getRows();
         hmRaster.cols = hmRaster.regionMap.getCols();
         hmRaster.xRes = hmRaster.regionMap.getXres();
@@ -155,6 +159,20 @@ public class HMRaster implements AutoCloseable {
     
     public RandomIter getIter() {
         return iter;
+    }
+
+    /**
+     * @return the start row of this raster.
+     */
+    public int getStartRow() {
+        return startRow;
+    }
+
+    /**
+     * @return the start column of this raster.
+     */
+    public int getStartCol() {
+        return startCol;
     }
 
     /**
@@ -225,7 +243,7 @@ public class HMRaster implements AutoCloseable {
      * @return <code>true</code> if the col/row position is contained.
      */
     public boolean isContained( int col, int row ) {
-        return col >= 0 && col < cols && row >= 0 && row < rows;
+        return col >= startCol && col < cols && row >= startRow && row < rows;
     }
 
     /**
@@ -378,8 +396,8 @@ public class HMRaster implements AutoCloseable {
         if (pm == null)
             pm = new DummyProgressMonitor();
         pm.beginTask(processName, rows);
-        for( int row = 0; row < rows; row++ ) {
-            for( int col = 0; col < cols; col++ ) {
+        for( int row = startRow; row < rows + startRow; row++ ) {
+            for( int col = startCol; col < cols + startCol; col++ ) {
                 if (pm.isCanceled()) {
                     return;
                 }
@@ -398,7 +416,7 @@ public class HMRaster implements AutoCloseable {
             pm = new DummyProgressMonitor();
         pm.beginTask(processName, rows);
 
-        IntStream rowsStream = IntStream.range(0, rows);
+        IntStream rowsStream = IntStream.range(startRow, rows + startRow);
         if (doParallel) {
             rowsStream = rowsStream.parallel();
         }
@@ -610,8 +628,8 @@ public class HMRaster implements AutoCloseable {
     }
 
     public void printData() {
-        for( int row = 0; row < rows; row++ ) {
-            for( int col = 0; col < cols; col++ ) {
+        for( int row = startRow; row < rows + startRow; row++ ) {
+            for( int col = startCol; col < cols + startCol; col++ ) {
                 double value = getValue(col, row);
                 System.out.print(value + " ");
             }
@@ -825,5 +843,7 @@ public class HMRaster implements AutoCloseable {
             }
         }
     }
+
+
 
 }

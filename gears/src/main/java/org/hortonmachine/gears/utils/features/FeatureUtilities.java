@@ -491,6 +491,9 @@ public class FeatureUtilities {
                     int numGeometries = geometry.getNumGeometries();
                     for( int i = 0; i < numGeometries; i++ ) {
                         Geometry geometryN = geometry.getGeometryN(i);
+                        if (geometryN.isEmpty()) {
+                            continue;
+                        }
                         geometriesList.add(geometryN);
                         if (userDataField != null) {
                             Object attribute = feature.getAttribute(userDataField);
@@ -498,6 +501,9 @@ public class FeatureUtilities {
                         }
                     }
                 } else {
+                    if (geometry.isEmpty()) {
+                        continue;
+                    }
                     geometriesList.add(geometry);
                     if (userDataField != null) {
                         Object attribute = feature.getAttribute(userDataField);
@@ -546,6 +552,9 @@ public class FeatureUtilities {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
         long id = 1;
         for( Geometry g : geometries ) {
+            if (g.isEmpty()) {
+                continue;
+            }
             Object[] values;
             if (userData == null) {
                 values = new Object[]{g};

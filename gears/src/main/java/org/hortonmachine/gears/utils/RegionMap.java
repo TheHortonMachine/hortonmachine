@@ -44,6 +44,8 @@ public class RegionMap {
     public double yres;
     public int cols;
     public int rows;
+    public int startCol = 0;
+    public int startRow = 0;
 
 
     public static RegionMap fromEnvelopeAndGrid( Envelope envelope, int cols, int rows ) {
