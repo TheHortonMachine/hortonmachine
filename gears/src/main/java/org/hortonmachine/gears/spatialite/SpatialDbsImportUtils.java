@@ -50,6 +50,7 @@ import org.hortonmachine.dbs.postgis.PostgisDb;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -99,9 +100,11 @@ public class SpatialDbsImportUtils {
      */
     public static SqlName createTableFromShp( ASpatialDb db, File shapeFile, SqlName newTableName, String forceSrid,
             boolean avoidSpatialIndex ) throws Exception {
-        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
-        SimpleFeatureSource featureSource = store.getFeatureSource();
-        SimpleFeatureType schema = featureSource.getSchema();
+    	SimpleFeatureCollection fc = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
+    	SimpleFeatureType schema = fc.getSchema();
+//        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
+//        SimpleFeatureSource featureSource = store.getFeatureSource();
+//        SimpleFeatureType schema = featureSource.getSchema();
         if (newTableName == null) {
             newTableName = SqlName.m(FileUtilities.getNameWithoutExtention(shapeFile));
         }
@@ -234,9 +237,10 @@ public class SpatialDbsImportUtils {
      */
     public static boolean importShapefile( ASpatialDb db, File shapeFile, SqlName tableName, int limit, boolean useFromTextForGeom,
             IHMProgressMonitor pm ) throws Exception {
-        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
-        SimpleFeatureSource featureSource = store.getFeatureSource();
-        SimpleFeatureCollection features = featureSource.getFeatures();
+    	SimpleFeatureCollection features = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
+//        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
+//        SimpleFeatureSource featureSource = store.getFeatureSource();
+//        SimpleFeatureCollection features = featureSource.getFeatures();
 
         return importFeatureCollection(db, features, tableName, limit, useFromTextForGeom, pm);
 
