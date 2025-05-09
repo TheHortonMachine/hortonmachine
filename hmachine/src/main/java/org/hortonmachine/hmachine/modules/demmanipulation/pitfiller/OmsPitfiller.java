@@ -167,7 +167,7 @@ public class OmsPitfiller extends HMModel {
 
         try {
             pitRaster = new HMRaster.HMRasterWritableBuilder().setName("pitfiller").setCrs(elevRaster.getCrs())
-                    .setRegion(regionMap).setNoValue(novalue).build();
+                    .setRegion(regionMap).setNoValue(PITNOVALUE).build();
 
             for( int i = 0; i < nRows; i++ ) {
                 if (pm.isCanceled()) {
