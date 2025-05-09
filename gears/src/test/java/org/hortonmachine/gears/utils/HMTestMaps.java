@@ -42,6 +42,7 @@ public class HMTestMaps {
     private static final double NaN = HMConstants.doubleNovalue;
     private static final int intNaN = HMConstants.intNovalue;
     private static RegionMap envelopeParams = null;
+    private static RegionMap envelopeParamsLeftHalf = null;
 
     private static CoordinateReferenceSystem crs = null;
 
@@ -83,6 +84,11 @@ public class HMTestMaps {
         return envelopeParams;
     }
 
+        public static RegionMap getEnvelopeparamsLeftHalf() {
+                buildTestData();
+                return envelopeParamsLeftHalf;
+        }
+
     public static SimpleFeatureCollection getTestFC() {
         buildTestData();
         return testFC;
@@ -110,6 +116,17 @@ public class HMTestMaps {
         envelopeParams.yres = 30.0;
         envelopeParams.rows = 8;
         envelopeParams.cols = 10;
+
+        envelopeParamsLeftHalf = new RegionMap();
+        envelopeParamsLeftHalf.north = n;
+        envelopeParamsLeftHalf.south = s;
+        envelopeParamsLeftHalf.west = w;
+        envelopeParamsLeftHalf.east = w + (e - w) / 2;
+        envelopeParamsLeftHalf.xres = 30.0;
+        envelopeParamsLeftHalf.yres = 30.0;
+        envelopeParamsLeftHalf.rows = 8;
+        envelopeParamsLeftHalf.cols = 5;
+
 
         try {
             crs = CrsUtilities.getCrsFromEpsg("EPSG:32632");
@@ -184,15 +201,15 @@ public class HMTestMaps {
             {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
             {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
 
-    public static double[][] mapDataHalf = new double[][]{//
-            {800, 900, 1000, 1000, 1200, 1250, 1300, 1350, 1450, 1500}, //
-            {600, NaN, 750, 850, 860, 900, 1000, 1200, 1250, 1500}, //
-            {500, 550, 700, 750, 800, 850, 900, 1000, 1100, 1500}, //
-            {400, 410, 650, 700, 750, 800, 850, 490, 450, 1500}, //
-            {450, 550, 430, 500, 600, 700, 800, 500, 450, 1500}, //
-            {500, 600, 700, 750, 760, 770, 850, 1000, 1150, 1500}, //
-            {600, 700, 750, 800, 780, 790, 1000, 1100, 1250, 1500}, //
-            {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
+    public static double[][] mapDataLeftHalf = new double[][]{//
+            {800, 900, 1000, 1000, 1200}, //
+            {600, NaN, 750, 850, 860}, //
+            {500, 550, 700, 750, 800}, //
+            {400, 410, 650, 700, 750}, //
+            {450, 550, 430, 500, 600}, //
+            {500, 600, 700, 750, 760}, //
+            {600, 700, 750, 800, 780}, //
+            {800, 910, 980, 1001, 1150}};
 
 //    public static double[][] mapData4326 = new double[][]{//
 //            {NaN, 800.0, 900.0, 1000.0, NaN, NaN, NaN, NaN, NaN, NaN}, //
