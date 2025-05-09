@@ -29,6 +29,7 @@ import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtr
 import static org.hortonmachine.gears.modules.v.contoursextractor.OmsContourExtractor.OMSCONTOUREXTRACTOR_STATUS;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -43,6 +44,9 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.operation.linemerge.LineMerger;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.opengis.feature.simple.SimpleFeature;
 
 import oms3.annotations.Author;
@@ -89,6 +93,8 @@ public class OmsContourExtractor extends HMModel {
 
     public boolean doPrintLevels = false;
 
+    public Integer precisionScale = null;
+
     public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Module that extracts contour lines from a raster.";
     public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
     public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Raster, Vector";
@@ -132,6 +138,7 @@ public class OmsContourExtractor extends HMModel {
         outGeodata = new DefaultFeatureCollection();
 
         List<Geometry> contours = FeatureUtilities.featureCollectionToGeometriesList(contoursFC, true, "value");
+        HashMap<Double, List<LineString>> elev2ContourListMap = new HashMap<Double, List<LineString>>();
         for( Geometry geom : contours ) {
             LineString lineString = (LineString) geom;
             Object userData = lineString.getUserData();
@@ -140,12 +147,38 @@ public class OmsContourExtractor extends HMModel {
                 elev = (Double) userData;
                 lineString.setUserData(null);
             }
-            SimpleFeatureBuilder builder = new SimpleFeatureBuilder(contoursFC.getSchema());
-            Object[] values = new Object[]{lineString, elev};
-            builder.addAll(values);
-            SimpleFeature feature = builder.buildFeature(null);
-            ((DefaultFeatureCollection) outGeodata).add(feature);
+            var countoursList = elev2ContourListMap.get(elev);
+            if (countoursList == null) {
+                countoursList = new ArrayList<LineString>();
+                elev2ContourListMap.put(elev, countoursList);
+            }
+            countoursList.add(lineString);
         }
+
+        // merge lines together by elevation
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(contoursFC.getSchema());
+        for (var entry : elev2ContourListMap.entrySet()) {
+            double elev = entry.getKey();
+            List<LineString> lineStrings = entry.getValue();
+            LineMerger lineMerger = new LineMerger();
+            for (LineString lineString : lineStrings) {
+                if(precisionScale != null) {
+                    PrecisionModel precModel = new PrecisionModel(precisionScale);
+                    lineString = (LineString) GeometryPrecisionReducer.reduce(lineString, precModel);
+                }
+                lineMerger.add(lineString);
+            }
+            List<LineString> mergedLines = (List<LineString>) lineMerger.getMergedLineStrings();
+            for (LineString lineString : mergedLines) {
+                Object[] values = new Object[]{lineString, elev};
+                builder.addAll(values);
+                SimpleFeature feature = builder.buildFeature(null);
+                ((DefaultFeatureCollection) outGeodata).add(feature);
+            }
+        }
+
+
+
 
     }
 }
