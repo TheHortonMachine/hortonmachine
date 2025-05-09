@@ -93,6 +93,11 @@ public class HMRaster implements AutoCloseable {
          * Substitute the values everytime. Last values wins.
          */
         SUBSTITUTE,
+        
+        /**
+         * Substitute the values, if they are valid values. Last values wins.
+         */
+        SUBSTITUTE_IGNORE_NOVALUE,
 
         /**
          * Insert the values only if the cell contains novalue. First value wins.
@@ -408,6 +413,22 @@ public class HMRaster implements AutoCloseable {
         pm.done();
     }
 
+    public void processWindow( int col, int row, int windowSize, RasterCellProcessor processor ) throws Exception {
+        if ( windowSize % 2 == 0 ) {
+            windowSize++;
+        }
+        int delta = (windowSize - 1) / 2;
+
+        for( int wRow = row - delta; wRow < row + delta; wRow++ ) {
+            for( int wCol = col - delta; wCol < col + delta; wCol++ ) {
+                if(!isContained(wCol, wRow)){
+                    continue;
+                }
+                processor.processCell(wCol, wRow, getValue(wCol, wRow), windowSize, windowSize);
+            }
+        }
+    }
+
     public void processByRow( IHMProgressMonitor pm, String processName, RasterRowProcessor processor, boolean doParallel )
             throws Exception {
         if (processName == null)
@@ -480,6 +501,8 @@ public class HMRaster implements AutoCloseable {
         RegionMap otherRegion = otherRaster.getRegionMap();
         Coordinate lowerLeft = otherRegion.getLowerLeft();
         Coordinate upperRight = otherRegion.getUpperRight();
+        Coordinate lowerLeftCellCenter = new Coordinate(lowerLeft.x + otherRegion.getXres() / 2, lowerLeft.y + otherRegion.getYres() / 2);
+        Coordinate upperRightCellCenter = new Coordinate(upperRight.x - otherRegion.getXres() / 2, upperRight.y - otherRegion.getYres() / 2);
 
         // convert to current region crs
         CoordinateReferenceSystem sourceCRS = otherRaster.getCrs();
@@ -487,17 +510,17 @@ public class HMRaster implements AutoCloseable {
 
         if (!CRS.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
             MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
-            lowerLeft = JTS.transform(lowerLeft, null, transform);
-            upperRight = JTS.transform(upperRight, null, transform);
+            lowerLeftCellCenter = JTS.transform(lowerLeftCellCenter, null, transform);
+            upperRightCellCenter = JTS.transform(upperRightCellCenter, null, transform);
         }
 
         // find grid coordinates in the current region's space
-        Point ll = getCell(lowerLeft);
+        Point ll = getCell(lowerLeftCellCenter);
         int fromCol = ll.x;
         if (fromCol < 0)
             fromCol = 0;
         int toRow = ll.y;
-        Point ur = getCell(upperRight);
+        Point ur = getCell(upperRightCellCenter);
         int toCol = ur.x;
         int fromRow = ur.y;
         if (fromRow < 0)
@@ -533,6 +556,16 @@ public class HMRaster implements AutoCloseable {
                         if (_mergeMode == MergeMode.SUBSTITUTE || mergeMode == MergeMode.INSERT_ON_NOVALUE) {
                             // you want to always substitute, use the other
                             thisRasterValue = otherRasterValue;
+                        } else if (_mergeMode == MergeMode.SUBSTITUTE_IGNORE_NOVALUE) {
+                            // substitute only if the other value is not a novalue
+                            if (!otherRaster.isNovalue(otherRasterValue)) {
+                                thisRasterValue = otherRasterValue;
+                            }
+                        } else if (_mergeMode == MergeMode.INSERT_ON_NOVALUE) {
+                            // do nothing, just insert the value if it is a novalue
+                            if (thisIsNovalue) {
+                                thisRasterValue = otherRasterValue;
+                            }
                         } else if (_mergeMode == MergeMode.SUM) {
                             // just sum with any previous value
                             if (thisIsNovalue) {

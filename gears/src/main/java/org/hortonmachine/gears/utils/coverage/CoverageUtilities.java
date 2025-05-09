@@ -107,6 +107,8 @@ import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 import it.geosolutions.jaiext.range.NoDataContainer;
@@ -1547,9 +1549,12 @@ public class CoverageUtilities {
      */
     public static Coordinate coordinateFromColRow( int col, int row, GridGeometry2D gridGeometry ) {
         try {
-            GridCoordinates2D pos = new GridCoordinates2D(col, row);
-            DirectPosition gridToWorld = gridGeometry.gridToWorld(pos);
-            double[] coord = gridToWorld.getCoordinate();
+            MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
+            DirectPosition pos = new DirectPosition2D();
+            gridToCRS.transform(new DirectPosition2D(col, row), pos);
+            // GridCoordinates2D pos = new GridCoordinates2D(col, row);
+            // DirectPosition gridToWorld = gridGeometry.gridToWorld(pos);
+            double[] coord = pos.getCoordinate();
             return new Coordinate(coord[0], coord[1]);
         } catch (InvalidGridGeometryException e) {
             e.printStackTrace();
