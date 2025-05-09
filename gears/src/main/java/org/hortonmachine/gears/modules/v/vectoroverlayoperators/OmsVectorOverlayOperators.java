@@ -56,6 +56,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -63,9 +64,14 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
+import org.locationtech.jts.operation.linemerge.LineMerger;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
+import org.locationtech.jts.precision.SimpleGeometryPrecisionReducer;
 
 @Description(OMSVECTOROVERLAYOPERATORS_DESCRIPTION)
 @Documentation(OMSVECTOROVERLAYOPERATORS_DOCUMENTATION)
@@ -98,6 +104,8 @@ public class OmsVectorOverlayOperators extends HMModel {
     @Description(OMSVECTOROVERLAYOPERATORS_outMap_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outMap = null;
+
+    public Integer precisionScale = null;
     
     // VARS DOCS START
     public static final String OMSVECTOROVERLAYOPERATORS_DESCRIPTION = "A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables.";
@@ -132,15 +140,25 @@ public class OmsVectorOverlayOperators extends HMModel {
 
         pm.message("Preparing geometry layers...");
 
-        List<Geometry> geoms1 = FeatureUtilities.featureCollectionToGeometriesList(inMap1, false, null);
-        GeometryCollection geometryCollection1 = new GeometryCollection(geoms1.toArray(new Geometry[geoms1.size()]), gf);
-        Geometry g1 = geometryCollection1.buffer(0);
+        List<Geometry> geoms1 = FeatureUtilities.featureCollectionToGeometriesList(inMap1, true, null);
+        boolean isLines = EGeometryType.isLine(geoms1.get(0));
+
+        Geometry g1 = gf.createGeometryCollection(geoms1.toArray(new Geometry[geoms1.size()]));
+        if (precisionScale != null) {
+            PrecisionModel precisionModel = new PrecisionModel(precisionScale);
+            g1 = GeometryPrecisionReducer.reduce(g1, precisionModel);
+        }
+
+        // g1 = g1.buffer(0);
 
         Geometry g2 = null;
         if (inMap2 != null) {
-            List<Geometry> geoms2 = FeatureUtilities.featureCollectionToGeometriesList(inMap2, false, null);
-            GeometryCollection geometryCollection2 = new GeometryCollection(geoms2.toArray(new Geometry[geoms2.size()]), gf);
-            g2 = geometryCollection2.buffer(0);
+            List<Geometry> geoms2 = FeatureUtilities.featureCollectionToGeometriesList(inMap2, true, null);
+            g2 = new GeometryCollection(geoms2.toArray(new Geometry[geoms2.size()]), gf);
+            if (precisionScale != null) {
+                PrecisionModel precisionModel = new PrecisionModel(precisionScale);
+                g2 = GeometryPrecisionReducer.reduce(g2, precisionModel);
+            }
         }
 
         pm.beginTask("Performing overlay operation...", IHMProgressMonitor.UNKNOWN);
@@ -153,7 +171,16 @@ public class OmsVectorOverlayOperators extends HMModel {
                 if (inMap2 != null) {
                     resultingGeometryCollection = g1.union(g2);
                 } else {
-                    resultingGeometryCollection = g1.union();
+                    // if it is lines, the geometry union is done via linemerger
+                    if (isLines) {
+                        LineMerger lineMerger = new LineMerger();
+                        lineMerger.add(g1);
+                        var res = lineMerger.getMergedLineStrings();
+                        resultingGeometryCollection = gf.createMultiLineString((LineString[]) res.toArray(new LineString[res.size()]));
+                    } else {
+                        // if it is polygons, the geometry union is done via union
+                        resultingGeometryCollection = g1.union();
+                    }
                 }
                 break;
             case DIFFERENCE:
