@@ -15,22 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.dbs.compat;
+package org.hortonmachine.dbs.compat.objects;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Spatialite table namse and groups.
+ * Class representing a db table type (table, view, etc) level.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
- *
  */
-public interface ISpatialTableNames {
-    public static final String USERDATA = "User Data";
-    public static final String SYSTEM = "System tables";
+public class TableTypeLevel {
+    public SchemaLevel parent;
+    public String typeName;
 
-    public static final List<String> ALL_TYPES_LIST = Arrays.asList(//
-            USERDATA, SYSTEM);
-
+    public List<TableLevel> tablesList = new ArrayList<TableLevel>();
+    
+    @Override
+    public String toString() {
+        return typeName;
+    }
 }

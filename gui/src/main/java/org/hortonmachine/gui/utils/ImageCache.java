@@ -67,6 +67,7 @@ public class ImageCache {
     public static final String TABLE_FOLDER = "table_folder.gif";
 
     public static final String TABLE = "table.gif";
+    public static final String TABLETYPE = "tabletype.gif";
     public static final String VIEW = "view.gif";
     public static final String TABLE_SPATIAL = "table_spatial.gif";
     public static final String TABLE_SPATIAL_VIRTUAL = "table_spatial_virtual.gif";

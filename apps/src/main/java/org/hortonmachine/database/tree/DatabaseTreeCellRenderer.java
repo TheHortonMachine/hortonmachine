@@ -25,8 +25,9 @@ import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.LeafLevel;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.compat.objects.TypeLevel;
+import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -90,8 +91,10 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                     break;
                 }
             }
-        } else if (value instanceof TypeLevel) {
+        } else if (value instanceof SchemaLevel) {
             setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER));
+        } else if (value instanceof TableTypeLevel) {
+            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLETYPE));
         } else if (value instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) value;
             try {

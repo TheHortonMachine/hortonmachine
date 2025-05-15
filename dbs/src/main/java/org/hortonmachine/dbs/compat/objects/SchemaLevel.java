@@ -21,17 +21,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class representing a db type level.
+ * Class representing a db schema level.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class TypeLevel {
-    public String typeName;
+public class SchemaLevel {
+    public static final String FALLBACK_SCHEMA = "tables";
+    public DbLevel parent;
+    public String schemaName;
 
-    public List<TableLevel> tablesList = new ArrayList<TableLevel>();
+    public List<TableTypeLevel> tableTypesList = new ArrayList<TableTypeLevel>();
     
     @Override
     public String toString() {
-        return typeName;
+        return schemaName;
     }
 }

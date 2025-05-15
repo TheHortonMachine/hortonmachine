@@ -36,10 +36,11 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
-import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -190,10 +191,24 @@ public class GPSpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
-        return tablesMap;
+    public HashMap<String, HashMap<String,List<String>>> getTablesMap() throws Exception {
+        List<TableName> tableNames = getTables();
+        HashMap<String, HashMap<String, List<String>>> schema2types2tableMap = new HashMap<>();
+        for (TableName tableName : tableNames) {
+            String schema = tableName.getSchema();
+            HashMap<String,List<String>> type2tableMap = schema2types2tableMap.get(schema);
+            if (type2tableMap == null) {
+                type2tableMap = new HashMap<>();
+                schema2types2tableMap.put(schema, type2tableMap);
+            }
+            List<String> tablesList = type2tableMap.get(tableName.getTableType().name());
+            if (tablesList == null) {
+                tablesList = new ArrayList<>();
+                type2tableMap.put(tableName.getTableType().name(), tablesList);
+            }
+            tablesList.add(tableName.getName());
+        }
+        return schema2types2tableMap;
     }
 
     public String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2, double y2 )
@@ -211,17 +226,20 @@ public class GPSpatialiteDb extends ASpatialDb {
         return SpatialiteCommonMethods.getGeometryColumnsForTable(mConn, tableName);
     }
 
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        List<String> tableNames = new ArrayList<String>();
-        String orderBy = " ORDER BY name";
-        if (!doOrder) {
-            orderBy = "";
-        }
-        String sql = "SELECT name FROM sqlite_master WHERE type='table' or type='view'" + orderBy;
+    public List<TableName> getTables( ) throws Exception {
+        List<TableName> tableNames = new ArrayList<TableName>();
+        String sql = """
+            SELECT name, type 
+            FROM sqlite_master 
+            WHERE type IN ('table', 'view')
+            ORDER BY name;
+        """;
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String tabelName = rs.getString(1);
-                tableNames.add(tabelName);
+                String type = rs.getString(2);
+                var tt = ETableType.fromType(type);
+                tableNames.add(new TableName(tabelName, SchemaLevel.FALLBACK_SCHEMA, tt));
             }
             return tableNames;
         }

@@ -23,14 +23,17 @@ import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.utils.HMConnectionConsumer;
 import org.hortonmachine.dbs.utils.HMResultSetConsumer;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 
 /**
  * Abstract non spatial db class.
@@ -303,12 +306,41 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
     /**
      * Get the list of available tables.
      * 
-     * @param doOrder
-     *                if <code>true</code>, the names are ordered.
      * @return the list of names.
      * @throws Exception
      */
-    public abstract List<String> getTables(boolean doOrder) throws Exception;
+    public abstract List<TableName> getTables() throws Exception;
+
+    /**
+     * Get the list of available tables, mapped by schema and type.
+     * 
+     * 
+     * @return the map of tables sorted by aggregated type and schema.
+     * @throws Exception
+     */
+    public HashMap<String, HashMap<String, List<String>>> getTablesMap( ) throws Exception {
+        List<TableName> tableNames = getTables();
+        HashMap<String, HashMap<String, List<String>>> schema2types2tableMap = new HashMap<>();
+        for (TableName tableName : tableNames) {
+            String schema = tableName.getSchema();
+            if (schema == null) {
+                schema = SchemaLevel.FALLBACK_SCHEMA;
+            }
+            HashMap<String,List<String>> type2tableMap = schema2types2tableMap.get(schema);
+            if (type2tableMap == null) {
+                type2tableMap = new HashMap<>();
+                schema2types2tableMap.put(schema, type2tableMap);
+            }
+            List<String> tablesList = type2tableMap.get(tableName.getTableType().name());
+            if (tablesList == null) {
+                tablesList = new ArrayList<>();
+                type2tableMap.put(tableName.getTableType().name(), tablesList);
+            }
+            tablesList.add(tableName.getName());
+        }
+        return schema2types2tableMap;
+    };
+
 
     /**
      * Checks if the table is available.
@@ -622,11 +654,11 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public String getProperTableNameCase(SqlName tableName) throws Exception {
-        List<String> tables = getTables(false);
+        List<TableName> tables = getTables();
         String realName = tableName.name;
-        for (String name : tables) {
-            if (name.equalsIgnoreCase(tableName.name)) {
-                realName = name;
+        for (TableName tname : tables) {
+            if (tname.getName().equalsIgnoreCase(tableName.name)) {
+                realName = tname.getName();
                 break;
             }
         }

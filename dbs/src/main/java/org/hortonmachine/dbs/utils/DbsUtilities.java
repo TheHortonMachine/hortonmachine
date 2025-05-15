@@ -462,4 +462,51 @@ public class DbsUtilities {
         }
         return names;
     }
+
+
+    /// Check the name and fix it if necessary.
+    ///
+    /// @param name the name to check.
+    /// @return the fixed name.
+    public static String fixWithQuotes( String name ) {
+        if (name.charAt(0) == '\'') {
+            // already fixed
+            return name;
+        }
+        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
+            return "'" + name + "'";
+        }
+        return name;
+    }
+
+    /// Check the name and fix it if necessary.
+    ///
+    /// @param name the name to check.
+    /// @return the fixed name.
+    public static String fixWithDoubleQuotes( String name ) {
+        if (name.charAt(0) == '\"') {
+            // already fixed
+            return name;
+        }
+        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
+            return "\"" + name + "\"";
+        }
+        return name;
+    }
+
+    /// Check the name and fix it if necessary.
+    ///
+    /// @param name the name to check.
+    /// @return the fixed name.
+    public static String fixWithBrackets( String name ) {
+        if (name.charAt(0) == '[') {
+            // already fixed
+            return name;
+        }
+
+        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
+            return "[" + name + "]";
+        }
+        return name;
+    }
 }

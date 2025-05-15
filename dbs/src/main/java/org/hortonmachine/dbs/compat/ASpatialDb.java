@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public abstract class ASpatialDb extends ADb implements AutoCloseable {
+public abstract class ASpatialDb extends ADb {
 
     public final static String DEFAULT_GEOM_FIELD_NAME = "the_geom";
 
@@ -229,25 +229,6 @@ public abstract class ASpatialDb extends ADb implements AutoCloseable {
         GeometryColumn geometryColumns = getGeometryColumnsForTable(tableName);
         return geometryColumns != null;
     }
-
-    /**
-     * Get the list of available tables, mapped by type.
-     * 
-     * <p>
-     * Supported types are:
-     * <ul>
-     * <li>{@value ISpatialTableNames#INTERNALDATA}</li>
-     * <li>{@value ISpatialTableNames#SYSTEM}</li>
-     * <li></li>
-     * <li></li>
-     * <li></li>
-     * </ul>
-     * 
-     * @param doOrder
-     * @return the map of tables sorted by aggregated type:
-     * @throws Exception
-     */
-    public abstract HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception;
 
     /**
      * Get the table records map with geometry in the given envelope.

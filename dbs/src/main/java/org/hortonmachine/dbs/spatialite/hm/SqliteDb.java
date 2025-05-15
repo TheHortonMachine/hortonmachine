@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -36,10 +37,14 @@ import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
+import org.hortonmachine.dbs.geopackage.GeopackageTableNames;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
+import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.sqlite.SQLiteConfig;
 
 /**
@@ -176,21 +181,45 @@ public class SqliteDb extends ADb {
         Logger.INSTANCE.insertDebug(null, message);
     }
 
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        List<String> tableNames = new ArrayList<String>();
-        String orderBy = " ORDER BY name";
-        if (!doOrder) {
-            orderBy = "";
-        }
-        String sql = "SELECT name FROM sqlite_master WHERE type='table' or type='view'" + orderBy;
+    @Override
+    public List<TableName> getTables() throws Exception {
+        List<TableName> tableNames = new ArrayList<TableName>();
+        String sql = """
+            SELECT name, type 
+            FROM sqlite_master 
+            WHERE type IN ('table', 'view')
+            ORDER BY name;
+        """;
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String tabelName = rs.getString(1);
-                tableNames.add(tabelName);
+                String type = rs.getString(2);
+                var tt = ETableType.fromType(type);
+                tableNames.add(new TableName(tabelName, SchemaLevel.FALLBACK_SCHEMA, tt));
             }
-            return tableNames;
         }
+
+        var metadataTables = SpatialiteTableNames.metadataTables;
+        var internalDataTables = SpatialiteTableNames.internalDataTables;
+        var startsWithIndexTables = SpatialiteTableNames.startsWithIndexTables;
+
+        List<TableName> result = new ArrayList<>();
+        for( TableName tableName : tableNames ) {
+            String name = tableName.getName().toLowerCase();
+            if (metadataTables.contains(name)) {
+                continue;
+            }
+            if (internalDataTables.contains(name)) {
+                continue;
+            }
+            if (name.startsWith(startsWithIndexTables)) {
+                continue;
+            }
+            result.add(tableName);
+        }
+        return result;
     }
+
 
     public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT name FROM sqlite_master WHERE type='table'";
@@ -276,5 +305,4 @@ public class SqliteDb extends ADb {
     public void accept( IDbVisitor visitor ) throws Exception {
         visitor.visit(jdbcConn);
     }
-
 }

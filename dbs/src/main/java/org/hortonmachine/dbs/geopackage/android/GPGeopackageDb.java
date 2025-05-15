@@ -1,5 +1,8 @@
 package org.hortonmachine.dbs.geopackage.android;
 
+import java.util.HashMap;
+import java.util.List;
+
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.geom.GeoPkgGeomReader;
 import org.hortonmachine.dbs.spatialite.android.GPSpatialiteDb;

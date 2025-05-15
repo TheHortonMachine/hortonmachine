@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -39,6 +40,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
@@ -48,6 +50,7 @@ import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.OsCheck;
 import org.hortonmachine.dbs.utils.OsCheck.OSType;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -254,12 +257,6 @@ public class SpatialiteDb extends ASpatialDb {
         Logger.INSTANCE.insertDebug(null, message);
     }
 
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = SpatialiteTableNames.getTablesSorted(tableNames, doOrder);
-        return tablesMap;
-    }
-
     public String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
         return SpatialiteCommonMethods.getSpatialindexBBoxWherePiece(this, tableName, alias, x1, y1, x2, y2);
@@ -276,8 +273,8 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        return sqliteDb.getTables(doOrder);
+    public List<TableName> getTables() throws Exception {
+        return sqliteDb.getTables();
     }
 
     @Override

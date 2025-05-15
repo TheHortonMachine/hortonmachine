@@ -36,9 +36,9 @@ public class SqlName {
 
     private SqlName( String name ) {
         this.name = name;
-        fixedName = fixWithQuotes(name);
-        bracketName = fixWithBrackets(name);
-        fixedDoubleName = fixWithDoubleQuotes(name);
+        fixedName = DbsUtilities.fixWithQuotes(name);
+        bracketName = DbsUtilities.fixWithBrackets(name);
+        fixedDoubleName = DbsUtilities.fixWithDoubleQuotes(name);
     }
     
     @Override
@@ -50,49 +50,4 @@ public class SqlName {
         return this.name.replaceAll("\\s+", "_");
     }
     
-    /// Check the name and fix it if necessary.
-    ///
-    /// @param name the name to check.
-    /// @return the fixed name.
-    public static String fixWithQuotes( String name ) {
-        if (name.charAt(0) == '\'') {
-            // already fixed
-            return name;
-        }
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
-            return "'" + name + "'";
-        }
-        return name;
-    }
-
-    /// Check the name and fix it if necessary.
-    ///
-    /// @param name the name to check.
-    /// @return the fixed name.
-    public static String fixWithDoubleQuotes( String name ) {
-        if (name.charAt(0) == '\"') {
-            // already fixed
-            return name;
-        }
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
-            return "\"" + name + "\"";
-        }
-        return name;
-    }
-
-    /// Check the name and fix it if necessary.
-    ///
-    /// @param name the name to check.
-    /// @return the fixed name.
-    public static String fixWithBrackets( String name ) {
-        if (name.charAt(0) == '[') {
-            // already fixed
-            return name;
-        }
-
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
-            return "[" + name + "]";
-        }
-        return name;
-    }
 }

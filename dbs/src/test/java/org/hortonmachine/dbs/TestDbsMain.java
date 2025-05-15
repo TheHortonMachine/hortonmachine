@@ -13,6 +13,7 @@ import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -93,7 +94,7 @@ public class TestDbsMain {
         assertEquals("1", tableColumns.get(0)[2]);
         assertEquals("0", tableColumns.get(1)[2]);
 
-        List<String> tables = db.getTables(false);
+        List<TableName> tables = db.getTables();
         assertTrue(tables.size() == 2);
 
         List<ForeignKey> foreignKeys = db.getForeignKeys(TABLE1);

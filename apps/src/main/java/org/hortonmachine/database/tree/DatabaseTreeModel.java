@@ -29,8 +29,9 @@ import javax.swing.tree.TreePath;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.LeafLevel;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
-import org.hortonmachine.dbs.compat.objects.TypeLevel;
+import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 
 /**
  * Database tree model.
@@ -67,13 +68,19 @@ public class DatabaseTreeModel implements TreeModel {
     public int getChildCount( Object parent ) {
         if (parent instanceof DbLevel) {
             DbLevel dbLevel = (DbLevel) parent;
-            return dbLevel.typesList.size();
-        } else if (parent instanceof TypeLevel) {
-            TypeLevel typeLevel = (TypeLevel) parent;
+            return dbLevel.schemasList.size();
+        } else if (parent instanceof SchemaLevel) {
+            SchemaLevel schemaLevel = (SchemaLevel) parent;
+            return schemaLevel.tableTypesList.size();
+        } else if (parent instanceof TableTypeLevel) {
+            TableTypeLevel typeLevel = (TableTypeLevel) parent;
             return typeLevel.tablesList.size();
         } else if (parent instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) parent;
-            return tableLevel.columnsList.size();
+            if (!tableLevel.isLoaded) {
+                return 1; // Placeholder child to indicate lazy loading
+            }
+            return tableLevel.getColumnsList(root.parent).size();
         } else if (parent instanceof ColumnLevel) {
             ColumnLevel columnLevel = (ColumnLevel) parent;
             return columnLevel.leafsList.size();
@@ -91,13 +98,19 @@ public class DatabaseTreeModel implements TreeModel {
     public Object getChild( Object parent, int index ) {
         if (parent instanceof DbLevel) {
             DbLevel dbLevel = (DbLevel) parent;
-            return dbLevel.typesList.get(index);
-        } else if (parent instanceof TypeLevel) {
-            TypeLevel typeLevel = (TypeLevel) parent;
+            return dbLevel.schemasList.get(index);
+        } else if (parent instanceof SchemaLevel) {
+            SchemaLevel schemaLevel = (SchemaLevel) parent;
+            return schemaLevel.tableTypesList.get(index);
+        } else if (parent instanceof TableTypeLevel) {
+            TableTypeLevel typeLevel = (TableTypeLevel) parent;
             return typeLevel.tablesList.get(index);
         } else if (parent instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) parent;
-            return tableLevel.columnsList.get(index);
+            if (!tableLevel.isLoaded) {
+                return "Loading..."; // Dummy node
+            }
+            return tableLevel.getColumnsList(root.parent).get(index);
         } else if (parent instanceof ColumnLevel) {
             ColumnLevel columnLevel = (ColumnLevel) parent;
             return columnLevel.leafsList.get(index);

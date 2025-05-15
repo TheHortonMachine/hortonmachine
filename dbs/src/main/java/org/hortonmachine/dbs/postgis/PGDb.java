@@ -23,6 +23,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -39,6 +40,7 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
@@ -48,7 +50,6 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class PGDb extends ADb {
-    private static final String WORKING_SCHEMA = "public"; // TODO add schema support in future
     private static final String DRIVER_CLASS = "org.postgresql.Driver";
     /**
      * Connection use in non pooled mode.
@@ -245,26 +246,24 @@ public class PGDb extends ADb {
     }
 
     @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        List<String> tableNames = new ArrayList<String>();
-        String orderBy = " ORDER BY TABLE_NAME";
-        if (!doOrder) {
-            orderBy = "";
-        }
-        String sql = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES  " + //
-                "WHERE (TABLE_TYPE='BASE TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL') " + //
-                "and table_schema='public' " + //
-                "and table_name != 'geography_columns' " + //
-                "and table_name != 'geometry_columns' " + //
-                "and table_name != 'spatial_ref_sys' " + //
-                "and table_name != 'raster_columns' " + //
-                "and table_name != 'raster_overviews'" + orderBy;
+    public List<TableName> getTables() throws Exception {
+        List<TableName> tableNames = new ArrayList<TableName>();
+        String sql = """
+                    SELECT table_name, table_schema, table_type 
+                    FROM INFORMATION_SCHEMA.TABLES  
+                    WHERE (TABLE_TYPE='BASE TABLE' OR TABLE_TYPE='VIEW' OR TABLE_TYPE='EXTERNAL')
+                    AND table_schema NOT IN ('pg_catalog', 'information_schema') 
+                    ORDER BY table_schema, table_name;
+                """;
 
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     String tabelName = rs.getString(1);
-                    tableNames.add(tabelName);
+                    var schemaName = rs.getString(2);
+                    var tableType = rs.getString(3);
+                    var tt = ETableType.fromType(tableType);
+                    tableNames.add(new TableName(tabelName, schemaName, tt));
                 }
                 return tableNames;
             }
@@ -274,8 +273,8 @@ public class PGDb extends ADb {
     @Override
     public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES "
-                + "WHERE (TABLE_TYPE='BASE TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL') " + "and table_schema='"
-                + WORKING_SCHEMA + "' and upper(table_name) = upper('" + tableName.name + "')";
+                + "WHERE (TABLE_TYPE='BASE TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL') "+
+                "' and upper(table_name) = upper('" + tableName.name + "')";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {

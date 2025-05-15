@@ -17,13 +17,9 @@
  */
 package org.hortonmachine.dbs.spatialite;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 
-import org.hortonmachine.dbs.compat.ISpatialTableNames;
 
 /**
  * Spatialite table namse and groups.
@@ -31,12 +27,9 @@ import org.hortonmachine.dbs.compat.ISpatialTableNames;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class SpatialiteTableNames implements ISpatialTableNames {
+public class SpatialiteTableNames  {
     public static final String CHECK_SPATIALITE_TABLE = "spatial_ref_sys";
     public static final String startsWithIndexTables = "idx_";
-    public static final List<String> spatialindexTables = Arrays.asList("spatialindex", // SpatialIndex
-            "knn" // KNN
-    );
 
     // STYLE
     public static final String startsWithStyleTables = "SE_";
@@ -80,46 +73,8 @@ public class SpatialiteTableNames implements ISpatialTableNames {
             "views_geometry_columns_statistics", //
             "virts_geometry_columns_auth", //
             "virts_geometry_columns_field_infos", //
-            "virts_geometry_columns_statistics");
-
-    /**
-     * Sorts all supplied table names by type.
-     * 
-     * <p>
-     * Supported types are:
-     * <ul>
-     * <li>{@value ISpatialTableNames#INTERNALDATA} </li>
-     * <li>{@value ISpatialTableNames#SYSTEM} </li>
-     * </ul>
-     * 
-     * @param allTableNames list of all tables.
-     * @param doSort if <code>true</code>, table names are alphabetically sorted.
-     * @return the {@link LinkedHashMap}.
-     */
-    public static LinkedHashMap<String, List<String>> getTablesSorted( List<String> allTableNames, boolean doSort ) {
-        LinkedHashMap<String, List<String>> tablesMap = new LinkedHashMap<>();
-        tablesMap.put(USERDATA, new ArrayList<String>());
-        tablesMap.put(SYSTEM, new ArrayList<String>());
-
-        for( String tableName : allTableNames ) {
-            tableName = tableName.toLowerCase();
-            if (spatialindexTables.contains(tableName) || tableName.startsWith(startsWithIndexTables)
-                    || tableName.startsWith(startsWithStyleTables) || metadataTables.contains(tableName)
-                    || internalDataTables.contains(tableName)) {
-                List<String> list = tablesMap.get(SYSTEM);
-                list.add(tableName);
-                continue;
-            }
-            List<String> list = tablesMap.get(USERDATA);
-            list.add(tableName);
-        }
-
-        if (doSort) {
-            for( List<String> values : tablesMap.values() ) {
-                Collections.sort(values);
-            }
-        }
-
-        return tablesMap;
-    }
+            "virts_geometry_columns_statistics",//
+            "spatialindex", //
+            "knn" //
+            );
 }

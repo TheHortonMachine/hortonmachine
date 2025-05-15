@@ -43,6 +43,7 @@ import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
@@ -251,8 +252,8 @@ public class H2GisDb extends ASpatialDb {
     }
 
     @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        return h2Db.getTables(doOrder);
+    public List<TableName> getTables( ) throws Exception {
+        return h2Db.getTables();
     }
 
     @Override
@@ -277,13 +278,6 @@ public class H2GisDb extends ASpatialDb {
     @Override
     public List<Index> getIndexes( SqlName tableName ) throws Exception {
         return h2Db.getIndexes(tableName);
-    }
-
-    @Override
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = H2GisTableNames.getTablesSorted(tableNames, doOrder);
-        return tablesMap;
     }
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {

@@ -36,7 +36,6 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.IHmExtrasDb;
-import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -45,6 +44,7 @@ import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
@@ -312,8 +312,8 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     }
 
     @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        return pgDb.getTables(doOrder);
+    public List<TableName> getTables() throws Exception {
+        return pgDb.getTables();
     }
 
     @Override
@@ -338,15 +338,6 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     @Override
     public List<Index> getIndexes( SqlName tableName ) throws Exception {
         return pgDb.getIndexes(tableName);
-    }
-
-    @Override
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = new HashMap<>();
-        // TODO fix
-        tablesMap.put(ISpatialTableNames.USERDATA, tableNames);
-        return tablesMap;
     }
 
     public QueryResult getTableRecordsMapFromRawSql( String sql, int limit ) throws Exception {
@@ -704,4 +695,6 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     public void updateForm( SqlName tableName, String form ) throws Exception {
         updateFormsInternal(pgDb, tableName, form);
     }
+
+
 }

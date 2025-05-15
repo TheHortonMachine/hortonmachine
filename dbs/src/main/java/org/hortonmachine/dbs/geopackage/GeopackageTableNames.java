@@ -17,13 +17,8 @@
  */
 package org.hortonmachine.dbs.geopackage;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-
-import org.hortonmachine.dbs.compat.ISpatialTableNames;
 
 /**
  * Spatialite table namse and groups.
@@ -31,7 +26,7 @@ import org.hortonmachine.dbs.compat.ISpatialTableNames;
  * @author Andrea Antonello (www.hydrologis.com)
  *
  */
-public class GeopackageTableNames implements ISpatialTableNames {
+public class GeopackageTableNames{
     public static final String startsWithIndexTables = "rtree_";
 
     // METADATA
@@ -59,43 +54,4 @@ public class GeopackageTableNames implements ISpatialTableNames {
             "sqlite_sequence" //
     );
 
-    /**
-     * Sorts all supplied table names by type.
-     * 
-     * <p>
-     * Supported types are:
-     * <ul>
-     * <li>{@value ISpatialTableNames#INTERNALDATA} </li>
-     * <li>{@value ISpatialTableNames#SYSTEM} </li>
-     * </ul>
-     * 
-     * @param allTableNames list of all tables.
-     * @param doSort if <code>true</code>, table names are alphabetically sorted.
-     * @return the {@link LinkedHashMap}.
-     */
-    public static LinkedHashMap<String, List<String>> getTablesSorted( List<String> allTableNames, boolean doSort ) {
-        LinkedHashMap<String, List<String>> tablesMap = new LinkedHashMap<>();
-        tablesMap.put(USERDATA, new ArrayList<String>());
-        tablesMap.put(SYSTEM, new ArrayList<String>());
-
-        for( String tableName : allTableNames ) {
-            tableName = tableName.toLowerCase();
-            if (tableName.startsWith(startsWithIndexTables) || metadataTables.contains(tableName)
-                    || internalDataTables.contains(tableName)) {
-                List<String> list = tablesMap.get(SYSTEM);
-                list.add(tableName);
-                continue;
-            }
-            List<String> list = tablesMap.get(USERDATA);
-            list.add(tableName);
-        }
-
-        if (doSort) {
-            for( List<String> values : tablesMap.values() ) {
-                Collections.sort(values);
-            }
-        }
-
-        return tablesMap;
-    }
 }

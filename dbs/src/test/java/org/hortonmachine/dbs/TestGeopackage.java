@@ -12,7 +12,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.geopackage.Entry;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
@@ -38,8 +40,10 @@ public class TestGeopackage {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
-            HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
-            List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
+            var tablesMap = db.getTablesMap();
+            HashMap<String, List<String>> types2TablesMap = tablesMap.get(SchemaLevel.FALLBACK_SCHEMA);
+            assertEquals(1, types2TablesMap.size());
+            List<String> tables = types2TablesMap.get(ETableType.TABLE.name());
             assertEquals(16, tables.size());
 
             SqlName point2DTable = SqlName.m("point2d");
@@ -114,8 +118,10 @@ public class TestGeopackage {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
-            HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
-            List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
+            var tablesMap = db.getTablesMap();
+            HashMap<String, List<String>> types2TablesMap = tablesMap.get(SchemaLevel.FALLBACK_SCHEMA);
+            assertEquals(1, types2TablesMap.size());
+            List<String> tables = types2TablesMap.get(ETableType.TABLE.name());
             assertEquals(1, tables.size());
 
             List<Entry> contents = db.contents();
@@ -154,8 +160,10 @@ public class TestGeopackage {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
-            HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
-            List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
+            var tablesMap = db.getTablesMap();
+            HashMap<String, List<String>> types2TablesMap = tablesMap.get(SchemaLevel.FALLBACK_SCHEMA);
+            assertEquals(1, types2TablesMap.size());
+            List<String> tables = types2TablesMap.get(ETableType.TABLE.name());
             assertEquals(1, tables.size());
 
             List<Entry> contents = db.contents();
@@ -219,8 +227,10 @@ public class TestGeopackage {
             db.open(gpkgFile.getAbsolutePath());
             db.initSpatialMetadata(null);
 
-            HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
-            List<String> tables = tablesMap.get(GeopackageTableNames.USERDATA);
+            var tablesMap = db.getTablesMap();
+            HashMap<String, List<String>> types2TablesMap = tablesMap.get(SchemaLevel.FALLBACK_SCHEMA);
+            assertEquals(1, types2TablesMap.size());
+            List<String> tables = types2TablesMap.get(ETableType.TABLE.name());
             assertEquals(6, tables.size());
 
             List<Geometry> geometries = db.getGeometriesIn(TestUtilities.MPOLY_TABLE, (Envelope) null);

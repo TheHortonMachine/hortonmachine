@@ -50,6 +50,7 @@ import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
@@ -615,8 +616,11 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().getModel().getLayers().add(rasterizedSpatialiteLayer);
                     layerEventsListener.onLayerAdded(rasterizedSpatialiteLayer);
                 } else {
-                    List<String> tableMaps = db.getTables(false);
-                    String[] tables = tableMaps.toArray(new String[0]);
+                    List<TableName> tableMaps = db.getTables();
+                    String[] tables = new String[tableMaps.size()];
+                    for( int i = 0; i < tableMaps.size(); i++ ) {
+                        tables[i] = tableMaps.get(i).getName();
+                    }
                     String tableName = (String) JOptionPane.showInputDialog(this, "Select the table to load", "Table selection",
                             JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
 

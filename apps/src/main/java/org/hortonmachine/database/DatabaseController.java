@@ -72,11 +72,15 @@ import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.event.TreeWillExpandListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -556,6 +560,31 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                 }
 
+            });
+
+            databaseTreeView._databaseTree.addTreeWillExpandListener(new TreeWillExpandListener() {
+                public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
+                    TreePath path = event.getPath();
+                    Object node = path.getLastPathComponent();
+
+                    if (node instanceof TableLevel) {
+                        TableLevel tableLevel = (TableLevel) node;
+                        if (!tableLevel.isLoaded) {
+                            tableLevel.getColumnsList(currentConnectedSqlDatabase);
+                            tableLevel.isLoaded = true;
+                            // ((DefaultTreeModel) databaseTreeView._databaseTree.getModel()).reload();
+                            SwingUtilities.invokeLater(() -> {
+                                DefaultTreeModel model = (DefaultTreeModel) databaseTreeView._databaseTree.getModel();
+                                model.reload();
+                            });
+                        }
+                    }
+                }
+
+                @Override
+                public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
+                    
+                }
             });
 
             databaseTreeView._databaseTree.setVisible(false);
@@ -1751,6 +1780,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         if (expandNodes) {
             databaseTreeView._databaseTree.expandRow(0);
             databaseTreeView._databaseTree.expandRow(1);
+            databaseTreeView._databaseTree.expandRow(2);
         }
         // expandAllNodes(_databaseTree, 0, 2);
 
@@ -2098,12 +2128,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected DbLevel gatherDatabaseLevels( ADb db ) throws Exception {
-        DbLevel currentDbLevel = DbLevel.getDbLevel(db, SpatialiteTableNames.ALL_TYPES_LIST.toArray(new String[0]));
+        DbLevel currentDbLevel = DbLevel.getDbLevel(db);
         return currentDbLevel;
     }
 
     protected DbLevel gatherDatabaseLevels( INosqlDb db ) throws Exception {
-        DbLevel currentDbLevel = DbLevel.getDbLevel(db, SpatialiteTableNames.ALL_TYPES_LIST.toArray(new String[0]));
+        DbLevel currentDbLevel = DbLevel.getDbLevel(db);
         return currentDbLevel;
     }
 

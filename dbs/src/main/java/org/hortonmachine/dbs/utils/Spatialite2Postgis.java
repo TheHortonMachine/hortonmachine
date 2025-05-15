@@ -31,7 +31,6 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
-import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -174,14 +173,14 @@ public class Spatialite2Postgis implements AutoCloseable {
     }
 
     private List<TableLevel> getTables() throws Exception {
-        DbLevel dbLevel = DbLevel.getDbLevel(spatialite, ISpatialTableNames.USERDATA);
-        List<TableLevel> tablesList = dbLevel.typesList.get(0).tablesList;
+        DbLevel dbLevel = DbLevel.getDbLevel(spatialite);
+        List<TableLevel> tablesList = dbLevel.schemasList.get(0).tableTypesList.get(0).tablesList;
 
         Collections.sort(tablesList, new Comparator<TableLevel>(){
             @Override
             public int compare( TableLevel o1, TableLevel o2 ) {
                 if (o1.hasFks()) {
-                    List<ColumnLevel> columnsList = o1.columnsList;
+                    List<ColumnLevel> columnsList = o1.getColumnsList(dbLevel.parent);
                     for( ColumnLevel col : columnsList ) {
                         if (col.references != null) {
                             String refTable = col.tableColsFromFK()[0];
@@ -196,7 +195,7 @@ public class Spatialite2Postgis implements AutoCloseable {
                     }
                 }
                 if (o2.hasFks()) {
-                    List<ColumnLevel> columnsList = o2.columnsList;
+                    List<ColumnLevel> columnsList = o2.getColumnsList(dbLevel.parent);
                     for( ColumnLevel col : columnsList ) {
                         if (col.references != null) {
                             String refTable = col.tableColsFromFK()[0];

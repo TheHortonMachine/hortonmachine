@@ -24,7 +24,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.h2.upgrade.DbUpgrade;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
@@ -56,6 +55,7 @@ import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.dbs.utils.MercatorUtils;
 import org.hortonmachine.dbs.utils.ResultSetToObjectFunction;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -977,11 +977,6 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         Logger.INSTANCE.insertDebug(null, message);
     }
 
-    public HashMap<String, List<String>> getTablesMap( boolean doOrder ) throws Exception {
-        List<String> tableNames = getTables(doOrder);
-        HashMap<String, List<String>> tablesMap = GeopackageTableNames.getTablesSorted(tableNames, doOrder);
-        return tablesMap;
-    }
 
     public String getSpatialindexBBoxWherePiece( SqlName tableName, String alias, double x1, double y1, double x2, double y2 )
             throws Exception {
@@ -1033,13 +1028,28 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
     }
 
     @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        return sqliteDb.getTables(doOrder);
-        // Stream<String> map = features().stream().map(e -> e.tableName);
-        // if (doOrder) {
-        // map = map.sorted();
-        // }
-        // return map.collect(Collectors.toList());
+    public List<TableName> getTables( ) throws Exception {
+        var tables = sqliteDb.getTables();
+
+        var metadataTables = GeopackageTableNames.metadataTables;
+        var internalDataTables = GeopackageTableNames.internalDataTables;
+        var startsWithIndexTables = GeopackageTableNames.startsWithIndexTables;
+
+        List<TableName> result = new ArrayList<>();
+        for( TableName tableName : tables ) {
+            String name = tableName.getName();
+            if (metadataTables.contains(name)) {
+                continue;
+            }
+            if (internalDataTables.contains(name)) {
+                continue;
+            }
+            if (name.startsWith(startsWithIndexTables)) {
+                continue;
+            }
+            result.add(tableName);
+        }
+        return result;
     }
 
     @Override

@@ -988,7 +988,7 @@
 				<version>3.8.1</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
-					<release>11</release>
+					<release>17</release>
 					<debug>true</debug>
 				</configuration>
 			</plugin>

@@ -20,11 +20,12 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
-import org.hortonmachine.dbs.compat.ISpatialTableNames;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBReader;
 import org.hortonmachine.dbs.spatialite.SpatialiteWKBWriter;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -144,8 +145,10 @@ public class TestPostgisDbsMain {
         assertEquals("temperature", tableColumns.get(2)[0].toLowerCase());
         assertEquals("the_geom", tableColumns.get(3)[0].toLowerCase());
 
-        HashMap<String, List<String>> tablesMap = db.getTablesMap(false);
-        List<String> tables = tablesMap.get(ISpatialTableNames.USERDATA);
+        var tablesMap = db.getTablesMap();
+        HashMap<String, List<String>> types2TablesMap = tablesMap.get(SchemaLevel.FALLBACK_SCHEMA);
+        assertEquals(1, types2TablesMap.size());
+        List<String> tables = types2TablesMap.get(ETableType.TABLE.name());
         assertTrue(tables.size() == tablesCount);
 
         List<ForeignKey> foreignKeys = db.getForeignKeys(MPOLY_TABLE);

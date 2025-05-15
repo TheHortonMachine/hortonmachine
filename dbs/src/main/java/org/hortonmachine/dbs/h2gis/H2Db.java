@@ -22,6 +22,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -38,6 +39,7 @@ import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
@@ -239,25 +241,30 @@ public class H2Db extends ADb {
     }
 
     @Override
-    public List<String> getTables( boolean doOrder ) throws Exception {
-        List<String> tableNames = new ArrayList<String>();
-        String orderBy = " ORDER BY TABLE_NAME";
-        if (!doOrder) {
-            orderBy = "";
-        }
-        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'"
-                + orderBy;
+    public List<TableName> getTables( ) throws Exception {
+        List<TableName> tableNames = new ArrayList<TableName>();
+        String sql = """
+                SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE 
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_TYPE IN ('TABLE', 'VIEW', 'EXTERNAL')
+                ORDER BY TABLE_SCHEMA, TABLE_NAME;
+                """;
 
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
-                    String tabelName = rs.getString(1);
-                    tableNames.add(tabelName);
+                    String tabelSchema = rs.getString(1);
+                    String tableName = rs.getString(2);
+                    String tableType = rs.getString(3);
+                    ETableType type = ETableType.fromType(tableType);
+                    TableName t = new TableName(tableName, tabelSchema, type);
+                    tableNames.add(t);
                 }
                 return tableNames;
             }
         });
     }
+
 
     @Override
     public boolean hasTable( SqlName tableName ) throws Exception {
