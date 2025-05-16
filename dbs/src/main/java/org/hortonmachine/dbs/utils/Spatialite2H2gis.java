@@ -155,7 +155,7 @@ public class Spatialite2H2gis implements AutoCloseable {
             @Override
             public int compare( TableLevel o1, TableLevel o2 ) {
                 if (o1.hasFks()) {
-                    List<ColumnLevel> columnsList = o1.getColumnsList(dbLevel.parent);
+                    List<ColumnLevel> columnsList = o1.columnsList;
                     for( ColumnLevel col : columnsList ) {
                         if (col.references != null) {
                             String refTable = col.tableColsFromFK()[0];
@@ -170,7 +170,7 @@ public class Spatialite2H2gis implements AutoCloseable {
                     }
                 }
                 if (o2.hasFks()) {
-                    List<ColumnLevel> columnsList = o2.getColumnsList(dbLevel.parent);
+                    List<ColumnLevel> columnsList = o2.columnsList;
                     for( ColumnLevel col : columnsList ) {
                         if (col.references != null) {
                             String refTable = col.tableColsFromFK()[0];

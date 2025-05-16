@@ -897,7 +897,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
         String sql = "SELECT ";
         sql += DbsUtilities.joinByComma(items);
-        sql += " FROM " + tableName;
+        sql += " FROM " + tableName.fixedDoubleName;
 
         List<String> whereStrings = new ArrayList<>();
         if (envelope != null && supportsSpatialIndex) {

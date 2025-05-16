@@ -251,7 +251,7 @@ public class SqliteDb extends ADb {
             String tmpTableName = split[1];
             sql = "PRAGMA " + dbName + ".foreign_key_list(" + DbsUtilities.fixTableName(tmpTableName) + ")";
         } else {
-            sql = "PRAGMA foreign_key_list(" + tableName.fixedDoubleName + ")";
+            sql = "PRAGMA foreign_key_list(\"" + tableName.name + "\")";
         }
 
         List<ForeignKey> fKeys = new ArrayList<ForeignKey>();

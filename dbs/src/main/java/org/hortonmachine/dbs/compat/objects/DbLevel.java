@@ -89,17 +89,8 @@ public class DbLevel {
                     TableLevel tableLevel = new TableLevel();
                     tableLevel.parent = tableTypeLevel;
                     tableLevel.tableName = tableName;
-
-                    GeometryColumn geometryColumns = null;
-                    try {
-                        if (db instanceof ASpatialDb) {
-                            geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(SqlName.m(tableName));
-                        }
-                    } catch (Exception e1) {
-                        // ignore
-                        e1.printStackTrace();
-                    }
-                    tableLevel.isGeo = geometryColumns != null;
+                    tableLevel.tableType = ETableType.fromType(typeName);
+                    getColumnsList(db, tableLevel);
                     tableTypeLevel.tablesList.add(tableLevel);
                 }
                 schemaLevel.tableTypesList.add(tableTypeLevel);
@@ -107,6 +98,74 @@ public class DbLevel {
             dbLevel.schemasList.add(schemaLevel);
         }
         return dbLevel;
+    }
+
+    private static void getColumnsList(ADb db, TableLevel tableLevel) {
+        String tableName = tableLevel.tableName;
+        var columnsListTmp = new ArrayList<ColumnLevel>();
+        SqlName sqlName = SqlName.m(tableName);
+        GeometryColumn geometryColumns = null;
+        try {
+            if (db instanceof ASpatialDb) {
+                geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(sqlName);
+            }
+        } catch (Exception e1) {
+            // ignore
+            e1.printStackTrace();
+        }
+        tableLevel.isGeo = geometryColumns != null;
+        List<ForeignKey> foreignKeys = new ArrayList<>();
+        try {
+            foreignKeys = db.getForeignKeys(sqlName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        List<Index> indexes = new ArrayList<>();
+        try {
+            indexes = db.getIndexes(sqlName);
+        } catch (Exception e) {
+        }
+
+        List<String[]> tableInfo;
+        try {
+            tableInfo = db.getTableColumns(sqlName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ;
+        }
+        for (String[] columnInfo : tableInfo) {
+            ColumnLevel columnLevel = new ColumnLevel();
+            columnLevel.parent = tableLevel;
+            String columnName = columnInfo[0];
+            String columnType = columnInfo[1];
+            String columnPk = columnInfo[2];
+            columnLevel.columnName = columnName;
+            columnLevel.columnType = columnType;
+            columnLevel.isPK = columnPk.equals("1") ? true : false;
+            if (geometryColumns != null && columnName.equalsIgnoreCase(geometryColumns.geometryColumnName)) {
+                columnLevel.geomColumn = geometryColumns;
+                if (columnType.equals("USER-DEFINED")) {
+                    EGeometryType guessedType = geometryColumns.geometryType;// TODO check
+                                                                                // EGeometryType.fromSpatialiteCode(geometryColumns.geometryType);
+                    if (guessedType != null) {
+                        columnLevel.columnType = guessedType.name();
+                    }
+                }
+            }
+            for (ForeignKey fKey : foreignKeys) {
+                if (fKey.from.equals(columnName)) {
+                    columnLevel.setFkReferences(fKey);
+                }
+            }
+            for (Index index : indexes) {
+                if (index.columns.contains(columnName)) {
+                    columnLevel.setIndex(index);
+                }
+            }
+            columnsListTmp.add(columnLevel);
+        }
+        tableLevel.columnsList = columnsListTmp;
     }
 
 

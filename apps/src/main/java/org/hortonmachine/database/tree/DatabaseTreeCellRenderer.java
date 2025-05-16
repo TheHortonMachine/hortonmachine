@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.database.tree;
 
+import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
@@ -45,6 +46,44 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
     private ADb db;
     private INosqlDb nosqlDb;
 
+    private ImageIcon h2gisIcon = ImageCache.getInstance().getImage(ImageCache.H2GIS32);
+
+    private ImageIcon gpkgIcon = ImageCache.getInstance().getImage(ImageCache.GPKG32);
+
+    private ImageIcon spatialiteIcon = ImageCache.getInstance().getImage(ImageCache.SPATIALITE32);
+
+    private ImageIcon postgisIcon = ImageCache.getInstance().getImage(ImageCache.POSTGIS32);
+
+    private ImageIcon databaseIcon = ImageCache.getInstance().getImage(ImageCache.DATABASE);
+
+    private ImageIcon mongoIcon = ImageCache.getInstance().getImage(ImageCache.MONGO32);
+
+    private ImageIcon tableFolderIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER);
+
+    private ImageIcon tableTypeIcon = ImageCache.getInstance().getImage(ImageCache.TABLETYPE);
+
+    private ImageIcon tableSpatialVirtualIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL);
+
+    private ImageIcon tableSpatialIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL);
+
+    private ImageIcon viewIcon = ImageCache.getInstance().getImage(ImageCache.VIEW);
+
+    private ImageIcon tableIcon = ImageCache.getInstance().getImage(ImageCache.TABLE);
+
+    private ImageIcon pkIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY);
+
+    private ImageIcon geomPointIon = ImageCache.getInstance().getImage(ImageCache.GEOM_POINT);
+
+    private ImageIcon geomLineIcon = ImageCache.getInstance().getImage(ImageCache.GEOM_LINE);
+
+    private ImageIcon geomPolyIcon = ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON);
+
+    private ImageIcon tableColumnIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN);
+
+    private ImageIcon tableColumnIndexIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX);
+
+    private ImageIcon tableColumnFkIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK);
+
     public DatabaseTreeCellRenderer( ADb db ) {
         this.db = db;
     }
@@ -64,125 +103,116 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                 switch( db.getType() ) {
                 case H2GIS:
                 case H2:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.H2GIS32));
+                    setIcon(h2gisIcon);
                     break;
                 case GEOPACKAGE:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.GPKG32));
+                    setIcon(gpkgIcon);
                     break;
                 case SPATIALITE:
                 case SQLITE:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.SPATIALITE32));
+                    setIcon(spatialiteIcon);
                     break;
                 case POSTGIS:
                 case POSTGRES:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.POSTGIS32));
+                    setIcon(postgisIcon);
                     break;
                 default:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+                    setIcon(databaseIcon);
                     break;
                 }
             } else if (nosqlDb != null) {
                 switch( nosqlDb.getType() ) {
                 case MONGODB:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.MONGO32));
+                    setIcon(mongoIcon);
                     break;
                 default:
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.DATABASE));
+                    setIcon(databaseIcon);
                     break;
                 }
             }
         } else if (value instanceof SchemaLevel) {
-            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER));
+            setIcon(tableFolderIcon);
         } else if (value instanceof TableTypeLevel) {
-            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLETYPE));
+            setIcon(tableTypeIcon);
         } else if (value instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) value;
-            try {
-                if (db != null) {
-                    ETableType tableType = db.getTableType(SqlName.m(tableLevel.tableName));
-                    if (tableLevel.isGeo) {
-                        if (tableType == ETableType.EXTERNAL) {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL));
-                        } else {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
-                        }
-                    } else {
-                        if (tableType == ETableType.VIEW) {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.VIEW));
-                        } else {
-                            setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
-                        }
-                    }
+            ETableType tableType = tableLevel.tableType;
+            if (tableLevel.isGeo) {
+                if (tableType == ETableType.EXTERNAL) {
+                    setIcon(tableSpatialVirtualIcon);
                 } else {
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
+                    setIcon(tableSpatialIcon);
                 }
-            } catch (Exception e) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE));
-                e.printStackTrace();
+            } else {
+                if (tableType == ETableType.VIEW) {
+                    setIcon(viewIcon);
+                } else {
+                    setIcon(tableIcon);
+                }
             }
         } else if (value instanceof ColumnLevel) {
             ColumnLevel columnLevel = (ColumnLevel) value;
             if (columnLevel.isPK) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
+                setIcon(pkIcon);
             } else if (columnLevel.geomColumn != null) {
                 EGeometryType gType = columnLevel.geomColumn.geometryType;
                 if (gType != null) {
                     switch( gType ) {
                     case POINT:
                     case MULTIPOINT:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
+                        setIcon(geomPointIon);
                         break;
                     case LINESTRING:
                     case MULTILINESTRING:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
+                        setIcon(geomLineIcon);
                         break;
                     case POLYGON:
                     case MULTIPOLYGON:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
+                        setIcon(geomPolyIcon);
                         break;
                     default:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                        setIcon(tableColumnIcon);
                         break;
                     }
                 } else {
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
+                    setIcon(tableSpatialIcon);
                 }
             } else if (columnLevel.index != null) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX));
+                setIcon(tableColumnIndexIcon);
             } else if (columnLevel.references != null) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK));
+                setIcon(tableColumnFkIcon);
             } else {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                setIcon(tableColumnIcon);
             }
         } else if (value instanceof LeafLevel) {
             LeafLevel leafLevel = (LeafLevel) value;
             if (leafLevel.isPK) {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY));
+                setIcon(pkIcon);
             } else if (leafLevel.geomColumn != null) {
                 EGeometryType gType = leafLevel.geomColumn.geometryType;
                 if (gType != null) {
                     switch( gType ) {
                     case POINT:
                     case MULTIPOINT:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POINT));
+                        setIcon(geomPointIon);
                         break;
                     case LINESTRING:
                     case MULTILINESTRING:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_LINE));
+                        setIcon(geomLineIcon);
                         break;
                     case POLYGON:
                     case MULTIPOLYGON:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON));
+                        setIcon(geomPolyIcon);
                         break;
                     default:
-                        setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                        setIcon(tableColumnIcon);
                         break;
                     }
                 } else {
-                    setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL));
+                    setIcon(tableSpatialIcon);
                 }
             } else {
-                setIcon(ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN));
+                setIcon(tableColumnIcon);
             }
         }
 

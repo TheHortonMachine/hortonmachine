@@ -386,6 +386,7 @@ public class DbsUtilities {
         if ( //
         Character.isDigit(tableName.charAt(0)) || //
                 tableName.matches(".*\\s+.*") || //
+                tableName.contains(" ") || //
                 tableName.contains("-") //
         ) {
             return "\"" + tableName + "\"";
@@ -401,6 +402,7 @@ public class DbsUtilities {
         if ( //
         Character.isDigit(columnName.charAt(0)) || //
                 columnName.matches(".*\\s+.*") || //
+                columnName.contains(" ") || //
                 columnName.contains("-") //
         ) {
             return "\"" + columnName + "\"";
@@ -473,7 +475,7 @@ public class DbsUtilities {
             // already fixed
             return name;
         }
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
+        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(" ") || name.contains(",") || name.matches("\\s+")) {
             return "'" + name + "'";
         }
         return name;
@@ -488,7 +490,7 @@ public class DbsUtilities {
             // already fixed
             return name;
         }
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
+        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(" ") || name.contains(",") || name.matches("\\s+")) {
             return "\"" + name + "\"";
         }
         return name;
@@ -504,7 +506,7 @@ public class DbsUtilities {
             return name;
         }
 
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(",") || name.matches("\\s+")) {
+        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(" ") || name.contains(",") || name.matches("\\s+")) {
             return "[" + name + "]";
         }
         return name;

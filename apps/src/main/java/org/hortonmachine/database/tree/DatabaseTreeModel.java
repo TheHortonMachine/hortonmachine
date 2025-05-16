@@ -63,6 +63,7 @@ public class DatabaseTreeModel implements TreeModel {
     public Object getRoot() {
         return root;
     }
+    
 
     @SuppressWarnings("rawtypes")
     public int getChildCount( Object parent ) {
@@ -77,10 +78,11 @@ public class DatabaseTreeModel implements TreeModel {
             return typeLevel.tablesList.size();
         } else if (parent instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) parent;
-            if (!tableLevel.isLoaded) {
-                return 1; // Placeholder child to indicate lazy loading
-            }
-            return tableLevel.getColumnsList(root.parent).size();
+            return tableLevel.columnsList.size();
+            // if (!tableLevel.isLoaded) {
+            //     return 1; // Placeholder child to indicate lazy loading
+            // }
+            // return tableLevel.getColumnsList(root.parent).size();
         } else if (parent instanceof ColumnLevel) {
             ColumnLevel columnLevel = (ColumnLevel) parent;
             return columnLevel.leafsList.size();
@@ -107,10 +109,11 @@ public class DatabaseTreeModel implements TreeModel {
             return typeLevel.tablesList.get(index);
         } else if (parent instanceof TableLevel) {
             TableLevel tableLevel = (TableLevel) parent;
-            if (!tableLevel.isLoaded) {
-                return "Loading..."; // Dummy node
-            }
-            return tableLevel.getColumnsList(root.parent).get(index);
+            return tableLevel.columnsList.get(index);
+            // if (!tableLevel.isLoaded) {
+            //     return "Loading...";
+            // }
+            // return tableLevel.getColumnsList(root.parent).get(index);
         } else if (parent instanceof ColumnLevel) {
             ColumnLevel columnLevel = (ColumnLevel) parent;
             return columnLevel.leafsList.get(index);
@@ -148,11 +151,18 @@ public class DatabaseTreeModel implements TreeModel {
         listenerList.remove(TreeModelListener.class, l);
     }
 
-    protected void fireTreeStructureChanged( Object oldRoot ) {
+    // protected void fireTreeStructureChanged( Object oldRoot ) {
+    //     TreeModelEvent event = new TreeModelEvent(this, new Object[]{oldRoot});
+    //     EventListener[] listeners = listenerList.getListeners(TreeModelListener.class);
+    //     for( int i = 0; i < listeners.length; i++ )
+    //         ((TreeModelListener) listeners[i]).treeStructureChanged(event);
+    // }
+
+    public void fireTreeStructureChanged(Object oldRoot ) {
         TreeModelEvent event = new TreeModelEvent(this, new Object[]{oldRoot});
-        EventListener[] listeners = listenerList.getListeners(TreeModelListener.class);
-        for( int i = 0; i < listeners.length; i++ )
-            ((TreeModelListener) listeners[i]).treeStructureChanged(event);
+        for (TreeModelListener listener : listenerList.getListeners(TreeModelListener.class)) {
+            listener.treeStructureChanged(event);
+        }
     }
 
 }

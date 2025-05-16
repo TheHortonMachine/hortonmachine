@@ -66,21 +66,18 @@ import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
-import javax.swing.event.TreeWillExpandListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.TreePath;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -109,7 +106,6 @@ import org.hortonmachine.dbs.nosql.INosqlCollection;
 import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.nosql.INosqlDocument;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
-import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.utils.CommonQueries;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -515,6 +511,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             databaseTreeView._databaseTree.addTreeSelectionListener(new TreeSelectionListener(){
                 public void valueChanged( TreeSelectionEvent evt ) {
+                    
                     TreePath[] paths = evt.getPaths();
                     currentSelectedDb = null;
                     currentSelectedTable = null;
@@ -528,28 +525,50 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             currentSelectedColumn = (ColumnLevel) selectedItem;
                         } else if (selectedItem instanceof TableLevel) {
                             currentSelectedTable = (TableLevel) selectedItem;
-
-                            try {
+                            SwingUtilities.invokeLater(() -> {
+                                String[] names = new String[]{"Loading data..."};
+                                Object[][] values = new Object[0][];
+                                currentDataTable.setModel(new DefaultTableModel(values, names));
+                            });
+                            SwingWorker<Void, Void> worker = new SwingWorker<>() {
                                 QueryResult queryResult = null;
-                                if (currentConnectedSqlDatabase != null) {
-                                    if (currentConnectedSqlDatabase instanceof ASpatialDb) {
-                                        queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
-                                                SqlName.m(currentSelectedTable.tableName), null, SQL_ONSELECT_LIMIT, -1, null);
-                                    } else {
-                                        queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
-                                                "select * from " + currentSelectedTable.tableName, SQL_ONSELECT_LIMIT);
-                                    }
-                                } else if (currentConnectedNosqlDatabase != null) {
-                                    INosqlCollection collection = currentConnectedNosqlDatabase
-                                            .getCollection(currentSelectedTable.tableName);
-                                    List<INosqlDocument> result = collection.find(null, NOSQL_ONSELECT_LIMIT);
-                                    queryResult = nosqlToQueryResult(result);
 
+                                @Override
+                                protected Void doInBackground() {
+                                    try {
+                                        if (currentConnectedSqlDatabase != null) {
+                                            if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+                                                queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
+                                                        SqlName.m(currentSelectedTable.tableName), null, SQL_ONSELECT_LIMIT, -1, null);
+                                            } else {
+                                                queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
+                                                        "select * from " + currentSelectedTable.tableName, SQL_ONSELECT_LIMIT);
+                                            }
+                                        } else if (currentConnectedNosqlDatabase != null) {
+                                            INosqlCollection collection = currentConnectedNosqlDatabase
+                                                    .getCollection(currentSelectedTable.tableName);
+                                            List<INosqlDocument> result = collection.find(null, NOSQL_ONSELECT_LIMIT);
+                                            queryResult = nosqlToQueryResult(result);
+        
+                                        }
+                                    } catch (Exception e) {
+                                        Logger.INSTANCE.insertError("", "ERROR", e);
+                                    }
+                                    return null;
                                 }
-                                loadDataViewer(queryResult);
-                            } catch (Exception e) {
-                                Logger.INSTANCE.insertError("", "ERROR", e);
-                            }
+                                
+                                @Override
+                                protected void done() {
+                                    if (queryResult == null) {
+                                        return;
+                                    }
+                                    loadDataViewer(queryResult);
+                                }
+                            };
+                            worker.execute();
+
+
+
                         } else if (selectedItem instanceof LeafLevel) {
                             currentSelectedLeaf = (LeafLevel) selectedItem;
                         } else {
@@ -562,30 +581,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             });
 
-            databaseTreeView._databaseTree.addTreeWillExpandListener(new TreeWillExpandListener() {
-                public void treeWillExpand(TreeExpansionEvent event) throws ExpandVetoException {
-                    TreePath path = event.getPath();
-                    Object node = path.getLastPathComponent();
-
-                    if (node instanceof TableLevel) {
-                        TableLevel tableLevel = (TableLevel) node;
-                        if (!tableLevel.isLoaded) {
-                            tableLevel.getColumnsList(currentConnectedSqlDatabase);
-                            tableLevel.isLoaded = true;
-                            // ((DefaultTreeModel) databaseTreeView._databaseTree.getModel()).reload();
-                            SwingUtilities.invokeLater(() -> {
-                                DefaultTreeModel model = (DefaultTreeModel) databaseTreeView._databaseTree.getModel();
-                                model.reload();
-                            });
-                        }
-                    }
-                }
-
-                @Override
-                public void treeWillCollapse(TreeExpansionEvent event) throws ExpandVetoException {
-                    
-                }
-            });
 
             databaseTreeView._databaseTree.setVisible(false);
         } catch (Exception e1) {
@@ -1859,7 +1854,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 setRightTreeRenderer();
                 DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
 
-                layoutTree(dbLevel, false);
+                SwingUtilities.invokeLater(() -> {
+                    layoutTree(dbLevel, false);
+                });
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
@@ -1967,8 +1964,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
                 }
                 setRightTreeRenderer();
-                layoutTree(dbLevel, true);
-                setDbTreeTitle(dbPath);
+                var _dbLevel = dbLevel;
+                SwingUtilities.invokeLater(() -> {
+                    layoutTree(_dbLevel, true);
+                    setDbTreeTitle(dbPath);
+                });
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 currentConnectedNosqlDatabase = null;
@@ -2036,8 +2036,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     setRightTreeRenderer();
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
 
-                    layoutTree(dbLevel, true);
-                    setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
+                    SwingUtilities.invokeLater(() -> {
+                        layoutTree(dbLevel, true);
+                        setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
+                    });
                 } else {
                     currentConnectedNosqlDatabase = _type.getNosqlDb();
                     currentConnectedNosqlDatabase.setCredentials(user, pwd);
@@ -2045,9 +2047,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedNosqlDatabase.getType());
                     setRightTreeRenderer();
                     DbLevel dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
-
-                    layoutTree(dbLevel, true);
-                    setDbTreeTitle(currentConnectedNosqlDatabase.getDbEngineUrl());
+                    SwingUtilities.invokeLater(() -> {
+                        layoutTree(dbLevel, true);
+                        setDbTreeTitle(currentConnectedNosqlDatabase.getDbEngineUrl());
+                    });
                 }
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
@@ -2391,12 +2394,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     protected void refreshDatabaseTree() throws Exception {
         if (currentConnectedSqlDatabase != null) {
             DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
-            setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
-            layoutTree(dbLevel, true);
+            SwingUtilities.invokeLater(() -> {
+                setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
+                layoutTree(dbLevel, true);
+            });
         } else if (currentConnectedNosqlDatabase != null) {
             DbLevel dbLevel = gatherDatabaseLevels(currentConnectedNosqlDatabase);
-            setDbTreeTitle(currentConnectedNosqlDatabase.getDbEngineUrl());
-            layoutTree(dbLevel, true);
+            SwingUtilities.invokeLater(() -> {
+                setDbTreeTitle(currentConnectedNosqlDatabase.getDbEngineUrl());
+                layoutTree(dbLevel, true);
+            });
         }
     }
 

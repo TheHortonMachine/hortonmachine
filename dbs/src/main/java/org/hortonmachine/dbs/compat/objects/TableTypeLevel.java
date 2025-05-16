@@ -33,6 +33,6 @@ public class TableTypeLevel {
     
     @Override
     public String toString() {
-        return typeName;
+        return typeName + "S";
     }
 }

@@ -552,7 +552,7 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
-                    List<ColumnLevel> columnsList = table.getColumnsList(spatialiteViewer.currentConnectedSqlDatabase);
+                    List<ColumnLevel> columnsList = table.columnsList;
                     String tableName = table.tableName;
                     String geometryColumnName = null;
                     for( ColumnLevel columnLevel : columnsList ) {

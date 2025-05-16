@@ -37,6 +37,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.dbs.spatialite.SpatialiteTableNames;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.dbs.utils.TableName;
@@ -260,9 +261,28 @@ public class H2Db extends ADb {
                     TableName t = new TableName(tableName, tabelSchema, type);
                     tableNames.add(t);
                 }
-                return tableNames;
+                var metadataTables = H2GisTableNames.metadataTables;
+                var internalDataTables = H2GisTableNames.internalDataTables;
+                var startsWithIndexTables = H2GisTableNames.startsWithIndexTables;
+        
+                List<TableName> result = new ArrayList<>();
+                for( TableName tableName : tableNames ) {
+                    String name = tableName.getName().toLowerCase();
+                    if (metadataTables.contains(name)) {
+                        continue;
+                    }
+                    if (internalDataTables.contains(name)) {
+                        continue;
+                    }
+                    if (name.startsWith(startsWithIndexTables)) {
+                        continue;
+                    }
+                    result.add(tableName);
+                }
+                return result;
             }
         });
+
     }
 
 
