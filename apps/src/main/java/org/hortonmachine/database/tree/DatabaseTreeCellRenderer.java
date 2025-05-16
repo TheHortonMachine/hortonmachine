@@ -30,7 +30,6 @@ import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
-import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gui.utils.ImageCache;
 
@@ -44,53 +43,30 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = 1L;
 
     private ADb db;
-    private INosqlDb nosqlDb;
 
     private ImageIcon h2gisIcon = ImageCache.getInstance().getImage(ImageCache.H2GIS32);
-
     private ImageIcon gpkgIcon = ImageCache.getInstance().getImage(ImageCache.GPKG32);
-
     private ImageIcon spatialiteIcon = ImageCache.getInstance().getImage(ImageCache.SPATIALITE32);
-
     private ImageIcon postgisIcon = ImageCache.getInstance().getImage(ImageCache.POSTGIS32);
-
     private ImageIcon databaseIcon = ImageCache.getInstance().getImage(ImageCache.DATABASE);
-
-    private ImageIcon mongoIcon = ImageCache.getInstance().getImage(ImageCache.MONGO32);
-
     private ImageIcon tableFolderIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_FOLDER);
-
     private ImageIcon tableTypeIcon = ImageCache.getInstance().getImage(ImageCache.TABLETYPE);
-
     private ImageIcon tableSpatialVirtualIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL_VIRTUAL);
-
     private ImageIcon tableSpatialIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_SPATIAL);
-
     private ImageIcon viewIcon = ImageCache.getInstance().getImage(ImageCache.VIEW);
-
     private ImageIcon tableIcon = ImageCache.getInstance().getImage(ImageCache.TABLE);
-
     private ImageIcon pkIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_PRIMARYKEY);
-
     private ImageIcon geomPointIon = ImageCache.getInstance().getImage(ImageCache.GEOM_POINT);
-
     private ImageIcon geomLineIcon = ImageCache.getInstance().getImage(ImageCache.GEOM_LINE);
-
     private ImageIcon geomPolyIcon = ImageCache.getInstance().getImage(ImageCache.GEOM_POLYGON);
-
     private ImageIcon tableColumnIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN);
-
     private ImageIcon tableColumnIndexIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_INDEX);
-
     private ImageIcon tableColumnFkIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK);
 
     public DatabaseTreeCellRenderer( ADb db ) {
         this.db = db;
     }
 
-    public DatabaseTreeCellRenderer( INosqlDb nosqlDb ) {
-        this.nosqlDb = nosqlDb;
-    }
 
     @Override
     public java.awt.Component getTreeCellRendererComponent( JTree tree, Object value, boolean selected, boolean expanded,
@@ -120,16 +96,7 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(databaseIcon);
                     break;
                 }
-            } else if (nosqlDb != null) {
-                switch( nosqlDb.getType() ) {
-                case MONGODB:
-                    setIcon(mongoIcon);
-                    break;
-                default:
-                    setIcon(databaseIcon);
-                    break;
-                }
-            }
+            } 
         } else if (value instanceof SchemaLevel) {
             setIcon(tableFolderIcon);
         } else if (value instanceof TableTypeLevel) {

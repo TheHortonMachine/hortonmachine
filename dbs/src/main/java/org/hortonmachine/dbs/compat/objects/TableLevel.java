@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.utils.TableName;
 
 /**
  * Class representing a db table level.
@@ -29,7 +30,7 @@ import org.hortonmachine.dbs.compat.ETableType;
  */
 public class TableLevel {
     public TableTypeLevel parent;
-    public String tableName;
+    public TableName tableName;
     public boolean isGeo = false;
     public ETableType tableType = ETableType.TABLE;
 
@@ -60,7 +61,7 @@ public class TableLevel {
 
     @Override
     public String toString() {
-        return tableName;
+        return tableName.getName();
     }
 
     

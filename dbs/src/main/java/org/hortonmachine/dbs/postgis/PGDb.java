@@ -263,6 +263,9 @@ public class PGDb extends ADb {
                     var schemaName = rs.getString(2);
                     var tableType = rs.getString(3);
                     var tt = ETableType.fromType(tableType);
+                    if("spatial_ref_sys".equalsIgnoreCase(tabelName)) {
+                        continue;
+                    }
                     tableNames.add(new TableName(tabelName, schemaName, tt));
                 }
                 return tableNames;

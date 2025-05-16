@@ -26,7 +26,7 @@ import java.util.List;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SchemaLevel {
-    public static final String FALLBACK_SCHEMA = "tables";
+    public static final String FALLBACK_SCHEMA = "dummyschema";
     public DbLevel parent;
     public String schemaName;
 

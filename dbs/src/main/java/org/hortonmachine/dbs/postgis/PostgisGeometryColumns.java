@@ -27,7 +27,8 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 public class PostgisGeometryColumns extends GeometryColumn{
     // COLUMN NAMES
     public static final String TABLENAME = "geometry_columns";
-    public static final String F_TABLE_NAME = "f_table_name";
+    public static final String F_TABLE_NAME2 = "f_table_name";
+    public static final String F_TABLE_SCHEMA = "f_table_schema";
     public static final String F_GEOMETRY_COLUMN = "f_geometry_column";
     public static final String GEOMETRY_TYPE = "type";
     public static final String COORD_DIMENSION = "coord_dimension";

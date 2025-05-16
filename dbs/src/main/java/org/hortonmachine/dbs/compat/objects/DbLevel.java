@@ -30,11 +30,9 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
-import org.hortonmachine.dbs.nosql.INosqlCollection;
-import org.hortonmachine.dbs.nosql.INosqlDb;
-import org.hortonmachine.dbs.nosql.INosqlDocument;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TableName;
 
 /**
  * Class representing a db level.
@@ -86,9 +84,10 @@ public class DbLevel {
                 tableTypeLevel.parent = schemaLevel;
                 tableTypeLevel.typeName = typeName;
                 for( String tableName : tablesMap ) {
+                    TableName tableNameObj = new TableName(tableName, schemaName, ETableType.fromType(typeName)); 
                     TableLevel tableLevel = new TableLevel();
                     tableLevel.parent = tableTypeLevel;
-                    tableLevel.tableName = tableName;
+                    tableLevel.tableName = tableNameObj;
                     tableLevel.tableType = ETableType.fromType(typeName);
                     getColumnsList(db, tableLevel);
                     tableTypeLevel.tablesList.add(tableLevel);
@@ -101,9 +100,9 @@ public class DbLevel {
     }
 
     private static void getColumnsList(ADb db, TableLevel tableLevel) {
-        String tableName = tableLevel.tableName;
+        TableName tableName = tableLevel.tableName;
         var columnsListTmp = new ArrayList<ColumnLevel>();
-        SqlName sqlName = SqlName.m(tableName);
+        SqlName sqlName = SqlName.m(tableName.getFullName());
         GeometryColumn geometryColumns = null;
         try {
             if (db instanceof ASpatialDb) {
@@ -169,63 +168,6 @@ public class DbLevel {
     }
 
 
-    public static DbLevel getDbLevel( INosqlDb db, String... types ) throws Exception {
-        DbLevel dbLevel = new DbLevel();
-        dbLevel.dbName = db.getDbName();
-
-        // List<String> collectionsNames = db.getCollections(true);
-
-        // HashMap<String, List<String>> currentDatabaseTablesMap = new HashMap<>();
-        // currentDatabaseTablesMap.put(SchemaLevel.FALLBACK_SCHEMA, collectionsNames);
-        // for( String typeName : types ) {
-        //     TypeLevel typeLevel = new TypeLevel();
-        //     typeLevel.typeName = typeName;
-        //     List<String> collectionsList = currentDatabaseTablesMap.get(typeName);
-        //     if (collectionsList == null) {
-        //         continue;
-        //     }
-        //     for( String collectionName : collectionsList ) {
-        //         TableLevel tableLevel = new TableLevel();
-        //         tableLevel.parent = dbLevel;
-        //         tableLevel.tableName = collectionName;
-
-        //         tableLevel.tableType = ETableType.OTHER;
-        //         tableLevel.isGeo = false;
-        //         typeLevel.tablesList.add(tableLevel);
-
-        //         INosqlCollection collection = db.getCollection(collectionName);
-
-        //         HashMap<String, GeometryColumn> spatialIndexes = collection.getSpatialIndexes();
-
-        //         INosqlDocument first = collection.getFirst();
-        //         if (first != null) {
-        //             LinkedHashMap<String, Object> schema = first.getSchema();
-
-        //             for( Entry<String, Object> entry : schema.entrySet() ) {
-        //                 String key = entry.getKey();
-        //                 Object value = entry.getValue();
-        //                 String type = value.toString();
-        //                 ColumnLevel columnLevel = new ColumnLevel();
-        //                 if (value instanceof Map) {
-        //                     type = "Document";
-        //                     handleDocument(columnLevel, (Map) value, spatialIndexes);
-        //                 }
-
-        //                 columnLevel.geomColumn = spatialIndexes.get(key);
-        //                 columnLevel.parent = tableLevel;
-        //                 columnLevel.columnName = key;
-        //                 columnLevel.columnType = type;
-        //                 columnLevel.isPK = key.equals("_id");
-        //                 tableLevel.columnsList.add(columnLevel);
-        //             }
-
-        //         }
-        //     }
-        //     dbLevel.schemasList.add(typeLevel);
-        // }
-
-        return dbLevel;
-    }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private static void handleDocument( Object parent, Map<String, Object> map, HashMap<String, GeometryColumn> spatialIndexes ) {

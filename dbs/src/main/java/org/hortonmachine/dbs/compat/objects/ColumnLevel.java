@@ -22,7 +22,6 @@ import java.util.List;
 
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
-import org.hortonmachine.dbs.nosql.NosqlGeometryColumn;
 
 /**
  * Class representing a db column.
@@ -74,18 +73,13 @@ public class ColumnLevel {
             }
             return col;
         } else {
-            if (geomColumn instanceof NosqlGeometryColumn) {
-                NosqlGeometryColumn gc = (NosqlGeometryColumn) geomColumn;
-                return columnName + " [" + gc.indexType + ",EPSG:" + geomColumn.srid + ",idx: true]";
-            } else {
-                EGeometryType geometryType = geomColumn.geometryType;
-                String gType = "UNKNOWN";
-                if (geometryType != null) {
-                    gType = geometryType.getTypeName();
-                }
-                boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
-                return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
+            EGeometryType geometryType = geomColumn.geometryType;
+            String gType = "UNKNOWN";
+            if (geometryType != null) {
+                gType = geometryType.getTypeName();
             }
+            boolean indexEnabled = geomColumn.isSpatialIndexEnabled == 1 ? true : false;
+            return columnName + " [" + gType + ",EPSG:" + geomColumn.srid + ",idx:" + indexEnabled + "]";
         }
     }
 

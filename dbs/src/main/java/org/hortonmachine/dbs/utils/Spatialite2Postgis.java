@@ -110,7 +110,7 @@ public class Spatialite2Postgis implements AutoCloseable {
         ADatabaseSyntaxHelper dsh = postgis.getType().getDatabaseSyntaxHelper();
         while( todo.size() > 0 && count < 10 ) {
             for( TableLevel tableLevel : todo ) {
-                SqlName tableName = SqlName.m(tableLevel.tableName);
+                SqlName tableName = SqlName.m(tableLevel.tableName.getFullName());
                 String tableSql = getTableSql(spatialite, tableName);
 
                 System.out.println("Trying to create table: " + tableName);
@@ -184,7 +184,7 @@ public class Spatialite2Postgis implements AutoCloseable {
                     for( ColumnLevel col : columnsList ) {
                         if (col.references != null) {
                             String refTable = col.tableColsFromFK()[0];
-                            if (o2.tableName.equalsIgnoreCase(refTable)) {
+                            if (o2.tableName.getName().equalsIgnoreCase(refTable)) {
                                 // linked, create other first
                                 return -1;
                             }
@@ -199,7 +199,7 @@ public class Spatialite2Postgis implements AutoCloseable {
                     for( ColumnLevel col : columnsList ) {
                         if (col.references != null) {
                             String refTable = col.tableColsFromFK()[0];
-                            if (o1.tableName.equalsIgnoreCase(refTable)) {
+                            if (o1.tableName.getName().equalsIgnoreCase(refTable)) {
                                 // linked, create other first
                                 return -1;
                             }
@@ -222,7 +222,7 @@ public class Spatialite2Postgis implements AutoCloseable {
             tablesList = finalDoneOrder;
         }
         for( TableLevel tableLevel : tablesList ) {
-            SqlName tableName = SqlName.m(tableLevel.tableName);
+            SqlName tableName = SqlName.m(tableLevel.tableName.getFullName());
             System.out.println("Copy table " + tableName);
             System.out.println("Read data...");
             QueryResult queryResult = spatialite.getTableRecordsMapFromRawSql("select * from " + tableName, -1);

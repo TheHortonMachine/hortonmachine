@@ -1,7 +1,7 @@
 package org.hortonmachine.dbs.utils;
 
 /**
- * A name for sql related strings (table names and column names ex.).
+ * A name for sql related strings (column names ex.).
  * 
  * This will contain the original name,the fixed one and the one between square brackets.
  */
@@ -23,6 +23,8 @@ public class SqlName {
     ///
     /// This might be needed for example in select queries for strange column names.
     public String bracketName;
+
+    public String schema;
     
     /**
      * Make a new instance of sqlname. 
@@ -36,10 +38,31 @@ public class SqlName {
 
     private SqlName( String name ) {
         this.name = name;
-        fixedName = DbsUtilities.fixWithQuotes(name);
-        bracketName = DbsUtilities.fixWithBrackets(name);
-        fixedDoubleName = DbsUtilities.fixWithDoubleQuotes(name);
+        if (this.name.indexOf(".") > -1) {
+            String[] split = this.name.split("\\.");
+            if (split.length == 2) {
+                schema = split[0];
+                this.name = split[1];
+            } else {
+                schema = "null";
+            }
+        }
+
+        String schemaStr = schema == null ? "" : schema + ".";
+
+        fixedName = schemaStr + DbsUtilities.fixWithQuotes(this.name);
+        bracketName = schemaStr + DbsUtilities.fixWithBrackets(this.name);
+        fixedDoubleName = schemaStr + DbsUtilities.fixWithDoubleQuotes(this.name);
     }
+
+    public String getFullname(){
+        if (schema != null) {
+            return schema + "." + name;
+        } else {
+            return name;
+        }
+    }
+
     
     @Override
     public String toString() {

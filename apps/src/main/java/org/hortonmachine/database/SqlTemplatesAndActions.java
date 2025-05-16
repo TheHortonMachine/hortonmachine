@@ -60,8 +60,6 @@ import org.hortonmachine.dbs.datatypes.EDataType;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.dbs.nosql.INosqlCollection;
-import org.hortonmachine.dbs.nosql.INosqlDb;
 import org.hortonmachine.dbs.postgis.PGDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.ITilesProducer;
@@ -102,11 +100,9 @@ public class SqlTemplatesAndActions {
 
     public static final String HM_SAVED_DATABASES = "HM-SAVED-DATABASES";
     private ASqlTemplates sqlTemplates;
-    private boolean isNosql;
 
     public SqlTemplatesAndActions( EDb dbType ) throws Exception {
         sqlTemplates = dbType.getSqlTemplates();
-        isNosql = dbType.isNosql();
     }
 
     private static final Logger logger = Logger.INSTANCE;
@@ -116,7 +112,7 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
-                String tableName = column.parent.tableName;
+                String tableName = column.parent.tableName.getFullName();
                 String query = sqlTemplates.selectOnColumn(columnName, SqlName.m(tableName));
                 spatialiteViewer.addTextToQueryEditor(query);
             }
@@ -128,7 +124,7 @@ public class SqlTemplatesAndActions {
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
-                String tableName = column.parent.tableName;
+                String tableName = column.parent.tableName.getFullName();
                 String query = sqlTemplates.selectGroupCountOnColumn(columnName, SqlName.m(tableName));
                 spatialiteViewer.addTextToQueryEditor(query);
             }
@@ -136,13 +132,10 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getUpdateOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Update on column"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                String tableName = column.parent.tableName;
+                String tableName = column.parent.tableName.getFullName();
                 String columnName = column.columnName;
                 String query = sqlTemplates.updateOnColumn(SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
@@ -158,7 +151,7 @@ public class SqlTemplatesAndActions {
                 public void actionPerformed( ActionEvent e ) {
 
                     String[] labels = {"Table name", "Column name", "SRID", "Geometry type", "Dimension"};
-                    String[] values = {column.parent.tableName, column.columnName, "4326", "POINT", "XY"};
+                    String[] values = {column.parent.tableName.getFullName(), column.columnName, "4326", "POINT", "XY"};
                     String[] result = GuiUtilities.showMultiInputDialog(spatialiteViewer, title, labels, values, null);
 
                     String tableName = result[0];
@@ -182,7 +175,7 @@ public class SqlTemplatesAndActions {
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String[] labels = {"Table name", "Column name", "SRID", "Geometry type", "Dimension"};
-                    String[] values = {column.parent.tableName, column.columnName, "4326", "POINT", "XY"};
+                    String[] values = {column.parent.tableName.getFullName(), column.columnName, "4326", "POINT", "XY"};
                     String[] result = GuiUtilities.showMultiInputDialog(spatialiteViewer, title, labels, values, null);
 
                     String tableName = result[0];
@@ -204,7 +197,7 @@ public class SqlTemplatesAndActions {
             return new AbstractAction("Discard geometry column"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    String tableName = column.parent.tableName;
+                    String tableName = column.parent.tableName.getFullName();
                     String geometryColumnName = column.geomColumn.geometryColumnName;
                     String query = sqlTemplates.discardGeometryColumn(SqlName.m(tableName), geometryColumnName);
                     spatialiteViewer.addTextToQueryEditor(query);
@@ -223,7 +216,7 @@ public class SqlTemplatesAndActions {
         return new AbstractAction("Create spatial index"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                String tableName = column.parent.tableName;
+                String tableName = column.parent.tableName.getFullName();
                 String columnName = column.columnName;
                 String query = sqlTemplates.createSpatialIndex(SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
@@ -237,7 +230,7 @@ public class SqlTemplatesAndActions {
             return new AbstractAction("Check spatial index"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    String tableName = column.parent.tableName;
+                    String tableName = column.parent.tableName.getFullName();
                     String columnName = column.columnName;
                     String query = sqlTemplates.checkSpatialIndex(SqlName.m(tableName), columnName);
                     spatialiteViewer.addTextToQueryEditor(query);
@@ -254,7 +247,7 @@ public class SqlTemplatesAndActions {
             return new AbstractAction("Recover spatial index"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    String tableName = column.parent.tableName;
+                    String tableName = column.parent.tableName.getFullName();
                     String columnName = column.columnName;
                     String query = sqlTemplates.recoverSpatialIndex(SqlName.m(tableName), columnName);
                     spatialiteViewer.addTextToQueryEditor(query);
@@ -270,7 +263,7 @@ public class SqlTemplatesAndActions {
             return new AbstractAction("Disable spatial index"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
-                    String tableName = column.parent.tableName;
+                    String tableName = column.parent.tableName.getFullName();
                     String columnName = column.columnName;
                     String query = sqlTemplates.disableSpatialIndex(SqlName.m(tableName), columnName);
                     spatialiteViewer.addTextToQueryEditor(query);
@@ -283,13 +276,10 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getShowSpatialMetadataAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Show spatial metadata"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                String tableName = column.parent.tableName;
+                String tableName = column.parent.tableName.getFullName();
                 String columnName = column.columnName;
                 String query = sqlTemplates.showSpatialMetadata(SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
@@ -298,16 +288,13 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCombinedSelectAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Create combined select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String[] tableColsFromFK = column.tableColsFromFK();
                 String refTable = tableColsFromFK[0];
                 String refColumn = tableColsFromFK[1];
-                String tableName = column.parent.tableName;
+                String tableName = column.parent.tableName.getFullName();
                 String columnName = column.columnName;
                 String query = sqlTemplates.combinedSelect(SqlName.m(refTable), refColumn, SqlName.m(tableName), columnName);
                 spatialiteViewer.addTextToQueryEditor(query);
@@ -317,9 +304,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewOtherTableAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Quick view other table"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -355,7 +339,6 @@ public class SqlTemplatesAndActions {
                         databaseViewer.refreshDatabaseTree();
                     } catch (Exception ex) {
                         databaseViewer.currentConnectedSqlDatabase = null;
-                        databaseViewer.currentConnectedNosqlDatabase = null;
                         logger.insertError("SqlTemplatesAndActions", "Error refreshing database...", ex);
                     } finally {
                         logConsole.finishProcess();
@@ -375,19 +358,13 @@ public class SqlTemplatesAndActions {
                 if (spatialiteViewer.currentConnectedSqlDatabase != null) {
                     String databasePath = spatialiteViewer.currentConnectedSqlDatabase.getDatabasePath();
                     GuiUtilities.copyToClipboard(databasePath);
-                } else if (spatialiteViewer.currentConnectedNosqlDatabase != null) {
-                    String databasePath = spatialiteViewer.currentConnectedNosqlDatabase.getDbEngineUrl();
-                    GuiUtilities.copyToClipboard(databasePath);
                 }
             }
         };
     }
 
     public Action getCreateTableFromShapefileSchemaAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
-        return new AbstractAction("Create table from shapefile"){
+        return new AbstractAction("Create table from vector file"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 if (!(spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb)) {
@@ -395,7 +372,7 @@ public class SqlTemplatesAndActions {
                             DatabaseController.THIS_ACTION_IS_AVAILABLE_ONLY_FOR_SPATIAL_DATABASES);
                     return;
                 }
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", PreferencesHandler.getLastFile(),
+                File[] openFiles = guiBridge.showOpenFileDialog("Open Vector File", PreferencesHandler.getLastFile(),
                         HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
@@ -453,9 +430,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getAttachShapefileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         if (sqlTemplates.hasAttachShapefile()) {
             return new AbstractAction("Attach readonly shapefile"){
                 @Override
@@ -486,9 +460,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSelectAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Select statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -503,21 +474,17 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getInsertAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
-        // TODO add json to collection if nosql?
         return new AbstractAction("Insert statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
                     List<String[]> tableColumns = spatialiteViewer.currentConnectedSqlDatabase
-                            .getTableColumns(SqlName.m(table.tableName));
+                            .getTableColumns(SqlName.m(table.tableName.getFullName()));
 
                     String cols = tableColumns.stream().map(tc -> tc[0]).collect(Collectors.joining(","));
                     String quest = tableColumns.stream().map(tc -> "?").collect(Collectors.joining(","));
 
-                    String query = "INSERT INTO " + DbsUtilities.fixTableName(table.tableName) + " (" + cols + ") VALUES ("
+                    String query = "INSERT INTO " + table.tableName.fixedDoubleName + " (" + cols + ") VALUES ("
                             + quest + ");";
                     spatialiteViewer.addTextToQueryEditor(query);
                 } catch (Exception e1) {
@@ -528,32 +495,12 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getDropAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return new AbstractAction("Drop collection " + table.tableName){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    try {
-
-                        boolean doDrop = GuiUtilities.showYesNoDialog(spatialiteViewer,
-                                "Are you sure you want to drop collection '" + table.tableName + "'?");
-                        if (doDrop) {
-                            INosqlCollection collection = spatialiteViewer.currentConnectedNosqlDatabase
-                                    .getCollection(table.tableName);
-                            collection.drop();
-                            spatialiteViewer.refreshDatabaseTree();
-                        }
-                    } catch (Exception ex) {
-                        logger.insertError("SqlTemplatesAndActions", "Error", ex);
-                    }
-                }
-            };
-        }
         return new AbstractAction("Drop table statement"){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
                     List<ColumnLevel> columnsList = table.columnsList;
-                    String tableName = table.tableName;
+                    String tableName = table.tableName.getFullName();
                     String geometryColumnName = null;
                     for( ColumnLevel columnLevel : columnsList ) {
                         if (columnLevel.geomColumn != null) {
@@ -577,13 +524,9 @@ public class SqlTemplatesAndActions {
                 try {
                     long count = 0;
                     if (spatialiteViewer.currentConnectedSqlDatabase != null) {
-                        String tableName = table.tableName;
+                        String tableName = table.tableName.getFullName();
                         count = spatialiteViewer.currentConnectedSqlDatabase.getCount(SqlName.m(tableName));
-                    } else if (spatialiteViewer.currentConnectedNosqlDatabase != null) {
-                        String tableName = table.tableName;
-                        INosqlCollection collection = spatialiteViewer.currentConnectedNosqlDatabase.getCollection(tableName);
-                        count = collection.getCount();
-                    }
+                    } 
                     JOptionPane.showMessageDialog(spatialiteViewer, "Count: " + count);
                 } catch (Exception ex) {
                     logger.insertError("SqlTemplatesAndActions", "Error", ex);
@@ -594,13 +537,10 @@ public class SqlTemplatesAndActions {
 
     public Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table, DatabaseViewer spatialiteViewer,
             boolean useFromTextForGeom ) {
-        if (isNosql) {
-            return null;
-        }
-        return new AbstractAction("Import data from shapefile"){
+        return new AbstractAction("Import data from vector file"){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                File[] openFiles = guiBridge.showOpenFileDialog("Open shapefile", PreferencesHandler.getLastFile(),
+                File[] openFiles = guiBridge.showOpenFileDialog("Open Vector File", PreferencesHandler.getLastFile(),
                         HMConstants.vectorFileFilter);
                 if (openFiles != null && openFiles.length > 0) {
                     try {
@@ -621,7 +561,7 @@ public class SqlTemplatesAndActions {
                     try {
                         hasErrors = !SpatialDbsImportUtils.importShapefile(
                                 (ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, openFiles[0],
-                                SqlName.m(spatialiteViewer.currentSelectedTable.tableName), -1, useFromTextForGeom, spatialiteViewer.pm);
+                                SqlName.m(spatialiteViewer.currentSelectedTable.tableName.getFullName()), -1, useFromTextForGeom, spatialiteViewer.pm);
                     } catch (Exception ex) {
                         logger.insertError("SqlTemplatesAndActions", "Error importing data from shapefile", ex);
                         hasErrors = true;
@@ -655,7 +595,7 @@ public class SqlTemplatesAndActions {
                     String[] result = GuiUtilities.showMultiInputDialog(spatialiteViewer, "Reprojection parameters", labels,
                             values, null);
 
-                    String tableName = table.tableName;
+                    String tableName = table.tableName.getFullName();
                     String newTableName = result[0];
                     String newSrid = result[1];
 
@@ -671,9 +611,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Quick View Table in 3D"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -685,7 +622,7 @@ public class SqlTemplatesAndActions {
                     }
                     String query = DbsUtilities.getSelectQuery((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, table,
                             false);
-                    spatialiteViewer.viewSpatialQueryResult3D(table.tableName, query, spatialiteViewer.pm);
+                    spatialiteViewer.viewSpatialQueryResult3D(table.tableName.getFullName(), query, spatialiteViewer.pm);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -694,9 +631,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableGeometriesAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Quick View Table Geometries"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -708,7 +642,7 @@ public class SqlTemplatesAndActions {
                     }
                     String query = DbsUtilities.getSelectQuery((ASpatialDb) spatialiteViewer.currentConnectedSqlDatabase, table,
                             false);
-                    spatialiteViewer.viewSpatialQueryResult(table.tableName, query, spatialiteViewer.pm, true);
+                    spatialiteViewer.viewSpatialQueryResult(table.tableName.getFullName(), query, spatialiteViewer.pm, true);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -717,9 +651,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getOpenInSldEditorAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
@@ -731,7 +662,7 @@ public class SqlTemplatesAndActions {
                         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
                         String databasePath = spatialiteViewer.currentConnectedSqlDatabase.getDatabasePath();
 
-                        final MainController controller = new MainController(new File(databasePath), table.tableName);
+                        final MainController controller = new MainController(new File(databasePath), table.tableName.getFullName());
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
                         Class<DatabaseViewer> class1 = DatabaseViewer.class;
                         ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
@@ -747,9 +678,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getOpenInGformsEditorAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
@@ -759,7 +687,7 @@ public class SqlTemplatesAndActions {
                     try {
                         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
                         IFormHandler formHandler = new DbFormHandler(spatialiteViewer.currentConnectedSqlDatabase,
-                                table.tableName);
+                                table.tableName.getFullName());
                         final FormBuilderController controller = new FormBuilderController(formHandler);
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine FORMS Editor");
                         Class<DatabaseViewer> class1 = DatabaseViewer.class;
@@ -776,10 +704,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getGenerateInsertExportAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
-
         return new AbstractAction("Generate insert sql statements"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -870,9 +794,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getImportSqlFileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        if (isNosql) {
-            return null;
-        }
         return new AbstractAction("Import sql file"){
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -914,31 +835,28 @@ public class SqlTemplatesAndActions {
         };
     }
 
-    public Action getNewCollectionAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        if (!isNosql) {
-            return null;
-        }
-        return new AbstractAction("Create new collection"){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                String newName = GuiUtilities.showInputDialog(spatialiteViewer, "Insert the name for the new collection",
-                        "newcollection");
-                if (newName.trim().length() > 0) {
-                    try {
-                        if (!spatialiteViewer.currentConnectedNosqlDatabase.hasCollection(newName)) {
-                            spatialiteViewer.currentConnectedNosqlDatabase.createCollection(newName);
-                            spatialiteViewer.refreshDatabaseTree();
-                        } else {
-                            GuiUtilities.showWarningMessage(spatialiteViewer,
-                                    "A collection named '" + newName + "' already exists.");
-                        }
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        };
-    }
+    // public Action getNewCollectionAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
+    //     return new AbstractAction("Create new collection"){
+    //         @Override
+    //         public void actionPerformed( ActionEvent e ) {
+    //             String newName = GuiUtilities.showInputDialog(spatialiteViewer, "Insert the name for the new collection",
+    //                     "newcollection");
+    //             if (newName.trim().length() > 0) {
+    //                 try {
+    //                     if (!spatialiteViewer.currentConnectedNosqlDatabase.hasCollection(newName)) {
+    //                         spatialiteViewer.currentConnectedNosqlDatabase.createCollection(newName);
+    //                         spatialiteViewer.refreshDatabaseTree();
+    //                     } else {
+    //                         GuiUtilities.showWarningMessage(spatialiteViewer,
+    //                                 "A collection named '" + newName + "' already exists.");
+    //                     }
+    //                 } catch (Exception e1) {
+    //                     e1.printStackTrace();
+    //                 }
+    //             }
+    //         }
+    //     };
+    // }
 
     public Action getSaveConnectionAction( DatabaseViewer databaseViewer ) {
         return new AbstractAction("Save Connection"){
@@ -950,26 +868,23 @@ public class SqlTemplatesAndActions {
                     if (databaseViewer.currentConnectedSqlDatabase != null) {
                         ADb db = databaseViewer.currentConnectedSqlDatabase;
                         connectionData = db.getConnectionData();
-                    } else if (databaseViewer.currentConnectedNosqlDatabase != null) {
-                        INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
-                        connectionData = db.getConnectionData();
-                    }
-
-                    String newName = GuiUtilities.showInputDialog(databaseViewer, "Enter a name for the saved connection",
-                            "db connection " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
-                    connectionData.connectionLabel = newName;
-
-                    byte[] savedDbs = PreferencesHandler.getPreference(HM_SAVED_DATABASES, new byte[0]);
-                    List<ConnectionData> connectionDataList = new ArrayList<>();
-                    try {
-                        connectionDataList = (List<ConnectionData>) convertFromBytes(savedDbs);
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                    }
-                    connectionDataList.add(connectionData);
-
-                    byte[] inBytes = convertObjectToBytes(connectionDataList);
-                    PreferencesHandler.setPreference(HM_SAVED_DATABASES, inBytes);
+                        
+                        String newName = GuiUtilities.showInputDialog(databaseViewer, "Enter a name for the saved connection",
+                        "db connection " + new DateTime().toString(HMConstants.dateTimeFormatterYYYYMMDDHHMMSS));
+                        connectionData.connectionLabel = newName;
+                        
+                        byte[] savedDbs = PreferencesHandler.getPreference(HM_SAVED_DATABASES, new byte[0]);
+                        List<ConnectionData> connectionDataList = new ArrayList<>();
+                        try {
+                            connectionDataList = (List<ConnectionData>) convertFromBytes(savedDbs);
+                        } catch (Exception e1) {
+                            e1.printStackTrace();
+                        }
+                        connectionDataList.add(connectionData);
+                        
+                        byte[] inBytes = convertObjectToBytes(connectionDataList);
+                        PreferencesHandler.setPreference(HM_SAVED_DATABASES, inBytes);
+                    } 
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -991,9 +906,6 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getImportRaster2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return null;
-        }
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
             return new AbstractAction("Import raster to tileset"){
                 @Override
@@ -1006,9 +918,6 @@ public class SqlTemplatesAndActions {
         }
     }
     public Action getImportVector2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return null;
-        }
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
             return new AbstractAction("Import vector to tileset"){
                 @Override
@@ -1178,24 +1087,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSwitchDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return new AbstractAction("Switch database"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-                    INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
-                    List<String> databasesNames = db.getDatabasesNames();
-                    String selectedName = GuiUtilities.showComboDialog(databaseViewer, "Select database",
-                            "Select the database to switch to", databasesNames.toArray(new String[0]), db.getDbName());
-                    if (selectedName != null && !selectedName.equals(db.getDbName())) {
-                        ConnectionData connectionData = db.getConnectionData();
-                        connectionData.connectionLabel = selectedName;
-                        connectionData.connectionUrl = db.getDbEngineUrl() + "/" + selectedName;
-                        databaseViewer.openDatabase(connectionData, false);
-                    }
-                }
-            };
-
-        } else if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
+        if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
                 || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES) {
             return new AbstractAction("Switch database"){
                 @Override
@@ -1226,30 +1118,8 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getDropDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return new AbstractAction("Drop current database"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
-
-                    try {
-                        boolean doDrop = GuiUtilities.showYesNoDialog(databaseViewer,
-                                "Are you sure you want to drop the current database '" + db.getDbName()
-                                        + "'?\nThis can't be undone!");
-                        if (doDrop) {
-                            db.drop();
-                            databaseViewer.closeCurrentDb(true);
-                        }
-                    } catch (Exception e1) {
-                        GuiUtilities.handleError(databaseViewer, e1);
-                        Logger.INSTANCE.e("Error", e1);
-                    }
-                }
-            };
-
-//        } else if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
-//                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES) {
+         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
+               || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES) {
 //            return new AbstractAction("Switch database"){
 //                @Override
 //                public void actionPerformed( ActionEvent e ) {
@@ -1260,96 +1130,7 @@ public class SqlTemplatesAndActions {
         return null;
     }
 
-    public Action getInsertCollectionDocumentAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return new AbstractAction("Add document"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
 
-                    try {
-                        if (databaseViewer.currentSelectedTable != null) {
-                            INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
-                            String json = GuiUtilities.showInputAreaDialog(databaseViewer,
-                                    "Add json to convert to document here.", "");
-                            if (json != null) {
-                                INosqlCollection collection = db.getCollection(databaseViewer.currentSelectedTable.tableName);
-                                collection.insert(json);
-                            }
-                        } else {
-                            GuiUtilities.showWarningMessage(databaseViewer, "Select a collection to insert the document to.");
-                        }
-                    } catch (Exception e1) {
-                        GuiUtilities.handleError(databaseViewer, e1);
-                        Logger.INSTANCE.e("Error", e1);
-                    }
-                }
-            };
-        }
-        return null;
-    }
-
-    public Action getUpdateCollectionDocumentAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return new AbstractAction("Update document by OID"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    try {
-                        if (databaseViewer.currentSelectedTable != null) {
-                            INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
-                            String oid = GuiUtilities.showInputDialog(databaseViewer, "Insert the document OID", "");
-                            if (oid != null && oid.trim().length() > 0) {
-                                oid = oid.trim();
-
-                                String json = GuiUtilities.showInputAreaDialog(databaseViewer,
-                                        "Add json to convert to document here.", "");
-                                if (json != null) {
-                                    INosqlCollection collection = db.getCollection(databaseViewer.currentSelectedTable.tableName);
-                                    collection.updateByOid(oid, json);
-                                }
-                            }
-
-                        } else {
-                            GuiUtilities.showWarningMessage(databaseViewer, "Select a collection to insert the document to.");
-                        }
-                    } catch (Exception e1) {
-                        GuiUtilities.handleError(databaseViewer, e1);
-                        Logger.INSTANCE.e("Error", e1);
-                    }
-                }
-            };
-        }
-        return null;
-    }
-
-    public Action getDeleteCollectionDocumentByIdAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (isNosql) {
-            return new AbstractAction("Delete document by OID"){
-                @Override
-                public void actionPerformed( ActionEvent e ) {
-
-                    try {
-                        if (databaseViewer.currentSelectedTable != null) {
-                            String oid = GuiUtilities.showInputDialog(databaseViewer, "Insert the document OID", "");
-                            if (oid != null && oid.trim().length() > 0) {
-                                oid = oid.trim();
-                                INosqlDb db = databaseViewer.currentConnectedNosqlDatabase;
-                                INosqlCollection collection = db.getCollection(databaseViewer.currentSelectedTable.tableName);
-                                collection.deleteByOid(oid);
-                            }
-
-                        } else {
-                            GuiUtilities.showWarningMessage(databaseViewer, "Select a collection to delete the document from.");
-                        }
-                    } catch (Exception e1) {
-                        GuiUtilities.handleError(databaseViewer, e1);
-                        Logger.INSTANCE.e("Error", e1);
-                    }
-                }
-            };
-        }
-        return null;
-    }
 
     public Action getUpdateValueAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
 //        if (isNosql) {
@@ -1370,8 +1151,8 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getViewActiveSessionsAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (!isNosql && (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
-                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS)) {
+        if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
+                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
             return new AbstractAction("List active connections"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
@@ -1389,8 +1170,8 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCleanIdleSessionsAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        if (!isNosql && (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
-                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS)) {
+        if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
+                || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
             return new AbstractAction("Clean up idle connections"){
                 @Override
                 public void actionPerformed( ActionEvent e ) {

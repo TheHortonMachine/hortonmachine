@@ -346,7 +346,6 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getSaveConnectionAction(this));
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getImportSqlFileAction(guiBridge, this));
-        addIfNotNull(actions, sqlTemplatesAndActions.getNewCollectionAction(guiBridge, this));
         if (currentConnectedSqlDatabase instanceof ASpatialDb) {
             addSeparator(actions);
             addIfNotNull(actions, sqlTemplatesAndActions.getCreateTableFromShapefileSchemaAction(guiBridge, this));
@@ -372,9 +371,6 @@ public class DatabaseViewer extends DatabaseController {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getCountRowsAction(selectedTable, this));
         addSeparator(actions);
-        addIfNotNull(actions, sqlTemplatesAndActions.getInsertCollectionDocumentAction(guiBridge, this));
-        addIfNotNull(actions, sqlTemplatesAndActions.getUpdateCollectionDocumentAction(guiBridge, this));
-        addIfNotNull(actions, sqlTemplatesAndActions.getDeleteCollectionDocumentByIdAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getInsertAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getGenerateInsertExportAction(selectedTable, this));

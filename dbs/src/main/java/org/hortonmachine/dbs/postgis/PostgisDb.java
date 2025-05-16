@@ -423,8 +423,9 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
 
     @Override
     public GeometryColumn getGeometryColumnsForTable( SqlName tableName ) throws Exception {
-        String indexSql = "SELECT tablename FROM pg_indexes WHERE upper(tablename) = upper('" + tableName
-                + "') and upper(indexdef) like '%USING GIST%'";
+        String indexSql = "SELECT schemaname, tablename FROM pg_indexes WHERE upper(tablename) = upper('" + tableName.name
+                + "') and upper(schemaname) = upper('" + (tableName.schema == null ? "public" : tableName.schema) + 
+                "') and upper(indexdef) like '%USING GIST%'";
         List<String> tablesWithIndex = new ArrayList<>();
         execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(indexSql)) {
@@ -436,20 +437,21 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
             }
         });
 
-        String sql = "select " + PostgisGeometryColumns.F_TABLE_NAME + ", " //
+        String sql = "select " + PostgisGeometryColumns.F_TABLE_NAME2 + ", " //
                 + PostgisGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + PostgisGeometryColumns.GEOMETRY_TYPE + "," //
                 + PostgisGeometryColumns.COORD_DIMENSION + ", " //
                 + PostgisGeometryColumns.SRID + " from " //
-                + PostgisGeometryColumns.TABLENAME + " where Lower(" + PostgisGeometryColumns.F_TABLE_NAME + ")=Lower('"
-                + tableName + "')";
+                + PostgisGeometryColumns.TABLENAME + " where Lower(" + PostgisGeometryColumns.F_TABLE_NAME2 + ")=Lower('"
+                + tableName.name + "') and Lower(" + PostgisGeometryColumns.F_TABLE_SCHEMA + ")=Lower('" 
+                + (tableName.schema == null ? "public" : tableName.schema) + "')";
 
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
                     PostgisGeometryColumns gc = new PostgisGeometryColumns();
                     String name = rs.getString(1);
-                    gc.tableName = name;
+                    gc.tableName = tableName.getFullname();
                     gc.geometryColumnName = rs.getString(2);
                     String type = rs.getString(3);
                     gc.geometryType = EGeometryType.forWktName(type);
@@ -520,6 +522,7 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
             if (DbsUtilities.isReservedName(info[0])) {
                 info[0] = DbsUtilities.fixReservedNameForQuery(info[0]);
             }
+            info[0] = DbsUtilities.fixColumnName(info[0]);
             tableColumns.add(info[0]);
         }
         if (hasGeom) {

@@ -102,11 +102,11 @@ public class DbsUtilities {
     public static String fixReservedNameForQuery( String name ) {
         int index = name.indexOf('.');
         if (index == -1) {
-            return "[" + name + "]";
+            return "\"" + name + "\"";
         } else {
             String alias = name.substring(0, index + 1);
             String tname = name.substring(index + 1);
-            return alias + "[" + tname + "]";
+            return alias + "\"" + tname + "\"";
         }
     }
 
@@ -196,16 +196,16 @@ public class DbsUtilities {
      * @throws Exception
      */
     public static String getSelectQuery( ADb db, final TableLevel selectedTable, boolean geomFirst ) throws Exception {
-        String tableName = selectedTable.tableName;
+        TableName tableName = selectedTable.tableName;
         String letter = "tbl";
-        if (!Character.isDigit(tableName.charAt(0))) {
-            letter = tableName.substring(0, 1);
+        if (!Character.isDigit(tableName.getName().charAt(0))) {
+            letter = tableName.getName().substring(0, 1);
         }
-        List<String[]> tableColumns = db.getTableColumns(SqlName.m(tableName));
+        List<String[]> tableColumns = db.getTableColumns(SqlName.m(tableName.getFullName()));
         GeometryColumn geometryColumns = null;
         try {
             if (db instanceof ASpatialDb) {
-                geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(SqlName.m(tableName));
+                geometryColumns = ((ASpatialDb) db).getGeometryColumnsForTable(SqlName.m(tableName.getFullName()));
             }
         } catch (Exception e) {
             // ignore
@@ -259,7 +259,7 @@ public class DbsUtilities {
                 }
             }
         }
-        query += " FROM " + fixTableName(tableName) + " " + letter;
+        query += " FROM " + tableName.fixedDoubleName + " " + letter;
         return query;
     }
 
@@ -402,8 +402,7 @@ public class DbsUtilities {
         if ( //
         Character.isDigit(columnName.charAt(0)) || //
                 columnName.matches(".*\\s+.*") || //
-                columnName.contains(" ") || //
-                columnName.contains("-") //
+                isTrickyName(columnName) //
         ) {
             return "\"" + columnName + "\"";
         }
@@ -465,6 +464,27 @@ public class DbsUtilities {
         return names;
     }
 
+    public static String[] trickyDbNameChars = new String[]{" ", "-", ",", " ", ":", "(", ")", "?", "/"};
+
+    public static boolean isTrickyName( String name ) {
+        for( String c : trickyDbNameChars ) {
+            if (name.contains(c)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isMixedCase(String name) {
+        boolean hasUpper = false;
+        boolean hasLower = false;
+        for (char c : name.toCharArray()) {
+            if (Character.isUpperCase(c)) hasUpper = true;
+            if (Character.isLowerCase(c)) hasLower = true;
+            if (hasUpper && hasLower) return true; // Mixed case detected
+        }
+        return false;
+    }
 
     /// Check the name and fix it if necessary.
     ///
@@ -475,7 +495,7 @@ public class DbsUtilities {
             // already fixed
             return name;
         }
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(" ") || name.contains(",") || name.matches("\\s+")) {
+        if (Character.isDigit(name.charAt(0)) || isTrickyName(name) || name.matches("\\s+") || isMixedCase(name)) {
             return "'" + name + "'";
         }
         return name;
@@ -490,7 +510,7 @@ public class DbsUtilities {
             // already fixed
             return name;
         }
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(" ") || name.contains(",") || name.matches("\\s+")) {
+        if (Character.isDigit(name.charAt(0)) || isTrickyName(name) || name.matches("\\s+") || isMixedCase(name)) {
             return "\"" + name + "\"";
         }
         return name;
@@ -506,7 +526,7 @@ public class DbsUtilities {
             return name;
         }
 
-        if (Character.isDigit(name.charAt(0)) || name.contains("-") || name.contains(" ") || name.contains(",") || name.matches("\\s+")) {
+        if (Character.isDigit(name.charAt(0)) || isTrickyName(name) || name.matches("\\s+") || isMixedCase(name)) {
             return "[" + name + "]";
         }
         return name;

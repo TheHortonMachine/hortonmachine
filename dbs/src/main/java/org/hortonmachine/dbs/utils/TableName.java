@@ -1,6 +1,7 @@
 package org.hortonmachine.dbs.utils;
 
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 
 public class TableName {
     private String name;
@@ -15,6 +16,10 @@ public class TableName {
         this.name = name;
         this.schema = schema;
         this.tableType = tableType;
+
+        if(SchemaLevel.FALLBACK_SCHEMA.equals(this.schema)) {
+            this.schema = null;
+        }
 
         if (this.schema != null) {
             this.fixedName = this.schema + "." + DbsUtilities.fixWithQuotes(this.name);
