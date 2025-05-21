@@ -52,6 +52,7 @@ public class HMStacCollection {
     private SearchQuery search;
     private IHMProgressMonitor pm;
     private S3Client s3Client;
+    private Integer assumedEpsg = 0;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
@@ -67,6 +68,10 @@ public class HMStacCollection {
 
     public String getType() {
         return collection.getType();
+    }
+
+    public void setAssumedEpsg(Integer assumedEpsg) {
+        this.assumedEpsg = assumedEpsg;
     }
 
     public ReferencedEnvelope getSpatialBounds() {
@@ -172,7 +177,7 @@ public class HMStacCollection {
             while( iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
                 HMStacItem item = HMStacItem.fromSimpleFeature(f);
-                if (item != null && item.getId() != null && item.getEpsg() != null) {
+                if (item != null && item.getId() != null) {// && item.getEpsg() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {
                     pm.errorMessage("Unable to get id of item: " + item.toString());
@@ -200,7 +205,7 @@ public class HMStacCollection {
     public HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
                                             boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
-        if (!allowTransform) {
+        if (!allowTransform || assumedEpsg == 0) {
             List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
             if (epsgs.size() > 1) {
                 throw new IllegalArgumentException(
@@ -208,8 +213,8 @@ public class HMStacCollection {
             }
         }
 
-        // use the first srid as the output srid.
-        Integer firstItemSrid = items.get(0).getEpsg();
+        // use either the assumed EPSG or the first srid as the output srid.
+        Integer firstItemSrid = assumedEpsg == 0 ? items.get(0).getEpsg() : this.assumedEpsg;
         CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
         ReferencedEnvelope roiEnvelopeFirstItemCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
                 DefaultGeographicCRS.WGS84).transform(outputCrs, true);
