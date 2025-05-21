@@ -37,8 +37,12 @@ public class HMStacItem {
     private Date end;
     private Date creationDateCet;
 
-    public SimpleFeature getFeature() {
-        return feature;
+    public JsonNode getAssetNode(String assetId) {
+        Map<Object, Object> userData = feature.getUserData();
+        Map<String, JsonNode> top = (Map<String, JsonNode>) userData.get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
+        ObjectNode assets = (ObjectNode) top.get("assets");
+        JsonNode assetNode = assets.get(assetId);
+        return assetNode;
     }
 
     private HMStacItem() {
