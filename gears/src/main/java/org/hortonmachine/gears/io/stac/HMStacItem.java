@@ -37,6 +37,10 @@ public class HMStacItem {
     private Date end;
     private Date creationDateCet;
 
+    public SimpleFeature getFeature() {
+        return feature;
+    }
+
     private HMStacItem() {
     }
 
