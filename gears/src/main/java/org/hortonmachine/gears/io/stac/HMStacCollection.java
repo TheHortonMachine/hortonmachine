@@ -230,7 +230,7 @@ public class HMStacCollection {
         String fileName = null;
         pm.beginTask("Reading " + bandName + "...", items.size());
         for( HMStacItem item : items ) {
-            int currentSrid = item.getEpsg();
+            int currentSrid = assumedEpsg == 0 ? item.getEpsg() : assumedEpsg;
             CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
 
