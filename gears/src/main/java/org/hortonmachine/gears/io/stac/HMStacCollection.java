@@ -259,9 +259,11 @@ public class HMStacCollection {
             GridCoverage2D readRaster = s3Client == null
                     ? asset.readRaster(readRegion)
                     : asset.readRaster(readRegion, s3Client);
+            /*
             if (items.size() == 1) {
                 return HMRaster.fromGridCoverage(readRaster);
             }
+            */
             outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
             pm.worked(1);
         }
