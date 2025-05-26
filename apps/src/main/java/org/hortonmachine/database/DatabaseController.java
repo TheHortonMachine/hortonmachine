@@ -1756,13 +1756,36 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         model.setRoot(dbLevel);
         databaseTreeView._databaseTree.setModel(model);
 
-        if (expandNodes) {
-            databaseTreeView._databaseTree.expandRow(0);
-            databaseTreeView._databaseTree.expandRow(1);
-            databaseTreeView._databaseTree.expandRow(2);
-        }
-        // expandAllNodes(_databaseTree, 0, 2);
 
+        Object root = model.getRoot();
+        TreePath rootPath = new TreePath(root);
+        expandTreeToLevel(databaseTreeView._databaseTree, rootPath, 2);
+    
+    }
+
+    /**
+     * Recursively expands the JTree to a given depth.
+     * 
+     * @param tree  the JTree to expand
+     * @param path  the current TreePath
+     * @param level the depth to expand to (0 = just root, 1 = root + children, etc.)
+     */
+    public void expandTreeToLevel(JTree tree, TreePath path, int level) {
+        if (level < 0 || path == null) return;
+
+        tree.expandPath(path);
+
+        if (level == 0) return;
+
+        Object node = path.getLastPathComponent();
+        DatabaseTreeModel model = (DatabaseTreeModel) tree.getModel();
+        int childCount = model.getChildCount(node);
+
+        for (int i = 0; i < childCount; i++) {
+            Object child = model.getChild(node, i);
+            TreePath childPath = path.pathByAddingChild(child);
+            expandTreeToLevel(tree, childPath, level - 1);
+        }
     }
 
     private void toggleButtonsEnabling( boolean enable ) {

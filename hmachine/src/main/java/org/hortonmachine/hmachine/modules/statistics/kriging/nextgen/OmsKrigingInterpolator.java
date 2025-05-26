@@ -39,8 +39,6 @@ import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingVectorMod
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
 
-import com.mongodb.client.MongoChangeStreamCursor;
-
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
