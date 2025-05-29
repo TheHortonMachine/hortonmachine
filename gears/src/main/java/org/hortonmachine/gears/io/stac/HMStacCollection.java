@@ -53,6 +53,7 @@ public class HMStacCollection {
     private IHMProgressMonitor pm;
     private S3Client s3Client;
     private String s3Endpoint;
+    private boolean turnIntoHttp = false;
     private Integer assumedEpsg = 0;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
@@ -160,6 +161,11 @@ public class HMStacCollection {
     public HMStacCollection setS3Client( S3Client s3Client ) {
         this.s3Client = s3Client;
         this.s3Endpoint = "s3.amazonaws.com";
+        return this;
+    }
+
+    public HMStacCollection turnIntoHttp( boolean turnIntoHttp ) {
+        this.turnIntoHttp = turnIntoHttp;
         return this;
     }
 
