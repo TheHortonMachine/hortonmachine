@@ -52,6 +52,7 @@ public class HMStacCollection {
     private SearchQuery search;
     private IHMProgressMonitor pm;
     private S3Client s3Client;
+    private String s3Endpoint;
     private Integer assumedEpsg = 0;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
@@ -150,8 +151,15 @@ public class HMStacCollection {
         return this;
     }
 
+    public HMStacCollection setS3Client( S3Client s3Client, String s3Endpoint) {
+        this.s3Client = s3Client;
+        this.s3Endpoint = s3Endpoint;
+        return this;
+    }
+
     public HMStacCollection setS3Client( S3Client s3Client ) {
         this.s3Client = s3Client;
+        this.s3Endpoint = "s3.amazonaws.com";
         return this;
     }
 
@@ -258,7 +266,7 @@ public class HMStacCollection {
 
             GridCoverage2D readRaster = s3Client == null
                     ? asset.readRaster(readRegion)
-                    : asset.readRaster(readRegion, s3Client);
+                    : s3Endpoint != null ? asset.readRaster(readRegion, s3Client, s3Endpoint) : asset.readRaster(readRegion, s3Client);
             /*
             if (items.size() == 1) {
                 return HMRaster.fromGridCoverage(readRaster);

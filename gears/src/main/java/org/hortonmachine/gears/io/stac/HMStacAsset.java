@@ -95,26 +95,26 @@ public class HMStacAsset {
      * @return the read raster from the asset's url.
      * @throws Exception
      */
-    public GridCoverage2D readRaster( RegionMap region, String user, String password, S3Client s3Client ) throws Exception {
-        BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
+    public GridCoverage2D readRaster( RegionMap region, String user, String password, S3Client s3Client, String s3Endpoint ) throws Exception {
+        if (assetUrl.startsWith("s3://")) {
+            String url = convertS3URLToHTTP(assetUrl, s3Endpoint);
+        }
+        BasicAuthURI cogUri = assetUrl.startsWith("s3://") ?
+                new BasicAuthURI(convertS3URLToHTTP(assetUrl, s3Endpoint), false) :
+                new BasicAuthURI(assetUrl, false);
+
         if (user != null && password != null) {
             cogUri.setUser(user);
             cogUri.setPassword(password);
         }
-        GeoTiffReader reader;
-        if (assetUrl.startsWith("s3://")) {
-            InputStream inputProvider = readS3Raster(cogUri, s3Client);
-            reader = new GeoTiffReader(inputProvider);
-        } else {
-            if (PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)) {
-                String accessibleHref = PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl);
-                cogUri = new BasicAuthURI(accessibleHref, false);
-            }
-            RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
-            CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
-                    new CogImageInputStreamSpi(), rangeReader.getClass().getName());
-            reader = new GeoTiffReader(inputProvider);
+        if (PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)) {
+            String accessibleHref = PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl);
+            cogUri = new BasicAuthURI(accessibleHref, false);
         }
+        RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
+        CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
+                new CogImageInputStreamSpi(), rangeReader.getClass().getName());
+        GeoTiffReader reader = new GeoTiffReader(inputProvider);
         CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
 
         GeneralParameterValue[] generalParameter = null;
@@ -137,11 +137,15 @@ public class HMStacAsset {
     }
 
     public GridCoverage2D readRaster( RegionMap region ) throws Exception {
-        return readRaster(region, null, null, null );
+        return readRaster(region, null, null, null, null );
     }
 
     public GridCoverage2D readRaster( RegionMap region, S3Client s3Client ) throws Exception {
-        return readRaster(region, null, null, s3Client );
+        return readRaster(region, null, null, s3Client, AWS_ENDPOINT );
+    }
+
+    public GridCoverage2D readRaster( RegionMap region, S3Client s3Client, String s3Endpoint ) throws Exception {
+        return readRaster(region, null, null, s3Client, s3Endpoint );
     }
 
     public String getId() {
@@ -175,4 +179,42 @@ public class HMStacAsset {
     public double getResolution() {
         return resolution;
     }
+
+    final public static String AWS_ENDPOINT = "s3.amazonaws.com";
+
+    /**
+     * Checks if the given url is a valid S3 endpoint
+     * @param url to be analyzed
+     * @return true if it is a valid S3 endpoint
+     */
+    public static boolean isS3Endpoint(String url) {
+        return url.startsWith("s3://");
+    }
+
+    /**
+     * Translates an S3 URL into to HTTP. It does not take the region into account.
+     * Example: "s3://bucket/object" -> "https://bucket.s3.amazonaws.com/object"
+     * @param s3url URL for S3 protocol
+     * @param s3Server server of the S3 bucket
+     * @return The equivalent URL for an HTTP endpoint
+     */
+    public static String convertS3URLToHTTP(String s3url, String s3Server) throws Exception {
+        if (!isS3Endpoint(s3url)) {
+            throw new Exception(String.format("The URL %s does not utilize the S3 protocol", s3url));
+        }
+        String[] bucketAndObject = s3url.split("://")[1].split("/", 2);
+        return "https://" + bucketAndObject[0] + "." + s3Server + "/" + bucketAndObject[1];
+    }
+
+    /**
+     * Translates an S3 URL into to HTTP. It does not take the region into account.
+     * The default value for the s3Server is AWS.
+     * Example: "s3://bucket/object" -> "https://bucket.s3.amazonaws.com/object"
+     * @param s3url URL for S3 protocol
+     * @return The equivalent URL for an HTTP endpoint
+     */
+    public static String convertS3URLToHTTP(String s3url) throws Exception {
+        return convertS3URLToHTTP(s3url, AWS_ENDPOINT);
+    }
+
 }
