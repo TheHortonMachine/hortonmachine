@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.10.9-S3-SDK-2.0-SNAPSHOT</version>
+		<version>0.10.9-WEED-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>hm-apps</artifactId>
@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
-			<version>0.10.9-S3-SDK-2.0-SNAPSHOT</version>
+			<version>0.10.9-WEED-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
