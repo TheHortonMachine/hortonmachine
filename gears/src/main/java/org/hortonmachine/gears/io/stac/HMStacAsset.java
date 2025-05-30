@@ -102,7 +102,7 @@ public class HMStacAsset {
             cogUri.setPassword(password);
         }
         GeoTiffReader reader;
-        if (assetUrl.startsWith("s3://")) {
+        if (assetUrl.startsWith("s3://")) { // TODO manage multiple S3 servers
             InputStream inputProvider = readS3Raster(cogUri, s3Client);
             reader = new GeoTiffReader(inputProvider);
         } else {
