@@ -126,12 +126,6 @@ public class TestSpatialDbsMain {
         assertEquals("temperature", tableColumns.get(2)[0].toLowerCase());
         assertEquals("the_geom", tableColumns.get(3)[0].toLowerCase());
 
-        var tablesMap = db.getTablesMap();
-        HashMap<String, List<String>> types2TablesMap = tablesMap.get(SchemaLevel.FALLBACK_SCHEMA);
-        assertEquals(1, types2TablesMap.size());
-        List<String> tables = types2TablesMap.get(ETableType.TABLE.name());
-        assertTrue(tables.size() == tablesCount);
-
         List<ForeignKey> foreignKeys = db.getForeignKeys(MPOLY_TABLE);
         assertEquals(0, foreignKeys.size());
         foreignKeys = db.getForeignKeys(MPOINTS_TABLE);

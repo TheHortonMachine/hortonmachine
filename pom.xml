@@ -24,6 +24,7 @@
 	</modules>
 
 	<properties>
+    <maven.compiler.source>17</maven.compiler.source>
 		<gt.version>28.0</gt.version>
 		<groovy.version>3.0.11</groovy.version>
 		<geoscript.version>1.19.0</geoscript.version>
@@ -987,8 +988,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
 				<configuration>
-					<encoding>UTF-8</encoding>
-					<release>17</release>
+					<encoding>${project.build.sourceEncoding}</encoding>
+					<release>${maven.compiler.source}</release>
 					<debug>true</debug>
 				</configuration>
 			</plugin>
@@ -1084,7 +1085,7 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
-							<source>8</source>
+							<source>${maven.compiler.source}</source>
 							<doclint>none</doclint>
 							<quiet>true</quiet>
 							<failOnWarnings>false</failOnWarnings>
