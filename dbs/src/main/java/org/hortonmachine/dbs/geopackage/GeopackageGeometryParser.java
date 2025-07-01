@@ -50,8 +50,8 @@ public class GeopackageGeometryParser implements IGeometryParser {
     public Object toSqlObject( Geometry geometry ) throws Exception {
         Coordinate coordinate = geometry.getCoordinate();
         int dim = 2;
-        if(!Double.isNaN(coordinate.z)) {
-            dim = 3; // wkbwriter only supports 2 and 3
+        if (coordinate != null && !Double.isNaN(coordinate.z)) {
+            dim = 3;
         }
         byte[] bytes = new GeoPkgGeomWriter(dim).write(geometry);
         return bytes;
