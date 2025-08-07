@@ -82,7 +82,7 @@ public class FeatureExtender {
      * @param additionalAttributes the array of attributes to add.
      * @return the new created feature, as merged from the old feature plus the new attributes.
      */
-    public SimpleFeature extendFeature( SimpleFeature oldFeature, Object[] additionalAttributes ) {
+    public SimpleFeature extendFeature( SimpleFeature oldFeature, Object[] additionalAttributes, String id ) {
         Object[] attributes = oldFeature.getAttributes().toArray();
         Object[] newAttributes = new Object[attributes.length + additionalAttributes.length];
         System.arraycopy(attributes, 0, newAttributes, 0, attributes.length);
@@ -92,8 +92,12 @@ public class FeatureExtender {
         // create the feature
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(newFeatureType);
         builder.addAll(newAttributes);
-        SimpleFeature f = builder.buildFeature(null);
+        SimpleFeature f = builder.buildFeature(id);
         return f;
+    }
+
+    public SimpleFeature extendFeature( SimpleFeature oldFeature, Object[] additionalAttributes ) {
+        return extendFeature(oldFeature, additionalAttributes, null);
     }
 
 }

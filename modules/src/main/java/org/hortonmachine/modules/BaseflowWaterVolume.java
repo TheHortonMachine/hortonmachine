@@ -17,16 +17,12 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.*;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inInf_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inNetInf_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.inNet_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume.outBaseflow_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsBaseflowWaterVolume.*;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow.OmsBaseflowWaterVolume;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsBaseflowWaterVolume;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

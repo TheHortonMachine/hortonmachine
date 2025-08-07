@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.hmachine.modules.hydrogeomorphology.baseflow;
+package org.hortonmachine.hmachine.modules.hydrogeomorphology.swy;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
 
@@ -110,7 +110,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
     public static final String inNet_DESCRIPTION = "The map of net.";
     public static final String outBaseflow_DESCRIPTION = "The map of cumulated baseflow.";
     public static final String outB_DESCRIPTION = "The map of single cell baseflow.";
-    public static final String outVri_DESCRIPTION = "The map of contribution of local recharge in pixel to baseflow.";
+    public static final String outVri_DESCRIPTION = "The map of contribution of local recharge in cell to baseflow.";
     public static final String outLsum_DESCRIPTION = "The map of Lsum.";
     public static final String outQb_DESCRIPTION = "The total baseflow.";
     public static final String outVriSum_DESCRIPTION = "The Vri sum value.";
@@ -263,6 +263,17 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
     }
 
+    /**
+     * Build the Lsum raster, the total cumulative recharge (local + upstream)
+     * that reaches each cell via shallow subsuface routing.
+     * 
+     * @param sourceCells
+     * @param lSumMatrix
+     * @param infiltrationIter
+     * @param netIter
+     * @param lsumNv
+     * @param pm
+     */
     private void calculateLsumMatrix( List<FlowNode> sourceCells, double[][] lSumMatrix, RandomIter infiltrationIter,
             RandomIter netIter, double lsumNv, IHMProgressMonitor pm ) {
 

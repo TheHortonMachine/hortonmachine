@@ -139,12 +139,13 @@ public class OmsScsRunoff extends HMModel {
     }
 
     /**
-     * Calculate the runoff.
+     * Calculate the runoff using the curve number approach, assuming 
+     * exponential rainfall distribution and applying the expectation fomula.
      *  
      * @param rainfall the rainfall in mm.
      * @param curveNumber the curvenumber value.
      * @param net <code>true</code>, if the pixel is a net pixel.
-     * @param eventsNum number of events.
+     * @param eventsNum number of events in the considered time unit (for InVEST always the month).
      * @return the runoff value.
      */
     public static double calculateRunoff( double rainfall, double curveNumber, boolean isNet, int eventsNum ) {
@@ -153,15 +154,22 @@ public class OmsScsRunoff extends HMModel {
         if (rainfall == 0) {
             runoff = 0;
         } else if (isNet) {
+            /*
+             * InVEST sets CN == 100, which leads to the same result.
+             * All rain becomes runoff.
+             */
             runoff = rainfall;
         } else {
-            double sScsCoeff = 1000.0 / curveNumber - 10.0; // TODO check cn unit
+            double sScsCoeff = 1000.0 / curveNumber - 10.0; // SCS coefficient in inches
+
+            // calculate the mean reain depth per event
             double meanRainDepth = rainfall / eventsNum / 25.4; // convert to inches
+
+            // compute the quickflow expectation
             double rainParam = sScsCoeff / meanRainDepth;
             double p1 = -0.2 * rainParam;
             double p2 = 0.8 * rainParam;
             double expP1 = Math.exp(p1);
-//                double expP2 = Math.exp(p2);
 
             double enx = ExponentialIntegrals.enx(rainParam);
             double expResult = Math.exp(p2 + Math.log(enx));

@@ -173,6 +173,8 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
 
     /**
      * Calculate pet using the solar radiation.
+     * 
+     * <p>Variant of the Hargreaves-Samani equation, with solar radiation included.
      *  
      * @param tMax value of maximum temperature.
      * @param tMin value of minimum temperature.
@@ -191,6 +193,9 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
 
     /**
      * Calculate pet using the reference etp.
+     * 
+     * <p>Kc adjusts the reference PET to represent the potential ET of a 
+     * specific crop or land cover under well-watered conditions.
      * 
      * @param kc value of crop coefficient.
      * @param referenceET the reference ETP.

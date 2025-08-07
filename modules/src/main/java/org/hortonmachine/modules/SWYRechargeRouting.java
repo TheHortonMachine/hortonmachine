@@ -1,4 +1,4 @@
-/*
+    /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
  * (C) HydroloGIS - www.hydrologis.com 
  * 
@@ -17,21 +17,11 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.*;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inNet_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inPet_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inRainfall_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.inRunoff_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.outAet_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.outInfiltration_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.outNetInfiltration_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.pAlpha_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.pBeta_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume.pGamma_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYRechargeRouting.*;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration.OmsInfiltratedWaterVolume;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYRechargeRouting;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -44,14 +34,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description(OmsInfiltratedWaterVolume.DESCRIPTION)
-@Author(name = OmsInfiltratedWaterVolume.AUTHORNAMES, contact = OmsInfiltratedWaterVolume.AUTHORCONTACTS)
-@Keywords(OmsInfiltratedWaterVolume.KEYWORDS)
-@Label(OmsInfiltratedWaterVolume.LABEL)
-@Name(OmsInfiltratedWaterVolume.NAME)
-@Status(OmsInfiltratedWaterVolume.STATUS)
-@License(OmsInfiltratedWaterVolume.LICENSE)
-public class InfiltratedWaterVolume extends HMModel {
+@Description(OmsSWYRechargeRouting.DESCRIPTION)
+@Author(name = OmsSWYRechargeRouting.AUTHORNAMES, contact = OmsSWYRechargeRouting.AUTHORCONTACTS)
+@Keywords(OmsSWYRechargeRouting.KEYWORDS)
+@Label(OmsSWYRechargeRouting.LABEL)
+@Name(OmsSWYRechargeRouting.NAME)
+@Status(OmsSWYRechargeRouting.STATUS)
+@License(OmsSWYRechargeRouting.LICENSE)
+public class SWYRechargeRouting extends HMModel {
     @Description(inPet_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
@@ -111,7 +101,7 @@ public class InfiltratedWaterVolume extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        OmsInfiltratedWaterVolume inf = new OmsInfiltratedWaterVolume();
+        OmsSWYRechargeRouting inf = new OmsSWYRechargeRouting();
         inf.inPet = getRaster(inPet);
         inf.inRainfall = getRaster(inRainfall);
         inf.inFlowdirections = getRaster(inFlowdirections);
@@ -123,9 +113,9 @@ public class InfiltratedWaterVolume extends HMModel {
         inf.pm = pm;
         inf.process();
 
-        dumpRaster(inf.outInfiltration, outInfiltration);
-        dumpRaster(inf.outNetInfiltration, outNetInfiltration);
+        dumpRaster(inf.outRecharge, outInfiltration);
+        dumpRaster(inf.outAvailableRecharge, outNetInfiltration);
         dumpRaster(inf.outAet, outAet);
-        dumpRaster(inf.outLsumAvailable, outLsumAvailable);
+        dumpRaster(inf.outUpslopeSubsidy, outLsumAvailable);
     }
 }

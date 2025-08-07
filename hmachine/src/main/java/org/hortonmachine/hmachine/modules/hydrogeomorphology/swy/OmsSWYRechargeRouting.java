@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.hmachine.modules.hydrogeomorphology.infiltration;
+package org.hortonmachine.hmachine.modules.hydrogeomorphology.swy;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
 
@@ -46,14 +46,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-@Description(OmsInfiltratedWaterVolume.DESCRIPTION)
-@Author(name = OmsInfiltratedWaterVolume.AUTHORNAMES, contact = OmsInfiltratedWaterVolume.AUTHORCONTACTS)
-@Keywords(OmsInfiltratedWaterVolume.KEYWORDS)
-@Label(OmsInfiltratedWaterVolume.LABEL)
-@Name(OmsInfiltratedWaterVolume.NAME)
-@Status(OmsInfiltratedWaterVolume.STATUS)
-@License(OmsInfiltratedWaterVolume.LICENSE)
-public class OmsInfiltratedWaterVolume extends HMModel {
+@Description(OmsSWYRechargeRouting.DESCRIPTION)
+@Author(name = OmsSWYRechargeRouting.AUTHORNAMES, contact = OmsSWYRechargeRouting.AUTHORCONTACTS)
+@Keywords(OmsSWYRechargeRouting.KEYWORDS)
+@Label(OmsSWYRechargeRouting.LABEL)
+@Name(OmsSWYRechargeRouting.NAME)
+@Status(OmsSWYRechargeRouting.STATUS)
+@License(OmsSWYRechargeRouting.LICENSE)
+public class OmsSWYRechargeRouting extends HMModel {
     @Description(inPet_DESCRIPTION)
     @In
     public GridCoverage2D inPet = null;
@@ -92,22 +92,22 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
     @Description(outLsumAvailable_DESCRIPTION)
     @Out
-    public GridCoverage2D outLsumAvailable = null;
+    public GridCoverage2D outUpslopeSubsidy = null;
 
     @Description(outNetInfiltration_DESCRIPTION)
     @Out
-    public GridCoverage2D outNetInfiltration = null;
+    public GridCoverage2D outAvailableRecharge = null;
 
     @Description(outInfiltration_DESCRIPTION)
     @Out
-    public GridCoverage2D outInfiltration = null;
+    public GridCoverage2D outRecharge = null;
 
     // VARS DOC START
-    public static final String DESCRIPTION = "The Infiltrated Watervolume model (from INVEST).";
+    public static final String DESCRIPTION = "Implements recharge and evapotranspiration routing from the InVEST Seasonal Water Yield (SWY) model.";
     public static final String DOCUMENTATION = "";
-    public static final String KEYWORDS = "infiltration";
+    public static final String KEYWORDS = "recharge";
     public static final String LABEL = HYDROGEOMORPHOLOGY;
-    public static final String NAME = "InfiltratedWaterVolume";
+    public static final String NAME = "SWYRechargeRouting";
     public static final int STATUS = 5;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String AUTHORNAMES = "The klab team.";
@@ -131,6 +131,10 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
     @Execute
     public void process() throws Exception {
+        /*
+         * Implements recharge and evapotranspiration routing from the InVEST Seasonal Water Yield (SWY) model.
+         * Computes actual evapotranspiration (AET), local recharge, routed available recharge, and cumulative upslope subsidy."
+         */
         checkNull(inPet, inRainfall, inFlowdirections, inNet, inRunoff);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlowdirections);
@@ -193,19 +197,18 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
                     boolean isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
                     double initialAet = 0;
+
+                    /*
+                     * Calculate aet, recharge and available recharge 
+                     * for the source cell.
+                     */
                     double li = 0;
                     if (!isStream) {
                         if (isPetNv) {
                             initialAet = rain - runoff;
                         } else {
                             initialAet = Math.min(pet, rain - runoff);
-                        }
-
-                        Double d = new Double(initialAet);
-                        if (d == null) {
-                        	System.out.println(initialAet);
-						}
-                        
+                        }                        
                         li = rain - runoff - initialAet;
                     }
                     double lAvailable = Math.min(pGamma * li, li);
@@ -263,10 +266,6 @@ public class OmsInfiltratedWaterVolume extends HMModel {
                                     }
                                     liCC = rain - runoff - aetCC;
                                 }
-                                Double d = new Double(aetCC);
-                                if (d == null) {
-                                	System.out.println(aetCC);
-								}
                                 double lAvailableCC = Math.min(pGamma * liCC, liCC);
                                 cell.setDoubleValueInMap(outLiAvailableIter, lAvailableCC);
                                 cell.setDoubleValueInMap(outLiIter, liCC);
@@ -298,13 +297,13 @@ public class OmsInfiltratedWaterVolume extends HMModel {
 
             }
 
-            outInfiltration = CoverageUtilities.buildCoverageWithNovalue("infiltration", outLiWR, regionMap,
+            outRecharge = CoverageUtilities.buildCoverageWithNovalue("recharge", outLiWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
-            outNetInfiltration = CoverageUtilities.buildCoverageWithNovalue("netinfiltration", outLiAvailableWR, regionMap,
+            outAvailableRecharge = CoverageUtilities.buildCoverageWithNovalue("availablerecharge", outLiAvailableWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
             outAet = CoverageUtilities.buildCoverageWithNovalue("aet", outAetWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
-            outLsumAvailable = CoverageUtilities.buildCoverageWithNovalue("lsum", lSumAvailableMatrix, regionMap,
+            outUpslopeSubsidy = CoverageUtilities.buildCoverageWithNovalue("lsum", lSumAvailableMatrix, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), true, outNv);
 
         } finally {
