@@ -93,19 +93,59 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
         return query;
     }
 
+    // @Override
+    // public String dropTable( SqlName tableName, String geometryColumnName ) {
+    //     String query = "drop table if exists rtree_" + tableName + "_the_geom;\n";
+    //     query += "drop table if exists rtree_" + tableName + "_the_geom_rowid;\n";
+    //     query += "drop table if exists rtree_" + tableName + "_the_geom_parent;\n";
+    //     query += "drop table if exists rtree_" + tableName + "_the_geom_node;\n";
+    //     query += "delete from gpkg_tile_matrix where table_name = \"" + tableName + "\";\n";
+    //     query += "delete from gpkg_tile_matrix_set where table_name = \"" + tableName + "\";\n";
+    //     query += "delete from gpkg_geometry_columns where table_name = \"" + tableName + "\";\n";
+    //     query += "delete from gpkg_contents where table_name = \"" + tableName + "\";\n";
+    //     query += "drop table if exists " + tableName.fixedDoubleName + ";\n";
+    //     return query;
+    // }
+
     @Override
-    public String dropTable( SqlName tableName, String geometryColumnName ) {
-        String query = "drop table if exists rtree_" + tableName + "_the_geom;\n";
-        query += "drop table if exists rtree_" + tableName + "_the_geom_rowid;\n";
-        query += "drop table if exists rtree_" + tableName + "_the_geom_parent;\n";
-        query += "drop table if exists rtree_" + tableName + "_the_geom_node;\n";
+    public String dropTable(SqlName tableName, String geometryColumnName) {
+        // rtree prefix uses bare identifiers (no quotes)
+        String rtreePrefix = "rtree_" + tableName + "_" + geometryColumnName;
+
+        String query = "";
+
+        // RTree virtual table + shadow tables for this geometry column
+        query += "drop table if exists " + rtreePrefix + ";\n";
+        query += "drop table if exists " + rtreePrefix + "_rowid;\n";
+        query += "drop table if exists " + rtreePrefix + "_parent;\n";
+        query += "drop table if exists " + rtreePrefix + "_node;\n";
+
+        // RTree triggers for this geometry column (GeoPackage helper naming)
+        query += "drop trigger if exists " + rtreePrefix + "_insert;\n";
+        query += "drop trigger if exists " + rtreePrefix + "_update1;\n";
+        query += "drop trigger if exists " + rtreePrefix + "_update2;\n";
+        query += "drop trigger if exists " + rtreePrefix + "_delete;\n";
+
+        // GeoPackage metadata cleanup
+        query += "delete from gpkg_extensions where table_name = \"" + tableName + "\";\n";
+        query += "delete from gpkg_data_columns where table_name = \"" + tableName + "\";\n";
+        query += "delete from gpkg_metadata_reference where table_name = \"" + tableName + "\";\n";
+        query += "delete from gpkg_geometry_columns where table_name = \"" + tableName + "\";\n";
         query += "delete from gpkg_tile_matrix where table_name = \"" + tableName + "\";\n";
         query += "delete from gpkg_tile_matrix_set where table_name = \"" + tableName + "\";\n";
-        query += "delete from gpkg_geometry_columns where table_name = \"" + tableName + "\";\n";
         query += "delete from gpkg_contents where table_name = \"" + tableName + "\";\n";
+
+        // Optional: OGR helper tables (uncomment if present in your GPKG)
+        // query += "delete from gpkg_ogr_contents where table_name = \"" + tableName + "\";\n";
+        // query += "delete from gpkg_ogr_fields   where table_name = \"" + tableName + "\";\n";
+        // query += "delete from gpkg_ogr_style    where table_name = \"" + tableName + "\";\n";
+
+        // drop the base table
         query += "drop table if exists " + tableName.fixedDoubleName + ";\n";
+
         return query;
     }
+
 
     @Override
     public String reprojectTable( TableLevel table, ASpatialDb db, ColumnLevel geometryColumn, SqlName tableName,

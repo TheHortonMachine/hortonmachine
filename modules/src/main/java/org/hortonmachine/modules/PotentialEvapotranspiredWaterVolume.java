@@ -105,4 +105,22 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
         dumpRaster(pet.outputPet, outputPet);
     }
 
+    public static void main(String[] args) {
+        PotentialEvapotranspiredWaterVolume pet = new PotentialEvapotranspiredWaterVolume();
+        pet.inCropCoefficient = "/home/hydrologis/TMP/KLAB/pet_test/cropcoeff.tiff";
+        pet.inMaxTemp = "/home/hydrologis/TMP/KLAB/pet_test/tmax.tiff";
+        pet.inMinTemp = "/home/hydrologis/TMP/KLAB/pet_test/tmin.tiff";
+        pet.inAtmosphericTemp = "/home/hydrologis/TMP/KLAB/pet_test/tmean.tiff";
+        pet.inSolarRadiation = "/home/hydrologis/TMP/KLAB/pet_test/rad.tiff";
+        pet.inRainfall = "/home/hydrologis/TMP/KLAB/pet_test/rain.tiff";
+        // pet.inReferenceEtp = "path/to/reference_etp.tif";
+        pet.outputPet = "/home/hydrologis/TMP/KLAB/pet_test/out_pet.tiff";
+
+        try {
+            pet.process();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
