@@ -2026,7 +2026,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 if(pwd.equalsIgnoreCase("AZURE")){
                     pm.message("Need to acquire Azure token to use as password for this connection...");
                     _pwd = AzCliTokenProvider.getAccessToken("https://ossrdbms-aad.database.windows.net");
-                    pm.message("Token acquired: " + (_pwd.length() > 20 ? _pwd.substring(0, 20) : _pwd) + "...");
+                    pm.message("Token acquired: " + _pwd);
                 }
 
                 currentConnectedSqlDatabase.setCredentials(user, _pwd);
