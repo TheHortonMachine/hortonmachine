@@ -63,7 +63,7 @@ public class NwwUtilities {
 
     public static double DEFAULT_ELEV = 10000.0;
 
-    public static List<String> LAYERS_TO_KEEP_FROM_ORIGNALNWW = Arrays.asList("Scale bar", "Compass", "Bing Imagery");
+    public static List<String> LAYERS_TO_KEEP_FROM_ORIGNALNWW = Arrays.asList("Scale bar", "Compass");
 
     public static LatLon getEnvelopeCenter( Envelope bounds ) {
         Coordinate centre = bounds.centre();

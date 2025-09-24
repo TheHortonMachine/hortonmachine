@@ -24,8 +24,8 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * @version $Id: OSMMapnikLayer.java 1171 2013-02-11 21:45:02Z dcollins $
  */
-public class OSMMapnikLayer extends BasicMercatorTiledImageLayer {
-    public OSMMapnikLayer() {
+public class EsriSatellite extends BasicMercatorTiledImageLayer {
+    public EsriSatellite() {
         super(makeLevels());
     }
 
@@ -34,8 +34,8 @@ public class OSMMapnikLayer extends BasicMercatorTiledImageLayer {
 
         params.setValue(AVKey.TILE_WIDTH, 256);
         params.setValue(AVKey.TILE_HEIGHT, 256);
-        params.setValue(AVKey.DATA_CACHE_NAME, "Earth/OSM-Mercator/OpenStreetMap");
-        params.setValue(AVKey.SERVICE, "https://tile.openstreetmap.org/");
+        params.setValue(AVKey.DATA_CACHE_NAME, "Earth/Esri/Satellite");
+        params.setValue(AVKey.SERVICE, "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/");
         params.setValue(AVKey.DATASET_NAME, "h");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");
         params.setValue(AVKey.NUM_LEVELS, 22);
@@ -54,12 +54,12 @@ public class OSMMapnikLayer extends BasicMercatorTiledImageLayer {
             int x = tile.getColumn();
             int y = (1 << (tile.getLevelNumber()) + 3) - 1 - tile.getRow();
          
-            return new URL(tile.getLevel().getService() + zoom + "/" + x + "/" + y + ".png");
+            return new URL(tile.getLevel().getService() + zoom + "/" + y + "/" + x );
         }
     }
 
     @Override
     public String toString() {
-        return "OpenStreetMap";
+        return "Esri-Satellite";
     }
 }

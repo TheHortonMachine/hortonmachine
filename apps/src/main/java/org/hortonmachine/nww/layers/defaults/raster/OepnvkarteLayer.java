@@ -32,7 +32,7 @@ public class OepnvkarteLayer extends BasicMercatorTiledImageLayer {
         params.setValue(AVKey.TILE_WIDTH, 256);
         params.setValue(AVKey.TILE_HEIGHT, 256);
         params.setValue(AVKey.DATA_CACHE_NAME, "Earth/OSM-Mercator/Oepnvkarte");
-        params.setValue(AVKey.SERVICE, "http://tile.memomaps.de/tilegen//");
+        params.setValue(AVKey.SERVICE, "http://tile.memomaps.de/tilegen/");
         params.setValue(AVKey.DATASET_NAME, "h");
         params.setValue(AVKey.FORMAT_SUFFIX, ".png");
         params.setValue(AVKey.NUM_LEVELS, 22);

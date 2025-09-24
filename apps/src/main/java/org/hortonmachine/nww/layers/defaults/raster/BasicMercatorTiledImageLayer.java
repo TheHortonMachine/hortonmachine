@@ -17,6 +17,8 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import org.hortonmachine.utils.HmHttpRetriever;
+
 import com.jogamp.opengl.util.texture.TextureData;
 
 import gov.nasa.worldwind.Configuration;
@@ -215,7 +217,7 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer {
         Retriever retriever;
 
         if (url.getProtocol().toLowerCase().startsWith("http")) {
-            retriever = new HTTPRetriever(url, new DownloadPostProcessor(tile, this));
+            retriever = new HmHttpRetriever(url, new DownloadPostProcessor(tile, this));
             retriever.setValue(URLRetriever.EXTRACT_ZIP_ENTRY, "true"); // supports legacy layers
         } else if ("file".equalsIgnoreCase(url.getProtocol())) {
             retriever = new FileRetriever(url, new DownloadPostProcessor(tile, this));

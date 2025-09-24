@@ -315,6 +315,14 @@ public class TableDescriptions {
          */
         COLUMN_DATA_LAT("lat", Double.class),
         /**
+         * the longitude of the point.
+         */
+        COLUMN_DATA_FILTERED_LON("filtered_lon", Double.class),
+        /**
+         * the latitude of the point.
+         */
+        COLUMN_DATA_FILTERED_LAT("filtered_lat", Double.class),
+        /**
          * the elevation of the point.
          */
         COLUMN_DATA_ALTIM("altim", Double.class),

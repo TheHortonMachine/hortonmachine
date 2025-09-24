@@ -37,7 +37,9 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -76,6 +78,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.geopaparazzi.GeopaparazziUtilities;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
@@ -338,6 +341,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
             _nwwHolder.setLayout(new BorderLayout());
             _nwwHolder.add(wwjPanelComponent, BorderLayout.CENTER);
             wwjPanel = (NwwPanel) wwjPanelComponent;
+            wwjPanel.setFlatGlobe(true);
             wwjPanel.addOsmLayer();
             geopapDataLayer = new RenderableLayer();
             wwjPanel.addLayer(geopapDataLayer);
@@ -355,9 +359,11 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         for( File geopapDatabaseFile : projectFiles ) {
             try (SqliteDb db = new SqliteDb()) {
                 db.open(geopapDatabaseFile.getAbsolutePath());
+                
+                boolean hasMetadata = db.hasTable(SqlName.m(TABLE_METADATA));
 
                 ProjectInfo resInfo = db.execOnConnection(connection -> {
-                    String projectInfo = GeopaparazziUtilities.getProjectInfo(connection, true);
+                    String projectInfo = hasMetadata ? GeopaparazziUtilities.getProjectInfo(connection, true): " - nv - ";
                     ProjectInfo info = new ProjectInfo();
                     info.databaseFile = geopapDatabaseFile;
                     info.fileName = geopapDatabaseFile.getName();
@@ -879,6 +885,22 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         }
     }
 
+    
+    public static boolean hasColumn(Connection conn, String tableName, String columnName) throws SQLException {
+        String sql = "PRAGMA table_info(" + tableName + ")";
+        try (PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                String colName = rs.getString("name");
+                if (columnName.equalsIgnoreCase(colName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /**
      * Extract data from the db and add them to the map view.
      * 
@@ -894,6 +916,7 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
         File dbFile = currentSelectedProject.databaseFile;
         try (Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbFile.getAbsolutePath())) {
+        	boolean hasFilteredCoords = hasColumn(connection, "gpslogsdata", "flitered_lat");
 
             // NOTES
             List<String[]> noteDataList = GeopaparazziUtilities.getNotesText(connection);
@@ -973,10 +996,15 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
                     String endDateTimeString = ETimeUtilities.INSTANCE.TIME_FORMATTER_LOCAL.format(new Date(endDateTime));
                     String text = rs.getString(4);
 
+                    	
+                    String latColumn = hasFilteredCoords ? GpsLogsDataTableFields.COLUMN_DATA_FILTERED_LAT.getFieldName() 
+							: GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName();
+					String lonColumn = hasFilteredCoords ? GpsLogsDataTableFields.COLUMN_DATA_FILTERED_LON.getFieldName()
+							: GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName();
                     // points
                     String query = "select " //
-                            + GpsLogsDataTableFields.COLUMN_DATA_LAT.getFieldName() + ","
-                            + GpsLogsDataTableFields.COLUMN_DATA_LON.getFieldName() + ","
+                            + latColumn + ","
+                            + lonColumn + ","
                             + GpsLogsDataTableFields.COLUMN_DATA_ALTIM.getFieldName() + ","
                             + GpsLogsDataTableFields.COLUMN_DATA_TS.getFieldName()//
                             + " from " + TABLE_GPSLOG_DATA + " where " + //
@@ -1027,6 +1055,16 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
 
                     Color color = Color.RED;
                     try {
+                    	if(colorStr.contains("@")) {
+//                    		 trim away colortable part
+                    		colorStr = colorStr.split("@")[0];
+                    		// format is #AARRGGBB, need to remove the AA
+                    		if(colorStr.length() == 9) {
+								colorStr = "#" + colorStr.substring(3);
+							}
+                    		
+
+                    	}
                         color = Color.decode(colorStr);
                     } catch (Exception e) {
                         // ignore Logger.INSTANCE.insertError("","Could not convert color: " +
@@ -1063,6 +1101,10 @@ public abstract class GeopaparazziController extends GeopaparazziView implements
         LinkedHashMap<String, String> metadataMap = new LinkedHashMap<>();
         try (SqliteDb db = new SqliteDb()) {
             db.open(currentSelectedProject.databaseFile.getAbsolutePath());
+            if (!db.hasTable(SqlName.m(TABLE_METADATA))) {
+				GuiUtilities.showWarningMessage(null, "The selected project has no metadata table.");
+				return;
+			}
 
             db.execOnConnection(connection -> {
                 String sql = "select " + MetadataTableFields.COLUMN_KEY.getFieldName() + ", " + //

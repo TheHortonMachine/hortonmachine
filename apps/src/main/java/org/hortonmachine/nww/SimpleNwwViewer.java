@@ -18,6 +18,7 @@ import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.gui.ViewControlsLayer;
+import org.hortonmachine.nww.layers.defaults.raster.EsriSatellite;
 import org.hortonmachine.nww.layers.defaults.raster.OepnvkarteLayer;
 import org.hortonmachine.nww.layers.defaults.raster.OpenTopoLayer;
 
@@ -68,9 +69,12 @@ public class SimpleNwwViewer {
                 OpenTopoLayer openTopoLayer = new OpenTopoLayer();
                 openTopoLayer.setEnabled(false);
                 wwjPanel.addLayer(openTopoLayer);
-                OepnvkarteLayer oepnvLayer = new OepnvkarteLayer();
-                oepnvLayer.setEnabled(false);
-                wwjPanel.addLayer(oepnvLayer);
+//                OepnvkarteLayer oepnvLayer = new OepnvkarteLayer();
+//                oepnvLayer.setEnabled(false);
+//                wwjPanel.addLayer(oepnvLayer);
+                EsriSatellite esriLayer = new EsriSatellite();
+                esriLayer.setEnabled(false);
+                wwjPanel.addLayer(esriLayer);
                 ViewControlsLayer viewControls = wwjPanel.addViewControls();
                 viewControls.setScale(1.5);
 
