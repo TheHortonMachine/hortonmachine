@@ -25,28 +25,22 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
+import org.locationtech.jts.geom.Coordinate;
 import org.mapsforge.core.model.BoundingBox;
 import org.mapsforge.core.model.LatLong;
 import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
-import org.mapsforge.map.controller.FrameBufferController;
 import org.mapsforge.map.datastore.MultiMapDataStore;
 import org.mapsforge.map.datastore.MultiMapDataStore.DataPolicy;
 import org.mapsforge.map.layer.cache.InMemoryTileCache;
-import org.mapsforge.map.layer.hills.HillsRenderConfig;
 import org.mapsforge.map.layer.labels.TileBasedLabelStore;
 import org.mapsforge.map.layer.renderer.DatabaseRenderer;
-import org.mapsforge.map.layer.renderer.MapWorkerPool;
 import org.mapsforge.map.model.DisplayModel;
 import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.reader.ReadBuffer;
-import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.map.rendertheme.internal.MapsforgeThemes;
 import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
-
-import org.locationtech.jts.geom.Coordinate;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -112,7 +106,7 @@ public class MapsforgeNwwLayer extends BasicMercatorTiledImageLayer implements N
 		InMemoryTileCache tileCache = new InMemoryTileCache(200);
 		DatabaseRenderer renderer = new DatabaseRenderer(mapDatabase, AwtGraphicFactory.INSTANCE, tileCache,
 				new TileBasedLabelStore(tileCache.getCapacityFirstLevel()), true, true, null);
-		InternalRenderTheme xmlRenderTheme = InternalRenderTheme.DEFAULT;
+		MapsforgeThemes xmlRenderTheme = MapsforgeThemes.DEFAULT;
 		RenderThemeFuture theme = new RenderThemeFuture(AwtGraphicFactory.INSTANCE, xmlRenderTheme, model);
 		// super important!! without the following line, all rendering
 		// activities will block until the theme is created.

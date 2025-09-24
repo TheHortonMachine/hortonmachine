@@ -15,7 +15,7 @@
 	<name>HM Small Applications Components</name>
 
 	<properties>
-		<mapsforge.version>0.15.0</mapsforge.version>
+		<mapsforge.version>0.25.0</mapsforge.version>
 	</properties>
 
 	<dependencies>

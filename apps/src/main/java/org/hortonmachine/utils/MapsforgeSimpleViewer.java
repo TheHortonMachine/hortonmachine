@@ -20,7 +20,6 @@ import org.mapsforge.core.model.MapPosition;
 import org.mapsforge.core.model.Point;
 import org.mapsforge.core.util.LatLongUtils;
 import org.mapsforge.map.awt.graphics.AwtGraphicFactory;
-import org.mapsforge.map.awt.util.JavaPreferences;
 import org.mapsforge.map.awt.view.MapView;
 import org.mapsforge.map.datastore.MapDataStore;
 import org.mapsforge.map.datastore.MultiMapDataStore;
@@ -35,11 +34,10 @@ import org.mapsforge.map.layer.download.TileDownloadLayer;
 import org.mapsforge.map.layer.download.tilesource.OpenStreetMapMapnik;
 import org.mapsforge.map.layer.download.tilesource.TileSource;
 import org.mapsforge.map.layer.renderer.TileRendererLayer;
-import org.mapsforge.map.model.IMapViewPosition;
+import org.mapsforge.map.model.MapViewPosition;
 import org.mapsforge.map.model.Model;
-import org.mapsforge.map.model.common.PreferencesFacade;
 import org.mapsforge.map.reader.MapFile;
-import org.mapsforge.map.rendertheme.InternalRenderTheme;
+import org.mapsforge.map.rendertheme.internal.MapsforgeThemes;
 
 public final class MapsforgeSimpleViewer {
     private static final GraphicFactory GRAPHIC_FACTORY = AwtGraphicFactory.INSTANCE;
@@ -48,15 +46,18 @@ public final class MapsforgeSimpleViewer {
 
     private static final String MESSAGE = "Are you sure you want to exit the application?";
     private static final String TITLE = "Confirm close";
-
+    private static final String LATITUDE = "latitude";
+    private static final String LONGITUDE = "longitude";
+    private static final String ZOOM_LEVEL = "zoomLevel";
+    
     public static void main( String[] args ) {
         File mapFile = new File(
-                "/home/hydrologis/data/mapsforge/italy.map");
+                "/home/hydrologis/Documents/smash/maps/italy.map");
         List<File> mapFiles = Arrays.asList(mapFile);
         final MapView mapView = createMapView();
         final BoundingBox boundingBox = addLayers(mapView, mapFiles);
 
-        final PreferencesFacade preferencesFacade = new JavaPreferences(Preferences.userNodeForPackage(MapsforgeSimpleViewer.class));
+        final JavaPreferences preferences = new JavaPreferences(Preferences.userNodeForPackage(MapsforgeSimpleViewer.class));
 
         final JFrame frame = new JFrame();
         frame.setTitle("Mapsforge Simple Viewer");
@@ -70,7 +71,10 @@ public final class MapsforgeSimpleViewer {
             public void windowClosing( WindowEvent e ) {
                 int result = JOptionPane.showConfirmDialog(frame, MESSAGE, TITLE, JOptionPane.YES_NO_OPTION);
                 if (result == JOptionPane.YES_OPTION) {
-                    mapView.getModel().save(preferencesFacade);
+                    final MapViewPosition mapViewPosition = mapView.getModel().mapViewPosition;
+                    preferences.putDouble(LATITUDE, mapViewPosition.getCenter().latitude);
+                    preferences.putDouble(LONGITUDE, mapViewPosition.getCenter().longitude);
+                    preferences.putByte(ZOOM_LEVEL, mapViewPosition.getZoomLevel());
                     mapView.destroyAll();
                     AwtGraphicFactory.clearResourceMemoryCache();
                     frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -80,11 +84,14 @@ public final class MapsforgeSimpleViewer {
             @Override
             public void windowOpened( WindowEvent e ) {
                 final Model model = mapView.getModel();
-                model.init(preferencesFacade);
+                double latitude = preferences.getDouble(LATITUDE, 0);
+                double longitude = preferences.getDouble(LONGITUDE, 0);
+                byte zoomLevel = preferences.getByte(ZOOM_LEVEL, (byte) 0);
+                mapView.getModel().mapViewPosition.setMapPosition(new MapPosition(new LatLong(latitude, longitude), zoomLevel));
                 if (model.mapViewPosition.getZoomLevel() == 0 || !boundingBox.contains(model.mapViewPosition.getCenter())) {
-                    byte zoomLevel = LatLongUtils.zoomForBounds(model.mapViewDimension.getDimension(), boundingBox,
+                    byte zoomForBounds = LatLongUtils.zoomForBounds(model.mapViewDimension.getDimension(), boundingBox,
                             model.displayModel.getTileSize());
-                    model.mapViewPosition.setMapPosition(new MapPosition(boundingBox.getCenterPoint(), zoomLevel));
+                    model.mapViewPosition.setMapPosition(new MapPosition(boundingBox.getCenterPoint(), zoomForBounds));
                 }
             }
         });
@@ -146,7 +153,7 @@ public final class MapsforgeSimpleViewer {
     }
 
     @SuppressWarnings("unused")
-    private static TileDownloadLayer createTileDownloadLayer( TileCache tileCache, IMapViewPosition mapViewPosition,
+    private static TileDownloadLayer createTileDownloadLayer( TileCache tileCache, MapViewPosition mapViewPosition,
             TileSource tileSource ) {
         return new TileDownloadLayer(tileCache, mapViewPosition, tileSource, GRAPHIC_FACTORY){
             @Override
@@ -158,7 +165,7 @@ public final class MapsforgeSimpleViewer {
     }
 
     private static TileRendererLayer createTileRendererLayer( TileCache tileCache, MapDataStore mapDataStore,
-            IMapViewPosition mapViewPosition ) {
+            MapViewPosition mapViewPosition ) {
         TileRendererLayer tileRendererLayer = new TileRendererLayer(tileCache, mapDataStore, mapViewPosition, false, true, false,
                 GRAPHIC_FACTORY){
             @Override
@@ -167,7 +174,7 @@ public final class MapsforgeSimpleViewer {
                 return true;
             }
         };
-        tileRendererLayer.setXmlRenderTheme(InternalRenderTheme.DEFAULT);
+        tileRendererLayer.setXmlRenderTheme(MapsforgeThemes.DEFAULT);
         return tileRendererLayer;
     }
 
