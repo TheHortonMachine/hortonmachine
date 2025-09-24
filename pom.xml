@@ -907,7 +907,7 @@
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
-			<url>https://central.sonatype.com/repository/maven-snapshots</url>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
 		</snapshotRepository>
 		<repository>
 			<id>ossrh</id>
@@ -1040,7 +1040,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.4.2</version>
 				<configuration>
 					<archive>
 						<manifest>
@@ -1077,7 +1077,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.1.1</version>
+				<version>3.11.3</version>
 				<executions>
 					<execution>
 						<id>main-javadoc</id>
@@ -1086,6 +1086,7 @@
 							<goal>jar</goal>
 						</goals>
 						<configuration>
+              <useModulePath>false</useModulePath>
 							<source>${maven.compiler.source}</source>
 							<doclint>none</doclint>
 							<quiet>true</quiet>
