@@ -4,8 +4,8 @@ on:
   push:
     branches:
       - master
-  tags:
-    - 'hortonmachine-*'   # any tag starting with v, e.g. v0.10.11
+    tags:
+      - 'hortonmachine-*'   # any tag starting with v, e.g. v0.10.11
 
 jobs:
   # ---- SNAPSHOT BUILD ----
