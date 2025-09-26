@@ -87,6 +87,17 @@ jobs:
           DEPLOY="./extras/deploy"
           RELEASE_DIR="${DEPLOY}/hortonmachine_${VERSION}"
 
+          # Query Adoptium (Temurin) API for latest GA JRE 17, Windows x64
+          JRE_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.16_8.zip"
+
+          echo "Downloading Temurin JRE from: ${JRE_URL}"
+          curl -fsSL -o ./temurin-jre-win.zip "${JRE_URL}"
+
+          # Unzip into jre-win inside the release dir
+          unzip -q ./temurin-jre-win.zip -d 
+          mv jdk-17.0.16+8-jre jre
+          rm -f ./temurin-jre-win.zip
+
           # Do NOT delete ${TMPLIBS} here
           rm -rf "${DEPLOY}/libs" "${RELEASE_DIR}" "${DEPLOY}/hortonmachine_${VERSION}.tar.gz"
           mkdir -p "${RELEASE_DIR}"
