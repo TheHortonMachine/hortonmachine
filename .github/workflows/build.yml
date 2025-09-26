@@ -87,33 +87,39 @@ jobs:
           DEPLOY="./extras/deploy"
           RELEASE_DIR="${DEPLOY}/hortonmachine_${VERSION}"
 
-          # Query Adoptium (Temurin) API for latest GA JRE 17, Windows x64
+          # Download fixed Temurin JRE 17 (Windows x64)
           JRE_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.16_8.zip"
-
           echo "Downloading Temurin JRE from: ${JRE_URL}"
           curl -fsSL -o ./temurin-jre-win.zip "${JRE_URL}"
 
-          # Unzip into jre-win inside the release dir
+          # Unzip and normalize folder name to ./jre
           unzip -q ./temurin-jre-win.zip -d .
           mv jdk-17.0.16+8-jre jre
           rm -f ./temurin-jre-win.zip
 
-          # Do NOT delete ${TMPLIBS} here
+          # Prep release dir (don't delete ${TMPLIBS})
           rm -rf "${DEPLOY}/libs" "${RELEASE_DIR}" "${DEPLOY}/hortonmachine_${VERSION}.tar.gz"
           mkdir -p "${RELEASE_DIR}"
 
           # Move populated libs into the release dir
           mv "${TMPLIBS}" "${RELEASE_DIR}/libs"
 
-          # Copy deploy assets
-          cp -rv ${DEPLOY}/*.sh ${DEPLOY}/*.exe ${DEPLOY}/*.bat ${DEPLOY}/imgs ${DEPLOY}/natives ${DEPLOY}/quiet-logging.properties "${RELEASE_DIR}"
+          # Copy deploy assets (allow missing patterns without failing)
+          shopt -s nullglob
+          cp -rv ${DEPLOY}/*.sh ${DEPLOY}/*.exe ${DEPLOY}/*.bat "${RELEASE_DIR}" || true
+          cp -rv ${DEPLOY}/imgs ${DEPLOY}/natives ${DEPLOY}/quiet-logging.properties "${RELEASE_DIR}" || true
+          shopt -u nullglob
 
-          # Tar it up
+          # ➜ Put JRE inside the release dir so it's included in the tarball
+          mv ./jre "${RELEASE_DIR}/jre"
+
+          # Create tarball
           tar -C "${DEPLOY}" -zcvf "${DEPLOY}/hortonmachine_${VERSION}.tar.gz" "hortonmachine_${VERSION}"
 
-          # (Optional) keep a copy of libs next to the tarball, like your local script
+          # Optional: keep a copy of libs next to the tarball (and clean temp dir)
           mv "${RELEASE_DIR}/libs" "${DEPLOY}/"
           rm -rf "${RELEASE_DIR}"
+
 
 
       - name: Upload bundle artifact
