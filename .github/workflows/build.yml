@@ -7,6 +7,9 @@ on:
     tags:
       - 'hortonmachine-*'   # any tag starting with v, e.g. v0.10.11
 
+permissions:
+  contents: write
+
 jobs:
   # ---- SNAPSHOT BUILD ----
   snapshot:
@@ -122,22 +125,23 @@ jobs:
 
 
       - name: Build release title
-        id: rel-title
+        id: rel
         run: |
           VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
           DATE=$(date +'%Y-%m-%d %H%M')
           echo "TITLE=Hortonmachine-${VERSION} - release ${DATE}" >> $GITHUB_OUTPUT
 
-      - name: Upload bundle artifact
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: ${{ steps.rel-title.outputs.TITLE }}
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}   # the tag that triggered the workflow
+          name: ${{ steps.rel.outputs.TITLE }}
           body: |
             SNAPSHOT Release ${{ steps.ver.outputs.VERSION }} of the hortonmachine libs,
-            run-ready for Windows users (bundled Java + SpatiaLite libs).
+            run-ready for Windows users (Java + SpatiaLite libs).
+            
             Linux and macOS users will know what to do.
-          path: extras/deploy/hortonmachine_${{ steps.ver.outputs.VERSION }}.tar.gz
+          files: extras/deploy/hortonmachine_${{ steps.ver.outputs.VERSION }}.tar.gz
 
       - name: Attach bundle to GitHub Release
         uses: softprops/action-gh-release@v2
