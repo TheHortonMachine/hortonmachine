@@ -125,8 +125,8 @@ jobs:
         id: rel-title
         run: |
           VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
-          DATE=$(date +'%Y-%m-%d %H:%M')
-          echo "TITLE=Hortonmachine-${VERSION} - SNAPSHOT release ${DATE}" >> $GITHUB_OUTPUT
+          DATE=$(date +'%Y-%m-%d %H%M')
+          echo "TITLE=Hortonmachine-${VERSION} - release ${DATE}" >> $GITHUB_OUTPUT
 
       - name: Upload bundle artifact
         uses: actions/upload-artifact@v4
