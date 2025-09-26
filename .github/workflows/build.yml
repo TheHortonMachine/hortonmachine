@@ -60,6 +60,23 @@ jobs:
       - name: Build project (skip tests + javadoc)
         run: mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
 
+      - name: Populate libs from hm-apps deps
+        run: |
+          set -euxo pipefail
+          TMPLIBS=./extras/export/libs
+          mkdir -p "${TMPLIBS}"
+
+          # Copy hm-apps RUNTIME dependencies into extras/export/libs
+          mvn -q -pl :hm-apps -am dependency:copy-dependencies \
+            -DoutputDirectory="${TMPLIBS}" \
+            -DincludeScope=runtime \
+            -DexcludeClassifiers=sources,javadoc
+
+          # Add the app jar itself
+          cp ./apps/target/hm-apps-*.jar "${TMPLIBS}"
+          # (don’t ship sources in runtime bundle)
+          rm -f "${TMPLIBS}"/*-sources.jar || true
+
       - name: Assemble tar.gz bundle
         run: |
           set -euxo pipefail
