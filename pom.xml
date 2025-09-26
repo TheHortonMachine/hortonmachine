@@ -946,12 +946,6 @@
 		</repository>
 
 		<repository>
-			<id>unidata-all</id>
-			<name>Unidata All</name>
-			<url>https://artifacts.unidata.ucar.edu/repository/unidata-all/</url>
-		</repository>
-
-		<repository>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -1077,7 +1071,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.11.3</version>
+				<version>3.12.0</version>
 				<executions>
 					<execution>
 						<id>main-javadoc</id>

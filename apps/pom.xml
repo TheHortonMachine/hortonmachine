@@ -17,6 +17,19 @@
 	<properties>
 		<mapsforge.version>0.25.0</mapsforge.version>
 	</properties>
+	
+	<build>
+	  <plugins>
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-javadoc-plugin</artifactId>
+	      <version>3.12.0</version>
+	      <configuration>
+	        <skip>true</skip>
+	      </configuration>
+	    </plugin>
+	  </plugins>
+	</build>
 
 	<dependencies>
 		<dependency>
@@ -33,17 +46,18 @@
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-map-awt</artifactId>
 			<version>${mapsforge.version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>com.github.blackears</groupId>
-					<artifactId>svgSalamander</artifactId>
-				</exclusion>
-			</exclusions>
+		  <exclusions>
+		    <exclusion>
+		      <groupId>net.sf.kxml</groupId>
+		      <artifactId>kxml2</artifactId>
+		    </exclusion>
+		  </exclusions>
 		</dependency>
 		<dependency>
-			<groupId>com.formdev</groupId>
-			<artifactId>svgSalamander</artifactId>
-			<version>1.1.2.4</version>
+		  <groupId>net.sf.kxml</groupId>
+		  <artifactId>kxml2</artifactId>
+		  <version>2.3.0</version>
+		  <scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
