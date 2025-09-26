@@ -13,7 +13,7 @@ permissions:
 jobs:
   # ---- SNAPSHOT BUILD ----
   snapshot:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref_type == 'branch' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
