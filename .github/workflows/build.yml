@@ -94,7 +94,7 @@ jobs:
           curl -fsSL -o ./temurin-jre-win.zip "${JRE_URL}"
 
           # Unzip into jre-win inside the release dir
-          unzip -q ./temurin-jre-win.zip -d 
+          unzip -q ./temurin-jre-win.zip -d .
           mv jdk-17.0.16+8-jre jre
           rm -f ./temurin-jre-win.zip
 
