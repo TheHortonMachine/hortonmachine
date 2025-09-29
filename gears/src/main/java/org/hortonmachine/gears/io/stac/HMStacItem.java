@@ -187,7 +187,7 @@ public class HMStacItem {
     }
 
     public HMStacAsset getAssetForBand( String bandName ) {
-        return getAssets().stream().filter(as -> as.getTitle().equals(bandName)).findFirst().get();
+        return getAssets().stream().filter(as -> as.getId().equals(bandName)).findFirst().get();
     }
 
     private String getMetadataSummary( SimpleFeature f, String indent ) {
