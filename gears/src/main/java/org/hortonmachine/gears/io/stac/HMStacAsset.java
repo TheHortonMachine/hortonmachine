@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import com.github.davidmoten.aws.lw.client.Client;
 import it.geosolutions.imageioimpl.plugins.cog.*;
+import org.apache.commons.io.FilenameUtils;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -42,34 +43,36 @@ public class HMStacAsset {
         }
         JsonNode typeNode = assetNode.get("type");
         assetUrl = assetNode.get("href").textValue();
+
+        boolean isAcceptedType = false;
         if (typeNode != null) {
             type = typeNode.textValue();
-            // we only check cloud optimized datasets here
-            if (HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""))) {
-                assetUrl = assetNode.get("href").textValue();
+            isAcceptedType = HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""));
+        } else {
+            isAcceptedType = HMStacUtils.ACCEPTED_EXTENSIONS.contains(FilenameUtils.getExtension(assetUrl));
+        }
 
-                JsonNode rasterBandNode = assetNode.get("raster:bands");
-                if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
-                    Iterator<JsonNode> rbIterator = rasterBandNode.elements();
-                    while( rbIterator.hasNext() ) {
-                        JsonNode rbNode = rbIterator.next();
-                        JsonNode noValueNode = rbNode.get("nodata");
-                        if (noValueNode != null) {
-                            noValue = noValueNode.asDouble();
-                        }
-                        JsonNode resolNode = rbNode.get("spatial_resolution");
-                        if (resolNode != null) {
-                            resolution = resolNode.asDouble();
-                        }
+        if (isAcceptedType) {
+            assetUrl = assetNode.get("href").textValue();
+
+            JsonNode rasterBandNode = assetNode.get("raster:bands");
+            if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
+                Iterator<JsonNode> rbIterator = rasterBandNode.elements();
+                while (rbIterator.hasNext()) {
+                    JsonNode rbNode = rbIterator.next();
+                    JsonNode noValueNode = rbNode.get("nodata");
+                    if (noValueNode != null) {
+                        noValue = noValueNode.asDouble();
+                    }
+                    JsonNode resolNode = rbNode.get("spatial_resolution");
+                    if (resolNode != null) {
+                        resolution = resolNode.asDouble();
                     }
                 }
-            } else {
-                isValid = false;
-                nonValidReason = "not a valid type";
             }
         } else {
-            nonValidReason = "type information not available";
             isValid = false;
+            nonValidReason = "not a valid type";
         }
     }
 
