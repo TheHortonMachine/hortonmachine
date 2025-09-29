@@ -110,7 +110,23 @@ public class HMStacCollection {
     public HMStacCollection setGeometryFilter( Geometry intersectionGeometry ) {
         if (search == null)
             search = new SearchQuery();
+        else if (search.getBbox() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
         search.setIntersects(intersectionGeometry);
+        return this;
+    }
+
+    /**
+     * Set the geometry bbox filter for search query
+     * @param bbox
+     * @return the current collection.
+     */
+    public HMStacCollection setBboxFilter( double[] bbox ) {
+        if (search == null)
+            search = new SearchQuery();
+        else if (search.getIntersects() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
+        search.setBbox(bbox);
         return this;
     }
 
