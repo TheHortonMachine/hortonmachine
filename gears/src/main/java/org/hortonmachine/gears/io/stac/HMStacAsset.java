@@ -35,17 +35,16 @@ public class HMStacAsset {
     private double noValue = HMConstants.doubleNovalue;
     private double resolution;
 
-    public HMStacAsset( String id, JsonNode assetNode ) {
+    public HMStacAsset(String id, JsonNode assetNode) {
         this.id = id;
+        if (assetNode.has("title")) {
+            title = assetNode.get("title").textValue();
+        }
         JsonNode typeNode = assetNode.get("type");
+        assetUrl = assetNode.get("href").textValue();
         if (typeNode != null) {
             type = typeNode.textValue();
             // we only check cloud optimized datasets here
-            JsonNode titleNode = assetNode.get("title");
-            title = "undefined title";
-            if (titleNode != null) {
-                title = titleNode.textValue();
-            }
             if (HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""))) {
                 assetUrl = assetNode.get("href").textValue();
 
