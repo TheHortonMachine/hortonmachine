@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.davidmoten.aws.lw.client.Client;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -47,6 +48,7 @@ import org.opengis.referencing.operation.MathTransform;
 public class HMStacCollection {
     private STACClient stacClient;
     private Collection collection;
+    private Client client;
     private SearchQuery search;
     private IHMProgressMonitor pm;
 
@@ -123,6 +125,11 @@ public class HMStacCollection {
         if (search == null)
             search = new SearchQuery();
         search.setFilter(CQL.toFilter(cqlFilter));
+        return this;
+    }
+
+    public HMStacCollection setS3Client(Client client) {
+        this.client = client;
         return this;
     }
 
