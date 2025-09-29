@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Envelope;
 
 public class HMStacUtils {
 
+    static Integer NO_EPSG_DEFINED = -1;
     static DateFormat dateFormatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
     static DateFormat filterTimestampFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     static {
