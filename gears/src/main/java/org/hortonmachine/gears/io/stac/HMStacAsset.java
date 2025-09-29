@@ -110,6 +110,10 @@ public class HMStacAsset {
             InputStream inputProvider = readS3Raster(cogUri, client);
             reader = new GeoTiffReader(inputProvider);
         } else {
+            if (PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)) {
+                String accessibleHref = PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl);
+                cogUri = new BasicAuthURI(accessibleHref, false);
+            }
             RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
             CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
                     new CogImageInputStreamSpi(), rangeReader.getClass().getName());
