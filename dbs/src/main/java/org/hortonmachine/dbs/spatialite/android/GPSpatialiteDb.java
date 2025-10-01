@@ -250,7 +250,7 @@ public class GPSpatialiteDb extends ASpatialDb {
         try (IHMStatement stmt = mConn.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             while( rs.next() ) {
                 String name = rs.getString(1);
-                if (name.equals(tableName)) {
+                if (name.equals(tableName.name)) {
                     return true;
                 }
             }
