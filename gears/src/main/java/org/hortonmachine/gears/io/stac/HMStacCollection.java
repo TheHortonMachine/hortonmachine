@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.github.davidmoten.aws.lw.client.Client;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -37,6 +38,8 @@ import org.opengis.feature.simple.SimpleFeature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 
+import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
+
 @SuppressWarnings({"rawtypes"})
 /**
  * A stac collection.
@@ -47,6 +50,8 @@ import org.opengis.referencing.operation.MathTransform;
 public class HMStacCollection {
     private STACClient stacClient;
     private Collection collection;
+    private Client client;
+    private Integer assumedEpsg = NO_EPSG_DEFINED;
     private SearchQuery search;
     private IHMProgressMonitor pm;
 
@@ -64,6 +69,10 @@ public class HMStacCollection {
 
     public String getType() {
         return collection.getType();
+    }
+
+    public void setAssumedEpsg(Integer assumedEpsg) {
+        this.assumedEpsg = assumedEpsg;
     }
 
     public ReferencedEnvelope getSpatialBounds() {
@@ -108,7 +117,23 @@ public class HMStacCollection {
     public HMStacCollection setGeometryFilter( Geometry intersectionGeometry ) {
         if (search == null)
             search = new SearchQuery();
+        else if (search.getBbox() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
         search.setIntersects(intersectionGeometry);
+        return this;
+    }
+
+    /**
+     * Set the geometry bbox filter for search query
+     * @param bbox
+     * @return the current collection.
+     */
+    public HMStacCollection setBboxFilter( double[] bbox ) {
+        if (search == null)
+            search = new SearchQuery();
+        else if (search.getIntersects() != null)
+            throw new IllegalStateException("Cannot add intersects filter. Only one of either intersects or bbox may be specified");
+        search.setBbox(bbox);
         return this;
     }
 
@@ -126,6 +151,11 @@ public class HMStacCollection {
         return this;
     }
 
+    public HMStacCollection setS3Client(Client client) {
+        this.client = client;
+        return this;
+    }
+
     public List<HMStacItem> searchItems() throws Exception {
         if (search == null)
             search = new SearchQuery();
@@ -139,7 +169,7 @@ public class HMStacCollection {
             while( iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
                 HMStacItem item = HMStacItem.fromSimpleFeature(f);
-                if (item != null && item.getId() != null && item.getEpsg() != null) {
+                if (item != null && item.getId() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {
                     pm.errorMessage("Unable to get id of item: " + item.toString());
@@ -164,10 +194,10 @@ public class HMStacCollection {
      * @return the final raster.
      * @throws Exception
      */
-    public static HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
+    public HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
             boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
-        if (!allowTransform) {
+        if (!allowTransform || assumedEpsg == 0) {
             List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
             if (epsgs.size() > 1) {
                 throw new IllegalArgumentException(
@@ -175,8 +205,8 @@ public class HMStacCollection {
             }
         }
 
-        // use the first srid as the output srid.
-        Integer firstItemSrid = items.get(0).getEpsg();
+        // use either the assumed EPSG or the first srid as the output srid.
+        Integer firstItemSrid = assumedEpsg == NO_EPSG_DEFINED ? items.get(0).getEpsg() : this.assumedEpsg;
         CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
         ReferencedEnvelope roiEnvelopeFirstItemCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
                 DefaultGeographicCRS.WGS84).transform(outputCrs, true);
@@ -192,7 +222,7 @@ public class HMStacCollection {
         String fileName = null;
         pm.beginTask("Reading " + bandName + "...", items.size());
         for( HMStacItem item : items ) {
-            int currentSrid = item.getEpsg();
+            int currentSrid = assumedEpsg == NO_EPSG_DEFINED ? item.getEpsg() : assumedEpsg;
             CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
 

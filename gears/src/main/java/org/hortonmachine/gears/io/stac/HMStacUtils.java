@@ -12,6 +12,7 @@ import org.locationtech.jts.geom.Envelope;
 
 public class HMStacUtils {
 
+    static Integer NO_EPSG_DEFINED = -1;
     static DateFormat dateFormatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
     static DateFormat filterTimestampFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
     static {
@@ -32,4 +33,6 @@ public class HMStacUtils {
     final static List<String> ACCEPTED_TYPES = Arrays.asList("image/tiff;application=geotiff", "image/vnd.stac.geotiff",
             "image/tiff;application=geotiff;profile=cloud-optimized", "image/vnd.stac.geotiff;profile=cloud-optimized", "image/vnd.stac.geotiff;cloud-optimized=true",
             "application/geo+json");
+
+    final static List<String> ACCEPTED_EXTENSIONS = Arrays.asList("tif", "tiff", "gtiff");
 }

@@ -204,8 +204,8 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.amazonaws</groupId>
-			<artifactId>aws-java-sdk-core</artifactId>
+			<groupId>com.github.davidmoten</groupId>
+			<artifactId>aws-lightweight-client-java</artifactId>
 		</dependency>
 	</dependencies>
 
