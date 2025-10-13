@@ -591,7 +591,7 @@ public class SqlTemplatesAndActions {
                     }
 
                     String[] labels = {"New table name", "New SRID"};
-                    String[] values = {table.tableName + "4326", "4326"};
+                    String[] values = {table.tableName.getFullName() + "4326", "4326"};
                     String[] result = GuiUtilities.showMultiInputDialog(spatialiteViewer, "Reprojection parameters", labels,
                             values, null);
 
@@ -722,7 +722,7 @@ public class SqlTemplatesAndActions {
                     File saveFile = saveFiles[0];
 
                     ADb db = spatialiteViewer.currentConnectedSqlDatabase;
-                    QueryResult result = db.getTableRecordsMapFromRawSql("select * from " + table.tableName, -1);
+                    QueryResult result = db.getTableRecordsMapFromRawSql("select * from " + table.tableName.getFullName(), -1);
                     List<String> colNames = result.names;
                     List<String> types = result.types;
                     List<Object[]> data = result.data;
@@ -730,7 +730,7 @@ public class SqlTemplatesAndActions {
                     for( int i = 0; i < data.size(); i++ ) {
                         Object[] record = data.get(i);
 
-                        sb.append("INSERT INTO ").append(table.tableName).append("(");
+                        sb.append("INSERT INTO ").append(table.tableName.getFullName()).append("(");
 
                         StringBuilder namesSb = new StringBuilder();
                         StringBuilder valuesSb = new StringBuilder();

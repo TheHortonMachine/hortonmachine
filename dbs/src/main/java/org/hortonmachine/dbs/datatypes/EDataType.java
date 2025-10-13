@@ -34,7 +34,7 @@ public enum EDataType {
     LONG(5, Long.class, "0", new String[]{"LONG", "BIGINT"}), //
     FLOAT(6, Float.class, "0.0", new String[]{"FLOAT"}), //
     BLOB(7, Object.class, "''", new String[]{"BLOB"}), //
-    BOOLEAN(8, Boolean.class, "''", new String[]{"BOOLEAN"}), //
+    BOOLEAN(8, Boolean.class, "''", new String[]{"BOOLEAN", "BOOL"}), //
     DATETIME(9, String.class, "''", new String[]{"DATETIME"}), //
     GEOMETRY(999, Geometry.class, "''", new String[]{"GEOMETRY"});
 
