@@ -32,6 +32,7 @@ import org.geotools.data.ServiceInfo;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.WFSServiceInfo;
 import org.geotools.factory.CommonFactoryFinder;
@@ -105,6 +106,7 @@ public class Wfs implements AutoCloseable {
 	private CoordinateReferenceSystem forceCrs;
 	private boolean forceXYSwap = false;
 	private boolean normalizeGeomName = false;
+	private SimpleFeatureType schema;
 
 	public Wfs(String wfsUrl) {
 		this.wfsUrl = wfsUrl;
@@ -136,14 +138,26 @@ public class Wfs implements AutoCloseable {
 		this.arcCompatibility  = true;
 	}
 	
+	/**
+	 * Force a custom CRS.
+	 * 
+	 * @param crs
+	 */
 	public void forceCrs(CoordinateReferenceSystem crs) {
 		this.forceCrs = crs;
 	}
 	
+	/**
+	 * Forces a manual swapping of the coordinates. To be used as last option, if the wfs 
+	 * client does not work properly.
+	 */
 	public void forceCoordinateSwapping() {
 		this.forceXYSwap  = true;
 	}
 	
+	/**
+	 * Converts the geometry name to work with geotools file io libs.
+	 */
 	public void forceNormalizeGeometryName() {
 		this.normalizeGeomName  = true;
 	}
@@ -279,9 +293,12 @@ public class Wfs implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public SimpleFeatureType getSimpleFeatureType() throws IOException {
+		if( schema != null) {
+			return schema;
+		}
 		checkTypeName();
 		getDataSource();
-        SimpleFeatureType schema = dataSource.getSchema();
+		schema = dataSource.getSchema();
         return schema;
 	}
 
@@ -299,9 +316,19 @@ public class Wfs implements AutoCloseable {
 		checkTypeName();
 		getDataSource();
 		if (optionalFilter != null) {
-			return dataSource.getFeatures(optionalFilter).features();
+			SimpleFeatureCollection featureCollection = dataSource.getFeatures(optionalFilter);
+			if(forceCrs != null) {
+				featureCollection = new ReprojectingFeatureCollection(featureCollection, forceCrs);
+				schema = featureCollection.getSchema();
+			}
+			return featureCollection.features();
 		}
-		return dataSource.getFeatures().features();
+		SimpleFeatureCollection featureCollection = dataSource.getFeatures();
+		if(forceCrs != null) {
+			featureCollection = new ReprojectingFeatureCollection(featureCollection, forceCrs);
+			schema = featureCollection.getSchema();
+		}
+		return featureCollection.features();
 	}
 	
 	/**
@@ -338,9 +365,6 @@ public class Wfs implements AutoCloseable {
 			// include
 			query.setFilter(Filter.INCLUDE);
 		}
-		if (forceCrs != null) {
-			query.setCoordinateSystemReproject(forceCrs);
-		}
 		return getFeatureIterator(query);
 	}
 	
@@ -349,6 +373,8 @@ public class Wfs implements AutoCloseable {
 	 * 
 	 * @param envelope the optional envelope to filter on, can be null. Has to be 
 	 * 		in the same CRS as the data.
+	 * 		<b>The envelope filter has to be applied to the datasource, i.e. before any coordinate swapping,
+	 * 		so one might need to fix the envelope accordingly..</b> 
 	 * @return the feature collection.
 	 * @throws Exception
 	 */
@@ -367,7 +393,7 @@ public class Wfs implements AutoCloseable {
 				}
 				if (normalizeGeomName || forceXYSwap) {
 					if(substitutor == null) {
-						substitutor = new FeatureGeometrySubstitutor(getSimpleFeatureType(), defaultGeometry.getClass());
+						substitutor = new FeatureGeometrySubstitutor(feature.getFeatureType(), defaultGeometry.getClass());
 					}
 					feature = substitutor.substituteGeometry(feature, defaultGeometry);
 				}
