@@ -136,7 +136,7 @@
 			<groupId>it.geosolutions.imageio-ext</groupId>
 			<artifactId>imageio-ext-tiff</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>it.geosolutions.imageio-ext</groupId>
 			<artifactId>imageio-ext-cog-reader</artifactId>
@@ -157,6 +157,10 @@
 		<dependency>
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-wmts</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-wfs-ng</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.geotools</groupId>
