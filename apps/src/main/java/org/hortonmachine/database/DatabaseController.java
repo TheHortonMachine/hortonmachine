@@ -1444,11 +1444,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         if (categoryHistogram == null) {
                                             String[] xStr = new String[selectedRows.length];
                                             double[] y = new double[selectedRows.length];
+                                            int index = 0;
                                             for( int r : selectedRows ) {
                                                 Object xObj = table.getValueAt(r, selectedCols[0]);
                                                 Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                                xStr[r] = xObj.toString();
-                                                y[r] = ((Number) yObj).doubleValue();
+                                                xStr[index] = xObj.toString();
+                                                y[index] = ((Number) yObj).doubleValue();
+                                                index++;
                                             }
                                             categoryHistogram = new CategoryHistogram(xStr, y);
                                         }
@@ -1466,11 +1468,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         double[] x = new double[selectedRows.length];
                                         double[] y = new double[selectedRows.length];
                                         String seriesName = table.getColumnName(selectedCols[i + 1]);
+                                        int index = 0;
                                         for( int r : selectedRows ) {
                                             Object xObj = table.getValueAt(r, selectedCols[0]);
                                             Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            x[r] = ((Number) xObj).doubleValue();
-                                            y[r] = ((Number) yObj).doubleValue();
+                                            x[index] = ((Number) xObj).doubleValue();
+                                            y[index] = ((Number) yObj).doubleValue();
+                                            index++;
                                         }
                                         scatterChart.addSeries(seriesName, x, y);
                                     }

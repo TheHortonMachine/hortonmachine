@@ -44,12 +44,16 @@ public class CategoryHistogram implements IChart {
     private String xLabel = "Category";
     private List<String> series;
 
+    public CategoryHistogram(String title, String[] categories, double[] values ) {
+        this(title != null ? title : "", null, categories, Arrays.asList(values));
+    }
+    
     public CategoryHistogram( String[] categories, double[] values ) {
-        this("Histogram", null, categories, Arrays.asList(values));
+        this("", null, categories, Arrays.asList(values));
     }
 
     public CategoryHistogram( List<String> series, String[] categories, List<double[]> values ) {
-        this("Histogram", series, categories, values);
+        this("", series, categories, values);
     }
 
     public CategoryHistogram( String title, List<String> series, String[] categories, List<double[]> values ) {
