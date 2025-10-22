@@ -465,6 +465,8 @@ public class CoverageUtilities {
     /**
      * Get the parameters of the region covered by the {@link GridCoverage2D coverage}. 
      * 
+     * <b>This also sets the metric resolution based on the crs of the coverage!</b>
+     * 
      * @param gridCoverage the coverage.
      * @return the {@link HashMap map} of parameters. ( {@link #NORTH} and the 
      *          other static vars can be used to retrieve them.
@@ -498,11 +500,11 @@ public class CoverageUtilities {
             gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
             gc.setDestinationGeographicPoint(eastNorth[0],westSouth[1]);
             double xExtend = gc.getOrthodromicDistance();
-            xRes = xExtend / width;
+            envelopeParams.xresMetric = xExtend / width;
             gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
             gc.setDestinationGeographicPoint(westSouth[0],eastNorth[1]);
             double yExtend = gc.getOrthodromicDistance();
-            yRes = yExtend / height;
+            envelopeParams.yresMetric = yExtend / height;
         }
 
         envelopeParams.north = eastNorth[1];

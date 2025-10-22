@@ -46,6 +46,14 @@ public class RegionMap {
     public int rows;
     public int startCol = 0;
     public int startRow = 0;
+    
+    /*
+     * optionally some modules can set what is assured to be a metric resolution
+     * based on the crs. If not available, these values are null and the x/yres 
+     * will be in the units of the implicit crs.
+     */
+    public Double xresMetric;
+    public Double yresMetric;
 
 
     public static RegionMap fromEnvelopeAndGrid( Envelope envelope, int cols, int rows ) {

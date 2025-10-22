@@ -114,8 +114,8 @@ public class OmsGradient extends GridMultiProcessing {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
         nCols = regionMap.getCols();
         nRows = regionMap.getRows();
-        xRes = regionMap.getXres();
-        yRes = regionMap.getYres();
+        xRes = regionMap.xresMetric != null ? regionMap.xresMetric : regionMap.getXres();
+        yRes = regionMap.yresMetric != null ? regionMap.yresMetric : regionMap.getYres();
 
         RenderedImage elevationRI = inElev.getRenderedImage();
         RandomIter elevationIter = RandomIterFactory.create(elevationRI, null);
