@@ -53,14 +53,17 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public GridCoverage2D inCropCoefficient = null;
 
     @Description(inMaxTemp_DESCRIPTION)
+    @Unit("°C")
     @In
     public GridCoverage2D inMaxTemp = null;
 
     @Description(inMinTemp_DESCRIPTION)
+    @Unit("°C")
     @In
     public GridCoverage2D inMinTemp = null;
 
     @Description(inAtmosTemp_DESCRIPTION)
+    @Unit("°C")
     @In
     public GridCoverage2D inAtmosphericTemp = null;
 
@@ -70,14 +73,17 @@ public class OmsPotentialEvapotranspiredWaterVolume extends HMModel {
     public GridCoverage2D inSolarRadiation = null;
 
     @Description(inRainfall_DESCRIPTION)
+    @Unit("mm")
     @In
     public GridCoverage2D inRainfall;
 
     @Description(inReferenceEtp_DESCRIPTION)
+    @Unit("mm")
     @In
     public GridCoverage2D inReferenceEtp = null;
 
     @Description(outputPet_DESCRIPTION)
+    @Unit("mm")
     @In
     public GridCoverage2D outputPet;
 

@@ -33,6 +33,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OmsSWYRechargeRouting.DESCRIPTION)
 @Author(name = OmsSWYRechargeRouting.AUTHORNAMES, contact = OmsSWYRechargeRouting.AUTHORCONTACTS)
@@ -44,13 +45,15 @@ import oms3.annotations.UI;
 public class SWYRechargeRouting extends HMModel {
     @Description(inPet_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("mm")
     @In
     public String inPet = null;
 
-    @Description(inRainfall_DESCRIPTION)
+    @Description(inPrecipitation_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("mm")
     @In
-    public String inRainfall;
+    public String inPrecipitation;
 
     @Description(inFlowdirections_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
@@ -62,10 +65,11 @@ public class SWYRechargeRouting extends HMModel {
     @In
     public String inNet = null;
 
-    @Description(inRunoff_DESCRIPTION)
+    @Description(inQuickflow_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("mm")
     @In
-    public String inRunoff = null;
+    public String inQuickflow = null;
 
     @Description(pAlpha_DESCRIPTION)
     @In
@@ -81,41 +85,46 @@ public class SWYRechargeRouting extends HMModel {
 
     @Description(outAet_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
+    @Unit("mm")
     @In
     public String outAet = null;
 
-    @Description(outLsumAvailable_DESCRIPTION)
+    @Description(outRecharge_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
+    @Unit("mm")
     @In
-    public String outLsumAvailable = null;
+    public String outRecharge = null;
 
-    @Description(outNetInfiltration_DESCRIPTION)
+    @Description(outUpslopeSubsidy_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
+    @Unit("mm")
     @In
-    public String outNetInfiltration = null;
+    public String outUpslopeSubsidy = null;
 
-    @Description(outInfiltration_DESCRIPTION)
+    @Description(outAvailableRecharge_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
+    @Unit("mm")
     @In
-    public String outInfiltration = null;
+    public String outAvailableRecharge = null;
+
 
     @Execute
     public void process() throws Exception {
         OmsSWYRechargeRouting inf = new OmsSWYRechargeRouting();
         inf.inPet = getRaster(inPet);
-        inf.inRainfall = getRaster(inRainfall);
+        inf.inPrecipitation = getRaster(inPrecipitation);
         inf.inFlowdirections = getRaster(inFlowdirections);
         inf.inNet = getRaster(inNet);
-        inf.inRunoff = getRaster(inRunoff);
+        inf.inQuickflow = getRaster(inQuickflow);
         inf.pAlpha = pAlpha;
         inf.pBeta = pBeta;
         inf.pGamma = pGamma;
         inf.pm = pm;
         inf.process();
 
-        dumpRaster(inf.outRecharge, outInfiltration);
-        dumpRaster(inf.outAvailableRecharge, outNetInfiltration);
+        dumpRaster(inf.outRecharge, outRecharge);
+        dumpRaster(inf.outAvailableRecharge, outAvailableRecharge);
         dumpRaster(inf.outAet, outAet);
-        dumpRaster(inf.outUpslopeSubsidy, outLsumAvailable);
+        dumpRaster(inf.outUpslopeSubsidy, outUpslopeSubsidy);
     }
 }

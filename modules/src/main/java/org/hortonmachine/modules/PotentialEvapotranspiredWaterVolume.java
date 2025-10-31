@@ -40,6 +40,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OmsPotentialEvapotranspiredWaterVolume.DESCRIPTION)
 @Author(name = OmsPotentialEvapotranspiredWaterVolume.AUTHORNAMES, contact = OmsPotentialEvapotranspiredWaterVolume.AUTHORCONTACTS)
@@ -56,36 +57,43 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
 
     @Description(inMaxTemp_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("°C")
     @In
     public String inMaxTemp = null;
 
     @Description(inMinTemp_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("°C")
     @In
     public String inMinTemp = null;
 
     @Description(inAtmosTemp_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("°C")
     @In
     public String inAtmosphericTemp = null;
 
     @Description(inSolarRadiation_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("MJ/m2")
     @In
     public String inSolarRadiation = null;
 
     @Description(inRainfall_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("mm")
     @In
     public String inRainfall;
 
     @Description(inReferenceEtp_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Unit("mm")
     @In
     public String inReferenceEtp = null;
 
     @Description(outputPet_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
+    @Unit("mm")
     @In
     public String outputPet;
 
@@ -103,24 +111,6 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
         pet.process();
 
         dumpRaster(pet.outputPet, outputPet);
-    }
-
-    public static void main(String[] args) {
-        PotentialEvapotranspiredWaterVolume pet = new PotentialEvapotranspiredWaterVolume();
-        pet.inCropCoefficient = "/home/hydrologis/TMP/KLAB/pet_test/cropcoeff.tiff";
-        pet.inMaxTemp = "/home/hydrologis/TMP/KLAB/pet_test/tmax.tiff";
-        pet.inMinTemp = "/home/hydrologis/TMP/KLAB/pet_test/tmin.tiff";
-        pet.inAtmosphericTemp = "/home/hydrologis/TMP/KLAB/pet_test/tmean.tiff";
-        pet.inSolarRadiation = "/home/hydrologis/TMP/KLAB/pet_test/rad.tiff";
-        pet.inRainfall = "/home/hydrologis/TMP/KLAB/pet_test/rain.tiff";
-        // pet.inReferenceEtp = "path/to/reference_etp.tif";
-        pet.outputPet = "/home/hydrologis/TMP/KLAB/pet_test/out_pet.tiff";
-
-        try {
-            pet.process();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

@@ -45,6 +45,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OmsSWYRechargeRouting.DESCRIPTION)
 @Author(name = OmsSWYRechargeRouting.AUTHORNAMES, contact = OmsSWYRechargeRouting.AUTHORCONTACTS)
@@ -55,12 +56,14 @@ import oms3.annotations.Status;
 @License(OmsSWYRechargeRouting.LICENSE)
 public class OmsSWYRechargeRouting extends HMModel {
     @Description(inPet_DESCRIPTION)
+    @Unit("mm")
     @In
     public GridCoverage2D inPet = null;
 
-    @Description(inRainfall_DESCRIPTION)
+    @Description(inPrecipitation_DESCRIPTION)
+    @Unit("mm")
     @In
-    public GridCoverage2D inRainfall;
+    public GridCoverage2D inPrecipitation;
 
     @Description(inFlowdirections_DESCRIPTION)
     @In
@@ -70,9 +73,10 @@ public class OmsSWYRechargeRouting extends HMModel {
     @In
     public GridCoverage2D inNet = null;
 
-    @Description(inRunoff_DESCRIPTION)
+    @Description(inQuickflow_DESCRIPTION)
+    @Unit("mm")
     @In
-    public GridCoverage2D inRunoff = null;
+    public GridCoverage2D inQuickflow = null;
 
     @Description(pAlpha_DESCRIPTION)
     @In
@@ -87,20 +91,40 @@ public class OmsSWYRechargeRouting extends HMModel {
     public double pGamma = 1.0;
 
     @Description(outAet_DESCRIPTION)
+    @Unit("mm")
     @Out
     public GridCoverage2D outAet = null;
 
-    @Description(outLsumAvailable_DESCRIPTION)
+    @Description(outRecharge_DESCRIPTION)
+    @Unit("mm")
     @Out
+    /**
+     * Local recharge per cell: what’s left from rainfall after AET and quickflow (R = P - AET - QF).
+     * 
+     * INVEST's L, i.e. L in cell i and month m
+     */
+    public GridCoverage2D outRecharge = null;
+
+    @Description(outUpslopeSubsidy_DESCRIPTION)
+    @Unit("mm")
+    @Out
+    /**
+	 * Cumulative recharge from all upstream cells that drains into this cell (i.e. flow accumulation of R).
+	 * 
+	 * INVEST's Lsum, i.e. L_sum in cell i and month m
+	 */
     public GridCoverage2D outUpslopeSubsidy = null;
 
-    @Description(outNetInfiltration_DESCRIPTION)
+    @Description(outAvailableRecharge_DESCRIPTION)
+    @Unit("mm")
     @Out
+    /**
+	 * Local + upstream recharge actually available to that cell — i.e. R_avail = R + L_sum.
+	 * 
+	 * INVEST's L_avail, i.e. L_avail in cell i and month m
+	 */
     public GridCoverage2D outAvailableRecharge = null;
 
-    @Description(outInfiltration_DESCRIPTION)
-    @Out
-    public GridCoverage2D outRecharge = null;
 
     // VARS DOC START
     public static final String DESCRIPTION = "Implements recharge and evapotranspiration routing from the InVEST Seasonal Water Yield (SWY) model.";
@@ -114,13 +138,13 @@ public class OmsSWYRechargeRouting extends HMModel {
     public static final String AUTHORCONTACTS = "www.integratedmodelling.org";
 
     public static final String inFlowdirections_DESCRIPTION = "The map of flowdirections (D8).";
-    public static final String inNet_DESCRIPTION = "The map of net.";
-    public static final String inRunoff_DESCRIPTION = "The map of atmospheric temperature.";
-    public static final String outNetInfiltration_DESCRIPTION = "The map of net infiltration.";
-    public static final String outInfiltration_DESCRIPTION = "The map of infiltration.";
+    public static final String inNet_DESCRIPTION = "The map of the stream.";
+    public static final String inQuickflow_DESCRIPTION = "The map of superficial quickflow.";
+    public static final String outAvailableRecharge_DESCRIPTION = "The map of routed, cumulative recharge from upstream cells (the “upslope subsidy”) that is available for baseflow generation.";
+    public static final String outRecharge_DESCRIPTION = "The map of local recharge remaining after AET and quickflow are removed from precipitation.";
     public static final String outAet_DESCRIPTION = "The map of actual evapotranspiration.";
-    public static final String outLsumAvailable_DESCRIPTION = "The map of Lsum Available.";
-    public static final String inRainfall_DESCRIPTION = "The rainfall volume.";
+    public static final String outUpslopeSubsidy_DESCRIPTION = "The map of the upslope subsidy (the routed cumulative recharge, Lsum).";
+    public static final String inPrecipitation_DESCRIPTION = "The total precipitation in the month.";
     public static final String inPet_DESCRIPTION = "The potential evapotranspired watervolume.";
     public static final String pAlpha_DESCRIPTION = "Fraction of upslope available recharge (upgradient subsidy) that is available for month m or for the selected reference interval.";
     public static final String pBeta_DESCRIPTION = "Spatial availability parameter: the fraction of the upgradient subsidy that is available for downgradient evapotranspiration, it is based on local topography and geology";
@@ -135,7 +159,7 @@ public class OmsSWYRechargeRouting extends HMModel {
          * Implements recharge and evapotranspiration routing from the InVEST Seasonal Water Yield (SWY) model.
          * Computes actual evapotranspiration (AET), local recharge, routed available recharge, and cumulative upslope subsidy."
          */
-        checkNull(inPet, inRainfall, inFlowdirections, inNet, inRunoff);
+        checkNull(inPet, inPrecipitation, inFlowdirections, inNet, inQuickflow);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlowdirections);
         int rows = regionMap.getRows();
@@ -143,10 +167,10 @@ public class OmsSWYRechargeRouting extends HMModel {
 
         double outNv = -9999;//-1E32;// as INVEST HMConstants.doubleNovalue;
 
-        WritableRaster outLiWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
-        WritableRandomIter outLiIter = CoverageUtilities.getWritableRandomIterator(outLiWR);
-        WritableRaster outLiAvailableWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
-        WritableRandomIter outLiAvailableIter = CoverageUtilities.getWritableRandomIterator(outLiAvailableWR);
+        WritableRaster outL_WR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
+        WritableRandomIter outL_Iter = CoverageUtilities.getWritableRandomIterator(outL_WR);
+        WritableRaster outL_Available_WR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
+        WritableRandomIter outL_Available_Iter = CoverageUtilities.getWritableRandomIterator(outL_Available_WR);
         WritableRaster outAetWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, outNv);
         WritableRandomIter outAetIter = CoverageUtilities.getWritableRandomIterator(outAetWR);
 
@@ -154,10 +178,10 @@ public class OmsSWYRechargeRouting extends HMModel {
         int flowNv = HMConstants.getIntNovalue(inFlowdirections);
         RandomIter petIter = CoverageUtilities.getRandomIterator(inPet);
         double petNv = HMConstants.getNovalue(inPet);
-        RandomIter runoffIter = CoverageUtilities.getRandomIterator(inRunoff);
-        double runoffNv = HMConstants.getNovalue(inRunoff);
-        RandomIter rainIter = CoverageUtilities.getRandomIterator(inRainfall);
-        double rainNv = HMConstants.getNovalue(inRainfall);
+        RandomIter quickflowIter = CoverageUtilities.getRandomIterator(inQuickflow);
+        double runoffNv = HMConstants.getNovalue(inQuickflow);
+        RandomIter rainIter = CoverageUtilities.getRandomIterator(inPrecipitation);
+        double rainNv = HMConstants.getNovalue(inPrecipitation);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
         double netNv = HMConstants.getNovalue(inNet);
 
@@ -178,20 +202,20 @@ public class OmsSWYRechargeRouting extends HMModel {
             }
             pm.done();
 
-            double[][] lSumAvailableMatrix = new double[rows][cols];
-            for( int r = 0; r < lSumAvailableMatrix.length; r++ ) {
-                for( int c = 0; c < lSumAvailableMatrix[0].length; c++ ) {
-                    lSumAvailableMatrix[r][c] = outNv;
+            double[][] lSum_Matrix = new double[rows][cols];
+            for( int r = 0; r < lSum_Matrix.length; r++ ) {
+                for( int c = 0; c < lSum_Matrix[0].length; c++ ) {
+                    lSum_Matrix[r][c] = outNv;
                 }
             }
 
             for( FlowNode sourceCell : sourceCells ) {
                 double pet = sourceCell.getValueFromMap(petIter);
-                double runoff = sourceCell.getValueFromMap(runoffIter);
+                double quickflow = sourceCell.getValueFromMap(quickflowIter);
                 double rain = sourceCell.getValueFromMap(rainIter);
                 double net = sourceCell.getValueFromMap(netIter);
 
-                if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(runoff, runoffNv)) {
+                if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(quickflow, runoffNv)) {
 
                     boolean isPetNv = HMConstants.isNovalue(pet, petNv);
 
@@ -202,21 +226,24 @@ public class OmsSWYRechargeRouting extends HMModel {
                      * Calculate aet, recharge and available recharge 
                      * for the source cell.
                      */
-                    double li = 0;
+                    double l = 0;
                     if (!isStream) {
                         if (isPetNv) {
-                            initialAet = rain - runoff;
+                            initialAet = rain - quickflow;
                         } else {
-                            initialAet = Math.min(pet, rain - runoff);
+                            initialAet = Math.min(pet, rain - quickflow);
                         }                        
-                        li = rain - runoff - initialAet;
+                        l = rain - quickflow - initialAet;
+                        if (l < 0) {
+                        	l = 0;
+                        }
                     }
-                    double lAvailable = Math.min(pGamma * li, li);
+                    double lAvailable = Math.min(pGamma * l, l);
 
-                    lSumAvailableMatrix[sourceCell.row][sourceCell.col] = 0;
+                    lSum_Matrix[sourceCell.row][sourceCell.col] = 0;
 
-                    sourceCell.setDoubleValueInMap(outLiAvailableIter, lAvailable);
-                    sourceCell.setDoubleValueInMap(outLiIter, li);
+                    sourceCell.setDoubleValueInMap(outL_Available_Iter, lAvailable);
+                    sourceCell.setDoubleValueInMap(outL_Iter, l);
                     sourceCell.setDoubleValueInMap(outAetIter, initialAet);
 
                     // go downstream
@@ -227,54 +254,67 @@ public class OmsSWYRechargeRouting extends HMModel {
                     while( cell != null ) {
                         List<FlowNode> upstreamCells = cell.getEnteringNodes();
                         // check if all upstream have a value
-                        boolean canProcess = canProcess(outNv, outLiAvailableIter, upstreamCells);
+                        boolean canProcess = canProcess(outNv, outL_Available_Iter, upstreamCells);
                         if (canProcess) {
                             pet = cell.getDoubleValueFromMap(petIter);
                             isPetNv = HMConstants.isNovalue(pet, petNv);
                             rain = cell.getDoubleValueFromMap(rainIter);
-                            runoff = cell.getDoubleValueFromMap(runoffIter);
+                            quickflow = cell.getDoubleValueFromMap(quickflowIter);
                             net = cell.getDoubleValueFromMap(netIter);
+                            isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
 
-                            if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(runoff, runoffNv)) {
-                                isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
+                            if (!HMConstants.isNovalue(rain, rainNv) && !HMConstants.isNovalue(quickflow, runoffNv)) {
 
                                 double lAvailableUpstream = 0.0;
                                 double lSumAvailableUpstream = 0.0;
                                 for( FlowNode upstreamCell : upstreamCells ) {
-                                    double upstreamLAvailable = upstreamCell.getValueFromMap(outLiAvailableIter);
+                                    double upstreamLAvailable = upstreamCell.getValueFromMap(outL_Available_Iter);
                                     // infiltratedWaterVolumeState.get(upstreamCell,
                                     // Double.class);
                                     int x = upstreamCell.col;
                                     int y = upstreamCell.row;
+                                    
+                                    if (HMConstants.isNovalue(lSum_Matrix[y][x], outNv)) {
+										pm.errorMessage("Logic error: upstream Lsum is novalue.");
+									}
 
-                                    lSumAvailableUpstream += lSumAvailableMatrix[y][x];
+                                    lSumAvailableUpstream += lSum_Matrix[y][x];
                                     lAvailableUpstream += upstreamLAvailable;
                                 }
                                 double lSumAvailableCurrentCell = lSumAvailableUpstream + lAvailableUpstream;
 
-                                lSumAvailableCurrentCell /= upstreamCells.size();
+//                                lSumAvailableCurrentCell /= upstreamCells.size();
 
-                                lSumAvailableMatrix[cell.row][cell.col] = lSumAvailableCurrentCell;
+                                lSum_Matrix[cell.row][cell.col] = lSumAvailableCurrentCell;
 
                                 double aetCC = 0;
-                                double liCC = 0;
+                                double lCC = 0;
                                 if (!isStream) {
-                                    if (isPetNv) {
-                                        aetCC = rain - runoff + pAlpha * pBeta * lSumAvailableCurrentCell;
-                                    } else {
-                                        aetCC = Math.min(pet, rain - runoff + pAlpha * pBeta * lSumAvailableCurrentCell);
-                                    }
-                                    liCC = rain - runoff - aetCC;
+                                    // compute potential AET including upslope subsidy
+                                    double potentialAet = rain - quickflow + pAlpha * pBeta * lSumAvailableCurrentCell;
+                                    // if pet is novalue use potentialAet, otherwise use the minimum of pet and potentialAet
+                                    aetCC = isPetNv 
+                                    		? potentialAet 
+                                    		: Math.min(pet, potentialAet);
+                                    lCC = rain - quickflow - aetCC;
+                                    if (lCC < 0) {
+										// no negative recharge
+										lCC = 0;
+									}
+                                } else {
+                                	// stream pixels can evapotranspire using the upslope subsidy even though their local
+                                	// rainfall-quickflow balance is 0
+                                	aetCC = isPetNv 
+                                			? pAlpha * pBeta * lSumAvailableCurrentCell 
+                        					: Math.min(pet, pAlpha * pBeta * lSumAvailableCurrentCell);
                                 }
-                                double lAvailableCC = Math.min(pGamma * liCC, liCC);
-                                cell.setDoubleValueInMap(outLiAvailableIter, lAvailableCC);
-                                cell.setDoubleValueInMap(outLiIter, liCC);
+                                double lAvailableCC = Math.min(pGamma * lCC, lCC);
+                                cell.setDoubleValueInMap(outL_Available_Iter, lAvailableCC);
+                                cell.setDoubleValueInMap(outL_Iter, lCC);
                                 cell.setDoubleValueInMap(outAetIter, aetCC);
-
-
-                            } else if (!HMConstants.isNovalue(net, netNv) && net != 0.0 && cell.isValid()) {
-                                cell.setDoubleValueInMap(outLiAvailableIter, 0);
-                                cell.setDoubleValueInMap(outLiIter, 0);
+                            } else if (isStream && cell.isValid()) {
+                                cell.setDoubleValueInMap(outL_Available_Iter, 0);
+                                cell.setDoubleValueInMap(outL_Iter, 0);
                                 cell.setDoubleValueInMap(outAetIter, 0);
                             }
 
@@ -297,24 +337,24 @@ public class OmsSWYRechargeRouting extends HMModel {
 
             }
 
-            outRecharge = CoverageUtilities.buildCoverageWithNovalue("recharge", outLiWR, regionMap,
+            outRecharge = CoverageUtilities.buildCoverageWithNovalue("recharge", outL_WR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
-            outAvailableRecharge = CoverageUtilities.buildCoverageWithNovalue("availablerecharge", outLiAvailableWR, regionMap,
+            outAvailableRecharge = CoverageUtilities.buildCoverageWithNovalue("availablerecharge", outL_Available_WR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
             outAet = CoverageUtilities.buildCoverageWithNovalue("aet", outAetWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
-            outUpslopeSubsidy = CoverageUtilities.buildCoverageWithNovalue("lsum", lSumAvailableMatrix, regionMap,
+            outUpslopeSubsidy = CoverageUtilities.buildCoverageWithNovalue("lsum", lSum_Matrix, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), true, outNv);
 
         } finally {
             flowIter.done();
             petIter.done();
-            runoffIter.done();
+            quickflowIter.done();
             rainIter.done();
             netIter.done();
 
-            outLiIter.done();
-            outLiAvailableIter.done();
+            outL_Iter.done();
+            outL_Available_Iter.done();
             outAetIter.done();
 
         }
@@ -325,8 +365,6 @@ public class OmsSWYRechargeRouting extends HMModel {
         boolean canProcess = true;
         for( FlowNode upstreamCell : upstreamCells ) {
             double upstreamLAvailable = upstreamCell.getValueFromMap(outLiAvailableIter);
-            // infiltratedWaterVolumeState.get(upstreamCell,
-            // Double.class);
 
             if (HMConstants.isNovalue(upstreamLAvailable, outNv)) {
                 // stop, we still need the other upstream values

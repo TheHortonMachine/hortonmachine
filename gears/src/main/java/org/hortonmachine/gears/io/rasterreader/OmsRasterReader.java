@@ -194,7 +194,12 @@ public class OmsRasterReader extends HMModel {
             pRowcol = new int[]{pRows, pCols};
         }
         File mapFile = new File(file);
-        AbstractGridFormat format = GridFormatFinder.findFormat(mapFile);
+        AbstractGridFormat format = null;
+		try {
+			format = GridFormatFinder.findFormat(mapFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
         if (format != null && !(format instanceof GrassCoverageFormat)) {
             if (format instanceof UnknownFormat) {
                 throw new ModelsIllegalargumentException("Unupported format for: " + mapFile, this.getClass().getSimpleName(),
