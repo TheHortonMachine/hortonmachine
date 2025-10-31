@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.hmachine.modules.hydrogeomorphology.scsrunoff;
+package org.hortonmachine.hmachine.modules.hydrogeomorphology.swy;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
 import static org.hortonmachine.gears.libs.modules.HMConstants.getNovalue;
@@ -38,15 +38,16 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
-@Description(OmsScsRunoff.DESCRIPTION)
-@Author(name = OmsScsRunoff.AUTHORNAMES, contact = OmsScsRunoff.AUTHORCONTACTS)
-@Keywords(OmsScsRunoff.KEYWORDS)
-@Label(OmsScsRunoff.LABEL)
-@Name(OmsScsRunoff.NAME)
-@Status(OmsScsRunoff.STATUS)
-@License(OmsScsRunoff.LICENSE)
-public class OmsScsRunoff extends HMModel {
-    @Description(inRainfall_DESCRIPTION)
+@Description(OmsSWYQuickflow.DESCRIPTION)
+@Author(name = OmsSWYQuickflow.AUTHORNAMES, contact = OmsSWYQuickflow.AUTHORCONTACTS)
+@Keywords(OmsSWYQuickflow.KEYWORDS)
+@Label(OmsSWYQuickflow.LABEL)
+@Name(OmsSWYQuickflow.NAME)
+@Status(OmsSWYQuickflow.STATUS)
+@License(OmsSWYQuickflow.LICENSE)
+public class OmsSWYQuickflow extends HMModel {
+
+	@Description(inRainfall_DESCRIPTION)
     @Unit(pRainfall_UNIT)
     @In
     public GridCoverage2D inRainfall = null;
@@ -63,16 +64,17 @@ public class OmsScsRunoff extends HMModel {
     @In
     public GridCoverage2D inNumberOfEvents;
 
-    @Description(outputDischarge_DESCRIPTION)
+    @Description(outQuickflow_DESCRIPTION)
+    @Unit(quickflowUnit)
     @In
-    public GridCoverage2D outputDischarge;
+    public GridCoverage2D outQuickflow;
 
     // VARS DOC START
-    public static final String DESCRIPTION = "The SCS Runoff model.";
+    public static final String DESCRIPTION = "The surface quickflow component of the Seasonal Water Yield model, estimated using a CN-based empirical relationship.";
     public static final String DOCUMENTATION = "";
-    public static final String KEYWORDS = "SCS, Runoff";
+    public static final String KEYWORDS = "SCS, Runoff, CN, Quickflow, Hydrology, Hydromorphology";
     public static final String LABEL = HYDROGEOMORPHOLOGY;
-    public static final String NAME = "ScsRunoff";
+    public static final String NAME = "SWYQuickflow";
     public static final int STATUS = 5;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String AUTHORNAMES = "The klab team.";
@@ -80,10 +82,11 @@ public class OmsScsRunoff extends HMModel {
 
     public static final String inRainfall_DESCRIPTION = "The rainfall volume.";
     public static final String inNet_DESCRIPTION = "The network map.";
-    public static final String inCN_DESCRIPTION = "The map of Curvenumber.";
+    public static final String inCN_DESCRIPTION = "The map of Curvenumber, encapsulating soil, land cover and antecedent moisture.";
     public static final String inNumberEvents_DESCRIPTION = "Number of events (if null, defaults to 1)";
-    public static final String outputDischarge_DESCRIPTION = "The output runoff.";
+    public static final String outQuickflow_DESCRIPTION = "The output surface quickflow.";
 
+    public static final String quickflowUnit = "mm/month";
     public static final String pRainfall_UNIT = "mm";
     // VARS DOC END
 
@@ -134,7 +137,7 @@ public class OmsScsRunoff extends HMModel {
                 return runoff;
             }
         };
-        outputDischarge = processor.loop(funct, runoffNv, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
+        outQuickflow = processor.loop(funct, runoffNv, inRainfall, inCurveNumber, inNet, inNumberOfEvents);
 
     }
 

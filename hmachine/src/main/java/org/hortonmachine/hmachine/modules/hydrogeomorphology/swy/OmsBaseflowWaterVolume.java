@@ -367,7 +367,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
         FlowNode downCell = cell.goDownstream();
         if (downCell == null || isStream) {
-            // is it is and outlet or on the stream
+            // if it is an outlet or on the stream
             bSum = lSumMatrix[y][x];
         } else {
             int downY = downCell.row;

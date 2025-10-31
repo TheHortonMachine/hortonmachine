@@ -17,10 +17,11 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYQuickflow.*;
+
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.modules.hydrogeomorphology.scsrunoff.OmsScsRunoff;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.scsrunoff.OmsScsRunoff.*;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYQuickflow;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -34,14 +35,14 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-@Description(OmsScsRunoff.DESCRIPTION)
-@Author(name = OmsScsRunoff.AUTHORNAMES, contact = OmsScsRunoff.AUTHORCONTACTS)
-@Keywords(OmsScsRunoff.KEYWORDS)
-@Label(OmsScsRunoff.LABEL)
-@Name(OmsScsRunoff.NAME)
-@Status(OmsScsRunoff.STATUS)
-@License(OmsScsRunoff.LICENSE)
-public class ScsRunoff extends HMModel {
+@Description(OmsSWYQuickflow.DESCRIPTION)
+@Author(name = OmsSWYQuickflow.AUTHORNAMES, contact = OmsSWYQuickflow.AUTHORCONTACTS)
+@Keywords(OmsSWYQuickflow.KEYWORDS)
+@Label(OmsSWYQuickflow.LABEL)
+@Name(OmsSWYQuickflow.NAME)
+@Status(OmsSWYQuickflow.STATUS)
+@License(OmsSWYQuickflow.LICENSE)
+public class SWYQuickflow extends HMModel {
     @Description(inRainfall_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @Unit(pRainfall_UNIT)
@@ -63,14 +64,15 @@ public class ScsRunoff extends HMModel {
     @In
     public String inNumberOfEvents;
 
-    @Description(outputDischarge_DESCRIPTION)
+    @Description(outQuickflow_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
+    @Unit(quickflowUnit)
     @In
-    public String outputDischarge;
+    public String outQuickflow;
 
     @Execute
     public void process() throws Exception {
-        OmsScsRunoff rf = new OmsScsRunoff();
+        OmsSWYQuickflow rf = new OmsSWYQuickflow();
         rf.inRainfall = getRaster(inRainfall);
         rf.inNet = getRaster(inNet);
         rf.inCurveNumber = getRaster(inCurveNumber);
@@ -78,7 +80,7 @@ public class ScsRunoff extends HMModel {
         rf.pm = pm;
         rf.process();
 
-        dumpRaster(rf.outputDischarge, outputDischarge);
+        dumpRaster(rf.outQuickflow, outQuickflow);
 
     }
 
