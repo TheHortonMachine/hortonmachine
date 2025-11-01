@@ -17,12 +17,12 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsBaseflowWaterVolume.*;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYBaseflowRouting.*;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsBaseflowWaterVolume;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYBaseflowRouting;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -36,23 +36,23 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description(OmsBaseflowWaterVolume.DESCRIPTION)
-@Author(name = OmsBaseflowWaterVolume.AUTHORNAMES, contact = OmsBaseflowWaterVolume.AUTHORCONTACTS)
-@Keywords(OmsBaseflowWaterVolume.KEYWORDS)
-@Label(OmsBaseflowWaterVolume.LABEL)
-@Name(OmsBaseflowWaterVolume.NAME)
-@Status(OmsBaseflowWaterVolume.STATUS)
-@License(OmsBaseflowWaterVolume.LICENSE)
-public class BaseflowWaterVolume extends HMModel {
-    @Description(inInf_DESCRIPTION)
+@Description(OmsSWYBaseflowRouting.DESCRIPTION)
+@Author(name = OmsSWYBaseflowRouting.AUTHORNAMES, contact = OmsSWYBaseflowRouting.AUTHORCONTACTS)
+@Keywords(OmsSWYBaseflowRouting.KEYWORDS)
+@Label(OmsSWYBaseflowRouting.LABEL)
+@Name(OmsSWYBaseflowRouting.NAME)
+@Status(OmsSWYBaseflowRouting.STATUS)
+@License(OmsSWYBaseflowRouting.LICENSE)
+public class SWYBaseflowRouting extends HMModel {
+    @Description(inRecharge_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public String inInfiltration = null;
+    public String inRecharge = null;
 
-    @Description(inNetInf_DESCRIPTION)
+    @Description(inAvailableRecharge_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
-    public String inNetInfiltration = null;
+    public String inAvailableRecharge = null;
 
     @Description(inNet_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
@@ -94,10 +94,10 @@ public class BaseflowWaterVolume extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        OmsBaseflowWaterVolume bf = new OmsBaseflowWaterVolume();
+        OmsSWYBaseflowRouting bf = new OmsSWYBaseflowRouting();
         bf.pm = pm;
-        bf.inInfiltration = getRaster(inInfiltration);
-        bf.inNetInfiltration = getRaster(inNetInfiltration);
+        bf.inRecharge = getRaster(inRecharge);
+        bf.inAvailableRecharge = getRaster(inAvailableRecharge);
         bf.inNet = getRaster(inNet);
         bf.inFlowdirections = getRaster(inFlowdirections);
         bf.process();

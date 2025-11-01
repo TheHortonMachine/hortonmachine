@@ -47,21 +47,21 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-@Description(OmsBaseflowWaterVolume.DESCRIPTION)
-@Author(name = OmsBaseflowWaterVolume.AUTHORNAMES, contact = OmsBaseflowWaterVolume.AUTHORCONTACTS)
-@Keywords(OmsBaseflowWaterVolume.KEYWORDS)
-@Label(OmsBaseflowWaterVolume.LABEL)
-@Name(OmsBaseflowWaterVolume.NAME)
-@Status(OmsBaseflowWaterVolume.STATUS)
-@License(OmsBaseflowWaterVolume.LICENSE)
-public class OmsBaseflowWaterVolume extends HMModel {
-    @Description(inInf_DESCRIPTION)
+@Description(OmsSWYBaseflowRouting.DESCRIPTION)
+@Author(name = OmsSWYBaseflowRouting.AUTHORNAMES, contact = OmsSWYBaseflowRouting.AUTHORCONTACTS)
+@Keywords(OmsSWYBaseflowRouting.KEYWORDS)
+@Label(OmsSWYBaseflowRouting.LABEL)
+@Name(OmsSWYBaseflowRouting.NAME)
+@Status(OmsSWYBaseflowRouting.STATUS)
+@License(OmsSWYBaseflowRouting.LICENSE)
+public class OmsSWYBaseflowRouting extends HMModel {
+    @Description(inRecharge_DESCRIPTION)
     @In
-    public GridCoverage2D inInfiltration = null;
+    public GridCoverage2D inRecharge = null;
 
-    @Description(inNetInf_DESCRIPTION)
+    @Description(inAvailableRecharge_DESCRIPTION)
     @In
-    public GridCoverage2D inNetInfiltration = null;
+    public GridCoverage2D inAvailableRecharge = null;
 
     @Description(inNet_DESCRIPTION)
     @In
@@ -108,14 +108,15 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
     public static final String inFlowdirections_DESCRIPTION = "The map of flowdirections (D8).";
     public static final String inNet_DESCRIPTION = "The map of net.";
-    public static final String outBaseflow_DESCRIPTION = "The map of cumulated baseflow.";
-    public static final String outB_DESCRIPTION = "The map of single cell baseflow.";
-    public static final String outVri_DESCRIPTION = "The map of contribution of local recharge in cell to baseflow.";
-    public static final String outLsum_DESCRIPTION = "The map of Lsum.";
-    public static final String outQb_DESCRIPTION = "The total baseflow.";
-    public static final String outVriSum_DESCRIPTION = "The Vri sum value.";
-    public static final String inInf_DESCRIPTION = "The infiltrated watervolume.";
-    public static final String inNetInf_DESCRIPTION = "The net infiltrated watervolume.";
+    public static final String outBaseflow_DESCRIPTION = "The map of cumulative baseflow routed through each cell.";
+    public static final String outB_DESCRIPTION = "The map of local baseflow contribution per cell.";
+    public static final String outVri_DESCRIPTION = "The map of fractional contribution of local recharge in cell to baseflow.";
+    public static final String outLsum_DESCRIPTION = "The map of upslope subsidy (cumulative recharge routed to each cell).";
+    public static final String outQb_DESCRIPTION = "Basin-total recharge (sum of local recharge over valid cells).";
+    public static final String outVriSum_DESCRIPTION = "The sum of VRI across the basin (sanity ~ 1).";
+    public static final String inAvailableRecharge_DESCRIPTION = "The map of routed, cumulative recharge from upstream cells (the “upslope subsidy”) that is available for baseflow generation.";
+    public static final String inRecharge_DESCRIPTION = "The map of local recharge remaining after AET and quickflow are removed from precipitation.";
+
 
     // VARS DOC END
 
@@ -127,7 +128,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inInfiltration, inNetInfiltration, inFlowdirections, inNet);
+        checkNull(inRecharge, inAvailableRecharge, inFlowdirections, inNet);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlowdirections);
         int rows = regionMap.getRows();
@@ -146,10 +147,10 @@ public class OmsBaseflowWaterVolume extends HMModel {
 
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         int flowNv = HMConstants.getIntNovalue(inFlowdirections);
-        RandomIter netInfiltrationIter = CoverageUtilities.getRandomIterator(inNetInfiltration);
-        double netInfNv = HMConstants.getNovalue(inNetInfiltration);
-        RandomIter infiltrationIter = CoverageUtilities.getRandomIterator(inInfiltration);
-        infNv = HMConstants.getNovalue(inInfiltration);
+        RandomIter netInfiltrationIter = CoverageUtilities.getRandomIterator(inAvailableRecharge);
+        double netInfNv = HMConstants.getNovalue(inAvailableRecharge);
+        RandomIter infiltrationIter = CoverageUtilities.getRandomIterator(inRecharge);
+        infNv = HMConstants.getNovalue(inRecharge);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
         netNv = HMConstants.getNovalue(inNet);
 
@@ -215,7 +216,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                 }
                 pm.worked(1);
             }
-            double qbTmp = qb / count;
+            double qbTmp = qb; // / count;
             outQb = qbTmp;
             pm.done();
 
@@ -228,7 +229,7 @@ public class OmsBaseflowWaterVolume extends HMModel {
                     double lSum = lSumMatrix[row][col];
 
                     if (!HMConstants.isNovalue(li, infNv)) {
-                        double vri = li / (qbTmp * count);
+                        double vri = li / qb; //(qbTmp * count);
                         vriSum += vri;
                         outVriIter.setSample(col, row, 0, vri);
 

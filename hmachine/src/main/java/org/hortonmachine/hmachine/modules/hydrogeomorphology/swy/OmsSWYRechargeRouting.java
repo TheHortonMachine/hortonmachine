@@ -234,9 +234,6 @@ public class OmsSWYRechargeRouting extends HMModel {
                             initialAet = Math.min(pet, rain - quickflow);
                         }                        
                         l = rain - quickflow - initialAet;
-                        if (l < 0) {
-                        	l = 0;
-                        }
                     }
                     double lAvailable = Math.min(pGamma * l, l);
 
@@ -283,7 +280,7 @@ public class OmsSWYRechargeRouting extends HMModel {
                                 }
                                 double lSumAvailableCurrentCell = lSumAvailableUpstream + lAvailableUpstream;
 
-//                                lSumAvailableCurrentCell /= upstreamCells.size();
+                                lSumAvailableCurrentCell /= upstreamCells.size();
 
                                 lSum_Matrix[cell.row][cell.col] = lSumAvailableCurrentCell;
 
@@ -297,10 +294,6 @@ public class OmsSWYRechargeRouting extends HMModel {
                                     		? potentialAet 
                                     		: Math.min(pet, potentialAet);
                                     lCC = rain - quickflow - aetCC;
-                                    if (lCC < 0) {
-										// no negative recharge
-										lCC = 0;
-									}
                                 } else {
                                 	// stream pixels can evapotranspire using the upslope subsidy even though their local
                                 	// rainfall-quickflow balance is 0
