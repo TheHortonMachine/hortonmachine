@@ -35,8 +35,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import java.awt.image.WritableRaster;
 import java.text.DecimalFormat;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

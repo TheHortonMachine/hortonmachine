@@ -47,16 +47,15 @@ import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 import java.awt.geom.AffineTransform;
 import java.awt.image.RenderedImage;
 
-import javax.media.jai.Interpolation;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.operator.RotateDescriptor;
-import javax.media.jai.operator.ScaleDescriptor;
-import javax.media.jai.operator.TranslateDescriptor;
-import javax.media.jai.operator.TransposeDescriptor;
-
+import org.eclipse.imagen.Interpolation;
+import org.eclipse.imagen.RenderedOp;
+import org.eclipse.imagen.media.scale.ScaleDescriptor;
+import org.eclipse.imagen.media.translate.TranslateDescriptor;
+import org.eclipse.imagen.operator.TransposeDescriptor;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -69,8 +68,6 @@ import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -140,10 +137,10 @@ public class OmsRasterTransformer extends HMModel {
     @In
     public Double pEast;
 
-    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
-    @Unit("degrees")
-    @In
-    public Double pAngle;
+//    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
+//    @Unit("degrees")
+//    @In
+//    public Double pAngle;
 
     @Description(OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION)
     @Out
@@ -167,48 +164,48 @@ public class OmsRasterTransformer extends HMModel {
         }
 
         RenderedImage inRasterRI = inRaster.getRenderedImage();
-        RegionMap sourceRegion = CoverageUtilities.gridGeometry2RegionParamsMap(inRaster.getGridGeometry());
-        Envelope2D envelope2d = inRaster.getEnvelope2D();
+        RegionMap sourceRegion = RegionMap.fromGridGeometry(inRaster.getGridGeometry());
+        var envelope2d = inRaster.getEnvelope2D();
         Envelope targetEnvelope = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(),
                 envelope2d.getMaxY());
         Geometry targetGeometry = null;
         GeometryFactory gf = GeometryUtilities.gf();
 
         RenderedOp finalImg = null;
-        if (pAngle != null) {
-            pm.beginTask("Rotate raster by angle: " + pAngle, IHMProgressMonitor.UNKNOWN);
-
-            float centerX = 0f;
-            float centerY = 0f;
-            if (pEast == null) {
-                centerX = (float) envelope2d.getCenterX();
-            } else {
-                centerX = pEast.floatValue();
-            }
-            if (pNorth == null) {
-                centerY = (float) envelope2d.getCenterY();
-            } else {
-                centerY = pNorth.floatValue();
-            }
-            finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) Math.toRadians(pAngle), interpolation, null,
-                    null);
-
-            // also keep track of the transforming envelope
-            AffineTransform rotationAT = new AffineTransform();
-            rotationAT.translate(centerX, centerY);
-            rotationAT.rotate(Math.toRadians(-pAngle));
-            rotationAT.translate(-centerX, -centerY);
-            MathTransform rotationTransform = new AffineTransform2D(rotationAT);
-
-            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
-                    targetEnvelope.getMaxY());
-            targetEnvelope = JTS.transform(jtsEnv, rotationTransform);
-
-            Geometry rotGeometry = gf.toGeometry(jtsEnv);
-            targetGeometry = JTS.transform(rotGeometry, rotationTransform);
-
-            pm.done();
-        }
+//        if (pAngle != null) {
+//            pm.beginTask("Rotate raster by angle: " + pAngle, IHMProgressMonitor.UNKNOWN);
+//
+//            float centerX = 0f;
+//            float centerY = 0f;
+//            if (pEast == null) {
+//                centerX = (float) envelope2d.getCenterX();
+//            } else {
+//                centerX = pEast.floatValue();
+//            }
+//            if (pNorth == null) {
+//                centerY = (float) envelope2d.getCenterY();
+//            } else {
+//                centerY = pNorth.floatValue();
+//            }
+//            finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) Math.toRadians(pAngle), interpolation, null,
+//                    null);
+//
+//            // also keep track of the transforming envelope
+//            AffineTransform rotationAT = new AffineTransform();
+//            rotationAT.translate(centerX, centerY);
+//            rotationAT.rotate(Math.toRadians(-pAngle));
+//            rotationAT.translate(-centerX, -centerY);
+//            MathTransform rotationTransform = new AffineTransform2D(rotationAT);
+//
+//            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
+//                    targetEnvelope.getMaxY());
+//            targetEnvelope = JTS.transform(jtsEnv, rotationTransform);
+//
+//            Geometry rotGeometry = gf.toGeometry(jtsEnv);
+//            targetGeometry = JTS.transform(rotGeometry, rotationTransform);
+//
+//            pm.done();
+//        }
 
         if (doFlipHorizontal) {
             pm.beginTask("Flip horizontally...", IHMProgressMonitor.UNKNOWN);

@@ -50,8 +50,8 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureExtender;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 @Description(OMSVECTORMERGER_DESCRIPTION)
 @Documentation(OMSVECTORMERGER_DOCUMENTATION)

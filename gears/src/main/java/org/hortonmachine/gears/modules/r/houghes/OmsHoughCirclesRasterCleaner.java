@@ -23,7 +23,7 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,7 +49,7 @@ import org.hortonmachine.gears.libs.modules.ThreadedRunnable;
 import org.hortonmachine.gears.modules.r.summary.OmsZonalStats;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;

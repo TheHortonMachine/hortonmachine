@@ -3,21 +3,25 @@ package org.hortonmachine.gears.io.stac;
 import java.io.InputStream;
 import java.util.Iterator;
 
-import com.github.davidmoten.aws.lw.client.Client;
-import it.geosolutions.imageioimpl.plugins.cog.*;
 import org.apache.commons.io.FilenameUtils;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.github.davidmoten.aws.lw.client.Client;
 
 import it.geosolutions.imageio.core.BasicAuthURI;
 import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
+import it.geosolutions.imageioimpl.plugins.cog.CogImageInputStreamSpi;
+import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
+import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
+import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
+import it.geosolutions.imageioimpl.plugins.cog.RangeReader;
 
 /**
  * An asset from a stac item.

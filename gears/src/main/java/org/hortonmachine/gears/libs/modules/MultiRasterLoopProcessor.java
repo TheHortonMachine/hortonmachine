@@ -2,8 +2,8 @@ package org.hortonmachine.gears.libs.modules;
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;

@@ -31,7 +31,7 @@ import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterRepro
 import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_NAME;
 import static org.hortonmachine.gears.modules.r.rasterreprojector.OmsRasterReprojector.OMSRASTERREPROJECTOR_STATUS;
 
-import javax.media.jai.Interpolation;
+import org.eclipse.imagen.Interpolation;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -50,9 +50,9 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.parameter.ParameterValueGroup;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;

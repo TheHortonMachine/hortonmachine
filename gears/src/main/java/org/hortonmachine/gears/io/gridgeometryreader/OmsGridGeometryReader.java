@@ -53,7 +53,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.JGTProcessingRegion;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSGRIDGEOMETRYREADER_DESCRIPTION)
 @Author(name = OMSGRIDGEOMETRYREADER_AUTHORNAMES, contact = OMSGRIDGEOMETRYREADER_AUTHORCONTACTS)

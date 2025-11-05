@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.hmachine.modules.networktools.trento_p.utils;
 
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 /**
  * Interface used to implement a class which is used to create  SimpleFeatureType.

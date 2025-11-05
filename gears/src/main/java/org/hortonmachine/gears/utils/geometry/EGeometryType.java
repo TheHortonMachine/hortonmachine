@@ -18,7 +18,8 @@
 
 package org.hortonmachine.gears.utils.geometry;
 
-import org.opengis.feature.type.GeometryDescriptor;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.feature.type.GeometryType;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.locationtech.jts.geom.*;
 
@@ -128,12 +129,12 @@ public enum EGeometryType {
     }
 
     /**
-     * Returns the {@link EGeometryType} for a given {@link org.opengis.feature.type.GeometryType}.
+     * Returns the {@link EGeometryType} for a given {@link GeometryType}.
      * 
      * @param geometryType the geometry type to check.
      * @return the type.
      */
-    public static EGeometryType forGeometryType( org.opengis.feature.type.GeometryType geometryType ) {
+    public static EGeometryType forGeometryType( GeometryType geometryType ) {
         Class< ? > binding = geometryType.getBinding();
 
         if (binding == LineString.class) {
@@ -202,7 +203,7 @@ public enum EGeometryType {
      * @return <code>true</code> if there are points in there.
      */
     public static boolean isLine( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
+        GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
         if (binding == MultiLineString.class || binding == LineString.class) {
             return true;
@@ -230,7 +231,7 @@ public enum EGeometryType {
      * @return <code>true</code> if there are polygons in there.
      */
     public static boolean isPolygon( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
+        GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
         if (binding == MultiPolygon.class || binding == Polygon.class) {
             return true;
@@ -258,7 +259,7 @@ public enum EGeometryType {
      * @return <code>true</code> if there are points in there.
      */
     public static boolean isPoint( GeometryDescriptor geometryDescriptor ) {
-        org.opengis.feature.type.GeometryType type = geometryDescriptor.getType();
+        GeometryType type = geometryDescriptor.getType();
         Class< ? > binding = type.getBinding();
         if (binding == MultiPoint.class || binding == Point.class) {
             return true;

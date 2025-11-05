@@ -15,7 +15,7 @@ import org.hortonmachine.gears.utils.images.ImageGenerator;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 public class GeopackageTilesProducer implements ITilesProducer {
 

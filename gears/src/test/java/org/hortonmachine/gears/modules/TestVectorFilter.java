@@ -22,7 +22,7 @@ import org.geotools.feature.FeatureIterator;
 import org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 /**
  * Test for the {@link OmsVectorFilter}
  * 

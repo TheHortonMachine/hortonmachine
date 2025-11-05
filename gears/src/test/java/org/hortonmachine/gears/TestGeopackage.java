@@ -14,7 +14,7 @@ import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.LineString;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 /**
  * Test Geopackage.
  * 

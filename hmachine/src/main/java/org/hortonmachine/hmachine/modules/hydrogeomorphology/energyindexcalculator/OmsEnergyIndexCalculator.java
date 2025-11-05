@@ -54,8 +54,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.JTS;
@@ -70,7 +70,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

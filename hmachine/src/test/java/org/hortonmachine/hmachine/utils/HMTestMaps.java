@@ -24,7 +24,7 @@ import java.awt.image.WritableRaster;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -34,7 +34,7 @@ import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * The grass map named test and its values to be used in tests.

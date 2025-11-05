@@ -59,7 +59,7 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFea
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 /**
  * This is a class which represents a sewer pipe.

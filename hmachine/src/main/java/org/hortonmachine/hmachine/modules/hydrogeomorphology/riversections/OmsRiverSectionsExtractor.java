@@ -35,7 +35,7 @@ import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;

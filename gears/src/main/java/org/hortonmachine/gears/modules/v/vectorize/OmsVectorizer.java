@@ -46,12 +46,36 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
-import javax.media.jai.RenderedOp;
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.ParameterBlockImageN;
+import org.eclipse.imagen.RenderedOp;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.metadata.spatial.PixelOrientation;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.Operations;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.util.AffineTransformation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -64,33 +88,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridEnvelope2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.processing.Operations;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.Envelope2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.jaitools.media.jai.vectorize.VectorizeDescriptor;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.metadata.spatial.PixelOrientation;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
-import org.locationtech.jts.geom.util.AffineTransformation;
 
 @Description(OMSVECTORIZER_DESCRIPTION)
 @Documentation(OMSVECTORIZER_DOCUMENTATION)
@@ -318,7 +315,7 @@ public class OmsVectorizer extends HMModel {
             GridEnvelope2D gEnv = new GridEnvelope2D();
             gEnv.setLocation(new Point(left, top));
             gEnv.add(new Point(right, bottom));
-            Envelope2D envelope2d = gridGeometry.gridToWorld(gEnv);
+            var envelope2d = gridGeometry.gridToWorld(gEnv);
             inRaster = (GridCoverage2D) Operations.DEFAULT.crop(inRaster, envelope2d);
         }
     }
@@ -334,7 +331,7 @@ public class OmsVectorizer extends HMModel {
      */
     @SuppressWarnings("unchecked")
     private Collection<Polygon> doVectorize( RenderedImage src, Map<String, Object> args ) {
-        ParameterBlockJAI pb = new ParameterBlockJAI("Vectorize");
+        ParameterBlockImageN pb = new ParameterBlockImageN("Vectorize");
         pb.setSource("source0", src);
 
         // Set any parameters that were passed in
@@ -344,7 +341,7 @@ public class OmsVectorizer extends HMModel {
 
         // Get the desintation image: this is the unmodified source image data
         // plus a property for the generated vectors
-        RenderedOp dest = JAI.create("Vectorize", pb);
+        RenderedOp dest = ImageN.create("Vectorize", pb);
 
         // Get the vectors
         Object property = dest.getProperty(VectorizeDescriptor.VECTOR_PROPERTY_NAME);

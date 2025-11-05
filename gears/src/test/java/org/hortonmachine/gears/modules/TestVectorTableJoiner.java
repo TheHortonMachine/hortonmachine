@@ -31,8 +31,8 @@ import org.hortonmachine.gears.modules.v.vectortablejoiner.OmsVectorTableJoiner;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;

@@ -32,8 +32,8 @@ import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
 import org.hortonmachine.gears.io.wcs.wcs111.models.WcsCapabilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 public class WebCoverageService111 implements IWebCoverageService {
     WcsCapabilities wcsCapabilities;

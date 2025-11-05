@@ -59,8 +59,8 @@
 //import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Utility;
 //import org.joda.time.DateTime;
 //import org.locationtech.jts.geom.Coordinate;
-//import org.opengis.feature.simple.SimpleFeature;
-//import org.opengis.feature.simple.SimpleFeatureType;
+//import org.geotools.api.feature.simple.SimpleFeature;
+//import org.geotools.api.feature.simple.SimpleFeatureType;
 //
 //import oms3.annotations.Author;
 //import oms3.annotations.Description;

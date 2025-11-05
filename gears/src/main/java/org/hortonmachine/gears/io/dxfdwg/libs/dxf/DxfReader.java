@@ -31,9 +31,9 @@ package org.hortonmachine.gears.io.dxfdwg.libs.dxf;
 //import java.io.FileOutputStream;
 //
 //import org.geotools.feature.FeatureCollection;
-//import org.opengis.feature.simple.SimpleFeature;
-//import org.opengis.feature.simple.SimpleFeatureType;
-//import org.opengis.referencing.crs.CoordinateReferenceSystem;
+//import org.geotools.api.feature.simple.SimpleFeature;
+//import org.geotools.api.feature.simple.SimpleFeatureType;
+//import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 //
 ///**
 // *DataProperties for the JCSReader load(DataProperties) interface:<br><br>

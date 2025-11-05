@@ -33,7 +33,14 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_STATUS;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -45,15 +52,6 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoordinates2D;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.geometry.DirectPosition;
 
 @Description(OMSRASTER2XYZ_DESCRIPTION)
 @Documentation(OMSRASTER2XYZ_DOCUMENTATION)
@@ -98,7 +96,7 @@ public class OmsRaster2Xyz extends HMModel {
                     if (doRemovenv && HMConstants.isNovalue(elevation)) {
                         continue;
                     }
-                    DirectPosition position = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
+                    var position = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
                     double[] coordinate = position.getCoordinate();
 
                     StringBuilder sb = new StringBuilder();

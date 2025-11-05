@@ -33,7 +33,7 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSUMDOWNSTREAM_pU
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;

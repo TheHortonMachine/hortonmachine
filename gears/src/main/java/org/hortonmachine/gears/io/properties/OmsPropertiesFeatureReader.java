@@ -32,6 +32,19 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSPROPERTIESFEATUREREA
 import java.io.File;
 import java.io.IOException;
 
+import org.geotools.api.data.FeatureReader;
+import org.geotools.api.data.Query;
+import org.geotools.api.data.Transaction;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.data.property.PropertyDataStore;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureCollection;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -43,19 +56,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.FeatureReader;
-import org.geotools.data.Query;
-import org.geotools.data.Transaction;
-import org.geotools.data.property.PropertyDataStore;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureCollection;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description(OMSPROPERTIESFEATUREREADER_DESCRIPTION)
 @Author(name = OMSPROPERTIESFEATUREREADER_AUTHORNAMES, contact = OMSPROPERTIESFEATUREREADER_AUTHORCONTACTS)

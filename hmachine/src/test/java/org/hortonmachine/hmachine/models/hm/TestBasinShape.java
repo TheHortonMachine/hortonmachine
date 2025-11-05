@@ -27,8 +27,8 @@ import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link OmsBasinShape}.
  * 

@@ -6,7 +6,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2ca.OmsH2cA;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * test the {@link OmsH2cA} model.
  * 

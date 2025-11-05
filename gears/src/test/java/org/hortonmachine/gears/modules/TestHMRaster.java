@@ -22,8 +22,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
-import javax.media.jai.iterator.RectIter;
-import javax.media.jai.iterator.RectIterFactory;
+import org.eclipse.imagen.iterator.RectIter;
+import org.eclipse.imagen.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler;
@@ -36,7 +36,7 @@ import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test HMRaster
  * 

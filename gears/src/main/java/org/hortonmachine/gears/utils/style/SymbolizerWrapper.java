@@ -8,16 +8,16 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.filter.expression.PropertyName;
+import org.geotools.api.style.ExternalGraphic;
+import org.geotools.api.style.Graphic;
+import org.geotools.api.style.Symbolizer;
+import org.geotools.api.style.TextSymbolizer;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.LiteralExpressionImpl;
-import org.geotools.styling.ExternalGraphic;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.Symbolizer;
-import org.geotools.styling.TextSymbolizer;
 import org.geotools.util.factory.GeoTools;
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.PropertyName;
 
 /**
  * An abstract wrapper for a {@link Symbolizer} to ease interaction with gui.

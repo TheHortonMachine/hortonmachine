@@ -15,10 +15,10 @@ import org.hortonmachine.gears.io.wcs.wcs100.WebCoverageService100;
 import org.hortonmachine.gears.io.wcs.wcs111.WebCoverageService111;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
 
 /**
  * A builder class for getCoverage call parameters.

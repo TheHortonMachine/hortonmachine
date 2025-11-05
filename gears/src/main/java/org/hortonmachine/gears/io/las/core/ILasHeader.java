@@ -18,7 +18,7 @@
 package org.hortonmachine.gears.io.las.core;
 
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Las header interface. 

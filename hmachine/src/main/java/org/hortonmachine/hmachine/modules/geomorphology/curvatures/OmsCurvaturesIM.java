@@ -21,7 +21,7 @@ import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCur
 
 import java.io.File;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMModelIM;

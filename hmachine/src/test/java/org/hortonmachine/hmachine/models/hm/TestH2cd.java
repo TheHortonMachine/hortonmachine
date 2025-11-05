@@ -23,7 +23,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2cd.OmsH2cd;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Tests the {@link OmsH2cd} module.
  * 

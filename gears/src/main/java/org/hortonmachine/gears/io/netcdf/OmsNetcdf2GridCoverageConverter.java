@@ -25,12 +25,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.remotesensing.ModisInfo;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -39,7 +38,6 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.geometry.Envelope;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -306,7 +304,8 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 double lonMin = env.getMinX();
                 double latMin = env.getMinY();
 
-                Envelope envelope = new Envelope2D(DefaultGeographicCRS.WGS84, lonMin, latMin, env.getWidth(), env.getHeight());
+                ReferencedEnvelope envelope = new ReferencedEnvelope(lonMin, env.getMaxX(), latMin, env.getMaxY(),
+						DefaultGeographicCRS.WGS84);
                 GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, cols, rows);
                 outGridGeometry2D = new GridGeometry2D(gridRange, envelope);
 
@@ -384,6 +383,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
 
             WritableRandomIter iter = null;
             try {
+            	
                 WritableRaster wRaster = CoverageUtilities.createWritableRaster(xShapes[0], yShapes[0], null, null, nodata);
                 iter = CoverageUtilities.getWritableRandomIterator(wRaster);
 

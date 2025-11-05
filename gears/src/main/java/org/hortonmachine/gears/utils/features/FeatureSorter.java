@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils.features;
 import java.util.Comparator;
 import java.util.List;
 
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 /**
  * Sorts a {@link List} of features by one of the fields.

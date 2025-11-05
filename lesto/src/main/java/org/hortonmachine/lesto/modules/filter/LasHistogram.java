@@ -39,7 +39,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.PlotFrame;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description("A module that creates a histogram from a las file.")
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")

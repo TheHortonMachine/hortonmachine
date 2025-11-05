@@ -20,7 +20,7 @@ package org.hortonmachine.hmachine.modules.network.networkattributes;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

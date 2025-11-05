@@ -15,11 +15,14 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
+
 import javax.activation.MimetypesFileTypeMap;
+import javax.annotation.Resource;
+
+import org.geotools.api.style.ResourceLocator;
+import org.geotools.api.style.StyleFactory;
+import org.geotools.api.style.StyledLayerDescriptor;
 import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.styling.ResourceLocator;
-import org.geotools.styling.StyleFactory;
-import org.geotools.styling.StyledLayerDescriptor;
 import org.geotools.util.Version;
 import org.xml.sax.EntityResolver;
 

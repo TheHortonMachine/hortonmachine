@@ -17,8 +17,8 @@
  */
 package org.hortonmachine.gears.libs.modules;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 /**
  * A superclass representing a node. 

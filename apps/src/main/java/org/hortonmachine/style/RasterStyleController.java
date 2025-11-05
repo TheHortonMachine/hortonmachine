@@ -22,8 +22,8 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.style.RasterSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.opengis.filter.expression.Expression;
-import org.opengis.filter.expression.Literal;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.filter.expression.Literal;
 
 @SuppressWarnings({"unchecked", "serial"})
 public class RasterStyleController extends RasterStyleView {

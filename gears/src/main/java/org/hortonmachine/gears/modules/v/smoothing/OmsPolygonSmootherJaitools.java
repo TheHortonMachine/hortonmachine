@@ -32,6 +32,18 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOLYGONSMOOTHERJAITO
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -42,20 +54,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.jaitools.jts.PolygonSmoother;
-import org.opengis.feature.simple.SimpleFeature;
-
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.MultiPolygon;
-import org.locationtech.jts.geom.Polygon;
 
 @Description(OMSPOLYGONSMOOTHERJAITOOLS_DESCRIPTION)
 @Author(name = OMSPOLYGONSMOOTHERJAITOOLS_AUTHORNAMES, contact = OMSPOLYGONSMOOTHERJAITOOLS_AUTHORCONTACTS)

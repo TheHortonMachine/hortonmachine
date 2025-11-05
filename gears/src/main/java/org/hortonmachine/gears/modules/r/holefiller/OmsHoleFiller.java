@@ -35,8 +35,8 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -49,9 +49,6 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
@@ -157,7 +154,7 @@ public class OmsHoleFiller extends HMModel {
 
                 double value = outIter.getSampleDouble(c, r, 0);
                 if (isNovalue(value)) {
-                    DirectPosition worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
+                    var worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
                     double[] coordinate = worldPosition.getCoordinate();
                     Coordinate pointCoordinate = new Coordinate(coordinate[0], coordinate[1]);
                     Point point = gf.createPoint(pointCoordinate);
@@ -193,7 +190,7 @@ public class OmsHoleFiller extends HMModel {
                 }
                 double value = outIter.getSampleDouble(c + dc, r + dr, 0);
                 if (!isNovalue(value)) {
-                    DirectPosition worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c + dc, r + dr));
+                    var worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c + dc, r + dr));
                     double[] coordinate = worldPosition.getCoordinate();
                     Coordinate pointCoordinate = new Coordinate(coordinate[0], coordinate[1]);
                     pointCoordinate.z = value;

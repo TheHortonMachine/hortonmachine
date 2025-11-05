@@ -34,9 +34,26 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCUL
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTDIRECTIONCALCULATOR_STATUS;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridToWorld;
 
-import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.Operations;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.geotools.geometry.Position2D;
+import org.geotools.referencing.operation.matrix.XAffineTransform;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.features.FeatureExtender;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithmObjects;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,26 +66,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoordinates2D;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridEnvelope2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.processing.Operations;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.referencing.operation.matrix.XAffineTransform;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.features.FeatureExtender;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithmObjects;
-import org.opengis.feature.simple.SimpleFeature;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
 
 @Description(OMSPOINTDIRECTIONCALCULATOR_DESCRIPTION)
 @Documentation(OMSPOINTDIRECTIONCALCULATOR_DOCUMENTATION)
@@ -118,7 +115,7 @@ public class OmsPointDirectionCalculator extends HMModel {
             System.out.println(res[0] + "/" + res[1] + "/" + scaleX + "/" + scaleY);
             inCoverage = (GridCoverage2D) Operations.DEFAULT.subsampleAverage(inCoverage, scaleX, scaleY);
         }
-        Envelope2D env = inCoverage.getEnvelope2D();
+        var env = inCoverage.getEnvelope2D();
         GridGeometry2D gridGeometry = inCoverage.getGridGeometry();
 
         int size = inSources.size();
@@ -139,7 +136,7 @@ public class OmsPointDirectionCalculator extends HMModel {
             int cols = gridRange.width;
             int rows = gridRange.height;
 
-            GridCoordinates2D centerGC = gridGeometry.worldToGrid(new DirectPosition2D(coordinate.x, coordinate.y));
+            GridCoordinates2D centerGC = gridGeometry.worldToGrid(new Position2D(coordinate.x, coordinate.y));
 
             /*
              * c11 | c12 | c13

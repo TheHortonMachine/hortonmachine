@@ -28,7 +28,7 @@ import org.hortonmachine.gears.io.las.core.ALasReader;
 import org.hortonmachine.gears.io.las.core.ILasHeader;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.utils.CrsUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Las record reader for las spec 1.0. 

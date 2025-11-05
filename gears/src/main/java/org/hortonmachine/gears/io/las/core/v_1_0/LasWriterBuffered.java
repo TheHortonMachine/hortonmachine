@@ -36,7 +36,7 @@ import org.hortonmachine.gears.utils.ByteUtilities;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.HMVersion;
 import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A las writer.

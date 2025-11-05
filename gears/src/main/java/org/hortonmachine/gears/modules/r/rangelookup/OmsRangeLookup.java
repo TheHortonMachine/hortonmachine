@@ -33,12 +33,12 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
 
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
-import java.util.HashMap;
 
-import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
-import javax.media.jai.ROIShape;
-
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.ParameterBlockImageN;
+import org.eclipse.imagen.ROIShape;
+import org.eclipse.imagen.media.range.RangeFactory;
+import org.eclipse.imagen.media.rlookup.RangeLookupTable;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -46,10 +46,6 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
-import it.geosolutions.jaiext.JAIExt;
-import it.geosolutions.jaiext.range.Range;
-import it.geosolutions.jaiext.range.RangeFactory;
-import it.geosolutions.jaiext.rlookup.RangeLookupTable;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -95,7 +91,7 @@ public class OmsRangeLookup extends HMModel {
             return;
         }
 
-        JAIExt.initJAIEXT(true); // FIXME remove when the jaitools rangelookup is not pulled fro
+//        JAIExt.initJAIEXT(true); // FIXME remove when the jaitools rangelookup is not pulled fro
                                  // raster process anymore
 
         checkNull(inRaster, pRanges, pClasses);
@@ -148,7 +144,7 @@ public class OmsRangeLookup extends HMModel {
                 // can be null
             }
 
-            Range r = RangeFactory.create(min, minIncluded, max, maxIncluded);
+            var r = RangeFactory.create(min, minIncluded, max, maxIncluded);
             builder.add(r, classNum);
         }
         // List<org.jaitools.numeric.Range> ranges;
@@ -157,12 +153,12 @@ public class OmsRangeLookup extends HMModel {
 
         ROIShape roi = new ROIShape(new Rectangle(0, 0, inRI.getWidth(), inRI.getHeight()));
 
-        ParameterBlockJAI pb = new ParameterBlockJAI("RLookup");
+        ParameterBlockImageN pb = new ParameterBlockImageN("RLookup");
         pb.setSource("source0", inRI);
         pb.setParameter("table", table);
         pb.setParameter("roi", roi);
         pb.setParameter("default", (Double) novalue);
-        RenderedImage lookupImg = JAI.create("RLookup", pb);
+        RenderedImage lookupImg = ImageN.create("RLookup", pb);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
         outRaster = CoverageUtilities.buildCoverageWithNovalue("rangelookup", lookupImg, regionMap,

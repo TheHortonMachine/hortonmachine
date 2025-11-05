@@ -25,10 +25,29 @@ import java.awt.event.WindowEvent;
 import java.awt.image.RenderedImage;
 import java.io.File;
 
-import javax.media.jai.Interpolation;
-import javax.media.jai.iterator.RectIter;
-import javax.media.jai.iterator.RectIterFactory;
-
+import org.eclipse.imagen.Interpolation;
+import org.eclipse.imagen.InterpolationBilinear;
+import org.eclipse.imagen.iterator.RectIter;
+import org.eclipse.imagen.iterator.RectIterFactory;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
+import org.geotools.api.style.ColorMap;
+import org.geotools.api.style.ColorMapEntry;
+import org.geotools.api.style.FeatureTypeStyle;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Graphic;
+import org.geotools.api.style.LineSymbolizer;
+import org.geotools.api.style.Mark;
+import org.geotools.api.style.PointSymbolizer;
+import org.geotools.api.style.PolygonSymbolizer;
+import org.geotools.api.style.RasterSymbolizer;
+import org.geotools.api.style.Rule;
+import org.geotools.api.style.Stroke;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.StyleFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -40,22 +59,8 @@ import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.geotools.styling.ColorMap;
-import org.geotools.styling.ColorMapEntry;
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.LineSymbolizer;
-import org.geotools.styling.Mark;
-import org.geotools.styling.PointSymbolizer;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.RasterSymbolizer;
-import org.geotools.styling.Rule;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Stroke;
-import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
-import org.geotools.styling.StyleFactory;
 import org.geotools.swing.JMapFrame;
 import org.geotools.util.factory.GeoTools;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -63,11 +68,6 @@ import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.expression.Expression;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -173,7 +173,7 @@ public class OmsMapsViewer extends HMModel {
             fading.setValue(true);
 
             final ParameterValue<Interpolation> interpol = ImageMosaicFormat.INTERPOLATION.createValue();
-            interpol.setValue(new javax.media.jai.InterpolationBilinear());
+            interpol.setValue(new InterpolationBilinear());
 
             final ParameterValue<Boolean> resol = ImageMosaicFormat.ACCURATE_RESOLUTION.createValue();
             resol.setValue(true);
@@ -182,7 +182,7 @@ public class OmsMapsViewer extends HMModel {
             final ParameterValue<Boolean> multiThread= ImageMosaicFormat.ALLOW_MULTITHREADING.createValue();
             multiThread.setValue(true);
 
-            final ParameterValue<Boolean> usejai = ImageMosaicFormat.USE_JAI_IMAGEREAD.createValue();
+            final ParameterValue<Boolean> usejai = ImageMosaicFormat.USE_IMAGEN_IMAGEREAD.createValue();
             usejai.setValue(false);
 
             final ParameterValue<double[]> bkg = ImageMosaicFormat.BACKGROUND_VALUES.createValue();

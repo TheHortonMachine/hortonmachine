@@ -22,7 +22,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,7 +49,7 @@ import org.hortonmachine.gears.utils.features.FeatureExtender;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

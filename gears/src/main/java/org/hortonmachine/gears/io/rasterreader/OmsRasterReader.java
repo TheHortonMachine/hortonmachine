@@ -26,12 +26,6 @@ import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERR
 import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_NAME;
 import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_STATUS;
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERREADER;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.EAST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.NORTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.SOUTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.XRES;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.YRES;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.createGridGeometryGeneralParameter;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionParams;
@@ -39,8 +33,9 @@ import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.makeRegio
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.HashMap;
 
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
@@ -53,7 +48,7 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
-import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -64,9 +59,6 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -167,7 +159,7 @@ public class OmsRasterReader extends HMModel {
     /**
      * The original envelope of the coverage.
      */
-    public GeneralEnvelope originalEnvelope;
+    public GeneralBounds originalEnvelope;
 
     private GeneralParameterValue[] generalParameter = null;
 
@@ -260,7 +252,7 @@ public class OmsRasterReader extends HMModel {
         double e = readRegion.getEast();
 
         Envelope env = readRegion.getEnvelope();
-        originalEnvelope = new GeneralEnvelope(
+        originalEnvelope = new GeneralBounds(
                 new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), crs));
 
         // if bounds supplied, use them as region
@@ -407,7 +399,7 @@ public class OmsRasterReader extends HMModel {
         reader.file = path;
         reader.doEnvelope = true;
         reader.process();
-        GeneralEnvelope env = reader.originalEnvelope;
+        GeneralBounds env = reader.originalEnvelope;
         
         double[] ll = env.getLowerCorner().getCoordinate();
         double[] ur = env.getUpperCorner().getCoordinate();

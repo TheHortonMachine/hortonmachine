@@ -25,7 +25,7 @@ import java.util.Random;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

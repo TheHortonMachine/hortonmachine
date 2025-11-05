@@ -35,9 +35,22 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
+import org.eclipse.imagen.media.jiffle.Jiffle;
+import org.eclipse.imagen.media.jiffle.runtime.AffineCoordinateTransform;
+import org.eclipse.imagen.media.jiffle.runtime.CoordinateTransform;
+import org.eclipse.imagen.media.jiffle.runtime.JiffleDirectRuntime;
+import org.eclipse.imagen.media.jiffle.runtime.NullProgressListener;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.utils.jaitools.ImageUtils;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -51,26 +64,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.jaitools.imageutils.ImageUtils;
-import it.geosolutions.jaiext.jiffle.Jiffle;
-import it.geosolutions.jaiext.jiffle.runtime.AffineCoordinateTransform;
-import it.geosolutions.jaiext.jiffle.runtime.CoordinateTransform;
-import it.geosolutions.jaiext.jiffle.runtime.JiffleDirectRuntime;
-import it.geosolutions.jaiext.jiffle.runtime.JiffleEvent;
-import it.geosolutions.jaiext.jiffle.runtime.JiffleEventListener;
-import it.geosolutions.jaiext.jiffle.runtime.JiffleExecutor;
-import it.geosolutions.jaiext.jiffle.runtime.JiffleExecutorResult;
-import it.geosolutions.jaiext.jiffle.runtime.JiffleProgressListener;
-import it.geosolutions.jaiext.jiffle.runtime.NullProgressListener;
-
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSMAPCALC_DESCRIPTION)
 @Documentation(OMSMAPCALC_DOCUMENTATION)
@@ -127,7 +120,11 @@ public class OmsMapcalc extends HMModel {
                 regionParameters = CoverageUtilities.getRegionParamsFromGridCoverage(mapGC);
                 crs = mapGC.getCoordinateReferenceSystem();
 
-                worldBounds = mapGC.getEnvelope2D().getBounds2D();
+                ReferencedEnvelope envelope2d = mapGC.getEnvelope2D();
+                
+//                TODO check this!
+				worldBounds = new Rectangle2D.Double(envelope2d.getMinX(), envelope2d.getMinY(),
+						envelope2d.getWidth(), envelope2d.getHeight());
                 Rectangle gridBounds = mapGC.getGridGeometry().getGridRange2D().getBounds();
 
                 jiffleCRS = getTransform(worldBounds, gridBounds);

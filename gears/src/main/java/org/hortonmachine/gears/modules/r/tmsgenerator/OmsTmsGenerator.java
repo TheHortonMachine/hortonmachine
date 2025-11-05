@@ -74,8 +74,9 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -355,7 +356,7 @@ public class OmsTmsGenerator extends HMModel {
                                     : tmpBounds.getHeight();
                             final ReferencedEnvelope tmp = new ReferencedEnvelope(tmpBounds);
                             tmp.expandBy(safeExtend);
-                            Polygon polygon = FeatureUtilities.envelopeToPolygon(tmp);
+                            Polygon polygon = FeatureUtilities.envelopeToPolygon((Bounds)tmp);
                             if (!zoomLimitGeometry.intersects(polygon)) {
                                 pm.worked(1);
                                 continue;

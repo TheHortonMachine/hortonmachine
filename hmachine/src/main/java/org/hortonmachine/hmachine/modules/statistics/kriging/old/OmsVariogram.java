@@ -56,7 +56,7 @@ import org.geotools.feature.FeatureIterator;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

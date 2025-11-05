@@ -32,7 +32,7 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRAST
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;

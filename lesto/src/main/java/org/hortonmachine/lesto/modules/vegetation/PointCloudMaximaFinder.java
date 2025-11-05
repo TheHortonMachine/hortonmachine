@@ -57,7 +57,7 @@ import org.hortonmachine.gears.utils.StringUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.DsmDtmDiffHelper;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;

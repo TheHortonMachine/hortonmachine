@@ -20,7 +20,7 @@ package org.hortonmachine.gears.libs.modules;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 

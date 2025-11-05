@@ -21,10 +21,6 @@
 			<version>0.10.11-SNAPSHOT</version>
 		</dependency>
 
-		<dependency>
-			<groupId>javax.media</groupId>
-			<artifactId>jai_core</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>joda-time</groupId>
@@ -132,19 +128,6 @@
 			<groupId>org.geotools</groupId>
 			<artifactId>gt-stac-store</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>it.geosolutions.imageio-ext</groupId>
-			<artifactId>imageio-ext-tiff</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>it.geosolutions.imageio-ext</groupId>
-			<artifactId>imageio-ext-cog-reader</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>it.geosolutions.imageio-ext</groupId>
-			<artifactId>imageio-ext-cog-rangereader-http</artifactId>
-		</dependency>
 
 		<dependency>
 			<groupId>org.geotools</groupId>
@@ -183,10 +166,24 @@
 			<artifactId>xpp3</artifactId>
 		</dependency>
 
+<!--		<dependency>-->
+<!--			<groupId>it.geosolutions.jaiext.jiffle</groupId>-->
+<!--			<artifactId>jt-jiffle-op</artifactId>-->
+<!--		</dependency>-->
+<!--		<dependency>-->
+<!--			<groupId>it.geosolutions.imageio-ext</groupId>-->
+<!--			<artifactId>imageio-ext-tiff</artifactId>-->
+<!--		</dependency>-->
+
 		<dependency>
-			<groupId>it.geosolutions.jaiext.jiffle</groupId>
-			<artifactId>jt-jiffle-op</artifactId>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-cog-reader</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>it.geosolutions.imageio-ext</groupId>
+			<artifactId>imageio-ext-cog-rangereader-http</artifactId>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.apache.commons</groupId>

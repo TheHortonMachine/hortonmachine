@@ -28,8 +28,8 @@ import org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools;
 import org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;

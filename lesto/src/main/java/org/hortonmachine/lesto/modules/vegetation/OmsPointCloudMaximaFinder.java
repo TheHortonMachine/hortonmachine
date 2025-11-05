@@ -32,7 +32,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,7 +50,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.utils.LasUtils;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -61,8 +61,8 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -221,7 +221,7 @@ public class OmsPointCloudMaximaFinder extends HMModel {
                             if (helper != null) {
                                 // check if it is some border or noise
                                 GridCoordinates2D gridCoord = helper.gridGeometry
-                                        .worldToGrid(new DirectPosition2D(currentDot.x, currentDot.y));
+                                        .worldToGrid(new Position2D(currentDot.x, currentDot.y));
                                 GridNode node = new GridNode(helper.dsmDtmDiffIter, helper.cols, helper.rows, helper.xres,
                                         helper.yres, gridCoord.x, gridCoord.y, helper.novalue);
                                 double topElevation = node.elevation;

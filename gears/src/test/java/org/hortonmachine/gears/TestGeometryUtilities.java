@@ -15,7 +15,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

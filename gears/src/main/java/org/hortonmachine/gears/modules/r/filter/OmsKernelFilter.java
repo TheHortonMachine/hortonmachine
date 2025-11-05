@@ -13,10 +13,18 @@ import static org.hortonmachine.gears.libs.modules.Variables.TRIWEIGHT;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.KernelJAI;
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.KernelImageN;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.eclipse.imagen.media.kernel.KernelFactory;
+import org.eclipse.imagen.media.kernel.KernelFactory.ValueType;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -28,15 +36,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.jaitools.media.jai.kernel.KernelFactory;
-import org.jaitools.media.jai.kernel.KernelFactory.ValueType;
 
 @Description("A Kernel based filter.")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
@@ -74,7 +73,7 @@ public class OmsKernelFilter extends HMModel {
 
         ValueType type = getKernelType(pKernel);
 
-        KernelJAI kernel = KernelFactory.createCircle(pRadius, type);
+        KernelImageN kernel = KernelFactory.createCircle(pRadius, type);
 
         RenderedImage inImg = inRaster.getRenderedImage();
         RandomIter inIter = RandomIterFactory.create(inImg, null);

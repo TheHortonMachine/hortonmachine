@@ -41,7 +41,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureExtender;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

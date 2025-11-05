@@ -22,7 +22,7 @@ import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKer
 import java.io.IOException;
 import java.util.stream.IntStream;
 
-import javax.media.jai.KernelJAI;
+import org.eclipse.imagen.KernelJAI;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;

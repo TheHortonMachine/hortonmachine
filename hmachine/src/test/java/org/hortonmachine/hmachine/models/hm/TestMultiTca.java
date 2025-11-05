@@ -6,7 +6,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.multitca.OmsMultiTca;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 public class TestMultiTca extends HMTestCase {
     public void testMultiTca() throws Exception {

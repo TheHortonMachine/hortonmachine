@@ -24,9 +24,9 @@ import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegion
 import java.awt.image.WritableRaster;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -39,8 +39,8 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.geometry.Envelope;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A simple raster wrapper for scripting environment.

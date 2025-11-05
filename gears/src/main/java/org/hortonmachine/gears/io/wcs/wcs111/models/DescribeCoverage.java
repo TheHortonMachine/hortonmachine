@@ -11,7 +11,7 @@ import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
 public class DescribeCoverage implements IDescribeCoverage {

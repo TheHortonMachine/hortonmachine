@@ -33,7 +33,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.utils.CrsUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A spatialite database threadsafe on writing (see package javadoc for more info).

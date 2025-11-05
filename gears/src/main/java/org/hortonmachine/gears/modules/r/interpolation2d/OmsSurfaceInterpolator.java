@@ -44,10 +44,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -62,11 +64,6 @@ import org.hortonmachine.gears.modules.r.interpolation2d.core.TPSInterpolator;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -245,7 +242,7 @@ public class OmsSurfaceInterpolator extends HMModel {
             final int row ) {
         try {
             for( int c = 0; c < cols; c++ ) {
-                final DirectPosition gridToWorld = gridGeometry.gridToWorld(new GridCoordinates2D(c, row));
+                final var gridToWorld = gridGeometry.gridToWorld(new GridCoordinates2D(c, row));
                 // System.out.println(row + "/" + c);
                 boolean doProcess = true;
                 if (inMask != null) {

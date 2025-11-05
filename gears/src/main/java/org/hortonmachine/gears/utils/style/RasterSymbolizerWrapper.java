@@ -1,7 +1,7 @@
 package org.hortonmachine.gears.utils.style;
 
-import org.geotools.styling.RasterSymbolizer;
-import org.geotools.styling.Symbolizer;
+import org.geotools.api.style.RasterSymbolizer;
+import org.geotools.api.style.Symbolizer;
 
 /**
  * A wrapper for a {@link RasterSymbolizer} to ease interaction with gui.

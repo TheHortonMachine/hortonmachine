@@ -23,6 +23,40 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.grid.DefaultGridFeatureBuilder;
+import org.geotools.grid.GridFeatureBuilder;
+import org.geotools.grid.Grids;
+import org.geotools.grid.Lines;
+import org.geotools.grid.oblong.Oblongs;
+import org.geotools.grid.ortholine.LineOrientation;
+import org.geotools.grid.ortholine.OrthoLineDef;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -35,43 +69,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.grid.DefaultGridFeatureBuilder;
-import org.geotools.grid.GridFeatureBuilder;
-import org.geotools.grid.Grids;
-import org.geotools.grid.Lines;
-import org.geotools.grid.oblong.Oblongs;
-import org.geotools.grid.ortholine.LineOrientation;
-import org.geotools.grid.ortholine.OrthoLineDef;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
 @Description(OmsGridsGenerator.OMSGRIDSGENERATOR_DESCRIPTION)
 @Documentation(OmsGridsGenerator.OMSGRIDSGENERATOR_DOCUMENTATION)
@@ -179,7 +176,7 @@ public class OmsGridsGenerator extends HMModel {
             pWidth = bounds.getWidth() / pCols;
             pHeight = bounds.getHeight() / pRows;
         } else if (inRaster != null) {
-            Envelope2D bounds = inRaster.getGridGeometry().getEnvelope2D();
+            var bounds = inRaster.getGridGeometry().getEnvelope2D();
             crs = inRaster.getCoordinateReferenceSystem();
             s = bounds.getMinY();
             w = bounds.getMinX();

@@ -17,23 +17,33 @@
  */
 package org.hortonmachine.gears.modules.v.rastercattofeatureattribute;
 
-import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.*;
 import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_LABEL;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_LICENSE;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_NAME;
+import static org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute.OMSRASTERCATTOFEATUREATTRIBUTE_STATUS;
 
 import java.awt.image.RenderedImage;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
@@ -43,10 +53,6 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -127,7 +133,7 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
 
             FeatureExtender fExt = null;
 
-            Envelope2D inCoverageEnvelope = inRaster.getEnvelope2D();
+            var inCoverageEnvelope = inRaster.getEnvelope2D();
             outVector = new DefaultFeatureCollection();
             FeatureIterator<SimpleFeature> featureIterator = inVector.features();
             int all = inVector.size();
@@ -224,7 +230,7 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
 
     private double getRasterValue( Coordinate c ) throws TransformException {
         double value;
-        GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
+        GridCoordinates2D gridCoord = gridGeometry.worldToGrid(new Position2D(c.x, c.y));
         value = inIter.getSampleDouble(gridCoord.x, gridCoord.y, 0);
 
         // TODO make this better

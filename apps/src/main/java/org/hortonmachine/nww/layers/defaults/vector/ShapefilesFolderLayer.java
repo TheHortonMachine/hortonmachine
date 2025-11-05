@@ -35,8 +35,8 @@ import org.hortonmachine.nww.shapes.FeaturePolygon;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.hortonmachine.style.SimpleStyleUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.GeometryDescriptor;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.type.GeometryDescriptor;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

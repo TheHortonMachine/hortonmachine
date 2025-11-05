@@ -24,8 +24,8 @@ package org.hortonmachine.gears.modules;
 //import java.awt.image.DataBuffer;
 //import java.awt.image.WritableRaster;
 //
-//import javax.media.jai.Interpolation;
-//import javax.media.jai.RasterFactory;
+//import org.eclipse.imagen.Interpolation;
+//import org.eclipse.imagen.RasterFactory;
 //
 //import org.geotools.coverage.CoverageFactoryFinder;
 //import org.geotools.coverage.grid.GridCoverage2D;
@@ -38,10 +38,10 @@ package org.hortonmachine.gears.modules;
 //import org.geotools.referencing.CRS;
 //import org.geotools.resources.image.ImageUtilities;
 //import org.hortonmachine.gears.utils.HMTestCase;
-//import org.opengis.coverage.processing.Operation;
-//import org.opengis.geometry.Envelope;
-//import org.opengis.parameter.ParameterValueGroup;
-//import org.opengis.referencing.crs.CoordinateReferenceSystem;
+//import org.geotools.api.coverage.processing.Operation;
+//import org.geotools.api.geometry.Envelope;
+//import org.geotools.api.parameter.ParameterValueGroup;
+//import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 ///**
 // * Test for the reprojection modules.
 // * 

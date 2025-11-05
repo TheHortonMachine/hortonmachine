@@ -34,7 +34,7 @@ import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.OmsRiverSectionsExtractor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

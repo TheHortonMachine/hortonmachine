@@ -38,7 +38,7 @@ import org.hortonmachine.gears.utils.chart.PlotFrame;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
 import org.joda.time.DateTime;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

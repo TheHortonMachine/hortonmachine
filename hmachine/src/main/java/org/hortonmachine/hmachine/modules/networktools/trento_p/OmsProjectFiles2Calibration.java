@@ -44,9 +44,9 @@
 //import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
 //import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 //import org.locationtech.jts.geom.LineString;
-//import org.opengis.feature.simple.SimpleFeature;
-//import org.opengis.feature.simple.SimpleFeatureType;
-//import org.opengis.referencing.crs.CoordinateReferenceSystem;
+//import org.geotools.api.feature.simple.SimpleFeature;
+//import org.geotools.api.feature.simple.SimpleFeatureType;
+//import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 //
 //import oms3.annotations.Author;
 //import oms3.annotations.Description;

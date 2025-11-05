@@ -34,10 +34,22 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRIT
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.nio.charset.Charset;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.geotools.api.data.DataStore;
+import org.geotools.api.data.FileDataStoreFactorySpi;
+import org.geotools.api.data.FileDataStoreFinder;
+import org.geotools.api.data.SimpleFeatureStore;
+import org.geotools.api.data.Transaction;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.data.DefaultTransaction;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,23 +61,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.DataStore;
-import org.geotools.data.DefaultTransaction;
-import org.geotools.data.FileDataStoreFactorySpi;
-import org.geotools.data.FileDataStoreFinder;
-import org.geotools.data.Transaction;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.PreferencesHandler;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureVisitor;
-import org.opengis.feature.simple.SimpleFeatureType;
 
 @Description(OMSSHAPEFILEFEATUREWRITER_DESCRIPTION)
 @Author(name = OMSSHAPEFILEFEATUREWRITER_AUTHORNAMES, contact = OMSSHAPEFILEFEATUREWRITER_AUTHORCONTACTS)

@@ -22,8 +22,8 @@ import static java.lang.Math.sqrt;
 
 import java.io.File;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -40,7 +40,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModelIM;
 import org.hortonmachine.gears.utils.colors.EColorTables;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.referencing.operation.TransformException;
 
 @Description("The Geomorphon method for rasters - image mosaic version")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")

@@ -1,24 +1,26 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.DEFAULT_COLOR;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.ff;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.sb;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.geotools.styling.AnchorPoint;
-import org.geotools.styling.Displacement;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Font;
-import org.geotools.styling.Halo;
-import org.geotools.styling.LabelPlacement;
-import org.geotools.styling.LinePlacement;
-import org.geotools.styling.PointPlacement;
-import org.geotools.styling.Symbolizer;
-import org.geotools.styling.TextSymbolizer;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.style.AnchorPoint;
+import org.geotools.api.style.Displacement;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Font;
+import org.geotools.api.style.Halo;
+import org.geotools.api.style.LabelPlacement;
+import org.geotools.api.style.LinePlacement;
+import org.geotools.api.style.PointPlacement;
+import org.geotools.api.style.Symbolizer;
+import org.geotools.api.style.TextSymbolizer;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.opengis.filter.expression.Expression;
 
 /**
  * A wrapper for a {@link TextSymbolizer} to ease interaction with gui.

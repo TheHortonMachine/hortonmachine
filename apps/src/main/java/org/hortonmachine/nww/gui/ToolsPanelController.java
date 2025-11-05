@@ -93,9 +93,9 @@ import org.hortonmachine.style.SimpleStyleUtilities;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.WKTReader;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
 
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;

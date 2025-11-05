@@ -52,8 +52,8 @@ import org.hortonmachine.gears.utils.images.ImageUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
 
 import org.locationtech.jts.geom.Coordinate;
 

@@ -15,7 +15,7 @@ package org.hortonmachine.hmachine.models;
 //import org.geotools.process.Processors;
 //import org.geotools.process.Progress;
 //import org.junit.Test;
-//import org.opengis.feature.type.Name;
+//import org.geotools.api.feature.type.Name;
 //
 ///**
 // * Time to check that GearsProcessFactry meets the process api.

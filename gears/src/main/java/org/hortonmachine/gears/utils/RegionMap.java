@@ -21,13 +21,11 @@ import java.awt.geom.AffineTransform;
 
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.geometry.DirectPosition;
 
 /**
  * Map containing a region definition, having utility methods to get the values.
@@ -132,10 +130,10 @@ public class RegionMap {
     public static RegionMap fromGridGeometry( GridGeometry2D gridGeometry ) {
         RegionMap envelopeParams = new RegionMap();
 
-        Envelope2D envelope = gridGeometry.getEnvelope2D();
-        DirectPosition lowerCorner = envelope.getLowerCorner();
+        var envelope = gridGeometry.getEnvelope2D();
+        var lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        DirectPosition upperCorner = envelope.getUpperCorner();
+        var upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
 
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();

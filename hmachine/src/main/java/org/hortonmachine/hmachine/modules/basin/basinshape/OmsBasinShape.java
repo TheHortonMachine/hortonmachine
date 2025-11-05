@@ -34,9 +34,9 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -46,7 +46,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsSupporter;
 import org.hortonmachine.gears.modules.v.vectorize.OmsVectorizer;
@@ -58,8 +58,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -294,7 +294,7 @@ public class OmsBasinShape extends HMModel {
 
                 GridGeometry2D gridGeometry = inBasins.getGridGeometry();
                 GridCoordinates2D worldToGrid = gridGeometry
-                        .worldToGrid(new DirectPosition2D(centroidCoords.x, centroidCoords.y));
+                        .worldToGrid(new Position2D(centroidCoords.x, centroidCoords.y));
 
                 int[] rowColPoint = new int[]{worldToGrid.y, worldToGrid.x};
                 double centroidElevation = -1;;

@@ -12,7 +12,7 @@ import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.nww.shapes.IFeatureShape;
 import org.hortonmachine.nww.shapes.IInfoShape;
 import org.hortonmachine.nww.utils.NwwUtilities;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.event.SelectListener;

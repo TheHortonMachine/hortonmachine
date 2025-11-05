@@ -34,23 +34,22 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.RenderedImage;
 
-import javax.media.jai.iterator.RectIter;
-import javax.media.jai.iterator.RectIterFactory;
-
+import org.eclipse.imagen.iterator.RectIter;
+import org.eclipse.imagen.iterator.RectIterFactory;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.style.ColorMap;
+import org.geotools.api.style.ColorMapEntry;
+import org.geotools.api.style.RasterSymbolizer;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.StyleFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.MapContent;
-import org.geotools.styling.ColorMap;
-import org.geotools.styling.ColorMapEntry;
-import org.geotools.styling.RasterSymbolizer;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
 import org.geotools.styling.StyleBuilder;
-import org.geotools.styling.StyleFactory;
 import org.geotools.swing.JMapFrame;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.opengis.filter.expression.Expression;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

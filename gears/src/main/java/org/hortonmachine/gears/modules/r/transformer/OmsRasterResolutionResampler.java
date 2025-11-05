@@ -39,7 +39,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.Interpolation;
+import org.eclipse.imagen.Interpolation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

@@ -39,15 +39,21 @@ import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.data.FileDataStore;
+import org.geotools.api.data.FileDataStoreFinder;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.StyleFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.gce.grassraster.GrassCoverageReader;
@@ -61,8 +67,6 @@ import org.geotools.ows.wms.WebMapServer;
 import org.geotools.ows.wms.map.WMSLayer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
-import org.geotools.styling.StyleFactory;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -74,10 +78,6 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
 
 /**
  * An utility class for simple image map generation. 
@@ -321,7 +321,7 @@ public class ImageGenerator {
                 GridCoverageLayer layer = new GridCoverageLayer(raster, style);
                 layers.add(layer);
 
-                org.opengis.geometry.Envelope envelope = raster.getEnvelope();
+                var envelope = raster.getEnvelope();
                 if (maxExtent == null) {
                     maxExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
                 }
@@ -332,7 +332,7 @@ public class ImageGenerator {
                 // SimpleFeatureSource featureSource = layer.getFeatureSource();
                 layers.add(layer);
 
-                org.opengis.geometry.Envelope envelope = reader.getOriginalEnvelope();
+                var envelope = reader.getOriginalEnvelope();
                 if (maxExtent == null) {
                     maxExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
                 }
@@ -383,12 +383,12 @@ public class ImageGenerator {
         return maxExtent;
     }
 
-    private void expandToIncludeEnvelope( ReferencedEnvelope maxExtent, org.opengis.geometry.Envelope envelope ) {
+    private void expandToIncludeEnvelope( ReferencedEnvelope maxExtent, Bounds envelope ) {
         ReferencedEnvelope tmpExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
-        DirectPosition ll = envelope.getLowerCorner();
+        var ll = envelope.getLowerCorner();
         double[] coordinate = ll.getCoordinate();
         tmpExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
-        DirectPosition ur = envelope.getUpperCorner();
+        var ur = envelope.getUpperCorner();
         coordinate = ur.getCoordinate();
         tmpExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
 

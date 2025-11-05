@@ -52,8 +52,8 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.spi.ImageReaderSpi;
-import javax.media.jai.ImageLayout;
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.ImageLayout;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -63,7 +63,7 @@ import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.FileDataStore;
 import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
@@ -140,8 +140,8 @@ import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.operation.TransformException;
 
 import geoscript.style.Style;
 import geoscript.style.io.SLDReader;
@@ -1555,8 +1555,8 @@ public class HM {
             int cols = regionMap.getCols();
             int rows = regionMap.getRows();
 
-            GridCoordinates2D llPix = gg.worldToGrid(new DirectPosition2D(w, s));
-            GridCoordinates2D urPix = gg.worldToGrid(new DirectPosition2D(e, n));
+            GridCoordinates2D llPix = gg.worldToGrid(new Position2D(w, s));
+            GridCoordinates2D urPix = gg.worldToGrid(new Position2D(e, n));
 
             int fromC = (int) Math.floor(llPix.getX());
             int toC = (int) Math.ceil(urPix.getX()) + 1;

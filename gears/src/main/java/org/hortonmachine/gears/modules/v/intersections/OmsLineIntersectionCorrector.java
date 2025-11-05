@@ -65,7 +65,7 @@ import org.geotools.graph.structure.Node;
 import org.geotools.graph.traverse.standard.DijkstraIterator;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

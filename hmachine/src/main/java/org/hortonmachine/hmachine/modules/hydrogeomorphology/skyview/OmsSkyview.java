@@ -41,7 +41,7 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.RasterFactory;
+import org.eclipse.imagen.RasterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;

@@ -23,7 +23,7 @@ import org.hortonmachine.gears.io.dxfdwg.libs.dxf.DxfGroup;
 import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

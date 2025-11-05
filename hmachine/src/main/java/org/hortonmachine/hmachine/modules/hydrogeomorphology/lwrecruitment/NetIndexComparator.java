@@ -19,7 +19,7 @@ package org.hortonmachine.hmachine.modules.hydrogeomorphology.lwrecruitment;
 
 import java.util.Comparator;
 
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 public class NetIndexComparator implements Comparator<SimpleFeature>, LWFields{
 

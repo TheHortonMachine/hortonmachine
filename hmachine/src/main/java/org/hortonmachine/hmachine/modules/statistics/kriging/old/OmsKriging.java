@@ -53,8 +53,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -73,7 +73,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.SchemaException;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -83,10 +83,10 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.matrixes.ColumnVector;
 import org.hortonmachine.gears.utils.math.matrixes.LinearSystem;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.geometry.DirectPosition;
+import org.geotools.api.geometry.MismatchedDimensionException;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -549,13 +549,13 @@ public class OmsKriging extends HMModel {
         int c = 0;
         MathTransform transf = inInterpolationGrid.getCRSToGrid2D();
 
-        final DirectPosition gridPoint = new DirectPosition2D();
+        final DirectPosition gridPoint = new Position2D();
 
         while( idIterator.hasNext() ) {
             int id = idIterator.next();
             Coordinate coordinate = (Coordinate) interpolatedCoordinatesMap.get(id);
 
-            DirectPosition point = new DirectPosition2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
+            DirectPosition point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
                     coordinate.y);
             transf.transform(point, gridPoint);
 

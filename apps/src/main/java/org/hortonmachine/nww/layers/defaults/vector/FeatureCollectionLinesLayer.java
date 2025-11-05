@@ -34,7 +34,7 @@ import org.hortonmachine.nww.shapes.FeatureLine;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

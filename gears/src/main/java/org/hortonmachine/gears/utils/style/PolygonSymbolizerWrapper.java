@@ -1,19 +1,25 @@
 package org.hortonmachine.gears.utils.style;
 
-import static org.hortonmachine.gears.utils.style.StyleUtilities.*;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.DEFAULT_COLOR;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.DEFAULT_OFFSET;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.DEFAULT_OPACITY;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.DEFAULT_WIDTH;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.ff;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.getOffset;
+import static org.hortonmachine.gears.utils.style.StyleUtilities.sf;
 
 import java.awt.geom.Point2D;
 import java.util.List;
 
-import org.geotools.styling.ExternalGraphic;
-import org.geotools.styling.Fill;
-import org.geotools.styling.Graphic;
-import org.geotools.styling.Mark;
-import org.geotools.styling.PolygonSymbolizer;
-import org.geotools.styling.Stroke;
-import org.geotools.styling.Symbolizer;
-import org.opengis.filter.expression.Expression;
-import org.opengis.style.GraphicalSymbol;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.style.ExternalGraphic;
+import org.geotools.api.style.Fill;
+import org.geotools.api.style.Graphic;
+import org.geotools.api.style.GraphicalSymbol;
+import org.geotools.api.style.Mark;
+import org.geotools.api.style.PolygonSymbolizer;
+import org.geotools.api.style.Stroke;
+import org.geotools.api.style.Symbolizer;
 
 /**
  * A wrapper for a {@link PolygonSymbolizer} to ease interaction with gui.

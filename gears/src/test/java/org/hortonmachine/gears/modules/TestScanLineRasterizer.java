@@ -19,24 +19,22 @@ package org.hortonmachine.gears.modules;
 
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-
+import org.eclipse.imagen.iterator.RandomIter;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.Envelope2D;
 import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
 /**
@@ -57,8 +55,8 @@ public class TestScanLineRasterizer extends HMTestCase {
 
         elevationData = HMTestMaps.mapData;
         elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, ep, crs, true);
-        Envelope2D envelope = elevationCoverage.getEnvelope2D();
-        polygon = FeatureUtilities.envelopeToPolygon(envelope);
+        var envelope = elevationCoverage.getEnvelope2D();
+        polygon = FeatureUtilities.envelopeToPolygon((Bounds)envelope);
     }
 
     @SuppressWarnings("nls")

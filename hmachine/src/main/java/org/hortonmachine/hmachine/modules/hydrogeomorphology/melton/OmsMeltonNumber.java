@@ -56,8 +56,8 @@ import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.type.AttributeType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.type.AttributeType;
 
 import org.locationtech.jts.geom.Geometry;
 

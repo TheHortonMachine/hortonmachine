@@ -18,11 +18,11 @@
 package org.hortonmachine.gears;
 
 import java.awt.image.WritableRaster;
-import java.util.HashMap;
 import java.util.List;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.utils.HMTestCase;
@@ -30,8 +30,6 @@ import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.coverage.ProfilePoint;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 /**
  * Test {@link CoverageUtilities}.
@@ -106,24 +104,22 @@ public class TestCoverageUtilities extends HMTestCase {
     }
 
     public void testCoverageSubregionLoop() throws Exception {
-        Envelope2D env = new Envelope2D();
-        env.setRect(west, south, east - west, north - south);
+        ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, crs);
+        
         int[] loopColsRowsForSubregion1 = CoverageUtilities.getLoopColsRowsForSubregion(elevationCoverage, env);
         assertEquals(0, loopColsRowsForSubregion1[0]);
         assertEquals(cols, loopColsRowsForSubregion1[1]);
         assertEquals(0, loopColsRowsForSubregion1[2]);
         assertEquals(rows, loopColsRowsForSubregion1[3]);
 
-        env = new Envelope2D();
-        env.setRect(west + xres, south + yres, east - west - 2 * xres, north - south - 2 * yres);
+        env = new ReferencedEnvelope(west + xres, east - xres, south + yres, north - yres, crs);
         int[] loopColsRowsForSubregion2 = CoverageUtilities.getLoopColsRowsForSubregion(elevationCoverage, env);
         assertEquals(1, loopColsRowsForSubregion2[0]);
         assertEquals(cols - 1, loopColsRowsForSubregion2[1]);
         assertEquals(1, loopColsRowsForSubregion2[2]);
         assertEquals(rows - 1, loopColsRowsForSubregion2[3]);
 
-        env = new Envelope2D();
-        env.setRect(west + 2 * xres, south + yres, east - west - 3 * xres, north - south - 2 * yres);
+        env = new ReferencedEnvelope(west + 2 * xres, east - xres, south + yres, north - yres, crs);
         int[] loopColsRowsForSubregion3 = CoverageUtilities.getLoopColsRowsForSubregion(elevationCoverage, env);
         assertEquals(2, loopColsRowsForSubregion3[0]);
         assertEquals(cols - 1, loopColsRowsForSubregion3[1]);

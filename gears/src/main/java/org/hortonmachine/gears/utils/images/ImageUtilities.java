@@ -33,18 +33,16 @@ import java.awt.image.WritableRaster;
 import java.io.IOException;
 import java.util.Hashtable;
 
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.processing.Operations;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.GeneralBounds;
 import org.geotools.parameter.Parameter;
-import org.opengis.geometry.Envelope;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * An utility class image handling. 
@@ -129,9 +127,7 @@ public class ImageUtilities {
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, cols, rows);
-        DirectPosition2D minDp = new DirectPosition2D(sourceCrs, w, s);
-        DirectPosition2D maxDp = new DirectPosition2D(sourceCrs, e, n);
-        Envelope env = new Envelope2D(minDp, maxDp);
+        GeneralBounds env = new GeneralBounds(sourceCrs, w,s, e-w, n-s);
         readGG.setValue(new GridGeometry2D(gridEnvelope, env));
         readParams[0] = readGG;
 

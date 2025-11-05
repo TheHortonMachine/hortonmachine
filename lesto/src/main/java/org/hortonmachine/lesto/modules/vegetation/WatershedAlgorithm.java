@@ -5,8 +5,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import java.awt.image.WritableRaster;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

@@ -57,10 +57,10 @@ import org.hortonmachine.gears.utils.style.RuleWrapper;
 import org.hortonmachine.gears.utils.style.StyleWrapper;
 import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.expression.Expression;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.filter.Filter;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

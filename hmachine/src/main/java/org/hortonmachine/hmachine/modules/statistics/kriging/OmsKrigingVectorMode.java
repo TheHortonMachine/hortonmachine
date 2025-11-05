@@ -41,7 +41,7 @@ import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretic
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.TheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

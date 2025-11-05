@@ -30,8 +30,8 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.adige.core.HillSlope;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.adige.core.IHillSlope;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 /**
  * @author Andrea Antonello (www.hydrologis.com)

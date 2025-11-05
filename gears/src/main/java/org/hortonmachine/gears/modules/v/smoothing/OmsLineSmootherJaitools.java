@@ -33,6 +33,19 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.imagen.media.contour.LineSmoother;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiLineString;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -44,20 +57,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.jaitools.jts.LineSmoother;
-import org.opengis.feature.simple.SimpleFeature;
-
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiLineString;
 
 @Description(OMSLINESMOOTHERJAITOOLS_DESCRIPTION)
 @Documentation(OMSLINESMOOTHERJAITOOLS_DOCUMENTATION)

@@ -24,7 +24,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.util.Arrays;
 
-import javax.media.jai.RasterFactory;
+import org.eclipse.imagen.RasterFactory;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 

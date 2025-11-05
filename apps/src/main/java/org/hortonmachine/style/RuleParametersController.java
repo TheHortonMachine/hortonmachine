@@ -7,7 +7,7 @@ import java.awt.event.KeyListener;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
 import org.hortonmachine.gears.utils.style.RuleWrapper;
-import org.opengis.filter.Filter;
+import org.geotools.api.filter.Filter;
 
 @SuppressWarnings("serial")
 public class RuleParametersController extends RuleParametersView {

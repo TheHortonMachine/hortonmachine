@@ -30,7 +30,7 @@ import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

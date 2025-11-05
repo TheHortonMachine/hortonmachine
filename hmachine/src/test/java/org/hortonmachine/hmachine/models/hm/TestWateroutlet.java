@@ -24,7 +24,7 @@ import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtract
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Test the {@link OmsWateroutlet} module.

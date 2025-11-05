@@ -23,8 +23,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.GEOMORPHOLOGY;
 import java.awt.image.WritableRaster;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -36,8 +36,8 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.coverage.ProfilePoint;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.geometry.DirectPosition;
+import org.geotools.api.referencing.operation.TransformException;
 
 import org.locationtech.jts.geom.Coordinate;
 

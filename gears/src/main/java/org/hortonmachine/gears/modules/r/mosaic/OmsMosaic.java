@@ -30,40 +30,22 @@ import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_LABEL
 import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_LICENSE;
 import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_NAME;
 import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_STATUS;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.EAST;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.NORTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.SOUTH;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.WEST;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

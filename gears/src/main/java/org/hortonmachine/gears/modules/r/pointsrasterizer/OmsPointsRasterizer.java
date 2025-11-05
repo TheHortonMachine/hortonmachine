@@ -34,14 +34,14 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STA
 import java.awt.image.WritableRaster;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -51,7 +51,7 @@ import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -133,7 +133,7 @@ public class OmsPointsRasterizer extends HMModel {
                     continue;
                 }
 
-                GridCoordinates2D onGrid = inGrid.worldToGrid(new DirectPosition2D(coordinate.x, coordinate.y));
+                GridCoordinates2D onGrid = inGrid.worldToGrid(new Position2D(coordinate.x, coordinate.y));
                 outIter.setSample(onGrid.x, onGrid.y, 0, value);
             }
             pm.worked(1);

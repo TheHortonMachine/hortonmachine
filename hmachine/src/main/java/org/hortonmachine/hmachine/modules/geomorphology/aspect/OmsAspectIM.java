@@ -33,8 +33,8 @@ import static org.hortonmachine.hmachine.modules.geomorphology.aspect.OmsAspect.
 
 import java.io.File;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMModelIM;

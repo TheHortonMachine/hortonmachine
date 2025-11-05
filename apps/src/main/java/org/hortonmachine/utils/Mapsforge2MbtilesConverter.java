@@ -52,7 +52,7 @@ import org.mapsforge.map.reader.MapFile;
 import org.mapsforge.map.rendertheme.XmlRenderTheme;
 import org.mapsforge.map.rendertheme.internal.MapsforgeThemes;
 import org.mapsforge.map.rendertheme.rule.RenderThemeFuture;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Execute;
 

@@ -25,7 +25,7 @@ import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.utils.LasUtils;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

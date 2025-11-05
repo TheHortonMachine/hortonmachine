@@ -1,6 +1,6 @@
 package org.hortonmachine.nww.shapes;
 
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.render.Polygon;
 

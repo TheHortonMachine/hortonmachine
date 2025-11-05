@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 

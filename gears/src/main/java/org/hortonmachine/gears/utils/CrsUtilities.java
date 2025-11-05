@@ -31,11 +31,11 @@ import org.geotools.referencing.crs.AbstractSingleCRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.ReferenceIdentifier;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.ReferenceIdentifier;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.datum.Datum;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

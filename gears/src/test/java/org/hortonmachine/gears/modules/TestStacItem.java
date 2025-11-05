@@ -3,7 +3,7 @@ package org.hortonmachine.gears.modules;
 import org.geotools.data.geojson.GeoJSONReader;
 import org.hortonmachine.gears.io.stac.HMStacItem;
 import org.hortonmachine.gears.utils.HMTestCase;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 public class TestStacItem extends HMTestCase {
     public void testStacItemWithDatetime() throws Exception {

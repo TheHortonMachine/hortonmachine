@@ -52,7 +52,7 @@ import oms3.annotations.UI;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -61,7 +61,7 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -164,7 +164,7 @@ public class OmsXyz2Raster extends HMModel {
                 HMConstants.doubleNovalue);
 
         pm.beginTask("Create raster...", coordList.size());
-        DirectPosition2D world = new DirectPosition2D();
+        Position2D world = new Position2D();
         for( Coordinate coordinate : coordList ) {
             world.setLocation(coordinate.x, coordinate.y);
             GridCoordinates2D grid = gridGeometry.worldToGrid(world);

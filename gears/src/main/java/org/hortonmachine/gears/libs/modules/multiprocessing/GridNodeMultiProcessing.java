@@ -20,7 +20,7 @@ package org.hortonmachine.gears.libs.modules.multiprocessing;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.GridNode;

@@ -22,8 +22,8 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import java.awt.image.RenderedImage;
 import java.util.HashMap;
 
-import javax.media.jai.iterator.RectIter;
-import javax.media.jai.iterator.RectIterFactory;
+import org.eclipse.imagen.iterator.RectIter;
+import org.eclipse.imagen.iterator.RectIterFactory;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -34,7 +34,7 @@ import org.hortonmachine.gears.utils.time.EggClock;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsDePitter;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Test the {@link OmsPitfiller} module.

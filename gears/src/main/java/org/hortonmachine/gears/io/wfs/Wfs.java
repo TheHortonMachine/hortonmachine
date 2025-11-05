@@ -25,30 +25,28 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.geotools.data.DataStore;
-import org.geotools.data.DataStoreFinder;
-import org.geotools.data.Query;
-import org.geotools.data.ServiceInfo;
+import org.geotools.api.data.DataStore;
+import org.geotools.api.data.DataStoreFinder;
+import org.geotools.api.data.Query;
+import org.geotools.api.data.ServiceInfo;
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.filter.Filter;
+import org.geotools.api.filter.FilterFactory;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.data.wfs.WFSServiceInfo;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.utils.features.CoordinateSwappingFeatureCollection;
 import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.filter.FilterFactory2;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A simple WFS client wrapper class.
@@ -348,7 +346,7 @@ public class Wfs implements AutoCloseable {
 		if (envelope != null) {
 			SimpleFeatureType schema = dataSource.getSchema();
 	        String geomName = schema.getGeometryDescriptor().getLocalName(); // e.g. "Shape"
-	        FilterFactory2 ff = CommonFactoryFinder.getFilterFactory2();
+	        FilterFactory ff = CommonFactoryFinder.getFilterFactory();
 	        if(forceXYSwap) {
 	        	// swap x and y in the bbox
 	        	query.setFilter(ff.bbox(ff.property(geomName),

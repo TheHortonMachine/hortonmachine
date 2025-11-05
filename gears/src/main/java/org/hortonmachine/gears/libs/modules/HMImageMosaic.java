@@ -11,7 +11,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.GeneralParameterValue;
 
 /**
  * Wrapper around the geotools image mosaic reader.

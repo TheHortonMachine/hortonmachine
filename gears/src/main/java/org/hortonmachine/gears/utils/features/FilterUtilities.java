@@ -20,8 +20,8 @@ package org.hortonmachine.gears.utils.features;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.filter.text.ecql.ECQL;
-import org.opengis.filter.Filter;
-import org.opengis.geometry.BoundingBox;
+import org.geotools.api.filter.Filter;
+import org.geotools.api.geometry.BoundingBox;
 
 import org.locationtech.jts.geom.Geometry;
 

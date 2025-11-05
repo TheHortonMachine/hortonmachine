@@ -25,10 +25,10 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.util.Locale;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.RectIter;
-import javax.media.jai.iterator.RectIterFactory;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.RectIter;
+import org.eclipse.imagen.iterator.RectIterFactory;
 
 import org.hortonmachine.gears.libs.monitor.PrintStreamProgressMonitor;
 

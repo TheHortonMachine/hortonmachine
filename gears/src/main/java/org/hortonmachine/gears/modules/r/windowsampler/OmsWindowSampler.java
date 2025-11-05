@@ -41,7 +41,14 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.image.WritableRaster;
-import java.util.List;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.utils.jaitools.WindowIterator;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -55,19 +62,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-import org.apache.commons.math3.linear.DecompositionSolver;
-import org.apache.commons.math3.linear.MatrixUtils;
-import org.apache.commons.math3.linear.RRQRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.io.las.core.LasRecord;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.jaitools.imageutils.iterator.WindowIterator;
 
 @Description(OMSWINDOWSAMPLER_DESCRIPTION)
 @Documentation(OMSWINDOWSAMPLER_DOCUMENTATION)

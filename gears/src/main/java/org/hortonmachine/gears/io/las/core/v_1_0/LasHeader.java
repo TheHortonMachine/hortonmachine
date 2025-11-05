@@ -21,7 +21,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.gears.io.las.core.ILasHeader;
 import org.hortonmachine.gears.io.las.utils.LasUtils;
 import org.joda.time.DateTime;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Las header object for las spec 1.0. 

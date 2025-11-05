@@ -23,26 +23,16 @@ import static org.hortonmachine.gears.utils.math.NumericsUtilities.dEq;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.List;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.gears.io.las.core.ALasReader;
@@ -56,10 +46,6 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -69,6 +55,18 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OmsLasConverter.OMSLASCONVERTER_DESCRIPTION)
 @Documentation(OmsLasConverter.OMSLASCONVERTER_DOCUMENTATION)
@@ -444,7 +442,7 @@ public class OmsLasConverter extends HMModel {
             throws Exception {
         final ReferencedEnvelope3D envelope = lasReader.getHeader().getDataEnvelope();
         ReferencedEnvelope env2d = new ReferencedEnvelope(envelope);
-        final Polygon polygon = FeatureUtilities.envelopeToPolygon(new Envelope2D(env2d));
+        final Polygon polygon = FeatureUtilities.envelopeToPolygon((Bounds)env2d);
 
         final SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("lasdataenvelope");

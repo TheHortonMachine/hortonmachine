@@ -20,8 +20,8 @@ package org.hortonmachine.gears.libs.monitor;
 
 import org.geotools.util.SimpleInternationalString;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.util.InternationalString;
-import org.opengis.util.ProgressListener;
+import org.geotools.api.util.InternationalString;
+import org.geotools.api.util.ProgressListener;
 
 /**
  * Wrapper for geotools' {@link ProgressListener}.

@@ -96,7 +96,7 @@ import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;

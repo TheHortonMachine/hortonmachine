@@ -23,8 +23,8 @@ import java.awt.image.RenderedImage;
 import java.util.HashSet;
 import java.util.Iterator;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
 
 /**
  * Class BinaryFast is a representation of a binary image storing

@@ -42,7 +42,7 @@ import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.executor.ExecutorIndeterminateGui;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @SuppressWarnings("unchecked")
 public class WebMapsController extends WebMapsView implements IOnCloseListener {

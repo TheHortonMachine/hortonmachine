@@ -32,7 +32,7 @@ import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCur
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.GridNode;

@@ -27,10 +27,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
@@ -39,8 +41,7 @@ import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
@@ -51,11 +52,6 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -104,7 +100,7 @@ public abstract class HMModelIM extends HMModel {
             locationField = propertiesMap.get("LocationAttribute");
             crs = imReader.getCoordinateReferenceSystem();
 
-            GeneralEnvelope originalEnvelope = imReader.getOriginalEnvelope();
+            var originalEnvelope = imReader.getOriginalEnvelope();
             llCorner = originalEnvelope.getLowerCorner().getCoordinate();
             urCorner = originalEnvelope.getUpperCorner().getCoordinate();
 
@@ -284,8 +280,8 @@ public abstract class HMModelIM extends HMModel {
         // int maxX = (int) round(transformed.getMaxX());
         // int minY = (int) round(transformed.getMinY());
 
-        GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new DirectPosition2D(llCorner[0], llCorner[1]));
-        GridCoordinates2D urGrid = readGridGeometry.worldToGrid(new DirectPosition2D(urCorner[0], urCorner[1]));
+        GridCoordinates2D llGrid = readGridGeometry.worldToGrid(new Position2D(llCorner[0], llCorner[1]));
+        GridCoordinates2D urGrid = readGridGeometry.worldToGrid(new Position2D(urCorner[0], urCorner[1]));
         int minX = llGrid.x;
         int maxY = llGrid.y; // y grid is inverse
         int maxX = urGrid.x;
@@ -315,7 +311,7 @@ public abstract class HMModelIM extends HMModel {
                 for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
                     gridCoordinates2D.x = writeCol;
                     gridCoordinates2D.y = writeRow;
-                    DirectPosition writeGridToWorld = writeGridGeometry.gridToWorld(gridCoordinates2D);
+                    var writeGridToWorld = writeGridGeometry.gridToWorld(gridCoordinates2D);
                     GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
                     int readCol = worldToReadGrid.x;
                     int readRow = worldToReadGrid.y;

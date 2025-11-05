@@ -32,8 +32,22 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_STA
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.coverage.grid.GridCoordinates2D;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -46,23 +60,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoordinates2D;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
-
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 
 @Description(OMSPOINTSVECTORIZER_DESCRIPTION)
 @Documentation(OMSPOINTSVECTORIZER_DOCUMENTATION)
@@ -119,7 +116,7 @@ public class OmsPointsVectorizer extends HMModel {
                 if (isNovalue(value)) {
                     continue;
                 }
-                DirectPosition world = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
+                var world = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
                 double[] coordinate = world.getCoordinate();
                 Coordinate coord = new Coordinate(coordinate[0], coordinate[1]);
                 Point point = gF.createPoint(coord);

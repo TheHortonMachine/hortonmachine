@@ -34,9 +34,9 @@ import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgPolyline3D;
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgSolid;
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgText;
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.utils.GisModelCurveCalculator;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateList;

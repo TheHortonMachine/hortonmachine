@@ -49,7 +49,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 @Description(OMSVECTORFIELDROUNDER_DESCRIPTION)
 @Documentation(OMSVECTORFIELDROUNDER_DOCUMENTATION)

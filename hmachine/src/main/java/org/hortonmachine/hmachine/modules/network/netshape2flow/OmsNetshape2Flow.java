@@ -39,8 +39,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -50,7 +50,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
@@ -62,9 +62,9 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.MultiPoint;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -180,7 +180,7 @@ public class OmsNetshape2Flow extends HMModel {
 
             Coordinate lastCoord = coordinates[coordinates.length - 1];
 
-            GridCoordinates2D lastPointGC = inGrid.worldToGrid(new DirectPosition2D(lastCoord.x, lastCoord.y));
+            GridCoordinates2D lastPointGC = inGrid.worldToGrid(new Position2D(lastCoord.x, lastCoord.y));
             int[] lastPoint = new int[]{lastPointGC.y, lastPointGC.x};
             for( int i = 0; i < coordinates.length - 1; i++ ) {
                 // if (i == coordinates.length - 2) {
@@ -201,9 +201,9 @@ public class OmsNetshape2Flow extends HMModel {
                     // length, i.e. 1
                     double perc = (runningLength + res) / segmentLength;
                     Coordinate secondPoint = lineSegment.pointAlong(perc > 1.0 ? 1.0 : perc);
-                    GridCoordinates2D firstPointGC = inGrid.worldToGrid(new DirectPosition2D(firstPoint.x, firstPoint.y));
+                    GridCoordinates2D firstPointGC = inGrid.worldToGrid(new Position2D(firstPoint.x, firstPoint.y));
                     int[] firstOnRaster = new int[]{firstPointGC.y, firstPointGC.x};
-                    GridCoordinates2D secondPointGC = inGrid.worldToGrid(new DirectPosition2D(secondPoint.x, secondPoint.y));
+                    GridCoordinates2D secondPointGC = inGrid.worldToGrid(new Position2D(secondPoint.x, secondPoint.y));
                     int[] secondOnRaster = new int[]{secondPointGC.y, secondPointGC.x};
 
                     /*
@@ -261,7 +261,7 @@ public class OmsNetshape2Flow extends HMModel {
 
             }
             Coordinate lastCoordinate = coordinates[coordinates.length - 1];
-            GridCoordinates2D lastCoordinateGC = inGrid.worldToGrid(new DirectPosition2D(lastCoordinate.x, lastCoordinate.y));
+            GridCoordinates2D lastCoordinateGC = inGrid.worldToGrid(new Position2D(lastCoordinate.x, lastCoordinate.y));
             int[] lastOnRaster = new int[]{lastCoordinateGC.y, lastCoordinateGC.x};
 
             /*

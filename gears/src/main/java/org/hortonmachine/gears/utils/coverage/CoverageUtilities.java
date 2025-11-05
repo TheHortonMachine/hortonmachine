@@ -48,13 +48,13 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import javax.media.jai.ROI;
-import javax.media.jai.ROIShape;
-import javax.media.jai.RasterFactory;
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.eclipse.imagen.ROI;
+import org.eclipse.imagen.ROIShape;
+import org.eclipse.imagen.RasterFactory;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.eclipse.imagen.media.range.NoDataContainer;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -67,8 +67,9 @@ import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.GeneralBounds;
+import org.geotools.geometry.GeneralPosition;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.parameter.Parameter;
@@ -90,6 +91,7 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
@@ -100,18 +102,17 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
-import org.opengis.coverage.grid.GridCoverageReader;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.Envelope;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.parameter.ParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.coverage.grid.GridCoverageReader;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.geometry.Position;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.GeographicCRS;
+import org.geotools.api.referencing.datum.PixelInCell;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.TransformException;
 
-import it.geosolutions.jaiext.range.NoDataContainer;
 
 /**
  * <p>
@@ -331,8 +332,8 @@ public class CoverageUtilities {
             writableRasterHolder[0] = raster;
         }
 
-        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west,
-                north - south);
+        ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north,
+				template.getCoordinateReferenceSystem());
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
         GridCoverage2D coverage2D = factory.create("newraster", raster, writeEnvelope);
         return coverage2D;
@@ -350,7 +351,7 @@ public class CoverageUtilities {
      *                  was can be used to populate the coverage. If <code>null</code>, it is ignored.
      * @return the new coverage.
      */
-    public static GridCoverage2D createSubCoverageFromTemplate( GridCoverage2D template, Envelope2D subregion, Double value,
+    public static GridCoverage2D createSubCoverageFromTemplate( GridCoverage2D template, Envelope subregion, Double value,
             WritableRaster[] writableRasterHolder ) {
         RegionMap regionMap = getRegionParamsFromGridCoverage(template);
         double xRes = regionMap.getXres();
@@ -377,8 +378,8 @@ public class CoverageUtilities {
         }
         if (writableRasterHolder != null)
             writableRasterHolder[0] = writableRaster;
-        Envelope2D writeEnvelope = new Envelope2D(template.getCoordinateReferenceSystem(), west, south, east - west,
-                north - south);
+        ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north,
+        						template.getCoordinateReferenceSystem());
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
         GridCoverage2D coverage2D = factory.create("newraster", writableRaster, writeEnvelope);
         return coverage2D;
@@ -474,11 +475,11 @@ public class CoverageUtilities {
     public static RegionMap getRegionParamsFromGridCoverage( GridCoverage2D gridCoverage ) {
         RegionMap envelopeParams = new RegionMap();
 
-        Envelope envelope = gridCoverage.getEnvelope();
+        Bounds envelope = gridCoverage.getEnvelope();
 
-        DirectPosition lowerCorner = envelope.getLowerCorner();
+        Position lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        DirectPosition upperCorner = envelope.getUpperCorner();
+        Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
 
         GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
@@ -531,11 +532,11 @@ public class CoverageUtilities {
     public static RegionMap getRegionParamsFromImageMosaicReader( ImageMosaicReader reader ) throws IOException {
         RegionMap envelopeParams = new RegionMap();
 
-        Envelope envelope = reader.getOriginalEnvelope();
+        Bounds envelope = reader.getOriginalEnvelope();
 
-        DirectPosition lowerCorner = envelope.getLowerCorner();
+        Position lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        DirectPosition upperCorner = envelope.getUpperCorner();
+        Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
 
         GridEnvelope2D gridRange = (GridEnvelope2D) reader.getOriginalGridRange();
@@ -564,10 +565,10 @@ public class CoverageUtilities {
      * @return the array of region parameters as [n, s, w, e, xres, yres, cols, rows]
      */
     public static double[] getRegionArrayFromGridCoverage( GridCoverage2D gridCoverage ) {
-        Envelope envelope = gridCoverage.getEnvelope();
-        DirectPosition lowerCorner = envelope.getLowerCorner();
+        Bounds envelope = gridCoverage.getEnvelope();
+        Position lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        DirectPosition upperCorner = envelope.getUpperCorner();
+        Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
 
         GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
@@ -621,7 +622,7 @@ public class CoverageUtilities {
      * @return the bounding polygon.
      */
     public static Polygon getRegionPolygon( GridCoverage2D gridCoverage ) {
-        Envelope2D env = gridCoverage.getEnvelope2D();
+        ReferencedEnvelope env = gridCoverage.getEnvelope2D();
         Coordinate[] c = new Coordinate[]{new Coordinate(env.getMinX(), env.getMinY()),
                 new Coordinate(env.getMinX(), env.getMaxY()), new Coordinate(env.getMaxX(), env.getMaxY()),
                 new Coordinate(env.getMaxX(), env.getMinY()), new Coordinate(env.getMinX(), env.getMinY())};
@@ -639,7 +640,7 @@ public class CoverageUtilities {
      * @return the array of looping values in the form [minCol, maxCol, minRow, maxRow].
      * @throws Exception
      */
-    public static int[] getLoopColsRowsForSubregion( GridCoverage2D gridCoverage, Envelope2D subregion ) throws Exception {
+    public static int[] getLoopColsRowsForSubregion( GridCoverage2D gridCoverage, ReferencedEnvelope subregion ) throws Exception {
         GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
         GridEnvelope2D subRegionGrid = gridGeometry.worldToGrid(subregion);
         int minCol = subRegionGrid.x;
@@ -677,10 +678,10 @@ public class CoverageUtilities {
     public static RegionMap gridGeometry2RegionParamsMap( GridGeometry2D gridGeometry ) {
         RegionMap envelopeParams = new RegionMap();
 
-         Envelope2D envelope = gridGeometry.getEnvelope2D();
-        DirectPosition lowerCorner = envelope.getLowerCorner();
+        ReferencedEnvelope envelope = gridGeometry.getEnvelope2D();
+        Position lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        DirectPosition upperCorner = envelope.getUpperCorner();
+        Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
 
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
@@ -759,7 +760,8 @@ public class CoverageUtilities {
 
     public static GridGeometry2D gridGeometryFromRegionValues( double north, double south, double east, double west, int cols,
             int rows, CoordinateReferenceSystem crs ) {
-        Envelope envelope = new Envelope2D(crs, west, south, east - west, north - south);
+//        Envelope envelope = new Envelope2D(crs, west, south, east - west, north - south);
+		ReferencedEnvelope envelope = new ReferencedEnvelope(west, east, south, north, crs);
         GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, cols, rows);
         GridGeometry2D gridGeometry2D = new GridGeometry2D(gridRange, envelope);
         return gridGeometry2D;
@@ -782,13 +784,13 @@ public class CoverageUtilities {
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, width, height);
-        Envelope env;
+        Bounds env;
         if (crs != null) {
             env = new ReferencedEnvelope(west, east, south, north, crs);
         } else {
-            DirectPosition2D minDp = new DirectPosition2D(west, south);
-            DirectPosition2D maxDp = new DirectPosition2D(east, north);
-            env = new Envelope2D(minDp, maxDp);
+        	GeneralPosition minGp = new GeneralPosition(west, south);
+        	GeneralPosition maxGp = new GeneralPosition(east, north);
+            env = new GeneralBounds(minGp, maxGp);
         }
         GridGeometry2D gridGeometry = new GridGeometry2D(gridEnvelope, env);
         readGG.setValue(gridGeometry);
@@ -809,7 +811,7 @@ public class CoverageUtilities {
         GeneralParameterValue[] readParams = new GeneralParameterValue[1];
         Parameter<GridGeometry2D> readGG = new Parameter<GridGeometry2D>(AbstractGridFormat.READ_GRIDGEOMETRY2D);
         GridEnvelope2D gridEnvelope = new GridEnvelope2D(0, 0, regionMap.getCols(), regionMap.getRows());
-        Envelope env;
+        Bounds env;
         double north = regionMap.getNorth();
         double south = regionMap.getSouth();
         double east = regionMap.getEast();
@@ -817,9 +819,9 @@ public class CoverageUtilities {
         if (crs != null) {
             env = new ReferencedEnvelope(west, east, south, north, crs);
         } else {
-            DirectPosition2D minDp = new DirectPosition2D(west, south);
-            DirectPosition2D maxDp = new DirectPosition2D(east, north);
-            env = new Envelope2D(minDp, maxDp);
+        	GeneralPosition minDp = new GeneralPosition(west, south);
+        	GeneralPosition maxDp = new GeneralPosition(east, north);
+        	env = new GeneralBounds(minDp, maxDp);
         }
         readGG.setValue(new GridGeometry2D(gridEnvelope, env));
         readParams[0] = readGG;
@@ -1041,7 +1043,7 @@ public class CoverageUtilities {
         double south = envelopeParams.south;
         double east = envelopeParams.east;
         double north = envelopeParams.north;
-        Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
+        ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north, crs);
 
         final GridSampleDimension[] bands = RenderedSampleDimension.create(name, renderedImage.getData(), null, null, null, null,
                 null);
@@ -1089,7 +1091,7 @@ public class CoverageUtilities {
         double south = envelopeParams.south;
         double east = envelopeParams.east;
         double north = envelopeParams.north;
-        Envelope2D writeEnvelope = new Envelope2D(crs, west, south, east - west, north - south);
+        ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north, crs);
         final GridSampleDimension[] bands = RenderedSampleDimension.create(name, writableRaster, null, null, null, null, null);
         final ColorModel model = bands[0].getColorModel(0, bands.length, writableRaster.getSampleModel().getDataType());
         final RenderedImage image = new BufferedImage(model, writableRaster, false, null);
@@ -1420,7 +1422,7 @@ public class CoverageUtilities {
         while( progressive < lineLength + step ) { // run over by a step to make sure we get the
                                                    // last coord back from the extractor
             Coordinate c = indexedLine.extractPoint(progressive);
-            gridCoords = gridGeometry.worldToGrid(new DirectPosition2D(c.x, c.y));
+            gridCoords = gridGeometry.worldToGrid(new Position2D(c.x, c.y));
             double value = HMConstants.doubleNovalue;
             if (// envelope2d.contains(c.x, c.y) &&
             isInside(cols - 1, rows - 1, gridCoords)) {
@@ -1523,7 +1525,7 @@ public class CoverageUtilities {
      */
     public static int[] colRowFromCoordinate( Coordinate coordinate, GridGeometry2D gridGeometry, Point point ) {
         try {
-            DirectPosition pos = new DirectPosition2D(coordinate.x, coordinate.y);
+            Position pos = new Position2D(coordinate.x, coordinate.y);
             GridCoordinates2D worldToGrid = gridGeometry.worldToGrid(pos);
             if (point != null) {
                 point.x = worldToGrid.x;
@@ -1552,8 +1554,8 @@ public class CoverageUtilities {
     public static Coordinate coordinateFromColRow( int col, int row, GridGeometry2D gridGeometry ) {
         try {
             MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
-            DirectPosition pos = new DirectPosition2D();
-            gridToCRS.transform(new DirectPosition2D(col, row), pos);
+            Position pos = new Position2D();
+            gridToCRS.transform(new Position2D(col, row), pos);
             // GridCoordinates2D pos = new GridCoordinates2D(col, row);
             // DirectPosition gridToWorld = gridGeometry.gridToWorld(pos);
             double[] coord = pos.getCoordinate();
@@ -2120,14 +2122,14 @@ public class CoverageUtilities {
                             Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
                             Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
 
-                            DirectPosition2D startDP;
-                            DirectPosition2D endDP;
+                            Position2D startDP;
+                            Position2D endDP;
                             if (startC.x < endC.x) {
-                                startDP = new DirectPosition2D(startC.x, startC.x);
-                                endDP = new DirectPosition2D(endC.x, endC.x);
+                                startDP = new Position2D(startC.x, startC.x);
+                                endDP = new Position2D(endC.x, endC.x);
                             } else {
-                                startDP = new DirectPosition2D(endC.x, endC.x);
-                                endDP = new DirectPosition2D(startC.x, startC.x);
+                                startDP = new Position2D(endC.x, endC.x);
+                                endDP = new Position2D(startC.x, startC.x);
                             }
                             GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(startDP);
                             GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(endDP);

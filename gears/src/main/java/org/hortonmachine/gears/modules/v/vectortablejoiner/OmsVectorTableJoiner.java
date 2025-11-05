@@ -52,7 +52,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureExtender;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 @Description(OMSVECTORTABLEJOINER_DESCRIPTION)
 @Documentation(OMSVECTORTABLEJOINER_DOCUMENTATION)

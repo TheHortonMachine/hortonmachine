@@ -31,10 +31,10 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.FEATUREREADER;
 import java.io.File;
 import java.io.IOException;
 
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
+import org.geotools.api.data.FileDataStore;
+import org.geotools.api.data.FileDataStoreFinder;
+import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.EDb;

@@ -56,8 +56,8 @@ import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import org.locationtech.jts.awt.PointTransformation;
 import org.locationtech.jts.awt.ShapeWriter;

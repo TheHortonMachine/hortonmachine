@@ -30,7 +30,7 @@ import javax.net.ssl.TrustManager;
 // import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.readers.InsecureTrustManager;
 import org.hortonmachine.gears.utils.CrsUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Utils methods for the WCS handlers.

@@ -20,23 +20,16 @@ package org.hortonmachine.gears.utils;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.PrintStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.opengis.geometry.DirectPosition;
 
 /**
  * Utility class to print data out.
@@ -177,30 +170,23 @@ public class PrintUtilities {
         return geometry.toText();
     }
 
-    public static org.locationtech.jts.geom.Envelope envelope2D2Envelope( Envelope2D envelope2d ) {
-        org.locationtech.jts.geom.Envelope jtsEnv = new org.locationtech.jts.geom.Envelope(envelope2d.getMinX(),
-                envelope2d.getMaxX(), envelope2d.getMinY(), envelope2d.getMaxY());
-        return jtsEnv;
-    }
-
     public static String toString( GridCoverage2D coverage ) {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
         StringBuilder sb = new StringBuilder();
         sb.append(regionMap.toStringJGT()).append("\n");
-        Envelope2D envelope2d = coverage.getEnvelope2D();
-        Envelope jtsEnvelope = envelope2D2Envelope(envelope2d);
-        String envelope2wkt = envelope2WKT(jtsEnvelope);
+        var envelope2d = coverage.getEnvelope2D();
+        String envelope2wkt = envelope2WKT(envelope2d);
         sb.append("WKT bounds: \n");
         sb.append(envelope2wkt);
         return sb.toString();
     }
 
     public static String getRegionPrint( GridCoverage2D coverage ) {
-        org.opengis.geometry.Envelope envelope = coverage.getEnvelope();
+        var envelope = coverage.getEnvelope();
 
-        DirectPosition lowerCorner = envelope.getLowerCorner();
+        var lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        DirectPosition upperCorner = envelope.getUpperCorner();
+        var upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
 
         GridGeometry2D gridGeometry = coverage.getGridGeometry();

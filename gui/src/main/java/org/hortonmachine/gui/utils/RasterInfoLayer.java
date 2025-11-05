@@ -19,7 +19,7 @@ import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.DirectLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -29,7 +29,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.referencing.operation.TransformException;
 
 public class RasterInfoLayer extends DirectLayer {
 
@@ -82,8 +82,8 @@ public class RasterInfoLayer extends DirectLayer {
 
                 double half = cellSize / 2;
 
-                GridCoordinates2D llPix = gg.worldToGrid(new DirectPosition2D(w, s));
-                GridCoordinates2D urPix = gg.worldToGrid(new DirectPosition2D(e, n));
+                GridCoordinates2D llPix = gg.worldToGrid(new Position2D(w, s));
+                GridCoordinates2D urPix = gg.worldToGrid(new Position2D(e, n));
 
                 int fromC = (int) Math.floor(llPix.getX());
                 int toC = (int) Math.ceil(urPix.getX()) + 1;

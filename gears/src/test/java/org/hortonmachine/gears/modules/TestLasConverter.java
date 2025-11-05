@@ -27,7 +27,7 @@ import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestLasConverter extends HMTestCase {
     public void testLasConverter() throws Exception {

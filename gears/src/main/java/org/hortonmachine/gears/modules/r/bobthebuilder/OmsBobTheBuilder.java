@@ -42,10 +42,9 @@ import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
-
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -69,7 +68,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
-import org.opengis.geometry.DirectPosition;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -236,7 +234,7 @@ public class OmsBobTheBuilder extends HMModel {
                     continue;
                 }
                 gridCoord.setLocation(c, r);
-                DirectPosition world = gridGeometry.gridToWorld(gridCoord);
+                var world = gridGeometry.gridToWorld(gridCoord);
                 double[] coordinate = world.getCoordinate();
                 double interpolated = interpolator.getValue(controlPoints, new Coordinate(coordinate[0], coordinate[1]));
                 outputIter.setSample(c, r, 0, interpolated);

@@ -26,7 +26,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 /**
  * @author Stefano Endrizzi

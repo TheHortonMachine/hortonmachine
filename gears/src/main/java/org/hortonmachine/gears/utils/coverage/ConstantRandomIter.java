@@ -17,7 +17,7 @@
  */
 package org.hortonmachine.gears.utils.coverage;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 public class ConstantRandomIter implements RandomIter {
 

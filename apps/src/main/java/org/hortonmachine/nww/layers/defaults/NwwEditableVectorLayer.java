@@ -18,7 +18,7 @@
 package org.hortonmachine.nww.layers.defaults;
 
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 /**
  * Common interface for editable layers.

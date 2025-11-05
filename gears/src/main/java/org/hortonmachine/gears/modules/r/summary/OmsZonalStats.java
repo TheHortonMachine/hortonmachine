@@ -39,7 +39,7 @@ import java.awt.geom.AffineTransform;
 import java.text.MessageFormat;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -49,7 +49,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
@@ -60,10 +60,10 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -265,14 +265,14 @@ public class OmsZonalStats extends HMModel {
                             Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
                             Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
 
-                            DirectPosition2D startDP;
-                            DirectPosition2D endDP;
+                            Position2D startDP;
+                            Position2D endDP;
                             if (startC.x < endC.x) {
-                                startDP = new DirectPosition2D(startC.x, startC.x);
-                                endDP = new DirectPosition2D(endC.x, endC.x);
+                                startDP = new Position2D(startC.x, startC.x);
+                                endDP = new Position2D(endC.x, endC.x);
                             } else {
-                                startDP = new DirectPosition2D(endC.x, endC.x);
-                                endDP = new DirectPosition2D(startC.x, startC.x);
+                                startDP = new Position2D(endC.x, endC.x);
+                                endDP = new Position2D(startC.x, startC.x);
                             }
                             GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(startDP);
                             GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(endDP);

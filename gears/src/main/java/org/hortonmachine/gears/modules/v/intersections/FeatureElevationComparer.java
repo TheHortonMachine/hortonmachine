@@ -20,8 +20,8 @@ package org.hortonmachine.gears.modules.v.intersections;
 
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import org.locationtech.jts.geom.Geometry;
 

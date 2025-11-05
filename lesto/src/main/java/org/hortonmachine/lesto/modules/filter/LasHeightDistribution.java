@@ -26,14 +26,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.las.ALasDataManager;
@@ -49,8 +49,8 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.geometry.DirectPosition;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -180,7 +180,7 @@ public class LasHeightDistribution extends HMModel {
 
                     WritableRandomIter tmpIter = CoverageUtilities.getWritableRandomIterator(wrH[0]);
 
-                    final DirectPosition2D wp = new DirectPosition2D();
+                    final Position2D wp = new Position2D();
                     for( LasRecord lasRecord : pointsInVerticalRange ) {
                         wp.setLocation(lasRecord.x, lasRecord.y);
                         GridCoordinates2D gp = tileGridGeometry.worldToGrid(wp);

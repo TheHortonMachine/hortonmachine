@@ -22,7 +22,7 @@ import java.util.List;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.adige.duffy.DuffyInputs;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

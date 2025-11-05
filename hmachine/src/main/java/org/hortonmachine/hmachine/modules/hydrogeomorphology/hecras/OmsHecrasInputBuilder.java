@@ -50,7 +50,7 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.ARiverSectionsExtractor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.RiverInfo;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.riversections.RiverPoint;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import org.locationtech.jts.geom.Coordinate;
 

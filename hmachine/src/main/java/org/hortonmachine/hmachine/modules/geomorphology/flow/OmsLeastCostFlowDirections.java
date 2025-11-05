@@ -50,8 +50,8 @@ import java.awt.image.WritableRaster;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -76,7 +76,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.modules.geomorphology.aspect.OmsAspect;
 import org.hortonmachine.hmachine.modules.geomorphology.slope.OmsSlope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION)
 @Documentation(OMSLEASTCOSTFLOWDIRECTIONS_DOCUMENTATION)

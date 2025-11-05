@@ -18,19 +18,16 @@ package org.hortonmachine.gears.libs.modules;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
@@ -179,16 +176,16 @@ public class JGTProcessingRegion {
      * Creates a new instance of {@link JGTProcessingRegion} from an {@link Envelope2D}
      * .
      * 
-     * @param envelope2D
+     * @param envelope
      *            the envelope2D from which to take the setting from.
      */
-    public JGTProcessingRegion( Envelope2D envelope2D ) {
-        west = envelope2D.getMinX();
-        east = envelope2D.getMaxX();
-        south = envelope2D.getMinY();
-        north = envelope2D.getMaxY();
-        we_res = envelope2D.getHeight();
-        ns_res = envelope2D.getWidth();
+    public JGTProcessingRegion( Envelope envelope ) {
+        west = envelope.getMinX();
+        east = envelope.getMaxX();
+        south = envelope.getMinY();
+        north = envelope.getMaxY();
+        we_res = envelope.getHeight();
+        ns_res = envelope.getWidth();
 
         fixRowsAndCols();
         fixResolution();

@@ -40,7 +40,7 @@ import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgPolyline2D;
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgPolyline3D;
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgSolid;
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.objects.DwgText;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 /**
  * Feature reader for DWG files.

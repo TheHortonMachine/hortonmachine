@@ -2,7 +2,7 @@ package org.hortonmachine.nww.shapes;
 
 import java.util.List;
 
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.render.Path;

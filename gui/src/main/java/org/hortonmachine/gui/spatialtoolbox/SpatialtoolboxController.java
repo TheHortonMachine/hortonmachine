@@ -94,7 +94,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Out;
 

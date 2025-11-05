@@ -26,7 +26,7 @@ package org.hortonmachine.hmachine.models.hm;
 //import org.hortonmachine.hmachine.modules.network.strahler.OmsStrahler;
 //import org.hortonmachine.hmachine.utils.HMTestCase;
 //import org.hortonmachine.hmachine.utils.HMTestMaps;
-//import org.opengis.referencing.crs.CoordinateReferenceSystem;
+//import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 //
 ///**
 // * Test the {@link OmsStrahler} module.

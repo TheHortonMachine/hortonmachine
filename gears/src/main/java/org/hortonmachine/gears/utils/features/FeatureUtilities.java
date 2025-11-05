@@ -34,25 +34,30 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.media.jai.JAI;
-import javax.media.jai.ParameterBlockJAI;
-import javax.media.jai.RenderedOp;
-
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.ParameterBlockImageN;
+import org.eclipse.imagen.RenderedOp;
+import org.geotools.api.data.SimpleFeatureStore;
+import org.geotools.api.data.Transaction;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.type.AttributeDescriptor;
+import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.metadata.spatial.PixelOrientation;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.DefaultTransaction;
-import org.geotools.data.Transaction;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.data.shapefile.ShapefileDataStoreFactory;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.data.simple.SimpleFeatureStore;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.gce.grassraster.JGrassConstants;
-import org.geotools.geometry.Envelope2D;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -70,12 +75,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.util.AffineTransformation;
 import org.locationtech.jts.index.strtree.STRtree;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.feature.type.AttributeDescriptor;
-import org.opengis.feature.type.GeometryDescriptor;
-import org.opengis.metadata.spatial.PixelOrientation;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 public class FeatureUtilities {
 
@@ -706,11 +705,14 @@ public class FeatureUtilities {
      * @param envelope the envelope to convert.
      * @return the created polygon.
      */
-    public static Polygon envelopeToPolygon( Envelope2D envelope ) {
-        double w = envelope.getMinX();
-        double e = envelope.getMaxX();
-        double s = envelope.getMinY();
-        double n = envelope.getMaxY();
+    public static Polygon envelopeToPolygon( Bounds envelope ) {
+    	var lowerCorner = envelope.getLowerCorner();
+    	var upperCorner = envelope.getUpperCorner();
+    	
+        double w = lowerCorner.getOrdinate(0);
+        double s = lowerCorner.getOrdinate(1);
+        double e = upperCorner.getOrdinate(0);
+        double n = upperCorner.getOrdinate(1);
 
         Coordinate[] coords = new Coordinate[5];
         coords[0] = new Coordinate(w, n);
@@ -765,7 +767,7 @@ public class FeatureUtilities {
             args = new HashMap<String, Object>();
         }
 
-        ParameterBlockJAI pb = new ParameterBlockJAI("Vectorize");
+        ParameterBlockImageN pb = new ParameterBlockImageN("Vectorize");
         pb.setSource("source0", src.getRenderedImage());
 
         // Set any parameters that were passed in
@@ -775,7 +777,7 @@ public class FeatureUtilities {
 
         // Get the desintation image: this is the unmodified source image data
         // plus a property for the generated vectors
-        RenderedOp dest = JAI.create("Vectorize", pb);
+        RenderedOp dest = ImageN.create("Vectorize", pb);
 
         // Get the vectors
         Collection<Polygon> polygons = (Collection<Polygon>) dest.getProperty(VectorizeDescriptor.VECTOR_PROPERTY_NAME);

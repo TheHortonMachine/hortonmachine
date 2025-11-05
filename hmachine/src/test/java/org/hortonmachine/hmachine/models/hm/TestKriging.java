@@ -21,9 +21,9 @@ package org.hortonmachine.hmachine.models.hm;
 //import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKriging;
 //import org.hortonmachine.hmachine.utils.HMTestCase;
 //import org.hortonmachine.hmachine.utils.HMTestMaps;
-//import org.opengis.feature.simple.SimpleFeature;
-//import org.opengis.filter.Filter;
-//import org.opengis.referencing.crs.CoordinateReferenceSystem;
+//import org.geotools.api.feature.simple.SimpleFeature;
+//import org.geotools.api.filter.Filter;
+//import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 //
 //import org.locationtech.jts.geom.Coordinate;
 //import org.locationtech.jts.geom.Geometry;

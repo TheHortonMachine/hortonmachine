@@ -36,9 +36,9 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -49,7 +49,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.i18n.GearsMessageHandler;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -63,11 +63,11 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.TransformException;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.datum.PixelInCell;
+import org.geotools.api.referencing.operation.MathTransform2D;
+import org.geotools.api.referencing.operation.TransformException;
 
 /**
  * A class containing several methods used by the modules.
@@ -734,7 +734,7 @@ public class ModelsEngine {
                     Coordinate pointCoordinate = point.getCoordinate();
                     if (envelope.contains(pointCoordinate)) {
                         GridCoordinates2D gridCoordinate = gridGeometry
-                                .worldToGrid(new DirectPosition2D(pointCoordinate.x, pointCoordinate.y));
+                                .worldToGrid(new Position2D(pointCoordinate.x, pointCoordinate.y));
 
                         GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y, netNv);
                         FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y, flowNv);

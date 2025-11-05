@@ -47,7 +47,7 @@ import org.hortonmachine.gears.utils.features.FeatureExtender;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
-import org.opengis.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeature;
 
 @Description(OmsLW11_NetworkPropagator.DESCRIPTION)
 @Author(name = OmsLW11_NetworkPropagator.AUTHORS, contact = OmsLW11_NetworkPropagator.CONTACTS)

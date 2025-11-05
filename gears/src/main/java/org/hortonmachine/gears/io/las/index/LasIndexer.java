@@ -49,8 +49,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.geotools.referencing.CRS;
@@ -67,10 +66,9 @@ import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateList;
@@ -269,8 +267,7 @@ public class LasIndexer extends HMModel {
                 return;
             }
             ReferencedEnvelope3D envelope = header.getDataEnvelope();
-            ReferencedEnvelope env2d = new ReferencedEnvelope(envelope);
-            Envelope2D e = new Envelope2D(env2d);
+            ReferencedEnvelope e = new ReferencedEnvelope(envelope);
 
             double north = e.getMaxY();
             double south = e.getMinY();
@@ -308,7 +305,7 @@ public class LasIndexer extends HMModel {
             }
             while( reader.hasNextPoint() ) {
                 LasRecord dot = reader.getNextPoint();
-                DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
+                Position2D wPoint = new Position2D(dot.x, dot.y);
                 GridCoordinates2D gridCoord = gridGeometry.worldToGrid(wPoint);
                 int x = gridCoord.x;
                 int y = gridCoord.y;

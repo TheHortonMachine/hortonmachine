@@ -34,9 +34,9 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_outAttribut
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.RandomIterFactory;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.RandomIterFactory;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

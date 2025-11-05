@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.Rule;
+import org.geotools.api.style.FeatureTypeStyle;
+import org.geotools.api.style.Rule;
 
 /**
  * A wrapper for the {@link FeatureTypeStyle} object to ease gui use.

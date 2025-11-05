@@ -25,7 +25,7 @@ package org.hortonmachine.gears.modules;
 //import org.hortonmachine.gears.modules.v.vectorconverter.OmsDwgConverter;
 //import org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter;
 //import org.hortonmachine.gears.utils.HMTestCase;
-//import org.opengis.feature.simple.SimpleFeature;
+//import org.geotools.api.feature.simple.SimpleFeature;
 //
 //import org.locationtech.jts.geom.Coordinate;
 //import org.locationtech.jts.geom.Geometry;

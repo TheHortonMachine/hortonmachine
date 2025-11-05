@@ -31,8 +31,8 @@ import static org.hortonmachine.hmachine.modules.geomorphology.gradient.OmsGradi
 
 import java.io.File;
 
-import javax.media.jai.iterator.RandomIter;
-import javax.media.jai.iterator.WritableRandomIter;
+import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.hortonmachine.gears.libs.modules.HMModelIM;
 import org.hortonmachine.gears.utils.colors.EColorTables;

@@ -36,8 +36,8 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import static org.hortonmachine.gears.i18n.GearsMessages.*;
 

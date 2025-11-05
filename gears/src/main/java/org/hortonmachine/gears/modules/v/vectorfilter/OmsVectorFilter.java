@@ -47,8 +47,8 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FilterUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.filter.Filter;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.filter.Filter;
 
 @Description(OMSVECTORFILTER_DESCRIPTION)
 @Documentation(OMSVECTORFILTER_DOCUMENTATION)

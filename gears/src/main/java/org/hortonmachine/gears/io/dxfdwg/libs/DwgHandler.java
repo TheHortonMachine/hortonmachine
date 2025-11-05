@@ -23,7 +23,7 @@ import java.io.IOException;
 import java.util.List;
 
 import org.hortonmachine.gears.io.dxfdwg.libs.dwg.DwgFile;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 public class DwgHandler {
 

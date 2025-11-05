@@ -19,18 +19,17 @@ package org.hortonmachine.gears.modules.r.aoi;
 
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
 import org.geotools.coverage.processing.Operations;
-import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.JGTProcessingRegion;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -79,7 +78,7 @@ public class OmsAreaOfInterestGridCoverage extends HMModel {
         
         aoi = aoi.transform( crs, true );
         
-        GeneralEnvelope originalEnvelope = inCoverageReader.getOriginalEnvelope();
+        var originalEnvelope = inCoverageReader.getOriginalEnvelope();
         GridEnvelope2D overviewGridEnvelope = (GridEnvelope2D) inCoverageReader.getOriginalGridRange();
 
         double[] llCorner = originalEnvelope.getLowerCorner().getCoordinate();
@@ -88,9 +87,8 @@ public class OmsAreaOfInterestGridCoverage extends HMModel {
         JGTProcessingRegion originalRegion = new JGTProcessingRegion(llCorner[0], urCorner[0], llCorner[1], urCorner[1],
                 overviewGridEnvelope.height, overviewGridEnvelope.width);
 
-        RegionMap originalRegionMap = CoverageUtilities.makeRegionParamsMap(urCorner[1], llCorner[1], llCorner[0], urCorner[0],
-                originalRegion.getWEResolution(), originalRegion.getNSResolution(), overviewGridEnvelope.width,
-                overviewGridEnvelope.height);
+        RegionMap originalRegionMap = RegionMap.fromBoundsAndResolution(urCorner[1], llCorner[1], llCorner[0], urCorner[0],
+                originalRegion.getWEResolution(), originalRegion.getNSResolution());
 
         RegionMap subRegion = originalRegionMap.toSubRegion(aoi.getMaxY(), aoi.getMinY(), aoi.getMinX(), aoi.getMaxX());
 

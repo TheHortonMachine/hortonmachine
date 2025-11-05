@@ -34,14 +34,16 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.geotools.api.coverage.PointOutsideCoverageException;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -60,11 +62,6 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.gears.utils.time.EggClock;
-import org.opengis.coverage.PointOutsideCoverageException;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
@@ -311,9 +308,8 @@ public class DatabaseLasWriter extends HMModel {
                 return;
             }
             ReferencedEnvelope3D envelope = header.getDataEnvelope();
-            ReferencedEnvelope env2d = new ReferencedEnvelope(envelope);
-            Envelope2D e = new Envelope2D(env2d);
-
+            ReferencedEnvelope e = new ReferencedEnvelope(envelope);
+			
             double north = e.getMaxY();
             double south = e.getMinY();
             double east = e.getMaxX();
@@ -341,7 +337,7 @@ public class DatabaseLasWriter extends HMModel {
                 LasRecord dot = reader.getNextPoint();
                 minIntens = (short) Math.min(minIntens, dot.intensity);
                 maxIntens = (short) Math.max(maxIntens, dot.intensity);
-                DirectPosition wPoint = new DirectPosition2D(dot.x, dot.y);
+                Position2D wPoint = new Position2D(dot.x, dot.y);
                 GridCoordinates2D gridCoord = gridGeometry.worldToGrid(wPoint);
                 int x = gridCoord.x;
                 if (x < 0)

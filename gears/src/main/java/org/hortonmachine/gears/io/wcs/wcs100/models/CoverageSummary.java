@@ -8,7 +8,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.ICoverageSummary;
 import org.hortonmachine.gears.io.wcs.XmlHelper;
 import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.w3c.dom.Node;
 
 public class CoverageSummary implements ICoverageSummary {

@@ -25,7 +25,7 @@ import org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDens
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
 import org.jaitools.media.jai.kernel.KernelFactory;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for the {@link OmsKernelDensity} module.
  * 

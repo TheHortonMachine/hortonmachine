@@ -52,7 +52,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.NotesTa
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.opengis.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.Point;

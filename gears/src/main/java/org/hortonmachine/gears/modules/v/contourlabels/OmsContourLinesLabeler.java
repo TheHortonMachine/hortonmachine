@@ -18,18 +18,6 @@
  */
 package org.hortonmachine.gears.modules.v.contourlabels;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Documentation;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_BUFFER_DESCRIPTION;
@@ -45,9 +33,14 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_OUTPOINTS_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCONTOURLINESLABELER_STATUS;
 
+import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.filter.Filter;
+import org.geotools.api.geometry.BoundingBox;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.memory.MemoryDataStore;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
@@ -55,15 +48,21 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FilterUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.feature.simple.SimpleFeatureType;
-import org.opengis.filter.Filter;
-import org.opengis.geometry.BoundingBox;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OMSCONTOURLINESLABELER_DESCRIPTION)
 @Documentation(OMSCONTOURLINESLABELER_DOCUMENTATION)
