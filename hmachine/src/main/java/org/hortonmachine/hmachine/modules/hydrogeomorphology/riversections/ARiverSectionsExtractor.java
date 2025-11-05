@@ -29,6 +29,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.lwrecruitment.LWFields;
 import org.opengis.feature.simple.SimpleFeature;
@@ -178,10 +179,11 @@ public abstract class ARiverSectionsExtractor {
      * @param riverPointsFeatures the river points. 
      * @param sectionFeatures the extracted sections.
      * @param sectionPointsFeatures the section points.
+     * @param pKs 
      * @return the {@link RiverInfo}.
      */
     public static RiverInfo getRiverInfo( List<SimpleFeature> riverPointsFeatures, List<SimpleFeature> sectionFeatures,
-            List<SimpleFeature> sectionPointsFeatures ) {
+            List<SimpleFeature> sectionPointsFeatures, Double pKs ) {
         RiverInfo riverInfo = new RiverInfo();
 
         for( SimpleFeature riverPointFeature : riverPointsFeatures ) {
@@ -205,6 +207,7 @@ public abstract class ARiverSectionsExtractor {
         }
 
         HashMap<Integer, TreeMap<Integer, SimpleFeature>> sectionId2PointId2PointMap = new HashMap<>();
+        String sectionPointsIndexName = FeatureUtilities.findAttributeName(sectionPointsFeatures.get(0).getFeatureType(), FIELD_SECTIONPOINT_INDEX);
         for( SimpleFeature pointFeature : sectionPointsFeatures ) {
             int sectionId = ((Number) pointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTION_ID)).intValue();
             TreeMap<Integer, SimpleFeature> pointId2PointMap = sectionId2PointId2PointMap.get(sectionId);
@@ -212,8 +215,15 @@ public abstract class ARiverSectionsExtractor {
                 pointId2PointMap = new TreeMap<>();
                 sectionId2PointId2PointMap.put(sectionId, pointId2PointMap);
             }
-            int pointId = ((Number) pointFeature.getAttribute(ARiverSectionsExtractor.FIELD_SECTIONPOINT_INDEX)).intValue();
-            pointId2PointMap.put(pointId, pointFeature);
+            Object attribute = pointFeature.getAttribute(sectionPointsIndexName);
+            if (attribute instanceof Number) {
+				int pointId = ((Number) attribute).intValue();
+				pointId2PointMap.put(pointId, pointFeature);
+			} else {
+				throw new ModelsRuntimeException("The input section point data do not have valid index values: " + pointFeature,
+						"ARiverSectionsExtractor");
+			}
+            
         }
 
         for( Entry<Integer, SimpleFeature> sectionEntry : riverInfo.orderedSections.entrySet() ) {
@@ -222,8 +232,12 @@ public abstract class ARiverSectionsExtractor {
             double progressive = ((Number) sectionFeature.getAttribute(ARiverSectionsExtractor.FIELD_PROGRESSIVE)).doubleValue();
             Object attribute = sectionFeature.getAttribute(LWFields.GAUKLER);
             if (attribute == null) {
-                throw new ModelsRuntimeException("The input section data do not have the value of KS.",
-                        "ARiverSectionsExtractor");
+            	if (pKs != null) {
+        			attribute = pKs;
+            	} else {
+	                throw new ModelsRuntimeException("The input section data do not have the value of KS.",
+	                        "ARiverSectionsExtractor");
+            	}
             }
             double ks = ((Number) attribute).doubleValue();
 

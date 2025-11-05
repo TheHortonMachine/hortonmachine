@@ -109,7 +109,8 @@ public class OmsHecrasInputBuilder extends HMModel {
         List<SimpleFeature> riverPointsFeatures = FeatureUtilities.featureCollectionToList(inRiverPoints);
         List<SimpleFeature> sectionFeatures = FeatureUtilities.featureCollectionToList(inSections);
         List<SimpleFeature> sectionPointsFeatures = FeatureUtilities.featureCollectionToList(inSectionPoints);
-        RiverInfo riverInfo = ARiverSectionsExtractor.getRiverInfo(riverPointsFeatures, sectionFeatures, sectionPointsFeatures);
+        double dummyKs = -1.0; // dummy constant value, since not used in this context
+		RiverInfo riverInfo = ARiverSectionsExtractor.getRiverInfo(riverPointsFeatures, sectionFeatures, sectionPointsFeatures, dummyKs);
 
         StringBuilder outBuf = new StringBuilder();
 

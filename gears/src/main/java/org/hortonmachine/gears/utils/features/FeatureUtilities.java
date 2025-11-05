@@ -691,6 +691,11 @@ public class FeatureUtilities {
             if (name.toLowerCase().equals(field.toLowerCase())) {
                 return name;
             }
+            // try to see if a reserved name was used, in which case it might be between quotes
+            String nameNoQuotes = name.replaceAll("\"", "");
+            if (nameNoQuotes.toLowerCase().equals(field.toLowerCase())) {
+				return name;
+			}
         }
         return null;
     }
