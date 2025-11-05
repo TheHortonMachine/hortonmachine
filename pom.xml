@@ -25,7 +25,19 @@
 
 	<properties>
     <maven.compiler.source>17</maven.compiler.source>
-		<gt.version>28.0</gt.version>
+		<gt.version>34.0</gt.version>
+
+		<!-- build configuration -->
+		<java.awt.headless>true</java.awt.headless>
+		<sun.java2d.d3d>true</sun.java2d.d3d>
+		<jvm.opts />
+		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
+		<build.timestamp>${maven.build.timestamp}</build.timestamp>
+		<fork.javac>true</fork.javac>
+		<javac.maxHeapSize>256M</javac.maxHeapSize>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		
+		
 		<groovy.version>3.0.11</groovy.version>
 		<geoscript.version>1.19.0</geoscript.version>
 
@@ -42,14 +54,6 @@
 		<jaiext.version>1.1.24</jaiext.version>
 		<jackson.version>2.13.2</jackson.version>
 
-		<java.awt.headless>true</java.awt.headless>
-		<sun.java2d.d3d>true</sun.java2d.d3d>
-		<jvm.opts />
-		<maven.build.timestamp.format>dd-MMM-yyyy HH:mm</maven.build.timestamp.format>
-		<build.timestamp>${maven.build.timestamp}</build.timestamp>
-		<fork.javac>true</fork.javac>
-		<javac.maxHeapSize>256M</javac.maxHeapSize>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
 		<postgis.version>2.5.0</postgis.version>
 		<postgresql.jdbc.version>42.4.1</postgresql.jdbc.version>
