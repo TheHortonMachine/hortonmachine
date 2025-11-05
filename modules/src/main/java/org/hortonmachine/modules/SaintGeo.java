@@ -17,8 +17,6 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.dbs.TestUtilities.GEOMCOLL_TABLE;
-import static org.hortonmachine.dbs.TestUtilities.arr;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.DESCRIPTION;
@@ -34,8 +32,6 @@ import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.Oms
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.inRiver_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.inSectionPoints_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.inSections_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.outputDischargeFile_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.outputLevelFile_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pDeltaTMillis_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pDeltaTMillis_UNIT;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.pKs_Description;
@@ -53,17 +49,13 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.HMTransactionExecuter;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
-import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.timeseries.OmsTimeSeriesReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.Result;
 import org.joda.time.DateTime;
-import org.locationtech.jts.geom.Coordinate;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
