@@ -20,15 +20,15 @@ package org.hortonmachine.nww.shapes;
 import java.io.IOException;
 import java.util.Collections;
 
-import org.geotools.data.DefaultTransaction;
-import org.geotools.data.Transaction;
-import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.factory.CommonFactoryFinder;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.util.factory.GeoTools;
+import org.geotools.api.data.SimpleFeatureStore;
+import org.geotools.api.data.Transaction;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.filter.Filter;
 import org.geotools.api.filter.FilterFactory;
+import org.geotools.data.DefaultTransaction;
+import org.geotools.factory.CommonFactoryFinder;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.util.factory.GeoTools;
 
 /**
  * A NWW shape holding a {@link SimpleFeature} and if editable, also a store.

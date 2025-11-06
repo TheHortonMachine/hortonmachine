@@ -2,7 +2,7 @@ package org.hortonmachine.nww.shapes;
 
 import java.util.HashMap;
 
-import org.geotools.data.simple.SimpleFeatureStore;
+import org.geotools.api.data.SimpleFeatureStore;
 
 public class FeatureStoreInfo {
 

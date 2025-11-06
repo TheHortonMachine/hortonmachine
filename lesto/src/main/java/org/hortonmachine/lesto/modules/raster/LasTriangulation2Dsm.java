@@ -30,17 +30,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -53,10 +44,6 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -64,6 +51,17 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("Module that creates a DSM from the triangulation of point clouds.")
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
@@ -207,7 +205,7 @@ public class LasTriangulation2Dsm extends HMModel {
     private void makeRow( STRtree tree, int newRows, GridGeometry2D newGridGeometry2D, WritableRaster newWR, int c )
             throws TransformException {
         for( int r = 0; r < newRows; r++ ) {
-            DirectPosition worldPosition = newGridGeometry2D.gridToWorld(new GridCoordinates2D(c, r));
+            var worldPosition = newGridGeometry2D.gridToWorld(new GridCoordinates2D(c, r));
             double[] wpCoords = worldPosition.getCoordinate();
             Coordinate coordinate = new Coordinate(wpCoords[0], wpCoords[1]);
             Point point = gf.createPoint(coordinate);

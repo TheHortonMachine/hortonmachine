@@ -25,23 +25,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-import oms3.annotations.Unit;
-
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.geometry.Bounds;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
 import org.hortonmachine.gears.io.las.ALasDataManager;
 import org.hortonmachine.gears.io.las.core.LasRecord;
@@ -58,14 +47,24 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.geotools.api.feature.simple.SimpleFeature;
-
 import org.locationtech.jts.densify.Densifier;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineSegment;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description("A simple buildings extractor module")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
@@ -152,8 +151,8 @@ public class LasOnDtmBuildingsExtractor extends HMModel {
                 pRasterResolution = regionMap.getXres();
             }
 
-            Envelope2D envelope2d = inDtmGC.getEnvelope2D();
-            Polygon regionPolygon = FeatureUtilities.envelopeToPolygon(envelope2d);
+            var envelope2d = inDtmGC.getEnvelope2D();
+            Polygon regionPolygon = FeatureUtilities.envelopeToPolygon((Bounds)envelope2d);
 
             WritableRaster[] buildingsHolder = new WritableRaster[1];
             GridCoverage2D newBuildingsRaster = CoverageUtilities.createCoverageFromTemplate(inDtmGC, 1.0, buildingsHolder);

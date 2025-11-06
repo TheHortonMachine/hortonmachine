@@ -113,10 +113,10 @@ public class RasterTransformer extends HMModel {
     @In
     public Double pEast;
 
-    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
-    @Unit("degrees")
-    @In
-    public Double pAngle;
+//    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
+//    @Unit("degrees")
+//    @In
+//    public Double pAngle;
 
     @Description(OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -141,7 +141,7 @@ public class RasterTransformer extends HMModel {
         rastertransformer.doFlipVertical = doFlipVertical;
         rastertransformer.pNorth = pNorth;
         rastertransformer.pEast = pEast;
-        rastertransformer.pAngle = pAngle;
+//        rastertransformer.pAngle = pAngle;
         rastertransformer.pm = pm;
         rastertransformer.doProcess = doProcess;
         rastertransformer.doReset = doReset;

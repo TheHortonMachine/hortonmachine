@@ -10,7 +10,6 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
-import org.hortonmachine.gui.utils.GuiUtilities;
 
 public class NewDbController extends NewDbView {
     private static final long serialVersionUID = 1L;

@@ -25,7 +25,7 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import java.io.File;
 import java.io.FilenameFilter;
 
-import org.geotools.styling.Style;
+import org.geotools.api.style.Style;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.SqlName;

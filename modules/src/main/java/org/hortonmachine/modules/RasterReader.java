@@ -17,6 +17,31 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_AUTHORNAMES;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_FILE_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_KEYWORDS;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_LABEL;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_LICENSE;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_NAME;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_COLS_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_EAST_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_NORTH_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_ROWS_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_SOUTH_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_WEST_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_X_RES_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_P_Y_RES_DESCRIPTION;
+import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.OMSRASTERREADER_STATUS;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.geometry.GeneralBounds;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -27,15 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import static org.hortonmachine.gears.io.rasterreader.OmsRasterReader.*;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.geometry.GeneralEnvelope;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
 
 @Description(OMSRASTERREADER_DESCRIPTION)
 @Author(name = OMSRASTERREADER_AUTHORNAMES, contact = OMSRASTERREADER_AUTHORCONTACTS)
@@ -103,7 +119,7 @@ public class RasterReader extends HMModel {
     /**
      * The original envelope of the coverage.
      */
-    public GeneralEnvelope originalEnvelope;
+    public GeneralBounds originalEnvelope;
 
     @Execute
     public void process() throws Exception {

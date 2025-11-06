@@ -62,13 +62,14 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.style.Style;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.Layer;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame.Tool;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -94,7 +95,6 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Out;
 

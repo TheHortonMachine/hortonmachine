@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.ITilesProducer;
@@ -15,7 +16,6 @@ import org.hortonmachine.gears.utils.images.ImageGenerator;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 public class GeopackageTilesProducer implements ITilesProducer {
 

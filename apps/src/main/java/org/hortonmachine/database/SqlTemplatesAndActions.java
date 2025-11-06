@@ -28,7 +28,6 @@ import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,10 +38,11 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
-import org.geotools.geometry.GeneralEnvelope;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
@@ -52,7 +52,6 @@ import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
-import org.hortonmachine.dbs.compat.IHmExtrasDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
@@ -87,8 +86,6 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
 
 /**
  * Simple queries templates.
@@ -1047,7 +1044,7 @@ public class SqlTemplatesAndActions {
                             if (isRaster) {
                                 AbstractGridFormat format = GridFormatFinder.findFormat(file);
                                 AbstractGridCoverage2DReader reader = format.getReader(file, null);
-                                GeneralEnvelope originalEnvelope = reader.getOriginalEnvelope();
+                                var originalEnvelope = reader.getOriginalEnvelope();
                                 CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
                                 double[] ll = originalEnvelope.getLowerCorner().getCoordinate();
                                 double[] ur = originalEnvelope.getUpperCorner().getCoordinate();

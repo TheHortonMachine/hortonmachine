@@ -27,11 +27,11 @@ import java.util.List;
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -39,8 +39,6 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
-import org.geotools.api.geometry.Envelope;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * A simple raster wrapper for scripting environment.
@@ -324,7 +322,7 @@ public class Raster {
 
     public GridGeometry2D getGridGeometry() {
         if (gridGeometry == null) {
-            Envelope envelope = new Envelope2D(crs, west, south, east - west, north - south);
+        	ReferencedEnvelope envelope = new ReferencedEnvelope(west, east, south, north, crs);
             GridEnvelope2D gridRange = new GridEnvelope2D(0, 0, cols, rows);
             gridGeometry = new GridGeometry2D(gridRange, envelope);
         }

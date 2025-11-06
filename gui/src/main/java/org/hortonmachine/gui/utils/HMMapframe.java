@@ -34,6 +34,7 @@ import javax.swing.JFrame;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
+import org.geotools.api.style.Style;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.map.FeatureLayer;
@@ -42,7 +43,6 @@ import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.map.MapLayerListEvent;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Style;
 import org.geotools.swing.JMapFrame;
 import org.geotools.tile.TileService;
 import org.geotools.tile.impl.osm.OSMService;

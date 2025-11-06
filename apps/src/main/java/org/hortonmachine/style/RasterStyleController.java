@@ -1,19 +1,19 @@
 package org.hortonmachine.style;
 
-import static org.hortonmachine.gears.utils.style.StyleUtilities.ff;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.filter.expression.Literal;
+import org.geotools.api.style.RasterSymbolizer;
+import org.geotools.api.style.ShadedRelief;
+import org.geotools.api.style.Style;
+import org.geotools.api.style.Symbolizer;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.styling.RasterSymbolizer;
-import org.geotools.styling.ShadedRelief;
 import org.geotools.styling.ShadedReliefImpl;
-import org.geotools.styling.Style;
-import org.geotools.styling.Symbolizer;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.colors.DefaultTables;
@@ -22,8 +22,7 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.style.RasterSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.geotools.api.filter.expression.Expression;
-import org.geotools.api.filter.expression.Literal;
+
 
 @SuppressWarnings({"unchecked", "serial"})
 public class RasterStyleController extends RasterStyleView {

@@ -22,10 +22,10 @@ import java.awt.Color;
 import java.io.File;
 import java.util.List;
 
-import org.geotools.styling.FeatureTypeStyle;
-import org.geotools.styling.LineSymbolizer;
-import org.geotools.styling.Rule;
-import org.geotools.styling.Style;
+import org.geotools.api.style.FeatureTypeStyle;
+import org.geotools.api.style.LineSymbolizer;
+import org.geotools.api.style.Rule;
+import org.geotools.api.style.Style;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;

@@ -2,7 +2,7 @@ package org.hortonmachine.style.objects;
 
 import java.io.File;
 
-import org.geotools.styling.Style;
+import org.geotools.api.style.Style;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;

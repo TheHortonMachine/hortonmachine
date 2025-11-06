@@ -26,18 +26,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import oms3.annotations.Author;
-import oms3.annotations.Bibliography;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -57,11 +48,6 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.lesto.modules.raster.adaptivetinfilter.TinHandler;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-
 import org.locationtech.jts.algorithm.locate.SimplePointInAreaLocator;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -69,6 +55,18 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Location;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.index.strtree.STRtree;
+
+import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("Tool for DEM generation from laser scanner data using adaptive tin models .")
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
@@ -261,7 +259,7 @@ public class AdaptiveTinFilter extends HMModel {
                 tRun.executeRunnable(new Runnable(){
                     public void run() {
                         try {
-                            DirectPosition directPosition = gridGeometry.gridToWorld(new GridCoordinates2D(col, row));
+                            var directPosition = gridGeometry.gridToWorld(new GridCoordinates2D(col, row));
                             double[] coord = directPosition.getCoordinate();
                             Coordinate coordinate = new Coordinate(coord[0], coord[1]);
                             Envelope e = new Envelope(coordinate);

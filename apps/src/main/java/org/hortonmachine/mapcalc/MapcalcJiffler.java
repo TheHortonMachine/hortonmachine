@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import org.eclipse.imagen.media.jiffle.JiffleBuilder;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -12,8 +14,6 @@ import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import it.geosolutions.jaiext.jiffle.JiffleBuilder;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 public class MapcalcJiffler {
 

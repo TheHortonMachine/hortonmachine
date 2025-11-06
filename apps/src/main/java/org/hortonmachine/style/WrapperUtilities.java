@@ -2,7 +2,7 @@ package org.hortonmachine.style;
 
 import java.util.List;
 
-import org.geotools.styling.Rule;
+import org.geotools.api.style.Rule;
 import org.hortonmachine.gears.utils.style.FeatureTypeStyleWrapper;
 import org.hortonmachine.gears.utils.style.RuleWrapper;
 import org.hortonmachine.gears.utils.style.StyleWrapper;

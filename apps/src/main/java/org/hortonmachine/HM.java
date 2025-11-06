@@ -52,16 +52,18 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.spi.ImageReaderSpi;
+
 import org.eclipse.imagen.ImageLayout;
 import org.eclipse.imagen.iterator.RandomIter;
-
+import org.geotools.api.data.FileDataStore;
+import org.geotools.api.data.FileDataStoreFinder;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.data.FileDataStore;
-import org.geotools.data.FileDataStoreFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -140,8 +142,6 @@ import org.locationtech.jts.index.strtree.STRtree;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.referencing.operation.TransformException;
 
 import geoscript.style.Style;
 import geoscript.style.io.SLDReader;
@@ -1510,7 +1510,7 @@ public class HM {
         double north = centerCoordinate.y + bufferCells * yres + yres / 2.0;
 
         File styleFile = FileUtilities.substituteExtention(new File(mapPath), "sld");
-        org.geotools.styling.Style style;
+        org.geotools.api.style.Style style;
         if (styleFile.exists()) {
             style = SldUtilities.getStyleFromFile(styleFile);
         } else {

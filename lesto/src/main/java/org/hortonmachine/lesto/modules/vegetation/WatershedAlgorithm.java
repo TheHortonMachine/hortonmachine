@@ -7,6 +7,14 @@ import java.util.List;
 
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedFIFO;
+import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedPixel;
+import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedStructure;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -19,15 +27,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedFIFO;
-import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedPixel;
-import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedStructure;
 
 /**
  *  This algorithm is an implementation of the watershed immersion algorithm

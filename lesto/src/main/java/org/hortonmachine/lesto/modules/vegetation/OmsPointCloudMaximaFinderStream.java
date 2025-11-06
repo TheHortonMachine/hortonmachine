@@ -27,10 +27,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.gce.grassraster.JGrassConstants;
 import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.geometry.jts.ReferencedEnvelope3D;
@@ -41,8 +41,6 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -124,7 +122,7 @@ public class OmsPointCloudMaximaFinderStream extends HMModel {
 
         pm.beginTask("Distribute maximum values on grid...", inLas.size());
         for( LasRecord dot : inLas ) {
-            DirectPosition wPoint = new Position2D(dot.x, dot.y);
+            var wPoint = new Position2D(dot.x, dot.y);
             if (!aoi.contains(wPoint)) {
                 continue;
             }

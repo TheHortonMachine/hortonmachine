@@ -28,13 +28,12 @@ import java.util.List;
 
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.Position2D;
-import org.geotools.geometry.Envelope2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.las.ALasDataManager;
 import org.hortonmachine.gears.io.las.core.LasRecord;
@@ -49,8 +48,6 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -148,9 +145,8 @@ public class LasHeightDistribution extends HMModel {
 
                 Envelope geomEnvelope = tileGeom.getEnvelopeInternal();
                 ReferencedEnvelope refEnvelope = new ReferencedEnvelope(geomEnvelope, crs);
-                Envelope2D tileEnvelope = new Envelope2D(refEnvelope);
                 WritableRaster[] tmpWrH = new WritableRaster[1];
-                GridCoverage2D tmp = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, tileEnvelope, doubleNovalue,
+                GridCoverage2D tmp = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, refEnvelope, doubleNovalue,
                         tmpWrH);
                 RegionMap tileRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(tmp);
                 GridGeometry2D tileGridGeometry = tmp.getGridGeometry();
@@ -174,7 +170,7 @@ public class LasHeightDistribution extends HMModel {
                             range[1], true);
 
                     WritableRaster[] wrH = new WritableRaster[1];
-                    GridCoverage2D tmpCoverage = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, tileEnvelope,
+                    GridCoverage2D tmpCoverage = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, refEnvelope,
                             doubleNovalue, wrH);
                     rangeCoverages.add(tmpCoverage);
 
@@ -247,7 +243,7 @@ public class LasHeightDistribution extends HMModel {
                                 value = 2;
                             }
                         }
-                        DirectPosition worldPosition = tileGridGeometry.gridToWorld(gridPosition);
+                        var worldPosition = tileGridGeometry.gridToWorld(gridPosition);
                         GridCoordinates2D worldPositionCats = gridGeometry.worldToGrid(worldPosition);
                         finalIter.setSample(worldPositionCats.x, worldPositionCats.y, 0, value);
                     }

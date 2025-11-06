@@ -46,7 +46,9 @@ import ucar.nc2.dataset.CoordinateAxis;
 import ucar.nc2.dataset.CoordinateAxis1DTime;
 import ucar.nc2.dataset.CoordinateSystem;
 import ucar.nc2.dataset.CoordinateTransform;
+import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
+import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
@@ -81,9 +83,8 @@ public class NetcdfInfo extends HMModel {
             }
         }
 
-//        DatasetUrl datasetUrl = DatasetUrl.findDatasetUrl(inPath);
-        NetcdfDataset netcdfDataset = NetcdfDataset.acquireDataset(inPath, null);
-//        NetcdfDataset netcdfDataset = NetCDFUtilities.getDataset(inPath);
+        DatasetUrl datasetUrl = DatasetUrl.findDatasetUrl(inPath);
+        NetcdfDataset netcdfDataset = NetcdfDatasets.acquireDataset(datasetUrl, null);
         List<Variable> variables = netcdfDataset.getVariables();
         String NL = "\n";
         String IND = "\t";

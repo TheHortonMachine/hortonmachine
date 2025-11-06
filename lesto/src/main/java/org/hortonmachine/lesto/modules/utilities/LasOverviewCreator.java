@@ -46,6 +46,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.geotools.api.geometry.Bounds;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Polygon;
@@ -96,7 +97,7 @@ public class LasOverviewCreator extends HMModel {
                     crs = header.getCrs();
 
                 ReferencedEnvelope3D dataEnvelope = header.getDataEnvelope();
-                Polygon polygon = FeatureUtilities.envelopeToPolygon(dataEnvelope);
+                Polygon polygon = FeatureUtilities.envelopeToPolygon((Bounds)dataEnvelope);
                 polygon.setUserData(file.getName());
                 overviewPolygons.add(polygon);
             }
