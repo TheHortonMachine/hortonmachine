@@ -36,4 +36,17 @@ public abstract class GeometryColumn {
     public int coordinatesDimension;
     public int srid;
     public int isSpatialIndexEnabled;
+    
+    public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("GeometryColumn[\n");
+		sb.append("\ttableName=").append(tableName).append(", \n");
+		sb.append("\tgeometryColumnName=").append(geometryColumnName).append(", \n");
+		sb.append("\tgeometryType=").append(geometryType).append(", \n");
+		sb.append("\tcoordinatesDimension=").append(coordinatesDimension).append(", \n");
+		sb.append("\tsrid=").append(srid).append(", \n");
+		sb.append("\tisSpatialIndexEnabled=").append(isSpatialIndexEnabled).append("\n");
+		sb.append("]");
+		return sb.toString();
+	}
 }

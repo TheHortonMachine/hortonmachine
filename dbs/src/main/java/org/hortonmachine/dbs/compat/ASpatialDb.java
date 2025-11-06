@@ -250,6 +250,11 @@ public abstract class ASpatialDb extends ADb {
     public abstract QueryResult getTableRecordsMapIn( SqlName tableName, Envelope envelope, int limit, int reprojectSrid,
             String whereStr ) throws Exception;
 
+    
+    public List<Geometry> getGeometries(SqlName tableName) throws Exception{
+    	return getGeometriesIn(tableName, (Envelope) null);
+    }
+    
     /**
      * Get the geometries of a table inside a given envelope.
      * 

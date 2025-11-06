@@ -1,3 +1,4 @@
+
 /*
  *  Licensed to the Apache Software Foundation (ASF) under one
  *  or more contributor license agreements.  See the NOTICE file
@@ -87,6 +88,7 @@ import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
 import java.awt.event.FocusEvent
 import java.awt.event.FocusListener
+import java.awt.image.BufferedImage
 import java.util.logging.Logger
 import java.util.prefs.Preferences
 
@@ -97,7 +99,7 @@ import java.util.prefs.Preferences
  */
 class Console implements CaretListener, HyperlinkListener, ComponentListener, FocusListener {
     static String myTitle = 'Geoscript and Hortonmachine GroovyConsole';
-    static String myVersions = ' Geoscript Version 1.19\n Hortonmachine Version 0.10.8 \n Groovy Version ';
+    static String myVersions = ' Geoscript Version 1.22\n Hortonmachine Version 0.12.x \n Groovy Version ';
 
     static final String DEFAULT_SCRIPT_NAME_START = 'ConsoleScript'
 
@@ -118,7 +120,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
     boolean showScriptInOutput = prefs.getBoolean('showScriptInOutput', false)
     Action showScriptInOutputAction
 
-    boolean visualizeScriptResults = prefs.getBoolean('visualizeScriptResults', false)
+    boolean visualizeScriptResults = prefs.getBoolean('visualizeScriptResults', true)
     Action visualizeScriptResultsAction
 
     boolean showToolbar = prefs.getBoolean('showToolbar', true)
@@ -165,7 +167,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
     int maxHistory = 10
 
     // Maximum number of characters to show on console at any time
-    int maxOutputChars = System.getProperty('groovy.console.output.limit', '20000') as int
+    int maxOutputChars = System.getProperty('groovy.console.output.limit', '100000') as int
 
     // File to output stdout & stderr, in addition to console
     PrintWriter outputPrintWriter = null
@@ -304,7 +306,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
             console.loadScriptFile(remaining[-1] as File)
         }
     }
-
+	
     int loadMaxOutputChars() {
         // For backwards compatibility 'maxOutputChars' remains defined in the Console class
         // and the System Property takes precedence as the default value.
@@ -374,122 +376,17 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
         consoleControllers += this
 
         // listen for Ivy events if Ivy is on the Classpath
-        try {
-            if (Class.forName('org.apache.ivy.core.event.IvyListener')) {
-                def ivyPluginClass = Class.forName('groovy.console.ui.ConsoleIvyPlugin')
-                ivyPluginClass.newInstance().addListener(this)
-            }
-        } catch (ClassNotFoundException ignore) {
-        }
+//        try {
+//            if (Class.forName('org.apache.ivy.core.event.IvyListener')) {
+//                def ivyPluginClass = Class.forName('groovy.console.ui.ConsoleIvyPlugin')
+//                ivyPluginClass.newInstance().addListener(this)
+//            }
+//        } catch (ClassNotFoundException ignore) {
+//        }
 
         binding.variables._outputTransforms = OutputTransforms.loadOutputTransforms()
         
-        // remove last for strings
-        binding.variables._outputTransforms.remove(binding.variables._outputTransforms.size()-1)
-        
-        // add nifty objects that fit in tables
-        binding.variables._outputTransforms << { it ->
-            if (it instanceof Map) {
-                def table = new javax.swing.JTable(
-                    it.collect{ k, v ->
-                        [k, v?.inspect()] as Object[]
-                    } as Object[][],
-                    ['Key', 'Value'] as Object[])
-                table.setGridColor(Color.BLACK)
-                table.preferredScrollableViewportSize = table.preferredSize
-                return new javax.swing.JScrollPane(table)
-            }
-        }
-        binding.variables._outputTransforms << { it ->
-            if (it instanceof List) {
-                def objs = null
-                def header = []
-                def i = 0
-                it.each { it2 ->
-                   if(it2 instanceof List) {
-                       if(objs==null) {
-                           objs = new Object[it.size()][it2.size()]
-                           for(c in 0..(it2.size()-1) ) {
-                               header << "Value " + (c+1)
-                           }
-                       }
-                       def j = 0;
-                       it2.each { it3 ->
-                           objs[i][j++] = it3.toString()
-                       }
-                       i++
-                   }else {
-                       if(objs==null) {
-                          objs = new Object[it.size()][1]
-                          header << "Value"
-                       }
-                       objs[i++][0] = it2.toString()
-                   }
-                }
-                def table = new javax.swing.JTable(
-                    objs,
-                    header as Object[])
-                table.setGridColor(Color.BLACK)
-                table.preferredScrollableViewportSize = table.preferredSize
-                return new javax.swing.JScrollPane(table)
-            }
-        }
-        binding.variables._outputTransforms << { it ->
-            if (it instanceof double[][]) {
-                def objs = null
-                def header = []
-                def i = 0
-                it.each { it2 ->
-                    if(objs==null) {
-                        objs = new Object[it.size()][it2.size()]
-                                for(c in 0..(it2.size()-1) ) {
-                                    header << "Value " + (c+1)
-                                }
-                    }
-                    def j = 0;
-                    it2.each { it3 ->
-                        objs[i][j++] = String.valueOf(it3)
-                    }
-                    i++
-                }
-                def table = new javax.swing.JTable(
-                        objs,
-                        header as Object[])
-                        table.setGridColor(Color.BLACK)
-                        table.preferredScrollableViewportSize = table.preferredSize
-                        return new javax.swing.JScrollPane(table)
-            }
-        }
-        binding.variables._outputTransforms << { it ->
-            if ( it instanceof geoscript.geom.Geometry ) { // || it instanceof geoscript.layer.Layer) {
-                def img = org.hortonmachine.HM.toImage(["size":[600,600]], [it])
-                return new ImageIcon(img)
-            } else if ( it instanceof geoscript.layer.Layer ) {
-                def img = geoscript.render.Draw.drawToImage(["size":[400,400],"backgroundColor":"white"],it)
-                return new ImageIcon(img)
-            } else if ( it instanceof geoscript.feature.Feature ) {
-                def map =[:]
-                it.attributes.each{attributeName,value->
-                    map.put(attributeName, value)
-                }
-                def objs = map.collect{ k, v ->
-                    [k, v?.inspect()] as Object[]
-                } as Object[][]
-                def table = new javax.swing.JTable(
-                    objs,
-                    ['Name', 'Value'] as Object[])
-                table.setGridColor(Color.BLACK)
-                table.preferredScrollableViewportSize = table.preferredSize
-                return new javax.swing.JScrollPane(table)
-            } else if ( it instanceof geoscript.render.Map ) {
-                return new ImageIcon(it.renderToImage())
-            }
-        }
-        binding.variables._outputTransforms << { it ->
-            if ( it instanceof org.hortonmachine.gears.utils.coverage.RasterCellInfo ) {
-                return ((org.hortonmachine.gears.utils.coverage.RasterCellInfo)it).toString()
-            }
-        }
+		hmAddOutputTransforms(binding)
         
         // or else to nothing
 //        binding.variables._outputTransforms << { it -> if (it != null) "" }
@@ -571,6 +468,10 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 
         // create the view
         swing.build(ConsoleView)
+		
+		// add hortonmachine menu
+		addHmMenu()
+		
 
         bindResults()
 
@@ -589,6 +490,437 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
         updateTitle() // Title changes based on indy setting
         swing.doLater inputArea.&requestFocus
     }
+	
+	// Add Hortonmachine specific menu
+	void addHmMenu() {
+		// Add custom Hortonmachine menu
+		def menuBar = swing.consoleFrame.JMenuBar
+		menuBar.add(swing.menu(text: 'HM') {
+			menuItem(text: 'Add HM main imports', actionPerformed: {
+				String imports = '''
+				import org.hortonmachine.* // hortonmachine support
+				import org.hortonmachine.modules.* // hortonmachine processing modules
+				'''.stripIndent()
+				hmInsertTextAtStart(imports)
+			})
+			menuItem(text: 'Add Geoscript main imports', actionPerformed: {
+				String imports = '''
+				import geoscript.geom.* // handles geometries objects
+				import geoscript.proj.* // handles projections
+				import geoscript.render.* // handles rendering and plotting
+				import geoscript.layer.* // enables layer management
+				import geoscript.style.* // enables tools to work with style
+				import geoscript.viewer.* // handles various viewers
+				import geoscript.filter.* // the package that works with filters
+				import geoscript.workspace.* // enables workspace handling
+				'''.stripIndent()
+				hmInsertTextAtStart(imports)
+			})
+			menuItem(text: 'Show HM class helper methods', actionPerformed: {
+				String script = """
+				import org.hortonmachine.*
+				println HM.methods()
+                """.stripIndent()
+				def intro = "Showing HM methods using: \n${script}\n"
+			    hmRunScriptTextOutsideEditor(script, intro, 'embeddedScript')
+			})
+			separator()
+			// --- Submenu: Examples ---
+			menu(text: 'Examples') {
+				menuItem(text: 'Add prj to files in folder', actionPerformed: {
+					String myscript = '''
+					import org.hortonmachine.gears.modules.utils.fileiterator.*
+					
+					def folder = "..."
+					def epsg = "EPSG:..."
+					
+					OmsFileIterator.addPrj(folder, epsg)
+					'''.stripIndent()
+					hmInsertTextAtStart(myscript)
+				})
+				menuItem(text: 'Create/render geometries', actionPerformed: {
+					String myscript = '''
+					// example geometries creation
+					def g1 = [[[0, 0], [0, 5], [5, 5], [5, 0], [0, 0]]] as Polygon
+					def g2 = [[[5, 0], [5, 2], [7, 2], [7, 0], [5, 0]]] as Polygon
+					def g3 = [4, 1] as Point
+					def g4 = [5, 4] as Point
+					def g5 = [[1, 0], [1, 6]] as LineString
+					def g6 = [[[3, 3], [3, 6], [6, 6], [6, 3], [3, 3]]] as Polygon
+					
+					def geomsList = [g1,g2,g3,g4,g5,g6]
+					
+					// view the geometries as an image
+					HM.toImage(geomsList)
+					'''.stripIndent()
+					hmInsertTextAtStart(myscript)
+				})
+				menuItem(text: 'Work with a database', actionPerformed: {
+					String myscript = '''
+					def dbHost = "localhost"
+					def user = "..."
+					def dbName = "..."
+					def pwd = "..."
+					
+					def db = HM.connectPostgis( dbHost, 5432, dbName, user, pwd )
+					
+					// db info
+					println db.getDbInfo()
+					
+					// get list of tables
+					def tables = db.getTables()
+					println "List of tables:"
+					tables.each{ t ->
+					    println "\t --> " + t.name
+					}
+					
+					// table columns
+					def columns = db.getTableColumns(tables[0].toSqlName())
+					println "Columns of table " + tables[0].name + ":" 
+					for (c in columns){
+					    println "\t--> name: " + c[0] + ", type: " + c[1] + ", is pk: " + (c[2]=="1"?"yes":"no")
+					}
+					
+					// records count
+					def count = db.getCount(tables[0].toSqlName())
+					println "Count for table: " + tables[0].name + " = " + count
+					
+					// is spatial?
+					println "Is table: " +  tables[0].name + " spatial? -> " + db.isTableSpatial(tables[0].toSqlName())
+					
+					// get geometry info
+					def gc = db.getGeometryColumnsForTable(tables[0].toSqlName())
+					println "Geometry info for table: " + tables[0].name
+					println gc
+					
+					// get the geometries in the table
+					println "Get geometries table: " + tables[0].name
+					def geoms = db.getGeometries(tables[0].toSqlName())
+					println "Got " + geoms.size() + " geometries."
+					println "First bit: " + geoms[0].toText().substring(0, 50) + "..."
+					
+					// execute update
+					db.executeInsertUpdateDeleteSql("...")
+					
+					// read table
+					def sql = "select * from " + tables[0].name
+					def limit = 1
+					def result = db.getTableRecordsMapFromRawSql(sql, limit)
+					def colSize = result.names.size()-1
+					println "Result of '" + sql + "' without geometry:" 
+					for (i in 0..colSize){
+					    if ( result.names[i] != gc.geometryColumnName )
+					        println result.names[i] + " = " + result.data[0][i]
+					}
+					
+					
+					db.close()
+					'''.stripIndent()
+					hmInsertTextAtCaret(myscript)
+				})
+				menuItem(text: 'Print raster cell info', actionPerformed: {
+					String myscript = '''
+	                // example values
+					def dtm = "..."
+					def raster = "..."
+					def col = 100
+					def row = 100
+					def x = 1638625.0
+					def y = 5112546.9
+					int cellBuffer = 3
+					
+					// print the values of a cell with surrounding cells on a set of rasters
+					println HM.getCellInfo(col, row, cellBuffer, raster, flow)
+					
+					// render the styled image of the dtm, with values and row/col
+					HM.toImage(col, row, cellBuffer, raster, 600, 600 )
+					
+					// adding a dtm will also show the pits and steepest directions
+					HM.toImage(col, row, cellBuffer, raster, dtm, 600, 600 )
+					
+					// this also works with world coords (larger buffer)
+					HM.toImage(x, y, cellBuffer*10, raster, dtm, 2600, 2600 )
+					'''.stripIndent()
+					hmInsertTextAtStart(myscript)
+				})
+				menuItem(text: 'Extract stream network from dtm', actionPerformed: {
+					String myscript = '''
+					// check possible colortable names
+					// println HM.printColorTables()
+					
+					def dtm = "..."
+					def pit = "..."
+					def flow = "..."
+					def drain = "..."
+					def tca = "..."
+					def net = "...
+					def thres = 100.0
+					
+					def pitfiller = new Pitfiller()
+					pitfiller.inElev = dtm
+					pitfiller.outPit = pit
+					pitfiller.process()
+					
+					def flowdirections = new FlowDirections()
+					flowdirections.inPit = pit
+					flowdirections.pMinElev = 0
+					flowdirections.outFlow = flow
+					flowdirections.process()
+					
+					def draindir = new DrainDir()
+					draindir.inPit = pit
+					draindir.inFlow = flow
+					draindir.pLambda = 1.0
+					draindir.doLad = true
+					draindir.outFlow = drain
+					draindir.outTca = tca
+					draindir.process()
+
+					def extractnetwork = new ExtractNetwork()
+					extractnetwork.inTca = tca
+					extractnetwork.inFlow = flow
+					extractnetwork.pThres = thres
+					extractnetwork.outNet = net
+					extractnetwork.process()
+					
+					// create colortables for QGIS
+					HM.makeQgisStyleForRaster("flow", flow, 0 )
+					HM.makeQgisStyleForRaster("flow", drain, 0 )
+					HM.makeQgisStyleForRaster("net", net, 0 )
+					// tca is better seen in logarithmic scale
+					HM.makeQgisStyleForRaster("logarithmic", tca, 0 )
+
+					// but let's also see it in the output
+					Map map = new Map( width: 1200, height: 1200)
+					def raster = Format.getFormat(dtm).read()
+					raster.style = HM.styleForColorTable('elev', 846, 2150, 1.0)
+					map.addLayer(raster)
+					raster = Format.getFormat(net).read()
+					raster.style = HM.styleForColorTable('net', 0, 1, 1.0)
+					map.addLayer(raster)
+					map.display()
+					'''.stripIndent()
+					hmInsertTextAtStart(myscript)
+				})
+			}
+		})
+		menuBar.revalidate()
+		menuBar.repaint()
+		
+	}
+	
+	/** Insert plain text at the current caret position. */
+	private void hmInsertTextAtCaret(String text) {
+		javax.swing.SwingUtilities.invokeLater {
+			def doc = inputArea.getDocument()
+			int pos = inputArea.getCaretPosition()
+			doc.insertString(pos, text, null)
+			inputArea.setCaretPosition(pos + text.length())
+			setDirty(true)
+		}
+	}
+	
+	/** Insert text at the very start of the editor. */
+	private void hmInsertTextAtStart(String text) {
+		javax.swing.SwingUtilities.invokeLater {
+			def doc = inputArea.getDocument()
+			doc.insertString(0, text, null)
+			// keep caret where it was, but shift by text length if caret was at start
+			int pos = inputArea.getCaretPosition()
+			if (pos == 0) inputArea.setCaretPosition(text.length())
+			setDirty(true)
+		}
+	}
+	
+	/**
+	 * Run an arbitrary Groovy script text (not the editor content) and show
+	 * its result/stdout/stderr in the output panel. Does not modify the editor.
+	 */
+	private void hmRunScriptTextOutsideEditor(String scriptText, String intro = "", String displayName = DEFAULT_SCRIPT_NAME_START) {
+		if (scriptRunning) {
+			statusLabel.text = 'Cannot run script now as a script is already running. Please wait or use "Interrupt Script".'
+			return
+		}
+	
+		scriptRunning = true
+		interruptAction.enabled = true
+		stackOverFlowError = false
+	
+		if (prefs.getBoolean('autoClearOutput', false)) clearOutput()
+	
+		// Optional: show a small header so users know what is running
+		appendOutputNl(intro, promptStyle)
+	
+		runThread = Thread.start {
+			try {
+				// make sure stdout/stderr are captured to this console
+				systemOutInterceptor.setConsoleId(this.getConsoleId())
+	
+				javax.swing.SwingUtilities.invokeLater { showExecutingMessage() }
+	
+				String name = displayName ?: (DEFAULT_SCRIPT_NAME_START + (scriptNameCounter++))
+	
+				if (beforeExecution) beforeExecution()
+	
+				def result
+				if (useScriptClassLoaderForScriptExecution) {
+					ClassLoader saved = Thread.currentThread().contextClassLoader
+					try {
+						Thread.currentThread().contextClassLoader = shell.classLoader
+						result = shell.run(scriptText, name, [])
+					} finally {
+						Thread.currentThread().contextClassLoader = saved
+					}
+				} else {
+					result = shell.run(scriptText, name, [])
+				}
+	
+				if (afterExecution) afterExecution()
+	
+				javax.swing.SwingUtilities.invokeLater {
+					// mimic finishNormal but don’t add to edit history
+					if (result != null) {
+						statusLabel.text = 'Execution complete.'
+						appendOutputNl('Result: ', promptStyle)
+						def obj = (visualizeScriptResults
+								? OutputTransforms.transformResult(result, shell.getContext()._outputTransforms)
+								: result.toString())
+						appendOutput(obj, resultStyle)
+					} else {
+						statusLabel.text = 'Execution complete. Result was null.'
+					}
+					if (detachedOutput) {
+						prepareOutputWindow()
+						showOutputWindow()
+					}
+				}
+			} catch (Throwable t) {
+				if (t instanceof StackOverflowError) {
+					stackOverFlowError = true
+					clearOutput()
+				}
+				javax.swing.SwingUtilities.invokeLater { finishException(t, true) }
+			} finally {
+				runThread = null
+				scriptRunning = false
+				interruptAction.enabled = false
+				systemOutInterceptor.removeConsoleId()
+			}
+		}
+	}
+	
+	void hmAddOutputTransforms(Binding binding) {
+		
+		// remove last for strings
+		binding.variables._outputTransforms.remove(binding.variables._outputTransforms.size()-1)
+		
+		// add nifty objects that fit in tables
+		binding.variables._outputTransforms << { it ->
+			if (it instanceof Map) {
+				def table = new javax.swing.JTable(
+					it.collect{ k, v ->
+						[k, v?.inspect()] as Object[]
+					} as Object[][],
+					['Key', 'Value'] as Object[])
+				table.setGridColor(Color.BLACK)
+				table.preferredScrollableViewportSize = table.preferredSize
+				return new javax.swing.JScrollPane(table)
+			}
+		}
+		binding.variables._outputTransforms << { it ->
+			if (it instanceof List) {
+				def objs = null
+				def header = []
+				def i = 0
+				it.each { it2 ->
+				   if(it2 instanceof List) {
+					   if(objs==null) {
+						   objs = new Object[it.size()][it2.size()]
+						   for(c in 0..(it2.size()-1) ) {
+							   header << "Value " + (c+1)
+						   }
+					   }
+					   def j = 0;
+					   it2.each { it3 ->
+						   objs[i][j++] = it3.toString()
+					   }
+					   i++
+				   }else {
+					   if(objs==null) {
+						  objs = new Object[it.size()][1]
+						  header << "Value"
+					   }
+					   objs[i++][0] = it2.toString()
+				   }
+				}
+				def table = new javax.swing.JTable(
+					objs,
+					header as Object[])
+				table.setGridColor(Color.BLACK)
+				table.preferredScrollableViewportSize = table.preferredSize
+				return new javax.swing.JScrollPane(table)
+			}
+		}
+		binding.variables._outputTransforms << { it ->
+			if (it instanceof double[][]) {
+				def objs = null
+				def header = []
+				def i = 0
+				it.each { it2 ->
+					if(objs==null) {
+						objs = new Object[it.size()][it2.size()]
+								for(c in 0..(it2.size()-1) ) {
+									header << "Value " + (c+1)
+								}
+					}
+					def j = 0;
+					it2.each { it3 ->
+						objs[i][j++] = String.valueOf(it3)
+					}
+					i++
+				}
+				def table = new javax.swing.JTable(
+						objs,
+						header as Object[])
+						table.setGridColor(Color.BLACK)
+						table.preferredScrollableViewportSize = table.preferredSize
+						return new javax.swing.JScrollPane(table)
+			}
+		}
+		binding.variables._outputTransforms << { it ->
+			if ( it instanceof geoscript.geom.Geometry ) { // || it instanceof geoscript.layer.Layer) {
+				def img = org.hortonmachine.HM.toImage(["size":[600,600]], [it])
+				return new ImageIcon(img)
+			} else if ( it instanceof geoscript.layer.Layer ) {
+				def img = geoscript.render.Draw.drawToImage(["size":[400,400],"backgroundColor":"white"],it)
+				return new ImageIcon(img)
+			} else if ( it instanceof geoscript.feature.Feature ) {
+				def map =[:]
+				it.attributes.each{attributeName,value->
+					map.put(attributeName, value)
+				}
+				def objs = map.collect{ k, v ->
+					[k, v?.inspect()] as Object[]
+				} as Object[][]
+				def table = new javax.swing.JTable(
+					objs,
+					['Name', 'Value'] as Object[])
+				table.setGridColor(Color.BLACK)
+				table.preferredScrollableViewportSize = table.preferredSize
+				return new javax.swing.JScrollPane(table)
+			} else if ( it instanceof geoscript.render.Map ) {
+				return new ImageIcon(it.renderToImage())
+			}
+		}
+		binding.variables._outputTransforms << { it ->
+			if ( it instanceof org.hortonmachine.gears.utils.coverage.RasterCellInfo ) {
+				appendOutputNl("Applying RasterCellInfo output transform...", promptStyle)
+				
+				return ((org.hortonmachine.gears.utils.coverage.RasterCellInfo)it).toString()
+			}
+		}
+		
+	}
 
     /**
      * Make the console frames capable of native fullscreen

@@ -54,5 +54,9 @@ public class TableName {
     public ETableType getTableType() {
         return tableType;
     }
+    
+    SqlName toSqlName() {
+		return SqlName.m(getFullName());
+	}
 }
 

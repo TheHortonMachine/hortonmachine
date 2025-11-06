@@ -1627,7 +1627,7 @@ public class HM {
                             g2d.setColor(Color.red);
                             g2d.fillOval((int) pCenter.getX() - dot / 2, (int) pCenter.getY() - dot / 2, dot, dot);
                         } else {
-                            g2d.setColor(Color.BLUE);
+                            g2d.setColor(Color.black);
                             g2d.setStroke(new BasicStroke(3));
                             int d = (int) ((ur.getX() - ll.getX()) * 0.2);
                             int flow = node.getFlow();
