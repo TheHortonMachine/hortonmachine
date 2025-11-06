@@ -25,20 +25,16 @@ import java.util.List;
 
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.geometry.Envelope2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.coverage.ProfilePoint;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.referencing.operation.TransformException;
-
 import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
@@ -153,7 +149,7 @@ public class OmsGeomorphon extends HMModel {
         if (HMConstants.isNovalue(elevation)) {
             return HMConstants.doubleNovalue;
         }
-        DirectPosition worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
+        var worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
         double[] coordinateArray = worldPosition.getCoordinate();
         Coordinate center = new Coordinate(coordinateArray[0], coordinateArray[1]);
         center.z = elevation;
@@ -223,7 +219,7 @@ public class OmsGeomorphon extends HMModel {
      */
     public static ProfilePoint getLastVisiblePoint( RegionMap regionMap, RandomIter elevIter, GridGeometry2D gridGeometry,
             Coordinate startCoordinate, Coordinate endCoordinate ) throws TransformException {
-        Envelope2D envelope2d = gridGeometry.getEnvelope2D();
+        var envelope2d = gridGeometry.getEnvelope2D();
         ProfilePoint lastVisible = null;
         double minX = envelope2d.getMinX();
         double maxX = envelope2d.getMaxX();

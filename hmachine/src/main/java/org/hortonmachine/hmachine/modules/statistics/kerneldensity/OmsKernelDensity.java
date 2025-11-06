@@ -17,20 +17,26 @@
  */
 package org.hortonmachine.hmachine.modules.statistics.kerneldensity;
 
-import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.*;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_AUTHORCONTACTS;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_AUTHORNAMES;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_LABEL;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_LICENSE;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_NAME;
+import static org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity.OMSKERNELDENSITY_STATUS;
 
 import java.io.IOException;
 import java.util.stream.IntStream;
 
-import org.eclipse.imagen.KernelJAI;
-
+import org.eclipse.imagen.KernelImageN;
+import org.eclipse.imagen.media.kernel.KernelFactory;
+import org.eclipse.imagen.media.kernel.KernelFactory.ValueType;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
-import org.jaitools.media.jai.kernel.KernelFactory;
-import org.jaitools.media.jai.kernel.KernelFactory.ValueType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -130,7 +136,7 @@ public class OmsKernelDensity extends HMModel {
                 break;
             }
 
-            KernelJAI kernel = KernelFactory.createCircle(pRadius, type);
+            KernelImageN kernel = KernelFactory.createCircle(pRadius, type);
 
             HMRaster outputRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inMap).build();
             float[] kernelData = kernel.getKernelData();

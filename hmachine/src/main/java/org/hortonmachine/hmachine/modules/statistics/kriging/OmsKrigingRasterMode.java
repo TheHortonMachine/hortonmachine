@@ -27,7 +27,8 @@ import java.util.Set;
 
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
+import org.geotools.api.geometry.MismatchedDimensionException;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -48,9 +49,6 @@ import org.hortonmachine.hmachine.modules.statistics.kriging.utils.StationsSelec
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.TheoreticalVariogram;
 import org.locationtech.jts.geom.Coordinate;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.geometry.MismatchedDimensionException;
-import org.geotools.api.referencing.operation.MathTransform;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -198,7 +196,7 @@ public class OmsKrigingRasterMode extends HMModel {
         double[] result = new double[pointsToInterpolateId2Coordinates.size()];
         int[] idArray = new int[pointsToInterpolateId2Coordinates.size()];
 
-        final DirectPosition gridPoint = new Position2D();
+        var gridPoint = new Position2D();
         MathTransform transf = inInterpolationGrid.getCRSToGrid2D();
 
         while( idIterator.hasNext() ) {
@@ -209,7 +207,7 @@ public class OmsKrigingRasterMode extends HMModel {
 
             Coordinate coordinate = (Coordinate) pointsToInterpolateId2Coordinates.get(id);
 
-            DirectPosition point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
+            var point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
                     coordinate.y);
             transf.transform(point, gridPoint);
 
@@ -563,13 +561,13 @@ public class OmsKrigingRasterMode extends HMModel {
         int c = 0;
         MathTransform transf = inInterpolationGrid.getCRSToGrid2D();
 
-        final DirectPosition gridPoint = new Position2D();
+        var gridPoint = new Position2D();
 
         while( idIterator.hasNext() ) {
             int id = idIterator.next();
             Coordinate coordinate = (Coordinate) interpolatedCoordinatesMap.get(id);
 
-            DirectPosition point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
+            var point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
                     coordinate.y);
             transf.transform(point, gridPoint);
 

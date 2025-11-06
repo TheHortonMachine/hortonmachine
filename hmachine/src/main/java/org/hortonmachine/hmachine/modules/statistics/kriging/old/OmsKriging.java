@@ -55,18 +55,9 @@ import java.util.Set;
 
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
-import oms3.annotations.Author;
-import oms3.annotations.Description;
-import oms3.annotations.Execute;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.License;
-import oms3.annotations.Name;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.geometry.MismatchedDimensionException;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -83,13 +74,19 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.matrixes.ColumnVector;
 import org.hortonmachine.gears.utils.math.matrixes.LinearSystem;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.geometry.DirectPosition;
-import org.geotools.api.geometry.MismatchedDimensionException;
-import org.geotools.api.referencing.operation.MathTransform;
-
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
+
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
 
 @Description(OMSKRIGING_DESCRIPTION)
 @Author(name = OMSKRIGING_AUTHORNAMES, contact = OMSKRIGING_AUTHORCONTACTS)
@@ -549,13 +546,13 @@ public class OmsKriging extends HMModel {
         int c = 0;
         MathTransform transf = inInterpolationGrid.getCRSToGrid2D();
 
-        final DirectPosition gridPoint = new Position2D();
+        final var gridPoint = new Position2D();
 
         while( idIterator.hasNext() ) {
             int id = idIterator.next();
             Coordinate coordinate = (Coordinate) interpolatedCoordinatesMap.get(id);
 
-            DirectPosition point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
+            var point = new Position2D(inInterpolationGrid.getCoordinateReferenceSystem(), coordinate.x,
                     coordinate.y);
             transf.transform(point, gridPoint);
 
@@ -568,7 +565,7 @@ public class OmsKriging extends HMModel {
 
         }
 
-        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(inInterpolationGrid);
+        RegionMap regionMap = RegionMap.fromGridGeometry(inInterpolationGrid);
 
         outGrid = CoverageUtilities
                 .buildCoverage("gridded", outWR, regionMap, inInterpolationGrid.getCoordinateReferenceSystem());

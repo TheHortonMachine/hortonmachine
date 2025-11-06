@@ -36,6 +36,28 @@ import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.geotools.api.data.SimpleFeatureStore;
+import org.geotools.api.data.Transaction;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.data.DefaultTransaction;
+import org.geotools.data.shapefile.ShapefileDataStore;
+import org.geotools.data.shapefile.ShapefileDataStoreFactory;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pipes;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pumps;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Reservoirs;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Tanks;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Valves;
+import org.hortonmachine.hmachine.modules.networktools.epanet.core.IEpanetType;
+import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.Point;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -46,30 +68,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.DefaultTransaction;
-import org.geotools.data.Transaction;
-import org.geotools.data.shapefile.ShapefileDataStore;
-import org.geotools.data.shapefile.ShapefileDataStoreFactory;
-import org.geotools.data.simple.SimpleFeatureStore;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.IEpanetType;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Junctions;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pipes;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Pumps;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Reservoirs;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Tanks;
-import org.hortonmachine.hmachine.modules.networktools.epanet.core.EpanetFeatureTypes.Valves;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
 
 @Description(OMSEPANETPROJECTFILESGENERATOR_DESCRIPTION)
 @Author(name = OMSEPANETPROJECTFILESGENERATOR_AUTHORNAMES, contact = OMSEPANETPROJECTFILESGENERATOR_AUTHORCONTACTS)

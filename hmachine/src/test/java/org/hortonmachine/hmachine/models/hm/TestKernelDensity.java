@@ -18,14 +18,14 @@ package org.hortonmachine.hmachine.models.hm;
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+import org.eclipse.imagen.media.kernel.KernelFactory;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDensity;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 import org.hortonmachine.hmachine.utils.HMTestMaps;
-import org.jaitools.media.jai.kernel.KernelFactory;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for the {@link OmsKernelDensity} module.
  * 
