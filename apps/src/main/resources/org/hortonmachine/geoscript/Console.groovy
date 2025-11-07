@@ -536,7 +536,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 					
 					OmsFileIterator.addPrj(folder, epsg)
 					'''.stripIndent()
-					hmInsertTextAtStart(myscript)
+					hmInsertTextAtCaret(myscript)
 				})
 				menuItem(text: 'Create/render geometries', actionPerformed: {
 					String myscript = '''
@@ -553,7 +553,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 					// view the geometries as an image
 					HM.toImage(geomsList)
 					'''.stripIndent()
-					hmInsertTextAtStart(myscript)
+					hmInsertTextAtCaret(myscript)
 				})
 				menuItem(text: 'Work with a database', actionPerformed: {
 					String myscript = '''
@@ -641,7 +641,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 					// this also works with world coords (larger buffer)
 					HM.toImage(x, y, cellBuffer*10, raster, dtm, 2600, 2600 )
 					'''.stripIndent()
-					hmInsertTextAtStart(myscript)
+					hmInsertTextAtCaret(myscript)
 				})
 				menuItem(text: 'Extract stream network from dtm', actionPerformed: {
 					String myscript = '''
@@ -653,7 +653,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 					def flow = "..."
 					def drain = "..."
 					def tca = "..."
-					def net = "...
+					def net = "..."
 					def thres = 100.0
 					
 					def pitfiller = new Pitfiller()
@@ -700,7 +700,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 					map.addLayer(raster)
 					map.display()
 					'''.stripIndent()
-					hmInsertTextAtStart(myscript)
+					hmInsertTextAtCaret(myscript)
 				})
 			}
 		})
