@@ -7,7 +7,8 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.11.0-SNAPSHOT</version>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
 	<artifactId>hm-apps</artifactId>
@@ -20,30 +21,25 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.geotools</groupId>
-			<artifactId>gt-jp2k</artifactId>
-		</dependency>
-		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
-			<version>0.11.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
 			<artifactId>mapsforge-map-awt</artifactId>
 			<version>${mapsforge.version}</version>
-		  <exclusions>
-		    <exclusion>
-		      <groupId>net.sf.kxml</groupId>
-		      <artifactId>kxml2</artifactId>
-		    </exclusion>
-		  </exclusions>
+			<exclusions>
+				<exclusion>
+					<groupId>net.sf.kxml</groupId>
+					<artifactId>kxml2</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
-		  <groupId>net.sf.kxml</groupId>
-		  <artifactId>kxml2</artifactId>
-		  <version>2.3.0</version>
-		  <scope>runtime</scope>
+			<groupId>net.sf.kxml</groupId>
+			<artifactId>kxml2</artifactId>
+			<version>2.3.0</version>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
@@ -54,7 +50,7 @@
 			<groupId>com.github.pcmehlitz</groupId>
 			<artifactId>worldwind-pcm</artifactId>
 			<version>2.1.0.206</version>
-		<!--
+			<!--
 			
 			<exclusions>
 				<exclusion>
@@ -64,7 +60,10 @@
 			</exclusions>
 		-->
 		</dependency>
-		
+		<dependency>
+			<groupId>org.geotools</groupId>
+			<artifactId>gt-jp2k</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>org.geoscript</groupId>
@@ -84,7 +83,8 @@
 					<groupId>org.geotools</groupId>
 					<artifactId>gt-epsg-hsql</artifactId>
 				</exclusion>
-				<!-- <exclusion> <groupId>org.geotools</groupId> <artifactId>gt-netcdf</artifactId> 
+				<!-- <exclusion> <groupId>org.geotools</groupId>
+				<artifactId>gt-netcdf</artifactId> 
 					</exclusion> -->
 				<exclusion>
 					<groupId>org.geotools</groupId>
@@ -162,9 +162,9 @@
 					<groupId>com.opencsv</groupId>
 					<artifactId>opencsv</artifactId>
 				</exclusion>
-				
+
 				<!-- Exclude groovy -->
-				
+
 			</exclusions>
 		</dependency>
 

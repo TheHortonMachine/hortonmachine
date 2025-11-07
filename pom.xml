@@ -6,7 +6,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>0.11.0-SNAPSHOT</version>
+	<version>${revision}</version>
 	<packaging>pom</packaging>
 
 	<name>The Horton Machine</name>
@@ -18,13 +18,17 @@
 		<module>gears</module>
 		<module>hmachine</module>
 		<module>lesto</module>
+		<module>geoframe</module>
 		<module>modules</module>
 		<module>gui</module>
 		<module>apps</module>
 	</modules>
 
 	<properties>
-    <maven.compiler.source>17</maven.compiler.source>
+		<!-- this Hortonmachine version -->
+		<revision>0.11.0-SNAPSHOT</revision>
+	
+		<maven.compiler.source>17</maven.compiler.source>
 		<gt.version>34.0</gt.version>
 
 		<!-- build configuration -->
@@ -36,22 +40,22 @@
 		<fork.javac>true</fork.javac>
 		<javac.maxHeapSize>256M</javac.maxHeapSize>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		
-		
+
+
 		<groovy.version>4.0.15</groovy.version>
 		<geoscript.version>1.22.0</geoscript.version>
 
 		<c3p0.version>0.11.2</c3p0.version>
 		<c3p0.commons.version>0.3.2</c3p0.commons.version>
-		
+
 		<h2gis.version>1.5.0</h2gis.version>
 		<sqlitejdbc.version>3.50.3.0</sqlitejdbc.version>
 
 		<netcdf.version>5.5.3</netcdf.version>
-		
+
 		<jt.version>1.6.0</jt.version>
 		<jts.version>1.20.0</jts.version>
-		
+
 		<imageio.ext.version>2.0.0</imageio.ext.version>
 
 		<jackson.version>2.19.0</jackson.version>
@@ -81,8 +85,10 @@
 	</mailingLists>
 
 	<scm>
-		<connection>scm:git:https://github.com/TheHortonMachine/hortonmachine.git</connection>
-		<developerConnection>scm:git:https://github.com/TheHortonMachine/hortonmachine.git</developerConnection>
+		<connection>
+			scm:git:https://github.com/TheHortonMachine/hortonmachine.git</connection>
+		<developerConnection>
+			scm:git:https://github.com/TheHortonMachine/hortonmachine.git</developerConnection>
 		<url>https://github.com/TheHortonMachine/hortonmachine</url>
 	</scm>
 
@@ -118,6 +124,48 @@
 	<!-- =========================================================== -->
 	<dependencyManagement>
 		<dependencies>
+			<!-- define internal hm same versions -->
+			<dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-dbs</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-gears</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-hmachine</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-lesto</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-geoframe</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-modules</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-gui</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.hortonmachine</groupId>
+                <artifactId>hm-apps</artifactId>
+                <version>${revision}</version>
+            </dependency>		
+		
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
@@ -140,37 +188,20 @@
 				<version>0.7.2</version>
 			</dependency>
 
-			<!-- Java Advanced Imaging (JAI) -->
-<!--			<dependency>-->
-<!--				<groupId>javax.media</groupId>-->
-<!--				<artifactId>jai_core</artifactId>-->
-<!--				<version>1.1.3</version>-->
-<!--			</dependency>-->
-<!--			<dependency>-->
-<!--				<groupId>javax.media</groupId>-->
-<!--				<artifactId>jai_codec</artifactId>-->
-<!--				<version>1.1.3</version>-->
-<!--			</dependency>-->
-<!--			<dependency>-->
-<!--				<groupId>javax.media</groupId>-->
-<!--				<artifactId>jai_imageio</artifactId>-->
-<!--				<version>1.1</version>-->
-<!--			</dependency>-->
-			
-		    <!-- Import GeoTools BOM -->
-		    <dependency>
-		      <groupId>org.geotools</groupId>
-		      <artifactId>gt-bom</artifactId>
-		      <version>${gt.version}</version>
-		      <type>pom</type>
-		      <scope>import</scope>
-		    </dependency>
-		    <dependency>
-			  <groupId>org.geotools</groupId>
-			  <artifactId>gt-platform-dependencies</artifactId>
-			  <version>${gt.version}</version>
-			  <type>pom</type>
-			  <scope>import</scope>
+			<!-- Import GeoTools BOM -->
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-bom</artifactId>
+				<version>${gt.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.geotools</groupId>
+				<artifactId>gt-platform-dependencies</artifactId>
+				<version>${gt.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
 			</dependency>
 
 
@@ -219,41 +250,41 @@
 				<artifactId>joda-time</artifactId>
 				<version>2.9.4</version>
 			</dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy-sql</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy-xml</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy-json</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy-swing</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy-groovysh</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
-	        <dependency>
-	            <groupId>org.apache.groovy</groupId>
-	            <artifactId>groovy-console</artifactId>
-	            <version>${groovy.version}</version>
-	        </dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy-sql</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy-xml</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy-json</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy-swing</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy-groovysh</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.groovy</groupId>
+				<artifactId>groovy-console</artifactId>
+				<version>${groovy.version}</version>
+			</dependency>
 
 			<dependency>
 				<groupId>com.h2database</groupId>
@@ -286,7 +317,7 @@
 				<version>1.1.4c</version>
 			</dependency>
 
-<!--			 geopap -->
+			<!--			 geopap -->
 			<dependency>
 				<groupId>org.json</groupId>
 				<artifactId>json</artifactId>
@@ -311,26 +342,26 @@
 				<artifactId>aws-lightweight-client-java</artifactId>
 				<version>${aws.version}</version>
 			</dependency>
-			
-			
+
+
 			<!-- forcing versions for conflicting packages -->
-		    <dependency>
-		      <groupId>org.apache.httpcomponents</groupId>
-		      <artifactId>httpcore</artifactId>
-		      <version>4.4.16</version>
-		      <scope>runtime</scope>
-		    </dependency>
-		    <dependency>
-		      <groupId>org.jetbrains.kotlin</groupId>
-		      <artifactId>kotlin-stdlib-jdk8</artifactId>
-		      <version>1.9.10</version>
-		    </dependency>
-	        <dependency>
-		      <groupId>org.gdal</groupId>
-		      <artifactId>gdal</artifactId>
-		      <version>3.3.0</version>
-		    </dependency>
-		    
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpcore</artifactId>
+				<version>4.4.16</version>
+				<scope>runtime</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.jetbrains.kotlin</groupId>
+				<artifactId>kotlin-stdlib-jdk8</artifactId>
+				<version>1.9.10</version>
+			</dependency>
+			<dependency>
+				<groupId>org.gdal</groupId>
+				<artifactId>gdal</artifactId>
+				<version>3.3.0</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -342,7 +373,8 @@
 		<repository>
 			<id>ossrh</id>
 			<!--<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url> -->
-      <url>https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2</url>
+			<url>
+				https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2</url>
 		</repository>
 	</distributionManagement>
 
@@ -365,7 +397,8 @@
 			<name>OSGeo Nexus Release Repository</name>
 			<url>https://repo.osgeo.org/repository/release/</url>
 			<!-- contains release (including third-party-dependences) -->
-			<!-- ucar (https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
+			<!-- ucar
+			(https://artifacts.unidata.ucar.edu/content/repositories/unidata-releases) -->
 			<!-- geosolutions (https://maven.geo-solutions.it/) -->
 			<snapshots>
 				<enabled>false</enabled>
@@ -391,7 +424,7 @@
 			<id>sonatype-nexus-snapshots</id>
 			<name>jgrasstools snapshots</name>
 			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-		</repository> 
+		</repository>
 		<repository>
 			<id>jitpack.io</id>
 			<name>jitpack</name>
@@ -409,15 +442,15 @@
 			</extension>
 		</extensions>
 		<plugins>
-      <plugin>
-          <groupId>org.sonatype.central</groupId>
-          <artifactId>central-publishing-maven-plugin</artifactId>
-          <version>0.9.0</version>
-          <extensions>true</extensions>
-          <configuration>
-            <publishingServerId>central</publishingServerId>
-          </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<version>0.9.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<publishingServerId>central</publishingServerId>
+				</configuration>
+			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
@@ -461,7 +494,8 @@
 				</executions>
 			</plugin>
 
-			<!-- can be used to find newest versions fo plugins: mvn versions:display-plugin-updates -->
+			<!-- can be used to find newest versions fo plugins: mvn
+			versions:display-plugin-updates -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
@@ -511,24 +545,25 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.12.0</version>
-				  <executions>
-				    <execution>
-				      <id>attach-javadocs</id>
-				      <goals>
-				        <goal>jar</goal>
-				      </goals>
-				      <phase>package</phase>
-				    </execution>
-				  </executions>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+				</executions>
 				<configuration>
-				    <!-- Set to your java source version -->
-				    <source>17</source>
-				
-				    <!-- Avoid doclint failures blocking the build -->
-				    <additionalparam>-Xdoclint:none -quiet</additionalparam>
-				
-				    <!-- If you still want the plugin to not fail on javadoc errors -->
-				    <failOnError>false</failOnError>
+					<!-- Set to your java source version -->
+					<source>17</source>
+
+					<!-- Avoid doclint failures blocking the build -->
+					<additionalparam>-Xdoclint:none -quiet</additionalparam>
+
+					<!-- If you still want the plugin to not fail on javadoc
+					errors -->
+					<failOnError>false</failOnError>
 				</configuration>
 			</plugin>
 
@@ -542,7 +577,8 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${session.executionRootDirectory}/extras/export/libs</outputDirectory>
+							<outputDirectory>
+								${session.executionRootDirectory}/extras/export/libs</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
