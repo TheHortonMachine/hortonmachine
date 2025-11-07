@@ -55,7 +55,7 @@ public class TableName {
         return tableType;
     }
     
-    SqlName toSqlName() {
+    public SqlName toSqlName() {
 		return SqlName.m(getFullName());
 	}
 }
