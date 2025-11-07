@@ -7,7 +7,7 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.10.11-SNAPSHOT</version>
+		<version>0.10.11</version>
 	</parent>
 
 	<artifactId>hm-apps</artifactId>
@@ -40,7 +40,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
-			<version>0.10.11-SNAPSHOT</version>
+			<version>0.10.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.mapsforge</groupId>
