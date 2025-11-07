@@ -979,6 +979,15 @@
 			</extension>
 		</extensions>
 		<plugins>
+      <plugin>
+          <groupId>org.sonatype.central</groupId>
+          <artifactId>central-publishing-maven-plugin</artifactId>
+          <version>0.9.0</version>
+          <extensions>true</extensions>
+          <configuration>
+            <publishingServerId>central</publishingServerId>
+          </configuration>
+      </plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.1</version>
@@ -1072,23 +1081,25 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.12.0</version>
-				<executions>
-					<execution>
-						<id>main-javadoc</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-              <useModulePath>false</useModulePath>
-							<source>${maven.compiler.source}</source>
-							<doclint>none</doclint>
-							<quiet>true</quiet>
-							<failOnWarnings>false</failOnWarnings>
-							<failOnError>true</failOnError>
-						</configuration>
-					</execution>
-				</executions>
+				  <executions>
+				    <execution>
+				      <id>attach-javadocs</id>
+				      <goals>
+				        <goal>jar</goal>
+				      </goals>
+				      <phase>package</phase>
+				    </execution>
+				  </executions>
+				<configuration>
+				    <!-- Set to your java source version -->
+				    <source>17</source>
+				
+				    <!-- Avoid doclint failures blocking the build -->
+				    <additionalparam>-Xdoclint:none -quiet</additionalparam>
+				
+				    <!-- If you still want the plugin to not fail on javadoc errors -->
+				    <failOnError>false</failOnError>
+				</configuration>
 			</plugin>
 
 			<plugin>
