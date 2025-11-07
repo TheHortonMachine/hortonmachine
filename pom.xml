@@ -300,12 +300,6 @@
 			</dependency>
 
 			<dependency>
-				<groupId>net.java.dev.jna</groupId>
-				<artifactId>jna</artifactId>
-				<version>4.2.2</version>
-			</dependency>
-
-			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.13.1</version>
@@ -331,8 +325,12 @@
 		      <artifactId>kotlin-stdlib-jdk8</artifactId>
 		      <version>1.9.10</version>
 		    </dependency>
-			
-
+	        <dependency>
+		      <groupId>org.gdal</groupId>
+		      <artifactId>gdal</artifactId>
+		      <version>3.3.0</version>
+		    </dependency>
+		    
 		</dependencies>
 	</dependencyManagement>
 

@@ -3,10 +3,6 @@ package org.hortonmachine.gears.io.wcs.readers;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.Authentication;
 import org.hortonmachine.gears.io.wcs.IDescribeCoverage;
 import org.hortonmachine.gears.io.wcs.WcsUtils;
