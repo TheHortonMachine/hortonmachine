@@ -630,7 +630,7 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 					int cellBuffer = 3
 					
 					// print the values of a cell with surrounding cells on a set of rasters
-					println HM.getCellInfo(col, row, cellBuffer, raster, flow)
+					println HM.getCellInfo(col, row, cellBuffer, raster, raster)
 					
 					// render the styled image of the dtm, with values and row/col
 					HM.toImage(col, row, cellBuffer, raster, 600, 600 )

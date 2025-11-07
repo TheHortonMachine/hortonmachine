@@ -20,6 +20,17 @@
 			<artifactId>hm-dbs</artifactId>
 			<version>0.11.0-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>edu.colostate.omslab</groupId>
+		    <artifactId>oms</artifactId>
+		    <version>3.5.12</version>
+		</dependency>
+		<dependency>
+		  <groupId>org.javassist</groupId>
+		  <artifactId>javassist</artifactId>
+		  <version>3.29.2-GA</version>
+		</dependency>
 
 		<dependency>
 			<groupId>joda-time</groupId>
