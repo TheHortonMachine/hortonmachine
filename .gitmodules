@@ -1,0 +1,3 @@
+[submodule "geoframe/geoframe-geoet/upstream"]
+	path = geoframe/geoframe-geoet/upstream
+	url = https://github.com/geoframecomponents/GEOET

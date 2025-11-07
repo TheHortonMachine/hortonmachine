@@ -6,13 +6,13 @@
 
   <parent>
     <groupId>org.hortonmachine</groupId>
-    <artifactId>hortonmachine</artifactId>
+    <artifactId>geoframe</artifactId>
     <version>${revision}</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
   <artifactId>hm-geoframe-core</artifactId>
-  <name>HM Geoframe</name>
+  <name>HM Geoframe Core</name>
   <packaging>jar</packaging>
 
   <dependencies>
