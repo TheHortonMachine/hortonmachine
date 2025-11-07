@@ -1,7 +1,4 @@
-<!-- geoframe/pom.xml -->
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project>
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -11,24 +8,16 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hm-geoframe</artifactId>
-  <name>HM Geoframe</name>
-  <packaging>jar</packaging>
+  <groupId>org.hortonmachine</groupId>
+  <artifactId>geoframe</artifactId>
+  <version>${revision}</version>
+  <packaging>pom</packaging>
+  <name>Hortonmachine Geoframe</name>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.hortonmachine</groupId>
-      <artifactId>hm-dbs</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hortonmachine</groupId>
-      <artifactId>hm-gears</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.hortonmachine</groupId>
-      <artifactId>hm-hmachine</artifactId>
-    </dependency>
-  </dependencies>
-
+  <modules>
+    <module>geoframe-core</module>
+    <module>geoframe-erm</module>
+    <module>geoframe-geoet</module>
+  </modules>
 </project>
 
