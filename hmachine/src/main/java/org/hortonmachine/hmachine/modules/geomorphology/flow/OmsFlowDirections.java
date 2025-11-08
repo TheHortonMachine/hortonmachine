@@ -219,28 +219,6 @@ public class OmsFlowDirections extends HMModel {
             fact[k] = 1.0 / (Math.sqrt(d1[k] * yRes * d1[k] * yRes + d2[k] * d2[k] * xRes * xRes));
         }
 
-        // Compute contrib area using overlayed directions for direction setting
-//        ccheck = 0; // dont worry about edge contamination
-//        useww = 0; // dont worry about weights
-
-//        arr = new int[n2][n1];
-//        for( int i = 0; i < arr.length; i++ ) {
-//            for( int j = 0; j < arr[0].length; j++ ) {
-//                arr[i][j] = 0;
-//            }
-//        }
-
-//        for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
-//            if (pm.isCanceled()) {
-//                return;
-//            }
-//            for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
-//                // This allows for a stream overlay
-//                if (dir[j][i] > 0)
-//                    darea(i, j);
-//            }
-//        }
-
         pm.message(msg.message("flow.setpos"));
         /* Set positive slope directions */
         n = 0;
@@ -321,14 +299,11 @@ public class OmsFlowDirections extends HMModel {
     }
 
     private boolean doesntTouchNovalue( int col, int row ) {
-//        int rows = elevations.length;
-//        int cols = elevations[0].length;
         for( int i = -1; i <= 1; i++ ) {
             for( int j = -1; j <= 1; j++ ) {
                 int r = row + i;
                 int c = col + j;
                 if (r >= 0 && r < rows && c >= 0 && c < cols) {
-//                    if (elevations[r][c] <= pMinElev) {
 					if (pitRaster.getValue(r, c) <= pMinElev) {
                         return false;
                     }
@@ -433,7 +408,6 @@ public class OmsFlowDirections extends HMModel {
             in = i + d1[k];
             spn = spos[jn][in];
             if (iter <= 1) {
-//                ed = elevations[j][i] - elevations[jn][in];
             	ed = pitRaster.getValue(j, i) - pitRaster.getValue(jn, in);
             } else {
                 ed = elev1[sp] - elev1[spn];
@@ -494,7 +468,6 @@ public class OmsFlowDirections extends HMModel {
                     spn = spos[jn][in];
 
                     if (iter <= 1) {
-//                        ed = elevations[j][i] - elevations[jn][in];
 						ed = pitRaster.getValue(j, i) - pitRaster.getValue(jn, in);
                     } else {
                         ed = elev1[sloc[ip]] - elev1[spn];
@@ -568,7 +541,6 @@ public class OmsFlowDirections extends HMModel {
                     in = i + d1[k];
                     spn = spos[jn][in];
                     if (iter <= 1) {
-//                        ed = elevations[j][i] - elevations[jn][in];
                     	ed = pitRaster.getValue(j, i) - pitRaster.getValue(jn, in);
                     } else {
                         ed = elev1[sloc[ip]] - elev1[spn];
@@ -611,7 +583,6 @@ public class OmsFlowDirections extends HMModel {
                         in = i + d1[k];
                         spn = spos[jn][in];
                         if (iter <= 1) {
-//                            ed = elevations[j][i] - elevations[jn][in];
                         	ed = pitRaster.getValue(j, i) - pitRaster.getValue(jn, in);
                         } else {
                             ed = elev1[sloc[ip]] - elev1[spn];
@@ -636,55 +607,6 @@ public class OmsFlowDirections extends HMModel {
 
     }
 
-    /**
-     * @param i
-     * @param j
-     */
-//    private void darea( int i, int j ) {
-//        int in, jn, con = 0;
-//        /*
-//         * con is a flag that signifies possible contaminatin of area due to edge effects
-//         */
-//        if (i != 0 && i != rows - 1 && j != 0 && j != cols - 1 && dir[j][i] > -1)
-//        /* not on boundary */
-//        {
-//            if (arr[j][i] == 0) // not touched yet
-//            {
-//                arr[j][i] = 1;
-//                if (useww == 1)
-//                    areaw[j][i] = weight[j][i];
-//                for( int k = 1; k <= 8; k++ ) {
-//                    in = i + d1[k];
-//                    jn = j + d2[k];
-//
-//                    /*
-//                     * test if neighbor drains towards cell excluding boundaryies
-//                     */
-//                    if (dir[jn][in] > 0 && (dir[jn][in] - k == 4 || dir[jn][in] - k == -4)) {
-//                        darea(in, jn);
-//                        if (arr[jn][in] < 0)
-//                            con = -1;
-//                        else
-//                            arr[j][i] = arr[j][i] + arr[jn][in];
-//                        if (useww == 1) {
-//                            if (areaw[jn][in] <= ndv || areaw[j][i] <= ndv) {
-//                                areaw[j][i] = ndv;
-//                            } else
-//                                areaw[j][i] = areaw[j][i] + areaw[jn][in];
-//                        }
-//                    }
-//                    if (dir[jn][in] < 0)
-//                        con = -1;
-//                }
-//                if (con == -1 && ccheck == 1) {
-//                    arr[j][i] = -1;
-//                    if (useww == 1)
-//                        areaw[j][i] = ndv;
-//                }
-//            }
-//        } else
-//            arr[j][i] = -1;
-//    }
 
     /**
      * @param i
@@ -704,14 +626,12 @@ public class OmsFlowDirections extends HMModel {
         {
             in = i + d1[k];
             jn = j + d2[k];
-//            if (elevations[jn][in] <= pMinElev) {
             double pitJIN = pitRaster.getValue(jn, in);
 			if (pitJIN <= pMinElev) {
                 continue;
             }
 
             if (dir[j][i] != -1) {
-//                slope = fact[k] * (elevations[j][i] - elevations[jn][in]);
 				slope = fact[k] * (pitJI - pitJIN);
 
                 if (aneigh > amax && slope >= 0.) {
@@ -731,13 +651,11 @@ public class OmsFlowDirections extends HMModel {
             in = i + d1[k];
             jn = j + d2[k];
             /* if(elev[jn][in] <= mval) dir[j][i] = -1; */
-//            if (elevations[jn][in] <= pMinElev) {
             double pitJIN = pitRaster.getValue(jn, in);
 			if (pitJIN <= pMinElev) {
                 continue;
             }
             if (dir[j][i] != -1) {
-//                slope = fact[k] * (elevations[j][i] - elevations[jn][in]);
 				slope = fact[k] * (pitJI - pitJIN);
                 if (slope > smax && amax <= 0) // still need amax check to
                 // prevent crossing
