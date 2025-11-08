@@ -76,20 +76,17 @@ public class OmsPitfiller extends HMModel {
     public static final String OMSPITFILLER_inElev_DESCRIPTION = "The map of digital elevation model (DEM).";
     public static final String OMSPITFILLER_outPit_DESCRIPTION = "The depitted elevation map.";
 
-    private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
     /**
      * The novalue needed by PitFiller.
      */
-    public static final double PITNOVALUE = -1.0;
+//    public static final double PITNOVALUE = -1.0;
 
     private int nCols;
     private int nRows;
     private double xRes;
     private double yRes;
 
-    // private final static String modelParameters = eu.hydrologis.libs.messages.help.Messages
-    // .getString("h_pitfiller.usage");
     /**
      * i1, i2, n1, n2, are the minimum and maximum index for the activeRegion
      * matrix (from 0 to nColumns or nRows).
@@ -143,8 +140,6 @@ public class OmsPitfiller extends HMModel {
     private HMRaster elevRaster;
     private HMRaster pitRaster;
 
-    private double novalue;
-
     /**
      * The pitfiller algorithm.
      * 
@@ -163,46 +158,15 @@ public class OmsPitfiller extends HMModel {
         yRes = regionMap.getYres();
 
         elevRaster = HMRaster.fromGridCoverage(inElev);
-        novalue = elevRaster.getNovalue();
-
         try {
-            pitRaster = new HMRaster.HMRasterWritableBuilder().setName("pitfiller").setCrs(elevRaster.getCrs())
-                    .setRegion(regionMap).setNoValue(PITNOVALUE).build();
-
-            for( int i = 0; i < nRows; i++ ) {
-                if (pm.isCanceled()) {
-                    return;
-                }
-                for( int j = 0; j < nCols; j++ ) {
-
-                    double value = elevRaster.getValue(j, i);
-                    if (!elevRaster.isNovalue(value)) {
-                        pitRaster.setValue(j, i, value);
-                    } else {
-                        pitRaster.setValue(j, i, PITNOVALUE);
-                    }
-                }
-            }
-
+            pitRaster = new HMRaster.HMRasterWritableBuilder().
+            		setName("pitfiller").setTemplate(elevRaster).setCopyValues(true).build();
+            
             flood();
             if (pm.isCanceled()) {
                 return;
             }
 
-            for( int i = 0; i < nRows; i++ ) {
-                if (pm.isCanceled()) {
-                    return;
-                }
-                for( int j = 0; j < nCols; j++ ) {
-                    if (dir[j][i] == 0) {
-                        return;
-                    }
-                    double value = pitRaster.getValue(j, i);
-                    if (pitRaster.isNovalue(value)) {
-                        pitRaster.setValue(j, i, novalue);
-                    }
-                }
-            }
             outPit = pitRaster.buildCoverage();
         } finally {
             elevRaster.close();

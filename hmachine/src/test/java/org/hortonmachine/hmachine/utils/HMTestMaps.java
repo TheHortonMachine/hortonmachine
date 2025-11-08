@@ -18,13 +18,10 @@
  */
 package org.hortonmachine.hmachine.utils;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-
 import java.awt.image.WritableRaster;
-import java.util.Arrays;
-import java.util.List;
 
 import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.utils.CrsUtilities;
@@ -34,7 +31,6 @@ import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * The grass map named test and its values to be used in tests.
@@ -42,8 +38,8 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class HMTestMaps {
-    private static final double N = -9999.0;
-    private static final int NI = -9999;
+	public static final double N = -9999.0;
+	public static final int NI = -9999;
 
     private static RegionMap envelopeParams = null;
     private static CoordinateReferenceSystem crs = null;
@@ -172,15 +168,16 @@ public class HMTestMaps {
             {N, N, N, N, N, N, N, N, N, N} //
     };
 
+    public static int NIF =  (int) OmsFlowDirections.FLOWNOVALUE;
     public static int[][] newIntFlowData = new int[][]{ //
-            /*    */{NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
-            {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
-            {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
-            {NI, 10, 5, 7, 6, 6, 6, 6, 5, NI}, //
-            {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
-            {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
-            {NI, 10, 4, 4, 4, 4, 5, 4, 4, NI}, //
-            {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
+            /*    */{NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF}, //
+            {NIF, NIF, NIF, 6, 6, 6, 6, 6, 6, NIF}, //
+            {NIF, NIF, NIF, 6, 6, 6, 6, 7, 7, NIF}, //
+            {NIF, 10, 5, 7, 6, 6, 6, 6, 5, NIF}, //
+            {NIF, 3, 4, 5, 5, 5, 5, 5, 5, NIF}, //
+            {NIF, 2, 3, 3, 4, 4, 4, 3, 3, NIF}, //
+            {NIF, 10, 4, 4, 4, 4, 5, 4, 4, NIF}, //
+            {NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF} //
     };
 
     /**

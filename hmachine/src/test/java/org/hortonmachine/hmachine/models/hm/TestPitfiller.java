@@ -42,7 +42,7 @@ public class TestPitfiller extends HMTestCase {
         double[][] elevationData = HMTestMaps.mapData;
         RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverageWithNovalue("elevation", elevationData, envelopeParams, crs, true, HMTestMaps.N);
 
         OmsPitfiller pitfiller = new OmsPitfiller();
         pitfiller.inElev = elevationCoverage;

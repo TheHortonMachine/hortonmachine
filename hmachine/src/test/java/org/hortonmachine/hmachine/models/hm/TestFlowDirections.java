@@ -46,7 +46,7 @@ public class TestFlowDirections extends HMTestCase {
 
         GridCoverage2D flowCoverage = flowDirections.outFlow;
         
-        checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData, 0);
+        checkMatrixEqual(flowCoverage.getRenderedImage(), HMTestMaps.newFlowData);
     }
 
 }
