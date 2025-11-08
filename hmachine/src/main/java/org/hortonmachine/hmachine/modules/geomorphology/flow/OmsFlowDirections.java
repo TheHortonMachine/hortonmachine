@@ -28,6 +28,8 @@ import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirec
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_NAME;
 import static org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections.OMSFLOWDIRECTIONS_STATUS;
 
+import java.io.IOException;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -86,22 +88,22 @@ public class OmsFlowDirections extends HMModel {
     /**
      * The novalue needed by OmsFlowDirections.
      */
-    public static final double FLOWNOVALUE = -1.0;
+    public static final short FLOWNOVALUE = -1;
 
     // the hydrologic variables
     /* define directions */
     private int[] d1 = new int[]{(int) FLOWNOVALUE, 0, -1, -1, -1, 0, 1, 1, 1};
     private int[] d2 = new int[]{(int) FLOWNOVALUE, 1, 1, 0, -1, -1, -1, 0, 1};
 
-    private int i1, i2, n1, n2, cols, rows;
+    private int cols, rows;
 
     private int[] is, js, dn;
-
-    private int[][] dir;
 
     private double xRes, yRes;
 
     private HMRaster pitRaster;
+
+	private HMRaster outFlowRaster;
 
     @Execute
     public void process() throws Exception {
@@ -119,11 +121,6 @@ public class OmsFlowDirections extends HMModel {
             xRes = regionMap.getXres();
             yRes = regionMap.getYres();
 
-            i1 = 0;
-            i2 = 0;
-            n1 = cols;
-            n2 = rows;
-
             for( int row = 0; row < rows; row++ ) {
                 if (pm.isCanceled()) {
                     return;
@@ -135,75 +132,56 @@ public class OmsFlowDirections extends HMModel {
                     }
                 }
             }
-
-            setdfnoflood();
-
-            // it is necessary to transpose the dir matrix and than it's possible to
-            // write the output
             
-            double novalue = pitRaster.getNovalue();
-            try (HMRaster outFlowRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inPit).setDoShort(true)
-                    .setNoValue(novalue).build()) {
-                for( int i = 0; i < dir[0].length; i++ ) {
-                    if (pm.isCanceled()) {
-                        return;
-                    }
-                    for( int j = 0; j < dir.length; j++ ) {
-                        if (dir[j][i] == 0) {
-                            throw new ModelsIllegalargumentException("Should never happen", this);
-                        }
-//                        outFlowRaster.setValue(j, i, dir[j][i]);
-                        if (dir[j][i] != FLOWNOVALUE) {
-                            outFlowRaster.setValue(j, i, dir[j][i]);
-                        } else {
-                            outFlowRaster.setValue(j, i, novalue);
-                        }
-                    }
-                }
-                
-                outFlowRaster.printData();
+            outFlowRaster = new HMRaster.HMRasterWritableBuilder().setTemplate(inPit).setInitialValue((short)0).setDoShort(true)
+            		.setNoValue(FLOWNOVALUE).build();
 
-                outFlow = outFlowRaster.buildCoverage();
-            }
+            
+        	setdfnoflood();
+
+            outFlow = outFlowRaster.buildCoverage();
+            
 
         } finally {
             pitRaster.close();
+            outFlowRaster.close();
         }
     }
 
     /**
+     * @throws Exception 
      * 
      */
-    private void setdfnoflood() {
+    private void setdfnoflood() throws Exception {
         int n;
         double[] fact = new double[9];
 
-        dir = new int[cols][rows];
 
         pm.message(msg.message("flow.initbound"));
 
         /* Initialize boundaries */
-        for( int i = i1; i < n1; i++ ) {
-            dir[i][i2] = -1;
-            dir[i][n2 - 1] = -1;
+        for( int i = 0; i < cols; i++ ) {
+        	outFlowRaster.setValue(i, 0, FLOWNOVALUE);
+        	outFlowRaster.setValue(i, rows - 1, FLOWNOVALUE);
         }
 
-        for( int i = i2; i < n2; i++ ) {
-            dir[i1][i] = -1;
-            dir[n1 - 1][i] = -1;
+        for( int i = 0; i < rows; i++ ) {
+        	outFlowRaster.setValue(0, i, FLOWNOVALUE);
+			outFlowRaster.setValue(cols - 1, i, FLOWNOVALUE);
         }
+        
         pm.message(msg.message("flow.initpointers"));
         /* initialize internal pointers */
-        for( int col = (i2 + 1); col < (n2 - 1); col++ ) {
+        for( int col = (0 + 1); col < (rows - 1); col++ ) {
             if (pm.isCanceled()) {
                 return;
             }
-            for( int row = (i1 + 1); row < (n1 - 1); row++ ) {
+            for( int row = (0 + 1); row < (cols - 1); row++ ) {
 
                 if (doesntTouchNovalue(col, row)) {
-                    dir[row][col] = 0;
+                	outFlowRaster.setValue(row, col, 0);
                 } else {
-                    dir[row][col] = -1;
+                	outFlowRaster.setValue(row, col, FLOWNOVALUE);
                 }
 
                 // if (elevations[row][col] <= FLOWNOVALUE) {
@@ -222,16 +200,18 @@ public class OmsFlowDirections extends HMModel {
         pm.message(msg.message("flow.setpos"));
         /* Set positive slope directions */
         n = 0;
-        for( int i = (i2 + 1); i < (n2 - 1); i++ ) {
+        for( int i = (0 + 1); i < (rows - 1); i++ ) {
             if (pm.isCanceled()) {
                 return;
             }
-            for( int j = (i1 + 1); j < (n1 - 1); j++ ) {
-                if (dir[j][i] == 0) {
+            for( int j = (0 + 1); j < (cols - 1); j++ ) {
+//                if (dir[j][i] == 0) {
+            	if (outFlowRaster.getValue(j, i) == 0) {
 //                    if (elevations[j][i] > pMinElev) {
 					if (pitRaster.getValue(j, i) > pMinElev) {
                         set(i, j, fact);
-                        if (dir[j][i] == 0) {
+//                        if (dir[j][i] == 0) {
+						if (outFlowRaster.getValue(j, i) == 0) {
                             n++;
                         }
                     }
@@ -265,13 +245,13 @@ public class OmsFlowDirections extends HMModel {
 
             /* Put unresolved pixels on stack */
             int ip = 0;
-            for( int i = i2; i < n2; i++ ) {
+            for( int i = 0; i < rows; i++ ) {
                 if (pm.isCanceled()) {
                     return;
                 }
-                for( int j = i1; j < n1; j++ ) {
+                for( int j = 0; j < cols; j++ ) {
                     spos[j][i] = -1; /* Initialize stack position */
-                    if (dir[j][i] == 0) {
+					if (outFlowRaster.getValue(j, i) == 0) {
                         is[ip] = i;
                         js[ip] = j;
                         dn[ip] = 0;
@@ -286,19 +266,25 @@ public class OmsFlowDirections extends HMModel {
 
             flatrout(n, sloc, s, spos, iter, elev2, elev2, fact, n);
             /* The direction 19 was used to flag pits. Set these to 0 */
-            for( int i = i2; i < n2; i++ ) {
+            for( int i = 0; i < rows; i++ ) {
                 if (pm.isCanceled()) {
                     return;
                 }
-                for( int j = i1; j < n1; j++ ) {
-                    if (dir[j][i] == 19)
-                        dir[j][i] = 0;
+                for( int j = 0; j < cols; j++ ) {
+                	
+                	if (outFlowRaster.getValue(j, i) == 19) {
+						outFlowRaster.setValue(j, i, 0);
+					}
                 }
             }
         }
     }
 
     private boolean doesntTouchNovalue( int col, int row ) {
+    	// cols and rows are inverted here
+    	int rows = this.cols;
+    	int cols = this.rows;
+    	
         for( int i = -1; i <= 1; i++ ) {
             for( int j = -1; j <= 1; j++ ) {
                 int r = row + i;
@@ -314,7 +300,7 @@ public class OmsFlowDirections extends HMModel {
     }
 
     private void flatrout( int n, int[] sloc, int[] s, int[][] spos, int iter, double[] elev1, double[] elev2, double[] fact,
-            int ns ) {
+            int ns ) throws Exception {
         int nu, ipp;
         int[] sloc2;
         double[] elev3;
@@ -333,7 +319,7 @@ public class OmsFlowDirections extends HMModel {
         nu = 0;
         for( int ip = 0; ip < n; ip++ ) {
             set2(is[sloc[ip]], js[sloc[ip]], fact, elev1, elev2, iter, spos, s);
-            if (dir[js[sloc[ip]]][is[sloc[ip]]] == 0)
+			if (outFlowRaster.getValue(js[sloc[ip]], is[sloc[ip]]) == 0) 
                 nu++;
         }
 
@@ -358,7 +344,7 @@ public class OmsFlowDirections extends HMModel {
                 if (pm.isCanceled()) {
                     return;
                 }
-                if (dir[js[sloc[ip]]][is[sloc[ip]]] == 0) {
+				if (outFlowRaster.getValue(js[sloc[ip]], is[sloc[ip]]) == 0) {
                     sloc2[ipp] = sloc[ip];
                     /* Initialize the stage 1 array for flat routing */
                     s[sloc[ip]] = 1;
@@ -386,8 +372,9 @@ public class OmsFlowDirections extends HMModel {
      * @param iter
      * @param spos
      * @param s
+     * @throws Exception 
      */
-    private void set2( int i, int j, double[] fact, double[] elev1, double[] elev2, int iter, int[][] spos, int[] s ) {
+    private void set2( int i, int j, double[] fact, double[] elev1, double[] elev2, int iter, int[][] spos, int[] s ) throws Exception {
         /*
          * This function sets directions based upon secondary elevations for assignment of flow
          * directions across flats according to Garbrecht and Martz scheme. There are two
@@ -426,7 +413,8 @@ public class OmsFlowDirections extends HMModel {
                                                  */
             {
                 smax = slope2;
-                dir[j][i] = k;
+//                dir[j][i] = k;
+                outFlowRaster.setValue(j, i, k);
             }
         } /* End of for */
 
@@ -514,8 +502,9 @@ public class OmsFlowDirections extends HMModel {
      * @param spos
      * @param iter
      * @param sloc
+     * @throws Exception 
      */
-    private void incfall( int n, double[] elev1, int[] s1, int[][] spos, int iter, int[] sloc ) {
+    private void incfall( int n, double[] elev1, int[] s1, int[][] spos, int iter, int[] sloc ) throws Exception {
         /* This routine implements drainage towards lower areas - stage 1 */
         int done = 0, donothing, ninc, nincold, spn;
         int st = 1, i, j, in, jn;
@@ -545,12 +534,14 @@ public class OmsFlowDirections extends HMModel {
                     } else {
                         ed = elev1[sloc[ip]] - elev1[spn];
                     }
-                    if (ed >= 0. && dir[jn][in] != 0)
+//                    if (ed >= 0. && dir[jn][in] != 0)
+                    if (ed >= 0. && outFlowRaster.getValue(jn, in) != 0)
                         donothing = 1; /* If neighbor drains */
                     if (spn >= 0) /* if neighbor is in flat */
                     {
                         /* If neighbor is not being */
-                        if (s1[spn] >= 0 && s1[spn] < st && dir[jn][in] == 0) {
+//                        if (s1[spn] >= 0 && s1[spn] < st && dir[jn][in] == 0) {
+						if (s1[spn] >= 0 && s1[spn] < st && outFlowRaster.getValue(jn, in) == 0) {
                             donothing = 1; /* Incremented */
                         }
                     }
@@ -587,17 +578,17 @@ public class OmsFlowDirections extends HMModel {
                         } else {
                             ed = elev1[sloc[ip]] - elev1[spn];
                         }
-                        if (ed >= 0. && dir[jn][in] != 0)
+                        if (ed >= 0. && outFlowRaster.getValue(jn, in) != 0)
                             donothing = 1; /* If neighbor drains */
                         if (spn >= 0) /* if neighbor is in flat */
                         {
                             /* If neighbor is not being */
-                            if (s1[spn] >= 0 && s1[spn] < st && dir[jn][in] == 0)
+							if (s1[spn] >= 0 && s1[spn] < st && outFlowRaster.getValue(jn, in) == 0) 
                                 donothing = 1; /* Incremented */
                         }
                     }
                     if (donothing == 0) {
-                        dir[j][i] = 19;
+						outFlowRaster.setValue(j, i, 19);
                         /* printf("%d %d\n",i,j); */
                     }
                 } /* End of loop 2 over all flats */
@@ -612,13 +603,15 @@ public class OmsFlowDirections extends HMModel {
      * @param i
      * @param j
      * @param fact
+     * @throws Exception 
      */
-    private void set( int i, int j, double[] fact ) {
+    private void set( int i, int j, double[] fact ) throws Exception {
         double slope, smax;
         int amax, in, jn, aneigh = -1;
 
         double pitJI = pitRaster.getValue(j, i);
-        dir[j][i] = 0; /* This necessary for repeat passes after level raised */
+//        dir[j][i] = 0; /* This necessary for repeat passes after level raised */
+		outFlowRaster.setValue(j, i, 0); /* This necessary for repeat passes after level raised */
         smax = 0.;
         amax = 0;
 
@@ -631,16 +624,16 @@ public class OmsFlowDirections extends HMModel {
                 continue;
             }
 
-            if (dir[j][i] != -1) {
+			if (outFlowRaster.getValue(j, i) != FLOWNOVALUE) {
 				slope = fact[k] * (pitJI - pitJIN);
 
                 if (aneigh > amax && slope >= 0.) {
                     amax = aneigh;
-                    if (Math.abs(dir[jn][in] - k) != 4)
-                        dir[j][i] = k; // Dont set opposing pointers
+                    if (Math.abs(outFlowRaster.getValue(jn, in) - k) != 4)
+						outFlowRaster.setValue(j, i, k); // Dont set opposing pointers
                 } else if (slope > smax && amax <= 0) {
                     smax = slope;
-                    dir[j][i] = k;
+					outFlowRaster.setValue(j, i, k);
 
                 }
             }
@@ -655,13 +648,13 @@ public class OmsFlowDirections extends HMModel {
 			if (pitJIN <= pMinElev) {
                 continue;
             }
-            if (dir[j][i] != -1) {
+			if (outFlowRaster.getValue(j, i) != FLOWNOVALUE) {
 				slope = fact[k] * (pitJI - pitJIN);
                 if (slope > smax && amax <= 0) // still need amax check to
                 // prevent crossing
                 {
                     smax = slope;
-                    dir[j][i] = k;
+					outFlowRaster.setValue(j, i, k);
 
                 }
             }

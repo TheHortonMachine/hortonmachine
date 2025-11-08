@@ -17,6 +17,8 @@ package org.hortonmachine.gears.libs.modules;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
+
 import java.awt.Point;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
@@ -721,6 +723,8 @@ public class HMRaster implements AutoCloseable {
         private Short initialShortValue = null;
 
         private double[][] dataMatrix = null;
+        
+        private boolean doNullBorder = false;
 
         public HMRasterWritableBuilder setName( String name ) {
             this.name = name;
@@ -786,6 +790,11 @@ public class HMRaster implements AutoCloseable {
             this.dataMatrix = dataMatrix;
             return this;
         }
+        
+        public HMRasterWritableBuilder setDoNullBorder() {
+        	this.doNullBorder = true;
+        	return this;
+        }
 
         public HMRaster build() {
             if (template != null) {
@@ -814,25 +823,46 @@ public class HMRaster implements AutoCloseable {
                             null, initialValue != null ? initialValue : hmRaster.novalue);
                 }
                 hmRaster.iter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableRaster);
-
+//                if (nullBorders) {
+//                    for( int c = 0; c < width; c++ ) {
+//                        writableRaster.setSample(c, 0, 0, doubleNovalue);
+//                        writableRaster.setSample(c, height - 1, 0, doubleNovalue);
+//                    }
+//                    for( int r = 0; r < height; r++ ) {
+//                        writableRaster.setSample(0, r, 0, doubleNovalue);
+//                        writableRaster.setSample(width - 1, r, 0, doubleNovalue);
+//                    }
+//                }
                 if (copyValues) {
 //                    RandomIter inIter = CoverageUtilities.getRandomIterator(template);
                     if (doInteger) {
                         for( int r = 0; r < hmRaster.rows; r++ ) {
                             for( int c = 0; c < hmRaster.cols; c++ ) {
-                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.getValue(c, r));
+                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
+                            		((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.intNovalue);
+                            	} else {                            		
+                            		((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.getValue(c, r));
+                            	}
                             }
                         }
                     } else if (doShort) {
                         for( int r = 0; r < hmRaster.rows; r++ ) {
                             for( int c = 0; c < hmRaster.cols; c++ ) {
-                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, (short) template.getValue(c, r));
+                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
+                            		((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.shortNovalue);
+                            	} else {
+                            		((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, (short) template.getValue(c, r));
+                            	}
                             }
                         }
                     } else {
                         for( int r = 0; r < hmRaster.rows; r++ ) {
                             for( int c = 0; c < hmRaster.cols; c++ ) {
-                                ((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.getValue(c, r));
+                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
+                            		((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.novalue);
+                            	} else {                            		
+                            		((WritableRandomIter) hmRaster.iter).setSample(c, r, 0, template.getValue(c, r));
+                            	}
                             }
                         }
                     }

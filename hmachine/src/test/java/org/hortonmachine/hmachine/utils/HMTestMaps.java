@@ -157,27 +157,27 @@ public class HMTestMaps {
      * Output data of the {@link OmsFlowDirections} module, since 
      * it has changed to also eat a border of data around the basin.
      */
+    public static int NIF =  OmsFlowDirections.FLOWNOVALUE;
     public static double[][] newFlowData = new double[][]{ //
-            /*    */{N, N, N, N, N, N, N, N, N, N}, //
-            {N, N, N, 6, 6, 6, 6, 6, 6, N}, //
-            {N, N, N, 6, 6, 6, 6, 7, 7, N}, //
-            {N, 5, 5, 7, 6, 6, 6, 6, 5, N}, //
-            {N, 3, 4, 5, 5, 5, 5, 5, 5, N}, //
-            {N, 2, 3, 3, 4, 4, 4, 3, 3, N}, //
-            {N, 4, 4, 4, 4, 4, 5, 4, 4, N}, //
-            {N, N, N, N, N, N, N, N, N, N} //
-    };
-
-    public static int NIF =  (int) OmsFlowDirections.FLOWNOVALUE;
-    public static int[][] newIntFlowData = new int[][]{ //
             /*    */{NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF}, //
             {NIF, NIF, NIF, 6, 6, 6, 6, 6, 6, NIF}, //
             {NIF, NIF, NIF, 6, 6, 6, 6, 7, 7, NIF}, //
-            {NIF, 10, 5, 7, 6, 6, 6, 6, 5, NIF}, //
+            {NIF, 5, 5, 7, 6, 6, 6, 6, 5, NIF}, //
             {NIF, 3, 4, 5, 5, 5, 5, 5, 5, NIF}, //
             {NIF, 2, 3, 3, 4, 4, 4, 3, 3, NIF}, //
-            {NIF, 10, 4, 4, 4, 4, 5, 4, 4, NIF}, //
+            {NIF, 4, 4, 4, 4, 4, 5, 4, 4, NIF}, //
             {NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF, NIF} //
+    };
+
+    public static int[][] newIntFlowData = new int[][]{ //
+            /*    */{NI, NI, NI, NI, NI, NI, NI, NI, NI, NI}, //
+            {NI, NI, NI, 6, 6, 6, 6, 6, 6, NI}, //
+            {NI, NI, NI, 6, 6, 6, 6, 7, 7, NI}, //
+            {NI, 10, 5, 7, 6, 6, 6, 6, 5, NI}, //
+            {NI, 3, 4, 5, 5, 5, 5, 5, 5, NI}, //
+            {NI, 2, 3, 3, 4, 4, 4, 3, 3, NI}, //
+            {NI, 10, 4, 4, 4, 4, 5, 4, 4, NI}, //
+            {NI, NI, NI, NI, NI, NI, NI, NI, NI, NI} //
     };
 
     /**
