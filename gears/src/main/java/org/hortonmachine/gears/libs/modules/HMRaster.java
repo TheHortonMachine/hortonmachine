@@ -17,8 +17,6 @@ package org.hortonmachine.gears.libs.modules;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-
 import java.awt.Point;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
@@ -28,7 +26,8 @@ import java.util.stream.IntStream;
 
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.JTS;
@@ -40,8 +39,6 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
 
 /**
  * A generic HM single band raster object.
@@ -151,7 +148,16 @@ public class HMRaster implements AutoCloseable {
     public static HMRaster fromGridCoverage( GridCoverage2D coverage ) {
         return fromGridCoverage(null, coverage);
     }
-
+    
+    public static HMRaster fromGridCoverageWritable( String name, GridCoverage2D coverage ) {
+    	return new HMRaster.HMRasterWritableBuilder().
+        		setName("pitfiller").setTemplate(coverage).setCopyValues(true).build();
+	}
+    
+    public static HMRaster fromGridCoverageWritable(GridCoverage2D coverage ) {
+    	return fromGridCoverageWritable(null, coverage);
+    }
+    
     public String getName() {
         return name;
     }
@@ -661,6 +667,10 @@ public class HMRaster implements AutoCloseable {
         }
         return enteringNodes;
     }
+    
+    public GridNodeNG getGridNodeNG( int col, int row ) {
+		return new GridNodeNG(this, col, row);
+	}
 
     public void printData() {
         for( int row = startRow; row < rows + startRow; row++ ) {

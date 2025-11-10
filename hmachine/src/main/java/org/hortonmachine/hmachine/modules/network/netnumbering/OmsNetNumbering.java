@@ -28,17 +28,11 @@ import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumb
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_NAME;
 import static org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering.OMSNETNUMBERING_STATUS;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -46,6 +40,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.modules.NetLink;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -172,40 +167,36 @@ public class OmsNetNumbering extends HMModel {
             return;
         }
         checkNull(inFlow, inNet);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
+        
+        HMRaster flowRaster = HMRaster.fromGridCoverageWritable(inFlow);
+        HMRaster netRaster = HMRaster.fromGridCoverage(inNet);
+        HMRaster tcaRaster = HMRaster.fromGridCoverageWritable(inTca);
+        RegionMap regionMap = flowRaster.getRegionMap();
         nCols = regionMap.getCols();
         nRows = regionMap.getRows();
         xres = regionMap.getXres();
         yres = regionMap.getYres();
-
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2IntWritableRaster(flowRI, true);
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-        RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
 
         List<Geometry> pointsList = null;
         if (inPoints != null) {
             pointsList = FeatureUtilities.featureCollectionToGeometriesList(inPoints, true, null);
         }
 
-        WritableRandomIter netNumIter = null;
+        HMRaster netNumR = null;
         try {
             List<NetLink> linksList = new ArrayList<NetLink>();
-            WritableRaster netNumWR = ModelsEngine.netNumbering(inFlow, inNet, inTca, pointsList, linksList, pm);
-            outNetnum = CoverageUtilities.buildCoverage("netnum", netNumWR, regionMap, inFlow.getCoordinateReferenceSystem());
+			netNumR = ModelsEngine.netNumbering(flowRaster, netRaster, tcaRaster, pointsList, linksList, pm);
+            outNetnum = netNumR.buildCoverage();
 
-            netNumIter = RandomIterFactory.createWritable(netNumWR, null);
-            int novalue = HMConstants.getIntNovalue(inFlow);
-            WritableRaster basinWR = ModelsEngine.extractSubbasins(flowIter, novalue, netIter, netNumIter, nRows, nCols, pm);
-            outBasins = CoverageUtilities.buildCoverage("subbasins", basinWR, regionMap, inFlow.getCoordinateReferenceSystem());
+			HMRaster subbasinRaster = ModelsEngine.extractSubbasins(flowRaster, netRaster, netNumR, nRows, nCols, pm);
+            outBasins = subbasinRaster.buildCoverage();
 
-            RandomIter subbasinIter = CoverageUtilities.getRandomIterator(outBasins);
             int validCount = 0;
             int invalidCount = 0;
             try {
                 for( int r = 0; r < nRows; r++ ) {
                     for( int c = 0; c < nCols; c++ ) {
-                        int value = subbasinIter.getSample(c, r, 0);
+                        int value = subbasinRaster.getIntValue(c, r);
                         if (!isNovalue(value)) {
                             validCount++;
                         } else {
@@ -318,12 +309,13 @@ public class OmsNetNumbering extends HMModel {
                     printLinkAsIdOutletUpstreamArea(rootLink, inTca, inTca.getGridGeometry(), basinsInfoSb);
                     outBasinsInfo = basinsInfoSb.toString();
 
-                    WritableRaster desiredSubbasinsWR = CoverageUtilities.createWritableRaster(nCols, nRows, Integer.class, null,
-                            HMConstants.intNovalue);
-                    WritableRandomIter desiredSubbasinsWIter = RandomIterFactory.createWritable(desiredSubbasinsWR, null);
+                    
+
+            		HMRaster desiredSubbasinsR = new HMRaster.HMRasterWritableBuilder().setName("desiredsubbasin").setTemplate(flowRaster)
+            				.setInitialValue(0).setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
                     for( int r = 0; r < nRows; r++ ) {
                         for( int c = 0; c < nCols; c++ ) {
-                            int value = subbasinIter.getSample(c, r, 0);
+                            int value = subbasinRaster.getIntValue(c, r);
                             if (!isNovalue(value)) {
                                 Integer convertedBasinNum = conversionMap.get(value);
                                 if (convertedBasinNum != null) {
@@ -334,16 +326,15 @@ public class OmsNetNumbering extends HMModel {
                                         convertedBasinNum = convertedBasinNumTmp;
                                         convertedBasinNumTmp = conversionMap.get(convertedBasinNumTmp);
                                     }
-                                    desiredSubbasinsWIter.setSample(c, r, 0, convertedBasinNum);
+                                    desiredSubbasinsR.setValue(c, r, convertedBasinNum);
                                 } else {
-                                    desiredSubbasinsWIter.setSample(c, r, 0, value);
+                                	desiredSubbasinsR.setValue(c, r, value);
                                 }
                             }
                         }
                     }
-                    desiredSubbasinsWIter.done();
-                    outDesiredBasins = CoverageUtilities.buildCoverageWithNovalue("desiredsubbasins", desiredSubbasinsWR,
-                            regionMap, inFlow.getCoordinateReferenceSystem(), HMConstants.intNovalue);
+                    desiredSubbasinsR.close();
+                    outDesiredBasins = desiredSubbasinsR.buildCoverage();
                 }
 
                 // build geoframe topology input
@@ -353,14 +344,15 @@ public class OmsNetNumbering extends HMModel {
                 outGeoframeTopology = geoframeSb.toString();
 
             } finally {
-                subbasinIter.done();
+                subbasinRaster.close();
             }
 
         } finally {
-            flowIter.done();
-            netIter.done();
-            if (netNumIter != null)
-                netNumIter.done();
+            flowRaster.close();
+            netRaster.close();
+            tcaRaster.close();
+            if (netNumR != null)
+                netNumR.close();
         }
     }
 

@@ -158,15 +158,8 @@ public class OmsDrainDir extends HMModel {
 
         pitRaster = new HMRaster.HMRasterWritableBuilder().
         		setName("pit").setTemplate(inPit).setCopyValues(true).setDoNullBorder().build();
-//        RenderedImage pitfillerRI = inPit.getRenderedImage();
-//        WritableRaster pitfillerWR = CoverageUtilities.renderedImage2DoubleWritableRaster(pitfillerRI, true);
-        
         flowRaster = new HMRaster.HMRasterWritableBuilder().
 				setName("flow").setTemplate(inFlow).setCopyValues(true).setDoNullBorder().build();
-//        RenderedImage flowRI = inFlow.getRenderedImage();
-//        WritableRaster flowWR = CoverageUtilities.renderedImage2ShortWritableRaster(flowRI, true);
-
-//        RandomIter pitRandomIter = RandomIterFactory.create(pitfillerWR, null);
 
         // create new matrix
         double[] orderedelev = new double[cols * rows];
@@ -193,18 +186,13 @@ public class OmsDrainDir extends HMModel {
 
         pm.message(msg.message("draindir.initializematrix"));
 
-        // Initialize new RasterData and set value
-//        WritableRaster tcaWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, HMConstants.intNovalue);
         HMRaster tcaWR = new HMRaster.HMRasterWritableBuilder().
 				setName("tca").setRegion(regionMap).setCrs(inPit.getCoordinateReferenceSystem()).setDoInteger(true).setInitialValue(HMConstants.intNovalue).
 				setNoValue(HMConstants.intNovalue).build();
-//        WritableRaster dirWR = CoverageUtilities.createWritableRaster(cols, rows, Short.class, null, HMConstants.shortNovalue);
         HMRaster dirWR = new HMRaster.HMRasterWritableBuilder().
 				setName("drain").setRegion(regionMap).setCrs(inPit.getCoordinateReferenceSystem()).setDoShort(true).setInitialValue(HMConstants.shortNovalue).
 				setNoValue(HMConstants.shortNovalue).build();
 
-        // it contains the analyzed cells
-//        WritableRaster deviationsWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, null);
         HMRaster deviationsWR = new HMRaster.HMRasterWritableBuilder().
         						setName("deviations").setRegion(regionMap).setNoValue(HMConstants.doubleNovalue).build();
         BitMatrix analizedMatrix = new BitMatrix(cols, rows);
@@ -227,11 +215,8 @@ public class OmsDrainDir extends HMModel {
 			}
 			
 			
-			outFlow = dirWR.buildCoverage();// CoverageUtilities.buildCoverageWithNovalue("draindir", dirWR, regionMap,
-											// inPit.getCoordinateReferenceSystem(), HMConstants.intNovalue);
-			outTca = tcaWR.buildCoverage();// CoverageUtilities.buildCoverageWithNovalue("tca", tcaWR, regionMap,
-											// inPit.getCoordinateReferenceSystem(), HMConstants.shortNovalue);
-
+			outFlow = dirWR.buildCoverage();
+			outTca = tcaWR.buildCoverage();
 		} finally {
 			pitRaster.close();
 			flowRaster.close();

@@ -55,6 +55,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.coverage.RasterCellInfo;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateList;
@@ -691,255 +692,236 @@ public class ModelsEngine {
     /**
      * Calculate the map of netnumbering.
      *
-     * @param flowGC the map of flowdirection.
-     * @param netGC the map of network.
-     * @param tcaGC the optional map of tca.
+     * @param flowR the map of flowdirection.
+     * @param netR the map of network.
+     * @param tcaR the map of tca.
      * @param tcaThreshold the threshold on the tca.
      * @param pointsFC optional feature collection of points in which to split the net.
      * @param pm the monitor.
      * @return the raster of netnumbering.
      * @throws Exception
      */
-    public static WritableRaster netNumbering( GridCoverage2D flowGC, GridCoverage2D netGC, GridCoverage2D tcaGC,
-            List<Geometry> points, List<NetLink> netLinksList, IHMProgressMonitor pm ) throws Exception {
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(flowGC);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-        WritableRaster netnumWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, null);
-        WritableRandomIter netnumIter = RandomIterFactory.createWritable(netnumWR, null);
+    public static HMRaster netNumbering( HMRaster flowR, HMRaster netR, HMRaster tcaR,
+			List<Geometry> points, List<NetLink> netLinksList, IHMProgressMonitor pm) throws Exception {
+		RegionMap regionMap = flowR.getRegionMap();
+		int cols = regionMap.getCols();
+		int rows = regionMap.getRows();
 
-        int flowNv = HMConstants.getIntNovalue(flowGC);
-        double netNv = HMConstants.getNovalue(netGC);
+		HMRaster netnumRaster = new HMRaster.HMRasterWritableBuilder().setName("netnum").setTemplate(flowR).setInitialValue(0)
+				.setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
 
-        RandomIter flowIter = CoverageUtilities.getRandomIterator(flowGC);
-        RandomIter netIter = CoverageUtilities.getRandomIterator(netGC);
-        RandomIter tcaIter = null;
-        if (tcaGC != null)
-            tcaIter = CoverageUtilities.getRandomIterator(tcaGC);
-        try {
-            /*
-             * split nodes are points that create new numbering:
-             * - first points upstream on net
-             * - confluences
-             * - supplied points
-             */
-            List<FlowNode> splitNodes = new ArrayList<>();
-            List<String> fixedNodesColRows = new ArrayList<>();
-            // SUPPLIED POINTS
-            if (points != null) {
-                Envelope envelope = regionMap.toEnvelope();
-                GridGeometry2D gridGeometry = flowGC.getGridGeometry();
-                // snap points on net if necessary
-                for( Geometry point : points ) {
-                    Coordinate pointCoordinate = point.getCoordinate();
-                    if (envelope.contains(pointCoordinate)) {
-                        GridCoordinates2D gridCoordinate = gridGeometry
-                                .worldToGrid(new Position2D(pointCoordinate.x, pointCoordinate.y));
+		int flowNv = (int) flowR.getNovalue();
+		double netNv = netR.getNovalue();
 
-                        GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, gridCoordinate.x, gridCoordinate.y, netNv);
-                        FlowNode flowNode = new FlowNode(flowIter, cols, rows, gridCoordinate.x, gridCoordinate.y, flowNv);
-                        while( !netNode.isValid() ) {
-                            flowNode = flowNode.goDownstream();
-                            if (flowNode == null)
-                                break;
-                            netNode = new GridNode(netIter, cols, rows, -1, -1, flowNode.col, flowNode.row, netNv);
-                        }
-                        if (flowNode != null) {
-                            /*
-                             * now we need to go one more down. This is necessary, since 
-                             * in the later processing the netnumber channel is extracted 
-                             * going downstream from the splitnodes, so the supplied point 
-                             * would end up being the most upstream point of the basin.
-                             * Therefore we move one down, one downstream of teh point 
-                             * we want to be the basin outlet.
-                             */
-                            FlowNode flowNodeTmp = flowNode.goDownstream();
-                            if (flowNodeTmp != null) {
-                                netNode = new GridNode(netIter, cols, rows, -1, -1, flowNodeTmp.col, flowNodeTmp.row, netNv);
-                                if (netNode.isValid) {
-                                    splitNodes.add(flowNodeTmp);
-                                    fixedNodesColRows.add(flowNode.col + "_" + flowNode.row);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+		/*
+		 * split nodes are points that create new numbering: - first points upstream on
+		 * net - confluences - supplied points
+		 */
+		List<FlowNodeNG> splitNodes = new ArrayList<>();
+		List<String> fixedNodesColRows = new ArrayList<>();
+		// SUPPLIED POINTS
+		if (points != null) {
+			Envelope envelope = regionMap.toEnvelope();
+			GridGeometry2D gridGeometry = flowR.getGridGeometry();
+			// snap points on net if necessary
+			for (Geometry point : points) {
+				Coordinate pointCoordinate = point.getCoordinate();
+				if (envelope.contains(pointCoordinate)) {
+					GridCoordinates2D gridCoordinate = gridGeometry
+							.worldToGrid(new Position2D(pointCoordinate.x, pointCoordinate.y));
 
-            // FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)
-            pm.beginTask("Find confluences...", rows);
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    GridNode netNode = new GridNode(netIter, cols, rows, -1, -1, c, r, netNv);
-                    if (netNode.isValid()) {
-                        List<GridNode> validSurroundingNodes = netNode.getValidSurroundingNodes();
-                        FlowNode currentflowNode = new FlowNode(flowIter, cols, rows, c, r, flowNv);
-                        int enteringCount = 0;
-                        for( GridNode gridNode : validSurroundingNodes ) {
-                            FlowNode tmpNode = new FlowNode(flowIter, cols, rows, gridNode.col, gridNode.row, flowNv);
-                            List<FlowNode> enteringNodes = currentflowNode.getEnteringNodes();
-                            if (enteringNodes.contains(tmpNode)) {
-                                enteringCount++;
-                            }
-                        }
-                        if (enteringCount != 1) {
-                            splitNodes.add(currentflowNode);
-                        }
-                    }
-                }
-                pm.worked(1);
-            }
-            pm.done();
-            pm.message("Found split points: " + splitNodes.size());
+					GridNodeNG netNode = netR.getGridNodeNG(gridCoordinate.x, gridCoordinate.y);
+					FlowNodeNG flowNode = new FlowNodeNG(flowR, gridCoordinate.x, gridCoordinate.y);
+					while (!netNode.isValid()) {
+						flowNode = flowNode.goDownstream();
+						if (flowNode == null)
+							break;
+						netNode = netR.getGridNodeNG(flowNode.col, flowNode.row);
+					}
+					if (flowNode != null) {
+						/*
+						 * now we need to go one more down. This is necessary, since in the later
+						 * processing the netnumber channel is extracted going downstream from the
+						 * splitnodes, so the supplied point would end up being the most upstream point
+						 * of the basin. Therefore we move one down, one downstream of teh point we want
+						 * to be the basin outlet.
+						 */
+						FlowNodeNG flowNodeTmp = flowNode.goDownstream();
+						if (flowNodeTmp != null) {
+							netNode = netR.getGridNodeNG(flowNodeTmp.col, flowNodeTmp.row);
+							if (netNode.isValid) {
+								splitNodes.add(flowNodeTmp);
+								fixedNodesColRows.add(flowNode.col + "_" + flowNode.row);
+							}
+						}
+					}
+				}
+			}
+		}
 
-            int channel = 1;
-            pm.beginTask("Numbering network...", splitNodes.size());
-            for( int i = 0; i < splitNodes.size(); i++ ) {
-                FlowNode splitNode = splitNodes.get(i);
-                int startTca = splitNode.getIntValueFromMap(tcaIter);
+		// FIND CONFLUENCES AND NETWORK STARTING POINTS (MOST UPSTREAM)
+		pm.beginTask("Find confluences...", rows);
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				GridNodeNG netNode = netR.getGridNodeNG(c, r);
+				if (netNode.isValid()) {
+					List<GridNodeNG> validSurroundingNodes = netNode.getValidSurroundingNodes();
+					FlowNodeNG currentflowNode = new FlowNodeNG(flowR, c, r);
+					int enteringCount = 0;
+					for (GridNodeNG gridNode : validSurroundingNodes) {
+						FlowNodeNG tmpNode = new FlowNodeNG(flowR, gridNode.col, gridNode.row);
+						List<FlowNodeNG> enteringNodes = currentflowNode.getEnteringNodes();
+						if (enteringNodes.contains(tmpNode)) {
+							enteringCount++;
+						}
+					}
+					if (enteringCount != 1) {
+						splitNodes.add(currentflowNode);
+					}
+				}
+			}
+			pm.worked(1);
+		}
+		pm.done();
+		pm.message("Found split points: " + splitNodes.size());
 
-                setNetNumWithCheck(netnumIter, channel, splitNode);
+		int channel = 1;
+		pm.beginTask("Numbering network...", splitNodes.size());
+		for (int i = 0; i < splitNodes.size(); i++) {
+			FlowNodeNG splitNode = splitNodes.get(i);
+			int startTca = splitNode.getIntValueFromRaster(tcaR);
 
-                FlowNode lastNode = null;
-                FlowNode nextNode = splitNode.goDownstream();
-                int endTca;
-                if (nextNode == null || splitNodes.contains(nextNode)) {
-                    // it is a one pixel basin
-                    endTca = startTca;
-                    lastNode = splitNode;
+			setNetNumWithCheck(netnumRaster, channel, splitNode);
 
-                } else {
-                    endTca = intNovalue;
-                    if (nextNode != null) {
-                        do {
-                            lastNode = nextNode;
-                            endTca = nextNode.getIntValueFromMap(tcaIter);
+			FlowNodeNG lastNode = null;
+			FlowNodeNG nextNode = splitNode.goDownstream();
+			int endTca;
+			if (nextNode == null || splitNodes.contains(nextNode)) {
+				// it is a one pixel basin
+				endTca = startTca;
+				lastNode = splitNode;
 
-                            setNetNumWithCheck(netnumIter, channel, nextNode);
-                            nextNode = nextNode.goDownstream();
-                        } while( nextNode != null && !splitNodes.contains(nextNode) );
-                    }
-                }
+			} else {
+				endTca = intNovalue;
+				if (nextNode != null) {
+					do {
+						lastNode = nextNode;
+						endTca = nextNode.getIntValueFromRaster(tcaR);
 
-                int upCol = splitNode.col;
-                int upRow = splitNode.row;
-                int downCol = lastNode.col;
-                int downRow = lastNode.row;
+						setNetNumWithCheck(netnumRaster, channel, nextNode);
+						nextNode = nextNode.goDownstream();
+					} while (nextNode != null && !splitNodes.contains(nextNode));
+				}
+			}
 
-                int downLinkCol = -1;
-                int downLinkRow = -1;
-                if (nextNode != null) {
-                    downLinkCol = nextNode.col;
-                    downLinkRow = nextNode.row;
-                }
-                boolean isFixedNode = false;
-                if (fixedNodesColRows.contains(lastNode.col + "_" + lastNode.row)) {
-                    isFixedNode = true;
-                    // System.out.println("Found fixed: " + lastNode);
-                }
+			int upCol = splitNode.col;
+			int upRow = splitNode.row;
+			int downCol = lastNode.col;
+			int downRow = lastNode.row;
 
-                NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow, isFixedNode);
-                link.setTca(endTca);
-                netLinksList.add(link);
+			int downLinkCol = -1;
+			int downLinkRow = -1;
+			if (nextNode != null) {
+				downLinkCol = nextNode.col;
+				downLinkRow = nextNode.row;
+			}
+			boolean isFixedNode = false;
+			if (fixedNodesColRows.contains(lastNode.col + "_" + lastNode.row)) {
+				isFixedNode = true;
+				// System.out.println("Found fixed: " + lastNode);
+			}
 
-                channel++;
-                pm.worked(1);
-            }
-            pm.done();
-        } finally {
-            netnumIter.done();
-            flowIter.done();
-            netIter.done();
-            if (tcaIter != null) {
-                tcaIter.done();
-            }
-        }
-        return netnumWR;
-    }
+			NetLink link = new NetLink(channel, upCol, upRow, downCol, downRow, downLinkCol, downLinkRow, isFixedNode);
+			link.setTca(endTca);
+			netLinksList.add(link);
 
-    private static void setNetNumWithCheck( WritableRandomIter netnumIter, int channel, FlowNode node ) {
-        int sample = netnumIter.getSample(node.col, node.row, 0);
-        if (HMConstants.isNovalue(sample)) {
+			channel++;
+			pm.worked(1);
+		}
+		pm.done();
+		return netnumRaster;
+	}
+
+    private static void setNetNumWithCheck( HMRaster netnumRaster, int channel, FlowNodeNG node ) {
+        int sample = netnumRaster.getIntValue(node.col, node.row);
+        if (netnumRaster.isNovalue(sample)) {
             throw new ModelsIllegalargumentException("Can't over write existing netnum " + sample + " with " + channel,
                     "ModelsEngine#setNetNumWithCheck");
         }
-        node.setIntValueInMap(netnumIter, channel);
+        node.setIntValueInRaster(netnumRaster, channel);
     }
 
     /**
      * Extract the subbasins of a raster map.
      *
-     * @param flowIter the map of flowdirections.
-     * @param netIter the network map.
-     * @param netNumberIter the netnumber map.
+     * @param flowRaster the map of flowdirections.
+     * @param netRaster the network map.
+     * @param netNumberRaster the netnumber map.
      * @param rows rows of the region.
      * @param cols columns of the region.
      * @param pm
      * @return the map of extracted subbasins.
+     * @throws IOException 
      */
-    public static WritableRaster extractSubbasins( WritableRandomIter flowIter, int flowNovalue, RandomIter netIter,
-            WritableRandomIter netNumberIter, int rows, int cols, IHMProgressMonitor pm ) {
+    public static HMRaster extractSubbasins( HMRaster flowRaster, HMRaster netRaster,
+			HMRaster netNumberRaster, int rows, int cols, IHMProgressMonitor pm) throws IOException {
 
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                if (!isNovalue(netIter.getSampleDouble(c, r, 0)))
-                    flowIter.setSample(c, r, 0, FlowNode.OUTLET);
-            }
-        }
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				if (!netRaster.isNovalue(netRaster.getValue(c, r)))
+					flowRaster.setValue(c, r, FlowNode.OUTLET);
+			}
+		}
 
-        WritableRaster subbasinWR = CoverageUtilities.createWritableRaster(cols, rows, Integer.class, null, null);
-        WritableRandomIter subbasinIter = RandomIterFactory.createWritable(subbasinWR, null);
+		HMRaster subbasinRaster = new HMRaster.HMRasterWritableBuilder().setName("subbasin").setTemplate(flowRaster)
+				.setInitialValue(0).setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
 
-        markHillSlopeWithLinkValue(flowIter, flowNovalue, netNumberIter, subbasinIter, cols, rows, pm);
+		markHillSlopeWithLinkValue(flowRaster, netNumberRaster, subbasinRaster, cols, rows, pm);
 
-        try {
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    int netValue = netIter.getSample(c, r, 0);
-                    int netNumberValue = netNumberIter.getSample(c, r, 0);
-                    if (!isNovalue(netValue)) {
-                        subbasinIter.setSample(c, r, 0, netNumberValue);
-                    }
-                    if (NumericsUtilities.dEq(netNumberValue, 0)) {
-                        netNumberIter.setSample(c, r, 0, HMConstants.intNovalue);
-                    }
-                    int subbValue = subbasinIter.getSample(c, r, 0);
-                    if (NumericsUtilities.dEq(subbValue, 0))
-                        subbasinIter.setSample(c, r, 0, HMConstants.intNovalue);
-                }
-            }
-        } finally {
-            subbasinIter.done();
-        }
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				int netValue = netRaster.getIntValue(c, r);
+				int netNumberValue = netNumberRaster.getIntValue(c, r);
+				if (!netRaster.isNovalue(netValue)) {
+					subbasinRaster.setValue(c, r, netNumberValue);
+				}
+				if (NumericsUtilities.dEq(netNumberValue, 0)) {
+					netNumberRaster.setValue(c, r, HMConstants.intNovalue);
+				}
+				int subbValue = subbasinRaster.getIntValue(c, r);
+				if (NumericsUtilities.dEq(subbValue, 0))
+					subbasinRaster.setValue(c, r, HMConstants.intNovalue);
+			}
+		}
 
-        return subbasinWR;
-    }
+		return subbasinRaster;
+	}
 
     /**
      * Marks a map on the hillslope with the values on the channel of an attribute map.
      *
-     * @param flowIter map of flow direction with the network cells
+     * @param flowRaster map of flow direction with the network cells
      *                  all marked as {@link FlowNode#NETVALUE}. This is very important!
-     * @param attributeIter map of attributes.
-     * @param markedIter the map to be marked.
+     * @param attributeRaster map of attributes.
+     * @param markedRaster the map to be marked.
      * @param cols region cols.
      * @param rows region rows.
      * @param pm monitor.
      */
-    public static void markHillSlopeWithLinkValue( RandomIter flowIter, int flowNovalue, RandomIter attributeIter,
-            WritableRandomIter markedIter, int cols, int rows, IHMProgressMonitor pm ) {
+    public static void markHillSlopeWithLinkValue( HMRaster flowRaster, HMRaster attributeRaster,
+            HMRaster markedRaster, int cols, int rows, IHMProgressMonitor pm ) {
         pm.beginTask("Marking the hillslopes with the channel value...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                FlowNode flowNode = new FlowNode(flowIter, cols, rows, c, r, flowNovalue);
+                FlowNodeNG flowNode = new FlowNodeNG(flowRaster, c, r);
                 if (flowNode.isHeadingOutside()) {
                     // ignore single cells on borders that exit anyway
                     continue;
                 }
 
                 if (flowNode.isMarkedAsOutlet()) {
-                    double attributeValue = flowNode.getDoubleValueFromMap(attributeIter);
-                    flowNode.setDoubleValueInMap(markedIter, attributeValue);
+                    double attributeValue = flowNode.getDoubleValueFromRaster(attributeRaster);
+                    flowNode.setDoubleValueInRaster(markedRaster, attributeValue);
                     continue;
                 }
                 if (flowNode.isValid() && flowNode.isSource()) {
@@ -948,14 +930,14 @@ public class ModelsEngine {
                      * attribute map content on the net 
                      */
                     double attributeValue = doubleNovalue;
-                    FlowNode runningNode = flowNode.goDownstream();
+                    var runningNode = flowNode.goDownstream();
                     int runningRow = -1;
                     int runningCol = -1;
                     while( runningNode != null && runningNode.isValid() ) {
                         runningRow = runningNode.row;
                         runningCol = runningNode.col;
                         if (runningNode.isMarkedAsOutlet()) {
-                            attributeValue = runningNode.getDoubleValueFromMap(attributeIter);
+                            attributeValue = runningNode.getDoubleValueFromRaster(attributeRaster);
                             break;
                         }
                         runningNode = runningNode.goDownstream();
@@ -964,16 +946,17 @@ public class ModelsEngine {
                         // run down marking the hills
                         runningNode = flowNode;
                         while( runningNode != null && runningNode.isValid() ) {
-                            runningNode.setDoubleValueInMap(markedIter, attributeValue);
+                            runningNode.setDoubleValueInRaster(markedRaster, attributeValue);
                             if (runningNode.isMarkedAsOutlet()) {
                                 break;
                             }
                             runningNode = runningNode.goDownstream();
                         }
                     } else {
+                    	RasterCellInfo cellInfo = new RasterCellInfo(runningCol, runningRow, flowRaster, attributeRaster, markedRaster);
                         throw new ModelsIllegalargumentException(
                                 "Could not find a value of the attributes map in the channel after point: " + runningCol + "/"
-                                        + runningRow + ". Are you sure that everything leads to a channel or outlet?",
+                                        + runningRow + ".\nAre you sure that everything leads to a channel or outlet?\nInvolved cell infos with buffer:\n" + cellInfo,
                                 "MODELSENGINE", pm);
                     }
                 }

@@ -1,7 +1,7 @@
 package org.hortonmachine.gears.utils.coverage;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.StringUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -9,15 +9,19 @@ import org.locationtech.jts.geom.Coordinate;
 
 public class RasterCellInfo {
 
-    private GridCoverage2D[] coverage2ds;
+    private HMRaster[] coverage2ds;
     private double lon;
     private double lat;
     private int bufferCells = 1;
     private RegionMap regionMap;
+	private Coordinate coordinate;
 
     public RasterCellInfo( int col, int row, GridCoverage2D... coverage2ds ) {
-        this.coverage2ds = coverage2ds;
-        Coordinate coordinate = CoverageUtilities.coordinateFromColRow(col, row, coverage2ds[0].getGridGeometry());
+        this.coverage2ds = new HMRaster[coverage2ds.length];
+        for( int i = 0; i < coverage2ds.length; i++ ) {
+			this.coverage2ds[i] = HMRaster.fromGridCoverage(coverage2ds[i]);
+		}
+        coordinate = CoverageUtilities.coordinateFromColRow(col, row, coverage2ds[0].getGridGeometry());
         lon = coordinate.x;
         lat = coordinate.y;
         regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage2ds[0]);
@@ -26,8 +30,28 @@ public class RasterCellInfo {
     public RasterCellInfo( double lon, double lat, GridCoverage2D... coverage2ds ) {
         this.lon = lon;
         this.lat = lat;
-        this.coverage2ds = coverage2ds;
+        this.coordinate = new Coordinate(lon, lat);
+        this.coverage2ds = new HMRaster[coverage2ds.length];
+        for( int i = 0; i < coverage2ds.length; i++ ) {
+			this.coverage2ds[i] = HMRaster.fromGridCoverage(coverage2ds[i]);
+        }
         regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage2ds[0]);
+    }
+    
+    public RasterCellInfo( int col, int row, HMRaster... coverage2ds ) {
+        this.coverage2ds = coverage2ds;
+        coordinate = coverage2ds[0].getWorld(col, row);	
+        lon = coordinate.x;
+        lat = coordinate.y;
+        regionMap = coverage2ds[0].getRegionMap();
+    }
+
+    public RasterCellInfo( double lon, double lat, HMRaster... coverage2ds ) {
+        this.lon = lon;
+        this.lat = lat;
+        this.coordinate = new Coordinate(lon, lat);
+        this.coverage2ds = coverage2ds;
+        regionMap = coverage2ds[0].getRegionMap();
     }
 
     /**
@@ -36,9 +60,8 @@ public class RasterCellInfo {
     public double[] getValues() {
         double[] values = new double[coverage2ds.length];
         int i = 0;
-        for( GridCoverage2D g2d : coverage2ds ) {
-            double v = CoverageUtilities.getValue(g2d, lon, lat);
-            values[i++] = v;
+        for( HMRaster g2d : coverage2ds ) {
+            values[i++] = g2d.getValue(coordinate);
         }
         return values;
     }
@@ -68,11 +91,6 @@ public class RasterCellInfo {
         double xres = regionMap.getXres();
         double yres = regionMap.getYres();
 
-        double fromLon = lon - xres * bufferCells;
-        double toLon = lon + xres * bufferCells;
-        double fromLat = lat + yres * bufferCells;
-        double toLat = lat - yres * bufferCells - yres;
-
         StringBuilder sepSb = new StringBuilder();
         sepSb.append("+");
         for( int i = 0; i < cellChars + 2; i++ ) {
@@ -86,15 +104,16 @@ public class RasterCellInfo {
 
         StringBuilder sb = new StringBuilder();
         sb.append("\n");
-        for( double la = fromLat; la >= toLat; la -= yres ) {
-            sb.append(sep + "\n");
-            for( GridCoverage2D g2d : coverage2ds ) {
+        for (int r = bufferCells; r >= -bufferCells; r--) {
+            double la = lat + r * yres;
+            sb.append(sep).append("\n");
+            for (HMRaster g2d : coverage2ds) {
                 String name = StringUtilities.trimOrPadToCount(g2d.getName().toString(), cellChars);
                 sb.append("| ").append(name).append(" | ");
-                double nv = HMConstants.getNovalue(g2d);
-                for( double lo = fromLon; lo <= toLon; lo += xres ) {
-                    double v = CoverageUtilities.getValue(g2d, lo, la);
-                    if (HMConstants.isNovalue(v, nv)) {
+                for (int c = -bufferCells; c <= bufferCells; c++) {
+                    double lo = lon + c * xres;
+                    double v = g2d.getValue(new Coordinate(lo, la));
+                    if (g2d.isNovalue(v)) {
                         sb.append("       -nv-       | ");
                     } else {
                         sb.append(String.format("%17.8f", v)).append(" | ");
@@ -103,7 +122,7 @@ public class RasterCellInfo {
                 sb.append("\n");
             }
         }
-        sb.append(sep + "\n");
+        sb.append(sep).append("\n");
 
         return sb.toString();
     }
