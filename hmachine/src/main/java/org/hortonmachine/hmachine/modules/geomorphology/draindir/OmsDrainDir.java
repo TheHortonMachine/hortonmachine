@@ -422,7 +422,7 @@ public class OmsDrainDir extends HMModel {
                         ninflow = ninflow + 1;
                         tcaWR.setValue(col, row, tcaWR.getValue(col, row)
                                 + tcaWR.getValue(col + order[n][1], row + order[n][0]));
-                        dev[ninflow] = deviation.getIntValue(col + order[n][1], row + order[n][0]);
+                        dev[ninflow] = deviation.getValue(col + order[n][1], row + order[n][0]);
                         are[ninflow] = tcaWR.getIntValue(col + order[n][1], row + order[n][0]);
                     }
                 }
