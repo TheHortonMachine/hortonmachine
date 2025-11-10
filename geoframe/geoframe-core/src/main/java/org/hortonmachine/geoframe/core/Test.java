@@ -4,8 +4,10 @@ import java.io.File;
 
 import org.hortonmachine.HM;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.r.cutout.OmsCutOut;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
+import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
@@ -14,17 +16,33 @@ import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
 public class Test extends HMModel {
 
 	public Test() throws Exception {
+//		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/gura/";
+//		String ext = ".tif";
 		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/flanginec/";
-		String dtm = folder + "inputs/dtm.asc";
-		String pit = folder + "outputs/pit.asc";
-		String flow = folder + "outputs/flow.asc";
-		String drain = folder + "outputs/drain.asc";
-		String tca = folder + "outputs/tca.asc";
-		String net = folder + "outputs/net.asc";
-		String netnum = folder + "outputs/netnum.asc";
-		String netbasins = folder + "outputs/netnumbasins.asc";
+		String ext = ".asc";
+		String dtm = folder + "inputs/dtm" + ext;
+		String pit = folder + "outputs/pit" + ext;
+		String flow = folder + "outputs/flow" + ext;
+		String drain = folder + "outputs/drain" + ext;
+		String tca = folder + "outputs/tca" + ext;
+		String net = folder + "outputs/net" + ext;
+		String basin = folder + "outputs/basin" + ext;
+		
+		String basinpit = folder + "outputs/basin_pit" + ext;
+		String basindrain = folder + "outputs/basin_drain" + ext;
+		String basintca = folder + "outputs/basin_tca" + ext;
+		String basinnet = folder + "outputs/basin_net" + ext;
+		
+		String basinnetnum = folder + "outputs/basin_netnum" + ext;
+		String basinnetbasins = folder + "outputs/basin_netnumbasins" + ext;
 		int thres = 100;
 		double desiredArea = 5000.0;
+		// flanginec
+		double easting = 1637993.497;
+		double northing = 5111925.950;
+		// gura
+//		double easting = 265340.845;
+//		double northing = 9934464.184;
 		
 		// create output folder if not existing
 		File outFolder = new File(folder + "outputs/");
@@ -36,6 +54,7 @@ public class Test extends HMModel {
 		pitfiller.inElev = getRaster(dtm);
 		pitfiller.process();
 		dumpRaster(pitfiller.outPit, pit);
+		HM.makeQgisStyleForRaster(EColorTables.elev.name(), pit, 0);
 
 		OmsFlowDirections flowdirections = new OmsFlowDirections();
 		flowdirections.inPit = getRaster(pit);
@@ -63,17 +82,55 @@ public class Test extends HMModel {
 		dumpRaster(extractnetwork.outNet, net);
 		HM.makeQgisStyleForRaster(EColorTables.net.name(), net, 0);
 		
-//		OmsNetNumbering nn = new OmsNetNumbering();
-//		nn.inFlow = getRaster(drain);
-//		nn.inTca = getRaster(tca);
-//		nn.inNet = getRaster(net);
-//		nn.pDesiredArea = desiredArea;
-//		nn.pDesiredAreaDelta = 10.0;
-//		nn.process();
-//		dumpRaster(nn.outNetnum, netnum);
-//		dumpRaster(nn.outBasins, netbasins);
-//		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), netnum, 0);
-//		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), netbasins, 0);
+		OmsExtractBasin extractbasin = new OmsExtractBasin();
+		extractbasin.inFlow = getRaster(drain);
+		extractbasin.pEast = easting;
+		extractbasin.pNorth = northing;
+		extractbasin.process();
+		dumpRaster(extractbasin.outBasin, basin);
+		HM.makeQgisStyleForRaster(EColorTables.net.name(), basin, 0);
+		
+		// cutout pit, drain and tca for the basin only
+		OmsCutOut cutout = new OmsCutOut();
+		cutout.inRaster = getRaster(pit);
+		cutout.inMask = getRaster(basin);
+		cutout.process();
+		dumpRaster(cutout.outRaster, basinpit);
+		HM.makeQgisStyleForRaster(EColorTables.elev.name(), basinpit, 0);
+		
+		cutout = new OmsCutOut();
+		cutout.inRaster = getRaster(drain);
+		cutout.inMask = getRaster(basin);
+		cutout.process();
+		dumpRaster(cutout.outRaster, basindrain);
+		HM.makeQgisStyleForRaster(EColorTables.flow.name(), basindrain, 0);
+		
+		cutout = new OmsCutOut();
+		cutout.inRaster = getRaster(tca);
+		cutout.inMask = getRaster(basin);
+		cutout.process();
+		dumpRaster(cutout.outRaster, basintca);
+		HM.makeQgisStyleForRaster(EColorTables.logarithmic.name(), basintca, 0);
+		
+		cutout = new OmsCutOut();
+		cutout.inRaster = getRaster(net);
+		cutout.inMask = getRaster(basin);
+		cutout.process();
+		dumpRaster(cutout.outRaster, basinnet);
+		HM.makeQgisStyleForRaster(EColorTables.net.name(), basinnet, 0);
+		
+		
+		OmsNetNumbering nn = new OmsNetNumbering();
+		nn.inFlow = getRaster(drain);
+		nn.inTca = getRaster(tca);
+		nn.inNet = getRaster(net);
+		nn.pDesiredArea = desiredArea;
+		nn.pDesiredAreaDelta = 10.0;
+		nn.process();
+		dumpRaster(nn.outNetnum, basinnetnum);
+		dumpRaster(nn.outBasins, basinnetbasins);
+		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetnum, 0);
+		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasins, 0);
 		
 		
 		
