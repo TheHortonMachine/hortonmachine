@@ -16,10 +16,30 @@ import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
 public class Test extends HMModel {
 
 	public Test() throws Exception {
+		// gura
 //		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/gura/";
 //		String ext = ".tif";
+//		int thres = 500;
+//		double desiredArea = 500.0;
+//		double easting = 265340.845;
+//		double northing = 9934464.184;
+		
+		// flanginec
 		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/flanginec/";
-		String ext = ".asc";
+		String ext = ".tif";
+		int thres = 100;
+		double desiredArea = 100.0;
+		double easting = 1637993.497;
+		double northing = 5111925.950;
+		
+		// NOCE
+//		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
+//		String ext = ".tif";
+//		int thres = 5000;
+//		double desiredArea = 5000.0;
+//		double easting = 623524.005;
+//		double northing = 5128704.421;
+		
 		String dtm = folder + "inputs/dtm" + ext;
 		String pit = folder + "outputs/pit" + ext;
 		String flow = folder + "outputs/flow" + ext;
@@ -35,16 +55,7 @@ public class Test extends HMModel {
 		
 		String basinnetnum = folder + "outputs/basin_netnum" + ext;
 		String basinnetbasins = folder + "outputs/basin_netnumbasins" + ext;
-		int thres = 100;
-		double desiredArea = 5000.0;
-		// flanginec
-		double easting = 1637993.497;
-		double northing = 5111925.950;
-		// gura
-//		double easting = 265340.845;
-//		double northing = 9934464.184;
-		
-		// create output folder if not existing
+
 		File outFolder = new File(folder + "outputs/");
 		if (!outFolder.exists()) {
 			outFolder.mkdirs();
