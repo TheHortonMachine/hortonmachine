@@ -39,13 +39,15 @@ import java.util.List;
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.datum.PixelInCell;
+import org.geotools.api.referencing.operation.MathTransform2D;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoordinates2D;
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
@@ -64,11 +66,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.referencing.datum.PixelInCell;
-import org.geotools.api.referencing.operation.MathTransform2D;
-import org.geotools.api.referencing.operation.TransformException;
 
 /**
  * A class containing several methods used by the modules.
@@ -879,7 +876,7 @@ public class ModelsEngine {
 		HMRaster subbasinRaster = new HMRaster.HMRasterWritableBuilder().setName("subbasin").setTemplate(flowRaster)
 				.setInitialValue(0).setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
 
-		markHillSlopeWithLinkValue(flowRaster, netNumberRaster, subbasinRaster, cols, rows, pm);
+		markHillSlopeWithLinkValue(flowRaster, netNumberRaster, subbasinRaster, pm);
 
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
@@ -912,7 +909,10 @@ public class ModelsEngine {
      * @param pm monitor.
      */
     public static void markHillSlopeWithLinkValue( HMRaster flowRaster, HMRaster attributeRaster,
-            HMRaster markedRaster, int cols, int rows, IHMProgressMonitor pm ) {
+            HMRaster markedRaster, IHMProgressMonitor pm ) {
+		RegionMap regionMap = flowRaster.getRegionMap();
+		int cols = regionMap.getCols();
+		int rows = regionMap.getRows();
         pm.beginTask("Marking the hillslopes with the channel value...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {

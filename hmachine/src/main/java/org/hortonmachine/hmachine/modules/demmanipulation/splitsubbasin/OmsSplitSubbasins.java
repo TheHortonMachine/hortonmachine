@@ -42,7 +42,6 @@ import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.modules.ModelsSupporter;
 import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
@@ -99,29 +98,42 @@ public class OmsSplitSubbasins extends HMModel {
         }
         checkNull(inFlow, inHack, pHackorder);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        nCols = regionMap.getCols();
-        nRows = regionMap.getRows();
 
         hackOrder = pHackorder;
 
-        HMRaster flowRasterW = HMRaster.fromGridCoverageWritable(inFlow);
-        flowRasterW.makeNullBorders();
-
-        HMRaster hackRasterW = HMRaster.fromGridCoverageWritable(inHack);
-        hackNovalue = hackRasterW.getNovalue();
-        hackRasterW.makeNullBorders();
-        
-        HMRaster netRaster = new HMRaster.HMRasterWritableBuilder().setName("net").setTemplate(flowRasterW)
-				.setInitialValue(HMConstants.shortNovalue).setDoShort(true).setNoValue(HMConstants.shortNovalue).build();
-        
-        net(hackRasterW, netRaster);
-
-        HMRaster netNumberWR = netNumber(flowRasterW, hackRasterW, netRaster);
-        HMRaster subbasinWR = ModelsEngine.extractSubbasins(flowRasterW, netRaster, netNumberWR, pm);
-
-        outNetnum = netNumberWR.buildCoverage();
-        outSubbasins = subbasinWR.buildCoverage();
+        HMRaster flowRasterW = null;
+        HMRaster hackRasterW = null;
+        HMRaster netRaster = null;
+        HMRaster netNumberWR = null;
+        HMRaster subbasinWR = null;
+        try {
+			flowRasterW = HMRaster.fromGridCoverageWritable(inFlow);
+	        flowRasterW.makeNullBorders();
+	        RegionMap regionMap = flowRasterW.getRegionMap();
+	        nCols = regionMap.getCols();
+	        nRows = regionMap.getRows();
+	
+			hackRasterW = HMRaster.fromGridCoverageWritable(inHack);
+	        hackNovalue = hackRasterW.getNovalue();
+	        hackRasterW.makeNullBorders();
+	        
+			netRaster = new HMRaster.HMRasterWritableBuilder().setName("net").setTemplate(flowRasterW)
+					.setInitialValue(HMConstants.shortNovalue).setDoShort(true).setNoValue(HMConstants.shortNovalue).build();
+	        
+	        net(hackRasterW, netRaster);
+	
+			netNumberWR = netNumber(flowRasterW, hackRasterW, netRaster);
+			subbasinWR = ModelsEngine.extractSubbasins(flowRasterW, netRaster, netNumberWR, pm);
+	
+	        outNetnum = netNumberWR.buildCoverage();
+	        outSubbasins = subbasinWR.buildCoverage();
+  		} finally {
+			if (flowRasterW != null) flowRasterW.close();
+			if (hackRasterW != null) hackRasterW.close();
+			if (netRaster != null) netRaster.close();
+			if (netNumberWR != null) netNumberWR.close();
+			if (subbasinWR != null) subbasinWR.close();
+  		}
     }
     /**
      * Return the map of the network with only the river of the choosen order.

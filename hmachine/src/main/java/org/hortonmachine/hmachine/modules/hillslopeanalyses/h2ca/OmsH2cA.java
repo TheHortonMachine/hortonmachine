@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.hmachine.modules.hillslopeanalyses.h2ca;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_DESCRIPTION;
@@ -31,12 +30,13 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_inFlow_DESC
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_inNet_DESCRIPTION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CA_outAttribute_DESCRIPTION;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.FlowNode;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.utils.RegionMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -48,14 +48,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.FlowNode;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSH2CA_DESCRIPTION)
 @Author(name = OMSH2CA_AUTHORNAMES, contact = OMSH2CA_AUTHORCONTACTS)
@@ -82,49 +74,60 @@ public class OmsH2cA extends HMModel {
     public GridCoverage2D outAttribute = null;
 
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outAttribute == null, doReset)) {
             return;
         }
         checkNull(inFlow, inNet, inAttribute);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlow);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
 
-        int novalue = HMConstants.getIntNovalue(inFlow);
-
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-        RandomIter attributeIter = CoverageUtilities.getRandomIterator(inAttribute);
-        RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
-
-        pm.beginTask("Marking the network...", rows); //$NON-NLS-1$
-        /*
-         * mark network as outlet, in order to easier stop on the net 
-         * while going downstream
-         */
-        for( int j = 0; j < rows; j++ ) {
-            for( int i = 0; i < cols; i++ ) {
-                if (netIter.getSampleDouble(i, j, 0) == FlowNode.NETVALUE)
-                    flowIter.setSample(i, j, 0, FlowNode.OUTLET);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-        netIter.done();
-
-        WritableRaster h2caWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
-        WritableRandomIter h2caIter = RandomIterFactory.createWritable(h2caWR, null);
-
-        ModelsEngine.markHillSlopeWithLinkValue(flowIter, novalue, attributeIter, h2caIter, cols, rows, pm);
-
-        h2caIter.done();
-        attributeIter.done();
-        flowIter.done();
-
-        outAttribute = CoverageUtilities.buildCoverage("h2ca", h2caWR, regionMap, inFlow.getCoordinateReferenceSystem());
+        
+        HMRaster flowRasterW = null;
+        HMRaster netRaster = null;
+        HMRaster attributeRaster = null;
+        HMRaster h2caRaster = null;
+        try {
+			flowRasterW = HMRaster.fromGridCoverageWritable(inFlow);
+			netRaster = HMRaster.fromGridCoverage(inNet);
+			attributeRaster = HMRaster.fromGridCoverage(inAttribute);
+	        RegionMap regionMap = flowRasterW.getRegionMap();
+	        int cols = regionMap.getCols();
+	        int rows = regionMap.getRows();
+	
+	        pm.beginTask("Marking the network...", rows); //$NON-NLS-1$
+	        /*
+	         * mark network as outlet, in order to easier stop on the net 
+	         * while going downstream
+	         */
+	        for( int j = 0; j < rows; j++ ) {
+	            for( int i = 0; i < cols; i++ ) {
+	                if (netRaster.getValue(i, j) == FlowNode.NETVALUE)
+	                    flowRasterW.setValue(i, j, FlowNode.OUTLET);
+	            }
+	            pm.worked(1);
+	        }
+	        pm.done();
+	
+			h2caRaster = new HMRaster.HMRasterWritableBuilder().setName("h2ca").setTemplate(flowRasterW)
+					.setInitialValue(HMConstants.doubleNovalue).setNoValue(HMConstants.doubleNovalue).build();
+	        
+	        ModelsEngine.markHillSlopeWithLinkValue(flowRasterW, attributeRaster, h2caRaster, pm);
+	
+	        outAttribute = h2caRaster.buildCoverage();
+        } finally {
+			if (flowRasterW != null) {
+				flowRasterW.close();
+			}
+			if (netRaster != null) {
+				netRaster.close();
+			}
+			if (attributeRaster != null) {
+				attributeRaster.close();
+			}
+			if (h2caRaster != null) {
+				h2caRaster.close();
+			}	
+		}	
 
     }
 
