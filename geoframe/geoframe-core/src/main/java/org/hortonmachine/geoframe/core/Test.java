@@ -2,16 +2,28 @@ package org.hortonmachine.geoframe.core;
 
 import java.io.File;
 
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.HM;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.modules.r.cutout.OmsCutOut;
+import org.hortonmachine.gears.modules.r.rasteronvectorresizer.OmsRasterResizer;
+import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.colors.EColorTables;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
+import org.hortonmachine.modules.GeoframeInputsBuilder;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Polygon;
 
 public class Test extends HMModel {
 
@@ -48,6 +60,7 @@ public class Test extends HMModel {
 		String tca = folder + "outputs/tca" + ext;
 		String net = folder + "outputs/net" + ext;
 		String basin = folder + "outputs/basin" + ext;
+		String basin_resized = folder + "outputs/basin_resized" + ext;
 		
 		String basinpit = folder + "outputs/basin_pit" + ext;
 		String basindrain = folder + "outputs/basin_drain" + ext;
@@ -57,6 +70,12 @@ public class Test extends HMModel {
 		String basinnetnum = folder + "outputs/basin_netnum" + ext;
 		String basinnetbasins = folder + "outputs/basin_netnumbasins" + ext;
 		String basinnetbasinsdesired = folder + "outputs/basin_netnumbasins_desired" + ext;
+		String topology = folder + "outputs/topology.txt";
+		
+		String skyview = folder + "outputs/skyview" + ext;
+		String basinskyview = folder + "outputs/basin_skyview" + ext;
+		
+		String geoframeFolder = folder + "geoframe_inputs/";
 
 		File outFolder = new File(folder + "outputs/");
 		if (!outFolder.exists()) {
@@ -95,6 +114,12 @@ public class Test extends HMModel {
 		dumpRaster(extractnetwork.outNet, net);
 		HM.makeQgisStyleForRaster(EColorTables.net.name(), net, 0);
 		
+		OmsSkyview sv = new OmsSkyview();
+		sv.inElev = getRaster(pit);
+		sv.process();
+		dumpRaster(sv.outSky, skyview);
+		HM.makeQgisStyleForRaster(EColorTables.slope.name(), skyview, 0);
+		
 		OmsExtractBasin extractbasin = new OmsExtractBasin();
 		extractbasin.inFlow = getRaster(drain);
 		extractbasin.pEast = easting;
@@ -103,35 +128,52 @@ public class Test extends HMModel {
 		dumpRaster(extractbasin.outBasin, basin);
 		HM.makeQgisStyleForRaster(EColorTables.net.name(), basin, 0);
 		
+		OmsRasterResizer resizer = new OmsRasterResizer();
+		GridCoverage2D basinGC = getRaster(basin);
+		resizer.inRaster = basinGC;
+		RegionMap dataRegionMap = HMRaster.fromGridCoverage(basinGC).getDataRegionMap();
+		Envelope dataEnvelope = dataRegionMap.toEnvelope();
+		Polygon dataPolygon = GeometryUtilities.createPolygonFromEnvelope(dataEnvelope);
+		SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(basinGC.getCoordinateReferenceSystem(), dataPolygon);
+		resizer.inVector = fc;
+		resizer.process();
+		dumpRaster(resizer.outRaster, basin_resized);
+		
 		// cutout pit, drain and tca for the basin only
 		OmsCutOut cutout = new OmsCutOut();
 		cutout.inRaster = getRaster(pit);
-		cutout.inMask = getRaster(basin);
+		cutout.inMask = getRaster(basin_resized);
 		cutout.process();
 		dumpRaster(cutout.outRaster, basinpit);
 		HM.makeQgisStyleForRaster(EColorTables.elev.name(), basinpit, 0);
 		
 		cutout = new OmsCutOut();
 		cutout.inRaster = getRaster(drain);
-		cutout.inMask = getRaster(basin);
+		cutout.inMask = getRaster(basin_resized);
 		cutout.process();
 		dumpRaster(cutout.outRaster, basindrain);
 		HM.makeQgisStyleForRaster(EColorTables.flow.name(), basindrain, 0);
 		
 		cutout = new OmsCutOut();
 		cutout.inRaster = getRaster(tca);
-		cutout.inMask = getRaster(basin);
+		cutout.inMask = getRaster(basin_resized);
 		cutout.process();
 		dumpRaster(cutout.outRaster, basintca);
 		HM.makeQgisStyleForRaster(EColorTables.logarithmic.name(), basintca, 0);
 		
 		cutout = new OmsCutOut();
 		cutout.inRaster = getRaster(net);
-		cutout.inMask = getRaster(basin);
+		cutout.inMask = getRaster(basin_resized);
 		cutout.process();
 		dumpRaster(cutout.outRaster, basinnet);
 		HM.makeQgisStyleForRaster(EColorTables.net.name(), basinnet, 0);
 		
+		cutout = new OmsCutOut();
+		cutout.inRaster = getRaster(skyview);
+		cutout.inMask = getRaster(basin_resized);
+		cutout.process();
+		dumpRaster(cutout.outRaster, basinskyview);
+		HM.makeQgisStyleForRaster(EColorTables.slope.name(), basinskyview, 0);
 		
 		OmsNetNumbering nn = new OmsNetNumbering();
 		nn.inFlow = getRaster(basindrain);
@@ -143,9 +185,23 @@ public class Test extends HMModel {
 		dumpRaster(nn.outNetnum, basinnetnum);
 		dumpRaster(nn.outBasins, basinnetbasins);
 		dumpRaster(nn.outDesiredBasins, basinnetbasinsdesired);
+		FileUtilities.writeFile(nn.outGeoframeTopology, new File(topology));
 		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetnum, 0);
 		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasins, 0);
 		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasinsdesired, 0);
+		
+		GeoframeInputsBuilder builder = new GeoframeInputsBuilder();
+		builder.inPitfiller = basinpit;
+		builder.inDrain = basindrain;
+		builder.inTca = basintca;
+		builder.inNet = basinnet;
+		builder.inSkyview = basinskyview;
+		builder.inBasins = basinnetbasins;
+		builder.inGeoframeTopology = topology;
+		builder.outFolder = geoframeFolder;
+		builder.process();
+		
+
 		
 		
 		
