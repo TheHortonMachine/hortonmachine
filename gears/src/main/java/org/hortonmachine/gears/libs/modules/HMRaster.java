@@ -165,6 +165,39 @@ public class HMRaster implements AutoCloseable {
     public RegionMap getRegionMap() {
         return RegionMap.fromRegionMap(regionMap);
     }
+    
+	public RegionMap getDataRegionMap() {
+		// loop over the region map and find the actual data region
+		int minRow = Integer.MAX_VALUE;
+		int maxRow = -Integer.MAX_VALUE;
+		int minCol = Integer.MAX_VALUE;
+		int maxCol = -Integer.MAX_VALUE;
+		boolean found = false;
+		for (int r = startRow; r < rows + startRow; r++) {
+			for (int c = startCol; c < cols + startCol; c++) {
+				double v = getValue(c, r);
+				if (!isNovalue(v)) { 
+					if (!found) { 
+						minRow = maxRow = r;
+						minCol = maxCol = c;
+						found = true;
+					} else {
+						if (r < minRow)
+							minRow = r;
+						if (r > maxRow)
+							maxRow = r;
+						if (c < minCol)
+							minCol = c;
+						if (c > maxCol)
+							maxCol = c;
+					}
+				}
+			}
+		}
+		Coordinate ll = getWorld(minCol, minRow);
+		Coordinate ur = getWorld(maxCol, maxRow);
+		return regionMap.toSubRegion(ur.y, ll.y, ll.x, ur.x);
+	}
 
     public GridGeometry2D getGridGeometry() {
         return gridGeometry;

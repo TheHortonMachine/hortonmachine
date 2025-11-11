@@ -18,20 +18,15 @@
 package org.hortonmachine.gears.modules.r.cutout;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.eclipse.imagen.iterator.WritableRandomIter;
+import java.awt.Point;
 
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.multiprocessing.GridMultiProcessing;
-import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -53,7 +48,7 @@ import oms3.annotations.Status;
 @Name(OmsCutOut.OMSCUTOUT_NAME)
 @Status(OmsCutOut.OMSCUTOUT_STATUS)
 @License(OmsCutOut.OMSCUTOUT_LICENSE)
-public class OmsCutOut extends GridMultiProcessing {
+public class OmsCutOut extends HMModel {
 
     @Description(OMSCUTOUT_IN_RASTER_DESCRIPTION)
     @In
@@ -95,7 +90,7 @@ public class OmsCutOut extends GridMultiProcessing {
     public static final String OMSCUTOUT_DO_INVERSE_DESCRIPTION = "Switch for doing extraction of the mask area or the inverse (negative). Default is false and extract the mask area.";
     public static final String OMSCUTOUT_OUT_RASTER_DESCRIPTION = "The processed map.";
 
-    private RandomIter maskIter;
+    private HMRaster maskRaster;
     private boolean doMax = false;
     private boolean doMin = false;
     private double max = -1;
@@ -116,66 +111,71 @@ public class OmsCutOut extends GridMultiProcessing {
             min = pMin;
             doMin = true;
         }
+        
+        HMRaster geodataRaster = HMRaster.fromGridCoverage(inRaster);
+        int nCols = geodataRaster.getCols();
+        int nRows = geodataRaster.getRows();
+        double outNV = geodataRaster .getNovalue();
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
-
-        RenderedImage geodataRI = inRaster.getRenderedImage();
-        RandomIter geodataIter = RandomIterFactory.create(geodataRI, null);
-
-        double maskNv = 0;
         if (inMask != null) {
-            RenderedImage maskRI = inMask.getRenderedImage();
-            maskNv = HMConstants.getNovalue(inMask);
-            maskIter = RandomIterFactory.create(maskRI, null);
+            maskRaster = HMRaster.fromGridCoverage(inMask);
+            // in that case the mask rules
+            nCols = maskRaster.getCols();
+            nRows = maskRaster.getRows();
         }
 
-        WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(geodataRI, false);
-        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
+        HMRaster outHMRaster = HMRaster.fromGridCoverageWritable(inMask);
 
         try {
-            double _maskNv = maskNv;
             pm.beginTask("Processing map...", nRows * nCols);
-            processGrid(nCols, nRows, false, ( c, r ) -> {
-                if (pm.isCanceled()) {
-                    return;
-                }
-                pm.worked(1);
-                if (maskIter != null) {
-                    double maskValue = maskIter.getSampleDouble(c, r, 0);
-                    if (!doInverse) {
-                        if (isNovalue(maskValue, _maskNv)) {
-                            outIter.setSample(c, r, 0, HMConstants.doubleNovalue);
-                            return;
-                        }
-                    } else {
-                        if (!isNovalue(maskValue, _maskNv)) {
-                            outIter.setSample(c, r, 0, HMConstants.doubleNovalue);
-                            return;
-                        }
+            for( int r = 0; r < nRows; r++ ) {
+                for( int c = 0; c < nCols; c++ ) {
+                	if (pm.isCanceled()) {
+                        return;
                     }
+                    pm.worked(1);
+                    Coordinate coord = outHMRaster.getWorld(c, r);
+                    if (maskRaster != null) {
+                    	Point cell = maskRaster.getCell(coord);
+                    	if(maskRaster.isContained(cell.x, cell.y)) {                    		
+                    		double maskValue = maskRaster.getValue(coord);
+                    		if (!doInverse) {
+                    			if (maskRaster.isNovalue(maskValue)) {
+                    				outHMRaster.setValue(c, r, outNV);
+                    				continue;
+                    			}
+                    		} else {
+                    			if (!maskRaster.isNovalue(maskValue)) {
+                    				outHMRaster.setValue(c, r, outNV);
+                    				continue;
+                    			}
+                    		}
+                    	} else {
+                    		continue;
+                    	}
+                    }
+                    double value = geodataRaster.getValue(coord);
+                    if (doMax && value > max) {
+                        outHMRaster.setValue(c, r, outNV);
+                        continue;
+                    }
+                    if (doMin && value < min) {
+                        outHMRaster.setValue(c, r, outNV);
+                        continue;
+                    }
+                    outHMRaster.setValue(c, r, value);
                 }
-                double value = geodataIter.getSampleDouble(c, r, 0);
-                if (doMax && value > max) {
-                    outIter.setSample(c, r, 0, HMConstants.doubleNovalue);
-                    return;
-                }
-                if (doMin && value < min) {
-                    outIter.setSample(c, r, 0, HMConstants.doubleNovalue);
-                }
-            });
+            }
             pm.done();
         } finally {
-            geodataIter.done();
-            outIter.done();
-            if (maskIter != null) {
-                maskIter.done();
+            geodataRaster.close();
+            outHMRaster.close();
+            if (maskRaster != null) {
+                maskRaster.close();
             }
         }
 
-        outRaster = CoverageUtilities.buildCoverage("cutout", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
-
+        outRaster = outHMRaster.buildCoverage(); 
     }
 
     /**
