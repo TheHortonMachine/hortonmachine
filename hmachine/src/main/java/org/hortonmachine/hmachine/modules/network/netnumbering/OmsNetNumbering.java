@@ -188,7 +188,7 @@ public class OmsNetNumbering extends HMModel {
 			netNumR = ModelsEngine.netNumbering(flowRaster, netRaster, tcaRaster, pointsList, linksList, pm);
             outNetnum = netNumR.buildCoverage();
 
-			HMRaster subbasinRaster = ModelsEngine.extractSubbasins(flowRaster, netRaster, netNumR, nRows, nCols, pm);
+			HMRaster subbasinRaster = ModelsEngine.extractSubbasins(flowRaster, netRaster, netNumR, pm);
             outBasins = subbasinRaster.buildCoverage();
 
             int validCount = 0;

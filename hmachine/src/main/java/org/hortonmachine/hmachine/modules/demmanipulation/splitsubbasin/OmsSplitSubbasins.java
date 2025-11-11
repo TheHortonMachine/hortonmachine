@@ -18,7 +18,6 @@
  */
 package org.hortonmachine.hmachine.modules.demmanipulation.splitsubbasin;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_DESCRIPTION;
@@ -33,12 +32,18 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_o
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSSPLITSUBBASINS_pHackorder_DESCRIPTION;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
+import java.io.IOException;
 
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.ModelsEngine;
+import org.hortonmachine.gears.libs.modules.ModelsSupporter;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -50,16 +55,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.ModelsEngine;
-import org.hortonmachine.gears.libs.modules.ModelsSupporter;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.math.NumericsUtilities;
 
 @Description(OMSSPLITSUBBASINS_DESCRIPTION)
 @Author(name = OMSSPLITSUBBASINS_AUTHORNAMES, contact = OMSSPLITSUBBASINS_AUTHORCONTACTS)
@@ -95,8 +90,10 @@ public class OmsSplitSubbasins extends HMModel {
     private int nRows;
     private double hackOrder;
 
+	private double hackNovalue;
+
     @Execute
-    public void process() {
+    public void process() throws Exception {
         if (!concatOr(outSubbasins == null, doReset)) {
             return;
         }
@@ -108,52 +105,47 @@ public class OmsSplitSubbasins extends HMModel {
 
         hackOrder = pHackorder;
 
-        int flowNovalue = HMConstants.getIntNovalue(inFlow);
-        RenderedImage flowRI = inFlow.getRenderedImage();
-        WritableRaster flowWR = CoverageUtilities.renderedImage2WritableRaster(flowRI, true);
-        RenderedImage hacksRI = inHack.getRenderedImage();
-        WritableRaster hackWR = CoverageUtilities.renderedImage2WritableRaster(hacksRI, true);
+        HMRaster flowRasterW = HMRaster.fromGridCoverageWritable(inFlow);
+        flowRasterW.makeNullBorders();
 
-        WritableRandomIter flowIter = RandomIterFactory.createWritable(flowWR, null);
-        WritableRandomIter hacksIter = RandomIterFactory.createWritable(hackWR, null);
+        HMRaster hackRasterW = HMRaster.fromGridCoverageWritable(inHack);
+        hackNovalue = hackRasterW.getNovalue();
+        hackRasterW.makeNullBorders();
+        
+        HMRaster netRaster = new HMRaster.HMRasterWritableBuilder().setName("net").setTemplate(flowRasterW)
+				.setInitialValue(HMConstants.shortNovalue).setDoShort(true).setNoValue(HMConstants.shortNovalue).build();
+        
+        net(hackRasterW, netRaster);
 
-        double outNv = HMConstants.doubleNovalue;
-        WritableRaster netImage = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, outNv);
-        WritableRandomIter netIter = RandomIterFactory.createWritable(netImage, null);
-        net(hacksIter, netIter);
+        HMRaster netNumberWR = netNumber(flowRasterW, hackRasterW, netRaster);
+        HMRaster subbasinWR = ModelsEngine.extractSubbasins(flowRasterW, netRaster, netNumberWR, pm);
 
-        WritableRaster netNumberWR = netNumber(flowIter, hacksIter, netIter);
-        WritableRandomIter netNumberIter = RandomIterFactory.createWritable(netNumberWR, null);
-        WritableRaster subbasinWR = ModelsEngine.extractSubbasins(flowIter, flowNovalue, netIter, netNumberIter, nRows, nCols,
-                pm);
-
-        outNetnum = CoverageUtilities.buildCoverageWithNovalue("netnum", netNumberWR, regionMap, //$NON-NLS-1$
-                inFlow.getCoordinateReferenceSystem(), outNv);
-        outSubbasins = CoverageUtilities.buildCoverageWithNovalue("subbasins", subbasinWR, regionMap, //$NON-NLS-1$
-                inFlow.getCoordinateReferenceSystem(), outNv);
+        outNetnum = netNumberWR.buildCoverage();
+        outSubbasins = subbasinWR.buildCoverage();
     }
     /**
      * Return the map of the network with only the river of the choosen order.
      * 
-     * @param hacksIter the hack stream map.
-     * @param netIter the network map to build on the required hack orders.
+     * @param hackRaster the hack stream map.
+     * @param netRaster the network map to build on the required hack orders.
      * @return the map of the network with the choosen order.
+     * @throws IOException 
      */
-    private void net( WritableRandomIter hacksIter, WritableRandomIter netIter ) {
+    private void net( HMRaster hackRaster, HMRaster netRaster ) throws IOException {
         // calculates the max order of basin (max hackstream value)
         pm.beginTask("Extraction of rivers of chosen order...", nRows);
         for( int r = 0; r < nRows; r++ ) {
             for( int c = 0; c < nCols; c++ ) {
-                double value = hacksIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(value)) {
+                double value = hackRaster.getValue(c, r);
+                if (!hackRaster.isNovalue(value)) {
                     /*
                      * if the hack value is in the asked range 
                      * => keep it as net
                      */
                     if (value <= hackOrder) {
-                        netIter.setSample(c, r, 0, 2);
+                        netRaster.setValue(c, r, (short) 2);
                     } else {
-                        hacksIter.setSample(c, r, 0, HMConstants.doubleNovalue);
+                        hackRaster.setValue(c, r, hackNovalue);
                     }
                 }
             }
@@ -162,12 +154,13 @@ public class OmsSplitSubbasins extends HMModel {
         pm.done();
     }
 
-    private WritableRaster netNumber( RandomIter flowIter, RandomIter hacksIter, RandomIter netIter ) {
+    private HMRaster netNumber( HMRaster flowR, HMRaster hacksR, HMRaster netR ) throws IOException {
         int drainingPixelNum = 0;
         int[] flowColRow = new int[2];
 
-        WritableRaster netNumberingImage = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, 0.0);
-        WritableRandomIter netNumberRandomIter = RandomIterFactory.createWritable(netNumberingImage, null);
+        
+        HMRaster netNumberingRaster = new HMRaster.HMRasterWritableBuilder().setName("netnumbering").setTemplate(flowR)
+				.setInitialValue(HMConstants.intNovalue).setDoInteger(true).setInitialValue(0).setNoValue(HMConstants.intNovalue).build();
 
         int n = 0;
         pm.beginTask("Numbering network...", nRows);
@@ -175,15 +168,14 @@ public class OmsSplitSubbasins extends HMModel {
             for( int c = 0; c < nCols; c++ ) {
                 flowColRow[0] = c;
                 flowColRow[1] = r;
-                if (!isNovalue(netIter.getSampleDouble(c, r, 0)) && flowIter.getSampleDouble(c, r, 0) != 10.0
-                        && NumericsUtilities.dEq(netNumberRandomIter.getSampleDouble(c, r, 0), 0.0)) {
+                if (!netR.isNovalue(netR.getValue(c, r)) && flowR.getValue(c, r) != 10.0
+                        && NumericsUtilities.dEq(netNumberingRaster.getValue(c, r), 0.0)) {
 
                     boolean isSource = true;
                     for( int k = 1; k <= 8; k++ ) {
-                        boolean isDraining = flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0],
-                                0) == dir[k][2];
-                        boolean isOnNet = !isNovalue(
-                                netIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0));
+                        boolean isDraining = flowR.getValue(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0]) == dir[k][2];
+                        boolean isOnNet = !netR.isNovalue(
+                                netR.getValue(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0]));
                         if (isDraining && isOnNet) {
                             isSource = false;
                             break;
@@ -195,22 +187,21 @@ public class OmsSplitSubbasins extends HMModel {
                      */
                     if (isSource) {
                         n++;
-                        netNumberRandomIter.setSample(c, r, 0, n);
-                        if (!ModelsEngine.go_downstream(flowColRow, flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
+                        netNumberingRaster.setValue(c, r, n);
+                        if (!ModelsEngine.go_downstream(flowColRow, flowR.getValue(flowColRow[0], flowColRow[1])))
                             throw new ModelsIllegalargumentException("go_downstream failure...", this, pm);
                         /*
                          * while it is on the network, go downstream
                          */
-                        while( !isNovalue(flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0))
-                                && netNumberRandomIter.getSampleDouble(flowColRow[0], flowColRow[1], 0) == 0 ) {
+                        while( !flowR.isNovalue(flowR.getValue(flowColRow[0], flowColRow[1]))
+                                && netNumberingRaster.getValue(flowColRow[0], flowColRow[1]) == 0 ) {
                             /*
                              * calculate how many pixels drain into the current pixel.
                              */
                             drainingPixelNum = 0;
                             for( int k = 1; k <= 8; k++ ) {
-                                if (!isNovalue(netIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0], 0))
-                                        && flowIter.getSampleDouble(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0],
-                                                0) == dir[k][2]) {
+                                if (!netR.isNovalue(netR.getValue(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0]))
+                                        && flowR.getValue(flowColRow[0] + dir[k][1], flowColRow[1] + dir[k][0]) == dir[k][2]) {
                                     drainingPixelNum++;
                                 }
                             }
@@ -218,10 +209,10 @@ public class OmsSplitSubbasins extends HMModel {
                             if (drainingPixelNum > 1) {
                                 n++;
                             }
-                            netNumberRandomIter.setSample(flowColRow[0], flowColRow[1], 0, n);
+                            netNumberingRaster.setValue(flowColRow[0], flowColRow[1], n);
 
                             if (!ModelsEngine.go_downstream(flowColRow,
-                                    flowIter.getSampleDouble(flowColRow[0], flowColRow[1], 0)))
+                                    flowR.getValue(flowColRow[0], flowColRow[1])))
                                 throw new ModelsIllegalargumentException("go_downstream failure...", this, pm);
                         }
                     }
@@ -231,7 +222,7 @@ public class OmsSplitSubbasins extends HMModel {
         }
         pm.done();
 
-        return netNumberingImage;
+        return netNumberingRaster;
     }
 
 }

@@ -395,6 +395,23 @@ public class HMRaster implements AutoCloseable {
         Coordinate coordinate = CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
         return coordinate;
     }
+    
+	public void makeNullBorders() {
+		try {
+			// top and bottom rows
+			for (int col = startCol; col < cols + startCol; col++) {
+				setValue(col, startRow, novalue);
+				setValue(col, rows + startRow - 1, novalue);
+			}
+			// left and right columns
+			for (int row = startRow; row < rows + startRow; row++) {
+				setValue(startCol, row, novalue);
+				setValue(cols + startCol - 1, row, novalue);
+			}
+		} catch (IOException e) {
+			throw new ModelsRuntimeException("Error setting null borders.", this);
+		}
+	}
 
     /**
      * Process the raster cell by cell.

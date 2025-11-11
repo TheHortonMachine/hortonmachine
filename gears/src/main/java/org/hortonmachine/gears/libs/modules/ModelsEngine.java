@@ -864,7 +864,10 @@ public class ModelsEngine {
      * @throws IOException 
      */
     public static HMRaster extractSubbasins( HMRaster flowRaster, HMRaster netRaster,
-			HMRaster netNumberRaster, int rows, int cols, IHMProgressMonitor pm) throws IOException {
+			HMRaster netNumberRaster, IHMProgressMonitor pm) throws IOException {
+		RegionMap regionMap = flowRaster.getRegionMap();
+		int cols = regionMap.getCols();
+		int rows = regionMap.getRows();
 
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {

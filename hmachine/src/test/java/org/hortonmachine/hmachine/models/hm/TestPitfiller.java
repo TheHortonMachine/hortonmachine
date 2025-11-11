@@ -50,7 +50,7 @@ public class TestPitfiller extends HMTestCase {
         pitfiller.process();
 
         GridCoverage2D pitfillerCoverage = pitfiller.outPit;
-        printImage(pitfillerCoverage.getRenderedImage());
+//        printImage(pitfillerCoverage.getRenderedImage());
         checkMatrixEqual(pitfillerCoverage.getRenderedImage(), HMTestMaps.pitData, 0);
 
     }
