@@ -147,7 +147,7 @@ public class OmsNetNumbering extends HMModel {
     public static final String OMSNETNUMBERING_outDesiredBasins_DESCRIPTION = "The map of desired size subbasins";
     public static final String OMSNETNUMBERING_outMindmap_DESCRIPTION = "Output mindmap (plantuml).";
     public static final String OMSNETNUMBERING_outMindmapDesired_DESCRIPTION = "Output desired mindmap (plantuml).";
-    public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size.";
+    public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size in the projection's unit.";
     public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
     public static final String OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION = "The maximum number of channels that can converge into 1 node (-1 = no limit). Works only in desired area mode.";
     public static final String OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION = "The optional geoframe topology output file.";
@@ -169,8 +169,17 @@ public class OmsNetNumbering extends HMModel {
         checkNull(inFlow, inNet);
         
         HMRaster flowRaster = HMRaster.fromGridCoverageWritable(inFlow);
+        flowRaster.makeNullBorders();
         HMRaster netRaster = HMRaster.fromGridCoverage(inNet);
-        HMRaster tcaRaster = HMRaster.fromGridCoverageWritable(inTca);
+        
+        HMRaster tcaRaster = null;
+        if (inTca != null) {
+        	tcaRaster = HMRaster.fromGridCoverageWritable(inTca);
+        } else {
+        	if (pDesiredArea != null) {
+				throw new ModelsRuntimeException("TCA input is required when desired area parameter is set.", this);
+			}
+        }
         RegionMap regionMap = flowRaster.getRegionMap();
         nCols = regionMap.getCols();
         nRows = regionMap.getRows();
@@ -312,11 +321,11 @@ public class OmsNetNumbering extends HMModel {
                     
 
             		HMRaster desiredSubbasinsR = new HMRaster.HMRasterWritableBuilder().setName("desiredsubbasin").setTemplate(flowRaster)
-            				.setInitialValue(0).setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
+            				.setInitialValue(HMConstants.intNovalue).setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
                     for( int r = 0; r < nRows; r++ ) {
                         for( int c = 0; c < nCols; c++ ) {
                             int value = subbasinRaster.getIntValue(c, r);
-                            if (!isNovalue(value)) {
+                            if (!subbasinRaster.isNovalue(value)) {
                                 Integer convertedBasinNum = conversionMap.get(value);
                                 if (convertedBasinNum != null) {
                                     // check if the converted has been converted also in some
@@ -333,8 +342,8 @@ public class OmsNetNumbering extends HMModel {
                             }
                         }
                     }
-                    desiredSubbasinsR.close();
                     outDesiredBasins = desiredSubbasinsR.buildCoverage();
+                    desiredSubbasinsR.close();
                 }
 
                 // build geoframe topology input
@@ -350,7 +359,8 @@ public class OmsNetNumbering extends HMModel {
         } finally {
             flowRaster.close();
             netRaster.close();
-            tcaRaster.close();
+            if (tcaRaster != null)
+            	tcaRaster.close();
             if (netNumR != null)
                 netNumR.close();
         }

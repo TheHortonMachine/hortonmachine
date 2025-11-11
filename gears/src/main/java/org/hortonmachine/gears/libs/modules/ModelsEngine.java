@@ -77,7 +77,6 @@ import org.locationtech.jts.geom.MultiLineString;
  * @author Erica Ghesla
  * @author Daniele Andreis
  */
-@SuppressWarnings("unchecked")
 public class ModelsEngine {
     /**
      * @deprecated this should not be used. Use the {@link FlowNode} concept instead.
@@ -707,9 +706,6 @@ public class ModelsEngine {
 		HMRaster netnumRaster = new HMRaster.HMRasterWritableBuilder().setName("netnum").setTemplate(flowR).setInitialValue(0)
 				.setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
 
-		int flowNv = (int) flowR.getNovalue();
-		double netNv = netR.getNovalue();
-
 		/*
 		 * split nodes are points that create new numbering: - first points upstream on
 		 * net - confluences - supplied points
@@ -786,7 +782,13 @@ public class ModelsEngine {
 		pm.beginTask("Numbering network...", splitNodes.size());
 		for (int i = 0; i < splitNodes.size(); i++) {
 			FlowNodeNG splitNode = splitNodes.get(i);
-			int startTca = splitNode.getIntValueFromRaster(tcaR);
+			
+			int startTca;
+			if (tcaR == null) {
+				startTca = intNovalue;
+			} else {
+				startTca = splitNode.getIntValueFromRaster(tcaR);
+			}
 
 			setNetNumWithCheck(netnumRaster, channel, splitNode);
 
@@ -803,7 +805,11 @@ public class ModelsEngine {
 				if (nextNode != null) {
 					do {
 						lastNode = nextNode;
-						endTca = nextNode.getIntValueFromRaster(tcaR);
+						if (tcaR == null) {
+							endTca = intNovalue;
+						} else {
+							endTca = nextNode.getIntValueFromRaster(tcaR);
+						}
 
 						setNetNumWithCheck(netnumRaster, channel, nextNode);
 						nextNode = nextNode.goDownstream();
@@ -878,6 +884,7 @@ public class ModelsEngine {
 
 		markHillSlopeWithLinkValue(flowRaster, netNumberRaster, subbasinRaster, pm);
 
+		int netNumberNV = (int) netNumberRaster.getNovalue();
 		for (int r = 0; r < rows; r++) {
 			for (int c = 0; c < cols; c++) {
 				int netValue = netRaster.getIntValue(c, r);
@@ -886,7 +893,7 @@ public class ModelsEngine {
 					subbasinRaster.setValue(c, r, netNumberValue);
 				}
 				if (NumericsUtilities.dEq(netNumberValue, 0)) {
-					netNumberRaster.setValue(c, r, HMConstants.intNovalue);
+					netNumberRaster.setValue(c, r, netNumberNV);
 				}
 				int subbValue = subbasinRaster.getIntValue(c, r);
 				if (NumericsUtilities.dEq(subbValue, 0))
@@ -913,6 +920,7 @@ public class ModelsEngine {
 		RegionMap regionMap = flowRaster.getRegionMap();
 		int cols = regionMap.getCols();
 		int rows = regionMap.getRows();
+		double attributeNV = attributeRaster.getNovalue();
         pm.beginTask("Marking the hillslopes with the channel value...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
@@ -932,7 +940,7 @@ public class ModelsEngine {
                      * run down to the net to find the
                      * attribute map content on the net 
                      */
-                    double attributeValue = doubleNovalue;
+                    double attributeValue = attributeNV;
                     var runningNode = flowNode.goDownstream();
                     int runningRow = -1;
                     int runningCol = -1;
@@ -945,7 +953,7 @@ public class ModelsEngine {
                         }
                         runningNode = runningNode.goDownstream();
                     }
-                    if (!isNovalue(attributeValue)) {
+                    if (!attributeRaster.isNovalue(attributeValue)) {
                         // run down marking the hills
                         runningNode = flowNode;
                         while( runningNode != null && runningNode.isValid() ) {
@@ -959,7 +967,7 @@ public class ModelsEngine {
                     	RasterCellInfo cellInfo = new RasterCellInfo(runningCol, runningRow, flowRaster, attributeRaster, markedRaster);
                         throw new ModelsIllegalargumentException(
                                 "Could not find a value of the attributes map in the channel after point: " + runningCol + "/"
-                                        + runningRow + ".\nAre you sure that everything leads to a channel or outlet?\nInvolved cell infos with buffer:\n" + cellInfo,
+                                        + runningRow + ".\nAre you sure that everything leads to a channel or outlet?\nInvolved cell infos with buffer:\n" + cellInfo.toString2(),
                                 "MODELSENGINE", pm);
                     }
                 }

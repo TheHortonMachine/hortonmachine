@@ -25,20 +25,21 @@ public class Test extends HMModel {
 //		double northing = 9934464.184;
 		
 		// flanginec
-		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/flanginec/";
-		String ext = ".tif";
-		int thres = 100;
-		double desiredArea = 100.0;
-		double easting = 1637993.497;
-		double northing = 5111925.950;
+//		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/flanginec/";
+//		String ext = ".tif";
+//		int thres = 100;
+//		double desiredArea = 100.0;
+//		double easting = 1637993.497;
+//		double northing = 5111925.950;
 		
 		// NOCE
-//		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
-//		String ext = ".tif";
-//		int thres = 5000;
-//		double desiredArea = 5000.0;
-//		double easting = 623524.005;
-//		double northing = 5128704.421;
+		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
+		String ext = ".tif";
+		int drainThres = 5000;
+		double desiredArea = 10000.0;
+		double desiredAreaDelta = 200.0;
+		double easting = 623519.2969;
+		double northing = 5128704.4571;
 		
 		String dtm = folder + "inputs/dtm" + ext;
 		String pit = folder + "outputs/pit" + ext;
@@ -55,6 +56,7 @@ public class Test extends HMModel {
 		
 		String basinnetnum = folder + "outputs/basin_netnum" + ext;
 		String basinnetbasins = folder + "outputs/basin_netnumbasins" + ext;
+		String basinnetbasinsdesired = folder + "outputs/basin_netnumbasins_desired" + ext;
 
 		File outFolder = new File(folder + "outputs/");
 		if (!outFolder.exists()) {
@@ -88,7 +90,7 @@ public class Test extends HMModel {
 		OmsExtractNetwork extractnetwork = new OmsExtractNetwork();
 		extractnetwork.inTca = getRaster(tca);
 		extractnetwork.inFlow = getRaster(flow);
-		extractnetwork.pThres = thres;
+		extractnetwork.pThres = drainThres;
 		extractnetwork.process();
 		dumpRaster(extractnetwork.outNet, net);
 		HM.makeQgisStyleForRaster(EColorTables.net.name(), net, 0);
@@ -132,16 +134,18 @@ public class Test extends HMModel {
 		
 		
 		OmsNetNumbering nn = new OmsNetNumbering();
-		nn.inFlow = getRaster(drain);
-		nn.inTca = getRaster(tca);
-		nn.inNet = getRaster(net);
+		nn.inFlow = getRaster(basindrain);
+		nn.inNet = getRaster(basinnet);
+		nn.inTca = getRaster(basintca);
 		nn.pDesiredArea = desiredArea;
-		nn.pDesiredAreaDelta = 10.0;
+		nn.pDesiredAreaDelta = desiredAreaDelta;
 		nn.process();
 		dumpRaster(nn.outNetnum, basinnetnum);
 		dumpRaster(nn.outBasins, basinnetbasins);
+		dumpRaster(nn.outDesiredBasins, basinnetbasinsdesired);
 		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetnum, 0);
 		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasins, 0);
+		HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasinsdesired, 0);
 		
 		
 		
