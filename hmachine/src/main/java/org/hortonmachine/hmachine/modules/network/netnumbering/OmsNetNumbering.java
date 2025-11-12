@@ -37,6 +37,8 @@ import java.util.stream.Collectors;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -46,6 +48,7 @@ import org.hortonmachine.gears.libs.modules.NetLink;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -127,6 +130,13 @@ public class OmsNetNumbering extends HMModel {
     @Description(OMSNETNUMBERING_outMindmapDesired_DESCRIPTION)
     @Out
     public String outDesiredMindmap = null;
+    
+    /**
+     * Optional geoframe database to write the topology into.
+     * 
+     * If this is set, the topology text output is not created.
+     */
+    public ADb inGeoframeDb = null; 
 
     public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
     public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
@@ -347,10 +357,14 @@ public class OmsNetNumbering extends HMModel {
                 }
 
                 // build geoframe topology input
-                StringBuilder geoframeSb = new StringBuilder();
-                geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
-                printLinkAsGeoframe(rootLink, geoframeSb);
-                outGeoframeTopology = geoframeSb.toString();
+                if (inGeoframeDb != null) {
+					makeGeoframeTopologyDb(inGeoframeDb, rootLink);
+				} else {
+	                StringBuilder geoframeSb = new StringBuilder();
+	                geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
+	                printLinkAsGeoframe(rootLink, geoframeSb);
+	                outGeoframeTopology = geoframeSb.toString();
+				}
 
             } finally {
                 subbasinRaster.close();
@@ -366,7 +380,35 @@ public class OmsNetNumbering extends HMModel {
         }
     }
 
-    private void aggregateBasins( List<NetLink> currentLevelLinks, HashMap<Integer, Integer> conversionMap, double minArea,
+    private void makeGeoframeTopologyDb(ADb db, NetLink rootLink) throws Exception {
+		// check if table topology exists
+    	if(!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))){
+    		// create the table
+    		String createTopologyTable = "CREATE TABLE " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ( " +
+					GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + " INTEGER, " +
+					GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO + " INTEGER " +
+					");";
+    		db.executeInsertUpdateDeleteSql(createTopologyTable);
+		}
+		
+    	String insertSql = "INSERT INTO " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ( " +
+				GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + ", " +
+				GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO + " ) " +
+				"VALUES ( ?, ? );";
+    	db.executeInsertUpdateDeletePreparedSql(insertSql, new Object[] {rootLink.num, 0});
+    	
+		printLinkToDb(rootLink, db, insertSql);
+	}
+    
+	private void printLinkToDb(NetLink node, ADb db, String insertSql) throws Exception {
+		for (NetLink upNode : node.getUpStreamLinks()) {
+			db.executeInsertUpdateDeletePreparedSql(insertSql, new Object[] { upNode.num, node.num });
+			printLinkToDb(upNode, db, insertSql);
+		}
+	}
+    
+
+	private void aggregateBasins( List<NetLink> currentLevelLinks, HashMap<Integer, Integer> conversionMap, double minArea,
             double desArea, int level ) throws Exception {
 
         for( NetLink netLink : currentLevelLinks ) {

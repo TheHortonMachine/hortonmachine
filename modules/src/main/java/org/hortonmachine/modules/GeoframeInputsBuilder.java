@@ -18,17 +18,17 @@
 package org.hortonmachine.modules;
 import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -36,14 +36,17 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
+import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -53,6 +56,7 @@ import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDist
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
 import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
+import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -64,9 +68,6 @@ import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -136,6 +137,13 @@ public class GeoframeInputsBuilder extends HMModel {
     @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
     public String outFolder = null;
+    
+    /**
+     * Geoframe db to work with.
+     * 
+     * If this is set, the folder outputs will not be created.
+     */
+    public ASpatialDb inGeoframeDb = null;
 
     private boolean doOverWrite = true;
 
@@ -146,7 +154,7 @@ public class GeoframeInputsBuilder extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins, outFolder);
+        checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins);
 
         try (HMRaster subBasins = HMRaster.fromGridCoverage(getRaster(inBasins));
                 HMRaster pit = HMRaster.fromGridCoverage(getRaster(inPitfiller));
@@ -156,46 +164,60 @@ public class GeoframeInputsBuilder extends HMModel {
                 HMRaster tca = HMRaster.fromGridCoverage(getRaster(inTca));) {
 
             // first check if topology and subbasins are the same for consistency
-            if (inGeoframeTopology != null) {
-                TreeSet<Integer> subBasinsSet = new TreeSet<>();
-                subBasins.process(pm, "Check basin ids...", ( col, row, value, cols, rows ) -> {
-                    if (!subBasins.isNovalue(value)) {
-                        subBasinsSet.add((int) value);
-                    }
-                });
-                TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
-                List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
-                for( String line : topologyLines ) {
-                    String[] lineSplit = line.trim().split("\\s+");
-                    if (lineSplit.length != 2) {
-                        throw new ModelsIllegalargumentException("The topology file format is not recognised for line: " + line,
-                                this);
-                    }
-                    int currentBasinId = Integer.parseInt(lineSplit[0]);
-                    int childBasinId = Integer.parseInt(lineSplit[1]);
-                    topologyBasinsSet.add(childBasinId);
-                    topologyBasinsSet.add(currentBasinId);
-                }
-                topologyBasinsSet.remove(0);
-                if (subBasinsSet.size() != topologyBasinsSet.size()) {
-                    printSubbasins(subBasinsSet, topologyBasinsSet);
-                    throw new ModelsIllegalargumentException("The topology basins and raster subbasins differ: "
-                            + topologyBasinsSet.size() + " vs. " + subBasinsSet.size(), this);
-                } else {
-                    // also check the numbers
-                    for( Integer topoId : topologyBasinsSet ) {
-                        if (!subBasinsSet.contains(topoId)) {
-                            printSubbasins(subBasinsSet, topologyBasinsSet);
-                            throw new ModelsIllegalargumentException(
-                                    "The topology basins contain an id that is not available in the raster subbasins: " + topoId,
-                                    this);
-                        }
-                    }
-                }
-                pm.message("Found basin ids between " + subBasinsSet.first() + " and " + subBasinsSet.last());
-            }
+        	TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
+			if (inGeoframeDb != null) {
+				QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE, -1);
+				int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
+				int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
+				for( Object[] row : result.data ) {
+					int currentBasinId = ((Number) row[fromIndex]).intValue();
+					int childBasinId = ((Number) row[toIndex]).intValue();
+					topologyBasinsSet.add(childBasinId);
+					topologyBasinsSet.add(currentBasinId);
+				}
+				topologyBasinsSet.remove(0);
+			} else if(inGeoframeTopology != null) {				
+				List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
+				for (String line : topologyLines) {
+					String[] lineSplit = line.trim().split("\\s+");
+					if (lineSplit.length != 2) {
+						throw new ModelsIllegalargumentException(
+								"The topology file format is not recognised for line: " + line, this);
+					}
+					int currentBasinId = Integer.parseInt(lineSplit[0]);
+					int childBasinId = Integer.parseInt(lineSplit[1]);
+					topologyBasinsSet.add(childBasinId);
+					topologyBasinsSet.add(currentBasinId);
+				}
+				topologyBasinsSet.remove(0);
+			}
+			if (!topologyBasinsSet.isEmpty()) {
+				TreeSet<Integer> subBasinsSet = new TreeSet<>();
+				subBasins.process(pm, "Check basin ids...", (col, row, value, cols, rows) -> {
+					if (!subBasins.isNovalue(value)) {
+						subBasinsSet.add((int) value);
+					}
+				});
+				if (subBasinsSet.size() != topologyBasinsSet.size()) {
+					printSubbasins(subBasinsSet, topologyBasinsSet);
+					throw new ModelsIllegalargumentException("The topology basins and raster subbasins differ: "
+							+ topologyBasinsSet.size() + " vs. " + subBasinsSet.size(), this);
+				} else {
+					// also check the numbers
+					for (Integer topoId : topologyBasinsSet) {
+						if (!subBasinsSet.contains(topoId)) {
+							printSubbasins(subBasinsSet, topologyBasinsSet);
+							throw new ModelsIllegalargumentException(
+									"The topology basins contain an id that is not available in the raster subbasins: "
+											+ topoId,
+									this);
+						}
+					}
+				}
+				pm.message("Found basin ids between " + subBasinsSet.first() + " and " + subBasinsSet.last());
+			}
 
-            CoordinateReferenceSystem crs = subBasins.getCrs();
+			CoordinateReferenceSystem crs = subBasins.getCrs();
             List<Polygon> cells = CoverageUtilities.gridcoverageToValuesAggregatedPolygons(subBasins, pm);
 //            SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(subBasins.getCrs(),
 //                    (Polygon[]) polygons.toArray(new Polygon[polygons.size()]));
@@ -410,23 +432,29 @@ public class GeoframeInputsBuilder extends HMModel {
                             Geometry newGeom;
                             try {
                                 newGeom = geomToCut.difference(lakeGeom);
-                            } catch (Exception e) {
-                                File folder = new File(outFolder);
-                                File errorFile = new File(folder, "errors." + HMConstants.GPKG + "#error_basin_" + outBasin.id);
+							} catch (Exception e) {
+								geomToCut.setUserData("basin_" + outBasin.id);
+								lakeGeom.setUserData("lake");
+								SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs,
+										geomToCut, lakeGeom);
+								if (inGeoframeDb != null) {
+									var table = SqlName.m("error_basin_" + outBasin.id);
+				                    SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, fc.getSchema(), table, null, false);
+				                    SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, fc, table, -1, false, pm);
+								} else {
+									File folder = new File(outFolder);
+									File errorFile = new File(folder,
+											"errors." + HMConstants.GPKG + "#error_basin_" + outBasin.id);
+									String message = "An error occurred during intersection between basin and lake geometries. IGNORING LAKE.\nGeometries written to: "
+											+ errorFile;
 
-                                String message = "An error occurred during intersection between basin and lake geometries. IGNORING LAKE.\nGeometries written to: "
-                                        + errorFile;
+									pm.errorMessage(message);
 
-                                pm.errorMessage(message);
+									OmsVectorWriter.writeVector(errorFile.getAbsolutePath(), fc);
+								}
 
-                                geomToCut.setUserData("basin_" + outBasin.id);
-                                lakeGeom.setUserData("lake");
-                                SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(crs, geomToCut,
-                                        lakeGeom);
-                                OmsVectorWriter.writeVector(errorFile.getAbsolutePath(), fc);
-
-                                continue;
-                            }
+								continue;
+							}
                             outBasin.basinGeometry = newGeom;
                             basinId2geomMap.put(outBasin.id, newGeom);
 
@@ -472,23 +500,35 @@ public class GeoframeInputsBuilder extends HMModel {
                     }
 
                     // finally rewrite the topology file.
+                    if (inGeoframeDb != null) {
+                    	// clear old topology table
+						inGeoframeDb.executeInsertUpdateDeleteSql ("DELETE FROM " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE);
+						
+						StringBuilder errorSb = new StringBuilder("Not adding again: \n");
+						List<String> topology = new ArrayList<>();
+						writeTopologyToDb(topology, rootBasin, errorSb);
+						String error = errorSb.toString();
+						if (!error.isBlank()) {
+							pm.errorMessage(error);
+						}
+                    	
+					} else if (inGeoframeTopology != null) {
+						File topoFile = new File(inGeoframeTopology);
+						String topoFilename = FileUtilities.getNameWithoutExtention(topoFile);
+						File newTopoFile = new File(topoFile.getParentFile(), topoFilename + "_lakes.txt");
+						List<String> topology = new ArrayList<>();
+						StringBuilder errorSb = new StringBuilder("Not adding again: \n");
+						writeTopology(topology, rootBasin, errorSb);
+						StringBuilder sb = new StringBuilder();
+						topology.forEach(record -> sb.append(record).append("\n"));
 
-                    File topoFile = new File(inGeoframeTopology);
-                    String topoFilename = FileUtilities.getNameWithoutExtention(topoFile);
-                    File newTopoFile = new File(topoFile.getParentFile(), topoFilename + "_lakes.txt");
-                    List<String> topology = new ArrayList<>();
-                    StringBuilder errorSb = new StringBuilder("Not adding again: \n");
-                    writeTopology(topology, rootBasin, errorSb);
-                    StringBuilder sb = new StringBuilder();
-                    topology.forEach(record -> sb.append(record).append("\n"));
+						String error = errorSb.toString();
+						if (!error.isBlank()) {
+							sb.append("\n\n\n").append(error);
+						}
 
-                    String error = errorSb.toString();
-                    if (!error.isBlank()) {
-                        sb.append("\n\n\n").append(error);
-                    }
-
-                    FileUtilities.writeFile(sb.toString(), newTopoFile);
-
+						FileUtilities.writeFile(sb.toString(), newTopoFile);
+					}
                 } else {
                     pm.errorMessage("Unable to find the basin topology.");
                 }
@@ -510,19 +550,31 @@ public class GeoframeInputsBuilder extends HMModel {
 //            }
             pm.done();
 
-            File folder = new File(outFolder);
-            File basinShpFile = new File(folder, "subbasins_complete.shp");
-            if (!basinShpFile.exists() || doOverWrite) {
-                dumpVector(allBasinsFC, basinShpFile.getAbsolutePath());
-            }
-            File netShpFile = new File(folder, "network_complete.shp");
-            if (!netShpFile.exists() || doOverWrite) {
-                dumpVector(allNetworksFC, netShpFile.getAbsolutePath());
-            }
-            File csvFile = new File(folder, "subbasins.csv");
-            if (!csvFile.exists() || doOverWrite) {
-                FileUtilities.writeFile(csvText.toString(), csvFile);
-            }
+			if (inGeoframeDb == null) {
+				File folder = new File(outFolder);
+				File basinShpFile = new File(folder, "subbasins_complete.shp");
+				if (!basinShpFile.exists() || doOverWrite) {
+					dumpVector(allBasinsFC, basinShpFile.getAbsolutePath());
+				}
+				File netShpFile = new File(folder, "network_complete.shp");
+				if (!netShpFile.exists() || doOverWrite) {
+					dumpVector(allNetworksFC, netShpFile.getAbsolutePath());
+				}
+				File csvFile = new File(folder, "subbasins.csv");
+				if (!csvFile.exists() || doOverWrite) {
+					FileUtilities.writeFile(csvText.toString(), csvFile);
+				}
+			} else {
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(),
+						SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC,
+						SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE), -1, false, pm);
+
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
+						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC,
+						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), -1, false, pm);
+			}
         }
     }
 
@@ -619,64 +671,46 @@ public class GeoframeInputsBuilder extends HMModel {
             }
         }
 
-        File basinFolder = makeBasinFolder(basinNum);
 
-        GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
-
+        GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap,
+        		crs);
+        
         GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope, null);
         GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
-        File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
-        if (!pitFile.exists() || doOverWrite) {
-            dumpRaster(cutPit, pitFile.getAbsolutePath());
-        }
-
+        
         double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
         double avgElev = minMaxAvgSum[2];
+        
+        File basinFolder = null;
+		if (inGeoframeDb == null) {
+			basinFolder = makeBasinFolder(basinNum);
+			
+			File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
+			if (!pitFile.exists() || doOverWrite) {
+				dumpRaster(cutPit, pitFile.getAbsolutePath());
+			}
+			
+			GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope, null);
+			GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
+			File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
+			if (!skyFile.exists() || doOverWrite) {
+				dumpRaster(cutSky, skyFile.getAbsolutePath());
+			}
 
-        GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope, null);
-        GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
-        File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
-        if (!skyFile.exists() || doOverWrite) {
-            dumpRaster(cutSky, skyFile.getAbsolutePath());
-        }
+			GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope, null);
+			GridCoverage2D cutDrain = CoverageUtilities.coverageValuesMapper(clippedDrain, maskCoverage);
+			File drainFile = new File(basinFolder, "drain_" + basinNum + ".asc");
+			if (!drainFile.exists() || doOverWrite) {
+				dumpRaster(cutDrain, drainFile.getAbsolutePath());
+			}
 
-        GridCoverage2D clippedDrain = CoverageUtilities.clipCoverage(drain, basinRefEnvelope, null);
-        GridCoverage2D cutDrain = CoverageUtilities.coverageValuesMapper(clippedDrain, maskCoverage);
-        File drainFile = new File(basinFolder, "drain_" + basinNum + ".asc");
-        if (!drainFile.exists() || doOverWrite) {
-            dumpRaster(cutDrain, drainFile.getAbsolutePath());
-        }
-
-        GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope, null);
-        GridCoverage2D cutNet = CoverageUtilities.coverageValuesMapper(clippedNet, maskCoverage);
-        File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
-        if (!netFile.exists() || doOverWrite) {
-            dumpRaster(cutNet, netFile.getAbsolutePath());
-        }
-
-//            OmsRescaledDistance rescaledDistance1 = new OmsRescaledDistance();
-//            rescaledDistance1.pm = pm;
-//            rescaledDistance1.inElev = cutPit;
-//            rescaledDistance1.inFlow = cutDrain;
-//            rescaledDistance1.inNet = cutNet;
-//            rescaledDistance1.pRatio = 1;
-//            rescaledDistance1.process();
-//            File rescaled1File = new File(basinFolder, "rescaleddistance_1_" + basinNum + ".asc");
-//            if (!rescaled1File.exists() || doOverWrite) {
-//                dumpRaster(rescaledDistance1.outRescaled, rescaled1File.getAbsolutePath());
-//            }
-//
-//            OmsRescaledDistance rescaledDistance = new OmsRescaledDistance();
-//            rescaledDistance.pm = pm;
-//            rescaledDistance.inElev = cutPit;
-//            rescaledDistance.inFlow = cutDrain;
-//            rescaledDistance.inNet = cutNet;
-//            rescaledDistance.pRatio = pRatio;
-//            rescaledDistance.process();
-//            File rescaledRatioFile = new File(basinFolder, "rescaleddistance_" + pRatio + "_" + basinNum + ".asc");
-//            if (!rescaledRatioFile.exists() || doOverWrite) {
-//                dumpRaster(rescaledDistance.outRescaled, rescaledRatioFile.getAbsolutePath());
-//            }
+			GridCoverage2D clippedNet = CoverageUtilities.clipCoverage(net, basinRefEnvelope, null);
+			GridCoverage2D cutNet = CoverageUtilities.coverageValuesMapper(clippedNet, maskCoverage);
+			File netFile = new File(basinFolder, "net_" + basinNum + ".asc");
+			if (!netFile.exists() || doOverWrite) {
+				dumpRaster(cutNet, netFile.getAbsolutePath());
+			}
+		}
 
         // finalize feature writing
 
@@ -692,12 +726,14 @@ public class GeoframeInputsBuilder extends HMModel {
         allBasinsFC.add(basinFeature);
 
         // dump single subbasin
-        DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
-        singleBasin.add(basinFeature);
-        File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
-        if (!basinShpFile.exists() || doOverWrite) {
-            dumpVector(singleBasin, basinShpFile.getAbsolutePath());
-        }
+		if (inGeoframeDb == null) {
+			DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
+			singleBasin.add(basinFeature);
+			File basinShpFile = new File(basinFolder, "subbasins_complete_ID_" + basinNum + ".shp");
+			if (!basinShpFile.exists() || doOverWrite) {
+				dumpVector(singleBasin, basinShpFile.getAbsolutePath());
+			}
+		}
 
         Object[] centroidValues = new Object[]{basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
                 skyview};
@@ -705,12 +741,14 @@ public class GeoframeInputsBuilder extends HMModel {
         SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
 
         // dump single centroid
-        DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
-        singleCentroid.add(basinCentroidFeature);
-        File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
-        if (!centroidShpFile.exists() || doOverWrite) {
-            dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
-        }
+		if (inGeoframeDb == null) {
+			DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
+			singleCentroid.add(basinCentroidFeature);
+			File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
+			if (!centroidShpFile.exists() || doOverWrite) {
+				dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
+			}
+		}
 
         // CHANNELS
         if (!netPieces.isEmpty()) {
@@ -725,9 +763,11 @@ public class GeoframeInputsBuilder extends HMModel {
                 allNetworksFC.add(singleNetFeature);
                 singleNet.add(singleNetFeature);
             }
-            File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
-            if (!netShpFile.exists() || doOverWrite) {
-                dumpVector(singleNet, netShpFile.getAbsolutePath());
+            if (inGeoframeDb == null) {
+				File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
+				if (!netShpFile.exists() || doOverWrite) {
+					dumpVector(singleNet, netShpFile.getAbsolutePath());
+				}
             }
         }
 
@@ -777,6 +817,28 @@ public class GeoframeInputsBuilder extends HMModel {
         return newGeom;
     }
 
+    private void writeTopologyToDb( List<String> topology, Basin basin, StringBuilder errorSb ) throws Exception {
+        int downid = 0;
+        if (basin.downStreamBasin != null) {
+            downid = basin.downStreamBasinId;
+        }
+        String record = basin.id + " " + downid;
+        if (!topology.contains(record)) {
+            topology.add(record);
+            String sql = "INSERT INTO " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ("
+					+ GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + ", "
+					+ GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO + ") VALUES ("
+					+ basin.id + ", " + downid + ")";
+            inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+
+            for( Basin upBasin : basin.upStreamBasins ) {
+                writeTopology(topology, upBasin, errorSb);
+            }
+        } else {
+            errorSb.append("  ->").append(record).append("\n");
+        }
+    }
+    
     private void writeTopology( List<String> topology, Basin basin, StringBuilder errorSb ) {
         int downid = 0;
         if (basin.downStreamBasin != null) {
@@ -881,37 +943,61 @@ public class GeoframeInputsBuilder extends HMModel {
         return builder;
     }
 
-    private Basin getRootBasin( Map<Integer, Geometry> basinId2geomMap, List<Basin> allBasins ) throws IOException {
+    private Basin getRootBasin( Map<Integer, Geometry> basinId2geomMap, List<Basin> allBasins ) throws Exception {
 
-        if (inGeoframeTopology != null) {
-            HashMap<Integer, Basin> id2BasinMap = new HashMap<>();
-            List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
-            for( String line : topologyLines ) {
-                String[] lineSplit = line.trim().split("\\s+");
-                if (lineSplit.length != 2) {
-                    throw new ModelsIllegalargumentException("The topology file format is not recognised for line: " + line,
-                            this);
-                }
-
-                int currentBasinId = Integer.parseInt(lineSplit[0]);
-                int childBasinId = Integer.parseInt(lineSplit[1]);
-                Basin currentBasin = id2BasinMap.get(currentBasinId);
-                if (currentBasin == null) {
-                    currentBasin = new Basin();
-                    currentBasin.id = currentBasinId;
-                    id2BasinMap.put(currentBasinId, currentBasin);
-                }
-                if (childBasinId > 0) { // this makes the root stay with null down basin
-                    Basin childBasin = id2BasinMap.get(childBasinId);
-                    if (childBasin != null) {
-                        currentBasin.downStreamBasin = childBasin;
-                        currentBasin.downStreamBasinId = childBasinId;
-                    } else {
-                        currentBasin.downStreamBasinId = childBasinId;
-                    }
-                }
-            }
-
+    	HashMap<Integer, Basin> id2BasinMap = new HashMap<>();
+    	if (inGeoframeDb != null)	{
+			QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE, -1);
+			int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
+			int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
+			for( Object[] row : result.data ) {
+				int currentBasinId = ((Number) row[fromIndex]).intValue();
+				int childBasinId = ((Number) row[toIndex]).intValue();
+				Basin currentBasin = id2BasinMap.get(currentBasinId);
+				if (currentBasin == null) {
+					currentBasin = new Basin();
+					currentBasin.id = currentBasinId;
+					id2BasinMap.put(currentBasinId, currentBasin);
+				}
+				if (childBasinId > 0) { // this makes the root stay with null down basin
+					Basin childBasin = id2BasinMap.get(childBasinId);
+					if (childBasin != null) {
+						currentBasin.downStreamBasin = childBasin;
+						currentBasin.downStreamBasinId = childBasinId;
+					} else {
+						currentBasin.downStreamBasinId = childBasinId;
+					}
+				}
+			}
+    		
+		} else if (inGeoframeTopology != null) {
+			List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
+			for (String line : topologyLines) {
+				String[] lineSplit = line.trim().split("\\s+");
+				if (lineSplit.length != 2) {
+					throw new ModelsIllegalargumentException(
+							"The topology file format is not recognised for line: " + line, this);
+				}
+				int currentBasinId = Integer.parseInt(lineSplit[0]);
+				int childBasinId = Integer.parseInt(lineSplit[1]);
+				Basin currentBasin = id2BasinMap.get(currentBasinId);
+				if (currentBasin == null) {
+					currentBasin = new Basin();
+					currentBasin.id = currentBasinId;
+					id2BasinMap.put(currentBasinId, currentBasin);
+				}
+				if (childBasinId > 0) { // this makes the root stay with null down basin
+					Basin childBasin = id2BasinMap.get(childBasinId);
+					if (childBasin != null) {
+						currentBasin.downStreamBasin = childBasin;
+						currentBasin.downStreamBasinId = childBasinId;
+					} else {
+						currentBasin.downStreamBasinId = childBasinId;
+					}
+				}
+			}
+		}
+        if (!id2BasinMap.isEmpty()) {
             // find missing downstream basins
             for( Entry<Integer, Basin> entry : id2BasinMap.entrySet() ) {
                 Basin basin = entry.getValue();
