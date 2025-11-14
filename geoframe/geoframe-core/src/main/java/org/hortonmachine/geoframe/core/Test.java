@@ -61,8 +61,8 @@ public class Test extends HMModel {
 		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
 		String ext = ".tif";
 		int drainThres = 5000;
-		double desiredArea = 10000.0;
-		double desiredAreaDelta = 200.0;
+		double desiredArea = 1_000_000.0;
+		double desiredAreaDelta = 20.0;
 		double easting = 629720;
 		double northing = 5127690;
 
@@ -220,7 +220,7 @@ public class Test extends HMModel {
 			HM.makeQgisStyleForRaster(EColorTables.slope.name(), basinskyview, 0);
 		}
 
-		if (toDo(basinnetnum) || db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE)) == false) {
+		if (toDo(basinnetnum) || !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))) {
 			OmsNetNumbering nn = new OmsNetNumbering();
 			nn.inFlow = getRaster(basindrain);
 			nn.inNet = getRaster(basinnet);
@@ -238,17 +238,28 @@ public class Test extends HMModel {
 			HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasinsdesired, 0);
 		}
 
-		GeoframeInputsBuilder builder = new GeoframeInputsBuilder();
-		builder.inPitfiller = basinpit;
-		builder.inDrain = basindrain;
-		builder.inTca = basintca;
-		builder.inNet = basinnet;
-		builder.inSkyview = basinskyview;
-		builder.inBasins = basinnetbasins;
-		builder.inGeoframeTopology = topology;
-//		builder.outFolder = geoframeFolder;
-		builder.inGeoframeDb = db;
-		builder.process();
+		if (!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE))
+				|| !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE))) {
+			GeoframeInputsBuilder builder = new GeoframeInputsBuilder();
+			builder.inPitfiller = basinpit;
+			builder.inDrain = basindrain;
+			builder.inTca = basintca;
+			builder.inNet = basinnet;
+			builder.inSkyview = basinskyview;
+			builder.inBasins = basinnetbasinsdesired;
+			// builder.inGeoframeTopology = topology;
+			// builder.outFolder = geoframeFolder;
+			builder.inGeoframeDb = db;
+			builder.process();
+		}
+		
+		// TODO here a potential evapotrans comes in
+		
+		// TODO part in which rain, temperature, radiation and evapotransp are handled
+		
+		
+		
+		
 
 	}
 
