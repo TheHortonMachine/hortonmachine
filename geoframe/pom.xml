@@ -18,6 +18,10 @@
 		<module>geoframe-core</module>
 		<module>geoframe-geoet</module>
 		<module>geoframe-erm</module>
+		<module>geoframe-rssep</module>
+		<module>geoframe-snowm</module>
+		<module>geoframe-num</module>
+		<module>geoframe-cleq</module>
 	</modules>
 
 

@@ -4,3 +4,15 @@
 [submodule "geoframe/geoframe-erm/upstream"]
 	path = geoframe/geoframe-erm/upstream
 	url = https://github.com/geoframecomponents/Embedded_Reservoir_Model-ERM
+[submodule "geoframe/geoframe-rssep/upstream"]
+	path = geoframe/geoframe-rssep/upstream
+	url = https://github.com/geoframecomponents/RainSnowSep
+[submodule "geoframe/geoframe-snowm/upstream"]
+	path = geoframe/geoframe-snowm/upstream
+	url = https://github.com/geoframecomponents/SnowMelting
+[submodule "geoframe/geoframe-num/upstream"]
+	path = geoframe/geoframe-num/upstream
+	url = https://github.com/geoframecomponents/Numerical
+[submodule "geoframe/geoframe-cleq/upstream"]
+	path = geoframe/geoframe-cleq/upstream
+	url = https://github.com/geoframecomponents/ClosureEquation

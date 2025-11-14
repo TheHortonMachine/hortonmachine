@@ -7,9 +7,9 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>hm-geoframe-erm</artifactId>
+	<artifactId>hm-geoframe-cleq</artifactId>
 	<packaging>jar</packaging>
-	<name>HM Geoframe EmbeddedReservoirModel</name>
+	<name>HM Geoframe ClosureEquation</name>
 
 	<dependencies>
 

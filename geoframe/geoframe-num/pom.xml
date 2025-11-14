@@ -7,15 +7,20 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>hm-geoframe-erm</artifactId>
+	<artifactId>hm-geoframe-num</artifactId>
 	<packaging>jar</packaging>
-	<name>HM Geoframe EmbeddedReservoirModel</name>
+	<name>HM Geoframe Numerical</name>
 
 	<dependencies>
 
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gears</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-geoframe-cleq</artifactId>
 			<version>${revision}</version>
 		</dependency>
 
