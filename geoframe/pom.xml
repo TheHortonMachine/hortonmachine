@@ -17,6 +17,7 @@
 	<modules>
 		<module>geoframe-core</module>
 		<module>geoframe-geoet</module>
+		<module>geoframe-erm</module>
 	</modules>
 
 
