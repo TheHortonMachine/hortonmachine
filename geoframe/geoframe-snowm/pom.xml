@@ -24,6 +24,12 @@
 			<version>${revision}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -44,6 +50,8 @@
 							<sources>
 								<source>
 									${project.basedir}/upstream/src/main/java</source>
+								<source>
+									${project.basedir}/upstream/src/test/java</source>
 							</sources>
 						</configuration>
 					</execution>

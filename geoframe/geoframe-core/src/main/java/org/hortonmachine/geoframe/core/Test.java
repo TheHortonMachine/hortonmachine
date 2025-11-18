@@ -283,9 +283,9 @@ public class Test extends HMModel {
 			
 				// RAIN SNOW SEPARATION
 				double m1 = 1.0; 
-				var alfa_r = 1.0250815763753568; // Adjustment coefficient for the rainfall measurements errors [-]
-				var alfa_s = 1.3926868932936031; // Adjustment coefficient for the snow measurements errors [-] 
-				var meltingTemperature = 0.8123119295181382; // Melting temperature (equal for snow model) [°C]
+				var alfa_r = 1.0; // Adjustment coefficient for the rainfall measurements errors [-]
+				var alfa_s = 1.0; // Adjustment coefficient for the snow measurements errors [-] 
+				var meltingTemperature = 0.0; // Melting temperature (equal for snow model) [°C]
 				
 				double[] rainSnow = RainSnowSeparationPointCase.calculateRSSeparation(precipitation, temperature, meltingTemperature, alfa_r, alfa_s, m1);
 				
