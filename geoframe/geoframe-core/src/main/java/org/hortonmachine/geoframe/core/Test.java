@@ -1,6 +1,7 @@
 package org.hortonmachine.geoframe.core;
 
 import java.io.File;
+import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -28,6 +29,8 @@ import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.hortonmachine.modules.GeoframeInputsBuilder;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
+
+import rainSnowSperataion.RainSnowSeparationPointCase;
 
 public class Test extends HMModel {
 
@@ -257,6 +260,40 @@ public class Test extends HMModel {
 		
 		// TODO part in which rain, temperature, radiation and evapotransp are handled
 		
+		var precipReader = new GeoframeEnvDatabaseIterator();
+		precipReader.db = db;
+		precipReader.pParameterId = 2; // precip
+		precipReader.tStart = "2005-01-01 01:00:00";
+		precipReader.tEnd = "2005-12-31 23:00:00";
+		
+		var tempReader = new GeoframeEnvDatabaseIterator();
+		tempReader.db = db;
+		tempReader.pParameterId = 4; // temperature
+		tempReader.tStart = "2005-01-01 01:00:00";
+		tempReader.tEnd = "2005-12-31 23:00:00";
+		
+		while (precipReader.next() && tempReader.next()) {
+			HashMap<Integer, Double> precipMap = precipReader.outData;
+			HashMap<Integer, Double> tempMap = tempReader.outData;
+			
+			for (Integer basinId : precipMap.keySet()) {
+				// FOR EACH BASIN
+				double precipitation = precipMap.get(basinId);
+				double temperature = tempMap.get(basinId);
+			
+				// RAIN SNOW SEPARATION
+				double m1 = 1.0; 
+				var alfa_r = 1.0250815763753568; // Adjustment coefficient for the rainfall measurements errors [-]
+				var alfa_s = 1.3926868932936031; // Adjustment coefficient for the snow measurements errors [-] 
+				var meltingTemperature = 0.8123119295181382; // Melting temperature (equal for snow model) [°C]
+				
+				double[] rainSnow = RainSnowSeparationPointCase.calculateRSSeparation(precipitation, temperature, meltingTemperature, alfa_r, alfa_s, m1);
+				
+				
+				
+			}
+			
+		}
 		
 		
 		

@@ -19,7 +19,6 @@ package org.hortonmachine.dbs.compat;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -123,6 +122,10 @@ public abstract class ASpatialDb extends ADb {
      * @throws Exception
      */
     public abstract GeometryColumn getGeometryColumnsForTable( SqlName tableName ) throws Exception;
+    
+    public GeometryColumn getGeometryColumnsForTable( String tableName ) throws Exception {
+		return getGeometryColumnsForTable(SqlName.m(tableName));
+	}
 
     /**
      * Get the where query piece based on a geometry intersection.
@@ -214,8 +217,11 @@ public abstract class ASpatialDb extends ADb {
             }
             return null;
         });
-
     }
+    
+    public void insertGeometry( String tableName, Geometry geometry, String epsg , String where) throws Exception {
+		insertGeometry(SqlName.m(tableName), geometry, epsg, where);
+	}
 
     /**
      * Checks if a table is spatial.
@@ -228,6 +234,10 @@ public abstract class ASpatialDb extends ADb {
     public boolean isTableSpatial( SqlName tableName ) throws Exception {
         GeometryColumn geometryColumns = getGeometryColumnsForTable(tableName);
         return geometryColumns != null;
+    }
+    
+    public boolean isTableSpatial( String tableName ) throws Exception {
+    	return isTableSpatial(SqlName.m(tableName));
     }
 
     /**
@@ -249,11 +259,20 @@ public abstract class ASpatialDb extends ADb {
      */
     public abstract QueryResult getTableRecordsMapIn( SqlName tableName, Envelope envelope, int limit, int reprojectSrid,
             String whereStr ) throws Exception;
+    
+    public QueryResult getTableRecordsMapIn( String tableName, Envelope envelope, int limit, int reprojectSrid,
+			String whereStr ) throws Exception {
+		return getTableRecordsMapIn(SqlName.m(tableName), envelope, limit, reprojectSrid, whereStr);
+	}
 
     
     public List<Geometry> getGeometries(SqlName tableName) throws Exception{
     	return getGeometriesIn(tableName, (Envelope) null);
     }
+    
+    public List<Geometry> getGeometries(String tableName) throws Exception{
+		return getGeometries(SqlName.m(tableName));
+	}
     
     /**
      * Get the geometries of a table inside a given envelope.
@@ -319,6 +338,10 @@ public abstract class ASpatialDb extends ADb {
             }
             return geoms;
         });
+    }
+    
+    public List<Geometry> getGeometriesIn( String tableName, Envelope envelope, String... prePostWhere ) throws Exception {
+    	return getGeometriesIn(SqlName.m(tableName), envelope, prePostWhere);
     }
 
     /**
@@ -386,6 +409,11 @@ public abstract class ASpatialDb extends ADb {
         });
 
     }
+    
+    public List<Geometry> getGeometriesIn( String tableName, Geometry intersectionGeometry, String... prePostWhere )
+			throws Exception {
+		return getGeometriesIn(SqlName.m(tableName), intersectionGeometry, prePostWhere);
+	}
 
     /**
      * Get the geojson of a table inside a given envelope.
@@ -398,6 +426,10 @@ public abstract class ASpatialDb extends ADb {
      */
     public abstract String getGeojsonIn( SqlName tableName, String[] fields, String wherePiece, Integer precision )
             throws Exception;
+    
+    public String getGeojsonIn( String tableName, String[] fields, String wherePiece, Integer precision ) throws Exception {
+    	return getGeojsonIn(SqlName.m(tableName), fields, wherePiece, precision);
+    }
 
     /**
      * Get the bounds of a table.
@@ -408,24 +440,10 @@ public abstract class ASpatialDb extends ADb {
      * @throws Exception
      */
     public abstract Envelope getTableBounds( SqlName tableName ) throws Exception;
-
-    /**
-     * Get the column [name, type, primarykey] values of a table.
-     * 
-     * <p>pk = 0 -> false</p>
-     * 
-     * @param tableName
-     *            the table to check.
-     * @return the list of column [name, type, pk].
-     * @throws SQLException
-     */
-    public abstract List<String[]> getTableColumns( SqlName tableName ) throws Exception;
-
-    protected abstract void logWarn( String message );
-
-    protected abstract void logInfo( String message );
-
-    protected abstract void logDebug( String message );
+    
+    public Envelope getTableBounds( String tableName ) throws Exception {
+    	return getTableBounds(SqlName.m(tableName));
+    }
 
     /**
      * Reproject an envelope.

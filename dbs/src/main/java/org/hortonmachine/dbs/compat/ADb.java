@@ -351,6 +351,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public abstract boolean hasTable(SqlName tableName) throws Exception;
+    
+    public boolean hasTable(String tableName) throws Exception{
+    	return hasTable(SqlName.m(tableName));
+    }
 
     /**
      * Gets the table type.
@@ -361,6 +365,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public abstract ETableType getTableType(SqlName tableName) throws Exception;
+    
+    public ETableType getTableType(String tableName) throws Exception {
+		return getTableType(SqlName.m(tableName));
+	}
 
     /**
      * Get the column [name, type, primarykey] values of a table.
@@ -375,6 +383,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws SQLException
      */
     public abstract List<String[]> getTableColumns(SqlName tableName) throws Exception;
+    
+    public List<String[]> getTableColumns(String tableName) throws Exception {
+    	return getTableColumns(SqlName.m(tableName));
+    }
 
     /**
      * Get the foreign keys from a table.
@@ -385,6 +397,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public abstract List<ForeignKey> getForeignKeys(SqlName tableName) throws Exception;
+    
+    public List<ForeignKey> getForeignKeys(String tableName) throws Exception {
+		return getForeignKeys(SqlName.m(tableName));
+	}
 
     /**
      * Get the indexes of a table (no primary keys and no foreign keys).
@@ -395,6 +411,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public abstract List<Index> getIndexes(SqlName tableName) throws Exception;
+    
+    public List<Index> getIndexes(String tableName) throws Exception {
+    	return getIndexes(SqlName.m(tableName));
+	}
 
     /**
      * Get the record count of a table.
@@ -416,6 +436,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
         });
         return count;
     }
+    
+    public long getCount(String tableName) throws Exception {
+		return getCount(SqlName.m(tableName));
+	}
 
     /**
      * Get the max value of a long/int field.
@@ -439,6 +463,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
         });
         return max;
     }
+    
+    public long getMax(String tableName, String fieldName) throws Exception {
+    	return getMax(SqlName.m(tableName), fieldName);
+	}
 
     /**
      * Get a single long field as query result.
@@ -608,6 +636,46 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
             }
         });
     }
+    
+    public int[] executeBatchPreparedSql(String sql, List<Object[]> batchParams) throws Exception {
+        return execOnConnection(connection -> {
+            try (IHMPreparedStatement stmt = connection.prepareStatement(sql)) {
+                for (Object[] params : batchParams) {
+
+                    // bind params
+                    for (int i = 0; i < params.length; i++) {
+                        Object obj = params[i];
+                        int idx = i + 1;
+
+                        if (obj instanceof Boolean) {
+                            stmt.setBoolean(idx, (Boolean) obj);
+                        } else if (obj instanceof byte[]) {
+                            stmt.setBytes(idx, (byte[]) obj);
+                        } else if (obj instanceof Double) {
+                            stmt.setDouble(idx, (Double) obj);
+                        } else if (obj instanceof Float) {
+                            stmt.setFloat(idx, (Float) obj);
+                        } else if (obj instanceof Integer) {
+                            stmt.setInt(idx, (Integer) obj);
+                        } else if (obj instanceof Long) {
+                            stmt.setLong(idx, (Long) obj);
+                        } else if (obj instanceof Short) {
+                            stmt.setShort(idx, (Short) obj);
+                        } else if (obj instanceof String) {
+                            stmt.setString(idx, (String) obj);
+                        } else {
+                            stmt.setObject(idx, obj);
+                        }
+                    }
+
+                    stmt.addBatch();
+                }
+
+                return stmt.executeBatch(); // returns update counts
+            }
+        });
+    }
+
 
     /**
      * Escape sql.
@@ -645,6 +713,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
         }
         return realName;
     }
+    
+    public String getProperColumnNameCase(String tableName, String columnName) throws Exception {
+		return getProperColumnNameCase(SqlName.m(tableName), columnName);	
+	}
 
     /**
      * Get the table name in the proper case.
@@ -663,6 +735,10 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
             }
         }
         return realName;
+    }
+    
+    public String getProperTableNameCase(String tableName) throws Exception {
+    	return getProperTableNameCase(SqlName.m(tableName));
     }
 
     /**
@@ -689,8 +765,11 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
                 executeInsertUpdateDeleteSql(sql);
             }
         }
-
     }
+    
+    public void addNewColumn(String tableName, String columnToAdd, String typeToAdd) throws Exception {
+		addNewColumn(SqlName.m(tableName), columnToAdd, typeToAdd);	
+	}
 
     protected abstract void logWarn(String message);
 
