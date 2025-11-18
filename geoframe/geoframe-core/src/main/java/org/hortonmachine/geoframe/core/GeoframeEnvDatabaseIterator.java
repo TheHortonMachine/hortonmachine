@@ -71,9 +71,9 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
     @Out
     public String tCurrent;
 
-    @Description("The previous time read.")
-    @Out
-    public String tPrevious;
+//    @Description("The previous time read.")
+//    @Out
+//    public String tPrevious;
     
     // TODO the timestep to check data consistency
 
@@ -88,8 +88,13 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	private boolean initialized = false;
 
 	private long currentT;
+	
+	private boolean isClosed = false;
 
     private void ensureOpen() throws Exception {
+    	if(rs != null) {
+    		return;
+    	}
     	checkNull(pParameterId, db);
     	
     	String sql = "SELECT ts, basin_id, value FROM measurement WHERE parameter_id = ?";
@@ -117,36 +122,41 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
     @Execute
     public boolean next() throws Exception {
+    	if(isClosed) {
+    		return false;
+    	}
         ensureOpen();
         outData.clear();
         if (!initialized) {
             if (!rs.next()) {
+            	isClosed = true;
                 return false;
             }
             initialized = true;
-            currentT = rs.getLong("ts");
         }
         
-        long ts = currentT;
-        boolean added = false;
+        boolean hasNext = false;
         do {
+        	long ts = rs.getLong("ts");
+        	currentT = ts;
+        	tCurrent = HM.ts2str(currentT);
             int basinId  = rs.getInt("basin_id");
             double value = rs.getDouble("value");
             outData.put(basinId, value);
-            added = true;
+            hasNext = true;
 
             if (!rs.next()) {
+            	isClosed = true;
                 break;
             }
 
             long nextT = rs.getLong("ts");
             if (nextT != ts) {
-                currentT = nextT;
                 break;
             }
         } while (true);
         
-        return added;
+        return hasNext;
     }
 
 
