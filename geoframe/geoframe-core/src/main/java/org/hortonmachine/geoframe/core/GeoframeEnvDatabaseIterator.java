@@ -22,9 +22,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 
-import org.hortonmachine.HM;
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -101,12 +102,12 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
     	
     	if (tStart != null) {
     		// add start time condition
-    		long startTs = HM.str2ts(tStart);
+    		long startTs = str2ts(tStart);
     		sql += " AND ts >= " + startTs;
 		}
     	if (tEnd != null) {
 			// add end time condition
-			long endTs = HM.str2ts(tEnd);
+			long endTs = str2ts(tEnd);
 			sql += " AND ts <= " + endTs;
     	}
     	sql += " ORDER BY ts, basin_id";
@@ -139,7 +140,7 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
         do {
         	long ts = rs.getLong("ts");
         	currentT = ts;
-        	tCurrent = HM.ts2str(currentT);
+        	tCurrent = ts2str(currentT);
             int basinId  = rs.getInt("basin_id");
             double value = rs.getDouble("value");
             outData.put(basinId, value);
@@ -157,6 +158,14 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
         } while (true);
         
         return hasNext;
+    }
+    
+    public static String ts2str( long millis ) {
+        return new DateTime(millis).toString(HMConstants.utcDateFormatterYYYYMMDDHHMMSS);
+    }
+
+    public static long str2ts( String isoString ) {
+        return HMConstants.utcDateFormatterYYYYMMDDHHMMSS.parseDateTime(isoString).getMillis();
     }
 
 

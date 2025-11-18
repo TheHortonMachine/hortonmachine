@@ -7,18 +7,21 @@ import java.util.HashMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.HM;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.modules.r.cutout.OmsCutOut;
 import org.hortonmachine.gears.modules.r.rasteronvectorresizer.OmsRasterResizer;
+import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.colors.EColorTables;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -28,15 +31,17 @@ import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
+import org.hortonmachine.hmachine.modules.network.netnumbering.OmsGeoframeInputsBuilder;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
 import org.hortonmachine.hmachine.utils.GeoframeUtils;
-import org.hortonmachine.modules.GeoframeInputsBuilder;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
 import canopyOut.WaterBudgetCanopyOUT;
 import canopyOut.WaterBudgetCanopyOUT.WaterBudgetCanopyStepResult;
+import groundWater.WaterBudgetGround;
+import groundWater.WaterBudgetGround.WaterBudgetGroundStepResult;
 import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay;
 import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay.SnowStepResult;
 import rainSnowSperataion.RainSnowSeparationPointCase;
@@ -130,7 +135,7 @@ public class Test extends HMModel {
 				pitfiller.inElev = getRaster(dtm);
 				pitfiller.process();
 				dumpRaster(pitfiller.outPit, pit);
-				HM.makeQgisStyleForRaster(EColorTables.elev.name(), pit, 0);
+				makeQgisStyleForRaster(EColorTables.elev.name(), pit, 0);
 			}
 
 			if (toDo(flow)) {
@@ -139,7 +144,7 @@ public class Test extends HMModel {
 				flowdirections.pMinElev = 0;
 				flowdirections.process();
 				dumpRaster(flowdirections.outFlow, flow);
-				HM.makeQgisStyleForRaster(EColorTables.flow.name(), flow, 0);
+				makeQgisStyleForRaster(EColorTables.flow.name(), flow, 0);
 			}
 
 			if (toDo(drain)) {
@@ -151,8 +156,8 @@ public class Test extends HMModel {
 				draindir.process();
 				dumpRaster(draindir.outFlow, drain);
 				dumpRaster(draindir.outTca, tca);
-				HM.makeQgisStyleForRaster(EColorTables.flow.name(), drain, 0);
-				HM.makeQgisStyleForRaster(EColorTables.logarithmic.name(), tca, 0);
+				makeQgisStyleForRaster(EColorTables.flow.name(), drain, 0);
+				makeQgisStyleForRaster(EColorTables.logarithmic.name(), tca, 0);
 			}
 
 			if (toDo(net)) {
@@ -162,7 +167,7 @@ public class Test extends HMModel {
 				extractnetwork.pThres = drainThres;
 				extractnetwork.process();
 				dumpRaster(extractnetwork.outNet, net);
-				HM.makeQgisStyleForRaster(EColorTables.net.name(), net, 0);
+				makeQgisStyleForRaster(EColorTables.net.name(), net, 0);
 			}
 
 			if (toDo(skyview)) {
@@ -170,7 +175,7 @@ public class Test extends HMModel {
 				sv.inElev = getRaster(pit);
 				sv.process();
 				dumpRaster(sv.outSky, skyview);
-				HM.makeQgisStyleForRaster(EColorTables.slope.name(), skyview, 0);
+				makeQgisStyleForRaster(EColorTables.slope.name(), skyview, 0);
 			}
 
 			if (toDo(basin)) {
@@ -180,7 +185,7 @@ public class Test extends HMModel {
 				extractbasin.pNorth = northing;
 				extractbasin.process();
 				dumpRaster(extractbasin.outBasin, basin);
-				HM.makeQgisStyleForRaster(EColorTables.net.name(), basin, 0);
+				makeQgisStyleForRaster(EColorTables.net.name(), basin, 0);
 			}
 
 			if (toDo(basin_resized)) {
@@ -204,7 +209,7 @@ public class Test extends HMModel {
 				cutout.inMask = getRaster(basin_resized);
 				cutout.process();
 				dumpRaster(cutout.outRaster, basinpit);
-				HM.makeQgisStyleForRaster(EColorTables.elev.name(), basinpit, 0);
+				makeQgisStyleForRaster(EColorTables.elev.name(), basinpit, 0);
 			}
 
 			if (toDo(basindrain)) {
@@ -213,7 +218,7 @@ public class Test extends HMModel {
 				cutout.inMask = getRaster(basin_resized);
 				cutout.process();
 				dumpRaster(cutout.outRaster, basindrain);
-				HM.makeQgisStyleForRaster(EColorTables.flow.name(), basindrain, 0);
+				makeQgisStyleForRaster(EColorTables.flow.name(), basindrain, 0);
 			}
 
 			if (toDo(basintca)) {
@@ -222,7 +227,7 @@ public class Test extends HMModel {
 				cutout.inMask = getRaster(basin_resized);
 				cutout.process();
 				dumpRaster(cutout.outRaster, basintca);
-				HM.makeQgisStyleForRaster(EColorTables.logarithmic.name(), basintca, 0);
+				makeQgisStyleForRaster(EColorTables.logarithmic.name(), basintca, 0);
 			}
 
 			if (toDo(basinnet)) {
@@ -231,7 +236,7 @@ public class Test extends HMModel {
 				cutout.inMask = getRaster(basin_resized);
 				cutout.process();
 				dumpRaster(cutout.outRaster, basinnet);
-				HM.makeQgisStyleForRaster(EColorTables.net.name(), basinnet, 0);
+				makeQgisStyleForRaster(EColorTables.net.name(), basinnet, 0);
 			}
 
 			if (toDo(basinskyview)) {
@@ -240,7 +245,7 @@ public class Test extends HMModel {
 				cutout.inMask = getRaster(basin_resized);
 				cutout.process();
 				dumpRaster(cutout.outRaster, basinskyview);
-				HM.makeQgisStyleForRaster(EColorTables.slope.name(), basinskyview, 0);
+				makeQgisStyleForRaster(EColorTables.slope.name(), basinskyview, 0);
 			}
 
 			if (toDo(basinnetnum) || !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))) {
@@ -256,14 +261,14 @@ public class Test extends HMModel {
 				dumpRaster(nn.outBasins, basinnetbasins);
 				dumpRaster(nn.outDesiredBasins, basinnetbasinsdesired);
 //			FileUtilities.writeFile(nn.outGeoframeTopology, new File(topology));
-				HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetnum, 0);
-				HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasins, 0);
-				HM.makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasinsdesired, 0);
+				makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetnum, 0);
+				makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasins, 0);
+				makeQgisStyleForRaster(EColorTables.contrasting.name(), basinnetbasinsdesired, 0);
 			}
 
 			if (!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE))
 					|| !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE))) {
-				GeoframeInputsBuilder builder = new GeoframeInputsBuilder();
+				OmsGeoframeInputsBuilder builder = new OmsGeoframeInputsBuilder();
 				builder.inPitfiller = basinpit;
 				builder.inDrain = basindrain;
 				builder.inTca = basintca;
@@ -321,6 +326,7 @@ public class Test extends HMModel {
 			HashMap<Integer, Double> initalConditionsCanopyMap = new HashMap<>();
 			HashMap<Integer, Double> initalConditionsRootzoneMap = new HashMap<>();
 			HashMap<Integer, Double> initalConditionsRunoffMap = new HashMap<>();
+			HashMap<Integer, Double> initalConditionsGroundMap = new HashMap<>();
 
 			while (precipReader.next() && tempReader.next() && etpReader.next()) {
 				HashMap<Integer, Double> precipMap = precipReader.outData;
@@ -464,6 +470,25 @@ public class Test extends HMModel {
 					WaterBudgetStepResult resultWB = WaterBudget.calculateWaterBudget(quick_mm, ci, c, d, s_RunoffMax, basinAreaKm2, timeStepMinutes);
 					initalConditionsRunoffMap.put(basinId, resultWB.waterStorage());
 					
+					// GROUNDWATER
+					var s_GroundWaterMax = 1000.0; // Maximum groundwater storage [mm]
+					var e = 0.002; // Coefficient of the non-linear reservoir model [-]
+					var f = 1.0; // Exponent of the non-linear reservoir model [-]
+					
+					ci = 0.01 * s_GroundWaterMax;
+					if (initalConditionsGroundMap.containsKey(basinId)) {
+						ci = initalConditionsGroundMap.get(basinId);
+					}
+					double recharge = resultRZ.recharge();
+					if (isNovalue(recharge)) {
+						recharge = 0.0;
+					}
+					WaterBudgetGroundStepResult resultWBG = WaterBudgetGround.calculateWaterBudgetGround(recharge, ci, e, f, s_GroundWaterMax, basinAreaKm2, timeStepMinutes);
+					initalConditionsGroundMap.put(basinId, resultWBG.waterStorage());
+					
+					// final discharge
+					double outDischargeRunoff = resultWB.runoff();
+					double outDischargeGround = resultWBG.discharge();
 					
 				}
 			}
@@ -477,6 +502,19 @@ public class Test extends HMModel {
 	private boolean toDo(String filepath) {
 		return new File(filepath).exists() == false;
 	}
+	
+    public static void makeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals ) throws Exception {
+        OmsRasterSummary s = new OmsRasterSummary();
+        s.pm = new DummyProgressMonitor();
+        s.inRaster = OmsRasterReader.readRaster(rasterPath);
+        s.process();
+        double min = s.outMin;
+        double max = s.outMax;
+
+        String style = RasterStyleUtilities.createQGISRasterStyle(tableName, min, max, null, labelDecimals);
+        File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "qml");
+        FileUtilities.writeFile(style, styleFile);
+    }
 
 	public static void main(String[] args) throws Exception {
 		new Test();
