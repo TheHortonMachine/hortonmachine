@@ -25,6 +25,12 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
+import org.hortonmachine.geoframe.core.parameters.SnowMeltingParameters;
+import org.hortonmachine.geoframe.core.parameters.WaterBudgetCanopyParameters;
+import org.hortonmachine.geoframe.core.parameters.WaterBudgetGroundParameters;
+import org.hortonmachine.geoframe.core.parameters.WaterBudgetRootzoneParameters;
+import org.hortonmachine.geoframe.core.parameters.WaterBudgetRunoffParameters;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
@@ -300,6 +306,7 @@ public class Test extends HMModel {
 
 			String fromTS = "2005-01-01 01:00:00";
 			String toTS = "2005-01-01 02:00:00";
+			var timeStepMinutes = 60; // time step in minutes
 
 			var precipReader = new GeoframeEnvDatabaseIterator();
 			precipReader.db = envDb;
@@ -319,7 +326,6 @@ public class Test extends HMModel {
 			etpReader.tStart = fromTS;
 			etpReader.tEnd = toTS;
 
-			var timeStepMinutes = 60; // time step in minutes
 
 			HashMap<Integer, Double> initialConditionSolidWater = new HashMap<>();
 			HashMap<Integer, Double> initialConditionLiquidWater = new HashMap<>();
@@ -327,7 +333,15 @@ public class Test extends HMModel {
 			HashMap<Integer, Double> initalConditionsRootzoneMap = new HashMap<>();
 			HashMap<Integer, Double> initalConditionsRunoffMap = new HashMap<>();
 			HashMap<Integer, Double> initalConditionsGroundMap = new HashMap<>();
-
+			
+			// CALIRATION PARAMETERS
+			RainSnowSeparationParameters rssepParam = RainSnowSeparationParameters.CALIBRATION_DEFAULT;
+			SnowMeltingParameters snowMParams = SnowMeltingParameters.CALIBRATION_DEFAULT;
+			WaterBudgetCanopyParameters wbCanopyParams = WaterBudgetCanopyParameters.CALIBRATION_DEFAULT;
+			WaterBudgetRootzoneParameters wbRootzoneParams = WaterBudgetRootzoneParameters.CALIBRATION_DEFAULT;
+			WaterBudgetRunoffParameters wbRunoffParams = WaterBudgetRunoffParameters.CALIBRATION_DEFAULT;
+			WaterBudgetGroundParameters wbGroundParams = WaterBudgetGroundParameters.CALIBRATION_DEFAULT;
+			
 			while (precipReader.next() && tempReader.next() && etpReader.next()) {
 				HashMap<Integer, Double> precipMap = precipReader.outData;
 				HashMap<Integer, Double> tempMap = tempReader.outData;
@@ -350,26 +364,19 @@ public class Test extends HMModel {
 					double basinAreaKm2 = basinAreas.get(basinId);
 
 					// RAIN SNOW SEPARATION
-					double m1 = 1.0;
-					var alfa_r = 1.0; // Adjustment coefficient for the rainfall measurements errors [-]
-					var alfa_s = 1.0; // Adjustment coefficient for the snow measurements errors [-]
-					var meltingTemperature = 0.0; // Melting temperature (equal for snow model) [°C]
-
 					double[] rainSnow = RainSnowSeparationPointCase.calculateRSSeparation(//
 							precipitation, //
 							temperature, //
-							meltingTemperature, //
-							alfa_r, //
-							alfa_s, //
-							m1 //
+							rssepParam.meltingTemperature(), //
+							rssepParam.alfa_r(), //
+							rssepParam.alfa_s(), //
+							rssepParam.m1() //
 					);
 
 					// SNOW MELTING
-					var combinedMeltingFactor = 1.5; // Melting factor [mm/°C/day]
-					var freezingFactor = 0.8; // Freezing factor [mm/°C/day]
-					var alfa_l = 0.2; // Coefficient for the computation of the maximum liquid water [-]
-
+					double freezingFactor = snowMParams.freezingFactor();
 					freezingFactor = freezingFactor / 1440 * timeStepMinutes;
+					double combinedMeltingFactor = snowMParams.combinedMeltingFactor();
 					combinedMeltingFactor = combinedMeltingFactor / 1440 * timeStepMinutes;
 
 					double initialSolidWater = 0.0;
@@ -385,10 +392,10 @@ public class Test extends HMModel {
 							temperature, //
 							rainSnow[0], //
 							rainSnow[1], //
-							meltingTemperature, //
+							rssepParam.meltingTemperature(), //
 							combinedMeltingFactor, //
 							freezingFactor, //
-							alfa_l, //
+							snowMParams.alfa_l(), //
 							initialSolidWater, //
 							initialLiquidWater //
 					);
@@ -397,10 +404,9 @@ public class Test extends HMModel {
 					initialConditionLiquidWater.put(basinId, resultSM.liquidWater());
 
 					// CANOPY
-					var kc = 0.6;
-					var p = 0.4;
 					var lai = 0.6; // TODO handle LAI properly
-
+					
+					var kc = wbCanopyParams.kc();
 					double ci = kc * lai / 2.0;
 					if (initalConditionsCanopyMap.containsKey(basinId)) {
 						ci = initalConditionsCanopyMap.get(basinId);
@@ -416,15 +422,12 @@ public class Test extends HMModel {
 							etp, //
 							ci, //
 							kc, //
-							p //
+							wbCanopyParams.p() //
 					);
 					initalConditionsCanopyMap.put(basinId, resultWBC.waterStorage());
 					
 					// ROOTZONE
-					var s_RootZoneMax = 150.0; // Maximum value of the rootzone water storage [mm]
-					var g = 0.05; // Maximum percolation rate [-]
-					var h = 1.5; // Exponential of non-linear reservoir model [-]
-					var pB_soil = 2.0; // Degree of spatial variability of the soil moisture capacity [-]
+					var s_RootZoneMax = wbRootzoneParams.s_RootZoneMax(); 
 					var sat_degree = 0.5;
 					
 					ci = s_RootZoneMax * sat_degree;
@@ -444,19 +447,17 @@ public class Test extends HMModel {
 							etp, //
 							aet, //
 							ci, //
-							pB_soil, //
+							wbRootzoneParams.pB_soil(), //
 							s_RootZoneMax, //
-							g, //
-							h, //
+							wbRootzoneParams.g(), //
+							wbRootzoneParams.h(), //
 							basinAreaKm2, //
 							timeStepMinutes//
 					);
 					initalConditionsRootzoneMap.put(basinId, resultRZ.waterStorage());
 					
 					// RUNOFF
-					var s_RunoffMax = 60.0; // Maximum runoff storage [mm]
-					var c = 0.4; // Coefficient of the non-linear reservoir model [-]
-					var d = 2.0; // Exponent of the non-linear reservoir model [-]
+					var s_RunoffMax = wbRunoffParams.sRunoffMax();
 					
 					ci = 0.5 * s_RunoffMax;
 					if (initalConditionsRunoffMap.containsKey(basinId)) {
@@ -467,13 +468,19 @@ public class Test extends HMModel {
 					if (isNovalue(quick_mm)) {
 						quick_mm = 0.0;
 					}
-					WaterBudgetStepResult resultWB = WaterBudget.calculateWaterBudget(quick_mm, ci, c, d, s_RunoffMax, basinAreaKm2, timeStepMinutes);
+					WaterBudgetStepResult resultWB = WaterBudget.calculateWaterBudget(//
+							quick_mm, //
+							ci, //
+							wbRunoffParams.c(), //
+							wbRunoffParams.d(), //
+							s_RunoffMax, //
+							basinAreaKm2, //
+							timeStepMinutes//
+							);
 					initalConditionsRunoffMap.put(basinId, resultWB.waterStorage());
 					
 					// GROUNDWATER
-					var s_GroundWaterMax = 1000.0; // Maximum groundwater storage [mm]
-					var e = 0.002; // Coefficient of the non-linear reservoir model [-]
-					var f = 1.0; // Exponent of the non-linear reservoir model [-]
+					var s_GroundWaterMax = wbGroundParams.s_GroundWaterMax();
 					
 					ci = 0.01 * s_GroundWaterMax;
 					if (initalConditionsGroundMap.containsKey(basinId)) {
@@ -483,7 +490,15 @@ public class Test extends HMModel {
 					if (isNovalue(recharge)) {
 						recharge = 0.0;
 					}
-					WaterBudgetGroundStepResult resultWBG = WaterBudgetGround.calculateWaterBudgetGround(recharge, ci, e, f, s_GroundWaterMax, basinAreaKm2, timeStepMinutes);
+					WaterBudgetGroundStepResult resultWBG = WaterBudgetGround.calculateWaterBudgetGround(//
+							recharge, //
+							ci, //
+							wbGroundParams.e(), //
+							wbGroundParams.f(), //
+							s_GroundWaterMax, //
+							basinAreaKm2, //
+							timeStepMinutes //
+							);
 					initalConditionsGroundMap.put(basinId, resultWBG.waterStorage());
 					
 					// final discharge
