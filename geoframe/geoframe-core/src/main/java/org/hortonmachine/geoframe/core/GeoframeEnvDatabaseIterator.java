@@ -20,7 +20,7 @@ package org.hortonmachine.geoframe.core;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.HashMap;
+import java.util.Arrays;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -78,9 +78,9 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
     
     // TODO the timestep to check data consistency
 
-    @Description("The basin id and value hashmap.")
+    @Description("The array of values for each basin (basinid is the index).")
     @Out
-    public HashMap<Integer, Double> outData = new HashMap<>();
+    public double[] outData = null;
 
 	private PreparedStatement ps;
 
@@ -91,6 +91,12 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	private long currentT;
 	
 	private boolean isClosed = false;
+
+	
+	
+	public GeoframeEnvDatabaseIterator(int maxBasinId) {
+		 outData = new double[maxBasinId + 1];
+	}
 
     private void ensureOpen() throws Exception {
     	if(rs != null) {
@@ -127,7 +133,9 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
     		return false;
     	}
         ensureOpen();
-        outData.clear();
+        // clean the array
+        Arrays.fill(outData, Double.NaN);
+        
         if (!initialized) {
             if (!rs.next()) {
             	isClosed = true;
@@ -143,7 +151,8 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
         	tCurrent = ts2str(currentT);
             int basinId  = rs.getInt("basin_id");
             double value = rs.getDouble("value");
-            outData.put(basinId, value);
+            outData[basinId] = value;
+            
             hasNext = true;
 
             if (!rs.next()) {

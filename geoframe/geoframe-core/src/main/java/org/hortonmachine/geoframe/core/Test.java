@@ -1,9 +1,7 @@
 package org.hortonmachine.geoframe.core;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-
 import java.io.File;
-import java.util.HashMap;
+import java.util.Arrays;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -45,18 +43,6 @@ import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
-
-import canopyOut.WaterBudgetCanopyOUT;
-import canopyOut.WaterBudgetCanopyOUT.WaterBudgetCanopyStepResult;
-import groundWater.WaterBudgetGround;
-import groundWater.WaterBudgetGround.WaterBudgetGroundStepResult;
-import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay;
-import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay.SnowStepResult;
-import rainSnowSperataion.RainSnowSeparationPointCase;
-import rootZone.WaterBudgetRootZone;
-import rootZone.WaterBudgetRootZone.WaterBudgetRootZoneStepResult;
-import simpleBucket.WaterBudget;
-import simpleBucket.WaterBudget.WaterBudgetStepResult;
 
 public class Test extends HMModel {
 
@@ -293,58 +279,63 @@ public class Test extends HMModel {
 
 			// TODO part in which rain, temperature, radiation and evapotransp are handled
 			
+			// get the max basin id from the db
+			int maxBasinId = db.getLong("select max(basinid) from " + GeoframeUtils.GEOFRAME_BASIN_TABLE).intValue();
+			
 			// get the basins from the db and their areas
 			QueryResult queryResult = db.getTableRecordsMapIn(GeoframeUtils.GEOFRAME_BASIN_TABLE, null, -1, -1, null);
-			HashMap<Integer, Double> basinAreas = new HashMap<>();
+			double[] basinAreas = new double[maxBasinId + 1];
 			int idIndex = queryResult.names.indexOf("basinid");
-			int maxBasinId = -1;
 			for(int i = 0; i < queryResult.data.size(); i++) {
 				Object[] row = queryResult.data.get(i);
 				int basinId = (int) row[idIndex];
 				Geometry basinGeom = (Geometry) row[queryResult.geometryIndex];
 				double area = basinGeom.getArea() / 1_000_000.0; // in km2
-				basinAreas.put(basinId, area);
-				maxBasinId = Math.max(maxBasinId, basinId);
+				basinAreas[basinId] = area;
 			}
 			
 			// get the topology from the db
 			TopologyNode rootNode = TopologyUtilities.getRootNodeFromDb(db);
 			pm.message("Topology:\n" + TopologyNode.toAsciiTree(rootNode));
 			// create a map of basinId -> TopologyNode
-			var basinid2nodeMap = new HashMap<Integer, TopologyNode>();
+			TopologyNode[] basinid2nodeMap = new TopologyNode[maxBasinId + 1];
 			rootNode.visitUpstream(node -> {
-				basinid2nodeMap.put(node.basinId, node);
+				basinid2nodeMap[node.basinId] = node;
 			});
 
 			String fromTS = "2005-01-01 01:00:00";
-			String toTS = "2005-01-01 02:00:00";
+			String toTS = "2006-01-01 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
 
-			var precipReader = new GeoframeEnvDatabaseIterator();
+			var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
 			precipReader.db = envDb;
 			precipReader.pParameterId = 2; // precip
 			precipReader.tStart = fromTS;
 			precipReader.tEnd = toTS;
 
-			var tempReader = new GeoframeEnvDatabaseIterator();
+			var tempReader = new GeoframeEnvDatabaseIterator(maxBasinId);
 			tempReader.db = envDb;
 			tempReader.pParameterId = 4; // temperature
 			tempReader.tStart = fromTS;
 			tempReader.tEnd = toTS;
 
-			var etpReader = new GeoframeEnvDatabaseIterator();
+			var etpReader = new GeoframeEnvDatabaseIterator(maxBasinId);
 			etpReader.db = envDb;
 			etpReader.pParameterId = 1; // etp
 			etpReader.tStart = fromTS;
 			etpReader.tEnd = toTS;
 
 
-			HashMap<Integer, Double> initialConditionSolidWater = new HashMap<>();
-			HashMap<Integer, Double> initialConditionLiquidWater = new HashMap<>();
-			HashMap<Integer, Double> initalConditionsCanopyMap = new HashMap<>();
-			HashMap<Integer, Double> initalConditionsRootzoneMap = new HashMap<>();
-			HashMap<Integer, Double> initalConditionsRunoffMap = new HashMap<>();
-			HashMap<Integer, Double> initalConditionsGroundMap = new HashMap<>();
+			double[] initialConditionSolidWater = new double[maxBasinId + 1]; // ok init with 0s
+			double[] initialConditionLiquidWater = new double[maxBasinId + 1]; // ok init with 0s
+			double[] initalConditionsCanopyMap = new double[maxBasinId + 1];
+			Arrays.fill(initalConditionsCanopyMap, Double.NaN);
+			double[] initalConditionsRootzoneMap = new double[maxBasinId + 1];
+			Arrays.fill(initalConditionsRootzoneMap, Double.NaN);
+			double[] initalConditionsRunoffMap = new double[maxBasinId + 1];
+			Arrays.fill(initalConditionsRunoffMap, Double.NaN);
+			double[] initalConditionsGroundMap = new double[maxBasinId + 1];
+			Arrays.fill(initalConditionsGroundMap, Double.NaN);
 			
 			// CALIRATION PARAMETERS
 			RainSnowSeparationParameters rssepParam = RainSnowSeparationParameters.CALIBRATION_DEFAULT;
@@ -356,191 +347,40 @@ public class Test extends HMModel {
 			
 			var lai = 0.6; // TODO handle LAI properly
 			
+			WaterBudgetSimulation wbSim = new WaterBudgetSimulation();
+			wbSim.pm = pm;
+			wbSim.basinAreas = basinAreas;
+			wbSim.rootNode = rootNode;
+			wbSim.basinid2nodeMap = basinid2nodeMap;
+			wbSim.timeStepMinutes = timeStepMinutes;
+			wbSim.precipReader = precipReader;
+			wbSim.tempReader = tempReader;
+			wbSim.etpReader = etpReader;
+			wbSim.initialConditionSolidWater = initialConditionSolidWater;
+			wbSim.initialConditionLiquidWater = initialConditionLiquidWater;
+			wbSim.initalConditionsCanopyMap = initalConditionsCanopyMap;
+			wbSim.initalConditionsRootzoneMap = initalConditionsRootzoneMap;
+			wbSim.initalConditionsRunoffMap = initalConditionsRunoffMap;
+			wbSim.initalConditionsGroundMap = initalConditionsGroundMap;
+			wbSim.rssepParam = rssepParam;
+			wbSim.snowMParams = snowMParams;
+			wbSim.wbCanopyParams = wbCanopyParams;
+			wbSim.wbRootzoneParams = wbRootzoneParams;
+			wbSim.wbRunoffParams = wbRunoffParams;
+			wbSim.wbGroundParams = wbGroundParams;
+			wbSim.lai = lai;
+			wbSim.process();
 			
+			TopologyNode nodeWithResults = wbSim.rootNode;
 			
-			while (precipReader.next() && tempReader.next() && etpReader.next()) {
-				HashMap<Integer, Double> precipMap = precipReader.outData;
-				HashMap<Integer, Double> tempMap = tempReader.outData;
-				HashMap<Integer, Double> etpMap = etpReader.outData;
-
-				String pTs = precipReader.tCurrent;
-				String tTs = tempReader.tCurrent;
-				String eTs = etpReader.tCurrent;
-				// check that time steps are the same
-				if (!pTs.equals(tTs) || !pTs.equals(eTs)) {
-					throw new Exception("Time steps do not match: " + pTs + " <> " + tTs + " <> " + eTs);
-				}
-
-				pm.message("Processing time step: " + pTs);
-				
-				// reset nodes values
-				rootNode.visitUpstream(node -> {
-					node.value = Double.NaN;
-					node.accumulatedValue = Double.NaN;
-				});
-
-				for (Integer basinId : precipMap.keySet()) {
-					// FOR EACH BASIN
-					double precipitation = precipMap.get(basinId);
-					double temperature = tempMap.get(basinId);
-					double etp = etpMap.get(basinId);
-					double basinAreaKm2 = basinAreas.get(basinId);
-
-					// RAIN SNOW SEPARATION
-					double[] rainSnow = RainSnowSeparationPointCase.calculateRSSeparation(//
-							precipitation, //
-							temperature, //
-							rssepParam.meltingTemperature(), //
-							rssepParam.alfa_r(), //
-							rssepParam.alfa_s(), //
-							rssepParam.m1() //
-					);
-
-					// SNOW MELTING
-					double freezingFactor = snowMParams.freezingFactor();
-					freezingFactor = freezingFactor / 1440 * timeStepMinutes;
-					double combinedMeltingFactor = snowMParams.combinedMeltingFactor();
-					combinedMeltingFactor = combinedMeltingFactor / 1440 * timeStepMinutes;
-
-					double initialSolidWater = 0.0;
-					double initialLiquidWater = 0.0;
-					if (initialConditionSolidWater.containsKey(basinId)) {
-						initialSolidWater = initialConditionSolidWater.get(basinId);
-					}
-					if (initialConditionLiquidWater.containsKey(basinId)) {
-						initialLiquidWater = initialConditionLiquidWater.get(basinId);
-					}
-
-					SnowStepResult resultSM = SnowMeltingPointCaseDegreeDay.computeSnowStep( //
-							temperature, //
-							rainSnow[0], //
-							rainSnow[1], //
-							rssepParam.meltingTemperature(), //
-							combinedMeltingFactor, //
-							freezingFactor, //
-							snowMParams.alfa_l(), //
-							initialSolidWater, //
-							initialLiquidWater //
-					);
-
-					initialConditionSolidWater.put(basinId, resultSM.solidWater());
-					initialConditionLiquidWater.put(basinId, resultSM.liquidWater());
-
-					// CANOPY
-					var kc = wbCanopyParams.kc();
-					double ci = kc * lai / 2.0;
-					if (initalConditionsCanopyMap.containsKey(basinId)) {
-						ci = initalConditionsCanopyMap.get(basinId);
-					}
-					double meltingDischarge = resultSM.meltingDischarge();
-					if (isNovalue(meltingDischarge))
-						meltingDischarge = 0.0;
-					if (isNovalue(etp) || etp < 0)
-						etp = 0.0;
-					WaterBudgetCanopyStepResult resultWBC = WaterBudgetCanopyOUT.calculateWaterBudgetCanopy(//
-							meltingDischarge, //
-							lai, //
-							etp, //
-							ci, //
-							kc, //
-							wbCanopyParams.p() //
-					);
-					initalConditionsCanopyMap.put(basinId, resultWBC.waterStorage());
-					
-					// ROOTZONE
-					var s_RootZoneMax = wbRootzoneParams.s_RootZoneMax(); 
-					var sat_degree = 0.5;
-					
-					ci = s_RootZoneMax * sat_degree;
-					if (initalConditionsRootzoneMap.containsKey(basinId)) {
-						ci = initalConditionsRootzoneMap.get(basinId);
-					}
-					var throughFall = resultWBC.throughfall();
-					if(isNovalue(throughFall)) {
-						throughFall = 0.0;
-					}
-					var aet = resultWBC.AET();
-					if(isNovalue(aet)) {
-						aet = 0.0;
-					}
-					WaterBudgetRootZoneStepResult resultRZ = WaterBudgetRootZone.calculateWaterBudgetRootZone(//
-							throughFall, //
-							etp, //
-							aet, //
-							ci, //
-							wbRootzoneParams.pB_soil(), //
-							s_RootZoneMax, //
-							wbRootzoneParams.g(), //
-							wbRootzoneParams.h(), //
-							basinAreaKm2, //
-							timeStepMinutes//
-					);
-					initalConditionsRootzoneMap.put(basinId, resultRZ.waterStorage());
-					
-					// RUNOFF
-					var s_RunoffMax = wbRunoffParams.sRunoffMax();
-					
-					ci = 0.5 * s_RunoffMax;
-					if (initalConditionsRunoffMap.containsKey(basinId)) {
-						ci = initalConditionsRunoffMap.get(basinId);
-					}
-					
-					double quick_mm = resultRZ.quick_mm();
-					if (isNovalue(quick_mm)) {
-						quick_mm = 0.0;
-					}
-					WaterBudgetStepResult resultWB = WaterBudget.calculateWaterBudget(//
-							quick_mm, //
-							ci, //
-							wbRunoffParams.c(), //
-							wbRunoffParams.d(), //
-							s_RunoffMax, //
-							basinAreaKm2, //
-							timeStepMinutes//
-							);
-					initalConditionsRunoffMap.put(basinId, resultWB.waterStorage());
-					
-					// GROUNDWATER
-					var s_GroundWaterMax = wbGroundParams.s_GroundWaterMax();
-					
-					ci = 0.01 * s_GroundWaterMax;
-					if (initalConditionsGroundMap.containsKey(basinId)) {
-						ci = initalConditionsGroundMap.get(basinId);
-					}
-					double recharge = resultRZ.recharge();
-					if (isNovalue(recharge)) {
-						recharge = 0.0;
-					}
-					WaterBudgetGroundStepResult resultWBG = WaterBudgetGround.calculateWaterBudgetGround(//
-							recharge, //
-							ci, //
-							wbGroundParams.e(), //
-							wbGroundParams.f(), //
-							s_GroundWaterMax, //
-							basinAreaKm2, //
-							timeStepMinutes //
-							);
-					initalConditionsGroundMap.put(basinId, resultWBG.waterStorage());
-					
-					// final discharge
-					double outDischargeRunoff = resultWB.runoff();
-					double outDischargeGround = resultWBG.discharge();
-					double totalDischarge = outDischargeRunoff + outDischargeGround;
-					
-					basinid2nodeMap.get(basinId).value = totalDischarge;
-				}
-				
-				// accumulate the discharges downstream
-				TopologyNode.accumulateDownstream(rootNode);
-				
-//				pm.message(TopologyNode.toAsciiTree(rootNode));
-			}
+//			pm.message(TopologyNode.toAsciiTree(nodeWithResults));
 
 		} finally {
 			db.close();
 			envDb.close();
 		}
 	}
+
 
 	private boolean toDo(String filepath) {
 		return new File(filepath).exists() == false;
