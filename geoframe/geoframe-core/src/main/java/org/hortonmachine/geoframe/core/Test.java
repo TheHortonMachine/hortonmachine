@@ -31,6 +31,8 @@ import org.hortonmachine.geoframe.core.parameters.WaterBudgetCanopyParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetGroundParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetRootzoneParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetRunoffParameters;
+import org.hortonmachine.geoframe.core.utils.TopologyNode;
+import org.hortonmachine.geoframe.core.utils.TopologyUtilities;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
@@ -295,14 +297,24 @@ public class Test extends HMModel {
 			QueryResult queryResult = db.getTableRecordsMapIn(GeoframeUtils.GEOFRAME_BASIN_TABLE, null, -1, -1, null);
 			HashMap<Integer, Double> basinAreas = new HashMap<>();
 			int idIndex = queryResult.names.indexOf("basinid");
+			int maxBasinId = -1;
 			for(int i = 0; i < queryResult.data.size(); i++) {
 				Object[] row = queryResult.data.get(i);
 				int basinId = (int) row[idIndex];
-				Geometry basinGeom = queryResult.geometries.get(i);
+				Geometry basinGeom = (Geometry) row[queryResult.geometryIndex];
 				double area = basinGeom.getArea() / 1_000_000.0; // in km2
 				basinAreas.put(basinId, area);
+				maxBasinId = Math.max(maxBasinId, basinId);
 			}
 			
+			// get the topology from the db
+			TopologyNode rootNode = TopologyUtilities.getRootNodeFromDb(db);
+			pm.message("Topology:\n" + TopologyNode.toAsciiTree(rootNode));
+			// create a map of basinId -> TopologyNode
+			var basinid2nodeMap = new HashMap<Integer, TopologyNode>();
+			rootNode.visitUpstream(node -> {
+				basinid2nodeMap.put(node.basinId, node);
+			});
 
 			String fromTS = "2005-01-01 01:00:00";
 			String toTS = "2005-01-01 02:00:00";
@@ -342,6 +354,10 @@ public class Test extends HMModel {
 			WaterBudgetRunoffParameters wbRunoffParams = WaterBudgetRunoffParameters.CALIBRATION_DEFAULT;
 			WaterBudgetGroundParameters wbGroundParams = WaterBudgetGroundParameters.CALIBRATION_DEFAULT;
 			
+			var lai = 0.6; // TODO handle LAI properly
+			
+			
+			
 			while (precipReader.next() && tempReader.next() && etpReader.next()) {
 				HashMap<Integer, Double> precipMap = precipReader.outData;
 				HashMap<Integer, Double> tempMap = tempReader.outData;
@@ -349,12 +365,19 @@ public class Test extends HMModel {
 
 				String pTs = precipReader.tCurrent;
 				String tTs = tempReader.tCurrent;
+				String eTs = etpReader.tCurrent;
 				// check that time steps are the same
-				if (!pTs.equals(tTs)) {
-					throw new Exception("Time steps do not match: " + pTs + " <> " + tTs);
+				if (!pTs.equals(tTs) || !pTs.equals(eTs)) {
+					throw new Exception("Time steps do not match: " + pTs + " <> " + tTs + " <> " + eTs);
 				}
 
 				pm.message("Processing time step: " + pTs);
+				
+				// reset nodes values
+				rootNode.visitUpstream(node -> {
+					node.value = Double.NaN;
+					node.accumulatedValue = Double.NaN;
+				});
 
 				for (Integer basinId : precipMap.keySet()) {
 					// FOR EACH BASIN
@@ -404,8 +427,6 @@ public class Test extends HMModel {
 					initialConditionLiquidWater.put(basinId, resultSM.liquidWater());
 
 					// CANOPY
-					var lai = 0.6; // TODO handle LAI properly
-					
 					var kc = wbCanopyParams.kc();
 					double ci = kc * lai / 2.0;
 					if (initalConditionsCanopyMap.containsKey(basinId)) {
@@ -504,8 +525,15 @@ public class Test extends HMModel {
 					// final discharge
 					double outDischargeRunoff = resultWB.runoff();
 					double outDischargeGround = resultWBG.discharge();
+					double totalDischarge = outDischargeRunoff + outDischargeGround;
 					
+					basinid2nodeMap.get(basinId).value = totalDischarge;
 				}
+				
+				// accumulate the discharges downstream
+				TopologyNode.accumulateDownstream(rootNode);
+				
+//				pm.message(TopologyNode.toAsciiTree(rootNode));
 			}
 
 		} finally {
