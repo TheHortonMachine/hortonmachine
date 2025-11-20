@@ -2,7 +2,8 @@ package org.hortonmachine.geoframe.core;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
@@ -22,6 +23,7 @@ import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay.
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Initialize;
 import rainSnowSperataion.RainSnowSeparationPointCase;
 import rootZone.WaterBudgetRootZone;
 import rootZone.WaterBudgetRootZone.WaterBudgetRootZoneStepResult;
@@ -29,17 +31,13 @@ import simpleBucket.WaterBudget;
 import simpleBucket.WaterBudget.WaterBudgetStepResult;
 
 public class WaterBudgetSimulation extends HMModel {
-	@Description("Map of basin areas in km2")
-	@In
-	public double[] basinAreas;
-	
 	@Description("Root node of the topology. after each simulation it contains the discharges of all nodes.")
 	@In
 	public TopologyNode rootNode;
 	
-	@Description("Map of basin id to topology node")
+	@Description("Map of basin areas in km2")
 	@In
-	public TopologyNode[] basinid2nodeMap;
+	public double[] basinAreas;
 	
 	@Description("Time step in minutes")
 	@In
@@ -109,9 +107,36 @@ public class WaterBudgetSimulation extends HMModel {
 	@In
 	public double lai;
 	
-	@Description("Whether to do the parallel processing topologically (at nodes wait for upstream nodes to finish)")
+	@Description("Results writer")
 	@In
+	public GeoframeWaterBudgetSimulationWriter resultsWriter;
+	
+
+	/**
+	 * Whether to do the parallel processing
+	 */
+	public boolean doParallel = true;
+	/**
+	 * If parallel processing is chosen, whether to do it topologically (at nodes wait for upstream nodes to finish)
+	 */
 	public boolean doParallelTopologically = true;
+	
+	private TopologyNode[] basinid2nodeMap = null;
+	
+	public boolean doDebugMessages = true;
+
+	private String previousDay = null;
+
+	@Initialize
+	public void init() {
+		if (basinid2nodeMap == null) {
+			// create a map of basinId -> TopologyNode
+			basinid2nodeMap = new TopologyNode[basinAreas.length];
+			rootNode.visitUpstream(node -> {
+				basinid2nodeMap[node.basinId] = node;
+			});
+		}
+	}
 	
 	@Execute	
 	public void process() throws Exception {
@@ -136,13 +161,21 @@ public class WaterBudgetSimulation extends HMModel {
 				node.accumulatedValue = Double.NaN;
 			});
 			
-			if (!doParallelTopologically) {
+			if (doParallel) {
+				if (doParallelTopologically) {
+					rootNode.visitDownstreamFromLeavesParallel(null, node -> {
+						processTimestep(precipMap, tempMap, etpMap, node);
+					});
+				} else {
+					Set<TopologyNode> nodes = new HashSet<>();
+					TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
+					nodes.parallelStream().forEach(node -> {
+						processTimestep(precipMap, tempMap, etpMap, node);
+					});
+				}
+			} else {
 				// process each node independently in parallel
 				rootNode.visitDownstreamFromLeaves(node -> {
-					processTimestep(precipMap, tempMap, etpMap, node);
-				});
-			} else {
-				rootNode.visitDownstreamFromLeavesParallel(null, node -> {
 					processTimestep(precipMap, tempMap, etpMap, node);
 				});
 			}
@@ -151,7 +184,15 @@ public class WaterBudgetSimulation extends HMModel {
 			TopologyNode.accumulateDownstream(rootNode);
 			
 			// TODO do something with the resulting discharges
-			pm.message(pTs + "; " + rootNode.accumulatedValue + " m3/s at outlet");
+			if (doDebugMessages) {
+				String yearDay = pTs.substring(0, 10);
+				if (previousDay == null || !yearDay.equals(previousDay)) {
+					pm.message(pTs + "; " + rootNode.accumulatedValue + " m3/s at outlet");
+					previousDay = yearDay;
+				}
+			}
+			resultsWriter.currentT = precipReader.currentT;
+			resultsWriter.insert();
 		}
 		
 	}

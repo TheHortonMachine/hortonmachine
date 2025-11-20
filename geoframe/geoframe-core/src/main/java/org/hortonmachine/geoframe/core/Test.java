@@ -296,12 +296,6 @@ public class Test extends HMModel {
 			
 			// get the topology from the db
 			TopologyNode rootNode = TopologyUtilities.getRootNodeFromDb(db);
-			pm.message("Topology:\n" + TopologyNode.toAsciiTree(rootNode));
-			// create a map of basinId -> TopologyNode
-			TopologyNode[] basinid2nodeMap = new TopologyNode[maxBasinId + 1];
-			rootNode.visitUpstream(node -> {
-				basinid2nodeMap[node.basinId] = node;
-			});
 
 			String fromTS = "2005-01-01 01:00:00";
 			String toTS = "2006-01-01 01:00:00";
@@ -324,7 +318,11 @@ public class Test extends HMModel {
 			etpReader.pParameterId = 1; // etp
 			etpReader.tStart = fromTS;
 			etpReader.tEnd = toTS;
-
+			
+			var resultsWriter = new GeoframeWaterBudgetSimulationWriter();
+			resultsWriter.db = db;
+			resultsWriter.rootNode = rootNode;
+			resultsWriter.clearTable();
 
 			double[] initialConditionSolidWater = new double[maxBasinId + 1]; // ok init with 0s
 			double[] initialConditionLiquidWater = new double[maxBasinId + 1]; // ok init with 0s
@@ -349,9 +347,8 @@ public class Test extends HMModel {
 			
 			WaterBudgetSimulation wbSim = new WaterBudgetSimulation();
 			wbSim.pm = pm;
-			wbSim.basinAreas = basinAreas;
 			wbSim.rootNode = rootNode;
-			wbSim.basinid2nodeMap = basinid2nodeMap;
+			wbSim.basinAreas = basinAreas;
 			wbSim.timeStepMinutes = timeStepMinutes;
 			wbSim.precipReader = precipReader;
 			wbSim.tempReader = tempReader;
@@ -369,10 +366,15 @@ public class Test extends HMModel {
 			wbSim.wbRunoffParams = wbRunoffParams;
 			wbSim.wbGroundParams = wbGroundParams;
 			wbSim.lai = lai;
+			wbSim.resultsWriter = resultsWriter;
+			wbSim.doParallel = true;
+			wbSim.doParallelTopologically = false;
+			wbSim.doDebugMessages = true;
+			
+			wbSim.init();
 			wbSim.process();
 			
-			TopologyNode nodeWithResults = wbSim.rootNode;
-			
+//			TopologyNode nodeWithResults = wbSim.rootNode;
 //			pm.message(TopologyNode.toAsciiTree(nodeWithResults));
 
 		} finally {

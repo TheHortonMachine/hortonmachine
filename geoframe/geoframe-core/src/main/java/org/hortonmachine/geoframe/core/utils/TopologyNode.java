@@ -185,7 +185,7 @@ public class TopologyNode {
         ExecutorService executor = Executors.newFixedThreadPool(nThreads);
         CountDownLatch latch = new CountDownLatch(allNodes.size());
 
-        // 4) Submit all leaves (no upstreams) as starting tasks
+        // Submit all leaves (no upstreams) as starting tasks
         for (TopologyNode n : allNodes) {
             if (n.upStreamNodes.isEmpty()) {
                 submitNodeTask(n, visitor, remainingUpstream, executor, latch);

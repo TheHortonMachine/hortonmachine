@@ -88,7 +88,7 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	
 	private boolean initialized = false;
 
-	private long currentT;
+	public long currentT;
 	
 	private boolean isClosed = false;
 
