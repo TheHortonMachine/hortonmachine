@@ -1,5 +1,10 @@
 package org.hortonmachine.geoframe.core.parameters;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.hortonmachine.gears.utils.optimizers.sceua.ParameterBounds;
+
 /**
  * Parameters for the water budget canopy model that need to be calibrated.
  * 
@@ -24,5 +29,12 @@ public record WaterBudgetCanopyParameters(
 	
 	public static double[] pRange() {
 		return new double[] {0.5, 0.98};
+	}
+	
+	public static List<ParameterBounds> calibrationParameterBounds() {
+		return Arrays.asList(
+				new ParameterBounds("kc", kcRange()[0], kcRange()[1]),
+				new ParameterBounds("p", pRange()[0], pRange()[1])
+		);
 	}
 }

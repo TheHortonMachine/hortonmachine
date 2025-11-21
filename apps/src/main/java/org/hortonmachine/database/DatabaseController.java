@@ -238,6 +238,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         sqlEditorView._sqlEditorAreaPanel.setLayout(new BorderLayout());
 
         dataTableView._formatDatesPatternTextField.setText("date, ts, timestamp");
+        dataTableView._formatDatesCheckbox.setSelected(true); // on by default
 
         JTabbedPane tabbedDataViewerPane = new JTabbedPane();
         JTabbedPane tabbedEditorPane = new JTabbedPane();

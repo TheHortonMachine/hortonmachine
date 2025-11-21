@@ -39,17 +39,30 @@
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<version>3.6.0</version>
 				<executions>
+					<!-- Add upstream main sources -->
 					<execution>
-						<id>add-upstream-sources</id>
+						<id>add-upstream-main-sources</id>
 						<phase>generate-sources</phase>
 						<goals>
 							<goal>add-source</goal>
-							<goal>add-test-source</goal>
 						</goals>
 						<configuration>
 							<sources>
 								<source>
 									${project.basedir}/upstream/src/main/java</source>
+							</sources>
+						</configuration>
+					</execution>
+
+					<!-- Add upstream test sources -->
+					<execution>
+						<id>add-upstream-test-sources</id>
+						<phase>generate-test-sources</phase>
+						<goals>
+							<goal>add-test-source</goal>
+						</goals>
+						<configuration>
+							<sources>
 								<source>
 									${project.basedir}/upstream/src/test/java</source>
 							</sources>

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.DynamicDoubleArray;
 import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
 import org.hortonmachine.geoframe.core.parameters.SnowMeltingParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetCanopyParameters;
@@ -24,6 +25,7 @@ import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
+import oms3.annotations.Out;
 import rainSnowSperataion.RainSnowSeparationPointCase;
 import rootZone.WaterBudgetRootZone;
 import rootZone.WaterBudgetRootZone.WaterBudgetRootZoneStepResult;
@@ -111,6 +113,11 @@ public class WaterBudgetSimulation extends HMModel {
 	@In
 	public GeoframeWaterBudgetSimulationWriter resultsWriter;
 	
+	@Description("Dynamic array to store the most downstream node discharge over time")
+	@Out
+	public DynamicDoubleArray outRootNodeDischargeInTime = new DynamicDoubleArray(10000, 10000);
+	
+	
 
 	/**
 	 * Whether to do the parallel processing
@@ -191,8 +198,14 @@ public class WaterBudgetSimulation extends HMModel {
 					previousDay = yearDay;
 				}
 			}
-			resultsWriter.currentT = precipReader.currentT;
-			resultsWriter.insert();
+			
+			if (resultsWriter != null) {
+				resultsWriter.currentT = precipReader.currentT;
+				resultsWriter.insert();
+			}
+			
+			// store outlet discharge in dynamic array
+			outRootNodeDischargeInTime.addValue(rootNode.accumulatedValue);
 		}
 		
 	}

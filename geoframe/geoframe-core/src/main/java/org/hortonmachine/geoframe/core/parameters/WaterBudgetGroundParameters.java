@@ -1,5 +1,10 @@
 package org.hortonmachine.geoframe.core.parameters;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.hortonmachine.gears.utils.optimizers.sceua.ParameterBounds;
+
 /**
  * Parameters for the water budget ground model that need to be calibrated.
  * 
@@ -33,5 +38,13 @@ public record WaterBudgetGroundParameters(
 	
 	public static double[] fRange() {
 		return new double[] {1.0, 3.0};
+	}
+	
+	public static List<ParameterBounds> calibrationParameterBounds() {
+		return Arrays.asList(
+				new ParameterBounds("s_GroundWaterMax", sGroundWaterMaxRange()[0], sGroundWaterMaxRange()[1]),
+				new ParameterBounds("e", eRange()[0], eRange()[1]),
+				new ParameterBounds("f", fRange()[0], fRange()[1])
+		);
 	}
 }

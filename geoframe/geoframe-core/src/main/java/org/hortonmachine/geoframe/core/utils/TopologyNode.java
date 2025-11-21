@@ -400,6 +400,64 @@ public class TopologyNode {
 		}
 	}
 	
+    /**
+     * Deep clone of this node and the whole connected topology graph.
+     * <p>
+     * All reachable nodes (upstream and downstream) are duplicated.
+     * The cloned graph has the same basinIds, value and accumulatedValue
+     * but consists of new TopologyNode instances.
+     *
+     * @return the cloned node corresponding to {@code this}
+     */
+    public TopologyNode clone() {
+        Map<TopologyNode, TopologyNode> visited = new HashMap<>();
+        return cloneInternal(this, visited);
+    }
+
+    /**
+     * Internal recursive helper for deep cloning a topology graph.
+     */
+    private static TopologyNode cloneInternal(TopologyNode original,
+                                              Map<TopologyNode, TopologyNode> visited) {
+        // Already cloned this node?
+        TopologyNode copy = visited.get(original);
+        if (copy != null) {
+            return copy;
+        }
+
+        // Create the shallow copy
+        copy = new TopologyNode(original.basinId);
+        copy.value = original.value;
+        copy.accumulatedValue = original.accumulatedValue;
+        visited.put(original, copy);
+
+        // Clone upstream links
+        for (TopologyNode upOrig : original.upStreamNodes) {
+            TopologyNode upCopy = cloneInternal(upOrig, visited);
+
+            // maintain bidirectional link in the clone
+            if (!copy.upStreamNodes.contains(upCopy)) {
+                copy.upStreamNodes.add(upCopy);
+            }
+            if (upCopy.downStreamNode != copy) {
+                upCopy.downStreamNode = copy;
+            }
+        }
+
+        // Clone downstream link
+        if (original.downStreamNode != null) {
+            TopologyNode downCopy = cloneInternal(original.downStreamNode, visited);
+            copy.downStreamNode = downCopy;
+
+            if (!downCopy.upStreamNodes.contains(copy)) {
+                downCopy.upStreamNodes.add(copy);
+            }
+        }
+
+        return copy;
+    }
+
+	
 	
 
 	public static void main(String[] args) {
