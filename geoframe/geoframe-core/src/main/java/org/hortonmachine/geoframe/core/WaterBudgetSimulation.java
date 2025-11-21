@@ -126,13 +126,15 @@ public class WaterBudgetSimulation extends HMModel {
 	/**
 	 * If parallel processing is chosen, whether to do it topologically (at nodes wait for upstream nodes to finish)
 	 */
-	public boolean doParallelTopologically = true;
+	public boolean doTopologically = true;
 	
 	private TopologyNode[] basinid2nodeMap = null;
 	
 	public boolean doDebugMessages = true;
 
 	private String previousDay = null;
+	
+	private int timestepIndex = 0;
 
 	@Initialize
 	public void init() {
@@ -147,70 +149,95 @@ public class WaterBudgetSimulation extends HMModel {
 	
 	@Execute	
 	public void process() throws Exception {
-		while (precipReader.next() && tempReader.next() && etpReader.next()) {
-			double[] precipMap = precipReader.outData;
-			double[] tempMap = tempReader.outData;
-			double[] etpMap = etpReader.outData;
+		if (precipReader.isPreCachingMode()) {
+			double[] precipData = precipReader.getCached(timestepIndex);
+			double[] tempData = tempReader.getCached(timestepIndex);
+			double[] etpData = etpReader.getCached(timestepIndex);
+			while (precipData != null && tempData != null && etpData != null) {
+				processTimestep(precipData, tempData, etpData);
+				timestepIndex++;
+				precipData = precipReader.getCached(timestepIndex);
+				tempData = tempReader.getCached(timestepIndex);
+				etpData = etpReader.getCached(timestepIndex);
+			}
+		} else {
+			while (precipReader.next() && tempReader.next() && etpReader.next()) {
 
-			String pTs = precipReader.tCurrent;
-			String tTs = tempReader.tCurrent;
-			String eTs = etpReader.tCurrent;
-			// check that time steps are the same
-			if (!pTs.equals(tTs) || !pTs.equals(eTs)) {
-				throw new Exception("Time steps do not match: " + pTs + " <> " + tTs + " <> " + eTs);
-			}
+				double[] precipMap = precipReader.outData;
+				double[] tempMap = tempReader.outData;
+				double[] etpMap = etpReader.outData;
 
-//			pm.message("Processing time step: " + pTs);
-			
-			// reset nodes values
-			rootNode.visitUpstream(node -> {
-				node.value = Double.NaN;
-				node.accumulatedValue = Double.NaN;
-			});
-			
-			if (doParallel) {
-				if (doParallelTopologically) {
-					rootNode.visitDownstreamFromLeavesParallel(null, node -> {
-						processTimestep(precipMap, tempMap, etpMap, node);
-					});
-				} else {
-					Set<TopologyNode> nodes = new HashSet<>();
-					TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
-					nodes.parallelStream().forEach(node -> {
-						processTimestep(precipMap, tempMap, etpMap, node);
-					});
-				}
-			} else {
-				// process each node independently in parallel
-				rootNode.visitDownstreamFromLeaves(node -> {
-					processTimestep(precipMap, tempMap, etpMap, node);
-				});
+				processTimestep(precipMap, tempMap, etpMap);
 			}
-			
-			// accumulate the discharges downstream
-			TopologyNode.accumulateDownstream(rootNode);
-			
-			// TODO do something with the resulting discharges
-			if (doDebugMessages) {
-				String yearDay = pTs.substring(0, 10);
-				if (previousDay == null || !yearDay.equals(previousDay)) {
-					pm.message(pTs + "; " + rootNode.accumulatedValue + " m3/s at outlet");
-					previousDay = yearDay;
-				}
-			}
-			
-			if (resultsWriter != null) {
-				resultsWriter.currentT = precipReader.currentT;
-				resultsWriter.insert();
-			}
-			
-			// store outlet discharge in dynamic array
-			outRootNodeDischargeInTime.addValue(rootNode.accumulatedValue);
 		}
 		
 	}
 
-	private void processTimestep(double[] precipMap, double[] tempMap, double[] etpMap, TopologyNode node) {
+	private void processTimestep(double[] precipMap, double[] tempMap, double[] etpMap) throws Exception {
+		String pTs = precipReader.tCurrent;
+		String tTs = tempReader.tCurrent;
+		String eTs = etpReader.tCurrent;
+		// check that time steps are the same
+		if (!pTs.equals(tTs) || !pTs.equals(eTs)) {
+			throw new Exception("Time steps do not match: " + pTs + " <> " + tTs + " <> " + eTs);
+		}
+
+//			pm.message("Processing time step: " + pTs);
+		
+		// reset nodes values
+		rootNode.visitUpstream(node -> {
+			node.value = Double.NaN;
+			node.accumulatedValue = Double.NaN;
+		});
+		
+		if (doParallel) {
+			if (doTopologically) {
+				rootNode.visitDownstreamFromLeavesParallel(null, node -> {
+					processTimestepForBasin(precipMap, tempMap, etpMap, node);
+				});
+			} else {
+				Set<TopologyNode> nodes = new HashSet<>();
+				TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
+				nodes.parallelStream().forEach(node -> {
+					processTimestepForBasin(precipMap, tempMap, etpMap, node);
+				});
+			}
+		} else {
+			if (doTopologically) {
+				rootNode.visitDownstreamFromLeaves(node -> {
+					processTimestepForBasin(precipMap, tempMap, etpMap, node);
+				});
+			} else {
+				Set<TopologyNode> nodes = new HashSet<>();
+				TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
+				nodes.stream().forEach(node -> {
+					processTimestepForBasin(precipMap, tempMap, etpMap, node);
+				});
+			}
+		}
+		
+		// accumulate the discharges downstream
+		TopologyNode.accumulateDownstream(rootNode);
+		
+		// TODO do something with the resulting discharges
+		if (doDebugMessages) {
+			String yearDay = pTs.substring(0, 10);
+			if (previousDay == null || !yearDay.equals(previousDay)) {
+				pm.message(pTs + "; " + rootNode.accumulatedValue + " m3/s at outlet");
+				previousDay = yearDay;
+			}
+		}
+		
+		if (resultsWriter != null) {
+			resultsWriter.currentT = precipReader.currentT;
+			resultsWriter.insert();
+		}
+		
+		// store outlet discharge in dynamic array
+		outRootNodeDischargeInTime.addValue(rootNode.accumulatedValue);
+	}
+
+	private void processTimestepForBasin(double[] precipMap, double[] tempMap, double[] etpMap, TopologyNode node) {
 		int basinId = node.basinId;
 
 		// FOR EACH BASIN

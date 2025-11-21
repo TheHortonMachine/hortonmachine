@@ -1,5 +1,8 @@
 package org.hortonmachine.gears.utils.optimizers.sceua;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.DynamicDoubleArray;
+
 /**
  * Kling-Gupta Efficiency (KGE) metric and associated cost function.
  *
@@ -18,7 +21,7 @@ public final class KGE {
      * @param obs observed time series
      * @return KGE value (1 is perfect, can be negative)
      */
-    public static double kge(double[] sim, double[] obs) {
+    public static double kge(double[] sim, double[] obs, Integer spinupTimesteps, double noDataValue) {
         if (sim.length != obs.length) {
             throw new IllegalArgumentException("sim and obs must have same length.");
         }
@@ -26,7 +29,26 @@ public final class KGE {
         if (n == 0) {
             throw new IllegalArgumentException("Empty time series.");
         }
-
+        
+        int startIndex = 0;
+        if (spinupTimesteps != null && spinupTimesteps > 0) {
+			startIndex = spinupTimesteps;
+		}
+        DynamicDoubleArray simFilteredTemp = new DynamicDoubleArray(n);
+        DynamicDoubleArray obsFilteredTemp = new DynamicDoubleArray(n);
+        for (int i = startIndex; i < n; i++) {
+        	if(!HMConstants.isNovalue(obs[i], noDataValue)) {
+        		simFilteredTemp.addValue(sim[i]);
+				obsFilteredTemp.addValue(obs[i]);
+        	}
+        }
+        sim = simFilteredTemp.getTrimmedInternalArray();
+        obs = obsFilteredTemp.getTrimmedInternalArray();
+        n = sim.length;
+        if (n == 0) {
+			throw new IllegalArgumentException("No overlapping valid data in time series.");
+		}
+        
         double meanSim = 0.0;
         double meanObs = 0.0;
         for (int i = 0; i < n; i++) {
@@ -71,7 +93,7 @@ public final class KGE {
     /**
      * Cost to MINIMIZE for calibration (higher KGE is better, so cost = -KGE).
      */
-    public static double kgeCost(double[] sim, double[] obs) {
-        return -kge(sim, obs);
+    public static double kgeCost(double[] sim, double[] obs, Integer spinupTimesteps, double noDataValue) {
+        return -kge(sim, obs, spinupTimesteps, noDataValue);
     }
 }

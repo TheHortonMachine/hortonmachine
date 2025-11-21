@@ -53,7 +53,7 @@ public class TestSceUaKge {
 
             double[] simQ = simulation(n, P, a, b);
 
-            return KGE.kgeCost(simQ, observedQ); // minimize -KGE
+            return KGE.kgeCost(simQ, observedQ, 0, -9999.0); // minimize -KGE
         };
 
         // ----- 4) Configure SCE-UA -----

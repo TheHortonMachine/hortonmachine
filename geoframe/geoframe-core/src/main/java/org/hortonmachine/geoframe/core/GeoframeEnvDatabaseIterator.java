@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.List;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -91,11 +92,30 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	public long currentT;
 	
 	private boolean isClosed = false;
-
 	
+	private boolean doPreCache = false;
+	private double[][] cachedData = null;
+
 	
 	public GeoframeEnvDatabaseIterator(int maxBasinId) {
 		 outData = new double[maxBasinId + 1];
+	}
+	
+	/**
+	 * Pre-caches all data in memory.
+	 * 
+	 * In this mode the iterator next method will not work, since 
+	 * data are accessed from multiple threads in parallel using an index.
+	 * 
+	 * @throws Exception
+	 */
+	public void preCacheData() throws Exception {
+		doPreCache = true;
+		ensureOpen();
+	}
+	
+	public boolean isPreCachingMode() {
+		return doPreCache;
 	}
 
     private void ensureOpen() throws Exception {
@@ -125,11 +145,47 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	           ResultSet.CONCUR_READ_ONLY);
     	ps.setInt(1, pParameterId);
     	rs = ps.executeQuery();
+    	
+    	if(doPreCache) {
+    		List<double[]> tmpCachedData = new java.util.ArrayList<>();
+    		while(internalNext()) {
+				double[] dataCopy = Arrays.copyOf(outData, outData.length);
+				tmpCachedData.add(dataCopy);
+			}
+    		cachedData = new double[tmpCachedData.size()][];
+			for (int i = 0; i < tmpCachedData.size(); i++) {
+				cachedData[i] = tmpCachedData.get(i);
+			}
+			
+			// close the result set and statement
+			rs.close();
+			ps.close();
+			rs = null;
+			ps = null;
+		}
     }
+    
+    public double[] getCached( int index ) throws Exception {
+		if(!doPreCache) {		
+			throw new Exception("Not in pre-cache mode, cannot get cached data.");
+		}
+		if(index >= cachedData.length) {
+			return null;
+		}
+		return cachedData[index];
+	}
+    
 
     @Execute
     public boolean next() throws Exception {
-    	if(isClosed) {
+    	if(doPreCache) {
+			throw new Exception("In pre-cache mode, next() method cannot be used, use getCached(i) instead.");
+		}
+    	return internalNext();
+    }
+
+	private boolean internalNext() throws Exception {
+		if(isClosed) {
     		return false;
     	}
         ensureOpen();
@@ -167,7 +223,7 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
         } while (true);
         
         return hasNext;
-    }
+	}
     
     public static String ts2str( long millis ) {
         return new DateTime(millis).toString(HMConstants.utcDateFormatterYYYYMMDDHHMMSS);

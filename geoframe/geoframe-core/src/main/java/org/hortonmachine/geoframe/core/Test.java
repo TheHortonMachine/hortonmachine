@@ -15,6 +15,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
@@ -87,8 +88,8 @@ public class Test extends HMModel {
 		// NOCE
 		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
 		String ext = ".tif";
-		int drainThres = 5000;
-		double desiredArea = 1_000_000.0;
+		int drainThres = 2000;
+		double desiredArea = 30_000; // 1_000_000.0; 
 		double desiredAreaDelta = 20.0;
 		double easting = 629720;
 		double northing = 5127690;
@@ -133,7 +134,7 @@ public class Test extends HMModel {
 
 		ADb envDb = EDb.SQLITE.getDb();
 		envDb.open(envDataPath);
-
+		
 		try {
 
 			if (toDo(pit)) {
@@ -312,9 +313,39 @@ public class Test extends HMModel {
 			String fromTS = "2001-01-01 01:00:00";
 			String toTS = "2004-01-01 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
+			int spinUpDays = 180;
 			double[] observedDischarge = getObservedDischarge(envDb, fromTS, toTS);
+			boolean doCalibration = true;
+			int calibrationThreadCount = 20;
+			
+			var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
+			precipReader.db = envDb;
+			precipReader.pParameterId = 2; // precip
+			precipReader.tStart = fromTS;
+			precipReader.tEnd = toTS;
+			if (doCalibration) {
+				precipReader.preCacheData();
+			}
 
-			boolean doCalibration = false;
+			var tempReader = new GeoframeEnvDatabaseIterator(maxBasinId);
+			tempReader.db = envDb;
+			tempReader.pParameterId = 4; // temperature
+			tempReader.tStart = fromTS;
+			tempReader.tEnd = toTS;
+			if (doCalibration) {
+				tempReader.preCacheData();
+			}
+
+			var etpReader = new GeoframeEnvDatabaseIterator(maxBasinId);
+			etpReader.db = envDb;
+			etpReader.pParameterId = 1; // etp
+			etpReader.tStart = fromTS;
+			etpReader.tEnd = toTS;
+			if (doCalibration) {
+				etpReader.preCacheData();
+			}
+			
+			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
 //				Best objective (cost) = 0.7175186988286195
 //				Best params = [0.8, 1.2569136394087654, 1.932469419839689, 
@@ -332,14 +363,15 @@ public class Test extends HMModel {
 				WaterBudgetGroundParameters wbgP = new WaterBudgetGroundParameters(988.7810, 2.89507E-4, 3.0);
 				
 				// run a single simulation with default parameters
-				double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, envDb, rootNode.clone(), basinAreas,
+				double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
 						rssepP, snowmP,
 						wbcP,
 						wbRzP,
 						wbrP,
 						wbgP, 0.6, // TODO handle LAI properly
-						db);
-				double kge = KGE.kge(simQ, observedDischarge);
+						db,
+						precipReader, tempReader, etpReader);
+				double kge = KGE.kge(simQ, observedDischarge, spinUpTimesteps, HMConstants.doubleNovalue);
 				System.out.println("KGE with default parameters = " + kge);
 			} else {
 				List<ParameterBounds> allParameterBounds = new ArrayList<>();
@@ -389,17 +421,18 @@ public class Test extends HMModel {
 					WaterBudgetGroundParameters wbGroundParamsCalib = new WaterBudgetGroundParameters(s_GroundWaterMax,
 							e, f);
 
-					double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, envDb, rootNode.clone(),
+					double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(),
 							basinAreas, rssepParamCalib, snowMParamsCalib, wbCanopyParamsCalib, wbRootzoneParamsCalib,
-							wbRunoffParamsCalib, wbGroundParamsCalib, lai, null);
-					return KGE.kgeCost(simQ, observedDischarge); // minimize -KGE
+							wbRunoffParamsCalib, wbGroundParamsCalib, lai, null,
+							precipReader, tempReader, etpReader);
+					return KGE.kgeCost(simQ, observedDischarge, spinUpTimesteps, HMConstants.doubleNovalue); // minimize -KGE
 				};
-				SceUaConfig config = SceUaConfig.builder().maxIterations(2000).maxEvaluations(5000).complexCount(5)
+				SceUaConfig config = SceUaConfig.builder().maxIterations(1200).maxEvaluations(1200).complexCount(5)
 						.objectiveStdTolerance(1e-4).random(new Random(42L)) // deterministic
 						.verbose(false).build();
 
 				SceUaOptimizer optimizer = new SceUaOptimizer(allParameterBounds, objFn, config);
-				SceUaResult result = optimizer.optimizeParallel(1);
+				SceUaResult result = optimizer.optimizeParallel(calibrationThreadCount);
 
 				double[] best = result.getBestParameters();
 				double bestObj = result.getBestObjective();
@@ -419,10 +452,13 @@ public class Test extends HMModel {
 		}
 	}
 
-	private double[] runSimulation(String fromTS, String toTS, int timeStepMinutes, int maxBasinId, ADb envDb, TopologyNode rootNode, double[] basinAreas,
+	private double[] runSimulation(String fromTS, String toTS, int timeStepMinutes, int maxBasinId, //
+			TopologyNode rootNode, double[] basinAreas, //
 			RainSnowSeparationParameters rssepParam, SnowMeltingParameters snowMParams, WaterBudgetCanopyParameters wbCanopyParams, 
 			WaterBudgetRootzoneParameters wbRootzoneParams, WaterBudgetRunoffParameters wbRunoffParams, 
-			WaterBudgetGroundParameters wbGroundParams, double lai, ADb outputDb
+			WaterBudgetGroundParameters wbGroundParams, double lai, //
+			ADb outputDb, //
+			GeoframeEnvDatabaseIterator precipReader, GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader
 			) throws Exception {
 		int calibRun = calibrationCounter.incrementAndGet();
 
@@ -430,24 +466,6 @@ public class Test extends HMModel {
 		System.out.println("Running simulation " +  calibRun);
 		
 		
-	
-		var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
-		precipReader.db = envDb;
-		precipReader.pParameterId = 2; // precip
-		precipReader.tStart = fromTS;
-		precipReader.tEnd = toTS;
-
-		var tempReader = new GeoframeEnvDatabaseIterator(maxBasinId);
-		tempReader.db = envDb;
-		tempReader.pParameterId = 4; // temperature
-		tempReader.tStart = fromTS;
-		tempReader.tEnd = toTS;
-
-		var etpReader = new GeoframeEnvDatabaseIterator(maxBasinId);
-		etpReader.db = envDb;
-		etpReader.pParameterId = 1; // etp
-		etpReader.tStart = fromTS;
-		etpReader.tEnd = toTS;
 
 		GeoframeWaterBudgetSimulationWriter resultsWriter = null;
 		if (outputDb != null) {
@@ -490,8 +508,8 @@ public class Test extends HMModel {
 		wbSim.wbGroundParams = wbGroundParams;
 		wbSim.lai = lai;
 		wbSim.resultsWriter = resultsWriter;
-		wbSim.doParallel = true;
-		wbSim.doParallelTopologically = true;
+		wbSim.doParallel = false;
+		wbSim.doTopologically = false;
 		wbSim.doDebugMessages = outputDb != null ;
 
 		wbSim.init();
