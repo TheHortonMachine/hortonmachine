@@ -27,6 +27,8 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
+import org.jfree.data.time.FixedMillisecond;
+import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeriesCollection;
 
 /**
@@ -71,9 +73,9 @@ public class TimeSeries implements IChart {
             String name = "series" + (i + 1);
             if (seriesNames != null && seriesNames.size() == size)
                 name = seriesNames.get(i);
-            org.jfree.data.time.TimeSeries series = new org.jfree.data.time.TimeSeries(name);
+            org.jfree.data.time.TimeSeries series = new org.jfree.data.time.TimeSeries(name, FixedMillisecond.class);
             for( int j = 0; j < ts.length; j++ ) {
-                series.add(new Day(new Date(ts[j])), values[j]);
+                series.add(new FixedMillisecond(ts[j]), values[j]);
             }
             dataset.addSeries(series);
         }

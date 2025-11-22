@@ -1,11 +1,19 @@
 package org.hortonmachine.geoframe.core;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.KeyStroke;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -24,6 +32,7 @@ import org.hortonmachine.gears.modules.r.rasteronvectorresizer.OmsRasterResizer;
 import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.DynamicDoubleArray;
 import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.chart.TimeSeries;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -51,9 +60,12 @@ import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwo
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsGeoframeInputsBuilder;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
 import org.hortonmachine.hmachine.utils.GeoframeUtils;
+import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
+
+import com.google.common.util.concurrent.AtomicDouble;
 
 public class Test extends HMModel {
 	
@@ -315,7 +327,7 @@ public class Test extends HMModel {
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 180;
 			double[] observedDischarge = getObservedDischarge(envDb, fromTS, toTS);
-			boolean doCalibration = true;
+			boolean doCalibration = false;
 			int calibrationThreadCount = 20;
 			
 			var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
@@ -347,20 +359,21 @@ public class Test extends HMModel {
 			
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
-//				Best objective (cost) = 0.7175186988286195
-//				Best params = [0.8, 1.2569136394087654, 1.932469419839689, 
-//								0.0022958543552148054, 1.0E-4, 0.012081897205468567, 
-//								0.8827651473577803, 0.8281084929808293, 
-//								145.44367883355892, 0.22833855129992142, 2.256007161307445, 0.506427242953237, 
-//								15.250391376469448, 0.4007918724273609, 1.001258062874522, 
-//								988.7809685222537, 2.8950706950524037E-4, 3.0]
-//				Best KGE = -0.7175186988286195
-				RainSnowSeparationParameters rssepP = new RainSnowSeparationParameters(1.0, 0.8, 1.2569, 1.9325);
-				SnowMeltingParameters snowmP = new SnowMeltingParameters(0.00229585, 1.0E-4, 0.0120819);
-				WaterBudgetCanopyParameters wbcP = new WaterBudgetCanopyParameters(0.882765, 0.828108);
-				WaterBudgetRootzoneParameters wbRzP = new WaterBudgetRootzoneParameters(145.4437, 0.228339, 2.256007, 0.506427);
-				WaterBudgetRunoffParameters wbrP = new WaterBudgetRunoffParameters(15.25039, 0.400792, 1.001258);
-				WaterBudgetGroundParameters wbgP = new WaterBudgetGroundParameters(988.7810, 2.89507E-4, 3.0);
+//				Best params = [1.4991210577054512, 1.4999257881866468, 0.24691150853269062, 1.981916919380824, 
+//				0.9976034695088298, 0.4430675659847265, 0.8081823197441601, 0.98, 40.0, 0.2990859073782653, 1.0, 
+//				2.9689915583831885, 10.000491496058672, 0.5979045531796342, 1.0, 103.17261139534912, 0.0039555535684116, 1.0271816409340593]
+
+				RainSnowSeparationParameters rssepP = new RainSnowSeparationParameters(1.0, 1.4991210577054512,
+						1.4999257881866468, 0.24691150853269062);
+				SnowMeltingParameters snowmP = new SnowMeltingParameters(1.981916919380824, 0.9976034695088298,
+						0.4430675659847265);
+				WaterBudgetCanopyParameters wbcP = new WaterBudgetCanopyParameters(0.8081823197441601, 0.98);
+				WaterBudgetRootzoneParameters wbRzP = new WaterBudgetRootzoneParameters(40.0, 0.2990859073782653,
+						1.0, 2.9689915583831885);
+				WaterBudgetRunoffParameters wbrP = new WaterBudgetRunoffParameters(10.000491496058672,
+						0.5979045531796342, 1.0);
+				WaterBudgetGroundParameters wbgP = new WaterBudgetGroundParameters(103.17261139534912,
+						0.0039555535684116, 1.0271816409340593);
 				
 				// run a single simulation with default parameters
 				double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
@@ -371,9 +384,11 @@ public class Test extends HMModel {
 						wbgP, 0.6, // TODO handle LAI properly
 						db,
 						precipReader, tempReader, etpReader);
-				double kge = KGE.kge(simQ, observedDischarge, spinUpTimesteps, HMConstants.doubleNovalue);
-				System.out.println("KGE with default parameters = " + kge);
+				
+				chartResult(simQ, observedDischarge, timeStepMinutes, fromTS, spinUpTimesteps);
 			} else {
+				AtomicDouble bestSoFar = new AtomicDouble(Double.POSITIVE_INFINITY);
+
 				List<ParameterBounds> allParameterBounds = new ArrayList<>();
 				allParameterBounds.addAll(RainSnowSeparationParameters.calibrationParameterBounds());
 				allParameterBounds.addAll(SnowMeltingParameters.calibrationParameterBounds());
@@ -425,9 +440,18 @@ public class Test extends HMModel {
 							basinAreas, rssepParamCalib, snowMParamsCalib, wbCanopyParamsCalib, wbRootzoneParamsCalib,
 							wbRunoffParamsCalib, wbGroundParamsCalib, lai, null,
 							precipReader, tempReader, etpReader);
-					return KGE.kgeCost(simQ, observedDischarge, spinUpTimesteps, HMConstants.doubleNovalue); // minimize -KGE
+					double kgeCost = KGE.kgeCost(simQ, observedDischarge, spinUpTimesteps, HMConstants.doubleNovalue);
+					double old = bestSoFar.get();
+				    if (kgeCost < old && bestSoFar.compareAndSet(old, kgeCost)) {
+				        synchronized (pm) {
+				            pm.message("New best cost = " + kgeCost +
+				                               " | KGE = " + (-kgeCost) +
+				                               " | Params = " + Arrays.toString(params));
+				        }
+				    }
+					return kgeCost; // minimize -KGE
 				};
-				SceUaConfig config = SceUaConfig.builder().maxIterations(1200).maxEvaluations(1200).complexCount(5)
+				SceUaConfig config = SceUaConfig.builder().maxIterations(2000).maxEvaluations(5000).complexCount(5)
 						.objectiveStdTolerance(1e-4).random(new Random(42L)) // deterministic
 						.verbose(false).build();
 
@@ -450,6 +474,78 @@ public class Test extends HMModel {
 			db.close();
 			envDb.close();
 		}
+	}
+
+	private void chartResult(double[] simQ, double[] observedDischarge, int timeStepMinutes, String fromTS,
+			int spinUpTimesteps) {
+	       	String title = "Simulated vs Observed Discharge";
+	        String xLabel = "time";
+	        String yLabel = "Q [m3]";
+	        int width = 1600;
+	        int height = 1000;
+
+	        List<String> series = new ArrayList<>();
+	        series.add("Simulated Discharge");
+	        series.add("Observed Discharge");
+	        List<Boolean> doLines = new ArrayList<>();
+	        doLines.add(true);
+	        doLines.add(true);
+	        
+	        long startTS = GeoframeEnvDatabaseIterator.str2ts(fromTS);
+	        
+	        List<double[]> allValuesList = new ArrayList<>();
+	        List<long[]> allTimesList = new ArrayList<>();
+	        // simulated
+	        double[] simValues = new double[simQ.length];
+	        double[] obsValues = new double[simQ.length];
+	        long[] simTimes1 = new long[simQ.length];
+	        long[] simTimes2 = new long[simQ.length];
+	        for (int i = 0; i < simQ.length; i++) {
+	        	simValues[i] = simQ[i];
+	            simTimes1[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+	            
+	            if (!HMConstants.isNovalue(observedDischarge[i])) {
+	            	obsValues[i] = observedDischarge[i];
+	            } else {
+	            	obsValues[i] = 0.0;
+	            }
+	            simTimes2[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+			}
+			
+	        allValuesList.add(simValues);
+			allTimesList.add(simTimes1);
+
+			allValuesList.add(obsValues);
+			allTimesList.add(simTimes2);
+
+			TimeSeries timeseriesChart = new TimeSeries(title, series, allTimesList, allValuesList);
+	        timeseriesChart.setXLabel(xLabel);
+	        timeseriesChart.setYLabel(yLabel);
+            timeseriesChart.setShowLines(doLines);
+            
+            timeseriesChart.setColors(new Color[] {Color.BLUE, Color.RED});
+//	        if (doShapes != null)
+//	            timeseriesChart.setShowShapes(doShapes);
+
+	        ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
+	        Dimension preferredSize = new Dimension(width, height);
+	        chartPanel.setPreferredSize(preferredSize);
+
+//	        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+	        JDialog f = new JDialog();
+	        f.add(chartPanel, BorderLayout.CENTER);
+	        f.setTitle(title);
+	        f.setModal(false);
+	        f.pack();
+//	        if (dimension != null)
+//	            f.setSize(dimension);
+	        f.setLocationRelativeTo(null); // Center on screen
+	        f.setVisible(true);
+	        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	        f.getRootPane().registerKeyboardAction(e -> {
+	            f.dispose();
+	        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		
 	}
 
 	private double[] runSimulation(String fromTS, String toTS, int timeStepMinutes, int maxBasinId, //
