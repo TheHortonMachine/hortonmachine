@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.geoframe.core;
+package org.hortonmachine.geoframe.io;
 
 import java.util.Date;
 
@@ -24,7 +24,7 @@ import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
-import org.hortonmachine.geoframe.core.utils.TopologyNode;
+import org.hortonmachine.geoframe.core.TopologyNode;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

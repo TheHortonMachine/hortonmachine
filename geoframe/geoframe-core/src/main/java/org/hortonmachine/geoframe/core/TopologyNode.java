@@ -1,4 +1,4 @@
-package org.hortonmachine.geoframe.core.utils;
+package org.hortonmachine.geoframe.core;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

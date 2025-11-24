@@ -32,11 +32,11 @@ public record WaterBudgetRunoffParameters(
 	}
 	
 	public static double[] cRange() {
-		return new double[] {0.000001, 0.6};
+		return new double[] {0.000001, 5};
 	}
 	
 	public static double[] dRange() {
-		return new double[] {1.0, 3.0};
+		return new double[] {0.9, 1.0};
 	}
 	
 	public static List<ParameterBounds> calibrationParameterBounds() {

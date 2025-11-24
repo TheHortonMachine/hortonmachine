@@ -13,7 +13,8 @@ import org.hortonmachine.geoframe.core.parameters.WaterBudgetCanopyParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetGroundParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetRootzoneParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetRunoffParameters;
-import org.hortonmachine.geoframe.core.utils.TopologyNode;
+import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
+import org.hortonmachine.geoframe.io.GeoframeWaterBudgetSimulationWriter;
 
 import canopyOut.WaterBudgetCanopyOUT;
 import canopyOut.WaterBudgetCanopyOUT.WaterBudgetCanopyStepResult;

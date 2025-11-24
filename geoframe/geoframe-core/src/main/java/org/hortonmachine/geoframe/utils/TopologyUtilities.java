@@ -1,9 +1,10 @@
-package org.hortonmachine.geoframe.core.utils;
+package org.hortonmachine.geoframe.utils;
 
 import java.util.HashMap;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.utils.GeoframeUtils;
 
 public class TopologyUtilities {

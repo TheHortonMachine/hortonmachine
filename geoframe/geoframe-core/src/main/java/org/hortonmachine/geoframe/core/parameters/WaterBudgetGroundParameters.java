@@ -33,11 +33,11 @@ public record WaterBudgetGroundParameters(
 	}
 	
 	public static double[] eRange() {
-		return new double[] {0.0000005, 0.02};
+		return new double[] {0.0000005, 2};
 	}
 	
 	public static double[] fRange() {
-		return new double[] {1.0, 3.0};
+		return new double[] {0.95, 1.0};
 	}
 	
 	public static List<ParameterBounds> calibrationParameterBounds() {

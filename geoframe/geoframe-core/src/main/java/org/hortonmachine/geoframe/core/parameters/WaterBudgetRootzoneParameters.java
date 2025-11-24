@@ -31,15 +31,15 @@ public record WaterBudgetRootzoneParameters(
 	public static final WaterBudgetRootzoneParameters CALIBRATION_DEFAULT = new WaterBudgetRootzoneParameters(150.0, 0.05, 1.5, 2.0);
 
 	public static double[] sRootZoneMaxRange() {
-		return new double[] {40.0, 150.0};
+		return new double[] {40.0, 250.0};
 	}
 	
 	public static double[] gRange() {
-		return new double[] {0.000001, 0.3};
+		return new double[] {0.000001, 3};
 	}
 	
 	public static double[] hRange() {
-		return new double[] {1.0, 3.0};
+		return new double[] {0.8, 1.0};
 	}
 	
 	public static double[] pBSoilRange() {

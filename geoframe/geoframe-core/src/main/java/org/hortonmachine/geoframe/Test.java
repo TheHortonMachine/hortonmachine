@@ -1,4 +1,4 @@
-package org.hortonmachine.geoframe.core;
+package org.hortonmachine.geoframe;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,6 +27,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.modules.r.cutout.OmsCutOut;
 import org.hortonmachine.gears.modules.r.rasteronvectorresizer.OmsRasterResizer;
 import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
@@ -43,14 +44,20 @@ import org.hortonmachine.gears.utils.optimizers.sceua.ParameterBounds;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaConfig;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaOptimizer;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaResult;
+import org.hortonmachine.geoframe.calibration.WaterBudgetCalibration;
+import org.hortonmachine.geoframe.core.TopologyNode;
+import org.hortonmachine.geoframe.core.WaterBudgetSimulation;
 import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
 import org.hortonmachine.geoframe.core.parameters.SnowMeltingParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetCanopyParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetGroundParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetRootzoneParameters;
 import org.hortonmachine.geoframe.core.parameters.WaterBudgetRunoffParameters;
-import org.hortonmachine.geoframe.core.utils.TopologyNode;
-import org.hortonmachine.geoframe.core.utils.TopologyUtilities;
+import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
+import org.hortonmachine.geoframe.io.GeoframeWaterBudgetSimulationWriter;
+import org.hortonmachine.geoframe.utils.IWaterBudgetSimulationRunner;
+import org.hortonmachine.geoframe.utils.TopologyUtilities;
+import org.hortonmachine.geoframe.utils.WaterSimulationRunner;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
@@ -357,116 +364,41 @@ public class Test extends HMModel {
 				etpReader.preCacheData();
 			}
 			
+			IWaterBudgetSimulationRunner runner = new WaterSimulationRunner();
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
-//				Best params = [1.4991210577054512, 1.4999257881866468, 0.24691150853269062, 1.981916919380824, 
-//				0.9976034695088298, 0.4430675659847265, 0.8081823197441601, 0.98, 40.0, 0.2990859073782653, 1.0, 
-//				2.9689915583831885, 10.000491496058672, 0.5979045531796342, 1.0, 103.17261139534912, 0.0039555535684116, 1.0271816409340593]
+//				PSO-WB FINAL BEST PARAMS = [1.4988412128134276, 1.3528682904526688, -0.9719297586025497, 
+//				1.2129776817498121, 0.2524744929259273, 0.4999207726598689, 
+//				0.3099495302231014, 0.5705882325703485, 
+//				91.37212539260358, 0.7165720580162959, 0.9998233463029578, 1.8675287557895643, 
+//				10.783705825536433, 1.3816224824093237, 0.9990192426917267, 
+//				120.68110880147364, 1.3244889798041657, 0.9992072740099666]
 
-				RainSnowSeparationParameters rssepP = new RainSnowSeparationParameters(1.0, 1.4991210577054512,
-						1.4999257881866468, 0.24691150853269062);
-				SnowMeltingParameters snowmP = new SnowMeltingParameters(1.981916919380824, 0.9976034695088298,
-						0.4430675659847265);
-				WaterBudgetCanopyParameters wbcP = new WaterBudgetCanopyParameters(0.8081823197441601, 0.98);
-				WaterBudgetRootzoneParameters wbRzP = new WaterBudgetRootzoneParameters(40.0, 0.2990859073782653,
-						1.0, 2.9689915583831885);
-				WaterBudgetRunoffParameters wbrP = new WaterBudgetRunoffParameters(10.000491496058672,
-						0.5979045531796342, 1.0);
-				WaterBudgetGroundParameters wbgP = new WaterBudgetGroundParameters(103.17261139534912,
-						0.0039555535684116, 1.0271816409340593);
+				RainSnowSeparationParameters rssepP = new RainSnowSeparationParameters(1.0, 1.4988, 1.3529, -0.9719);
+				SnowMeltingParameters snowmP = new SnowMeltingParameters( 1.2130, 0.2525, 0.4999);
+				WaterBudgetCanopyParameters wbcP = new WaterBudgetCanopyParameters(0.3099, 0.5706);
+				WaterBudgetRootzoneParameters wbRzP = new WaterBudgetRootzoneParameters(91.3721, 0.7166, 0.9998, 1.8675);
+				WaterBudgetRunoffParameters wbrP = new WaterBudgetRunoffParameters(10.7837, 1.3816, 0.9990);
+				WaterBudgetGroundParameters wbgP = new WaterBudgetGroundParameters(120.6811, 1.3245, 0.9992);
+				
+
+				
 				
 				// run a single simulation with default parameters
-				double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
+				double[] simQ = runner.run(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
 						rssepP, snowmP,
 						wbcP,
 						wbRzP,
 						wbrP,
 						wbgP, 0.6, // TODO handle LAI properly
 						db,
-						precipReader, tempReader, etpReader);
+						precipReader, tempReader, etpReader,
+						null, pm);
 				
 				chartResult(simQ, observedDischarge, timeStepMinutes, fromTS, spinUpTimesteps);
 			} else {
-				AtomicDouble bestSoFar = new AtomicDouble(Double.POSITIVE_INFINITY);
-
-				List<ParameterBounds> allParameterBounds = new ArrayList<>();
-				allParameterBounds.addAll(RainSnowSeparationParameters.calibrationParameterBounds());
-				allParameterBounds.addAll(SnowMeltingParameters.calibrationParameterBounds());
-				allParameterBounds.addAll(WaterBudgetCanopyParameters.calibrationParameterBounds());
-				allParameterBounds.addAll(WaterBudgetRootzoneParameters.calibrationParameterBounds());
-				allParameterBounds.addAll(WaterBudgetRunoffParameters.calibrationParameterBounds());
-				allParameterBounds.addAll(WaterBudgetGroundParameters.calibrationParameterBounds());
-
-				SceUaOptimizer.ObjectiveFunction objFn = params -> {
-					var lai = 0.6; // TODO handle LAI properly
-
-					int i = 0;
-					double alpha_r = params[i++];
-					double alpha_s = params[i++];
-					double meltingTemperature = params[i++];
-					var m1 = 1.0; // TODO handle m1 properly
-					RainSnowSeparationParameters rssepParamCalib = new RainSnowSeparationParameters(m1, alpha_r,
-							alpha_s, meltingTemperature);
-
-					double combinedMeltingFactor = params[i++];
-					double freezingFactor = params[i++];
-					double alfa_l = params[i++];
-					SnowMeltingParameters snowMParamsCalib = new SnowMeltingParameters(combinedMeltingFactor,
-							freezingFactor, alfa_l);
-
-					double kc = params[i++];
-					double p = params[i++];
-					WaterBudgetCanopyParameters wbCanopyParamsCalib = new WaterBudgetCanopyParameters(kc, p);
-
-					double s_RootZoneMax = params[i++];
-					double g = params[i++];
-					double h = params[i++];
-					double pB_soil = params[i++];
-					WaterBudgetRootzoneParameters wbRootzoneParamsCalib = new WaterBudgetRootzoneParameters(
-							s_RootZoneMax, g, h, pB_soil);
-
-					double sRunoffMax = params[i++];
-					double c = params[i++];
-					double d = params[i++];
-					WaterBudgetRunoffParameters wbRunoffParamsCalib = new WaterBudgetRunoffParameters(sRunoffMax, c, d);
-
-					double s_GroundWaterMax = params[i++];
-					double e = params[i++];
-					double f = params[i++];
-					WaterBudgetGroundParameters wbGroundParamsCalib = new WaterBudgetGroundParameters(s_GroundWaterMax,
-							e, f);
-
-					double[] simQ = runSimulation(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(),
-							basinAreas, rssepParamCalib, snowMParamsCalib, wbCanopyParamsCalib, wbRootzoneParamsCalib,
-							wbRunoffParamsCalib, wbGroundParamsCalib, lai, null,
-							precipReader, tempReader, etpReader);
-					double kgeCost = KGE.kgeCost(simQ, observedDischarge, spinUpTimesteps, HMConstants.doubleNovalue);
-					double old = bestSoFar.get();
-				    if (kgeCost < old && bestSoFar.compareAndSet(old, kgeCost)) {
-				        synchronized (pm) {
-				            pm.message("New best cost = " + kgeCost +
-				                               " | KGE = " + (-kgeCost) +
-				                               " | Params = " + Arrays.toString(params));
-				        }
-				    }
-					return kgeCost; // minimize -KGE
-				};
-				SceUaConfig config = SceUaConfig.builder().maxIterations(2000).maxEvaluations(5000).complexCount(5)
-						.objectiveStdTolerance(1e-4).random(new Random(42L)) // deterministic
-						.verbose(false).build();
-
-				SceUaOptimizer optimizer = new SceUaOptimizer(allParameterBounds, objFn, config);
-				SceUaResult result = optimizer.optimizeParallel(calibrationThreadCount);
-
-				double[] best = result.getBestParameters();
-				double bestObj = result.getBestObjective();
-
-				System.out.println("Best objective (cost) = " + bestObj);
-				System.out.println("Best params = " + Arrays.toString(best));
-
-				// Convert cost back to KGE for interpretation
-				double bestKGE = -bestObj;
-				System.out.println("Best KGE = " + bestKGE);
+				WaterBudgetCalibration.psoCalibration(maxBasinId, basinAreas, rootNode, fromTS, toTS, timeStepMinutes, observedDischarge,
+						calibrationThreadCount, precipReader, tempReader, etpReader, runner ,spinUpTimesteps, calibrationCounter, pm);
 
 			}
 
@@ -475,6 +407,8 @@ public class Test extends HMModel {
 			envDb.close();
 		}
 	}
+
+	
 
 	private void chartResult(double[] simQ, double[] observedDischarge, int timeStepMinutes, String fromTS,
 			int spinUpTimesteps) {
@@ -548,76 +482,6 @@ public class Test extends HMModel {
 		
 	}
 
-	private double[] runSimulation(String fromTS, String toTS, int timeStepMinutes, int maxBasinId, //
-			TopologyNode rootNode, double[] basinAreas, //
-			RainSnowSeparationParameters rssepParam, SnowMeltingParameters snowMParams, WaterBudgetCanopyParameters wbCanopyParams, 
-			WaterBudgetRootzoneParameters wbRootzoneParams, WaterBudgetRunoffParameters wbRunoffParams, 
-			WaterBudgetGroundParameters wbGroundParams, double lai, //
-			ADb outputDb, //
-			GeoframeEnvDatabaseIterator precipReader, GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader
-			) throws Exception {
-		int calibRun = calibrationCounter.incrementAndGet();
-
-		long t1 = System.currentTimeMillis();
-		System.out.println("Running simulation " +  calibRun);
-		
-		
-
-		GeoframeWaterBudgetSimulationWriter resultsWriter = null;
-		if (outputDb != null) {
-			resultsWriter = new GeoframeWaterBudgetSimulationWriter();
-			resultsWriter.db = outputDb;
-			resultsWriter.rootNode = rootNode;
-		}
-
-		double[] initialConditionSolidWater = new double[maxBasinId + 1]; // ok init with 0s
-		double[] initialConditionLiquidWater = new double[maxBasinId + 1]; // ok init with 0s
-		double[] initalConditionsCanopyMap = new double[maxBasinId + 1];
-		Arrays.fill(initalConditionsCanopyMap, Double.NaN);
-		double[] initalConditionsRootzoneMap = new double[maxBasinId + 1];
-		Arrays.fill(initalConditionsRootzoneMap, Double.NaN);
-		double[] initalConditionsRunoffMap = new double[maxBasinId + 1];
-		Arrays.fill(initalConditionsRunoffMap, Double.NaN);
-		double[] initalConditionsGroundMap = new double[maxBasinId + 1];
-		Arrays.fill(initalConditionsGroundMap, Double.NaN);
-		
-		
-		WaterBudgetSimulation wbSim = new WaterBudgetSimulation();
-		wbSim.pm = pm;
-		wbSim.rootNode = rootNode;
-		wbSim.basinAreas = basinAreas;
-		wbSim.timeStepMinutes = timeStepMinutes;
-		wbSim.precipReader = precipReader;
-		wbSim.tempReader = tempReader;
-		wbSim.etpReader = etpReader;
-		wbSim.initialConditionSolidWater = initialConditionSolidWater;
-		wbSim.initialConditionLiquidWater = initialConditionLiquidWater;
-		wbSim.initalConditionsCanopyMap = initalConditionsCanopyMap;
-		wbSim.initalConditionsRootzoneMap = initalConditionsRootzoneMap;
-		wbSim.initalConditionsRunoffMap = initalConditionsRunoffMap;
-		wbSim.initalConditionsGroundMap = initalConditionsGroundMap;
-		wbSim.rssepParam = rssepParam;
-		wbSim.snowMParams = snowMParams;
-		wbSim.wbCanopyParams = wbCanopyParams;
-		wbSim.wbRootzoneParams = wbRootzoneParams;
-		wbSim.wbRunoffParams = wbRunoffParams;
-		wbSim.wbGroundParams = wbGroundParams;
-		wbSim.lai = lai;
-		wbSim.resultsWriter = resultsWriter;
-		wbSim.doParallel = false;
-		wbSim.doTopologically = false;
-		wbSim.doDebugMessages = outputDb != null ;
-
-		wbSim.init();
-		wbSim.process();
-		
-		var lastNodeDischargeArray = wbSim.outRootNodeDischargeInTime;
-		var sim = lastNodeDischargeArray.getTrimmedInternalArray();
-		
-		long t2 = System.currentTimeMillis();
-		System.out.println("Simulation run " + calibRun + " completed in " + (t2 - t1) / 1000.0 + " seconds.");
-		return sim;
-	}
 
 	private double[] getObservedDischarge(ADb envDb, String fromTS, String toTS) throws Exception {
 		long from = GeoframeEnvDatabaseIterator.str2ts(fromTS);

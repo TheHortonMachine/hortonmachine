@@ -36,11 +36,11 @@ public record RainSnowSeparationParameters(
 	}
 	
 	public static double[] alphaSRange() {
-		return new double[] {0.9, 1.5};
+		return new double[] {0.8, 1.5};
 	}
 	
 	public static double[] meltingTemperatureRange() {
-		return new double[] {-1.0, 2.0};
+		return new double[] {-1.0, 3.0};
 	}
 	
 	public static List<ParameterBounds> calibrationParameterBounds() {

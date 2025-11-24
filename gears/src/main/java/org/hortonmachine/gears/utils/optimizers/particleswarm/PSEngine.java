@@ -47,6 +47,10 @@ public class PSEngine {
     private Random rand;
     private double[][] ranges;
     private String prefix;
+    
+    private final Object globalLock = new Object(); // lock for global best updates
+	private Integer numOfThreads;
+
 
     /**
      * Constructor.
@@ -61,7 +65,7 @@ public class PSEngine {
      * @param prefix TODO
      */
     public PSEngine( int particlesNum, int maxIterations, double accelerationFactorLocal, double accelerationFactorGlobal,
-            double initDecelerationFactor, double decayFactor, IPSFunction function, String prefix ) {
+            double initDecelerationFactor, double decayFactor, IPSFunction function, Integer numOfThreads, String prefix ) {
         this.particlesNum = particlesNum;
         this.accelerationFactorLocal = accelerationFactorLocal;
         this.accelerationFactorGlobal = accelerationFactorGlobal;
@@ -69,6 +73,7 @@ public class PSEngine {
         this.decayFactor = decayFactor;
         this.maxIterations = maxIterations;
         this.function = function;
+		this.numOfThreads = numOfThreads;
         this.prefix = prefix;
     }
 
@@ -93,37 +98,58 @@ public class PSEngine {
             throw new ModelsIllegalargumentException("No ranges have been defined for the parameter space.", this);
         }
 
-        createSwarm();
+        if (numOfThreads != null && numOfThreads > 1) {
+			createSwarmMultiThreaded();
+		} else {
+			createSwarm();
+		}
+        
+        System.out.println(prefix + " INITIAL BEST KGE = " + (-globalBest));
+        System.out.println(prefix + " INITIAL BEST PARAMS = " + Arrays.toString(globalBestLocations));
+
+        
         double[] previous = null;
         while( iterationStep <= maxIterations ) {
-            updateSwarm();
+        	if (numOfThreads != null && numOfThreads > 1) {
+        		updateSwarmMultiThreaded();
+        	} else {
+        		updateSwarm();
+			}
 
-            if (printStep()) {
-                System.out.println(prefix + " - ITER: " + iterationStep + " global best: " + globalBest + " - for positions: "
-                        + Arrays.toString(globalBestLocations));
-            }
+//            if (printStep()) {
+//                System.out.println(prefix + " - ITER: " + iterationStep + " global best: " + globalBest + " - for positions: "
+//                        + Arrays.toString(globalBestLocations));
+//            }
 
             if (function.hasConverged(globalBest, globalBestLocations, previous)) {
                 break;
             }
             previous = globalBestLocations.clone();
+            
+
+            System.out.println(prefix + " CURRENT BEST KGE = " + (-globalBest));
+            System.out.println(prefix + " CURRENT BEST PARAMS = " + Arrays.toString(globalBestLocations));
         }
+
+        System.out.println(prefix + " FINAL BEST KGE = " + (-globalBest));
+        System.out.println(prefix + " FINAL BEST PARAMS = " + Arrays.toString(globalBestLocations));
+        
     }
 
-    private boolean printStep() {
-        if (maxIterations > 10000) {
-            if (iterationStep % 1000 == 0) {
-                return true;
-            }
-        } else if (maxIterations > 1000) {
-            if (iterationStep % 100 == 0) {
-                return true;
-            }
-        } else {
-            return true;
-        }
-        return false;
-    }
+//    private boolean printStep() {
+//        if (maxIterations > 10000) {
+//            if (iterationStep % 1000 == 0) {
+//                return true;
+//            }
+//        } else if (maxIterations > 1000) {
+//            if (iterationStep % 100 == 0) {
+//                return true;
+//            }
+//        } else {
+//            return true;
+//        }
+//        return false;
+//    }
     /**
      * Getter for the found solution. 
      * 
@@ -162,6 +188,60 @@ public class PSEngine {
             }
         }
     }
+    
+	private void createSwarmMultiThreaded() throws Exception {
+		rand = new Random();
+		iterationStep = 0;
+		globalBest = function.getInitialGlobalBest();
+		swarm = new Particle[particlesNum];
+
+		// globalBestLocations will be initialized lazily once we know the dimension
+		globalBestLocations = null;
+
+		int nThreads = Runtime.getRuntime().availableProcessors();
+		java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(nThreads);
+
+		java.util.List<java.util.concurrent.Future<?>> futures = new java.util.ArrayList<>();
+
+		for (int j = 0; j < swarm.length; j++) {
+			final int particleIndex = j;
+
+			futures.add(executor.submit(() -> {
+				// create particle and evaluate it
+				Particle p = new Particle(ranges);
+				swarm[particleIndex] = p;
+
+				double[] currentLocations = p.getInitialLocations();
+				double evaluated = function.evaluate(iterationStep, particleIndex, currentLocations, ranges);
+				p.setParticleBestFunction(evaluated);
+
+				// update global best (thread-safe)
+				synchronized (globalLock) {
+					if (function.isBetter(evaluated, globalBest)) {
+						globalBest = evaluated;
+
+						if (globalBestLocations == null) {
+							globalBestLocations = new double[currentLocations.length];
+						}
+						System.arraycopy(currentLocations, 0, globalBestLocations, 0, currentLocations.length);
+					}
+				}
+
+				return null;
+			}));
+		}
+
+		// wait for all particles to finish initialization
+		for (java.util.concurrent.Future<?> f : futures) {
+			f.get();
+		}
+		executor.shutdown();
+
+		// Safety check (should not happen in practice)
+		if (globalBestLocations == null) {
+			throw new RuntimeException("No evaluated value found better than the initial global best: " + globalBest);
+		}
+	}
 
     private void updateSwarm() throws Exception {
         // System.out.println("UPDATE SWARM");
@@ -200,6 +280,61 @@ public class PSEngine {
             }
         }
     }
+    
+    private void updateSwarmMultiThreaded() throws Exception {
+    	iterationStep++;
+
+        double w = initDecelerationFactor * Math.pow(iterationStep, -decayFactor);
+
+        int nThreads = Runtime.getRuntime().availableProcessors();
+        if (numOfThreads != null && numOfThreads > 0) {
+        	nThreads = numOfThreads;
+        }
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(nThreads);
+
+        var futures = new java.util.ArrayList<java.util.concurrent.Future<?>>();
+        
+        for (int i = 0; i < swarm.length; i++) {
+            final int particleIndex = i;
+
+            futures.add(executor.submit(() -> {
+                Particle particle = swarm[particleIndex];
+
+                double[] currentLocations = particle.update(
+                        w,
+                        accelerationFactorLocal, rand.nextDouble(),
+                        accelerationFactorGlobal, rand.nextDouble(),
+                        globalBestLocations);
+
+                if (currentLocations == null) {
+                    return null; // skip, outside bounds
+                }
+
+                double evaluated = function.evaluate(iterationStep, particleIndex, currentLocations, ranges);
+
+                // update particle-local best
+                if (function.isBetter(evaluated, particle.getParticleBestFunction())) {
+                    particle.setParticleBestFunction(evaluated);
+                    particle.setParticleLocalBeststoCurrent();
+                }
+
+                // update global best (thread-safe)
+                synchronized (globalLock) {
+                    if (function.isBetter(evaluated, globalBest)) {
+                        globalBest = evaluated;
+                        System.arraycopy(currentLocations, 0, globalBestLocations, 0, currentLocations.length);
+                    }
+                }
+
+                return null;
+            }));
+        }
+
+        // wait for all threads to finish
+        for (var f : futures) f.get();
+
+        executor.shutdown();
+	}
 
     /**
      * Checks if the parameters are in the ranges.

@@ -81,7 +81,7 @@ public class Particle {
             // System.out.println(min + "/" + max + "/" + value);
             r[i] = value;
         }
-        System.out.println("INIT PARTICLE WITH: " + Arrays.toString(r));
+//        System.out.println("INIT PARTICLE WITH: " + Arrays.toString(r));
 
         locations = r;
         tmpLocations = new double[locations.length];
