@@ -156,6 +156,11 @@
                 <version>${revision}</version>
             </dependency>
             <dependency>
+			  <groupId>org.hortonmachine</groupId>
+			  <artifactId>hm-geoframe-core</artifactId>
+			  <version>${revision}</version>
+			</dependency>
+            <dependency>
                 <groupId>org.hortonmachine</groupId>
                 <artifactId>hm-gui</artifactId>
                 <version>${revision}</version>
