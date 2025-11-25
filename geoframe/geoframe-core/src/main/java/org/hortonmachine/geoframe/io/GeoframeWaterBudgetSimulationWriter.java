@@ -49,55 +49,50 @@ public class GeoframeWaterBudgetSimulationWriter extends HMModel {
 	@Description("The db to use.")
 	@In
 	public ADb db = null;
-	
+
 	@Description("The topologynode carrying the value to store.")
 	@In
 	public TopologyNode rootNode = null;
-	
+
 	@Description("The current time step to write to.")
 	@In
 	public long currentT;
 
-	
 	private IHMPreparedStatement ps;
 	private IHMConnection conn;
-	
-	
-	private String tableName = "water_budget_simulation_discharge" + "_" + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_UTC.format(new Date());
-	
+
+	private String tableName = "sim" + ETimeUtilities.INSTANCE.TIMESTAMPFORMATTER_UTC.format(new Date())
+			+ "_water_budget_simulation_discharge";
+
 	public void clearTable() throws Exception {
-		if(db.hasTable(tableName)) {
+		if (db.hasTable(tableName)) {
 			String sql = "DROP TABLE " + tableName + ";";
 			db.executeInsertUpdateDeleteSql(sql);
 		}
 	}
 
-    private void ensureOpen() throws Exception {
-    	if(ps != null) {
-    		return;
-    	}
+	private void ensureOpen() throws Exception {
+		if (ps != null) {
+			return;
+		}
 
-    	// make sure the output table exists
-    	String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" 
-    			+ "ts BIGINT NOT NULL, "
-				+ "basin_id INT NOT NULL, "
-				+ "value DOUBLE, "
-				+ "PRIMARY KEY (ts, basin_id) "
-				+ ");";
-    	db.executeInsertUpdateDeleteSql(sql);
-		
-    	String insertSql = "INSERT INTO " + tableName + " (ts, basin_id, value) VALUES (?,?,?) ";
-    	conn = db.getConnectionInternal();
-    	ps = conn.prepareStatement(insertSql);
-    	
-    }
+		// make sure the output table exists
+		String sql = "CREATE TABLE IF NOT EXISTS " + tableName + " (" + "ts BIGINT NOT NULL, "
+				+ "basin_id INT NOT NULL, " + "value DOUBLE, " + "PRIMARY KEY (ts, basin_id) " + ");";
+		db.executeInsertUpdateDeleteSql(sql);
 
-    @Execute
-    public void insert() throws Exception {
-        ensureOpen();
-        
-        conn.enableAutocommit(false);
-        rootNode.visitUpstream(node -> {
+		String insertSql = "INSERT INTO " + tableName + " (ts, basin_id, value) VALUES (?,?,?) ";
+		conn = db.getConnectionInternal();
+		ps = conn.prepareStatement(insertSql);
+
+	}
+
+	@Execute
+	public void insert() throws Exception {
+		ensureOpen();
+
+		conn.enableAutocommit(false);
+		rootNode.visitUpstream(node -> {
 			try {
 				ps.setLong(1, currentT);
 				ps.setInt(2, node.basinId);
@@ -107,13 +102,13 @@ public class GeoframeWaterBudgetSimulationWriter extends HMModel {
 				throw new RuntimeException(e);
 			}
 		});
-        ps.executeBatch();
-        conn.commit();
-        conn.enableAutocommit(true);
-    }
-    
-    @Finalize
-    public void close() throws Exception {
-        ps.close();
-    }
+		ps.executeBatch();
+		conn.commit();
+		conn.enableAutocommit(true);
+	}
+
+	@Finalize
+	public void close() throws Exception {
+		ps.close();
+	}
 }

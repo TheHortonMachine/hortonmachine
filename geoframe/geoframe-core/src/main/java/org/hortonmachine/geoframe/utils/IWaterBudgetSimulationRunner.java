@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
 import org.hortonmachine.geoframe.core.parameters.SnowMeltingParameters;
@@ -38,12 +39,7 @@ public interface IWaterBudgetSimulationRunner {
      * @param maxBasinId          Maximum basin ID (used to size output and state arrays).
      * @param rootNode            The root of the topological basin network.
      * @param basinAreas          Array of basin areas indexed by basin ID.
-     * @param rssepParam          Parameters for rain/snow separation.
-     * @param snowMParams         Parameters for snow melting.
-     * @param wbCanopyParams      Water budget parameters for the canopy.
-     * @param wbRootzoneParams    Water budget parameters for the root zone.
-     * @param wbRunoffParams      Water budget parameters for runoff generation.
-     * @param wbGroundParams      Water budget parameters for groundwater.
+     * @param wbParams            all paramters required by the water budget model.
      * @param lai                 Leaf Area Index used by the canopy model.
      * @param outputDb            Output database for writing simulation results (may be null).
      * @param precipReader        Iterator providing precipitation input data.
@@ -61,12 +57,7 @@ public interface IWaterBudgetSimulationRunner {
         int maxBasinId,
         TopologyNode rootNode,
         double[] basinAreas,
-        RainSnowSeparationParameters rssepParam,
-        SnowMeltingParameters snowMParams,
-        WaterBudgetCanopyParameters wbCanopyParams,
-        WaterBudgetRootzoneParameters wbRootzoneParams,
-        WaterBudgetRunoffParameters wbRunoffParams,
-        WaterBudgetGroundParameters wbGroundParams,
+        WaterBudgetParameters wbParams,
         double lai,
         ADb outputDb,
         GeoframeEnvDatabaseIterator precipReader,

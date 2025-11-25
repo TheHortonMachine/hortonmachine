@@ -290,51 +290,26 @@ public class TopologyNode {
 		}
 	}
 	
-    /**
-     * Accumulate values downstream:
-     *
-     * @param root the root (most downstream) node
-     */
-    public static void accumulateDownstream(TopologyNode root) {
-        // Optional but helpful: reset previous accumulated values
-        resetAccumulated(root, new HashSet<>());
-
-        // Compute new accumulated values
-        accumulateRecursive(root, new HashSet<>());
+	public static TopologyNode findNodeByBasinId(TopologyNode root, int basinId) {
+	    final TopologyNode[] result = new TopologyNode[1];
+	    root.visitUpstream(node -> {
+	        if (node.basinId == basinId) {
+	            result[0] = node;
+	        }
+	    });
+	    return result[0];
     }
-
-    private static double accumulateRecursive(TopologyNode node,
-                                             Set<TopologyNode> visited) {
-        if (!visited.add(node)) {
-            return 0;
-        }
-
-        double sum = node.value;
-
-        // Add accumulated sums from upstream nodes
-        for (TopologyNode upstream : node.upStreamNodes) {
-            sum += accumulateRecursive(upstream, visited);
-        }
-
-        // Store final accumulated result
-        node.accumulatedValue = sum;
-        return sum;
-    }
-
-    private static void resetAccumulated(TopologyNode node,
-                                         Set<TopologyNode> visited) {
-        if (!visited.add(node)) {
-            return;
-        }
-
-        node.accumulatedValue = 0;  // clear old values
-
-        for (TopologyNode up : node.upStreamNodes) {
-            resetAccumulated(up, visited);
-        }
-    }
-    
-
+	
+	
+	public static void accumulateDownstream(TopologyNode root) {
+		root.visitDownstreamFromLeaves(node -> {
+			double sum = node.value;
+			for (TopologyNode up : node.upStreamNodes) {
+				sum += up.accumulatedValue;
+			}
+			node.accumulatedValue = sum;
+		});
+	}
 
 	/**
 	 * Create a simple ASCII tree of the topology starting from the given root.

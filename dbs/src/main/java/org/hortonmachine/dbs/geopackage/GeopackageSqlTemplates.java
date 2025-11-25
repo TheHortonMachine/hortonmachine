@@ -109,6 +109,12 @@ public class GeopackageSqlTemplates extends ASqlTemplates {
 
     @Override
     public String dropTable(SqlName tableName, String geometryColumnName) {
+    	
+    	if(geometryColumnName == null || geometryColumnName.isEmpty()) {
+    		return "drop table if exists " + tableName.fixedDoubleName + ";\n";
+    	}
+    	
+    	
         // rtree prefix uses bare identifiers (no quotes)
         String rtreePrefix = "rtree_" + tableName + "_" + geometryColumnName;
 

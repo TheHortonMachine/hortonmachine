@@ -2,19 +2,18 @@ package org.hortonmachine.geoframe.core;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.DynamicDoubleArray;
-import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
-import org.hortonmachine.geoframe.core.parameters.SnowMeltingParameters;
-import org.hortonmachine.geoframe.core.parameters.WaterBudgetCanopyParameters;
-import org.hortonmachine.geoframe.core.parameters.WaterBudgetGroundParameters;
-import org.hortonmachine.geoframe.core.parameters.WaterBudgetRootzoneParameters;
-import org.hortonmachine.geoframe.core.parameters.WaterBudgetRunoffParameters;
+import org.hortonmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.geoframe.io.GeoframeWaterBudgetSimulationWriter;
+import org.hortonmachine.geoframe.utils.WaterBudgetState;
 
 import canopyOut.WaterBudgetCanopyOUT;
 import canopyOut.WaterBudgetCanopyOUT.WaterBudgetCanopyStepResult;
@@ -82,29 +81,9 @@ public class WaterBudgetSimulation extends HMModel {
 	@In
 	public double[] initalConditionsGroundMap;
 	
-	@Description("Rain snow separation parameters")
+	@Description("Water budget simulation parameters")
 	@In
-	public RainSnowSeparationParameters rssepParam;
-	
-	@Description("Snow melting parameters")
-	@In
-	public SnowMeltingParameters snowMParams;
-	
-	@Description("Water budget canopy parameters")
-	@In
-	public WaterBudgetCanopyParameters wbCanopyParams;
-	
-	@Description("Water budget rootzone parameters")
-	@In
-	public WaterBudgetRootzoneParameters wbRootzoneParams;
-	
-	@Description("Water budget runoff parameters")
-	@In
-	public WaterBudgetRunoffParameters wbRunoffParams;
-	
-	@Description("Water budget groundwater parameters")
-	@In
-	public WaterBudgetGroundParameters wbGroundParams;
+	public WaterBudgetParameters wbSimParams;
 	
 	@Description("Leaf area index")
 	@In
@@ -118,7 +97,13 @@ public class WaterBudgetSimulation extends HMModel {
 	@Out
 	public DynamicDoubleArray outRootNodeDischargeInTime = new DynamicDoubleArray(10000, 10000);
 	
-	
+	/**
+	 * Optional state database to store results.
+	 * 
+	 * State database schema is created automatically if not existing.
+	 * State is dumped after each time step only if this variable is not null.
+	 */
+	public ADb stateDb = null;
 
 	/**
 	 * Whether to do the parallel processing
@@ -131,20 +116,32 @@ public class WaterBudgetSimulation extends HMModel {
 	
 	private TopologyNode[] basinid2nodeMap = null;
 	
+	private WaterBudgetState[] waterBudgetStates = null; 
+	
 	public boolean doDebugMessages = true;
 
 	private String previousDay = null;
 	
 	private int timestepIndex = 0;
 
+	private String stateTableName;
+
 	@Initialize
-	public void init() {
+	public void init() throws Exception {
 		if (basinid2nodeMap == null) {
 			// create a map of basinId -> TopologyNode
 			basinid2nodeMap = new TopologyNode[basinAreas.length];
 			rootNode.visitUpstream(node -> {
 				basinid2nodeMap[node.basinId] = node;
 			});
+			
+			if (stateDb != null) {
+				stateTableName = WaterBudgetState.initTable(stateDb);
+				waterBudgetStates = new WaterBudgetState[basinAreas.length];
+				rootNode.visitUpstream(node -> {
+					waterBudgetStates[node.basinId] = new WaterBudgetState();
+				});
+			}
 		}
 	}
 	
@@ -183,8 +180,6 @@ public class WaterBudgetSimulation extends HMModel {
 			throw new Exception("Time steps do not match: " + pTs + " <> " + tTs + " <> " + eTs);
 		}
 
-//			pm.message("Processing time step: " + pTs);
-		
 		// reset nodes values
 		rootNode.visitUpstream(node -> {
 			node.value = Double.NaN;
@@ -222,9 +217,10 @@ public class WaterBudgetSimulation extends HMModel {
 		
 		// TODO do something with the resulting discharges
 		if (doDebugMessages) {
+			TopologyNode dbNode = rootNode;// TopologyNode.findNodeByBasinId(rootNode, 126);
 			String yearDay = pTs.substring(0, 10);
 			if (previousDay == null || !yearDay.equals(previousDay)) {
-				pm.message(pTs + "; " + rootNode.accumulatedValue + " m3/s at outlet");
+				pm.message("Node " + dbNode.basinId + "   " + pTs + "; " + dbNode.accumulatedValue + "; " + dbNode.value);
 				previousDay = yearDay;
 			}
 		}
@@ -232,6 +228,23 @@ public class WaterBudgetSimulation extends HMModel {
 		if (resultsWriter != null) {
 			resultsWriter.currentT = precipReader.currentT;
 			resultsWriter.insert();
+			
+//			if (stateDb != null) {
+//				// store state in database
+//				List<Object[]> insertObjectsList = new ArrayList<>();
+//				rootNode.visitUpstream(node -> {
+//					try {
+//						int basinId = node.basinId;
+//						WaterBudgetState waterBudgetState = waterBudgetStates[basinId];
+//						Object[] insertIntoDbObjects = waterBudgetState.getInsertIntoDbObjects(basinId, precipReader.currentT);
+//						insertObjectsList.add(insertIntoDbObjects);
+//					} catch (Exception e) {
+//						throw new RuntimeException(e);
+//					}
+//				});
+//				String preparedInsertSql = WaterBudgetState.getPreparedInsertSql(stateTableName);
+//				stateDb.executeBatchPreparedSql(preparedInsertSql, insertObjectsList);
+//			}
 		}
 		
 		// store outlet discharge in dynamic array
@@ -240,6 +253,7 @@ public class WaterBudgetSimulation extends HMModel {
 
 	private void processTimestepForBasin(double[] precipMap, double[] tempMap, double[] etpMap, TopologyNode node) {
 		int basinId = node.basinId;
+		WaterBudgetState waterBudgetState = new WaterBudgetState();// waterBudgetStates[basinId];
 
 		// FOR EACH BASIN
 		double precipitation = precipMap[basinId];
@@ -251,42 +265,61 @@ public class WaterBudgetSimulation extends HMModel {
 		double[] rainSnow = RainSnowSeparationPointCase.calculateRSSeparation(//
 				precipitation, //
 				temperature, //
-				rssepParam.meltingTemperature(), //
-				rssepParam.alfa_r(), //
-				rssepParam.alfa_s(), //
-				rssepParam.m1() //
+				wbSimParams.rainSnowSeparation.meltingTemperature, //
+				wbSimParams.rainSnowSeparation.alfa_r, //
+				wbSimParams.rainSnowSeparation.alfa_s, //
+				wbSimParams.rainSnowSeparation.m1 //
 		);
+		
+		waterBudgetState.separatedPrecipitationRain = rainSnow[0];
+		waterBudgetState.separatedPrecipitationSnow = rainSnow[1];
 
 		// SNOW MELTING
-		double freezingFactor = snowMParams.freezingFactor();
+		double freezingFactor = wbSimParams.snowMelting.freezingFactor;
 		freezingFactor = freezingFactor / 1440 * timeStepMinutes;
-		double combinedMeltingFactor = snowMParams.combinedMeltingFactor();
+		double combinedMeltingFactor = wbSimParams.snowMelting.combinedMeltingFactor;
 		combinedMeltingFactor = combinedMeltingFactor / 1440 * timeStepMinutes;
 
 		double initialSolidWater = initialConditionSolidWater[basinId];
 		double initialLiquidWater = initialConditionLiquidWater[basinId];
+		
+		waterBudgetState.solidWaterInitial = initialSolidWater;
+		waterBudgetState.liquidWaterInitial = initialLiquidWater;
 
 		SnowStepResult resultSM = SnowMeltingPointCaseDegreeDay.computeSnowStep( //
 				temperature, //
 				rainSnow[0], //
 				rainSnow[1], //
-				rssepParam.meltingTemperature(), //
+				wbSimParams.rainSnowSeparation.meltingTemperature, //
 				combinedMeltingFactor, //
 				freezingFactor, //
-				snowMParams.alfa_l(), //
+				wbSimParams.snowMelting.alfa_l, //
 				initialSolidWater, //
 				initialLiquidWater //
 		);
 
 		initialConditionSolidWater[basinId] = resultSM.solidWater();
 		initialConditionLiquidWater[basinId] = resultSM.liquidWater();
+		
+		waterBudgetState.solidWaterFinal = resultSM.solidWater();
+		waterBudgetState.liquidWaterFinal = resultSM.liquidWater();
+		waterBudgetState.swe = resultSM.swe();
+		waterBudgetState.freezing = resultSM.freezing();
+		waterBudgetState.melting = resultSM.melting();
+		waterBudgetState.meltingDischarge = resultSM.meltingDischarge();
+		waterBudgetState.errorODESolidWater = resultSM.errorODESolidWater();
+		waterBudgetState.errorODELiquidWater = resultSM.errorODELiquidWater();
+		waterBudgetState.errorSWE = resultSM.errorSWE();
 
 		// CANOPY
-		var kc = wbCanopyParams.kc();
+		var kc = wbSimParams.waterBudgetCanopy.kc;
 		double ci = initalConditionsCanopyMap[basinId];
 		if (isNovalue(ci)) {
 			ci = kc * lai / 2.0;
 		}
+		
+		waterBudgetState.canopyInitial = ci;
+		
 		double meltingDischarge = resultSM.meltingDischarge();
 		if (isNovalue(meltingDischarge))
 			meltingDischarge = 0.0;
@@ -298,18 +331,28 @@ public class WaterBudgetSimulation extends HMModel {
 				etp, //
 				ci, //
 				kc, //
-				wbCanopyParams.p() //
+				wbSimParams.waterBudgetCanopy.p //
 		);
 		initalConditionsCanopyMap[basinId] = resultWBC.waterStorage();
 		
+		waterBudgetState.canopyFinal = resultWBC.waterStorage();
+		waterBudgetState.canopyThroughfall = resultWBC.throughfall();
+		waterBudgetState.canopyAET = resultWBC.AET();
+		waterBudgetState.canopyActualInput = resultWBC.actualInput();
+		waterBudgetState.canopyActualOutput = resultWBC.actualOutput();
+		waterBudgetState.canopyError = resultWBC.error();
+		
 		// ROOTZONE
-		var s_RootZoneMax = wbRootzoneParams.s_RootZoneMax(); 
+		var s_RootZoneMax = wbSimParams.waterBudgetRootzone.s_RootZoneMax; 
 		var sat_degree = 0.5;
 		
 		ci = initalConditionsRootzoneMap[basinId];
 		if (isNovalue(ci)) {
 			ci = s_RootZoneMax * sat_degree;
 		}
+		
+		waterBudgetState.rootzoneInitial = ci;
+		
 		var throughFall = resultWBC.throughfall();
 		if(isNovalue(throughFall)) {
 			throughFall = 0.0;
@@ -323,22 +366,32 @@ public class WaterBudgetSimulation extends HMModel {
 				etp, //
 				aet, //
 				ci, //
-				wbRootzoneParams.pB_soil(), //
+				wbSimParams.waterBudgetRootzone.pB_soil, //
 				s_RootZoneMax, //
-				wbRootzoneParams.g(), //
-				wbRootzoneParams.h(), //
+				wbSimParams.waterBudgetRootzone.g, //
+				wbSimParams.waterBudgetRootzone.h, //
 				basinAreaKm2, //
 				timeStepMinutes//
 		);
 		initalConditionsRootzoneMap[basinId] = resultRZ.waterStorage();
 		
+		waterBudgetState.rootzoneFinal = resultRZ.waterStorage();
+		waterBudgetState.rootzoneActualInput = resultRZ.actualInput();
+		waterBudgetState.rootzoneAET = resultRZ.AET();
+		waterBudgetState.rootzoneRecharge = resultRZ.recharge();
+		waterBudgetState.rootzoneQuick = resultRZ.quick();
+		waterBudgetState.rootzoneAlpha = resultRZ.alpha();
+		waterBudgetState.rootzoneError = resultRZ.error();
+		
 		// RUNOFF
-		var s_RunoffMax = wbRunoffParams.sRunoffMax();
+		var s_RunoffMax = wbSimParams.waterBudgetRunoff.sRunoffMax;
 		
 		ci = initalConditionsRunoffMap[basinId];
 		if (isNovalue(ci)) {
 			ci = 0.5 * s_RunoffMax;
 		}
+		
+		waterBudgetState.runoffInitial = ci;
 		
 		double quick_mm = resultRZ.quick_mm();
 		if (isNovalue(quick_mm)) {
@@ -347,21 +400,28 @@ public class WaterBudgetSimulation extends HMModel {
 		WaterBudgetStepResult resultWB = WaterBudget.calculateWaterBudget(//
 				quick_mm, //
 				ci, //
-				wbRunoffParams.c(), //
-				wbRunoffParams.d(), //
+				wbSimParams.waterBudgetRunoff.c, //
+				wbSimParams.waterBudgetRunoff.d, //
 				s_RunoffMax, //
 				basinAreaKm2, //
 				timeStepMinutes//
 				);
 		initalConditionsRunoffMap[basinId] = resultWB.waterStorage();
 		
+		waterBudgetState.runoffFinal = resultWB.waterStorage();
+		waterBudgetState.runoffDischarge = resultWB.runoff();
+		waterBudgetState.runoffError = resultWB.error();
+		
 		// GROUNDWATER
-		var s_GroundWaterMax = wbGroundParams.s_GroundWaterMax();
+		var s_GroundWaterMax = wbSimParams.waterBudgetGround.s_GroundWaterMax;
 		
 		ci = initalConditionsGroundMap[basinId];
 		if (isNovalue(ci)) {
 			ci = 0.01 * s_GroundWaterMax;
 		}
+		
+		waterBudgetState.groundInitial = ci;
+		
 		double recharge = resultRZ.recharge();
 		if (isNovalue(recharge)) {
 			recharge = 0.0;
@@ -369,13 +429,17 @@ public class WaterBudgetSimulation extends HMModel {
 		WaterBudgetGroundStepResult resultWBG = WaterBudgetGround.calculateWaterBudgetGround(//
 				recharge, //
 				ci, //
-				wbGroundParams.e(), //
-				wbGroundParams.f(), //
+				wbSimParams.waterBudgetGround.e, //
+				wbSimParams.waterBudgetGround.f, //
 				s_GroundWaterMax, //
 				basinAreaKm2, //
 				timeStepMinutes //
 				);
 		initalConditionsGroundMap[basinId] = resultWBG.waterStorage();
+		
+		waterBudgetState.groundFinal = resultWBG.waterStorage();
+		waterBudgetState.groundDischarge = resultWBG.discharge();
+		waterBudgetState.groundError = resultWBG.error();
 		
 		// final discharge
 		double outDischargeRunoff = resultWB.runoff();

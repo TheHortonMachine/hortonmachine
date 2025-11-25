@@ -39,12 +39,13 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.gears.utils.optimizers.sceua.KGE;
+import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.sceua.ParameterBounds;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaConfig;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaOptimizer;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaResult;
 import org.hortonmachine.geoframe.calibration.WaterBudgetCalibration;
+import org.hortonmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.core.WaterBudgetSimulation;
 import org.hortonmachine.geoframe.core.parameters.RainSnowSeparationParameters;
@@ -329,10 +330,10 @@ public class Test extends HMModel {
 			// get the topology from the db
 			TopologyNode rootNode = TopologyUtilities.getRootNodeFromDb(db);
 
-			String fromTS = "2001-01-01 01:00:00";
-			String toTS = "2004-01-01 01:00:00";
+			String fromTS = "2015-10-01 01:00:00";
+			String toTS = "2018-10-01 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
-			int spinUpDays = 180;
+			int spinUpDays = 365;
 			double[] observedDischarge = getObservedDischarge(envDb, fromTS, toTS);
 			boolean doCalibration = false;
 			int calibrationThreadCount = 20;
@@ -367,33 +368,22 @@ public class Test extends HMModel {
 			IWaterBudgetSimulationRunner runner = new WaterSimulationRunner();
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
-//				PSO-WB FINAL BEST PARAMS = [1.4988412128134276, 1.3528682904526688, -0.9719297586025497, 
-//				1.2129776817498121, 0.2524744929259273, 0.4999207726598689, 
-//				0.3099495302231014, 0.5705882325703485, 
-//				91.37212539260358, 0.7165720580162959, 0.9998233463029578, 1.8675287557895643, 
-//				10.783705825536433, 1.3816224824093237, 0.9990192426917267, 
-//				120.68110880147364, 1.3244889798041657, 0.9992072740099666]
-
-				RainSnowSeparationParameters rssepP = new RainSnowSeparationParameters(1.0, 1.4988, 1.3529, -0.9719);
-				SnowMeltingParameters snowmP = new SnowMeltingParameters( 1.2130, 0.2525, 0.4999);
-				WaterBudgetCanopyParameters wbcP = new WaterBudgetCanopyParameters(0.3099, 0.5706);
-				WaterBudgetRootzoneParameters wbRzP = new WaterBudgetRootzoneParameters(91.3721, 0.7166, 0.9998, 1.8675);
-				WaterBudgetRunoffParameters wbrP = new WaterBudgetRunoffParameters(10.7837, 1.3816, 0.9990);
-				WaterBudgetGroundParameters wbgP = new WaterBudgetGroundParameters(120.6811, 1.3245, 0.9992);
+				double[] params = {
+						1.0340263745139564, 0.9070028793148661, -0.47966070577687664, 1.3315168762316274, 0.13977748085156966, 0.1638140752752137, 0.1684748175451627, 0.5990448867883432, 154.20975825107638, 0.15228866553605397, 0.8713004300910122, 1.3727726416540622, 24.582836535502437, 0.6112959748415321, 0.9357673578648056, 508.3183713385732, 0.7348783484874652, 0.9747709636832089
+				};
 				
-
 				
+				WaterBudgetParameters wbParams = WaterBudgetParameters.fromParameterArray(params);				
 				
 				// run a single simulation with default parameters
 				double[] simQ = runner.run(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
-						rssepP, snowmP,
-						wbcP,
-						wbRzP,
-						wbrP,
-						wbgP, 0.6, // TODO handle LAI properly
+						wbParams, 0.6, // TODO handle LAI properly
 						db,
 						precipReader, tempReader, etpReader,
 						null, pm);
+				
+				double kge = CostFunctions.kge(observedDischarge, simQ, spinUpTimesteps, HMConstants.doubleNovalue);
+				System.out.println(kge);
 				
 				chartResult(simQ, observedDischarge, timeStepMinutes, fromTS, spinUpTimesteps);
 			} else {

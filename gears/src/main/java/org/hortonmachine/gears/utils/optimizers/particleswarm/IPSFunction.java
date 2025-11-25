@@ -25,25 +25,18 @@ package org.hortonmachine.gears.utils.optimizers.particleswarm;
 public interface IPSFunction {
 
     /**
-     * Evaluates the value of the fitting function and returns representing scalar.
+     * Evaluates the value of the fitting function and returns a value representing the cost, to be minimized.
      * 
      * @param iterationStep the iterationstep to monitor the process.
-     * @param particleNum the particle number to monitor the process.
+     * @param particleNum the particle number to monitor the process. For 
+     * 			every iteration step, all particles are evaluated.
      * @param parameters the parameters to be used in the function.
      * @param ranges the valid ranges for the given parameters.
-     * @return the calculated value.
+     * @return the calculated cost value.
      * @throws Exception 
      */
-    public double evaluate( int iterationStep, int particleNum, double[] parameters, double[]... ranges ) throws Exception;
+    public double evaluateCost( int iterationStep, int particleNum, double[] parameters, double[]... ranges ) throws Exception;
     
-    /**
-     * apply the optimization function.
-     * 
-     * @param parameters the parameters needed.
-     * @return the optimized value;
-     */
-    public double optimization(double... parameters);
-
     /**
      * @return a description for the applied optimization function.
      */
@@ -52,15 +45,17 @@ public interface IPSFunction {
     /**
      * Evaluates if the supplied value is better than the supplied best.
      * 
-     * <p>Implementations will take care of defining whether a minimum,
-     * a maximum or some other condition has to be considered.
+     * <p>In this case we are minimizing cost, so a lower value is better.
      * 
      * @param evaluatedValue the value to check.
      * @param consideredBest the best to check against.
      * @return <code>true</code> if the evaluatedValue is considered to be better than the 
      *      supplied best.
      */
-    public boolean isBetter( double evaluatedValue, double consideredBest );
+	public default boolean isBetter(double evaluatedValue, double consideredBest) {
+		return evaluatedValue < consideredBest; 
+	}
+
 
     /**
      * Evaluates if the solution has converged.
@@ -75,15 +70,12 @@ public interface IPSFunction {
     /**
      * Gives the initial global best to use (ex. for initial swarm creation).
      * 
+     * <p>Since we are minimizing cost, this should be a high value.
+     * 
      * @return the initial global best to use.
      */
-    public double getInitialGlobalBest();
-
-    /**
-     * Getter for information the module might want to collect and make available. 
-     * 
-     * @return the info string or <code>null</code>.
-     */
-    public String getPostInfoString();
+	public default double getInitialGlobalBest() {
+		return Double.POSITIVE_INFINITY;
+	}
 
 }

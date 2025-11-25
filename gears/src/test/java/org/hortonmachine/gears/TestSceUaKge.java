@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.hortonmachine.gears.utils.optimizers.sceua.KGE;
+import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.sceua.ParameterBounds;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaConfig;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaOptimizer;
@@ -53,7 +53,7 @@ public class TestSceUaKge {
 
             double[] simQ = simulation(n, P, a, b);
 
-            return KGE.kgeCost(simQ, observedQ, 0, -9999.0); // minimize -KGE
+            return -CostFunctions.kge(simQ, observedQ, 0, -9999.0); // minimize -KGE
         };
 
         // ----- 4) Configure SCE-UA -----

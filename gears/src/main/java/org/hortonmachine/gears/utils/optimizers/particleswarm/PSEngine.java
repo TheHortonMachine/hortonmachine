@@ -40,7 +40,7 @@ public class PSEngine {
     private double decayFactor;
     private int particlesNum;
     private Particle[] swarm;
-    private double globalBest;
+    private double globalBestCost;
     private double[] globalBestLocations;
     private IPSFunction function;
     private int iterationStep;
@@ -104,7 +104,8 @@ public class PSEngine {
 			createSwarm();
 		}
         
-        System.out.println(prefix + " INITIAL BEST KGE = " + (-globalBest));
+        System.out.println(prefix + " INITIAL BEST KGE = " + (-globalBestCost));
+        System.out.println(prefix + " INITIAL BEST COST = " + globalBestCost);
         System.out.println(prefix + " INITIAL BEST PARAMS = " + Arrays.toString(globalBestLocations));
 
         
@@ -116,40 +117,23 @@ public class PSEngine {
         		updateSwarm();
 			}
 
-//            if (printStep()) {
-//                System.out.println(prefix + " - ITER: " + iterationStep + " global best: " + globalBest + " - for positions: "
-//                        + Arrays.toString(globalBestLocations));
-//            }
-
-            if (function.hasConverged(globalBest, globalBestLocations, previous)) {
+            if (function.hasConverged(globalBestCost, globalBestLocations, previous)) {
                 break;
             }
             previous = globalBestLocations.clone();
             
 
-            System.out.println(prefix + " CURRENT BEST KGE = " + (-globalBest));
+            System.out.println(prefix + " CURRENT BEST KGE = " + (-globalBestCost));
+            System.out.println(prefix + " CURRENT BEST COST = " + globalBestCost);
             System.out.println(prefix + " CURRENT BEST PARAMS = " + Arrays.toString(globalBestLocations));
         }
 
-        System.out.println(prefix + " FINAL BEST KGE = " + (-globalBest));
+        System.out.println(prefix + " FINAL BEST KGE = " + (-globalBestCost));
+        System.out.println(prefix + " FINAL BEST COST = " + globalBestCost);
         System.out.println(prefix + " FINAL BEST PARAMS = " + Arrays.toString(globalBestLocations));
         
     }
 
-//    private boolean printStep() {
-//        if (maxIterations > 10000) {
-//            if (iterationStep % 1000 == 0) {
-//                return true;
-//            }
-//        } else if (maxIterations > 1000) {
-//            if (iterationStep % 100 == 0) {
-//                return true;
-//            }
-//        } else {
-//            return true;
-//        }
-//        return false;
-//    }
     /**
      * Getter for the found solution. 
      * 
@@ -160,22 +144,22 @@ public class PSEngine {
     }
 
     public double getSolutionFittingValue() {
-        return globalBest;
+        return globalBestCost;
     }
 
     private void createSwarm() throws Exception {
         rand = new Random();
         iterationStep = 0;
-        globalBest = function.getInitialGlobalBest();
+        globalBestCost = function.getInitialGlobalBest();
         swarm = new Particle[particlesNum];
         for( int j = 0; j < swarm.length; j++ ) {
             swarm[j] = new Particle(ranges);
             double[] currentLocations = swarm[j].getInitialLocations();
-            double evaluated = function.evaluate(iterationStep, j, currentLocations, ranges);
-            swarm[j].setParticleBestFunction(evaluated);
+            double evaluatedCost = function.evaluateCost(iterationStep, j, currentLocations, ranges);
+            swarm[j].setParticleBestFunction(evaluatedCost);
             /* find globally best function value */
-            if (function.isBetter(evaluated, globalBest)) {
-                globalBest = evaluated;
+            if (function.isBetter(evaluatedCost, globalBestCost)) {
+                globalBestCost = evaluatedCost;
                 if (globalBestLocations == null) {
                     globalBestLocations = new double[currentLocations.length];
                 }
@@ -183,8 +167,8 @@ public class PSEngine {
                     globalBestLocations[k] = currentLocations[k];
                 }
             } else if (globalBestLocations == null) {
-                throw new RuntimeException("No evaluated value found better than the initial global best: " + evaluated + " vs. "
-                        + globalBest);
+                throw new RuntimeException("No evaluated value found better than the initial global best: " + evaluatedCost + " vs. "
+                        + globalBestCost);
             }
         }
     }
@@ -192,7 +176,7 @@ public class PSEngine {
 	private void createSwarmMultiThreaded() throws Exception {
 		rand = new Random();
 		iterationStep = 0;
-		globalBest = function.getInitialGlobalBest();
+		globalBestCost = function.getInitialGlobalBest();
 		swarm = new Particle[particlesNum];
 
 		// globalBestLocations will be initialized lazily once we know the dimension
@@ -212,13 +196,13 @@ public class PSEngine {
 				swarm[particleIndex] = p;
 
 				double[] currentLocations = p.getInitialLocations();
-				double evaluated = function.evaluate(iterationStep, particleIndex, currentLocations, ranges);
-				p.setParticleBestFunction(evaluated);
+				double evaluatedCost = function.evaluateCost(iterationStep, particleIndex, currentLocations, ranges);
+				p.setParticleBestFunction(evaluatedCost);
 
 				// update global best (thread-safe)
 				synchronized (globalLock) {
-					if (function.isBetter(evaluated, globalBest)) {
-						globalBest = evaluated;
+					if (function.isBetter(evaluatedCost, globalBestCost)) {
+						globalBestCost = evaluatedCost;
 
 						if (globalBestLocations == null) {
 							globalBestLocations = new double[currentLocations.length];
@@ -239,7 +223,7 @@ public class PSEngine {
 
 		// Safety check (should not happen in practice)
 		if (globalBestLocations == null) {
-			throw new RuntimeException("No evaluated value found better than the initial global best: " + globalBest);
+			throw new RuntimeException("No evaluated value found better than the initial global best: " + globalBestCost);
 		}
 	}
 
@@ -259,21 +243,21 @@ public class PSEngine {
             Particle particle = this.swarm[i];
             double[] currentLocations = particle.update(w, accelerationFactorLocal, rand.nextDouble(), accelerationFactorGlobal,
                     rand.nextDouble(), globalBestLocations);
-            double evaluated;
+            double evaluatedCost;
             if (currentLocations != null) {
-                evaluated = function.evaluate(iterationStep, i, currentLocations, ranges);
+                evaluatedCost = function.evaluateCost(iterationStep, i, currentLocations, ranges);
             } else {
                 // parameters were outside, ignore and try next round with new position
                 continue;
             }
             /* update best local function value */
-            if (function.isBetter(evaluated, particle.getParticleBestFunction())) {
-                particle.setParticleBestFunction(evaluated);
+            if (function.isBetter(evaluatedCost, particle.getParticleBestFunction())) {
+                particle.setParticleBestFunction(evaluatedCost);
                 particle.setParticleLocalBeststoCurrent();
             }
             /* update best global function value */
-            if (function.isBetter(evaluated, globalBest)) {
-                globalBest = evaluated;
+            if (function.isBetter(evaluatedCost, globalBestCost)) {
+                globalBestCost = evaluatedCost;
                 for( int j = 0; j < currentLocations.length; j++ ) {
                     globalBestLocations[j] = currentLocations[j];
                 }
@@ -310,18 +294,18 @@ public class PSEngine {
                     return null; // skip, outside bounds
                 }
 
-                double evaluated = function.evaluate(iterationStep, particleIndex, currentLocations, ranges);
+                double evaluatedCost = function.evaluateCost(iterationStep, particleIndex, currentLocations, ranges);
 
                 // update particle-local best
-                if (function.isBetter(evaluated, particle.getParticleBestFunction())) {
-                    particle.setParticleBestFunction(evaluated);
+                if (function.isBetter(evaluatedCost, particle.getParticleBestFunction())) {
+                    particle.setParticleBestFunction(evaluatedCost);
                     particle.setParticleLocalBeststoCurrent();
                 }
 
                 // update global best (thread-safe)
                 synchronized (globalLock) {
-                    if (function.isBetter(evaluated, globalBest)) {
-                        globalBest = evaluated;
+                    if (function.isBetter(evaluatedCost, globalBestCost)) {
+                        globalBestCost = evaluatedCost;
                         System.arraycopy(currentLocations, 0, globalBestLocations, 0, currentLocations.length);
                     }
                 }
