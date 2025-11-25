@@ -266,7 +266,10 @@ public class WaterBudgetSimulation extends HMModel {
 					}
 				});
 				String preparedInsertSql = WaterBudgetState.getPreparedInsertSql(stateTableName);
+				stateDb.getConnectionInternal().enableAutocommit(false);
 				stateDb.executeBatchPreparedSql(preparedInsertSql, insertObjectsList);
+				stateDb.getConnectionInternal().commit();
+				stateDb.getConnectionInternal().enableAutocommit(true);
 			}
 		}
 		

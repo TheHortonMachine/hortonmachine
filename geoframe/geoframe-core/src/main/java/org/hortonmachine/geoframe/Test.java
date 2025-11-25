@@ -335,7 +335,7 @@ public class Test extends HMModel {
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 365;
 			double[] observedDischarge = getObservedDischarge(envDb, fromTS, toTS);
-			boolean doCalibration = true;
+			boolean doCalibration = false;
 			int calibrationThreadCount = 2;
 			CostFunctions costFunction = CostFunctions.KGE;
 
@@ -370,11 +370,11 @@ public class Test extends HMModel {
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
 
-				double[] params = { 1.0340263745139564, 0.9070028793148661, -0.47966070577687664, 1.3315168762316274,
-						0.13977748085156966, 0.1638140752752137, 0.1684748175451627, 0.5990448867883432,
-						154.20975825107638, 0.15228866553605397, 0.8713004300910122, 1.3727726416540622,
-						24.582836535502437, 0.6112959748415321, 0.9357673578648056, 508.3183713385732,
-						0.7348783484874652, 0.9747709636832089 };
+				double[] params = { 0.8000000000982134, 0.9617776781075441, -0.5785018194920201, 1.4823957108363572,
+						0.19219751251394124, 0.1259786317307167, 0.16286136948697752, 0.7830168710338546,
+						131.94150612848236, 0.1201302512370603, 0.9091589492305665, 0.9461511765942531,
+						29.108143743487677, 0.6448126444539124, 0.914311465329479, 965.5376985249287,
+						1.1144291122950565, 0.995286235089868 };
 
 				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
 						precipReader, tempReader, etpReader, runner, spinUpTimesteps, params);
@@ -387,9 +387,9 @@ public class Test extends HMModel {
 				psConfig.w0 = 0.9;
 				psConfig.decay = 0.4;
 
-				double[] bestParams = WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode, timeStepMinutes,
-						observedDischarge, costFunction, calibrationThreadCount, precipReader, tempReader, etpReader,
-						runner, spinUpTimesteps, pm);
+				double[] bestParams = WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode,
+						timeStepMinutes, observedDischarge, costFunction, calibrationThreadCount, precipReader,
+						tempReader, etpReader, runner, spinUpTimesteps, pm);
 
 				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
 						precipReader, tempReader, etpReader, runner, spinUpTimesteps, bestParams);
@@ -401,8 +401,8 @@ public class Test extends HMModel {
 		}
 	}
 
-	private void runSimulationOnParams(ASpatialDb db, int maxBasinId, double[] basinAreas, TopologyNode rootNode, String fromTS,
-			int timeStepMinutes, double[] observedDischarge, GeoframeEnvDatabaseIterator precipReader,
+	private void runSimulationOnParams(ASpatialDb db, int maxBasinId, double[] basinAreas, TopologyNode rootNode,
+			String fromTS, int timeStepMinutes, double[] observedDischarge, GeoframeEnvDatabaseIterator precipReader,
 			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader,
 			IWaterBudgetSimulationRunner runner, int spinUpTimesteps, double[] params) throws Exception {
 		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, true, true, db, pm);
@@ -412,12 +412,14 @@ public class Test extends HMModel {
 		double[] simQ = runner.run(wbParams, 0.6, // TODO handle LAI properly
 				precipReader, tempReader, etpReader, null);
 
-		double cost = CostFunctions.KGE.evaluateCost(observedDischarge, simQ, spinUpTimesteps, HMConstants.doubleNovalue);
+		double cost = CostFunctions.KGE.evaluateCost(observedDischarge, simQ, spinUpTimesteps,
+				HMConstants.doubleNovalue);
 		String title = "Simulated vs Observed Discharge ( cost: " + cost + " )";
 		chartResult(title, simQ, observedDischarge, timeStepMinutes, fromTS);
 	}
 
-	private void chartResult(String title, double[] simQ, double[] observedDischarge, int timeStepMinutes, String fromTS) {
+	private void chartResult(String title, double[] simQ, double[] observedDischarge, int timeStepMinutes,
+			String fromTS) {
 		String xLabel = "time";
 		String yLabel = "Q [m3]";
 		int width = 1600;
