@@ -8,65 +8,55 @@ import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.geoframe.utils.WaterSimulationRunner;
 
-public class WaterBudgetCalibrationPso implements IPSFunction {
+public class WaterBudgetCalibrationPsoFunction implements IPSFunction {
 
-	private String fromTS;
-	private String toTS;
-	private int timeStepMinutes;
 	private double[] observedDischarge;
-	private int maxBasinId;
-	private double[] basinAreas;
-	private TopologyNode rootNode;
 	private GeoframeEnvDatabaseIterator precipReader;
 	private GeoframeEnvDatabaseIterator tempReader;
 	private GeoframeEnvDatabaseIterator etpReader;
-	private IHMProgressMonitor pm;
-	
-    // --- convergence state ---
-    private Double previousGlobalBest = null;
-    private int stagnantIterations = 0;
 
-    // tune these to taste
-    private final double valueAbsTol = 1e-4;    // absolute change in cost
-    private final double valueRelTol = 1e-3;    // relative change in cost
-    private final double paramAbsTol = 1e-3;    // max change in any parameter
-    private final int maxStagnantIterations = 100; // how many stable iters before stopping
+	// --- convergence state ---
+	private Double previousGlobalBest = null;
+	private int stagnantIterations = 0;
+
+	// tune these to taste
+	private final double valueAbsTol = 1e-3; // absolute change in cost
+	private final double valueRelTol = 5e-3; // relative change in cost
+	private final double paramAbsTol = 1e-2; // max change in any parameter
+	private final int maxStagnantIterations = 30; // how many stable iters before stopping
 	private Integer spinupTimesteps;
+	private WaterSimulationRunner runner;
+	private CostFunctions costFunction;
 
-
-	public WaterBudgetCalibrationPso(String fromTS, String toTS, int timeStepMinutes, double[] observedDischarge,
-			int maxBasinId, double[] basinAreas, TopologyNode rootNode, GeoframeEnvDatabaseIterator precipReader,
-			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, Integer spinupTimesteps, IHMProgressMonitor pm) {
-		this.fromTS = fromTS;
-		this.toTS = toTS;
-		this.timeStepMinutes = timeStepMinutes;
+	public WaterBudgetCalibrationPsoFunction(int timeStepMinutes, double[] observedDischarge, int maxBasinId,
+			double[] basinAreas, TopologyNode rootNode, GeoframeEnvDatabaseIterator precipReader,
+			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, Integer spinupTimesteps,
+			CostFunctions costFunction, boolean doParallel,
+		    boolean doTopologicallyOrdered, IHMProgressMonitor pm) {
 		this.observedDischarge = observedDischarge;
-		this.maxBasinId = maxBasinId;
-		this.basinAreas = basinAreas;
-		this.rootNode = rootNode;
 		this.precipReader = precipReader;
 		this.tempReader = tempReader;
 		this.etpReader = etpReader;
 		this.spinupTimesteps = spinupTimesteps;
-		this.pm = pm;
+		this.costFunction = costFunction;
+
+		runner = new WaterSimulationRunner();
+		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, doParallel, doTopologicallyOrdered, null, pm);
 	}
 
 	@Override
-	public double evaluateCost(int iterationStep, int particleNum, double[] params, double[]... ranges) throws Exception {
+	public double evaluateCost(int iterationStep, int particleNum, double[] params, double[]... ranges)
+			throws Exception {
 		var lai = 0.6; // TODO handle LAI properly
 
 		WaterBudgetParameters wbParams = WaterBudgetParameters.fromParameterArray(params);
-		
-		WaterSimulationRunner runner = new WaterSimulationRunner();
-		double[] simQ = runner.run(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
-				wbParams, lai, null, precipReader, tempReader, etpReader, iterationStep, pm);
 
-        double kge = CostFunctions.kge(observedDischarge, simQ, spinupTimesteps, HMConstants.doubleNovalue);
-        // KGE is a performance metric (higher = better).
-        double cost = -kge;
-        return cost;
+		String iterationInfo = String.format("PSO Iteration %d, Particle %d", iterationStep, particleNum);
+		double[] simQ = runner.run(wbParams, lai, precipReader, tempReader, etpReader, iterationInfo);
+
+		double cost = costFunction.evaluateCost(observedDischarge, simQ, spinupTimesteps, HMConstants.doubleNovalue);
+		return cost;
 	}
-	
 
 	@Override
 	public String optimizationDescription() {

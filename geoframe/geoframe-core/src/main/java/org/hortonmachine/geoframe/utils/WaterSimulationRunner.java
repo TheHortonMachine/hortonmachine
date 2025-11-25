@@ -12,28 +12,45 @@ import org.hortonmachine.geoframe.io.GeoframeWaterBudgetSimulationWriter;
 
 public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 
+	private int timeStepMinutes;
+	private int maxBasinId;
+	private TopologyNode rootNode;
+	private double[] basinAreas;
+	private ADb outputDb;
+	private IHMProgressMonitor pm;
+	private boolean doTopologicallyOrdered;
+	private boolean doParallel;
+
 	@Override
-	public double[] run(String fromTS, String toTS, 
-			int timeStepMinutes, int maxBasinId, TopologyNode rootNode, double[] basinAreas, 
-			WaterBudgetParameters wbParams, 
-			double lai,
-			ADb outputDb, 
-			GeoframeEnvDatabaseIterator precipReader, GeoframeEnvDatabaseIterator tempReader,
-			GeoframeEnvDatabaseIterator etpReader, 
-			Integer runNum, IHMProgressMonitor pm)
+	public void configure(int timeStepMinutes, int maxBasinId, TopologyNode rootNode, double[] basinAreas,
+			boolean doParallel, boolean doTopologicallyOrdered, ADb outputDb, IHMProgressMonitor pm) {
+		this.timeStepMinutes = timeStepMinutes;
+		this.maxBasinId = maxBasinId;
+		this.rootNode = rootNode;
+		this.basinAreas = basinAreas;
+		this.doParallel = doParallel;
+		this.doTopologicallyOrdered = doTopologicallyOrdered;
+		this.outputDb = outputDb;
+		this.pm = pm;
+	}
+
+	@Override
+	public double[] run(WaterBudgetParameters wbParams, double lai, GeoframeEnvDatabaseIterator precipReader,
+			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, String iterationInfo)
 			throws Exception {
+		TopologyNode localRootNode = rootNode.clone();
 
 		long t1 = 0;
-		if (runNum != null) {
+		if (iterationInfo != null) {
 			t1 = System.currentTimeMillis();
-			pm.message("Running simulation " + runNum);
+			pm.message("Begin: " + iterationInfo);
 		}
 
 		GeoframeWaterBudgetSimulationWriter resultsWriter = null;
 		if (outputDb != null) {
 			resultsWriter = new GeoframeWaterBudgetSimulationWriter();
 			resultsWriter.db = outputDb;
-			resultsWriter.rootNode = rootNode;
+			resultsWriter.rootNode = localRootNode;
 		}
 
 		double[] initialConditionSolidWater = new double[maxBasinId + 1]; // ok init with 0s
@@ -49,7 +66,7 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 
 		WaterBudgetSimulation wbSim = new WaterBudgetSimulation();
 		wbSim.pm = pm;
-		wbSim.rootNode = rootNode;
+		wbSim.rootNode = localRootNode;
 		wbSim.basinAreas = basinAreas;
 		wbSim.timeStepMinutes = timeStepMinutes;
 		wbSim.precipReader = precipReader;
@@ -64,8 +81,8 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 		wbSim.wbSimParams = wbParams;
 		wbSim.lai = lai;
 		wbSim.resultsWriter = resultsWriter;
-		wbSim.doParallel = false;
-		wbSim.doTopologically = true;
+		wbSim.doParallel = doParallel;
+		wbSim.doTopologically = doTopologicallyOrdered;
 		wbSim.doDebugMessages = outputDb != null;
 		wbSim.stateDb = outputDb;
 
@@ -75,9 +92,9 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 		var lastNodeDischargeArray = wbSim.outRootNodeDischargeInTime;
 		var sim = lastNodeDischargeArray.getTrimmedInternalArray();
 
-		if (runNum != null) {
+		if (iterationInfo != null) {
 			long t2 = System.currentTimeMillis();
-			System.out.println("Simulation run " + runNum + " completed in " + (t2 - t1) / 1000.0 + " seconds.");
+			System.out.println("End " + iterationInfo + " (" + (t2 - t1) / 1000.0 + " seconds)");
 		}
 		return sim;
 	}

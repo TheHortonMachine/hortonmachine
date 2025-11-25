@@ -50,6 +50,8 @@ public class WaterBudgetState {
 	public double groundFinal;
 	public double groundDischarge;
 	public double groundError;
+	
+	public static final WaterBudgetState DUMMY = new WaterBudgetState();
 
 	public static String initTable(ADb db) throws Exception {
 		// create table if not exists, with primary key on basin id and timestamp,

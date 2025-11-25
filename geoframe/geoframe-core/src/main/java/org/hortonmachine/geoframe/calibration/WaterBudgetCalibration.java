@@ -1,17 +1,17 @@
 package org.hortonmachine.geoframe.calibration;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.IPSFunction;
+import org.hortonmachine.gears.utils.optimizers.particleswarm.PSConfig;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.PSEngine;
+import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 
 public class WaterBudgetCalibration {
-	
 
 //	public static void sceCalibration(int maxBasinId, double[] basinAreas, TopologyNode rootNode, String fromTS, String toTS,
 //			int timeStepMinutes, double[] observedDischarge, int calibrationThreadCount,
@@ -99,13 +99,14 @@ public class WaterBudgetCalibration {
 //		double bestKGE = -bestObj;
 //		System.out.println("Best KGE = " + bestKGE);
 //	}
-	
-	public static void psoCalibration(int maxBasinId, double[] basinAreas, TopologyNode rootNode, String fromTS, String toTS,
-			int timeStepMinutes, double[] observedDischarge, int calibrationThreadCount,
+
+	public static double[] psoCalibration(PSConfig psConfig, int maxBasinId, double[] basinAreas, TopologyNode rootNode, int timeStepMinutes,
+			double[] observedDischarge, CostFunctions costFunction, int calibrationThreadCount,
 			GeoframeEnvDatabaseIterator precipReader, GeoframeEnvDatabaseIterator tempReader,
-			GeoframeEnvDatabaseIterator etpReader, IWaterBudgetSimulationRunner runner,
-			int spinUpTimesteps, AtomicInteger calibrationCounter, IHMProgressMonitor pm) throws Exception {
-		
+			GeoframeEnvDatabaseIterator etpReader, IWaterBudgetSimulationRunner runner, int spinUpTimesteps,
+			IHMProgressMonitor pm)
+			throws Exception {
+
 		double[][] ranges = new double[][] { WaterBudgetParameters.RainSnowSeparation.alphaRRange(),
 				WaterBudgetParameters.RainSnowSeparation.alphaSRange(),
 				WaterBudgetParameters.RainSnowSeparation.meltingTemperatureRange(),
@@ -124,35 +125,27 @@ public class WaterBudgetCalibration {
 				WaterBudgetParameters.WaterBudgetGroundParameters.sGroundWaterMaxRange(),
 				WaterBudgetParameters.WaterBudgetGroundParameters.eRange(),
 				WaterBudgetParameters.WaterBudgetGroundParameters.fRange() };
+
+		IPSFunction wbFunction = new WaterBudgetCalibrationPsoFunction(timeStepMinutes, observedDischarge, maxBasinId,
+				basinAreas, rootNode, precipReader, tempReader, etpReader, spinUpTimesteps, costFunction, false,
+				true, pm);
+
+		PSEngine engine = new PSEngine(psConfig.particlesNum, psConfig.maxIterations, psConfig.c1, psConfig.c2, psConfig.w0, psConfig.decay, wbFunction,
+				calibrationThreadCount, "PSO-Waterbudget");
+		engine.initializeRanges(ranges);
+
+		// 4. Run the swarm
+		engine.run();
+
+		// 5. Extract results
+		double[] best = engine.getSolution();
+		double cost = engine.getSolutionFittingValue();
+
+		pm.message("PSO calibration completed.");
+		pm.message("Best cost = " + cost);
+		pm.message("Best params = " + Arrays.toString(best));
 		
-		IPSFunction wbFunction = new WaterBudgetCalibrationPso(fromTS, toTS, timeStepMinutes, observedDischarge,
-				maxBasinId, basinAreas, rootNode, precipReader, tempReader, etpReader, spinUpTimesteps, pm);
-
-		 // 3. Configure PSO engine
-	    int particlesNum = 20;
-	    int maxIterations = 1000;
-	    double c1 = 2.0;
-	    double c2 = 2.0;
-	    double w0 = 0.9;
-	    double decay = 0.4;
-
-	    PSEngine engine = new PSEngine(particlesNum, maxIterations, c1, c2, w0, decay, wbFunction, calibrationThreadCount, "PSO-WB");
-	    engine.initializeRanges(ranges);
-
-	    // 4. Run the swarm
-	    engine.run();
-
-	    // 5. Extract results
-	    double[] best = engine.getSolution();
-	    double cost = engine.getSolutionFittingValue();
-
-	    System.out.println("PSO calibration completed.");
-	    System.out.println("Best KGE = " + (-cost));
-	    System.out.println("Best cost = " + cost);
-	    System.out.println("Best params = " + Arrays.toString(best));
+		return best;
 	}
-
-	
-
 
 }

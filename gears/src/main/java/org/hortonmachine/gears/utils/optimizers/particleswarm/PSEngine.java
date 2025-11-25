@@ -104,7 +104,6 @@ public class PSEngine {
 			createSwarm();
 		}
         
-        System.out.println(prefix + " INITIAL BEST KGE = " + (-globalBestCost));
         System.out.println(prefix + " INITIAL BEST COST = " + globalBestCost);
         System.out.println(prefix + " INITIAL BEST PARAMS = " + Arrays.toString(globalBestLocations));
 
@@ -123,12 +122,10 @@ public class PSEngine {
             previous = globalBestLocations.clone();
             
 
-            System.out.println(prefix + " CURRENT BEST KGE = " + (-globalBestCost));
             System.out.println(prefix + " CURRENT BEST COST = " + globalBestCost);
             System.out.println(prefix + " CURRENT BEST PARAMS = " + Arrays.toString(globalBestLocations));
         }
 
-        System.out.println(prefix + " FINAL BEST KGE = " + (-globalBestCost));
         System.out.println(prefix + " FINAL BEST COST = " + globalBestCost);
         System.out.println(prefix + " FINAL BEST PARAMS = " + Arrays.toString(globalBestLocations));
         

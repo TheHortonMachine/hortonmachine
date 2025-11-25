@@ -346,6 +346,10 @@ public class TopologyNode {
 
 		return sb.toString();
 	}
+	
+	public String toString() {
+		return toAsciiTree(this);
+	}
 
 	private static void buildAsciiTree(TopologyNode node, String prefix, boolean isLast, Set<TopologyNode> visited,
 			StringBuilder sb) {

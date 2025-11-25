@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -114,6 +117,8 @@ public class WaterBudgetSimulation extends HMModel {
 	 */
 	public boolean doTopologically = true;
 	
+	public int threadPoolSize = Runtime.getRuntime().availableProcessors();
+	
 	private TopologyNode[] basinid2nodeMap = null;
 	
 	private WaterBudgetState[] waterBudgetStates = null; 
@@ -135,12 +140,12 @@ public class WaterBudgetSimulation extends HMModel {
 				basinid2nodeMap[node.basinId] = node;
 			});
 			
+			waterBudgetStates = new WaterBudgetState[basinAreas.length];
+			rootNode.visitUpstream(node -> {
+				waterBudgetStates[node.basinId] = new WaterBudgetState();
+			});
 			if (stateDb != null) {
 				stateTableName = WaterBudgetState.initTable(stateDb);
-				waterBudgetStates = new WaterBudgetState[basinAreas.length];
-				rootNode.visitUpstream(node -> {
-					waterBudgetStates[node.basinId] = new WaterBudgetState();
-				});
 			}
 		}
 	}
@@ -188,15 +193,33 @@ public class WaterBudgetSimulation extends HMModel {
 		
 		if (doParallel) {
 			if (doTopologically) {
-				rootNode.visitDownstreamFromLeavesParallel(null, node -> {
+				rootNode.visitDownstreamFromLeavesParallel(threadPoolSize, node -> {
 					processTimestepForBasin(precipMap, tempMap, etpMap, node);
 				});
 			} else {
 				Set<TopologyNode> nodes = new HashSet<>();
 				TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
-				nodes.parallelStream().forEach(node -> {
-					processTimestepForBasin(precipMap, tempMap, etpMap, node);
-				});
+				
+				// do parallel processing with threadPoolSize threads
+				ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
+				CountDownLatch latch = new CountDownLatch(nodes.size());
+				for (TopologyNode node : nodes) {
+					executor.submit(() -> {
+						try {
+							processTimestepForBasin(precipMap, tempMap, etpMap, node);
+						} finally {
+							latch.countDown();
+						}
+					});
+				}
+				try {
+		            latch.await();
+		        } catch (InterruptedException e) {
+		            Thread.currentThread().interrupt();
+		            throw new RuntimeException("Interrupted while waiting for basin parallel operation to finish", e);
+		        } finally {
+		            executor.shutdown();
+		        }
 			}
 		} else {
 			if (doTopologically) {
@@ -229,22 +252,22 @@ public class WaterBudgetSimulation extends HMModel {
 			resultsWriter.currentT = precipReader.currentT;
 			resultsWriter.insert();
 			
-//			if (stateDb != null) {
-//				// store state in database
-//				List<Object[]> insertObjectsList = new ArrayList<>();
-//				rootNode.visitUpstream(node -> {
-//					try {
-//						int basinId = node.basinId;
-//						WaterBudgetState waterBudgetState = waterBudgetStates[basinId];
-//						Object[] insertIntoDbObjects = waterBudgetState.getInsertIntoDbObjects(basinId, precipReader.currentT);
-//						insertObjectsList.add(insertIntoDbObjects);
-//					} catch (Exception e) {
-//						throw new RuntimeException(e);
-//					}
-//				});
-//				String preparedInsertSql = WaterBudgetState.getPreparedInsertSql(stateTableName);
-//				stateDb.executeBatchPreparedSql(preparedInsertSql, insertObjectsList);
-//			}
+			if (stateDb != null) {
+				// store state in database
+				List<Object[]> insertObjectsList = new ArrayList<>();
+				rootNode.visitUpstream(node -> {
+					try {
+						int basinId = node.basinId;
+						WaterBudgetState waterBudgetState = waterBudgetStates[basinId];
+						Object[] insertIntoDbObjects = waterBudgetState.getInsertIntoDbObjects(basinId, precipReader.currentT);
+						insertObjectsList.add(insertIntoDbObjects);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				});
+				String preparedInsertSql = WaterBudgetState.getPreparedInsertSql(stateTableName);
+				stateDb.executeBatchPreparedSql(preparedInsertSql, insertObjectsList);
+			}
 		}
 		
 		// store outlet discharge in dynamic array
@@ -253,7 +276,7 @@ public class WaterBudgetSimulation extends HMModel {
 
 	private void processTimestepForBasin(double[] precipMap, double[] tempMap, double[] etpMap, TopologyNode node) {
 		int basinId = node.basinId;
-		WaterBudgetState waterBudgetState = new WaterBudgetState();// waterBudgetStates[basinId];
+		WaterBudgetState waterBudgetState = waterBudgetStates[basinId];
 
 		// FOR EACH BASIN
 		double precipitation = precipMap[basinId];

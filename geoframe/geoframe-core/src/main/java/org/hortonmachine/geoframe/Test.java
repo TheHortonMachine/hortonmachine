@@ -39,6 +39,7 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.optimizers.particleswarm.PSConfig;
 import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.sceua.ParameterBounds;
 import org.hortonmachine.gears.utils.optimizers.sceua.SceUaConfig;
@@ -76,8 +77,6 @@ import org.locationtech.jts.geom.Polygon;
 import com.google.common.util.concurrent.AtomicDouble;
 
 public class Test extends HMModel {
-	
-	private AtomicInteger calibrationCounter = new AtomicInteger(0);
 
 	public Test() throws Exception {
 		// gura
@@ -109,7 +108,7 @@ public class Test extends HMModel {
 		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
 		String ext = ".tif";
 		int drainThres = 2000;
-		double desiredArea = 30_000; // 1_000_000.0; 
+		double desiredArea = 30_000; // 1_000_000.0;
 		double desiredAreaDelta = 20.0;
 		double easting = 629720;
 		double northing = 5127690;
@@ -154,7 +153,7 @@ public class Test extends HMModel {
 
 		ADb envDb = EDb.SQLITE.getDb();
 		envDb.open(envDataPath);
-		
+
 		try {
 
 			if (toDo(pit)) {
@@ -310,8 +309,6 @@ public class Test extends HMModel {
 
 			// TODO here a potential evapotrans comes in
 
-			// TODO part in which rain, temperature, radiation and evapotransp are handled
-
 			// get the max basin id from the db
 			int maxBasinId = db.getLong("select max(basinid) from " + GeoframeUtils.GEOFRAME_BASIN_TABLE).intValue();
 
@@ -330,14 +327,18 @@ public class Test extends HMModel {
 			// get the topology from the db
 			TopologyNode rootNode = TopologyUtilities.getRootNodeFromDb(db);
 
+			//////////////////////////////////////////////////
+			/// PARAMETERS
+			//////////////////////////////////////////////////
 			String fromTS = "2015-10-01 01:00:00";
 			String toTS = "2018-10-01 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 365;
 			double[] observedDischarge = getObservedDischarge(envDb, fromTS, toTS);
-			boolean doCalibration = false;
-			int calibrationThreadCount = 20;
-			
+			boolean doCalibration = true;
+			int calibrationThreadCount = 2;
+			CostFunctions costFunction = CostFunctions.KGE;
+
 			var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
 			precipReader.db = envDb;
 			precipReader.pParameterId = 2; // precip
@@ -364,32 +365,34 @@ public class Test extends HMModel {
 			if (doCalibration) {
 				etpReader.preCacheData();
 			}
-			
+
 			IWaterBudgetSimulationRunner runner = new WaterSimulationRunner();
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
-				double[] params = {
-						1.0340263745139564, 0.9070028793148661, -0.47966070577687664, 1.3315168762316274, 0.13977748085156966, 0.1638140752752137, 0.1684748175451627, 0.5990448867883432, 154.20975825107638, 0.15228866553605397, 0.8713004300910122, 1.3727726416540622, 24.582836535502437, 0.6112959748415321, 0.9357673578648056, 508.3183713385732, 0.7348783484874652, 0.9747709636832089
-				};
-				
-				
-				WaterBudgetParameters wbParams = WaterBudgetParameters.fromParameterArray(params);				
-				
-				// run a single simulation with default parameters
-				double[] simQ = runner.run(fromTS, toTS, timeStepMinutes, maxBasinId, rootNode.clone(), basinAreas,
-						wbParams, 0.6, // TODO handle LAI properly
-						db,
-						precipReader, tempReader, etpReader,
-						null, pm);
-				
-				double kge = CostFunctions.kge(observedDischarge, simQ, spinUpTimesteps, HMConstants.doubleNovalue);
-				System.out.println(kge);
-				
-				chartResult(simQ, observedDischarge, timeStepMinutes, fromTS, spinUpTimesteps);
-			} else {
-				WaterBudgetCalibration.psoCalibration(maxBasinId, basinAreas, rootNode, fromTS, toTS, timeStepMinutes, observedDischarge,
-						calibrationThreadCount, precipReader, tempReader, etpReader, runner ,spinUpTimesteps, calibrationCounter, pm);
 
+				double[] params = { 1.0340263745139564, 0.9070028793148661, -0.47966070577687664, 1.3315168762316274,
+						0.13977748085156966, 0.1638140752752137, 0.1684748175451627, 0.5990448867883432,
+						154.20975825107638, 0.15228866553605397, 0.8713004300910122, 1.3727726416540622,
+						24.582836535502437, 0.6112959748415321, 0.9357673578648056, 508.3183713385732,
+						0.7348783484874652, 0.9747709636832089 };
+
+				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
+						precipReader, tempReader, etpReader, runner, spinUpTimesteps, params);
+			} else {
+				PSConfig psConfig = new PSConfig();
+				psConfig.particlesNum = 20;
+				psConfig.maxIterations = 500;
+				psConfig.c1 = 2.0;
+				psConfig.c2 = 2.0;
+				psConfig.w0 = 0.9;
+				psConfig.decay = 0.4;
+
+				double[] bestParams = WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode, timeStepMinutes,
+						observedDischarge, costFunction, calibrationThreadCount, precipReader, tempReader, etpReader,
+						runner, spinUpTimesteps, pm);
+
+				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
+						precipReader, tempReader, etpReader, runner, spinUpTimesteps, bestParams);
 			}
 
 		} finally {
@@ -398,85 +401,97 @@ public class Test extends HMModel {
 		}
 	}
 
-	
+	private void runSimulationOnParams(ASpatialDb db, int maxBasinId, double[] basinAreas, TopologyNode rootNode, String fromTS,
+			int timeStepMinutes, double[] observedDischarge, GeoframeEnvDatabaseIterator precipReader,
+			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader,
+			IWaterBudgetSimulationRunner runner, int spinUpTimesteps, double[] params) throws Exception {
+		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, true, true, db, pm);
+		WaterBudgetParameters wbParams = WaterBudgetParameters.fromParameterArray(params);
 
-	private void chartResult(double[] simQ, double[] observedDischarge, int timeStepMinutes, String fromTS,
-			int spinUpTimesteps) {
-	       	String title = "Simulated vs Observed Discharge";
-	        String xLabel = "time";
-	        String yLabel = "Q [m3]";
-	        int width = 1600;
-	        int height = 1000;
+		// run a single simulation with default parameters
+		double[] simQ = runner.run(wbParams, 0.6, // TODO handle LAI properly
+				precipReader, tempReader, etpReader, null);
 
-	        List<String> series = new ArrayList<>();
-	        series.add("Simulated Discharge");
-	        series.add("Observed Discharge");
-	        List<Boolean> doLines = new ArrayList<>();
-	        doLines.add(true);
-	        doLines.add(true);
-	        
-	        long startTS = GeoframeEnvDatabaseIterator.str2ts(fromTS);
-	        
-	        List<double[]> allValuesList = new ArrayList<>();
-	        List<long[]> allTimesList = new ArrayList<>();
-	        // simulated
-	        double[] simValues = new double[simQ.length];
-	        double[] obsValues = new double[simQ.length];
-	        long[] simTimes1 = new long[simQ.length];
-	        long[] simTimes2 = new long[simQ.length];
-	        for (int i = 0; i < simQ.length; i++) {
-	        	simValues[i] = simQ[i];
-	            simTimes1[i] = startTS + i * timeStepMinutes * 60 * 1000L;
-	            
-	            if (!HMConstants.isNovalue(observedDischarge[i])) {
-	            	obsValues[i] = observedDischarge[i];
-	            } else {
-	            	obsValues[i] = 0.0;
-	            }
-	            simTimes2[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+		double cost = CostFunctions.KGE.evaluateCost(observedDischarge, simQ, spinUpTimesteps, HMConstants.doubleNovalue);
+		String title = "Simulated vs Observed Discharge ( cost: " + cost + " )";
+		chartResult(title, simQ, observedDischarge, timeStepMinutes, fromTS);
+	}
+
+	private void chartResult(String title, double[] simQ, double[] observedDischarge, int timeStepMinutes, String fromTS) {
+		String xLabel = "time";
+		String yLabel = "Q [m3]";
+		int width = 1600;
+		int height = 1000;
+
+		List<String> series = new ArrayList<>();
+		series.add("Simulated Discharge");
+		series.add("Observed Discharge");
+		List<Boolean> doLines = new ArrayList<>();
+		doLines.add(true);
+		doLines.add(true);
+
+		long startTS = GeoframeEnvDatabaseIterator.str2ts(fromTS);
+
+		List<double[]> allValuesList = new ArrayList<>();
+		List<long[]> allTimesList = new ArrayList<>();
+		// simulated
+		double[] simValues = new double[simQ.length];
+		double[] obsValues = new double[simQ.length];
+		long[] simTimes1 = new long[simQ.length];
+		long[] simTimes2 = new long[simQ.length];
+		for (int i = 0; i < simQ.length; i++) {
+			simValues[i] = simQ[i];
+			simTimes1[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+
+			if (!HMConstants.isNovalue(observedDischarge[i])) {
+				obsValues[i] = observedDischarge[i];
+			} else {
+				obsValues[i] = 0.0;
 			}
-			
-	        allValuesList.add(simValues);
-			allTimesList.add(simTimes1);
+			simTimes2[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+		}
 
-			allValuesList.add(obsValues);
-			allTimesList.add(simTimes2);
+		allValuesList.add(simValues);
+		allTimesList.add(simTimes1);
 
-			TimeSeries timeseriesChart = new TimeSeries(title, series, allTimesList, allValuesList);
-	        timeseriesChart.setXLabel(xLabel);
-	        timeseriesChart.setYLabel(yLabel);
-            timeseriesChart.setShowLines(doLines);
-            
-            timeseriesChart.setColors(new Color[] {Color.BLUE, Color.RED});
+		allValuesList.add(obsValues);
+		allTimesList.add(simTimes2);
+
+		TimeSeries timeseriesChart = new TimeSeries(title, series, allTimesList, allValuesList);
+		timeseriesChart.setXLabel(xLabel);
+		timeseriesChart.setYLabel(yLabel);
+		timeseriesChart.setShowLines(doLines);
+
+		timeseriesChart.setColors(new Color[] { Color.BLUE, Color.RED });
 //	        if (doShapes != null)
 //	            timeseriesChart.setShowShapes(doShapes);
 
-	        ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
-	        Dimension preferredSize = new Dimension(width, height);
-	        chartPanel.setPreferredSize(preferredSize);
+		ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
+		Dimension preferredSize = new Dimension(width, height);
+		chartPanel.setPreferredSize(preferredSize);
 
 //	        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
-	        JDialog f = new JDialog();
-	        f.add(chartPanel, BorderLayout.CENTER);
-	        f.setTitle(title);
-	        f.setModal(false);
-	        f.pack();
+		JDialog f = new JDialog();
+		f.add(chartPanel, BorderLayout.CENTER);
+		f.setTitle(title);
+		f.setModal(false);
+		f.pack();
 //	        if (dimension != null)
 //	            f.setSize(dimension);
-	        f.setLocationRelativeTo(null); // Center on screen
-	        f.setVisible(true);
-	        f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-	        f.getRootPane().registerKeyboardAction(e -> {
-	            f.dispose();
-	        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
-		
-	}
+		f.setLocationRelativeTo(null); // Center on screen
+		f.setVisible(true);
+		f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		f.getRootPane().registerKeyboardAction(e -> {
+			f.dispose();
+		}, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
 
+	}
 
 	private double[] getObservedDischarge(ADb envDb, String fromTS, String toTS) throws Exception {
 		long from = GeoframeEnvDatabaseIterator.str2ts(fromTS);
 		long to = GeoframeEnvDatabaseIterator.str2ts(toTS);
-		String sql = "select ts, value from observed_discharge where ts >= " + from + " " + "and ts <= " + to + " order by ts asc";
+		String sql = "select ts, value from observed_discharge where ts >= " + from + " " + "and ts <= " + to
+				+ " order by ts asc";
 		QueryResult qr = envDb.getTableRecordsMapFromRawSql(sql, -1);
 		DynamicDoubleArray dda = new DynamicDoubleArray(10000, 10000);
 		int valueIndex = qr.names.indexOf("value");

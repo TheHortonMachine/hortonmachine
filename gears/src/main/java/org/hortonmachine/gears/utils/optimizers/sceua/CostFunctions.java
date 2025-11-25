@@ -3,8 +3,18 @@ package org.hortonmachine.gears.utils.optimizers.sceua;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.DynamicDoubleArray;
 
-public final class CostFunctions {
+public enum CostFunctions {
+	KGE();
 
+	
+	public double evaluateCost(double[] obs, double[] sim, Integer spinupTimesteps, double noDataValue) {
+		if (this == KGE) {
+			// KGE is a performance metric (higher = better), so we return -KGE as cost (lower = better)
+			return -kge(obs, sim, spinupTimesteps, noDataValue);
+		}
+		throw new IllegalArgumentException("Unsupported cost function: " + this);
+	}
+	
     /**
 	 * Kling-Gupta Efficiency (KGE) metric and associated cost function.
 	 *
