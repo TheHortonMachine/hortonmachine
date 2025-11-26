@@ -45,5 +45,52 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<!-- normal jar plugin inherited from parent is fine -->
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.5.3</version> <!-- any recent version is fine -->
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<!-- Avoid rewriting the POM to remove deps (we want
+							a clean POM) -->
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+
+							<artifactSet>
+								<includes>
+									<include>org.hortonmachine:hm-geoframe-rssep</include>
+									<include>org.hortonmachine:hm-geoframe-snow</include>
+									<include>org.hortonmachine:hm-geoframe-erm</include>
+									<include>org.hortonmachine:hm-geoframe-cleq</include>
+									<include>org.hortonmachine:hm-geoframe-num</include>
+								</includes>
+							</artifactSet>
+
+							<!-- optional but nice: define final name -->
+							<!--
+							<finalName>${project.artifactId}-${project.version}</finalName> -->
+
+							<!-- If you need to merge META-INF/services or
+							similar: -->
+							<!--
+	            <transformers>
+	              <transformer
+							implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+	            </transformers>
+	            -->
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
 

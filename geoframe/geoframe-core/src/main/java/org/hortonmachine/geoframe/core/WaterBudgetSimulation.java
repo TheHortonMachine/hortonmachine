@@ -18,10 +18,15 @@ import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.geoframe.io.GeoframeWaterBudgetSimulationWriter;
 import org.hortonmachine.geoframe.utils.WaterBudgetState;
 
-import canopyOut.WaterBudgetCanopyOUT;
-import canopyOut.WaterBudgetCanopyOUT.WaterBudgetCanopyStepResult;
-import groundWater.WaterBudgetGround;
-import groundWater.WaterBudgetGround.WaterBudgetGroundStepResult;
+import it.geoframe.blogspot.canopy.WaterBudgetCanopyOUT;
+import it.geoframe.blogspot.canopy.WaterBudgetCanopyOUT.WaterBudgetCanopyStepResult;
+import it.geoframe.blogspot.groundwater.WaterBudgetGround;
+import it.geoframe.blogspot.groundwater.WaterBudgetGround.WaterBudgetGroundStepResult;
+import it.geoframe.blogspot.rainsnowseparation.RainSnowSeparationPointCase;
+import it.geoframe.blogspot.rootzone.WaterBudgetRootZone;
+import it.geoframe.blogspot.rootzone.WaterBudgetRootZone.WaterBudgetRootZoneStepResult;
+import it.geoframe.blogspot.simplebucket.WaterBudget;
+import it.geoframe.blogspot.simplebucket.WaterBudget.WaterBudgetStepResult;
 import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay;
 import it.geoframe.blogspot.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay.SnowStepResult;
 import oms3.annotations.Description;
@@ -29,11 +34,6 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Out;
-import rainSnowSperataion.RainSnowSeparationPointCase;
-import rootZone.WaterBudgetRootZone;
-import rootZone.WaterBudgetRootZone.WaterBudgetRootZoneStepResult;
-import simpleBucket.WaterBudget;
-import simpleBucket.WaterBudget.WaterBudgetStepResult;
 
 public class WaterBudgetSimulation extends HMModel {
 	@Description("Root node of the topology. after each simulation it contains the discharges of all nodes.")
