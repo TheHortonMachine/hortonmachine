@@ -67,7 +67,7 @@
 							<artifactSet>
 								<includes>
 									<include>org.hortonmachine:hm-geoframe-rssep</include>
-									<include>org.hortonmachine:hm-geoframe-snow</include>
+									<include>org.hortonmachine:hm-geoframe-snowm</include>
 									<include>org.hortonmachine:hm-geoframe-erm</include>
 									<include>org.hortonmachine:hm-geoframe-cleq</include>
 									<include>org.hortonmachine:hm-geoframe-num</include>
