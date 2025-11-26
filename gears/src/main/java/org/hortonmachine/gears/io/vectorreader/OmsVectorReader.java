@@ -29,13 +29,20 @@ import static org.hortonmachine.gears.io.vectorreader.OmsVectorReader.OMSVECTORR
 import static org.hortonmachine.gears.libs.modules.HMConstants.FEATUREREADER;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.geotools.api.data.DataStore;
+import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
@@ -139,8 +146,20 @@ public class OmsVectorReader extends HMModel {
             }
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
+        } else if (name.toLowerCase().endsWith("geojson") || name.toLowerCase().endsWith("json")) {
+        	FeatureJSON fjson = new FeatureJSON();
+        	try (Reader r = new FileReader(vectorFile)) {
+        	    outVector = (SimpleFeatureCollection) fjson.readFeatureCollection(r);
+        	}
         } else {
-            throw new IOException("Format is currently not supported for file: " + name);
+        	Map<String, Object> params = new HashMap<>();
+        	params.put("url", vectorFile.toURI().toURL());
+        	
+        	DataStore store = DataStoreFinder.getDataStore(params);
+        	if (store== null)
+        		throw new IOException("Format is currently not supported for file: " + name);
+        	SimpleFeatureSource fs = store.getFeatureSource(store.getTypeNames()[0]);
+        	outVector = fs.getFeatures();
         }
     }
 

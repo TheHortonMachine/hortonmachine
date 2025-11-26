@@ -21,6 +21,8 @@ import org.geotools.stac.client.CollectionExtent;
 import org.geotools.stac.client.CollectionExtent.TemporalExtents;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.SearchQuery;
+import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
+import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
@@ -240,16 +242,19 @@ public class HMStacCollection {
                     roiEnvCurrentItemCrs.getMinY(), roiEnvCurrentItemCrs.getMaxY(), cols, rows);
 
             HMStacAsset asset = item.getAssets().stream().filter(as -> as.getId().equals(bandName)).findFirst().get();
-            int lastSlash = asset.getAssetUrl().lastIndexOf('/');
-            fileName = asset.getAssetUrl().substring(lastSlash + 1);
-            if (outRaster == null) {
-                outRaster = new HMRasterWritableBuilder().setName(fileName)
-                        .setRegion(RegionMap.fromEnvelopeAndGrid(roiEnvelopeFirstItemCrs, cols, rows)).setCrs(outputCrs)
-                        .setNoValue(asset.getNoValue()).build();
+            IHMStacAssetHandler handler = asset.getHandler();
+            if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
+	            int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
+	            fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
+	            if (outRaster == null) {
+	                outRaster = new HMRasterWritableBuilder().setName(fileName)
+	                        .setRegion(RegionMap.fromEnvelopeAndGrid(roiEnvelopeFirstItemCrs, cols, rows)).setCrs(outputCrs)
+	                        .setNoValue(rasterHandler.getNoValue()).build();
+	            }
+	
+	            GridCoverage2D readRaster = rasterHandler.readRaster(readRegion);
+	            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
             }
-
-            GridCoverage2D readRaster = asset.readRaster(readRegion);
-            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
             pm.worked(1);
         }
         pm.done();

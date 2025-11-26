@@ -145,6 +145,7 @@ public class SpatialDbsImportUtils {
             if (DbsUtilities.isReservedName(attrName)) {
                 attrName = DbsUtilities.fixReservedNameForQuery(attrName);
             }
+            attrName = DbsUtilities.fixColumnName(attrName);
             Class< ? > binding = attributeDescriptor.getType().getBinding();
             if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
                 attrSql.add(attrName + " " + dsh.REAL());
@@ -318,6 +319,7 @@ public class SpatialDbsImportUtils {
                 if (DbsUtilities.isReservedName(attrName)) {
                     attrName = DbsUtilities.fixReservedNameForQuery(attrName);
                 }
+                attrName = DbsUtilities.fixColumnName(attrName);
                 valueNames += "," + attrName;
                 qMarks += ",?";
             }

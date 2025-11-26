@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
+import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
+import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
 import org.hortonmachine.gears.utils.HMTestCase;
 
 public class TestStacAsset extends HMTestCase {
@@ -26,8 +28,10 @@ public class TestStacAsset extends HMTestCase {
         assertEquals("B01", asset.getId());
         assertEquals("Band 1 (coastal) BOA reflectance", asset.getTitle());
         assertEquals("image/tiff; application=geotiff; profile=cloud-optimized", asset.getType());
-        assertEquals("https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/33/S/VB/2021/2/S2B_33SVB_20210221_0_L2A/B01.tif", asset.getAssetUrl());
-        assertEquals(0.0, asset.getNoValue());
+        
+        IHMStacAssetHandler handler = asset.getHandler();
+        assertEquals("https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/33/S/VB/2021/2/S2B_33SVB_20210221_0_L2A/B01.tif", handler.getAssetUrl());
+        assertEquals(0.0, ((IHMStacAssetRasterHandler) handler).getNoValue());
     }
 
     public void testCreateInvalidStacAssetNotAValidType() throws JsonProcessingException {
@@ -38,7 +42,7 @@ public class TestStacAsset extends HMTestCase {
         HMStacAsset asset = new HMStacAsset("B01", node);
 
         assertFalse(asset.isValid());
-        assertEquals("not a valid type", asset.getNonValidReason());
+        assertEquals("no handler found for type: image/tiff;", asset.getNonValidReason());
     }
 
 }

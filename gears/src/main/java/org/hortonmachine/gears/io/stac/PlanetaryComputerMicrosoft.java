@@ -15,7 +15,7 @@ public class PlanetaryComputerMicrosoft {
      * @param href
      * @return
      */
-    static boolean isAzureBlob(String href) {
+    public static boolean isAzureBlob(String href) {
         return href.contains("blob.core.windows.net");
     }
 
@@ -28,7 +28,7 @@ public class PlanetaryComputerMicrosoft {
      * @throws IOException
      * @throws InterruptedException
      */
-    static String getHrefWithToken(String href) throws IOException, InterruptedException {
+    public static String getHrefWithToken(String href) throws IOException, InterruptedException {
         String getReadAccess = "https://planetarycomputer.microsoft.com/api/sas/v1/sign?href=" + href;
         HttpClient client = HttpClient.newBuilder().build();
         HttpRequest.Builder uriBuilder = HttpRequest.newBuilder()
