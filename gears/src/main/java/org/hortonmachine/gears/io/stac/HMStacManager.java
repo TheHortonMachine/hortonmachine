@@ -11,6 +11,7 @@ import org.geotools.stac.client.FeaturesConformance;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.STACConformance;
 import org.geotools.stac.client.STACLandingPage;
+import org.hortonmachine.gears.io.stac.client.HMSTACClient;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
 /**
@@ -22,7 +23,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 @SuppressWarnings("rawtypes")
 public class HMStacManager implements AutoCloseable {
     private String catalogUrl;
-    private STACClient stacClient;
+    private HMSTACClient stacClient;
     private IHMProgressMonitor pm;
 
     public HMStacManager( String catalogUrl, IHMProgressMonitor pm ) {
@@ -36,7 +37,7 @@ public class HMStacManager implements AutoCloseable {
      * @throws Exception
      */
     public void open() throws Exception {
-        stacClient = new STACClient(new URL(catalogUrl), new MultithreadedHttpClient());
+        stacClient = new HMSTACClient(new URL(catalogUrl), new MultithreadedHttpClient());
     }
 
     public String getConformanceSummary() throws Exception {
