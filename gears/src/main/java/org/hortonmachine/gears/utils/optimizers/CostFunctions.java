@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.utils.optimizers.sceua;
+package org.hortonmachine.gears.utils.optimizers;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.DynamicDoubleArray;

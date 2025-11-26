@@ -1,8 +1,8 @@
 package org.hortonmachine.gears.utils;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.IPSFunction;
-import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 
 /**
  * Synthetic IPSFunction: params = [A, phi, B] obs[t] = A_true * sin(ω t +

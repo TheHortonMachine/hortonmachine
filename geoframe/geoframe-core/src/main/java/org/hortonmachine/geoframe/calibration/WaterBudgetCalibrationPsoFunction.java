@@ -2,8 +2,8 @@ package org.hortonmachine.geoframe.calibration;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.IPSFunction;
-import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.geoframe.utils.WaterSimulationRunner;
@@ -32,7 +32,7 @@ public class WaterBudgetCalibrationPsoFunction implements IPSFunction {
 			double[] basinAreas, TopologyNode rootNode, GeoframeEnvDatabaseIterator precipReader,
 			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, Integer spinupTimesteps,
 			CostFunctions costFunction, boolean doParallel,
-		    boolean doTopologicallyOrdered, IHMProgressMonitor pm) {
+		    boolean doTopologicallyOrdered, boolean writeState, IHMProgressMonitor pm) {
 		this.observedDischarge = observedDischarge;
 		this.precipReader = precipReader;
 		this.tempReader = tempReader;
@@ -41,7 +41,7 @@ public class WaterBudgetCalibrationPsoFunction implements IPSFunction {
 		this.costFunction = costFunction;
 
 		runner = new WaterSimulationRunner();
-		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, doParallel, doTopologicallyOrdered, null, pm);
+		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, doParallel, writeState, doTopologicallyOrdered, null, pm);
 	}
 
 	@Override

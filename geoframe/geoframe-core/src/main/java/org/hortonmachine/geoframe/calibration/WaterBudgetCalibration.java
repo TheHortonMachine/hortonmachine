@@ -3,10 +3,10 @@ package org.hortonmachine.geoframe.calibration;
 import java.util.Arrays;
 
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.IPSFunction;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.PSConfig;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.PSEngine;
-import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.geoframe.utils.IWaterBudgetSimulationRunner;
@@ -103,7 +103,7 @@ public class WaterBudgetCalibration {
 	public static double[] psoCalibration(PSConfig psConfig, int maxBasinId, double[] basinAreas, TopologyNode rootNode, int timeStepMinutes,
 			double[] observedDischarge, CostFunctions costFunction, int calibrationThreadCount,
 			GeoframeEnvDatabaseIterator precipReader, GeoframeEnvDatabaseIterator tempReader,
-			GeoframeEnvDatabaseIterator etpReader, IWaterBudgetSimulationRunner runner, int spinUpTimesteps,
+			GeoframeEnvDatabaseIterator etpReader, IWaterBudgetSimulationRunner runner, int spinUpTimesteps, boolean writeState,
 			IHMProgressMonitor pm)
 			throws Exception {
 
@@ -128,7 +128,7 @@ public class WaterBudgetCalibration {
 
 		IPSFunction wbFunction = new WaterBudgetCalibrationPsoFunction(timeStepMinutes, observedDischarge, maxBasinId,
 				basinAreas, rootNode, precipReader, tempReader, etpReader, spinUpTimesteps, costFunction, false,
-				true, pm);
+				true, writeState, pm);
 
 		PSEngine engine = new PSEngine(psConfig.particlesNum, psConfig.maxIterations, psConfig.c1, psConfig.c2, psConfig.w0, psConfig.decay, wbFunction,
 				calibrationThreadCount, "PSO-Waterbudget");

@@ -8,9 +8,9 @@ import java.util.Random;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.SyntheticCalibrationPso;
+import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.IPSFunction;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.PSEngine;
-import org.hortonmachine.gears.utils.optimizers.sceua.CostFunctions;
 import org.junit.Test;
 
 public class TestOptimizations {

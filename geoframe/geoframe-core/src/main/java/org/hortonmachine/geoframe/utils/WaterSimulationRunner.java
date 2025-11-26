@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.core.WaterBudgetSimulation;
@@ -20,16 +21,18 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 	private IHMProgressMonitor pm;
 	private boolean doTopologicallyOrdered;
 	private boolean doParallel;
+	private boolean writeState = false;
 
 	@Override
 	public void configure(int timeStepMinutes, int maxBasinId, TopologyNode rootNode, double[] basinAreas,
-			boolean doParallel, boolean doTopologicallyOrdered, ADb outputDb, IHMProgressMonitor pm) {
+			boolean doParallel, boolean doTopologicallyOrdered, boolean writeState, ADb outputDb, IHMProgressMonitor pm) {
 		this.timeStepMinutes = timeStepMinutes;
 		this.maxBasinId = maxBasinId;
 		this.rootNode = rootNode;
 		this.basinAreas = basinAreas;
 		this.doParallel = doParallel;
 		this.doTopologicallyOrdered = doTopologicallyOrdered;
+		this.writeState = writeState;
 		this.outputDb = outputDb;
 		this.pm = pm;
 	}
@@ -39,7 +42,10 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, String iterationInfo)
 			throws Exception {
 		TopologyNode localRootNode = rootNode.clone();
-
+		
+		if (pm == null) {
+			pm = new LogProgressMonitor();
+		}
 		long t1 = 0;
 		if (iterationInfo != null) {
 			t1 = System.currentTimeMillis();
@@ -84,7 +90,7 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 		wbSim.doParallel = doParallel;
 		wbSim.doTopologically = doTopologicallyOrdered;
 		wbSim.doDebugMessages = outputDb != null;
-		wbSim.stateDb = outputDb;
+		wbSim.stateDb = writeState ? outputDb : null;
 
 		wbSim.init();
 		wbSim.process();

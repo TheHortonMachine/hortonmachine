@@ -1,10 +1,29 @@
 package org.hortonmachine.geoframe.utils;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.KeyStroke;
+
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.DynamicDoubleArray;
+import org.hortonmachine.gears.utils.chart.TimeSeries;
 import org.hortonmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.geoframe.io.GeoframeEnvDatabaseIterator;
+import org.hortonmachine.hmachine.utils.GeoframeUtils;
+import org.jfree.chart.ChartPanel;
+import org.locationtech.jts.geom.Geometry;
 
 /**
  * An interface representing a complete execution of the
@@ -21,6 +40,7 @@ public interface IWaterBudgetSimulationRunner {
 	 * @param basinAreas array of basin areas indexed by basin id.
 	 * @param doParallel whether to run the simulation in parallel mode over the basins.
 	 * @param doTopologicallyOrdered whether to process nodes in topological order.
+	 * @param writeState whether to write the model state to the output database.
 	 * @param outputDb output database for writing simulation results (may be null).
 	 * @param pm progress monitor for messages and progress tracking.
 	 */
@@ -31,6 +51,7 @@ public interface IWaterBudgetSimulationRunner {
 	    double[] basinAreas,
 	    boolean doParallel,
 	    boolean doTopologicallyOrdered,
+	    boolean writeState, 
 	    ADb outputDb,
 	    IHMProgressMonitor pm
 		);
@@ -55,5 +76,110 @@ public interface IWaterBudgetSimulationRunner {
         GeoframeEnvDatabaseIterator etpReader,
         String iterationInfo
     ) throws Exception;
+    
+    static double[] getObservedDischarge(ADb envDb, String fromTS, String toTS) throws Exception {
+		long from = GeoframeEnvDatabaseIterator.str2ts(fromTS);
+		long to = GeoframeEnvDatabaseIterator.str2ts(toTS);
+		String sql = "select ts, value from observed_discharge where ts >= " + from + " " + "and ts <= " + to
+				+ " order by ts asc";
+		QueryResult qr = envDb.getTableRecordsMapFromRawSql(sql, -1);
+		DynamicDoubleArray dda = new DynamicDoubleArray(10000, 10000);
+		int valueIndex = qr.names.indexOf("value");
+		for (Object[] row : qr.data) {
+			double value = ((Number) row[valueIndex]).doubleValue();
+			dda.addValue(value);
+		}
+		return dda.getTrimmedInternalArray();
+	}
+    
+	static double[] getBasinAreas(ASpatialDb db, int maxBasinId) throws Exception {
+		QueryResult queryResult = db.getTableRecordsMapIn(GeoframeUtils.GEOFRAME_BASIN_TABLE, null, -1, -1, null);
+		double[] basinAreas = new double[maxBasinId + 1];
+		int idIndex = queryResult.names.indexOf("basinid");
+		for (int i = 0; i < queryResult.data.size(); i++) {
+			Object[] row = queryResult.data.get(i);
+			int basinId = (int) row[idIndex];
+			Geometry basinGeom = (Geometry) row[queryResult.geometryIndex];
+			double area = basinGeom.getArea() / 1_000_000.0; // in km2
+			basinAreas[basinId] = area;
+		}
+		return basinAreas;
+	}
+	
+	static int getMaxBasinId(ADb db) throws Exception {
+		int maxBasinId = db.getLong("select max(basinid) from " + GeoframeUtils.GEOFRAME_BASIN_TABLE).intValue();
+		return maxBasinId;
+	}
+
+	static void quickChartResult(String title, double[] simQ, double[] observedDischarge, int timeStepMinutes,
+			String fromTS) {
+		String xLabel = "time";
+		String yLabel = "Q [m3]";
+		int width = 1600;
+		int height = 1000;
+
+		List<String> series = new ArrayList<>();
+		series.add("Simulated Discharge");
+		series.add("Observed Discharge");
+		List<Boolean> doLines = new ArrayList<>();
+		doLines.add(true);
+		doLines.add(true);
+
+		long startTS = GeoframeEnvDatabaseIterator.str2ts(fromTS);
+
+		List<double[]> allValuesList = new ArrayList<>();
+		List<long[]> allTimesList = new ArrayList<>();
+		// simulated
+		double[] simValues = new double[simQ.length];
+		double[] obsValues = new double[simQ.length];
+		long[] simTimes1 = new long[simQ.length];
+		long[] simTimes2 = new long[simQ.length];
+		for (int i = 0; i < simQ.length; i++) {
+			simValues[i] = simQ[i];
+			simTimes1[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+
+			if (!HMConstants.isNovalue(observedDischarge[i])) {
+				obsValues[i] = observedDischarge[i];
+			} else {
+				obsValues[i] = 0.0;
+			}
+			simTimes2[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+		}
+
+		allValuesList.add(simValues);
+		allTimesList.add(simTimes1);
+
+		allValuesList.add(obsValues);
+		allTimesList.add(simTimes2);
+
+		TimeSeries timeseriesChart = new TimeSeries(title, series, allTimesList, allValuesList);
+		timeseriesChart.setXLabel(xLabel);
+		timeseriesChart.setYLabel(yLabel);
+		timeseriesChart.setShowLines(doLines);
+
+		timeseriesChart.setColors(new Color[] { Color.BLUE, Color.RED });
+//	        if (doShapes != null)
+//	            timeseriesChart.setShowShapes(doShapes);
+
+		ChartPanel chartPanel = new ChartPanel(timeseriesChart.getChart(), true);
+		Dimension preferredSize = new Dimension(width, height);
+		chartPanel.setPreferredSize(preferredSize);
+
+//	        GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
+		JDialog f = new JDialog();
+		f.add(chartPanel, BorderLayout.CENTER);
+		f.setTitle(title);
+		f.setModal(false);
+		f.pack();
+//	        if (dimension != null)
+//	            f.setSize(dimension);
+		f.setLocationRelativeTo(null); // Center on screen
+		f.setVisible(true);
+		f.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		f.getRootPane().registerKeyboardAction(e -> {
+			f.dispose();
+		}, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+	}
 }
 
