@@ -80,6 +80,11 @@ jobs:
           cp ./apps/target/hm-apps-*.jar "${TMPLIBS}"
           rm -f "${TMPLIBS}"/*-sources.jar || true
           rm -f "${TMPLIBS}"/junit*.jar "${TMPLIBS}"/log4j-*.jar || true
+          rm -f "${TMPLIBS}"/hm-geoframe-cleq-*.jar || true
+          rm -f "${TMPLIBS}"/hm-geoframe-num-*.jar || true
+          rm -f "${TMPLIBS}"/hm-geoframe-snowm-*.jar || true
+          rm -f "${TMPLIBS}"/hm-geoframe-rssep-*.jar || true
+          rm -f "${TMPLIBS}"/hm-geoframe-erm-*.jar || true
 
       # --- FIXED assemble step ---
       - name: Assemble tar.gz bundle
