@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.hortonmachine.gears.utils.CyclicSupplier;
+
 public class DefaultTables {
     private static HashMap<String, String> map = new HashMap<String, String>();
 
@@ -476,6 +478,11 @@ public class DefaultTables {
         }
         return Arrays.asList(availColors);
     }
+    
+    public CyclicSupplier<Color> getCyclicTableColors( String name ) {
+		List<Color> tableColors = getTableColors(name);
+		return new CyclicSupplier<Color>(tableColors);
+	}
 
     public static String[] getTableNames() {
         checkInit();

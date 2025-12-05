@@ -28,7 +28,7 @@ import static java.lang.Math.max;
 public class DynamicDoubleArray {
     private double[] internalArray = null;
     private final int growingSize;
-    private int lastIndex = 0;
+    private int lastIndex = -1;
 
     /**
      * Create the array with an initial size.
@@ -74,8 +74,8 @@ public class DynamicDoubleArray {
      * @param value the value to add.
      */
     public void addValue( double value ) {
-        int position = lastIndex + 1;
-        setValue(position, value);
+        lastIndex++;
+        setValue(lastIndex, value);
     }
 
     /**
@@ -119,5 +119,13 @@ public class DynamicDoubleArray {
         System.arraycopy(internalArray, 0, newArray, 0, newArray.length);
         return newArray;
     }
+    
+    public long[] getTrimmedInternalArrayLong() {
+		long[] newArray = new long[lastIndex + 1];
+		for( int i = 0; i < newArray.length; i++ ) {
+			newArray[i] = (long) internalArray[i];
+		}
+		return newArray;
+	}
 
 }

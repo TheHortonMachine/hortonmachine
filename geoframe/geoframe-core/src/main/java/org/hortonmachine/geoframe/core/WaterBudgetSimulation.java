@@ -249,27 +249,31 @@ public class WaterBudgetSimulation extends HMModel {
 		}
 		
 		if (resultsWriter != null) {
-			resultsWriter.currentT = precipReader.currentT;
-			resultsWriter.insert();
-			
-			if (stateDb != null) {
-				// store state in database
-				List<Object[]> insertObjectsList = new ArrayList<>();
-				rootNode.visitUpstream(node -> {
-					try {
-						int basinId = node.basinId;
-						WaterBudgetState waterBudgetState = waterBudgetStates[basinId];
-						Object[] insertIntoDbObjects = waterBudgetState.getInsertIntoDbObjects(basinId, precipReader.currentT);
-						insertObjectsList.add(insertIntoDbObjects);
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				});
-				String preparedInsertSql = WaterBudgetState.getPreparedInsertSql(stateTableName);
-				stateDb.getConnectionInternal().enableAutocommit(false);
-				stateDb.executeBatchPreparedSql(preparedInsertSql, insertObjectsList);
-				stateDb.getConnectionInternal().commit();
-				stateDb.getConnectionInternal().enableAutocommit(true);
+			try {
+				resultsWriter.currentT = precipReader.currentT;
+				resultsWriter.insert();
+				
+				if (stateDb != null) {
+					// store state in database
+					List<Object[]> insertObjectsList = new ArrayList<>();
+					rootNode.visitUpstream(node -> {
+						try {
+							int basinId = node.basinId;
+							WaterBudgetState waterBudgetState = waterBudgetStates[basinId];
+							Object[] insertIntoDbObjects = waterBudgetState.getInsertIntoDbObjects(basinId, precipReader.currentT);
+							insertObjectsList.add(insertIntoDbObjects);
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					});
+					String preparedInsertSql = WaterBudgetState.getPreparedInsertSql(stateTableName);
+					stateDb.getConnectionInternal().enableAutocommit(false);
+					stateDb.executeBatchPreparedSql(preparedInsertSql, insertObjectsList);
+					stateDb.getConnectionInternal().commit();
+					stateDb.getConnectionInternal().enableAutocommit(true);
+				}
+			} catch (Exception e) {
+				pm.message("Error writing results to database: " + e.getMessage());
 			}
 		}
 		

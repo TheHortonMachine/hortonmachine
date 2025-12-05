@@ -108,7 +108,7 @@ public class Test extends HMModel {
 		String folder = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/";
 		String ext = ".tif";
 		int drainThres = 2000;
-		double desiredArea = 30_000; // 1_000_000.0;
+		double desiredArea = 1_000_000.0;
 		double desiredAreaDelta = 20.0;
 		double easting = 629720;
 		double northing = 5127690;
@@ -321,13 +321,14 @@ public class Test extends HMModel {
 			/// PARAMETERS
 			//////////////////////////////////////////////////
 			String fromTS = "2015-10-01 01:00:00";
-			String toTS = "2018-10-01 01:00:00";
+			String toTS = "2023-10-01 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 365;
 			double[] observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(envDb, fromTS, toTS);
 			boolean doCalibration = false;
+			int psoIterations = 300;
 			boolean writeState = false;
-			int calibrationThreadCount = 2;
+			int calibrationThreadCount = 20;
 			CostFunctions costFunction = CostFunctions.KGE;
 
 			var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
@@ -361,29 +362,27 @@ public class Test extends HMModel {
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
 
-				double[] params = { 0.8000000000982134, 0.9617776781075441, -0.5785018194920201, 1.4823957108363572,
-						0.19219751251394124, 0.1259786317307167, 0.16286136948697752, 0.7830168710338546,
-						131.94150612848236, 0.1201302512370603, 0.9091589492305665, 0.9461511765942531,
-						29.108143743487677, 0.6448126444539124, 0.914311465329479, 965.5376985249287,
-						1.1144291122950565, 0.995286235089868 };
+				double[] params = {0.940739667840607, 0.96075954632785, -0.681919048298992, 1.3971214752557832, 0.33951109114109224, 0.09437578309755729, 0.3755301937475191, 0.6209768892258773, 166.8213039282626, 0.12887303016873772, 0.8868181607935712, 1.8827257470886904, 48.43029773696331, 1.0623972142583038, 0.9188401606071446, 745.4366397791149, 0.9812359783377442, 0.9798892148598694};
 
 				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
 						precipReader, tempReader, etpReader, runner, spinUpTimesteps, params, writeState);
 			} else {
 				PSConfig psConfig = new PSConfig();
 				psConfig.particlesNum = 20;
-				psConfig.maxIterations = 500;
+				psConfig.maxIterations = psoIterations;
 				psConfig.c1 = 2.0;
 				psConfig.c2 = 2.0;
 				psConfig.w0 = 0.9;
 				psConfig.decay = 0.4;
 
-				double[] bestParams = WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode,
+//				double[] bestParams = 
+						WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode,
 						timeStepMinutes, observedDischarge, costFunction, calibrationThreadCount, precipReader,
 						tempReader, etpReader, runner, spinUpTimesteps, writeState, pm);
 
-				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
-						precipReader, tempReader, etpReader, runner, spinUpTimesteps, bestParams, writeState);
+				
+//				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
+//						precipReader, tempReader, etpReader, runner, spinUpTimesteps, bestParams, writeState);
 			}
 
 		} finally {
@@ -403,10 +402,12 @@ public class Test extends HMModel {
 		double[] simQ = runner.run(wbParams, 0.6, // TODO handle LAI properly
 				precipReader, tempReader, etpReader, null);
 
-		double cost = CostFunctions.KGE.evaluateCost(observedDischarge, simQ, spinUpTimesteps,
+		double cost = -CostFunctions.KGE.evaluateCost(observedDischarge, simQ, spinUpTimesteps,
 				HMConstants.doubleNovalue);
-		String title = "Simulated vs Observed Discharge ( cost: " + cost + " )";
-		IWaterBudgetSimulationRunner.quickChartResult(title, simQ, observedDischarge, timeStepMinutes, fromTS);
+		// format cost ##,00
+		cost = Math.round(cost * 100.0) / 100.0;
+		String title = "Simulated vs Observed Discharge ( KGE: " + cost + " )";
+		IWaterBudgetSimulationRunner.quickChartResult(title, simQ, observedDischarge, timeStepMinutes, fromTS, spinUpTimesteps);
 	}
 
 

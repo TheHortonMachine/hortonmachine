@@ -18,6 +18,7 @@
 package org.hortonmachine.database;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Toolkit;
@@ -112,9 +113,13 @@ import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
+import org.hortonmachine.gears.utils.CyclicSupplier;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.chart.CategoryHistogram;
 import org.hortonmachine.gears.utils.chart.Scatter;
+import org.hortonmachine.gears.utils.chart.TimeSeries;
+import org.hortonmachine.gears.utils.colors.DefaultTables;
+import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -1425,22 +1430,46 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                 int chartsCount = selectedCols.length - 1;
 
                                 String xLabel = table.getColumnName(selectedCols[0]);
+                                String timePatterns = dataTableView._formatDatesPatternTextField.getText();
 
                                 Scatter scatterChart = null;
                                 CategoryHistogram categoryHistogram = null;
+                                TimeSeries timeSeriesChart = null;
+                        		List<double[]> timeSeriesValuesList = new ArrayList<>();
+                        		List<long[]> timeSeriesTimesList = new ArrayList<>();
+                        		List<String> timeSeriesNames = new ArrayList<>();
 
                                 for( int i = 0; i < chartsCount; i++ ) {
                                     Object tmpX = table.getValueAt(0, selectedCols[0]);
                                     boolean doCat = true;
+                                    boolean doTime = false;
                                     if (tmpX instanceof Number) {
                                         doCat = false;
                                     }
+                                    if (timePatterns.contains(xLabel) ) {
+                                    	doTime = true;
+									}
                                     Object tmpY = table.getValueAt(0, selectedCols[i + 1]);
                                     if (!(tmpY instanceof Number)) {
                                         break;
                                     }
 
-                                    if (doCat) {
+                                    if (doTime) {
+                                    	int index = 0;
+                                    	long[] x = new long[selectedRows.length];
+                                        double[] y = new double[selectedRows.length];
+                                        for( int r : selectedRows ) {
+                                            Object xObj = table.getValueAt(r, selectedCols[0]);
+                                            Object yObj = table.getValueAt(r, selectedCols[i + 1]);
+                                            x[index] = ((Number) xObj).longValue();
+                                            y[index] = ((Number) yObj).doubleValue();
+                                            index++;
+                                        }
+										timeSeriesTimesList.add(x);
+										timeSeriesValuesList.add(y);
+										String seriesName = table.getColumnName(selectedCols[i + 1]);
+										timeSeriesNames.add(seriesName);
+									} else if (doCat) {
                                         if (categoryHistogram == null) {
                                             String[] xStr = new String[selectedRows.length];
                                             double[] y = new double[selectedRows.length];
@@ -1479,25 +1508,45 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         scatterChart.addSeries(seriesName, x, y);
                                     }
                                 }
+                                
+                                if (timeSeriesNames.size() > 0) {
+									timeSeriesChart = new TimeSeries("", timeSeriesNames,
+											timeSeriesTimesList, timeSeriesValuesList);
+									timeSeriesChart.setXLabel(xLabel);
+									timeSeriesChart.setYLabel("");
+									List<Color> colorList = new ArrayList<>();
+									colorList.add(Color.BLUE);
+									colorList.add(Color.RED);
+									colorList.add(Color.GREEN);
+									List<Color> tableColors = new DefaultTables().getTableColors(EColorTables.contrasting130.name());
+									colorList.addAll(tableColors);
+									var cyclicTableColors = new CyclicSupplier<Color>(colorList);
+									Color[] colors = new Color[timeSeriesNames.size()];
+									for (int i = 0; i < timeSeriesNames.size(); i++) {
+										colors[i] = cyclicTableColors.next();
+									}
+									timeSeriesChart.setColors(colors);
+								}
 
-                                Dimension dimension = new Dimension(800, 600);
+                                Dimension dimension = new Dimension(1000, 800);
+                                JFreeChart chart = null;
                                 if (scatterChart != null) {
-                                    JFreeChart chart = scatterChart.getChart();
-                                    ChartPanel chartPanel = new ChartPanel(chart, true);
-                                    chartPanel.setPreferredSize(dimension);
-                                    JPanel p = new JPanel(new BorderLayout());
-                                    p.add(chartPanel, BorderLayout.CENTER);
-                                    GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+									chart = scatterChart.getChart();
                                 } else if (categoryHistogram != null) {
-                                    JFreeChart chart = categoryHistogram.getChart();
-                                    ChartPanel chartPanel = new ChartPanel(chart, true);
-                                    chartPanel.setPreferredSize(dimension);
-                                    JPanel p = new JPanel(new BorderLayout());
-                                    p.add(chartPanel, BorderLayout.CENTER);
-                                    GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+                                    chart = categoryHistogram.getChart();
+                                } else if (timeSeriesChart != null) {
+                                	chart = timeSeriesChart.getChart();
                                 } else {
                                     GuiUtilities.showWarningMessage(popupMenu, "Charting of selected data not possible.");
+                                    return;
                                 }
+                                if (chart != null) {
+                                	ChartPanel chartPanel = new ChartPanel(chart, true);
+                                	chartPanel.setPreferredSize(dimension);
+                                	JPanel p = new JPanel(new BorderLayout());
+                                	p.add(chartPanel, BorderLayout.CENTER);
+                                	GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
+								}
                             } catch (Exception ex) {
                                 Logger.INSTANCE.insertError("", "ERROR", ex);
                             }

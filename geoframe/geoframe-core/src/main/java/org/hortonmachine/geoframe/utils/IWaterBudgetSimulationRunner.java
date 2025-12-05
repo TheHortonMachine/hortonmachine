@@ -112,11 +112,11 @@ public interface IWaterBudgetSimulationRunner {
 	}
 
 	static void quickChartResult(String title, double[] simQ, double[] observedDischarge, int timeStepMinutes,
-			String fromTS) {
+			String fromTS, Integer spinupTimesteps) {
 		String xLabel = "time";
 		String yLabel = "Q [m3]";
-		int width = 1600;
-		int height = 1000;
+		int width = 2600;
+		int height = 1400;
 
 		List<String> series = new ArrayList<>();
 		series.add("Simulated Discharge");
@@ -130,27 +130,38 @@ public interface IWaterBudgetSimulationRunner {
 		List<double[]> allValuesList = new ArrayList<>();
 		List<long[]> allTimesList = new ArrayList<>();
 		// simulated
-		double[] simValues = new double[simQ.length];
-		double[] obsValues = new double[simQ.length];
-		long[] simTimes1 = new long[simQ.length];
-		long[] simTimes2 = new long[simQ.length];
-		for (int i = 0; i < simQ.length; i++) {
-			simValues[i] = simQ[i];
-			simTimes1[i] = startTS + i * timeStepMinutes * 60 * 1000L;
+		DynamicDoubleArray simValues = new DynamicDoubleArray(simQ.length, simQ.length);
+		DynamicDoubleArray obsValues = new DynamicDoubleArray(observedDischarge.length, simQ.length);
+		DynamicDoubleArray simTimes1 = new DynamicDoubleArray(simQ.length, simQ.length);
+		DynamicDoubleArray simTimes2 = new DynamicDoubleArray(simQ.length, simQ.length);
+		
+		int startIndex = 0;
+		if (spinupTimesteps != null && spinupTimesteps > 0) {
+			startIndex = spinupTimesteps;
+		}
+		for (int i = startIndex; i < simQ.length; i++) {
+			if (!HMConstants.isNovalue(simQ[i])) {
+				simValues.addValue(simQ[i]);
+				simTimes1.addValue(startTS + i * timeStepMinutes * 60 * 1000L);
+			}
 
 			if (!HMConstants.isNovalue(observedDischarge[i])) {
-				obsValues[i] = observedDischarge[i];
-			} else {
-				obsValues[i] = 0.0;
+				obsValues.addValue(observedDischarge[i]);
+				simTimes2.addValue(startTS + i * timeStepMinutes * 60 * 1000L);
 			}
-			simTimes2[i] = startTS + i * timeStepMinutes * 60 * 1000L;
 		}
+		
+		double[] simValuesArr = simValues.getTrimmedInternalArray();
+		long[] simTimesArr1 = simTimes1.getTrimmedInternalArrayLong();
 
-		allValuesList.add(simValues);
-		allTimesList.add(simTimes1);
+		double[] obsValuesArr = obsValues.getTrimmedInternalArray();
+		long[] simTimesArr2 = simTimes2.getTrimmedInternalArrayLong();
 
-		allValuesList.add(obsValues);
-		allTimesList.add(simTimes2);
+		allValuesList.add(simValuesArr);
+		allTimesList.add(simTimesArr1);
+
+		allValuesList.add(obsValuesArr);
+		allTimesList.add(simTimesArr2);
 
 		TimeSeries timeseriesChart = new TimeSeries(title, series, allTimesList, allValuesList);
 		timeseriesChart.setXLabel(xLabel);
