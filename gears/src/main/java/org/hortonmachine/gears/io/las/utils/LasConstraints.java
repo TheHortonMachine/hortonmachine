@@ -353,8 +353,11 @@ public class LasConstraints {
 
     public void setDtm( GridCoverage2D dtm ) {
         this.dtm = dtm;
-
     }
+    
+    public boolean hasDtm() {
+		return this.dtm != null;
+	}
 
     public void setLowerThres( Double lowerThres ) {
         this.lowerThresConstrain = lowerThres;

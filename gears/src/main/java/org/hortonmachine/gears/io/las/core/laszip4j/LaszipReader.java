@@ -95,8 +95,10 @@ public class LaszipReader extends ALasReader {
         lr.returnNumber = next.getReturnNumber();
         lr.numberOfReturns = next.getNumberOfReturns();
         lr.classification = next.getClassification();
-        lr.gpsTime = next.getGPSTime();
-        lr.color = new short[]{(short) next.getRed(), (short) next.getGreen(), (short) next.getBlue()};
+        if(next.hasGPSTime())
+        	lr.gpsTime = next.getGPSTime();
+        if(next.hasRGB())
+        	lr.color = new short[]{(short) next.getRed(), (short) next.getGreen(), (short) next.getBlue()};
 
         return lr;
     }

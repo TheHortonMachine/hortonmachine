@@ -450,8 +450,15 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
         double width = Double.parseDouble(text);
 
         double[] stats = constraints.getStats();
-        double minElev = stats[0];
-        double maxElev = stats[1];
+        double minElev;
+        double maxElev;
+        if(constraints.hasDtm()) {
+			minElev = stats[8];
+			maxElev = stats[9];
+        }else {
+	        minElev = stats[0];
+	        maxElev = stats[1];
+        }
 
         slicesMap = new LinkedHashMap<>();
 
@@ -464,9 +471,15 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
             double lower = runningInterval - width / 2.0;
             double upper = runningInterval + width / 2.0;
             for( LasRecord lr : filteredPoints ) {
-                if (lr.z > lower && lr.z < upper) {
-                    sliceList.add(lr);
-                }
+            	if(constraints.hasDtm()) {
+            		if (lr.groundElevation > lower && lr.groundElevation < upper) {
+	                    sliceList.add(lr);
+	                }
+            	}else {
+	                if (lr.z > lower && lr.z < upper) {
+	                    sliceList.add(lr);
+	                }
+            	}
             }
 
             runningInterval += interval;

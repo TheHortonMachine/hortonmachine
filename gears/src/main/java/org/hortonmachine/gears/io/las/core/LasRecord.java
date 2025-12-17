@@ -57,7 +57,7 @@ public class LasRecord {
     /**
      * Classification.
      */
-    public byte classification = -1;
+    public short classification = -1;
 
     /**
      * Gps timestamp
