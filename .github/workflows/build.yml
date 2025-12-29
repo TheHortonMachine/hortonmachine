@@ -78,7 +78,7 @@ jobs:
 
           mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
           # Copy hm-apps runtime deps
-          mvn -q -pl :hm-apps -am dependency:copy-dependencies \
+          mvn -q -pl :hm-apps dependency:copy-dependencies \
             -DoutputDirectory="${TMPLIBS}" \
             -DincludeScope=runtime \
             -DexcludeClassifiers=sources,javadoc
