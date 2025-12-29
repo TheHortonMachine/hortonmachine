@@ -27,7 +27,7 @@
 	<properties>
 		<!-- this Hortonmachine version -->
 		<revision>0.11.0-SNAPSHOT</revision>
-	
+
 		<maven.compiler.source>17</maven.compiler.source>
 		<gt.version>34.0</gt.version>
 
@@ -126,51 +126,51 @@
 		<dependencies>
 			<!-- define internal hm same versions -->
 			<dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-dbs</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-gears</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-hmachine</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-lesto</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-geoframe</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-modules</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-			  <groupId>org.hortonmachine</groupId>
-			  <artifactId>hm-geoframe-core</artifactId>
-			  <version>${revision}</version>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-dbs</artifactId>
+				<version>${revision}</version>
 			</dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-gui</artifactId>
-                <version>${revision}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.hortonmachine</groupId>
-                <artifactId>hm-apps</artifactId>
-                <version>${revision}</version>
-            </dependency>		
-		
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-gears</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-hmachine</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-lesto</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-geoframe</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-modules</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-geoframe-core</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-gui</artifactId>
+				<version>${revision}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-apps</artifactId>
+				<version>${revision}</version>
+			</dependency>
+
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
@@ -464,6 +464,31 @@
 					<release>${maven.compiler.source}</release>
 					<debug>true</debug>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<configuration>
+					<updatePomFile>true</updatePomFile>
+					<flattenMode>resolveCiFriendliesOnly</flattenMode>
+				</configuration>
+				<executions>
+					<execution>
+						<id>flatten</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>flatten</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>flatten-clean</id>
+						<phase>clean</phase>
+						<goals>
+							<goal>clean</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
