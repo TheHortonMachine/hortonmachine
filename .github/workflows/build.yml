@@ -77,7 +77,7 @@ jobs:
           mkdir -p "${TMPLIBS}"
 
           # Copy hm-apps runtime deps
-          mvn -q -pl :hm-apps -am dependency:copy-dependencies \
+          mvn -q -pl :hm-apps,:hm-geoframe-cleq -am dependency:copy-dependencies \
             -DoutputDirectory="${TMPLIBS}" \
             -DincludeScope=runtime \
             -DexcludeClassifiers=sources,javadoc
