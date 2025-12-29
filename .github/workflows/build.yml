@@ -48,6 +48,8 @@ jobs:
   release-bundle:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
+    env:
+      REVISION: 0.11.0-SNAPSHOT
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -64,7 +66,7 @@ jobs:
 
       - name: Resolve project version
         id: ver
-        run: echo "VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
+        run: echo "VERSION=$(mvn -q -DforceStdout -Drevision=${REVISION} help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
 
      # - name: Build project (skip tests + javadoc)
      #   run: mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
@@ -76,9 +78,9 @@ jobs:
           TMPLIBS=./extras/export/libs
           mkdir -p "${TMPLIBS}"
 
-          mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
+          mvn -U -Drevision=${REVISION} clean install -DskipTests -Dmaven.javadoc.skip=true
           # Copy hm-apps runtime deps
-          mvn -q -pl :hm-apps dependency:copy-dependencies \
+          mvn -q -Drevision=${REVISION} -pl :hm-apps dependency:copy-dependencies \
             -DoutputDirectory="${TMPLIBS}" \
             -DincludeScope=runtime \
             -DexcludeClassifiers=sources,javadoc
