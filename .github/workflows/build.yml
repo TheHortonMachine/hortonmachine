@@ -66,8 +66,8 @@ jobs:
         id: ver
         run: echo "VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
 
-      - name: Build project (skip tests + javadoc)
-        run: mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
+     # - name: Build project (skip tests + javadoc)
+     #   run: mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
 
       # --- keep this step (populate) as-is ---
       - name: Populate libs from hm-apps deps
@@ -76,8 +76,9 @@ jobs:
           TMPLIBS=./extras/export/libs
           mkdir -p "${TMPLIBS}"
 
+          mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
           # Copy hm-apps runtime deps
-          mvn -q -pl :hm-apps,:hm-geoframe-cleq -am dependency:copy-dependencies \
+          mvn -q -pl :hm-apps -am dependency:copy-dependencies \
             -DoutputDirectory="${TMPLIBS}" \
             -DincludeScope=runtime \
             -DexcludeClassifiers=sources,javadoc
