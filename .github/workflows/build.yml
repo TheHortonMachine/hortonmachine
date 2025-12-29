@@ -48,8 +48,6 @@ jobs:
   release-bundle:
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
-    env:
-      REVISION: 0.11.0-SNAPSHOT
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -66,76 +64,135 @@ jobs:
 
       - name: Resolve project version
         id: ver
-        run: echo "VERSION=$(mvn -q -DforceStdout -Drevision=${REVISION} help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
+        run: echo "VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)" >> "$GITHUB_OUTPUT"
 
-     # - name: Build project (skip tests + javadoc)
-     #   run: mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
+     #- name: Build project (skip tests + javadoc)
+     #  run: mvn -U clean install -DskipTests -Dmaven.javadoc.skip=true
 
-      # --- keep this step (populate) as-is ---
-      - name: Populate libs from hm-apps deps
+      - name: Build bundle with embedded JRE
         run: |
           set -euxo pipefail
+
+          VERSION=$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)
           TMPLIBS=./extras/export/libs
-          mkdir -p "${TMPLIBS}"
+          DEPLOY=./extras/deploy
+          RELEASE_DIR=${DEPLOY}/hortonmachine_${VERSION}
 
-          mvn -U -Drevision=${REVISION} clean install -DskipTests -Dmaven.javadoc.skip=true
-          # Copy hm-apps runtime deps
-          mvn -q -Drevision=${REVISION} -pl :hm-apps dependency:copy-dependencies \
-            -DoutputDirectory="${TMPLIBS}" \
-            -DincludeScope=runtime \
-            -DexcludeClassifiers=sources,javadoc
+          rm -rf "${TMPLIBS}" "${DEPLOY}/libs" "${DEPLOY}"/*.tar.gz "${RELEASE_DIR}"
+          mkdir -p "${RELEASE_DIR}"
 
-          # Copy the app jar itself (no sources jar)
-          cp ./apps/target/hm-apps-*.jar "${TMPLIBS}"
-          rm -f "${TMPLIBS}"/*-sources.jar || true
-          rm -f "${TMPLIBS}"/junit*.jar "${TMPLIBS}"/log4j-*.jar || true
+          # Build and populate ./extras/export/libs
+          mvn -U clean
+          mvn -U install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+
+          # Fail fast if libs weren't created by the build
+          test -d "${TMPLIBS}"
+
+          # remove unused
+          rm -f "${TMPLIBS}"/junit*.jar || true
+          rm -f "${TMPLIBS}"/log4j-*.jar || true
           rm -f "${TMPLIBS}"/hm-geoframe-cleq-*.jar || true
           rm -f "${TMPLIBS}"/hm-geoframe-num-*.jar || true
           rm -f "${TMPLIBS}"/hm-geoframe-snowm-*.jar || true
           rm -f "${TMPLIBS}"/hm-geoframe-rssep-*.jar || true
           rm -f "${TMPLIBS}"/hm-geoframe-erm-*.jar || true
 
-      # --- FIXED assemble step ---
-      - name: Assemble tar.gz bundle
-        run: |
-          set -euxo pipefail
-          VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)"
-          TMPLIBS="./extras/export/libs"
-          DEPLOY="./extras/deploy"
-          RELEASE_DIR="${DEPLOY}/hortonmachine_${VERSION}"
+          # Copy the app jar itself into libs
+          cp ./apps/target/hm-apps-*.jar "${TMPLIBS}"
+          rm -f "${TMPLIBS}"/*-sources.jar || true
 
-          # Download fixed Temurin JRE 17 (Windows x64)
-          JRE_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.16_8.zip"
-          echo "Downloading Temurin JRE from: ${JRE_URL}"
-          curl -fsSL -o ./temurin-jre-win.zip "${JRE_URL}"
-
-          # Unzip and normalize folder name to ./jre
-          unzip -q ./temurin-jre-win.zip -d .
-          mv jdk-17.0.16+8-jre jre
-          rm -f ./temurin-jre-win.zip
-
-          # Prep release dir (don't delete ${TMPLIBS})
-          rm -rf "${DEPLOY}/libs" "${RELEASE_DIR}" "${DEPLOY}/hortonmachine_${VERSION}.tar.gz"
-          mkdir -p "${RELEASE_DIR}"
-
-          # Move populated libs into the release dir
+          # Put libs into release dir
           mv "${TMPLIBS}" "${RELEASE_DIR}/libs"
 
-          # Copy deploy assets (allow missing patterns without failing)
+          # Copy deploy assets (allow missing patterns)
           shopt -s nullglob
           cp -rv ${DEPLOY}/*.sh ${DEPLOY}/*.exe ${DEPLOY}/*.bat "${RELEASE_DIR}" || true
           cp -rv ${DEPLOY}/imgs ${DEPLOY}/natives ${DEPLOY}/quiet-logging.properties "${RELEASE_DIR}" || true
           shopt -u nullglob
 
-          # ➜ Put JRE inside the release dir so it's included in the tarball
-          mv ./jre "${RELEASE_DIR}/jre"
+          # ---- Embed Windows JRE ----
+          JRE_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.16_8.zip"
+          echo "Downloading Temurin JRE from: ${JRE_URL}"
+          curl -fsSL -o ./temurin-jre-win.zip "${JRE_URL}"
+          unzip -q ./temurin-jre-win.zip -d .
+          mv jdk-17.0.16+8-jre "${RELEASE_DIR}/jre"
+          rm -f ./temurin-jre-win.zip
 
-          # Create tarball
+          # Tarball
           tar -C "${DEPLOY}" -zcvf "${DEPLOY}/hortonmachine_${VERSION}.tar.gz" "hortonmachine_${VERSION}"
 
-          # Optional: keep a copy of libs next to the tarball (and clean temp dir)
-          mv "${RELEASE_DIR}/libs" "${DEPLOY}/"
+          # keep libs next to tarball 
+          mv "${RELEASE_DIR}/libs" "${DEPLOY}/" || true
           rm -rf "${RELEASE_DIR}"
+
+
+
+
+      # --- keep this step (populate) as-is ---
+      # - name: Populate libs from hm-apps deps
+      #   run: |
+      #     set -euxo pipefail
+      #     TMPLIBS=./extras/export/libs
+      #     mkdir -p "${TMPLIBS}"
+
+      #     mvn -U -Drevision=${REVISION} clean install -DskipTests -Dmaven.javadoc.skip=true
+      #     # Copy hm-apps runtime deps
+      #     mvn -q -Drevision=${REVISION} -pl :hm-apps dependency:copy-dependencies \
+      #       -DoutputDirectory="${TMPLIBS}" \
+      #       -DincludeScope=runtime \
+      #       -DexcludeClassifiers=sources,javadoc
+
+      #     # Copy the app jar itself (no sources jar)
+      #     cp ./apps/target/hm-apps-*.jar "${TMPLIBS}"
+      #     rm -f "${TMPLIBS}"/*-sources.jar || true
+      #     rm -f "${TMPLIBS}"/junit*.jar "${TMPLIBS}"/log4j-*.jar || true
+      #     rm -f "${TMPLIBS}"/hm-geoframe-cleq-*.jar || true
+      #     rm -f "${TMPLIBS}"/hm-geoframe-num-*.jar || true
+      #     rm -f "${TMPLIBS}"/hm-geoframe-snowm-*.jar || true
+      #     rm -f "${TMPLIBS}"/hm-geoframe-rssep-*.jar || true
+      #     rm -f "${TMPLIBS}"/hm-geoframe-erm-*.jar || true
+
+      # --- FIXED assemble step ---
+      # - name: Assemble tar.gz bundle
+      #   run: |
+      #     set -euxo pipefail
+      #     VERSION="$(mvn -q -DforceStdout help:evaluate -Dexpression=project.version)"
+      #     TMPLIBS="./extras/export/libs"
+      #     DEPLOY="./extras/deploy"
+      #     RELEASE_DIR="${DEPLOY}/hortonmachine_${VERSION}"
+
+      #     # Download fixed Temurin JRE 17 (Windows x64)
+      #     JRE_URL="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.16%2B8/OpenJDK17U-jre_x64_windows_hotspot_17.0.16_8.zip"
+      #     echo "Downloading Temurin JRE from: ${JRE_URL}"
+      #     curl -fsSL -o ./temurin-jre-win.zip "${JRE_URL}"
+
+      #     # Unzip and normalize folder name to ./jre
+      #     unzip -q ./temurin-jre-win.zip -d .
+      #     mv jdk-17.0.16+8-jre jre
+      #     rm -f ./temurin-jre-win.zip
+
+      #     # Prep release dir (don't delete ${TMPLIBS})
+      #     rm -rf "${DEPLOY}/libs" "${RELEASE_DIR}" "${DEPLOY}/hortonmachine_${VERSION}.tar.gz"
+      #     mkdir -p "${RELEASE_DIR}"
+
+      #     # Move populated libs into the release dir
+      #     mv "${TMPLIBS}" "${RELEASE_DIR}/libs"
+
+      #     # Copy deploy assets (allow missing patterns without failing)
+      #     shopt -s nullglob
+      #     cp -rv ${DEPLOY}/*.sh ${DEPLOY}/*.exe ${DEPLOY}/*.bat "${RELEASE_DIR}" || true
+      #     cp -rv ${DEPLOY}/imgs ${DEPLOY}/natives ${DEPLOY}/quiet-logging.properties "${RELEASE_DIR}" || true
+      #     shopt -u nullglob
+
+      #     # ➜ Put JRE inside the release dir so it's included in the tarball
+      #     mv ./jre "${RELEASE_DIR}/jre"
+
+      #     # Create tarball
+      #     tar -C "${DEPLOY}" -zcvf "${DEPLOY}/hortonmachine_${VERSION}.tar.gz" "hortonmachine_${VERSION}"
+
+      #     # Optional: keep a copy of libs next to the tarball (and clean temp dir)
+      #     mv "${RELEASE_DIR}/libs" "${DEPLOY}/"
+      #     rm -rf "${RELEASE_DIR}"
 
 
       - name: Build release title
