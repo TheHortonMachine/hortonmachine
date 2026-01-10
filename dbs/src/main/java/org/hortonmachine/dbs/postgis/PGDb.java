@@ -277,7 +277,7 @@ public class PGDb extends ADb {
     public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES "
                 + "WHERE (TABLE_TYPE='BASE TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL') "+
-                "' and upper(table_name) = upper('" + tableName.name + "')";
+                " and upper(table_name) = upper('" + tableName.name + "')";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {

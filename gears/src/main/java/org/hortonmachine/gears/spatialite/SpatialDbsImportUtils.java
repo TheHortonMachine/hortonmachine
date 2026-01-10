@@ -53,6 +53,7 @@ import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -258,6 +259,9 @@ public class SpatialDbsImportUtils {
      */
     public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, SqlName tableName,
             int limit, boolean useFromTextForGeom, IHMProgressMonitor pm ) throws Exception {
+    	if(pm == null) {
+    		pm = new DummyProgressMonitor();
+    	}
         SimpleFeatureType schema = featureCollection.getSchema();
         List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
@@ -333,6 +337,7 @@ public class SpatialDbsImportUtils {
         IGeometryParser gp = db.getType().getGeometryParser();
 
         boolean _hasFid = hasFid;
+        var _pm = pm;
         return db.execOnConnection(conn -> {
             boolean noErrors = true;
             boolean autoCommit = conn.getAutoCommit();
@@ -398,10 +403,10 @@ public class SpatialDbsImportUtils {
                         count++;
                         batchCount++;
                         if (batchCount % DbsUtilities.DEFAULT_BULK_INSERT_CHUNK_SIZE == 0) {
-                            pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
+                            _pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
                                     IHMProgressMonitor.UNKNOWN);
                             pStmt.executeBatch();
-                            pm.done();
+                            _pm.done();
                             batchCount = 0;
                         }
                         if (limit > 0 && count >= limit) {
@@ -409,10 +414,10 @@ public class SpatialDbsImportUtils {
                         }
                     }
                     if (batchCount > 0) {
-                        pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
+                        _pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
                                 IHMProgressMonitor.UNKNOWN);
                         pStmt.executeBatch();
-                        pm.done();
+                        _pm.done();
                     }
                 } catch (Exception e) {
                     logger.insertError("SpatialDbsImportUtils", "error", e);
