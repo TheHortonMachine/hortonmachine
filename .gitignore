@@ -21,3 +21,4 @@ gpserver/*.so
 bin/
 .DS_Store
 .vscode
+.flattened-pom.xml
