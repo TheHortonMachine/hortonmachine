@@ -106,11 +106,8 @@ public class PGDb extends ADb {
         String jdbcUrl = EDb.POSTGRES.getJdbcPrefix() + dbPath;
 
         if (makePooled) {
-            Properties p = new Properties(System.getProperties());
-            p.put("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
-            p.put("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF"); // Off or any
-                                                                                  // other level
-            System.setProperties(p);
+        	System.setProperty("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
+        	System.setProperty("com.mchange.v2.log.FallbackMLog.DEFAULT_CUTOFF_LEVEL", "OFF");
 
             comboPooledDataSource = new ComboPooledDataSource();
             comboPooledDataSource.setDriverClass(DRIVER_CLASS);
@@ -121,16 +118,13 @@ public class PGDb extends ADb {
             }
             comboPooledDataSource.setMinPoolSize(minSize);
             comboPooledDataSource.setMaxPoolSize(maxSize);
-            comboPooledDataSource.setInitialPoolSize(5);
+            comboPooledDataSource.setInitialPoolSize(1);
             // The pool will acquire one connection at a time when it 
             // needs more connections.
             comboPooledDataSource.setAcquireIncrement(1);
             // This sets the size of the global PreparedStatement cache. 
             // This setting is useful for caching prepared statements.
             comboPooledDataSource.setMaxStatements(100);
-            // This setting ensures that connections are tested for 
-            // validity when they are returned to the pool.
-            comboPooledDataSource.setTestConnectionOnCheckin(true);
             
             // Specifies the maximum time (in seconds) a connection can 
             // sit idle in the pool before being discarded. 
@@ -142,22 +136,28 @@ public class PGDb extends ADb {
             comboPooledDataSource.setMaxIdleTimeExcessConnections(180);
             // Specifies how frequently (in seconds) idle connections are 
             // tested to ensure they are still valid.
-            comboPooledDataSource.setIdleConnectionTestPeriod(60);
+//            comboPooledDataSource.setIdleConnectionTestPeriod(60);
             // specifies that the connection pool should attempt to acquire a new 
             // connection only once if the initial attempt fails.
-            comboPooledDataSource.setAcquireRetryAttempts(3);
+            comboPooledDataSource.setAcquireRetryAttempts(10);
+            comboPooledDataSource.setAcquireRetryDelay(1000); // in ms
             // This setting specifies the maximum number of milliseconds that a client
             // will wait for a connection to be checked out from the pool. If a connection
             // is not available within this time, an exception will be thrown.
             // Setting a checkout timeout can help prevent your application from hanging
             // indefinitely if a connection cannot be acquired. If the timeout is set too low,
             // you might encounter exceptions during high load periods.
-            comboPooledDataSource.setCheckoutTimeout(2000);
+            comboPooledDataSource.setCheckoutTimeout(15000);
             // This setting specifies whether the pool should continue to attempt to acquire
             // a new connection after a failure.
             comboPooledDataSource.setBreakAfterAcquireFailure(false);
             // TODO remove after debug
             // comboPooledDataSource.setUnreturnedConnectionTimeout(180);
+            
+            comboPooledDataSource.setPreferredTestQuery("SELECT 1");
+            comboPooledDataSource.setTestConnectionOnCheckin(false); 
+            comboPooledDataSource.setTestConnectionOnCheckout(true); 
+
 
         } else {
             if (user != null && password != null) {
