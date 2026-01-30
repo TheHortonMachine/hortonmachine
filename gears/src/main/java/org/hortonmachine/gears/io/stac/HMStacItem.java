@@ -84,6 +84,9 @@ public class HMStacItem {
         stacItem.geometry = (Geometry) feature.getDefaultGeometry();
 
         Object epsgObj = feature.getAttribute("proj:epsg");
+        if (epsgObj == null) {
+            epsgObj = feature.getAttribute("proj:code");
+        }
         if (epsgObj instanceof Integer) {
             stacItem.epsg = (Integer) epsgObj;
 
