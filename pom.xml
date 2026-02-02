@@ -6,7 +6,7 @@
 
 	<groupId>org.hortonmachine</groupId>
 	<artifactId>hortonmachine</artifactId>
-	<version>0.10.11</version>
+	<version>0.10.12</version>
 	<packaging>pom</packaging>
 
 	<name>The Horton Machine</name>
