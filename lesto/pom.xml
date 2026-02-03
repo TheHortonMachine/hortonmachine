@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>org.hortonmachine</groupId>
 		<artifactId>hortonmachine</artifactId>
-		<version>0.10.12</version>
+		<version>0.10.13</version>
 	</parent>
 
 	<artifactId>hm-lesto</artifactId>
@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-hmachine</artifactId>
-			<version>0.10.12</version>
+			<version>0.10.13</version>
 		</dependency>
 
 	</dependencies>
