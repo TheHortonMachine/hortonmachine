@@ -458,7 +458,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         gBridge.setLibsFolder(libsFile);
 
         final MapcalcController controller = new MapcalcController(gBridge, true);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Mapcalc");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Mapcalc - " + org.hortonmachine.Version.getVersion());
 
         GuiUtilities.setDefaultFrameIcon(frame);
 

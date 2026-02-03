@@ -207,7 +207,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         final GeopaparazziViewer controller = new GeopaparazziViewer(gBridge);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "Geopaparazzi Projects Viewer");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "Geopaparazzi Projects Viewer - " + org.hortonmachine.Version.getVersion());
 
         Class<GeopaparazziViewer> class1 = GeopaparazziViewer.class;
         ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/geopaparazzi_icon.png"));

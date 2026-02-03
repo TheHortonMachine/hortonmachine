@@ -83,7 +83,7 @@ public class SimpleNwwViewer {
             }
 
             final JFrame nwwFrame = new JFrame();
-            nwwFrame.setTitle(appName + ": map view");
+            nwwFrame.setTitle(appName + ": map view - " + org.hortonmachine.Version.getVersion());
             GuiUtilities.setDefaultFrameIcon(nwwFrame);
 
 //            JPanel mapPanel = new JPanel(new BorderLayout());

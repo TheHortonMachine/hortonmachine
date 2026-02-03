@@ -980,7 +980,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         gBridge.setLibsFolder(libsFile);
         final SpatialtoolboxController controller = new SpatialtoolboxController(gBridge);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "The HortonMachine Spatial Toolbox");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "The HortonMachine Spatial Toolbox - " + org.hortonmachine.Version.getVersion());
 
         GuiUtilities.setDefaultFrameIcon(frame);
 

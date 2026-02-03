@@ -715,7 +715,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
 
         final LasInfoController controller = new LasInfoController();
 
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Las Info Viewer");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Las Info Viewer - " + org.hortonmachine.Version.getVersion());
 
         GuiUtilities.setDefaultFrameIcon(frame);
 

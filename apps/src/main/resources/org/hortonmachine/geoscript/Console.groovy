@@ -99,7 +99,7 @@ import java.util.prefs.Preferences
  */
 class Console implements CaretListener, HyperlinkListener, ComponentListener, FocusListener {
     static String myTitle = 'Geoscript and Hortonmachine GroovyConsole';
-    static String myVersions = ' Geoscript Version 1.22\n Hortonmachine Version 0.12.x \n Groovy Version ';
+    static String myVersions = ' Hortonmachine ' + org.hortonmachine.Version.getVersion() +'\n Groovy Version ';
 
     static final String DEFAULT_SCRIPT_NAME_START = 'ConsoleScript'
 

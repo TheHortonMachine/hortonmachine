@@ -513,7 +513,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
         final WebMapsController controller = new WebMapsController();
         SettingsController.applySettings(controller);
 
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Web Maps Downloader");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Web Maps Downloader - " + org.hortonmachine.Version.getVersion());
 
         GuiUtilities.setDefaultFrameIcon(frame);
 

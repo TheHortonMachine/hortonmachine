@@ -573,7 +573,7 @@ public class DatabaseViewer extends DatabaseController {
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         final DatabaseViewer controller = new DatabaseViewer(gBridge);
         SettingsController.applySettings(controller);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Database Viewer");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Database Viewer - " + org.hortonmachine.Version.getVersion());
 
         GuiUtilities.setDefaultFrameIcon(frame);
         GuiUtilities.addClosingListener(frame, controller);

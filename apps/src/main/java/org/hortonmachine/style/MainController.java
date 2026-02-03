@@ -1224,7 +1224,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         final MainController controller = new MainController(openFile, selectedTableName);
         SettingsController.applySettings(controller);
 
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor - " + org.hortonmachine.Version.getVersion());
 
         GuiUtilities.setDefaultFrameIcon(frame);
 
