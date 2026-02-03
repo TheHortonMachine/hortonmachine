@@ -139,24 +139,27 @@ public class PGDb extends ADb {
 //            comboPooledDataSource.setIdleConnectionTestPeriod(60);
             // specifies that the connection pool should attempt to acquire a new 
             // connection only once if the initial attempt fails.
-            comboPooledDataSource.setAcquireRetryAttempts(10);
-            comboPooledDataSource.setAcquireRetryDelay(1000); // in ms
+            comboPooledDataSource.setAcquireRetryAttempts(3);
+            comboPooledDataSource.setAcquireRetryDelay(2000); // in ms
             // This setting specifies the maximum number of milliseconds that a client
             // will wait for a connection to be checked out from the pool. If a connection
             // is not available within this time, an exception will be thrown.
             // Setting a checkout timeout can help prevent your application from hanging
             // indefinitely if a connection cannot be acquired. If the timeout is set too low,
             // you might encounter exceptions during high load periods.
-            comboPooledDataSource.setCheckoutTimeout(15000);
+            comboPooledDataSource.setCheckoutTimeout(5000);
             // This setting specifies whether the pool should continue to attempt to acquire
             // a new connection after a failure.
             comboPooledDataSource.setBreakAfterAcquireFailure(false);
             // TODO remove after debug
             // comboPooledDataSource.setUnreturnedConnectionTimeout(180);
             
+            comboPooledDataSource.setTestConnectionOnCheckout(false);
+            comboPooledDataSource.setIdleConnectionTestPeriod(60);
             comboPooledDataSource.setPreferredTestQuery("SELECT 1");
-            comboPooledDataSource.setTestConnectionOnCheckin(false); 
-            comboPooledDataSource.setTestConnectionOnCheckout(true); 
+            
+            comboPooledDataSource.setUnreturnedConnectionTimeout(180);
+            comboPooledDataSource.setDebugUnreturnedConnectionStackTraces(true);
 
 
         } else {
