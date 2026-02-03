@@ -87,6 +87,13 @@ public class HMStacItem {
         if (epsgObj == null) {
             epsgObj = feature.getAttribute("proj:code");
         }
+        if (epsgObj instanceof String) {
+        	String codeStr = (String) epsgObj;
+        	if (codeStr.toUpperCase().startsWith("EPSG:")) {
+        		codeStr = codeStr.substring(5);
+        	}
+        	epsgObj = Integer.parseInt(codeStr);
+        }
         if (epsgObj instanceof Integer) {
             stacItem.epsg = (Integer) epsgObj;
 
