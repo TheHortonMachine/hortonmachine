@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.github.davidmoten.aws.lw.client.Client;
@@ -185,18 +186,37 @@ public class HMStacCollection {
         return stacItems;
     }
 
+    
     /**
      * Read all the raster of a certain band from the items list and merge them to a single raster sized on the given region and resolution.
      * 
+     * <b>NOTE: this method is kept for backwards compatibility.</b>
+     * 
      * @param latLongRegionMap the region to use for the final raster.
-     * @param bandName the name o the band to extract.
-     * @param items the list of items containing the various assets to read from.
+     * @param bandName the name of the band to filter.
+	 * @param items the list of items containing the various assets to read from.
      * @param allowTransform if true, allows datasets of different projections to be transformed and merged together.
      * @param mergeMode the merge mode to use in case of multiple value per cell.
      * @return the final raster.
      * @throws Exception
      */
     public HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, String bandName, List<HMStacItem> items,
+            boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
+    	return readRasterBandOnRegion(latLongRegionMap, asset -> asset.getId().equals(bandName), items, allowTransform, mergeMode, pm);
+    }
+    
+    /**
+     * Read all the raster from the filtered assets list and merge them to a single raster sized on the given region and resolution.
+     * 
+     * @param latLongRegionMap the region to use for the final raster.
+     * @param assetChecker the predicate used to filter on the assetslist.
+     * @param items the list of items containing the various assets to read from.
+     * @param allowTransform if true, allows datasets of different projections to be transformed and merged together.
+     * @param mergeMode the merge mode to use in case of multiple value per cell.
+     * @return the final raster.
+     * @throws Exception
+     */
+    public HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, Predicate<HMStacAsset> assetChecker, List<HMStacItem> items,
             boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
         if (!allowTransform || assumedEpsg == 0) {
@@ -222,7 +242,7 @@ public class HMStacCollection {
         HMRaster outRaster = null;
 
         String fileName = null;
-        pm.beginTask("Reading " + bandName + "...", items.size());
+        pm.beginTask("Reading raster ...", items.size());
         for( HMStacItem item : items ) {
             int currentSrid = assumedEpsg == NO_EPSG_DEFINED ? item.getEpsg() : assumedEpsg;
             CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
@@ -241,7 +261,7 @@ public class HMStacCollection {
             RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentItemCrs.getMinX(), roiEnvCurrentItemCrs.getMaxX(),
                     roiEnvCurrentItemCrs.getMinY(), roiEnvCurrentItemCrs.getMaxY(), cols, rows);
 
-            HMStacAsset asset = item.getAssets().stream().filter(as -> as.getId().equals(bandName)).findFirst().get();
+            HMStacAsset asset = item.getAssets().stream().filter(assetChecker).findFirst().get();
             IHMStacAssetHandler handler = asset.getHandler();
             if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
 	            int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
