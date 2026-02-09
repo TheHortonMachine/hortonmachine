@@ -33,6 +33,8 @@ public class SettingsView extends JPanel
    JComboBox _orientationCombo = new JComboBox();
    JTextField _preferencesDbPAth = new JTextField();
    JButton _preferencesDbButton = new JButton();
+   JLabel _uiScalingLabel = new JLabel();
+   JTextField _uiScalingTextField = new JTextField();
    JTextField _sshKeyPathField = new JTextField();
    JButton _sshKeyButton = new JButton();
    JPasswordField _sshKeyPassphraseField = new JPasswordField();
@@ -159,7 +161,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Proxy",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      TitledBorder titledborder1 = new TitledBorder(null,"Proxy",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -218,7 +220,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel4()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Charset",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      TitledBorder titledborder1 = new TitledBorder(null,"Charset",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -238,7 +240,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel5()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Component Orientation",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      TitledBorder titledborder1 = new TitledBorder(null,"Component Orientation",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
@@ -254,7 +256,7 @@ public class SettingsView extends JPanel
    public JPanel createPanel6()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:8DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:20DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:8DLU:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:20DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -263,14 +265,21 @@ public class SettingsView extends JPanel
       jpanel1.add(jlabel1,cc.xy(2,2));
 
       _preferencesDbPAth.setName("preferencesDbPAth");
-      jpanel1.add(_preferencesDbPAth,cc.xy(4,2));
+      jpanel1.add(_preferencesDbPAth,cc.xywh(4,2,23,1));
 
       _preferencesDbButton.setActionCommand("...");
       _preferencesDbButton.setName("preferencesDbButton");
       _preferencesDbButton.setText("...");
-      jpanel1.add(_preferencesDbButton,cc.xy(6,2));
+      jpanel1.add(_preferencesDbButton,cc.xy(28,2));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7 },new int[]{ 1,2,3 });
+      _uiScalingLabel.setName("uiScalingLabel");
+      _uiScalingLabel.setText("UI scaling to apply");
+      jpanel1.add(_uiScalingLabel,cc.xy(2,4));
+
+      _uiScalingTextField.setName("uiScalingTextField");
+      jpanel1.add(_uiScalingTextField,cc.xy(4,4));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29 },new int[]{ 1,2,3,4,5 });
       return jpanel1;
    }
 

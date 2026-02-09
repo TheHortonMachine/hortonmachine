@@ -31,159 +31,173 @@ import org.hortonmachine.ssh.SshUtilities;
 
 public class SettingsController extends SettingsView implements IOnCloseListener {
 
-    public SettingsController() {
-        setPreferredSize(new Dimension(900, 400));
+	public SettingsController() {
+		setPreferredSize(new Dimension(900, 400));
 
-        fillFromPreferences();
-    }
+		fillFromPreferences();
+	}
 
-    private void fillFromPreferences() {
-        String proxyCheck = PreferencesHandler.getPreference(HM_PREF_PROXYCHECK, "false");
-        String proxyHost = PreferencesHandler.getPreference(HM_PREF_PROXYHOST, "");
-        String proxyPort = PreferencesHandler.getPreference(HM_PREF_PROXYPORT, "");
-        String proxyUser = PreferencesHandler.getPreference(HM_PREF_PROXYUSER, "");
-        String proxyPwd = PreferencesHandler.getPreference(HM_PREF_PROXYPWD, "");
+	private void fillFromPreferences() {
+		String proxyCheck = PreferencesHandler.getPreference(HM_PREF_PROXYCHECK, "false");
+		String proxyHost = PreferencesHandler.getPreference(HM_PREF_PROXYHOST, "");
+		String proxyPort = PreferencesHandler.getPreference(HM_PREF_PROXYPORT, "");
+		String proxyUser = PreferencesHandler.getPreference(HM_PREF_PROXYUSER, "");
+		String proxyPwd = PreferencesHandler.getPreference(HM_PREF_PROXYPWD, "");
+		String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, ""+HM_DEF_UISCALE);
 
-        _proxyCheckbox.setSelected(Boolean.parseBoolean(proxyCheck));
-        _proxyHostField.setText(proxyHost);
-        _proxyPortField.setText(proxyPort);
-        _proxyUserField.setText(proxyUser);
-        _proxyPasswordField.setText(proxyPwd);
+		_proxyCheckbox.setSelected(Boolean.parseBoolean(proxyCheck));
+		_proxyHostField.setText(proxyHost);
+		_proxyPortField.setText(proxyPort);
+		_proxyUserField.setText(proxyUser);
+		_proxyPasswordField.setText(proxyPwd);
 
-        String shpCharset = PreferencesHandler.getPreference(HM_PREF_SHP_CHARSET, "");
-        _charsetTextField.setText(shpCharset);
+		String shpCharset = PreferencesHandler.getPreference(HM_PREF_SHP_CHARSET, "");
+		_charsetTextField.setText(shpCharset);
 
-        ComponentOrientation co = PreferencesHandler.getComponentOrientation();
-        _orientationCombo.setModel(new DefaultComboBoxModel<String>(
-                new String[]{PreferencesHandler.LEFT_TO_RIGHT, PreferencesHandler.RIGHT_TO_LEFT}));
-        _orientationCombo
-                .setSelectedItem(co.isLeftToRight() ? PreferencesHandler.LEFT_TO_RIGHT : PreferencesHandler.RIGHT_TO_LEFT);
-        _orientationCombo.addActionListener(( e ) -> {
-            String selection = (String) _orientationCombo.getSelectedItem();
-            if (selection != null) {
-                PreferencesHandler.saveComponentOrientation(selection);
-            }
-        });
+		ComponentOrientation co = PreferencesHandler.getComponentOrientation();
+		_orientationCombo.setModel(new DefaultComboBoxModel<String>(
+				new String[] { PreferencesHandler.LEFT_TO_RIGHT, PreferencesHandler.RIGHT_TO_LEFT }));
+		_orientationCombo.setSelectedItem(
+				co.isLeftToRight() ? PreferencesHandler.LEFT_TO_RIGHT : PreferencesHandler.RIGHT_TO_LEFT);
+		_orientationCombo.addActionListener((e) -> {
+			String selection = (String) _orientationCombo.getSelectedItem();
+			if (selection != null) {
+				PreferencesHandler.saveComponentOrientation(selection);
+			}
+		});
 
-        GuiUtilities.setFolderBrowsingOnWidgets(_preferencesDbPAth, _preferencesDbButton, null);
+		_uiScalingTextField.setText(uiScaleString);
 
-        Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
-        File baseFolder = PreferencesDb.getBaseFolder();
-        String folderPath = preferences.get(PreferencesDb.HM_PREF_PREFFOLDER, baseFolder.getAbsolutePath());
-        _preferencesDbPAth.setText(folderPath);
+		GuiUtilities.setFolderBrowsingOnWidgets(_preferencesDbPAth, _preferencesDbButton, null);
 
-        String sshKeyPath = SshUtilities.getPreference(SshUtilities.KEYPATH, "");
-        _sshKeyPathField.setText(sshKeyPath);
-        GuiUtilities.setFileBrowsingOnWidgets(_sshKeyPathField, _sshKeyButton, null, null);
-        String sshKeyPassphrase = SshUtilities.getPreference(SshUtilities.KEYPASSPHRASE, "");
-        _sshKeyPassphraseField.setText(sshKeyPassphrase);
+		Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
+		File baseFolder = PreferencesDb.getBaseFolder();
+		String folderPath = preferences.get(PreferencesDb.HM_PREF_PREFFOLDER, baseFolder.getAbsolutePath());
+		_preferencesDbPAth.setText(folderPath);
 
-        String spatialiteLibsFolder = DbsUtilities.getPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "");
-        _spatialiteModPathField.setText(spatialiteLibsFolder);
-        GuiUtilities.setFolderBrowsingOnWidgets(_spatialiteModPathField, _spatialiteModButton, null);
-    }
+		String sshKeyPath = SshUtilities.getPreference(SshUtilities.KEYPATH, "");
+		_sshKeyPathField.setText(sshKeyPath);
+		GuiUtilities.setFileBrowsingOnWidgets(_sshKeyPathField, _sshKeyButton, null, null);
+		String sshKeyPassphrase = SshUtilities.getPreference(SshUtilities.KEYPASSPHRASE, "");
+		_sshKeyPassphraseField.setText(sshKeyPassphrase);
 
-    private void applySettingsAndSavePreferences() throws Exception {
-        String charset = _charsetTextField.getText();
-        if (charset.trim().length() != 0) {
-            if (!Charset.isSupported(charset)) {
-                GuiUtilities.showWarningMessage(this, "Unsupported charset: " + charset);
-            } else {
-                PreferencesHandler.setPreference(HM_PREF_SHP_CHARSET, charset);
-            }
-        } else {
-            PreferencesHandler.setPreference(HM_PREF_SHP_CHARSET, "");
-        }
+		String spatialiteLibsFolder = DbsUtilities.getPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, "");
+		_spatialiteModPathField.setText(spatialiteLibsFolder);
+		GuiUtilities.setFolderBrowsingOnWidgets(_spatialiteModPathField, _spatialiteModButton, null);
+	}
 
-        boolean proxySelected = _proxyCheckbox.isSelected();
-        PreferencesHandler.setPreference(HM_PREF_PROXYCHECK, proxySelected ? "true" : "false");
-        if (proxySelected) {
-            String host = _proxyHostField.getText();
-            String port = _proxyPortField.getText();
-            String user = _proxyUserField.getText();
-            String pwd = _proxyPasswordField.getText();
+	private void applySettingsAndSavePreferences() throws Exception {
+		String charset = _charsetTextField.getText();
+		if (charset.trim().length() != 0) {
+			if (!Charset.isSupported(charset)) {
+				GuiUtilities.showWarningMessage(this, "Unsupported charset: " + charset);
+			} else {
+				PreferencesHandler.setPreference(HM_PREF_SHP_CHARSET, charset);
+			}
+		} else {
+			PreferencesHandler.setPreference(HM_PREF_SHP_CHARSET, "");
+		}
 
-            PreferencesHandler.setPreference(HM_PREF_PROXYHOST, host);
-            PreferencesHandler.setPreference(HM_PREF_PROXYPORT, port);
-            PreferencesHandler.setPreference(HM_PREF_PROXYUSER, user);
-            PreferencesHandler.setPreference(HM_PREF_PROXYPWD, pwd);
-        }
+		boolean proxySelected = _proxyCheckbox.isSelected();
+		PreferencesHandler.setPreference(HM_PREF_PROXYCHECK, proxySelected ? "true" : "false");
+		if (proxySelected) {
+			String host = _proxyHostField.getText();
+			String port = _proxyPortField.getText();
+			String user = _proxyUserField.getText();
+			String pwd = _proxyPasswordField.getText();
 
-        String folderPath = _preferencesDbPAth.getText();
-        if (new File(folderPath).exists()) {
-            Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
-            preferences.put(PreferencesDb.HM_PREF_PREFFOLDER, folderPath);
-        }
+			PreferencesHandler.setPreference(HM_PREF_PROXYHOST, host);
+			PreferencesHandler.setPreference(HM_PREF_PROXYPORT, port);
+			PreferencesHandler.setPreference(HM_PREF_PROXYUSER, user);
+			PreferencesHandler.setPreference(HM_PREF_PROXYPWD, pwd);
+		}
 
-        String sshPath = _sshKeyPathField.getText().trim();
-        File sshFile = new File(sshPath);
-        if (sshFile.exists() && sshFile.isFile()) {
-            SshUtilities.setPreference(SshUtilities.KEYPATH, sshPath);
-        }
-        String sshKeyPassphrase = _sshKeyPassphraseField.getText().trim();
-        SshUtilities.setPreference(SshUtilities.KEYPASSPHRASE, sshKeyPassphrase);
+		String folderPath = _preferencesDbPAth.getText();
+		if (new File(folderPath).exists()) {
+			Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
+			preferences.put(PreferencesDb.HM_PREF_PREFFOLDER, folderPath);
+		}
 
-        String spatialiteModField = _spatialiteModPathField.getText();
-        if (new File(spatialiteModField).exists() && new File(spatialiteModField).isDirectory()) {
-            DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, spatialiteModField);
-        }
-    }
+		String uiScaleValueString = _uiScalingTextField.getText();
+		double uiScale = HM_DEF_UISCALE;
+		if (!uiScaleValueString.isBlank()) {
+			try {
+				uiScale = Double.parseDouble(uiScaleValueString);
+			} catch (NumberFormatException e1) {
+				// ignore and use default
+			}
+			PreferencesHandler.setPreference(HM_PREF_UISCALE, String.valueOf(uiScale));
+		}
 
-    public JComponent asJComponent() {
-        return this;
-    }
+		String sshPath = _sshKeyPathField.getText().trim();
+		File sshFile = new File(sshPath);
+		if (sshFile.exists() && sshFile.isFile()) {
+			SshUtilities.setPreference(SshUtilities.KEYPATH, sshPath);
+		}
+		String sshKeyPassphrase = _sshKeyPassphraseField.getText().trim();
+		SshUtilities.setPreference(SshUtilities.KEYPASSPHRASE, sshKeyPassphrase);
 
-    @Override
-    public boolean canCloseWithoutPrompt() {
-        return true;
-    }
+		String spatialiteModField = _spatialiteModPathField.getText();
+		if (new File(spatialiteModField).exists() && new File(spatialiteModField).isDirectory()) {
+			DbsUtilities.setPreference(DbsUtilities.SPATIALITE_DYLIB_FOLDER, spatialiteModField);
+		}
+	}
 
-    public void onClose() {
-        try {
-            applySettingsAndSavePreferences();
-        } catch (Exception e) {
-            Logger.INSTANCE.insertError("SettingsController", "An error occurred while saving the settings", e);
-        }
-    }
+	public JComponent asJComponent() {
+		return this;
+	}
 
-    /**
-     * Applies all settings to the current component or module.
-     *  
-     * @param component
-     */
-    public static void applySettings( Component component ) {
-        String doProxy = PreferencesHandler.getPreference(HM_PREF_PROXYCHECK, "false");
-        if (Boolean.parseBoolean(doProxy)) {
-            String host = PreferencesHandler.getPreference(HM_PREF_PROXYHOST, "");
-            String port = PreferencesHandler.getPreference(HM_PREF_PROXYPORT, "");
-            String user = PreferencesHandler.getPreference(HM_PREF_PROXYUSER, "");
-            String pwd = PreferencesHandler.getPreference(HM_PREF_PROXYPWD, "");
+	@Override
+	public boolean canCloseWithoutPrompt() {
+		return true;
+	}
 
-            ProxyEnabler.enableProxy(host, port, user, pwd, "");
-        }
+	public void onClose() {
+		try {
+			applySettingsAndSavePreferences();
+		} catch (Exception e) {
+			Logger.INSTANCE.insertError("SettingsController", "An error occurred while saving the settings", e);
+		}
+	}
 
-        if (component != null) {
-            // charsets need to be set in shp read writer
-            ComponentOrientation co = PreferencesHandler.getComponentOrientation();
-            GuiUtilities.applyComponentOrientation(component, co);
-        }
-    }
+	/**
+	 * Applies all settings to the current component or module.
+	 * 
+	 * @param component
+	 */
+	public static void applySettings(Component component) {
+		String doProxy = PreferencesHandler.getPreference(HM_PREF_PROXYCHECK, "false");
+		if (Boolean.parseBoolean(doProxy)) {
+			String host = PreferencesHandler.getPreference(HM_PREF_PROXYHOST, "");
+			String port = PreferencesHandler.getPreference(HM_PREF_PROXYPORT, "");
+			String user = PreferencesHandler.getPreference(HM_PREF_PROXYUSER, "");
+			String pwd = PreferencesHandler.getPreference(HM_PREF_PROXYPWD, "");
 
-    public static void onCloseHandleSettings() {
-    }
+			ProxyEnabler.enableProxy(host, port, user, pwd, "");
+		}
 
-    public static void main( String[] args ) throws Exception {
-        GuiUtilities.setDefaultLookAndFeel();
+		if (component != null) {
+			// charsets need to be set in shp read writer
+			ComponentOrientation co = PreferencesHandler.getComponentOrientation();
+			GuiUtilities.applyComponentOrientation(component, co);
+		}
+	}
 
-        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
-        final SettingsController controller = new SettingsController();
-        applySettings(controller);
-        final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Settings");
+	public static void onCloseHandleSettings() {
+	}
 
-        frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));
+	public static void main(String[] args) throws Exception {
+		GuiUtilities.setDefaultLookAndFeel();
 
-        GuiUtilities.addClosingListener(frame, controller);
+		DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
+		final SettingsController controller = new SettingsController();
+		applySettings(controller);
+		final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Settings");
 
-    }
+		frame.setIconImage(ImageCache.getBuffered(ImageCache.HORTONMACHINE_FRAME_ICON));
+
+		GuiUtilities.addClosingListener(frame, controller);
+
+	}
 
 }

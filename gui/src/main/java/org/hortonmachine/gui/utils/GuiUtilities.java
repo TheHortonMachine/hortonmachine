@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.gui.utils;
 
+import static org.hortonmachine.gears.utils.PreferencesHandler.*;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -66,6 +68,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
@@ -75,6 +78,8 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
 import org.hortonmachine.gears.utils.PreferencesHandler;
+
+import com.formdev.flatlaf.FlatLightLaf;
 
 /**
  * Utilities class.
@@ -259,67 +264,87 @@ public class GuiUtilities {
     }
 
     public static void setDefaultLookAndFeel() {
-        // change fonts only if -Dhm.fontsize=18 is passed
-        String fontSize = System.getProperty("hm.fontsize");
-        if (fontSize != null) {
-            int fs = Integer.parseInt(fontSize);
-            setUIFont(new javax.swing.plaf.FontUIResource("Dialog", Font.PLAIN, fs));
-        }
+    	String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, String.valueOf(HM_DEF_UISCALE));
+    	double uiScale = HM_DEF_UISCALE;
+    	if(!uiScaleString.isBlank()) {
+    		try {
+				uiScale = Double.parseDouble(uiScaleString);
+			} catch (NumberFormatException e) {
+				// ignore and use default
+			}
+    	}
+    	System.setProperty("flatlaf.uiScale", "" + uiScale); 
+    	try {
+			UIManager.setLookAndFeel(new FlatLightLaf());
+		} catch (UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 
-        OSType osType = OsCheck.getOperatingSystemType();
-//        if(osType == OSType.MacOS) {
-//            // set keybindings
-//            InputMap im = (InputMap) UIManager.get("TextField.focusInputMap");
-//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
-//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
-//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
-//            im = (InputMap) UIManager.get("TextPane.focusInputMap");
-//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
-//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
-//            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
+//    	String uiFontSizeString = PreferencesHandler.getPreference(HM_PREF_UIFONTSIZE, "");
+//        int uiFontSize = HM_DEF_UIFONTSIZE;
+//        if(!uiFontSizeString.isBlank()) {
+//        	try {
+//        		uiFontSize = Integer.parseInt(uiFontSizeString);
+//        	} catch (NumberFormatException e1) {
+//        		// ignore and use default
+//        	}
 //        }
-        try {
-            switch( osType ) {
-            case Windows:
-                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
-                    String name = info.getName();
-                    if ("Windows".equalsIgnoreCase(name)) {
-                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                        return;
-                    }
-                }
-            case Linux:
-                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
-                    String name = info.getName();
-                    if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
-                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                        return;
-                    }
-                }
-
-                // for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
-                // String name = info.getName();
-                // if ("Nimbus".equalsIgnoreCase(name)) {
-                // javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                // break;
-                // }
-                // }
-            default:
+//        setUIFont(new javax.swing.plaf.FontUIResource("Dialog", Font.PLAIN, uiFontSize));
+//
+//        OSType osType = OsCheck.getOperatingSystemType();
+////        if(osType == OSType.MacOS) {
+////            // set keybindings
+////            InputMap im = (InputMap) UIManager.get("TextField.focusInputMap");
+////            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
+////            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
+////            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
+////            im = (InputMap) UIManager.get("TextPane.focusInputMap");
+////            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.META_DOWN_MASK), DefaultEditorKit.copyAction);
+////            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_V, KeyEvent.META_DOWN_MASK), DefaultEditorKit.pasteAction);
+////            im.put(KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK), DefaultEditorKit.cutAction);
+////        }
+//        try {
+//            switch( osType ) {
+//            case Windows:
 //                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
 //                    String name = info.getName();
-//                    if ("Nimbus".equalsIgnoreCase(name)) {
+//                    if ("Windows".equalsIgnoreCase(name)) {
 //                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
-//                        break;
+//                        return;
 //                    }
 //                }
-                break;
-            }
-            
-
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+//            case Linux:
+//                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+//                    String name = info.getName();
+//                    if ("GTK".equalsIgnoreCase(name) || "GTK+".equalsIgnoreCase(name)) {
+//                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                        return;
+//                    }
+//                }
+//
+//                // for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+//                // String name = info.getName();
+//                // if ("Nimbus".equalsIgnoreCase(name)) {
+//                // javax.swing.UIManager.setLookAndFeel(info.getClassName());
+//                // break;
+//                // }
+//                // }
+//            default:
+////                for( UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels() ) {
+////                    String name = info.getName();
+////                    if ("Nimbus".equalsIgnoreCase(name)) {
+////                        javax.swing.UIManager.setLookAndFeel(info.getClassName());
+////                        break;
+////                    }
+////                }
+//                break;
+//            }
+//            
+//
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
     }
     
     public static void setUIFont(javax.swing.plaf.FontUIResource f) {
