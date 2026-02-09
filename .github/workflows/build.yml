@@ -92,11 +92,6 @@ jobs:
           # remove unused
           rm -f "${TMPLIBS}"/junit*.jar || true
           rm -f "${TMPLIBS}"/log4j-*.jar || true
-          rm -f "${TMPLIBS}"/hm-geoframe-cleq-*.jar || true
-          rm -f "${TMPLIBS}"/hm-geoframe-num-*.jar || true
-          rm -f "${TMPLIBS}"/hm-geoframe-snowm-*.jar || true
-          rm -f "${TMPLIBS}"/hm-geoframe-rssep-*.jar || true
-          rm -f "${TMPLIBS}"/hm-geoframe-erm-*.jar || true
 
           # Copy the app jar itself into libs
           cp ./apps/target/hm-apps-*.jar "${TMPLIBS}"

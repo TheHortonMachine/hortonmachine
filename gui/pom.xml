@@ -18,10 +18,6 @@
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-modules</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.hortonmachine</groupId>
-			<artifactId>hm-geoframe-core</artifactId>
-		</dependency>
 
         <dependency>
             <groupId>org.apache.groovy</groupId>

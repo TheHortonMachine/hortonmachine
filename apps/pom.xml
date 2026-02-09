@@ -24,10 +24,6 @@
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gui</artifactId>
 		</dependency>
-		<dependency>
-		    <groupId>org.hortonmachine</groupId>
-		    <artifactId>hm-geoframe-core</artifactId>
-		</dependency>
 		
 		<dependency>
 			<groupId>org.mapsforge</groupId>
