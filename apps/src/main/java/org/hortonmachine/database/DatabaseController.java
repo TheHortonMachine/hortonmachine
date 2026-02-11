@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1113,12 +1114,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             if (connectionDataList.size() == 0) {
                                 GuiUtilities.showWarningMessage(DatabaseController.this, null, NO_SAVED_CONNECTIONS_AVAILABLE);
                             } else {
-                                connectionDataList.sort(( c1, c2 ) -> c1.connectionLabel.compareTo(c2.connectionLabel));
                                 Map<String, ConnectionData> collect = connectionDataList.stream().distinct()
                                         .collect(Collectors.toMap(c -> c.connectionLabel, Function.identity()));
 
                                 List<String> labels = connectionDataList.stream().map(c -> c.connectionLabel)
                                         .collect(Collectors.toList());
+                                labels.sort(Comparator.naturalOrder());
                                 String selected = GuiUtilities.showComboDialog(DatabaseController.this, "Select Connection",
                                         "Select the connection to use", labels.toArray(new String[0]), null);
                                 if (selected != null && selected.length() > 0) {
