@@ -44,7 +44,7 @@
 		<groovy.version>4.0.15</groovy.version>
 		<geoscript.version>1.22.0</geoscript.version>
 
-		<c3p0.version>0.11.2</c3p0.version>
+		<c3p0.version>0.12.0</c3p0.version>
 		<c3p0.commons.version>0.3.2</c3p0.commons.version>
 
 		<h2gis.version>1.5.0</h2gis.version>
