@@ -85,6 +85,8 @@ public class OmsVectorWriter extends HMModel {
     @In
     public String file = null;
 
+    public Integer suggestedSrid;
+    
     // PARAM NAMES START
     public static final String OMSVECTORWRITER_DESCRIPTION = "Vectors features writer to file module.";
     public static final String OMSVECTORWRITER_DOCUMENTATION = "OmsVectorWriter.html";
@@ -136,8 +138,15 @@ public class OmsVectorWriter extends HMModel {
                 db.initSpatialMetadata(null);
 
                 CoordinateReferenceSystem crs = inVector.getBounds().getCoordinateReferenceSystem();
-                int srid = CrsUtilities.getSrid(crs);
-                db.addCRS("EPSG", srid, crs.toWKT());
+                Integer srid = CrsUtilities.getSrid(crs);
+                if (srid == null && suggestedSrid != null) {
+                	srid = suggestedSrid;
+				}
+                if (srid != null) {
+                	db.addCRS("EPSG", srid, crs.toWKT());
+                } else {
+                	pm.errorMessage("Unable to find epsg code for projection.");
+                }
 
                 if (db.hasTable(table) && !doOverwrite) {
                     throw new ModelsIOException("Overwriting is disabled. First delete the data.", this);
@@ -161,10 +170,15 @@ public class OmsVectorWriter extends HMModel {
      * @throws IOException
      */
     public static void writeVector( String path, SimpleFeatureCollection featureCollection ) throws Exception {
-        OmsVectorWriter writer = new OmsVectorWriter();
-        writer.file = path;
-        writer.inVector = featureCollection;
-        writer.process();
+    	writeVector(path, featureCollection, null);
+    }
+    
+    public static void writeVector( String path, SimpleFeatureCollection featureCollection, Integer suggestedSrid ) throws Exception {
+    	OmsVectorWriter writer = new OmsVectorWriter();
+    	writer.file = path;
+    	writer.inVector = featureCollection;
+    	writer.suggestedSrid = suggestedSrid;
+    	writer.process();
     }
 
 }

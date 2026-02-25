@@ -348,10 +348,14 @@ public class HM {
         OmsRasterWriter.writeRaster(source, raster);
     }
 
+    public static void dumpVector( SimpleFeatureCollection vector, String source, Integer suggestedSrid ) throws Exception {
+    	if (vector == null || source == null)
+    		return;
+    	OmsVectorWriter.writeVector(source, vector, suggestedSrid);    	
+    }
+    
     public static void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
-        if (vector == null || source == null)
-            return;
-        OmsVectorWriter.writeVector(source, vector);
+    	dumpVector(vector, source, null);
     }
 
     public static String getRegisteredRasterFormats() {

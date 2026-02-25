@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -57,10 +58,12 @@ public class HMStacCollection {
     private Integer assumedEpsg = NO_EPSG_DEFINED;
     private SearchQuery search;
     private IHMProgressMonitor pm;
+	private Map<String, Object> otherFields;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
         this.collection = collection;
+        otherFields = collection.otherFields();
         if (pm == null)
             pm = new DummyProgressMonitor();
         this.pm = pm;
@@ -81,6 +84,10 @@ public class HMStacCollection {
     public String getType() {
         return collection.getType();
     }
+    
+    public Map<String, Object> getOtherFields() {
+		return otherFields;
+	}
 
     public void setAssumedEpsg(Integer assumedEpsg) {
         this.assumedEpsg = assumedEpsg;
@@ -173,13 +180,41 @@ public class HMStacCollection {
         search.setCollections(Arrays.asList(getId()));
 
         SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+
+        // check if there is some crs info in the metadata, might be useful later
+        String metadataEpsg = null;
+        
+    	// try to find one in the metadata 
+    	var summaries = otherFields.get("summaries");
+		if (summaries instanceof Map) {
+			Map sMap = (Map) summaries;
+			Object projObj = sMap.get("proj:epsg");
+			if (projObj instanceof List) {
+				var projObjList = (List) projObj;
+				if (!projObjList.isEmpty()) {
+					var item = projObjList.get(0);
+					if (item instanceof Integer) {
+						Integer srid = (Integer) item;
+						metadataEpsg = "EPSG:" + srid;
+					} else if (item instanceof String) {
+						metadataEpsg = item.toString();
+					}
+				}
+			}
+		}        
+        
         SimpleFeatureIterator iterator = fc.features();
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
         try {
             while( iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
-                HMStacItem item = HMStacItem.fromSimpleFeature(f);
+                HMStacItem item;
+                if(metadataEpsg != null) {
+                	item = HMStacItem.fromSimpleFeature(f, metadataEpsg);
+                } else {
+                	item = HMStacItem.fromSimpleFeature(f);
+                }
                 if (item.getId() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {

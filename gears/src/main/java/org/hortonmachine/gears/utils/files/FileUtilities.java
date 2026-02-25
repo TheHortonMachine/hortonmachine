@@ -465,6 +465,24 @@ public class FileUtilities {
         return files;
     }
     
+    public static List<File> findFilesByPattern(String folderPath, String regex) throws Exception{
+    	var fileFilter = new FileFilter() {
+            public boolean accept( java.io.File currentFile ) {
+            	if(currentFile.isDirectory()) {
+            		return true;
+            	}
+                return currentFile.getName().matches(regex);
+            }
+        };
+        List<File> filesList = new ArrayList<>();
+        new FileTraversal(fileFilter){
+            public void onFile( final File f ) {
+                filesList.add(f);
+            }
+        }.traverse(new File(folderPath));
+        return filesList;
+    }
+    
     /**
      * Create a temporary folder using a prefix.
      * 

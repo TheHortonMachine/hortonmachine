@@ -40,7 +40,18 @@ public class HMStacItem {
     private HMStacItem() {
     }
 
-    public static HMStacItem fromSimpleFeature( SimpleFeature feature ) throws Exception {
+    public static HMStacItem fromSimpleFeature( SimpleFeature feature) throws Exception {
+    	return fromSimpleFeature(feature, null);
+    }
+    
+    /**
+     * @param feature
+     * @param suggestedEpsg An optional suggested epsg in format "EPSG:XXXX" that might come from the 
+     * 			collection or some other metadata. 
+     * @return
+     * @throws Exception
+     */
+    public static HMStacItem fromSimpleFeature( SimpleFeature feature, String suggestedEpsg ) throws Exception {
         HMStacItem stacItem = new HMStacItem();
         stacItem.feature = feature;
         Map<Object, Object> userData = feature.getUserData();
@@ -86,7 +97,11 @@ public class HMStacItem {
         Object epsgObj = feature.getAttribute("proj:epsg");
         if (epsgObj == null) {
             epsgObj = feature.getAttribute("proj:code");
+            if (epsgObj == null) {
+				epsgObj = suggestedEpsg;
+			}
         }
+        
         if (epsgObj instanceof String) {
         	String codeStr = (String) epsgObj;
         	if (codeStr.toUpperCase().startsWith("EPSG:")) {
