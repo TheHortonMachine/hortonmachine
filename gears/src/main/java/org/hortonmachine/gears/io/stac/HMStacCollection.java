@@ -69,6 +69,14 @@ public class HMStacCollection {
     public String getId() {
         return collection.getId();
     }
+    
+    public String getTitle() {
+    	return collection.getTitle();
+    }
+    
+    public String getDescription() {
+    	return collection.getDescription();
+    }
 
     public String getType() {
         return collection.getType();
@@ -172,7 +180,7 @@ public class HMStacCollection {
             while( iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
                 HMStacItem item = HMStacItem.fromSimpleFeature(f);
-                if (item != null && item.getId() != null) {
+                if (item.getId() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {
                     pm.errorMessage("Unable to get id of item: " + item.toString());

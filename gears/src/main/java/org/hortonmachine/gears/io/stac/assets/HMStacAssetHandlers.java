@@ -7,6 +7,7 @@ import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeojsonHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeopackageVectorHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.ShapefileHandler;
 
 public final class HMStacAssetHandlers {
 
@@ -17,6 +18,7 @@ public final class HMStacAssetHandlers {
         HANDLERS.add(GeopackageVectorHandler.class);
         HANDLERS.add(GeotiffHandler.class);
         HANDLERS.add(GeojsonHandler.class);
+        HANDLERS.add(ShapefileHandler.class);
     }
 
     private HMStacAssetHandlers() {}
