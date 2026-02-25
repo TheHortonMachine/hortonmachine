@@ -1687,6 +1687,31 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
             }
         });
     }
+    
+    /**
+     * Scans all geometries in a feature table and updates gpkg_contents bounds.
+     *
+     * @param tableName the feature table
+     * @return the computed envelope, or null if no geometries were found
+     */
+    public Envelope updateFeatureTableBounds(SqlName tableName) throws Exception {
+        GeometryColumn gc = getGeometryColumnsForTable(tableName);
+        if (gc == null) {
+            // Not a feature table (or not registered properly)
+            return null;
+        }
+        
+        List<Geometry> geometries = getGeometries(tableName);
+        Envelope env = new Envelope();
+        for (Geometry g : geometries) {
+        	if (g != null && !g.isEmpty()) {
+                env.expandToInclude(g.getEnvelopeInternal());
+            }
+		}
+        // Write bounds (NULLs if no geometry found)
+        updateGeoPackageContentsEntry(tableName, env);
+        return env;
+    }
 
     public GeopackageCommonDb() {
         super();

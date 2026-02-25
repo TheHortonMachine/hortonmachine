@@ -156,6 +156,7 @@ public class OmsVectorWriter extends HMModel {
                     SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
                 }
                 SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, false, pm);
+                db.updateFeatureTableBounds(table);
             }
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
