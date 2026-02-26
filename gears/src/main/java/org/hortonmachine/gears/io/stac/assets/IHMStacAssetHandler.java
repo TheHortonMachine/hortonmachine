@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Map;
 
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -34,6 +35,15 @@ public interface IHMStacAssetHandler {
 	 *         requested type.
 	 */
 	<T> T read(Class<T> targetType, IHMProgressMonitor monitor) throws Exception;
+	
+	/**
+	 * Read the asset as the requested target type, allowing also for multiple objects.
+	 *
+	 * @param targetType the target type
+	 * @param monitor    the progress monitor
+	 * @return a hashmap containing the name and read object for each object. 
+	 */	
+	<T> Map<String, T> readAll(Class<T> targetType, IHMProgressMonitor monitor) throws Exception;
 
 	String getAssetUrl();
 

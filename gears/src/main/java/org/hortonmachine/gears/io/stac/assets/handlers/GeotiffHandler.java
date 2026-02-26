@@ -2,7 +2,9 @@ package org.hortonmachine.gears.io.stac.assets.handlers;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
@@ -102,6 +104,17 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		    return targetType.cast(readRaster(null));
 		}
 		return null;
+	}
+	
+	@Override
+	public <T> Map<String, T> readAll(Class<T> targetType, IHMProgressMonitor monitor) throws Exception {
+		// at the moment we fallback to the single result
+		Map<String, T> objectsMap = new HashMap<>();
+		T result = read(targetType, monitor);
+		if(result!=null) {
+			objectsMap.put(asset.getId(), result);
+		}
+		return objectsMap;
 	}
 
 	private void checkSupported() {

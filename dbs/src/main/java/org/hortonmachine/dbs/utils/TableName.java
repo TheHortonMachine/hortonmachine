@@ -58,5 +58,10 @@ public class TableName {
     public SqlName toSqlName() {
 		return SqlName.m(getFullName());
 	}
+    
+    @Override
+    public String toString() {
+    	return getFullName();
+    }
 }
 

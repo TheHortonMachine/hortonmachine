@@ -2,12 +2,10 @@ package org.hortonmachine.gears.io.stac.assets.handlers;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.utils.TableName;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
@@ -77,5 +75,16 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 			return targetType.cast(featureCollection);
 		}
 		return null;
+	}
+
+	@Override
+	public <T> Map<String, T> readAll(Class<T> targetType, IHMProgressMonitor monitor) throws Exception {
+		// at the moment we fallback to the single result
+		Map<String, T> objectsMap = new HashMap<>();
+		T result = read(targetType, monitor);
+		if(result!=null) {
+			objectsMap.put(asset.getId(), result);
+		}
+		return objectsMap;
 	}
 }
