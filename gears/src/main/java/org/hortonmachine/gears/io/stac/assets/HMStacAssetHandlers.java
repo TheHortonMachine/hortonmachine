@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.hortonmachine.gears.io.stac.HMStacAsset;
+import org.hortonmachine.gears.io.stac.assets.handlers.CsvfileHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeojsonHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeopackageVectorHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
@@ -19,6 +20,7 @@ public final class HMStacAssetHandlers {
         HANDLERS.add(GeotiffHandler.class);
         HANDLERS.add(GeojsonHandler.class);
         HANDLERS.add(ShapefileHandler.class);
+        HANDLERS.add(CsvfileHandler.class);
     }
 
     private HMStacAssetHandlers() {}

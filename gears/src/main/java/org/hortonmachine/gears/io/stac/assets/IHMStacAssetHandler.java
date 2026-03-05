@@ -86,9 +86,10 @@ public interface IHMStacAssetHandler {
 		try (InputStream is = new BufferedInputStream(connection.getInputStream());
 				OutputStream os = new BufferedOutputStream(Files.newOutputStream(targetFile))) {
 
-			byte[] buffer = new byte[8192];
+			byte[] buffer = new byte[128 * 1024]; // 128 KB buffer
 			long totalRead = 0;
 			int read;
+			int lastPercent = -1;
 
 			while ((read = is.read(buffer)) != -1) {
 				os.write(buffer, 0, read);
@@ -97,7 +98,10 @@ public interface IHMStacAssetHandler {
 				if (monitor != null) {
 					if (contentLength > 0) {
 						int percent = (int) (100L * totalRead / contentLength);
-						monitor.message("Downloaded: " + percent + "%...");
+				        if (percent != lastPercent && percent % 10 == 0) {
+				            monitor.message("Downloaded: " + percent + "%...");
+				            lastPercent = percent;
+				        }
 					}
 					if (monitor.isCanceled()) {
 						throw new IOException("Download canceled by user");

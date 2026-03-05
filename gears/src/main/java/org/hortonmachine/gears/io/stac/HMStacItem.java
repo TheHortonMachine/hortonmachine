@@ -36,6 +36,7 @@ public class HMStacItem {
     private Date start;
     private Date end;
     private Date creationDateCet;
+    private String errorMessage;
 
     private HMStacItem() {
     }
@@ -191,7 +192,13 @@ public class HMStacItem {
                         HMStacAsset hmAsset = new HMStacAsset(assetId, assetNode);
                         if (hmAsset.isValid()) {
                             assetsList.add(hmAsset);
-                        }
+                        } else {
+                        	String errorMessageTmp = "Asset " + assetId + " is not valid: " + hmAsset.getNonValidReason();
+                        	if (errorMessage == null || !errorMessage.equals(errorMessageTmp)) {
+								errorMessage = errorMessageTmp;
+								System.err.println(errorMessage);
+							}
+						}
                     }
                 }
             }
