@@ -37,6 +37,10 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Parameter;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,6 +96,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -109,6 +114,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.images.ImageGenerator;
+import org.hortonmachine.gears.utils.images.ImageUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
@@ -131,6 +137,8 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 import org.joda.time.DateTime;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -661,13 +669,13 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
-    public static void histogram( Map<String, Object> options, List<String> categories, List<Object> values ) {
+    public static void histogram( Map<String, ?> options, List<String> categories, List<? extends Number> values ) {
         histogram(options, Arrays.asList(""), categories, values);
     }
 
     @SuppressWarnings("unchecked")
-    public static void histogram( Map<String, Object> options, List<String> series, List<String> categories,
-            List<Object> values ) {
+    public static void histogram( Map<String, ?> options, List<String> series, List<String> categories,
+            List<? extends Number> values ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -788,14 +796,18 @@ public class HM {
         plotJtsGeometries(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
 
-    public static void plotJtsGeometries( Map<String, Object> options, List<Geometry> geomsList ) {
+    public static void plotJtsGeometries(List<Geometry> geomsList ) {
+		plotJtsGeometries(null, geomsList);
+    }
+    
+    public static void plotJtsGeometries( Map<String, ?> options, List<Geometry> geomsList ) {
         JFreeChart chart = makeJtsGeometriesChart(options, geomsList);
         ChartPanel chartPanel = new ChartPanel(chart, true);
         chartPanel.setRangeZoomable(true);
         chartPanel.setDomainZoomable(true);
 
         int width = 1200;
-        int height = 800;
+        int height = 1200;
 
         if (options != null) {
             Object object = options.get("size");
@@ -834,7 +846,7 @@ public class HM {
         return makeJtsGeometriesChart(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
 
-    public static JFreeChart makeJtsGeometriesChart( Map<String, Object> options, List<Geometry> geomsList ) {
+    public static JFreeChart makeJtsGeometriesChart( Map<String, ?> options, List<Geometry> geomsList ) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -1006,12 +1018,13 @@ public class HM {
         return chart;
     }
 
-    public static void scatterPlot( List<List<List<Number>>> data ) {
+    
+    public static void scatterPlot( List<? extends List<? extends List<? extends Number>>> data) {
         scatterPlot(null, data);
     }
 
     @SuppressWarnings("unchecked")
-    public static void scatterPlot( Map<String, Object> options, List<List<List<Number>>> data ) {
+    public static void scatterPlot(Map<String,?> options, List<? extends List<? extends List<? extends Number>>> data) {
         String title = "";
         String xLabel = "x";
         String yLabel = "y";
@@ -1042,15 +1055,21 @@ public class HM {
             object = options.get("colors");
             if (object instanceof List) {
                 colors = (List) object;
-            }
+            } else if (object instanceof String) {
+				colors = Arrays.asList((String) object);
+			}
             object = options.get("dolines");
             if (object instanceof List) {
                 doLines = (List) object;
+            } else if (object instanceof Boolean) {
+				doLines = Arrays.asList((Boolean) object);
             }
             object = options.get("doshapes");
             if (object instanceof List) {
                 doShapes = (List) object;
-            }
+            } else if (object instanceof Boolean) {
+				doShapes = Arrays.asList((Boolean) object);
+			}
             object = options.get("width");
             if (object instanceof Number) {
                 width = ((Number) object).intValue();
@@ -1070,14 +1089,14 @@ public class HM {
         scatterChart.setYLabel(yLabel);
 
         int index = 0;
-        for( List<List<Number>> seriesData : data ) {
+        for( List<? extends List<? extends Number>> seriesData : data ) {
             String name = "data " + (index + 1);
             if (series != null)
                 name = series.get(index);
             double[] x = new double[seriesData.size()];
             double[] y = new double[seriesData.size()];
             for( int i = 0; i < seriesData.size(); i++ ) {
-                List<Number> pair = seriesData.get(i);
+                List<? extends Number> pair = seriesData.get(i);
                 x[i] = pair.get(0).doubleValue();
                 y[i] = pair.get(1).doubleValue();
             }
@@ -1258,14 +1277,13 @@ public class HM {
     }
 
     public static void makeSldStyleForRaster( String tableName, String rasterPath, double opacity ) throws Exception {
-        RasterSummary s = new RasterSummary();
-        s.pm = new DummyProgressMonitor();
-        s.inRaster = rasterPath;
-        s.process();
-        double min = s.outMin;
-        double max = s.outMax;
+    	HMRaster raster = HMRaster.fromFile(new File(rasterPath));
+    	double[] minMax = raster.getMinMax();
+    	if (minMax == null) {
+    		return;
+    	}
         String style = RasterStyleUtilities
-                .styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity));
+                .styleToString(RasterStyleUtilities.createStyleForColortable(tableName, minMax[0], minMax[1], opacity));
         File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "sld");
         FileUtilities.writeFile(style, styleFile);
     }
@@ -1403,13 +1421,13 @@ public class HM {
                     Envelope envelope = region.toEnvelope();
                     ReferencedEnvelope refEnv = new ReferencedEnvelope(envelope, raster.getCoordinateReferenceSystem());    
 
-                    final ImageGenerator imgGen = new ImageGenerator(null, null);
+                    final ImageGenerator imgGen = new ImageGenerator(null, raster.getCoordinateReferenceSystem());
                     imgGen.addCoveragePath(file.getAbsolutePath());
                     imgGen.setLayers();
                     BufferedImage imageWithCheck = imgGen.getImageWithCheck(refEnv, width, height, 0, null);
                     return imageWithCheck;
                 }else{
-                    return ImageIO.read(file);
+                	return ImageUtilities.scaleImage(ImageIO.read(file), height);
                 }
             } else {
                 // try with wkt geometry
@@ -1854,5 +1872,45 @@ public class HM {
         Wcs wcs = new Wcs(url);
         return wcs;
     }
+    
+    public static String getJsonResponse(String url) throws Exception {
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("User-Agent", "Hortonmachine/geotools (info@hortonmachine.org)")
+                .header("Accept", "application/json")
+                .GET()
+                .build();
+
+        HttpResponse<String> response =
+                client.send(request, HttpResponse.BodyHandlers.ofString());
+        
+        if (response.statusCode() != 200) {
+			throw new RuntimeException("Failed to get response ("+response.statusCode()+") from url: " + url + " with error: " + response.body());
+		}
+
+        return response.body();
+    }
+    
+    public static Object jsonToObject(String json) {
+        char first = json.stripLeading().charAt(0);
+
+        return switch (first) {
+            case '[' -> new JSONArray(json).toList();
+            case '{' -> new JSONObject(json).toMap();
+            default -> throw new IllegalArgumentException("Invalid JSON");
+        };
+    }
+    
+    public static String objectToJson(Object object) {
+		if (object instanceof Map) {
+			return new JSONObject((Map<?, ?>) object).toString();
+		} else if (object instanceof List) {
+			return new JSONArray((List<?>) object).toString();
+		} else {
+			throw new IllegalArgumentException("Object must be a Map or List");
+		}
+	}
 
 }

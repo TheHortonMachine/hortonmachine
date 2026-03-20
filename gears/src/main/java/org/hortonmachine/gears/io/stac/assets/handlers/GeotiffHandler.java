@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.io.stac.assets.handlers;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -102,6 +103,14 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		checkSupported();
 		if (targetType.isAssignableFrom(GridCoverage2D.class)) {
 		    return targetType.cast(readRaster(null));
+		} else if (targetType.isAssignableFrom(File.class)) {
+			// download the asset to a temporary file and return it
+			File tempFile = File.createTempFile("geotiff_asset_", ".tif");
+			downloadAsset(tempFile.getAbsolutePath(), monitor);
+			return targetType.cast(tempFile);
+		} else if (targetType.isAssignableFrom(InputStream.class)) {
+			BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
+			return targetType.cast(readS3Raster(cogUri, null));
 		}
 		return null;
 	}

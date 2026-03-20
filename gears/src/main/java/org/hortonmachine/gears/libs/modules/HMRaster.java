@@ -19,6 +19,7 @@ package org.hortonmachine.gears.libs.modules;
 
 import java.awt.Point;
 import java.awt.image.WritableRaster;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -39,6 +41,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * A generic HM single band raster object.
@@ -156,6 +159,11 @@ public class HMRaster implements AutoCloseable {
     
     public static HMRaster fromGridCoverageWritable(GridCoverage2D coverage ) {
     	return fromGridCoverageWritable(null, coverage);
+    }
+    
+    public static HMRaster fromFile(File file) throws Exception {
+    	var gc = OmsRasterReader.readRaster(file.getAbsolutePath());
+    	return fromGridCoverage(gc);
     }
     
     public String getName() {
@@ -721,6 +729,72 @@ public class HMRaster implements AutoCloseable {
     public GridNodeNG getGridNodeNG( int col, int row ) {
 		return new GridNodeNG(this, col, row);
 	}
+    
+    /**
+     * Calculate the minimum and maximum valid values of the raster.
+     * 
+     * @return an array containing [min, max], or null if no valid cell was found.
+     */
+    public double[] getMinMax() {
+        return getMinMax(null);
+    }
+
+    /**
+     * Calculates the minimum and maximum valid values of the raster, optionally
+     * restricted to a world-region envelope.
+     * 
+     * <p>The envelope is assumed to be in the same CRS as the raster.</p>
+     * 
+     * @param envelope optional JTS envelope. If null, the full raster is scanned.
+     * @return an array containing [min, max], or null if no valid cell was found.
+     */
+    public double[] getMinMax( Envelope envelope ) {
+        int fromRow = startRow;
+        int toRow = startRow + rows - 1;
+        int fromCol = startCol;
+        int toCol = startCol + cols - 1;
+
+        if (envelope != null) {
+            Point ul = getCell(new Coordinate(envelope.getMinX(), envelope.getMaxY()));
+            Point lr = getCell(new Coordinate(envelope.getMaxX(), envelope.getMinY()));
+
+            fromCol = Math.max(startCol, Math.min(ul.x, lr.x));
+            toCol = Math.min(startCol + cols - 1, Math.max(ul.x, lr.x));
+            fromRow = Math.max(startRow, Math.min(ul.y, lr.y));
+            toRow = Math.min(startRow + rows - 1, Math.max(ul.y, lr.y));
+
+            if (fromCol > toCol || fromRow > toRow) {
+                return null;
+            }
+        }
+
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int r = fromRow; r <= toRow; r++) {
+            for (int c = fromCol; c <= toCol; c++) {
+                if (envelope != null) {
+                    Coordinate world = getWorld(c, r);
+                    if (!envelope.contains(world.x, world.y)) {
+                        continue;
+                    }
+                }
+
+                double value = getValue(c, r);
+                if (isNovalue(value)) {
+                    continue;
+                }
+
+                min = Math.min(min, value);
+                max = Math.max(max, value);
+            }
+        }
+        
+        if(min == Double.POSITIVE_INFINITY || max == Double.NEGATIVE_INFINITY) {
+			return null;
+		}
+
+        return new double[]{min, max};
+    }
 
     public void printData() {
         for( int row = startRow; row < rows + startRow; row++ ) {

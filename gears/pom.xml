@@ -16,6 +16,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.sun.activation</groupId>
+			<artifactId>javax.activation</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-dbs</artifactId>
 		</dependency>
@@ -40,7 +44,7 @@
 			<groupId>jfree</groupId>
 			<artifactId>eastwood</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.opencsv</groupId>
 			<artifactId>opencsv</artifactId>

@@ -56,7 +56,9 @@ import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
+import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.grassraster.GrassCoverageReader;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
@@ -264,9 +266,14 @@ public class ImageGenerator {
                     if (reader instanceof GrassCoverageReader) {
                         reader = null;
                     }
+                    if (reader instanceof GeoTiffReader) {
+                    	// TODO check why with the reader it is not propely read
+						reader = null;
+					}
                 } catch (Exception e1) {
                     // ignore and try others
                 }
+                reader = null;
                 if (reader == null) {
 
                     if (region == null) {
