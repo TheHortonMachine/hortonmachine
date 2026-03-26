@@ -2,6 +2,7 @@ package org.hortonmachine.gears.io.stac;
 
 import org.hortonmachine.gears.io.stac.assets.HMStacAssetHandlers;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
+import org.locationtech.jts.geom.Envelope;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -20,6 +21,9 @@ public class HMStacAsset {
 
 	private IHMStacAssetHandler handler;
 	private JsonNode assetNode;
+	
+	private Integer epsg;
+	private Envelope envelope;
 
 	public HMStacAsset(String id, JsonNode assetNode) {
 		this.id = id;
@@ -28,13 +32,34 @@ public class HMStacAsset {
 			title = assetNode.get("title").textValue();
 		}
 		JsonNode typeNode = assetNode.get("type");
-
 		if (typeNode != null) {
 			type = typeNode.textValue();
 //            isAcceptedType = HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""));
 //        } else {
 //            isAcceptedType = HMStacUtils.ACCEPTED_EXTENSIONS.contains(FilenameUtils.getExtension(assetUrl));
 		}
+		
+		JsonNode epsgNode = assetNode.get("proj:code");
+		if (epsgNode != null) {
+			String epsgCode = epsgNode.textValue();
+			if (epsgCode.toLowerCase().startsWith("epsg:")) {
+				try {
+					epsg = Integer.parseInt(epsgCode.substring(5));
+				} catch (NumberFormatException e) {
+					// ignore
+				}
+			}
+		}
+		
+		JsonNode bboxNode = assetNode.get("proj:bbox");
+		if (bboxNode != null && bboxNode.isArray() && bboxNode.size() == 4) {
+			double minX = bboxNode.get(0).asDouble();
+			double minY = bboxNode.get(1).asDouble();
+			double maxX = bboxNode.get(2).asDouble();
+			double maxY = bboxNode.get(3).asDouble();
+			envelope = new Envelope(minX, maxX, minY, maxY);
+		}
+
 		handler = HMStacAssetHandlers.getHandler(this);
 		if (handler == null) {
 			isValid = false;
@@ -48,6 +73,14 @@ public class HMStacAsset {
 
 	public IHMStacAssetHandler getHandler() {
 		return handler;
+	}
+	
+	public Integer getEpsg() {
+		return epsg;
+	}
+	
+	public Envelope getEnvelope() {
+		return envelope;
 	}
 
 	@Override
@@ -81,5 +114,7 @@ public class HMStacAsset {
 	public String getNonValidReason() {
 		return nonValidReason;
 	}
+	
+	
 
 }

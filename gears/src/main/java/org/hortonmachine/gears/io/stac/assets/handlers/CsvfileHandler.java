@@ -29,7 +29,7 @@ public class CsvfileHandler implements IHMStacAssetHandler {
 		this.assetNode = asset.getAssetNode();
 		this.assetUrl = assetNode.get("href").textValue();
 		for (String acceptedType : ACCEPTED_TYPES) {
-			if (asset.getType().toLowerCase().contains(acceptedType)) {
+			if (asset.getType()!=null && asset.getType().toLowerCase().contains(acceptedType)) {
 				supported = true;
 				break;
 			}

@@ -51,7 +51,11 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		this.asset = asset;
 		this.assetNode = asset.getAssetNode();
 		this.assetUrl = assetNode.get("href").textValue();
-		String assetType = asset.getType().replace(" ", "").toLowerCase();
+		String type = asset.getType();
+		if(type==null) {
+			return;
+		}
+		String assetType = type.replace(" ", "").toLowerCase();
 		for (String acceptedType : ACCEPTED_TYPES) {
 			String checkType = acceptedType.replace(" ", "").toLowerCase();
 			if (assetType.contains(checkType)) {

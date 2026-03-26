@@ -393,6 +393,11 @@ public class OmsRasterReader extends HMModel {
         GridCoverage2D geodata = reader.outRaster;
         return geodata;
     }
+    
+    public static GridCoverage2D extractBand(GridCoverage2D coverage, int band) {
+		GridCoverage2D extracted = (GridCoverage2D) Operations.DEFAULT.selectSampleDimension(coverage, new int[]{band});
+		return extracted;
+	}
 
     public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
         OmsRasterReader reader = new OmsRasterReader();

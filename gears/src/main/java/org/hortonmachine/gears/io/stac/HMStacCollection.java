@@ -307,6 +307,9 @@ public class HMStacCollection {
             HMStacAsset asset = item.getAssets().stream().filter(assetChecker).findFirst().get();
             IHMStacAssetHandler handler = asset.getHandler();
             if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
+            	
+            	
+            	
 	            int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
 	            fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
 	            if (outRaster == null) {
