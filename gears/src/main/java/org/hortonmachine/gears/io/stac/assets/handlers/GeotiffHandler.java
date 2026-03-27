@@ -164,6 +164,9 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 				String accessibleHref = PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl);
 				cogUri = new BasicAuthURI(accessibleHref, false);
 			}
+
+			System.out.println("Init Range Reader for COG URI: " + cogUri.getUri());
+
 			RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
 			CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
 					new CogImageInputStreamSpi(), rangeReader.getClass().getName());
@@ -171,12 +174,13 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		}
 		CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
 
+		System.out.println("CRS of the COG: " + crs.getCoordinateSystem());
+
 		GeneralParameterValue[] generalParameter = null;
 		if (region != null) {
 			generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(region, crs);
 		}
-		GridCoverage2D coverage = reader.read(generalParameter);
-		return coverage;
+        return reader.read(generalParameter);
 	}
 
 	public InputStream readS3Raster(BasicAuthURI cogUri, Client client) {
