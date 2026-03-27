@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.github.davidmoten.aws.lw.client.Client;
+import org.geotools.api.referencing.crs.CRSAuthorityFactory;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -18,6 +19,7 @@ import org.geotools.filter.text.cql2.CQLException;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.ReferencingFactoryFinder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.stac.client.Collection;
 import org.geotools.stac.client.CollectionExtent;
@@ -272,7 +274,6 @@ public class HMStacCollection {
         Polygon roiGeometryFirstItemCrs = null;
         CoordinateReferenceSystem firstItemCRS = null;
 
-
         pm.beginTask("Reading raster ...", items.size());
 
 
@@ -301,17 +302,41 @@ public class HMStacCollection {
 
                     int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
                     fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
-                    currentItemCRS = CRS.decode("EPSG:" + currentItemSrid);
+
+                    if (currentItemSrid != 6933) {
+                        currentItemCRS = CRS.decode("EPSG:" + currentItemSrid);
+                    } else {
+                        CRSAuthorityFactory customFactory =
+                                ReferencingFactoryFinder.getCRSAuthorityFactory("KLAB", null);
+
+                        currentItemCRS =
+                                customFactory.createCoordinateReferenceSystem("6933");
+                    }
 
                     if (firstItemSrid == null) { // It's the first item then
                         System.out.println("First Item.,..");
                         firstItemSrid = currentItemSrid;
-                        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
+//                        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
+                        CRSAuthorityFactory customFactory =
+                                ReferencingFactoryFinder.getCRSAuthorityFactory("KLAB", null);
+
+                        CoordinateReferenceSystem outputCrs =
+                                customFactory.createCoordinateReferenceSystem("6933");
+
                         ReferencedEnvelope roiEnvelopeFirstItemCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
                                 DefaultGeographicCRS.WGS84).transform(outputCrs, true);
 
                         roiGeometryFirstItemCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstItemCrs);
-                        firstItemCRS = CRS.decode("EPSG:" + firstItemSrid);
+
+                        if (firstItemSrid != 6933) {
+                            firstItemCRS = CRS.decode("EPSG:" + firstItemSrid);
+                        } else {
+                             customFactory =
+                                    ReferencingFactoryFinder.getCRSAuthorityFactory("KLAB", null);
+
+                            firstItemCRS =
+                                    customFactory.createCoordinateReferenceSystem("6933");
+                        }
 
                         cols = latLongRegionMap.getCols();
                         rows = latLongRegionMap.getRows();
