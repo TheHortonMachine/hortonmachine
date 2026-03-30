@@ -25,7 +25,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.other.MarkerLayer;
 import org.hortonmachine.nww.shapes.InfoPoint;

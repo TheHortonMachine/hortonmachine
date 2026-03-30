@@ -6,12 +6,13 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.io.wcs.Authentication;
@@ -23,11 +24,10 @@ import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wcs.readers.DescribeCoverageReader;
 import org.hortonmachine.gears.io.wcs.readers.WCSCapabilitiesReader;
 import org.hortonmachine.gears.io.wcs.wcs201.models.WcsCapabilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
 
 public class WebCoverageService201 implements IWebCoverageService {
     WcsCapabilities wcsCapabilities;
@@ -253,7 +253,7 @@ public class WebCoverageService201 implements IWebCoverageService {
             if (b == null || builder == null) {
                 b = new SimpleFeatureTypeBuilder();
                 b.setName(name);
-                b.setCRS(CRS.decode("EPSG:" + coverageSummary.getBoundingBoxSrid()));
+                b.setCRS(HMCrsRegistry.INSTANCE.getCrs("EPSG:" + coverageSummary.getBoundingBoxSrid()));
                 b.add("the_geom", Polygon.class);
                 b.add("coverageid", String.class);
                 SimpleFeatureType type = b.buildFeatureType();

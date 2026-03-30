@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.gears.utils;
+package org.hortonmachine.gears.utils.crs;
 
 import java.awt.geom.Point2D;
 import java.io.BufferedWriter;
@@ -223,9 +223,9 @@ public class CrsUtilities {
         }
         try {
             if (doLatitudeFirst == null) {
-                return CRS.decode("EPSG:" + srid);
+                return HMCrsRegistry.INSTANCE.getCrs("EPSG:" + srid);
             } else {
-                return CRS.decode("EPSG:" + srid, doLatitudeFirst);
+                return HMCrsRegistry.INSTANCE.getCrs("EPSG:" + srid, doLatitudeFirst);
             }
         } catch (Exception e) {
             e.printStackTrace();

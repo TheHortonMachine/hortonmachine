@@ -1,5 +1,7 @@
 package org.hortonmachine.gears.io.stac;
 
+import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -8,7 +10,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.github.davidmoten.aws.lw.client.Client;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -30,19 +34,17 @@ import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
 
-import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
+import com.github.davidmoten.aws.lw.client.Client;
 
 @SuppressWarnings({"rawtypes"})
 /**
@@ -277,7 +279,7 @@ public class HMStacCollection {
                 DefaultGeographicCRS.WGS84).transform(outputCrs, true);
         Polygon roiGeometryFirstItemCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstItemCrs);
 
-        CoordinateReferenceSystem firstItemCRS = CRS.decode("EPSG:" + firstItemSrid);
+        CoordinateReferenceSystem firstItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + firstItemSrid);
 
         int cols = latLongRegionMap.getCols();
         int rows = latLongRegionMap.getRows();
@@ -288,7 +290,7 @@ public class HMStacCollection {
         pm.beginTask("Reading raster ...", items.size());
         for( HMStacItem item : items ) {
             int currentSrid = assumedEpsg == NO_EPSG_DEFINED ? item.getEpsg() : assumedEpsg;
-            CoordinateReferenceSystem currentItemCRS = CRS.decode("EPSG:" + currentSrid);
+            CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
 
             if (firstItemSrid != currentSrid) {

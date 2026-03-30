@@ -40,8 +40,8 @@ import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.locationtech.jts.geom.Envelope;
 
 import oms3.annotations.Author;

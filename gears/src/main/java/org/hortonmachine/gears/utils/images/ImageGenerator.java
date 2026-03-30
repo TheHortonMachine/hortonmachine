@@ -58,7 +58,6 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.grassraster.GrassCoverageReader;
-import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;

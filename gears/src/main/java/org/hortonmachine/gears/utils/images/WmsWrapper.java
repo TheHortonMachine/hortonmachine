@@ -21,8 +21,8 @@ import org.geotools.ows.wms.WMSUtils;
 import org.geotools.ows.wms.WebMapServer;
 import org.geotools.ows.wms.request.GetMapRequest;
 import org.geotools.ows.wms.response.GetMapResponse;
-import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.utils.StringUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 
 public class WmsWrapper {
 
@@ -171,9 +171,9 @@ public class WmsWrapper {
 ////                double e = latLonBoundingBox.getMaxX();
 ////                double s = latLonBoundingBox.getMinY();
 ////                double n = latLonBoundingBox.getMaxY();
-////                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, CRS.decode("EPSG:4326"));
+////                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, HMCrsRegistry.INSTANCE.getCrs("EPSG:4326"));
 ////
-////                ReferencedEnvelope wmsEnv = env.transform(CRS.decode(wmscode), false);
+////                ReferencedEnvelope wmsEnv = env.transform(HMCrsRegistry.INSTANCE.getCrs(wmscode), false);
 //                String format = "jpg";
 //                if (outputImage.toLowerCase().endsWith("png")) {
 //                    format = "png";
@@ -202,9 +202,9 @@ public class WmsWrapper {
                 double e = latLonBoundingBox.getMaxX();
                 double s = latLonBoundingBox.getMinY();
                 double n = latLonBoundingBox.getMaxY();
-                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, CRS.decode("EPSG:4326"));
+                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, HMCrsRegistry.INSTANCE.getCrs("EPSG:4326"));
 
-                ReferencedEnvelope wmsEnv = env.transform(CRS.decode(wmscode), false);
+                ReferencedEnvelope wmsEnv = env.transform(HMCrsRegistry.INSTANCE.getCrs(wmscode), false);
                 BufferedImage image = ww.getImage(ww.getMapRequest(layer, null, wmscode, width, height, wmsEnv, null, null));
                 String format = "jpg";
                 if (outputImage.toLowerCase().endsWith("png")) {

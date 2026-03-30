@@ -35,7 +35,7 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.grasslegacy.map.RasterData;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;

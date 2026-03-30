@@ -2,10 +2,8 @@ package org.hortonmachine.gears.io.wcs;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.locationtech.jts.geom.Envelope;
 
 public class TestIsric {

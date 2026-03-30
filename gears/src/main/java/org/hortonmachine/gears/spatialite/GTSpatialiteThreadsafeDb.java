@@ -32,7 +32,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteThreadsafeDb;
 import org.hortonmachine.dbs.utils.SqlName;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**

@@ -35,7 +35,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.utils.SqlName;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.geotools.api.feature.simple.SimpleFeature;
