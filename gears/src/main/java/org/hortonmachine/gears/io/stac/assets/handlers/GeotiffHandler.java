@@ -165,16 +165,12 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 				cogUri = new BasicAuthURI(accessibleHref, false);
 			}
 
-			System.out.println("Init Range Reader for COG URI: " + cogUri.getUri());
-
 			RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
 			CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
 					new CogImageInputStreamSpi(), rangeReader.getClass().getName());
 			reader = new GeoTiffReader(inputProvider);
 		}
 		CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
-
-		System.out.println("CRS of the COG: " + crs.getCoordinateSystem());
 
 		GeneralParameterValue[] generalParameter = null;
 		if (region != null) {
