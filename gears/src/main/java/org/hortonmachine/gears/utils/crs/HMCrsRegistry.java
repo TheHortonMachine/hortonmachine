@@ -90,7 +90,7 @@ public enum HMCrsRegistry {
 		if (custom != null) {
 			return custom;
 		}
-		return HMCrsRegistry.INSTANCE.getCrs("EPSG:" + normalized, longitudeFirst);
+		return CRS.decode("EPSG:" + normalized, longitudeFirst);
 	}
 
 }
