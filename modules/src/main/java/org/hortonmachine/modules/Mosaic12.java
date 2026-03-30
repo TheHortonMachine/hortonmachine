@@ -37,15 +37,19 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSMOSAIC12_LABEL;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMOSAIC12_LICENSE;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMOSAIC12_NAME;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMOSAIC12_OUT_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSMOSAIC12_P_INTERPOLATION_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMOSAIC12_STATUS;
-import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
-import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
-import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_P_MERGEMODE_DESCRIPTION;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -57,13 +61,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.modules.r.mosaic.OmsMosaic;
 
 @Description(OMSMOSAIC12_DESCRIPTION)
 @Author(name = OMSMOSAIC12_AUTHORNAMES, contact = OMSMOSAIC12_AUTHORCONTACTS)
@@ -134,10 +131,10 @@ public class Mosaic12 extends HMModel {
     @In
     public String inMap12;
 
-    @Description(OMSMOSAIC12_P_INTERPOLATION_DESCRIPTION)
-    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
+    @Description(OMSMOSAIC_P_MERGEMODE_DESCRIPTION)
+    @UI("combo:INSERT_ON_NOVALUE,AVG,SUM,SUBSTITUTE")
     @In
-    public String pInterpolation = NEAREST_NEIGHTBOUR;
+    public String pMergeMode = "INSERT_ON_NOVALUE";
 
     @Description(OMSMOSAIC12_OUT_MAP_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -170,6 +167,7 @@ public class Mosaic12 extends HMModel {
 
         OmsMosaic mosaic = new OmsMosaic();
         mosaic.inFiles = filesList;
+        mosaic.pMergeMode = pMergeMode;
         mosaic.pm = pm;
         mosaic.process();
 

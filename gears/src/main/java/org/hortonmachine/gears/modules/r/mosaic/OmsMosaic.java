@@ -18,9 +18,6 @@
 package org.hortonmachine.gears.modules.r.mosaic;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
-import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
-import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
-import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
 import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.mosaic.OmsMosaic.OMSMOSAIC_DESCRIPTION;
@@ -78,10 +75,10 @@ public class OmsMosaic extends HMModel {
     @In
     public List<GridCoverage2D> inCoverages;
 
-    @Description(OMSMOSAIC_P_INTERPOLATION_DESCRIPTION)
-    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
+    @Description(OMSMOSAIC_P_MERGEMODE_DESCRIPTION)
+    @UI("combo:INSERT_ON_NOVALUE,AVG,SUM,SUBSTITUTE")
     @In
-    public String pInterpolation = NEAREST_NEIGHTBOUR;
+    public String pMergeMode = "INSERT_ON_NOVALUE";
 
     @Description(OMSMOSAIC_doFindSmallesresolution)
     @In
@@ -102,7 +99,7 @@ public class OmsMosaic extends HMModel {
     public static final String OMSMOSAIC_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSMOSAIC_IN_FILES_DESCRIPTION = "An optional list of map files that have to be patched.";
     public static final String OMSMOSAIC_IN_COVERAGES_DESCRIPTION = "An optional list of rasters that have to be patched.";
-    public static final String OMSMOSAIC_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
+    public static final String OMSMOSAIC_P_MERGEMODE_DESCRIPTION = "The merge mode to use";
     public static final String OMSMOSAIC_doFindSmallesresolution = "Force the reading of all coverages to find the smalles resolution for the final patched raster.";
     public static final String OMSMOSAIC_OUT_RASTER_DESCRIPTION = "The patched map.";
 
@@ -113,6 +110,7 @@ public class OmsMosaic extends HMModel {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
+        MergeMode mergeMode = MergeMode.valueOf(pMergeMode);
 
         if (inFiles == null && inCoverages == null) {
             throw new ModelsIllegalargumentException("No input data have been provided.", this, pm);
@@ -174,7 +172,7 @@ public class OmsMosaic extends HMModel {
             HMRaster raster = data.getRaster();
 
             pm.message("Patch map " + index++);
-            outHMRaster.mapRaster(pm, raster, MergeMode.AVG);
+            outHMRaster.mapRaster(pm, raster, mergeMode);
 
             raster.close();
 
