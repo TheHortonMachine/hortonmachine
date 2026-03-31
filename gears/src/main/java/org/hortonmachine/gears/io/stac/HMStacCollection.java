@@ -266,11 +266,13 @@ public class HMStacCollection {
 
         // use either the assumed EPSG or the first srid as the output srid.
         HMRaster outRaster = null;
-        String fileName = null;
+        String fileName;
+
         int rows = -1;
         int cols = -1;
         Polygon roiGeometryFirstAssetCrs = null;
         CoordinateReferenceSystem firstAssetCRS = null;
+        Integer firstAssetSrid = null;
 
         pm.beginTask("Reading raster ...", items.size());
 
@@ -291,6 +293,7 @@ public class HMStacCollection {
             if (asset != null) {
                 IHMStacAssetHandler handler = asset.getHandler();
                 CoordinateReferenceSystem currentAssetCRS = null;
+
                 if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
 
                     Integer currentAssetSrid = asset.getEpsg() != null ? asset.getEpsg() : item.getEpsg();
@@ -300,7 +303,6 @@ public class HMStacCollection {
 
                     int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
                     fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
-                    currentAssetCRS = CRS.decode("EPSG:" + currentAssetSrid);
 
                     if (firstAssetSrid == null) { // It's the first item then
                         firstAssetSrid = currentAssetSrid;
