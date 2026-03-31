@@ -2,11 +2,7 @@ package org.hortonmachine.gears.io.stac;
 
 import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -264,65 +260,93 @@ public class HMStacCollection {
     public HMRaster readRasterBandOnRegion( RegionMap latLongRegionMap, Predicate<HMStacAsset> assetChecker, List<HMStacItem> items,
             boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
-        if (!allowTransform || assumedEpsg == 0) {
-            List<String> epsgs = items.stream().map(( i ) -> i.getEpsg().toString()).distinct().collect(Collectors.toList());
-            if (epsgs.size() > 1) {
-                throw new IllegalArgumentException(
-                        "Multiple epsg detected when no transform allowed: " + epsgs.stream().collect(Collectors.joining(",")));
-            }
-        }
-
         // use either the assumed EPSG or the first srid as the output srid.
-        Integer firstItemSrid = assumedEpsg == NO_EPSG_DEFINED ? items.get(0).getEpsg() : this.assumedEpsg;
-        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstItemSrid);
-        ReferencedEnvelope roiEnvelopeFirstItemCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
-                DefaultGeographicCRS.WGS84).transform(outputCrs, true);
-        Polygon roiGeometryFirstItemCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstItemCrs);
-
-        CoordinateReferenceSystem firstItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + firstItemSrid);
-
-        int cols = latLongRegionMap.getCols();
-        int rows = latLongRegionMap.getRows();
-
         HMRaster outRaster = null;
+        String fileName;
 
-        String fileName = null;
+        int rows = -1;
+        int cols = -1;
+        Polygon roiGeometryFirstAssetCrs = null;
+        CoordinateReferenceSystem firstAssetCRS = null;
+        Integer firstAssetSrid = null;
+
         pm.beginTask("Reading raster ...", items.size());
+
+
         for( HMStacItem item : items ) {
-            int currentSrid = assumedEpsg == NO_EPSG_DEFINED ? item.getEpsg() : assumedEpsg;
-            CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
 
-            if (firstItemSrid != currentSrid) {
-                MathTransform transform = CRS.findMathTransform(currentItemCRS, firstItemCRS);
-                geometry = JTS.transform(geometry, transform);
+            // Read each asset from this item and find the first one that matches the predicate
+            // But don't throw an exception, if no Asset is found matching the condition passed
+
+            HMStacAsset asset = item.getAssets().stream()
+                    .filter(assetChecker)
+                    .findFirst()
+                    .orElse(null);
+
+            if (asset != null) {
+                // Give more priority to EPSG defined at the Asset level, and then if not then refer the EPSG defined at the Item Level
+                Integer currentSrid = asset.getEpsg()==null ? item.getEpsg():asset.getEpsg();
+
+                // If Assumed EPSG defined, then override everything with that
+                currentSrid = Objects.equals(assumedEpsg, NO_EPSG_DEFINED) ? currentSrid : assumedEpsg;
+                CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
+
+                IHMStacAssetHandler handler = asset.getHandler();
+                CoordinateReferenceSystem currentAssetCRS = null;
+
+                if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
+
+                    Integer currentAssetSrid = asset.getEpsg() != null ? asset.getEpsg() : item.getEpsg();
+                    if (currentAssetSrid == null) { // Assuming the assumedEpsg in case, EPSG information is not defined at the item, and the asset level
+                        currentAssetSrid = assumedEpsg;
+                    }
+
+                    int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
+                    fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
+
+                    if (firstAssetSrid == null) { // It's the first item then
+                        firstAssetSrid = currentAssetSrid;
+                        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstAssetSrid);
+                        ReferencedEnvelope roiEnvelopeFirstAssetCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
+                                DefaultGeographicCRS.WGS84).transform(outputCrs, true);
+
+                        roiGeometryFirstAssetCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstAssetCrs);
+                        firstAssetCRS = CRS.decode("EPSG:" + firstAssetSrid);
+                        cols = latLongRegionMap.getCols();
+                        rows = latLongRegionMap.getRows();
+
+                        // OutRaster would be null for the first item
+                        outRaster = new HMRasterWritableBuilder().setName(fileName)
+                                .setRegion(RegionMap.fromEnvelopeAndGrid(roiEnvelopeFirstAssetCrs, cols, rows)).setCrs(outputCrs)
+                                .setNoValue(rasterHandler.getNoValue()).build();
+
+                    } else {
+                        if (!firstAssetSrid.equals(currentAssetSrid)) { // Multiple projections found!
+                            if (!allowTransform || assumedEpsg == 0) {
+                                throw new IllegalArgumentException(
+                                        "Multiple epsg detected when no transform allowed: " + firstAssetSrid + " " + currentAssetSrid);
+                            }
+                        }
+                        MathTransform transform = CRS.findMathTransform(currentItemCRS, firstAssetCRS);
+                        geometry = JTS.transform(geometry, transform);
+                    }
+
+                    Geometry intersectionFirstAssetCrs = geometry.intersection(roiGeometryFirstAssetCrs);
+                    Envelope currentItemReadEnvelopeFirstAssetCrs = intersectionFirstAssetCrs.getEnvelopeInternal();
+
+                    ReferencedEnvelope roiEnvCurrentAssetCrs = new ReferencedEnvelope(currentItemReadEnvelopeFirstAssetCrs, firstAssetCRS)
+                            .transform(currentItemCRS, true);
+
+
+                    RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentAssetCrs.getMinX(), roiEnvCurrentAssetCrs.getMaxX(),
+                            roiEnvCurrentAssetCrs.getMinY(), roiEnvCurrentAssetCrs.getMaxY(), cols, rows);
+                    GridCoverage2D readRaster = rasterHandler.readRaster(readRegion);
+                    outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
+                    readRaster.dispose(true);
+                }
             }
-            Geometry intersectionFirstItemCrs = geometry.intersection(roiGeometryFirstItemCrs);
-            Envelope currentItemReadEnvelopeFIrstItemCrs = intersectionFirstItemCrs.getEnvelopeInternal();
-
-            ReferencedEnvelope roiEnvCurrentItemCrs = new ReferencedEnvelope(currentItemReadEnvelopeFIrstItemCrs, firstItemCRS)
-                    .transform(currentItemCRS, true);
-
-            RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentItemCrs.getMinX(), roiEnvCurrentItemCrs.getMaxX(),
-                    roiEnvCurrentItemCrs.getMinY(), roiEnvCurrentItemCrs.getMaxY(), cols, rows);
-
-            HMStacAsset asset = item.getAssets().stream().filter(assetChecker).findFirst().get();
-            IHMStacAssetHandler handler = asset.getHandler();
-            if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
-            	
-            	
-            	
-	            int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
-	            fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
-	            if (outRaster == null) {
-	                outRaster = new HMRasterWritableBuilder().setName(fileName)
-	                        .setRegion(RegionMap.fromEnvelopeAndGrid(roiEnvelopeFirstItemCrs, cols, rows)).setCrs(outputCrs)
-	                        .setNoValue(rasterHandler.getNoValue()).build();
-	            }
-	
-	            GridCoverage2D readRaster = rasterHandler.readRaster(readRegion);
-	            outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
-            }
+            //else: No Assets were found matching the passed predicate for item!
             pm.worked(1);
         }
         pm.done();
