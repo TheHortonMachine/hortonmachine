@@ -23,10 +23,10 @@ import java.net.URL;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Generic tests.

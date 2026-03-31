@@ -6,14 +6,12 @@ import java.net.URI;
 import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.net.http.HttpRequest.Builder;
+import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.List;
 
 import javax.net.ssl.HostnameVerifier;
@@ -24,13 +22,13 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 // import org.apache.http.HttpResponse;
 // import org.apache.http.client.HttpClient;
 // import org.apache.http.client.methods.HttpGet;
 // import org.apache.http.impl.client.HttpClientBuilder;
 import org.hortonmachine.gears.io.wcs.readers.InsecureTrustManager;
-import org.hortonmachine.gears.utils.CrsUtilities;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 
 /**
  * Utils methods for the WCS handlers.

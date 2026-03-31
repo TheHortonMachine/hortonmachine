@@ -28,7 +28,7 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.SpatialiteDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.shapes.InfoExtrudedPolygon;
 import org.hortonmachine.nww.shapes.InfoPolygon;

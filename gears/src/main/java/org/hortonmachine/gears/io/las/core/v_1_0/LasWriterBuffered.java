@@ -33,8 +33,8 @@ import org.hortonmachine.gears.io.las.core.ILasHeader;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.utils.ByteUtilities;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.HMVersion;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 

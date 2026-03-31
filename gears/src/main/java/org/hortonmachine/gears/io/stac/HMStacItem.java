@@ -8,15 +8,16 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.geotools.data.geojson.GeoJSONReader;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.utils.time.ETimeUtilities;
-import org.locationtech.jts.geom.Geometry;
 import org.geotools.api.feature.Property;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.data.geojson.GeoJSONReader;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.referencing.CRS;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.time.ETimeUtilities;
+import org.locationtech.jts.geom.Geometry;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -114,7 +115,7 @@ public class HMStacItem {
             stacItem.epsg = (Integer) epsgObj;
 
             CoordinateReferenceSystem geometryCrs = feature.getFeatureType().getCoordinateReferenceSystem();
-            CoordinateReferenceSystem itemCRS = CRS.decode("EPSG:" + stacItem.epsg);
+            CoordinateReferenceSystem itemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + stacItem.epsg);
             
             if(!CRS.equalsIgnoreMetadata(geometryCrs, itemCRS)) {
                 // update geometry with the data crs geometry

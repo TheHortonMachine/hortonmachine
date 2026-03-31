@@ -29,7 +29,7 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;

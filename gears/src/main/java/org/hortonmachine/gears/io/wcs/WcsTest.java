@@ -3,8 +3,6 @@ package org.hortonmachine.gears.io.wcs;
 import java.io.File;
 import java.util.List;
 
-import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.locationtech.jts.geom.Envelope;
 

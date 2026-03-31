@@ -10,7 +10,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.ITilesProducer;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.images.ImageGenerator;
 import org.locationtech.jts.geom.Envelope;

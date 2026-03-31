@@ -69,7 +69,7 @@ package org.hortonmachine.gears.modules;
 //
 //        CoordinateReferenceSystem crs = null;
 //        try {
-//            crs = CRS.decode("EPSG:32632");
+//            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:32632");
 //        } catch (Exception ex) {
 //            ex.printStackTrace();
 //        }

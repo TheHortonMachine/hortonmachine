@@ -36,7 +36,7 @@ import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.Variables;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.CalibrationOptionalParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.CalibrationTimeParameterCodes;

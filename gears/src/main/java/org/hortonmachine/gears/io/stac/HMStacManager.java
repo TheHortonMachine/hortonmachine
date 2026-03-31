@@ -8,7 +8,6 @@ import java.util.List;
 import org.geotools.http.commons.MultithreadedHttpClient;
 import org.geotools.stac.client.Collection;
 import org.geotools.stac.client.FeaturesConformance;
-import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.STACConformance;
 import org.geotools.stac.client.STACLandingPage;
 import org.hortonmachine.gears.io.stac.client.HMSTACClient;

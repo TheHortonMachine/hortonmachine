@@ -56,7 +56,7 @@ import org.hortonmachine.gears.io.dxfdwg.libs.dxf.DxfFile;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 

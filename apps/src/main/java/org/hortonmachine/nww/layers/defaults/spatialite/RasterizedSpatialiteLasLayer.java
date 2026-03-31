@@ -20,8 +20,6 @@ package org.hortonmachine.nww.layers.defaults.spatialite;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -34,33 +32,31 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
-import org.hortonmachine.dbs.spatialite.SpatialiteGeometryColumns;
 import org.hortonmachine.gears.io.las.databases.LasCell;
 import org.hortonmachine.gears.io.las.databases.LasCellsTable;
 import org.hortonmachine.gears.io.las.databases.LasLevel;
 import org.hortonmachine.gears.io.las.databases.LasLevelsTable;
 import org.hortonmachine.gears.io.las.databases.LasSource;
 import org.hortonmachine.gears.io.las.databases.LasSourcesTable;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.TransformationUtils;
 import org.hortonmachine.gears.utils.colors.ColorInterpolator;
 import org.hortonmachine.gears.utils.colors.EColorTables;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
-
 import org.locationtech.jts.awt.PointTransformation;
-import org.locationtech.jts.awt.ShapeWriter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -106,7 +102,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         try {
             Envelope tableBounds = db.getTableBounds(LasSourcesTable.TABLENAME);
             GeometryColumn spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
-            CoordinateReferenceSystem dataCrs = CRS.decode("EPSG:" + spatialiteGeometryColumns.srid);
+            CoordinateReferenceSystem dataCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + spatialiteGeometryColumns.srid);
             CoordinateReferenceSystem targetCRS = DefaultGeographicCRS.WGS84;
             ReferencedEnvelope env = new ReferencedEnvelope(tableBounds, dataCrs);
             ReferencedEnvelope envLL = env.transform(targetCRS, true);
@@ -142,7 +138,7 @@ public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer i
         int finalTileSize = tileSize;
 
         GeometryColumn spatialiteGeometryColumns = db.getGeometryColumnsForTable(LasCellsTable.TABLENAME);
-        CoordinateReferenceSystem dataCrs = CRS.decode("EPSG:" + spatialiteGeometryColumns.srid);
+        CoordinateReferenceSystem dataCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + spatialiteGeometryColumns.srid);
         CoordinateReferenceSystem nwwCRS = DefaultGeographicCRS.WGS84;
 
         List<LasSource> lasSources = LasSourcesTable.getLasSources(db);

@@ -158,9 +158,9 @@ public class WmtsWrapper {
 //                double e = latLonBoundingBox.getMaxX();
 //                double s = latLonBoundingBox.getMinY();
 //                double n = latLonBoundingBox.getMaxY();
-//                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, CRS.decode("EPSG:4326"));
+//                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, HMCrsRegistry.INSTANCE.getCrs("EPSG:4326"));
 //
-//                ReferencedEnvelope wmsEnv = env.transform(CRS.decode(wmscode), false);
+//                ReferencedEnvelope wmsEnv = env.transform(HMCrsRegistry.INSTANCE.getCrs(wmscode), false);
 //                BufferedImage image = ww.getImage(layer, null, wmscode, width, height, wmsEnv, null);
 //                String format = "jpg";
 //                if (outputImage.toLowerCase().endsWith("png")) {
@@ -189,9 +189,9 @@ public class WmtsWrapper {
 //                double e = latLonBoundingBox.getMaxX();
 //                double s = latLonBoundingBox.getMinY();
 //                double n = latLonBoundingBox.getMaxY();
-//                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, CRS.decode("EPSG:4326"));
+//                ReferencedEnvelope env = new ReferencedEnvelope(w, e, s, n, HMCrsRegistry.INSTANCE.getCrs("EPSG:4326"));
 //                
-//                ReferencedEnvelope wmsEnv = env.transform(CRS.decode(wmscode), false);
+//                ReferencedEnvelope wmsEnv = env.transform(HMCrsRegistry.INSTANCE.getCrs(wmscode), false);
 //                BufferedImage image = ww.getImage(layer, null, wmscode, width, height, wmsEnv, null);
 //                String format = "jpg";
 //                if (outputImage.toLowerCase().endsWith("png")) {

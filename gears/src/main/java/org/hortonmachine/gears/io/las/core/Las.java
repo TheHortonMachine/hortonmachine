@@ -22,7 +22,7 @@ import java.io.File;
 import org.hortonmachine.gears.io.las.core.laszip4j.LaszipReader;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasWriterBuffered;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 

@@ -20,6 +20,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.filechooser.FileFilter;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.ows.wms.CRSEnvelope;
@@ -27,22 +28,20 @@ import org.geotools.ows.wms.Layer;
 import org.geotools.ows.wms.StyleImpl;
 import org.geotools.ows.wms.WMSCapabilities;
 import org.geotools.ows.wms.request.GetMapRequest;
-import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.database.DatabaseViewer;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.images.WmsWrapper;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.executor.ExecutorIndeterminateGui;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @SuppressWarnings("unchecked")
 public class WebMapsController extends WebMapsView implements IOnCloseListener {
@@ -443,7 +442,7 @@ public class WebMapsController extends WebMapsView implements IOnCloseListener {
         if (epsg.toUpperCase().equals("EPSG:4326")) {
             return DefaultGeographicCRS.WGS84;
         }
-        return CRS.decode(epsg);
+        return HMCrsRegistry.INSTANCE.getCrs(epsg);
     }
     private void loadLayerInfo( String layerName ) {
         Layer layer = name2LayersMap.get(layerName);

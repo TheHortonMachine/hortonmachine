@@ -53,7 +53,7 @@ import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSVECTORREPROJECTOR_DESCRIPTION)

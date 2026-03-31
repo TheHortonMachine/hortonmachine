@@ -1,5 +1,7 @@
 package org.hortonmachine.gears.io.stac;
 
+import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -8,7 +10,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.github.davidmoten.aws.lw.client.Client;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -30,19 +34,17 @@ import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.CrsUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
 
-import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
+import com.github.davidmoten.aws.lw.client.Client;
 
 @SuppressWarnings({"rawtypes"})
 /**
@@ -263,7 +265,6 @@ public class HMStacCollection {
             boolean allowTransform, MergeMode mergeMode, IHMProgressMonitor pm ) throws Exception {
 
         // use either the assumed EPSG or the first srid as the output srid.
-        Integer firstAssetSrid = null;
         HMRaster outRaster = null;
         String fileName = null;
         int rows = -1;
@@ -275,6 +276,8 @@ public class HMStacCollection {
 
 
         for( HMStacItem item : items ) {
+            int currentSrid = assumedEpsg == NO_EPSG_DEFINED ? item.getEpsg() : assumedEpsg;
+            CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
 
             // Read each asset from this item and find the first one that matches the predicate
@@ -287,7 +290,7 @@ public class HMStacCollection {
 
             if (asset != null) {
                 IHMStacAssetHandler handler = asset.getHandler();
-                CoordinateReferenceSystem currentItemCRS = null;
+                CoordinateReferenceSystem currentAssetCRS = null;
                 if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
 
                     Integer currentAssetSrid = asset.getEpsg() != null ? asset.getEpsg() : item.getEpsg();
@@ -297,7 +300,7 @@ public class HMStacCollection {
 
                     int lastSlash = rasterHandler.getAssetUrl().lastIndexOf('/');
                     fileName = rasterHandler.getAssetUrl().substring(lastSlash + 1);
-                    currentItemCRS = CRS.decode("EPSG:" + currentAssetSrid);
+                    currentAssetCRS = CRS.decode("EPSG:" + currentAssetSrid);
 
                     if (firstAssetSrid == null) { // It's the first item then
                         firstAssetSrid = currentAssetSrid;

@@ -3,8 +3,10 @@ package org.hortonmachine.gears.io.wcs.readers;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.NoSuchAuthorityCodeException;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.io.wcs.ICoverageSummary;
@@ -14,11 +16,8 @@ import org.hortonmachine.gears.io.wcs.WcsUtils;
 import org.hortonmachine.gears.io.wcs.wcs100.WebCoverageService100;
 import org.hortonmachine.gears.io.wcs.wcs111.WebCoverageService111;
 import org.hortonmachine.gears.io.wcs.wcs201.WebCoverageService201;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.locationtech.jts.geom.Envelope;
-import org.geotools.api.referencing.FactoryException;
-import org.geotools.api.referencing.NoSuchAuthorityCodeException;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.TransformException;
 
 /**
  * A builder class for getCoverage call parameters.
@@ -207,7 +206,7 @@ public class CoverageReaderParameters {
             ReferencedEnvelope requestEnvelopeWgs84 = null;
             // TODO check this next, should not be necessary
             ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
-                    CRS.decode("EPSG:" + requestedEnvelopeSrid));
+                    HMCrsRegistry.INSTANCE.getCrs("EPSG:" + requestedEnvelopeSrid));
             if (requestedEnvelopeSrid != 4326) {
                 requestEnvelopeWgs84 = requestedReferenceEnvelope.transform(DefaultGeographicCRS.WGS84, true);
 //                finalRequestEnvelopeSrid = 4326;
@@ -259,7 +258,7 @@ public class CoverageReaderParameters {
         if (this.requestedEnvelope != null) {
             if (requestedEnvelopeSrid != 4326) {
                 ReferencedEnvelope requestedReferenceEnvelope = new ReferencedEnvelope(requestedEnvelope,
-                        CRS.decode("EPSG:" + requestedEnvelopeSrid));
+                        HMCrsRegistry.INSTANCE.getCrs("EPSG:" + requestedEnvelopeSrid));
                 finalRequestEnvelope = requestedReferenceEnvelope.transform(DefaultGeographicCRS.WGS84, true);
             }
             // if the requested envelope is partially outside the data envelope, we need to
@@ -319,7 +318,7 @@ public class CoverageReaderParameters {
             // && requestedEnvelopeSrid != describeCoverage.getCoverageEnvelopeSrid()) {
             // ReferencedEnvelope requestedReferenceEnvelope = new
             // ReferencedEnvelope(requestedEnvelope,
-            // CRS.decode("EPSG:" + requestedEnvelopeSrid));
+            // HMCrsRegistry.INSTANCE.getCrs("EPSG:" + requestedEnvelopeSrid));
             // CoordinateReferenceSystem finalRequestCrs = CRS
             // .decode("EPSG:" + describeCoverage.getCoverageEnvelopeSrid());
             // finalRequestEnvelope = requestedReferenceEnvelope.transform(finalRequestCrs,
