@@ -2,11 +2,7 @@ package org.hortonmachine.gears.io.stac;
 
 import static org.hortonmachine.gears.io.stac.HMStacUtils.NO_EPSG_DEFINED;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -278,8 +274,6 @@ public class HMStacCollection {
 
 
         for( HMStacItem item : items ) {
-            int currentSrid = assumedEpsg == NO_EPSG_DEFINED ? item.getEpsg() : assumedEpsg;
-            CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
             Geometry geometry = item.getGeometry();
 
             // Read each asset from this item and find the first one that matches the predicate
@@ -291,6 +285,13 @@ public class HMStacCollection {
                     .orElse(null);
 
             if (asset != null) {
+                // Give more priority to EPSG defined at the Asset level, and then if not then refer the EPSG defined at the Item Level
+                Integer currentSrid = asset.getEpsg()==null ? item.getEpsg():asset.getEpsg();
+
+                // If Assumed EPSG defined, then override everything with that
+                currentSrid = Objects.equals(assumedEpsg, NO_EPSG_DEFINED) ? currentSrid : assumedEpsg;
+                CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
+
                 IHMStacAssetHandler handler = asset.getHandler();
                 CoordinateReferenceSystem currentAssetCRS = null;
 
