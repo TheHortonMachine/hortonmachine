@@ -155,6 +155,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         _rulesTree.expandRow(0);
         _rulesTree.setRootVisible(false);
         _rulesTree.setModel(new DefaultTreeModel(null));
+        _rulesTree.addTreeSelectionListener(this);
         _stylePanel.setLayout(new BorderLayout());
 
         addJtreeContextMenu();
@@ -492,16 +493,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         }
 
-        if (currentLayer != null) {
-            mapContent.removeLayer(currentLayer);
-        }
-        currentSelectedFSW = null;
-        currentSelectedSW = null;
-        currentSelectedRW = null;
-        currentSelectedSymW = null;
-
-        currentLayer = new FeatureLayer(currentFeatureCollection, style);
-        mapContent.addLayer(currentLayer);
+        clearCurrentSelections();
+        replaceCurrentLayer(style, true);
 
         reloadGroupsAndRules();
 
@@ -518,13 +511,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         PreferencesHandler.setLastPath(absolutePath);
         _filepathField.setText(objectWithStyle.getNormalizedPath());
 
-        if (currentLayer != null) {
-            mapContent.removeLayer(currentLayer);
-        }
-        currentSelectedFSW = null;
-        currentSelectedSW = null;
-        currentSelectedRW = null;
-        currentSelectedSymW = null;
+        removeCurrentLayer();
+        clearCurrentSelections();
         currentRaster = null;
         currentFeaturesList = null;
         currentFeatureCollection = null;
@@ -547,10 +535,8 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     style = StyleUtilities.createDefaultStyle(currentFeatureCollection);
                 }
 
-                currentLayer = new FeatureLayer(currentFeatureCollection, style);
-                mapContent.addLayer(currentLayer);
-
                 styleWrapper = new StyleWrapper(style);
+                replaceCurrentLayer(style, false);
 
                 zoomToAll();
                 reloadGroupsAndRules();
@@ -565,10 +551,9 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     style = RasterStyleUtilities.createDefaultRasterStyle();
                 }
                 mapContent.getViewport().setCoordinateReferenceSystem(currentRaster.getCoordinateReferenceSystem());
-                currentLayer = new GridCoverageLayer(currentRaster, style);
-                mapContent.addLayer(currentLayer);
 
                 styleWrapper = new StyleWrapper(style);
+                replaceCurrentLayer(style, false);
 
                 zoomToAll();
                 reloadGroupsAndRules();
@@ -588,6 +573,53 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         _loadTemplateButton.setEnabled(enable);
         _loadSldButton.setEnabled(enable);
         _deleteTemplateButton.setEnabled(enable);
+    }
+
+    private void clearCurrentSelections() {
+        currentSelectedFSW = null;
+        currentSelectedSW = null;
+        currentSelectedRW = null;
+        currentSelectedSymW = null;
+        currentSelectedFeatureAttributeNode = null;
+    }
+
+    private void removeCurrentLayer() {
+        if (currentLayer != null) {
+            mapContent.removeLayer(currentLayer);
+            currentLayer = null;
+        }
+    }
+
+    private void replaceCurrentLayer( Style style, boolean preserveView ) {
+        if (style == null) {
+            return;
+        }
+
+        ReferencedEnvelope displayArea = null;
+        if (preserveView) {
+            try {
+                displayArea = mapPane.getDisplayArea();
+            } catch (Exception e) {
+                // Ignore and fall back to the layer bounds.
+            }
+        }
+
+        removeCurrentLayer();
+
+        if (currentFeatureCollection != null) {
+            currentLayer = new FeatureLayer(currentFeatureCollection, style);
+        } else if (currentRaster != null) {
+            currentLayer = new GridCoverageLayer(currentRaster, style);
+        } else {
+            return;
+        }
+        mapContent.addLayer(currentLayer);
+
+        if (displayArea != null && !displayArea.isEmpty()) {
+            mapPane.setDisplayArea(displayArea);
+        }
+        mapPane.revalidate();
+        mapPane.repaint();
     }
 
     private void reloadGroupsAndRules() {
@@ -716,8 +748,6 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         for( int i = 0; i < _rulesTree.getRowCount(); i++ ) {
             _rulesTree.expandRow(i);
         }
-        _rulesTree.addTreeSelectionListener(this);
-
     }
 
     private void addJtreeContextMenu() {
@@ -844,8 +874,16 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     }
 
     public void applyStyle() {
+        if (styleWrapper == null) {
+            return;
+        }
         Style style = styleWrapper.getStyle();
-        currentLayer.setStyle(style);
+        replaceCurrentLayer(style, true);
+    }
+
+    private void reloadStyleTreeAndPreview() {
+        reloadGroupsAndRules();
+        applyStyle();
     }
 
     private void createMenuActions( JPopupMenu popupMenu ) {
@@ -868,7 +906,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     ftsw.setName(tmpName);
                     styleWrapper.addFeatureTypeStyle(ftsw);
 
-                    reloadGroupsAndRules();
+                    reloadStyleTreeAndPreview();
                 }
             };
             JMenuItem item = new JMenuItem(action);
@@ -888,7 +926,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     tmpName = WrapperUtilities.checkSameNameRule(currentSelectedFSW.getRulesWrapperList(), tmpName);
                     rw.setName(tmpName);
 
-                    reloadGroupsAndRules();
+                    reloadStyleTreeAndPreview();
                 }
             };
             JMenuItem item = new JMenuItem(action);
@@ -899,7 +937,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     currentSelectedFSW.clear();
-                    reloadGroupsAndRules();
+                    reloadStyleTreeAndPreview();
                 }
             };
             item = new JMenuItem(action);
@@ -917,7 +955,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                         int to = ftIndex - 1;
                         if (to >= 0) {
                             styleWrapper.swap(from, to);
-                            reloadGroupsAndRules();
+                            reloadStyleTreeAndPreview();
                         }
 
                     }
@@ -937,7 +975,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     StyleWrapper p = currentSelectedFSW.getParent();
                     p.removeFeatureTypeStyle(currentSelectedFSW);
 
-                    reloadGroupsAndRules();
+                    reloadStyleTreeAndPreview();
                 }
             };
             item = new JMenuItem(action);
@@ -969,7 +1007,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                         default:
                             break;
                         }
-                        reloadGroupsAndRules();
+                        reloadStyleTreeAndPreview();
                     }
                 };
                 item = new JMenuItem(action);
@@ -982,7 +1020,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     @Override
                     public void actionPerformed( ActionEvent e ) {
                         currentSelectedRW.addSymbolizer(null, TextSymbolizerWrapper.class);
-                        reloadGroupsAndRules();
+                        reloadStyleTreeAndPreview();
                     }
                 };
                 item = new JMenuItem(action);
@@ -999,7 +1037,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                     FeatureTypeStyleWrapper f = currentSelectedRW.getParent();
                     f.removeRule(currentSelectedRW);
 
-                    reloadGroupsAndRules();
+                    reloadStyleTreeAndPreview();
                 }
             };
             item = new JMenuItem(action);
@@ -1012,7 +1050,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
                 public void actionPerformed( ActionEvent e ) {
                     RuleWrapper rw = currentSelectedSymW.getParent();
                     rw.removeSymbolizerWrapper(currentSelectedSymW);
-                    reloadGroupsAndRules();
+                    reloadStyleTreeAndPreview();
                 }
             };
             JMenuItem item = new JMenuItem(action);
