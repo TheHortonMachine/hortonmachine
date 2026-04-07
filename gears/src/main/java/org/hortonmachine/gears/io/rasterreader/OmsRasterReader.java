@@ -189,6 +189,9 @@ public class OmsRasterReader extends HMModel {
         
         if (file.toLowerCase().startsWith("http") && file.toLowerCase().endsWith(".tif") && pBoundsNSWE != null) {
 			outRaster = GeotiffHandler.readCogOnRegion(file, pBoundsNSWE[0], pBoundsNSWE[1], pBoundsNSWE[2], pBoundsNSWE[3]);
+			if (hasResolutionRequest() || hasRowColsRequest()) {
+				resample();
+			}
 			return;
         }
 
