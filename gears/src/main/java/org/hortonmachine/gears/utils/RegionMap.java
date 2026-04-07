@@ -402,5 +402,93 @@ public class RegionMap {
         }
         return false;
     }
+    
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        final int boxWidth = 35;
+        final int leftWidth = 18;
+        final int rightWidth = 18;
+
+        String horizontal = "+" + "-".repeat(boxWidth) + "+";
+
+        sb.append("\n=========== RegionMap ===========\n\n");
+
+        // --- North ---
+        sb.append(padLeft("", leftWidth));
+        sb.append(center(String.format("N: %.6f", north), boxWidth + 2));
+        sb.append("\n");
+
+        // --- Top border ---
+        sb.append(padLeft("", leftWidth)).append(horizontal).append("\n");
+
+        // --- West | box | East ---
+        String westStr = String.format("W: %.6f", west);
+        String eastStr = String.format("E: %.6f", east);
+
+        sb.append(padRight(westStr, leftWidth));
+        sb.append("|").append(" ".repeat(boxWidth)).append("|");
+        sb.append(padLeft(eastStr, rightWidth));
+        sb.append("\n");
+
+        // --- Empty line ---
+        sb.append(padLeft("", leftWidth))
+          .append("|").append(" ".repeat(boxWidth)).append("|")
+          .append("\n");
+
+        // --- Center content ---
+        sb.append(padLeft("", leftWidth))
+          .append("|").append(center(String.format("cols=%d rows=%d", cols, rows), boxWidth)).append("|")
+          .append("\n");
+
+        sb.append(padLeft("", leftWidth))
+          .append("|").append(center(String.format("xres=%.6f yres=%.6f", xres, yres), boxWidth)).append("|")
+          .append("\n");
+
+        if (xresMetric != null && yresMetric != null) {
+            sb.append(padLeft("", leftWidth))
+              .append("|").append(center(String.format("xresM=%.3f yresM=%.3f", xresMetric, yresMetric), boxWidth)).append("|")
+              .append("\n");
+        }
+
+        // --- Empty ---
+        sb.append(padLeft("", leftWidth))
+          .append("|").append(" ".repeat(boxWidth)).append("|")
+          .append("\n");
+
+        // --- Bottom border ---
+        sb.append(padLeft("", leftWidth)).append(horizontal).append("\n");
+
+        // --- South ---
+        sb.append(padLeft("", leftWidth));
+        sb.append(center(String.format("S: %.6f", south), boxWidth + 2));
+        sb.append("\n");
+
+        // --- Size ---
+        sb.append("\n");
+        sb.append(String.format("Width : %.6f   Height: %.6f%n", getWidth(), getHeight()));
+
+        sb.append("\n================================\n");
+
+        return sb.toString();
+    }
+
+    // helpers
+    private static String padRight(String s, int width) {
+        return String.format("%-" + width + "s", s);
+    }
+
+    private static String padLeft(String s, int width) {
+        return String.format("%" + width + "s", s);
+    }
+
+    private static String center(String s, int width) {
+        if (s.length() >= width) return s;
+        int left = (width - s.length()) / 2;
+        int right = width - s.length() - left;
+        return " ".repeat(left) + s + " ".repeat(right);
+    }
 
 }

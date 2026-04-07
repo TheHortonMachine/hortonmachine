@@ -51,6 +51,7 @@ import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
 import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
+import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -163,9 +164,9 @@ public class OmsRasterReader extends HMModel {
 
     private GeneralParameterValue[] generalParameter = null;
 
-    private double[] pBounds;
+    private double[] pBoundsNSWE;
 
-    private double[] pRes;
+    private double[] pResXY;
     private int[] pRowcol;
 
     @Execute
@@ -177,18 +178,28 @@ public class OmsRasterReader extends HMModel {
             throw new RuntimeException("If bounds are requested, also a resolution or number of rows/cols has to be supplied.");
         }
         if (hasBoundsRequest()) {
-            pBounds = new double[]{pNorth, pSouth, pWest, pEast};
+            pBoundsNSWE = new double[]{pNorth, pSouth, pWest, pEast};
         }
         if (hasResolutionRequest()) {
-            pRes = new double[]{pXres, pYres};
+            pResXY = new double[]{pXres, pYres};
         }
         if (hasRowColsRequest()) {
             pRowcol = new int[]{pRows, pCols};
         }
+        
+        if (file.toLowerCase().startsWith("http") && file.toLowerCase().endsWith(".tif") && pBoundsNSWE != null) {
+			outRaster = GeotiffHandler.readCogOnRegion(file, pBoundsNSWE[0], pBoundsNSWE[1], pBoundsNSWE[2], pBoundsNSWE[3]);
+			return;
+        }
+
         File mapFile = new File(file);
         AbstractGridFormat format = null;
 		try {
-			format = GridFormatFinder.findFormat(mapFile);
+			if(mapFile.exists()) {
+				format = GridFormatFinder.findFormat(mapFile);
+			} else {				
+				format = GridFormatFinder.findFormat(file);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -213,6 +224,7 @@ public class OmsRasterReader extends HMModel {
                         rasterReader = (AbstractGridCoverage2DReader) cons.newInstance(obj);
                     }
                     originalEnvelope = rasterReader.getOriginalEnvelope();
+                    CoordinateReferenceSystem crs = rasterReader.getCoordinateReferenceSystem();
                     if (!doEnvelope) {
                         outRaster = rasterReader.read(generalParameter);
                         resample();
@@ -256,15 +268,15 @@ public class OmsRasterReader extends HMModel {
                 new ReferencedEnvelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), crs));
 
         // if bounds supplied, use them as region
-        if (pBounds != null) {
+        if (pBoundsNSWE != null) {
             // n, s, w, e
-            n = pBounds[0];
-            s = pBounds[1];
-            w = pBounds[2];
-            e = pBounds[3];
+            n = pBoundsNSWE[0];
+            s = pBoundsNSWE[1];
+            w = pBoundsNSWE[2];
+            e = pBoundsNSWE[3];
         }
-        if (pRes != null) {
-            readRegion = new JGrassRegion(w, e, s, n, pRes[0], pRes[1]);
+        if (pResXY != null) {
+            readRegion = new JGrassRegion(w, e, s, n, pResXY[0], pResXY[1]);
         }
         if (pRowcol != null) {
             readRegion = new JGrassRegion(w, e, s, n, pRowcol[0], pRowcol[1]);
@@ -295,38 +307,38 @@ public class OmsRasterReader extends HMModel {
         double xres = envelopeParams.xres;
         double yres = envelopeParams.yres;
 
-        if (pBounds == null) {
-            pBounds = new double[]{north, south, west, east};
+        if (pBoundsNSWE == null) {
+            pBoundsNSWE = new double[]{north, south, west, east};
         }
-        if (pRes == null) {
-            pRes = new double[]{xres, yres};
+        if (pResXY == null) {
+            pResXY = new double[]{xres, yres};
         }
 
-        double n = pBounds[0];
-        double s = pBounds[1];
-        double w = pBounds[2];
-        double e = pBounds[3];
-        if (pRes != null || pRowcol != null) {
+        double n = pBoundsNSWE[0];
+        double s = pBoundsNSWE[1];
+        double w = pBoundsNSWE[2];
+        double e = pBoundsNSWE[3];
+        if (pResXY != null || pRowcol != null) {
             int newRows = 0;
             int newCols = 0;
             if (pRowcol != null) {
                 newRows = (int) pRowcol[0];
                 newCols = (int) pRowcol[1];
-                if (pRes == null) {
-                    pRes = new double[2];
+                if (pResXY == null) {
+                    pResXY = new double[2];
                 }
-                pRes[0] = (e - w) / (double) newCols;
-                pRes[1] = (n - s) / (double) newRows;
-            } else if (pRes != null) {
+                pResXY[0] = (e - w) / (double) newCols;
+                pResXY[1] = (n - s) / (double) newRows;
+            } else if (pResXY != null) {
                 pRowcol = new int[2];
-                newRows = (int) Math.round((n - s) / pRes[1]);
-                newCols = (int) Math.round((e - w) / pRes[0]);
+                newRows = (int) Math.round((n - s) / pResXY[1]);
+                newCols = (int) Math.round((e - w) / pResXY[0]);
             }
             pRowcol[0] = newRows;
             pRowcol[1] = newCols;
         }
 
-        RegionMap newParams = makeRegionParamsMap(n, s, w, e, pRes[0], pRes[1], (int) pRowcol[1], (int) pRowcol[0]);
+        RegionMap newParams = makeRegionParamsMap(n, s, w, e, pResXY[0], pResXY[1], (int) pRowcol[1], (int) pRowcol[0]);
         CoordinateReferenceSystem crs = outRaster.getCoordinateReferenceSystem();
         GridGeometry2D gg = gridGeometryFromRegionParams(newParams, crs);
         outRaster = (GridCoverage2D) Operations.DEFAULT.resample(outRaster, crs, gg, null);
