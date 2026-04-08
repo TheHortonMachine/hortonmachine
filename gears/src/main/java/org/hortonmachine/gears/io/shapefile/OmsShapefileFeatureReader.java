@@ -65,6 +65,13 @@ import oms3.annotations.UI;
 @UI(OMSSHAPEFILEFEATUREREADER_UI)
 public class OmsShapefileFeatureReader extends HMModel {
 
+    /**
+     * GeoTools documents shapefile support as limited to 2 GB. Bigger files can
+     * fail later with low-level channel positioning errors, so we fail fast with
+     * a clearer message.
+     */
+    public static final long MAX_SUPPORTED_SHP_SIZE = 2L * 1024L * 1024L * 1024L;
+
     @Description(OMSSHAPEFILEFEATUREREADER_FILE_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
@@ -82,6 +89,11 @@ public class OmsShapefileFeatureReader extends HMModel {
 
         try {
             File shapeFile = new File(file);
+            if (shapeFile.length() > MAX_SUPPORTED_SHP_SIZE) {
+                throw new IOException("Shapefile is too large for GeoTools shapefile support: " + shapeFile.getAbsolutePath()
+                        + " (" + shapeFile.length() + " bytes, limit " + MAX_SUPPORTED_SHP_SIZE
+                        + " bytes). Please split it or convert it to a format like GeoPackage before importing.");
+            }
             pm.beginTask("Reading features from shapefile: " + shapeFile.getName(), -1);
             FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
             if (store instanceof ShapefileDataStore) {
@@ -93,7 +105,6 @@ public class OmsShapefileFeatureReader extends HMModel {
             }
             SimpleFeatureSource featureSource = store.getFeatureSource();
             geodata = featureSource.getFeatures();
-            store.dispose();
         } finally {
             pm.done();
         }

@@ -287,14 +287,6 @@ public class SpatialDbsImportUtils {
         } catch (Exception e1) {
             // ignore and try without
         }
-        SimpleFeatureIterator featureIterator;
-        if (crs != null) {
-            ReprojectingFeatureCollection repFeatures = new ReprojectingFeatureCollection(featureCollection, crs);
-            featureIterator = repFeatures.features();
-        } else {
-            featureIterator = featureCollection.features();
-        }
-
         List<String> attrNames = new ArrayList<>();
         String valueNames = hasFid ? FID : "";
         String qMarks = hasFid ? "?" : "";
@@ -338,11 +330,16 @@ public class SpatialDbsImportUtils {
 
         boolean _hasFid = hasFid;
         var _pm = pm;
+        CoordinateReferenceSystem _crs = crs;
+        SimpleFeatureCollection _featureCollection = featureCollection;
         return db.execOnConnection(conn -> {
             boolean noErrors = true;
             boolean autoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql);
+                    SimpleFeatureIterator featureIterator = _crs != null
+                            ? new ReprojectingFeatureCollection(_featureCollection, _crs).features()
+                            : _featureCollection.features()) {
                 int count = 0;
                 int batchCount = 0;
                 try {
