@@ -494,15 +494,15 @@ public class CoverageUtilities {
         double yRes = XAffineTransform.getScaleY0(gridToCRS);
 
         CoordinateReferenceSystem crs = gridCoverage.getCoordinateReferenceSystem();
-        // check if crs is geographic
+        // check if crs is geographic, angular
         if (crs instanceof GeographicCRS) {
             // limit to bounds check (lat, lon) or (lon, lat)
             for (int i = 0; i < upperCorner.getDimension(); i++) {
                 AxisDirection dir =  crs.getCoordinateSystem().getAxis(i).getDirection();
-                if (dir == AxisDirection.NORTH || dir == AxisDirection.SOUTH) {
+                if (AxisDirection.NORTH.equals(dir) || AxisDirection.SOUTH.equals(dir)) {
                     westSouth[i] = Math.max(-90, Math.min(90, westSouth[i]));
                     eastNorth[i] = Math.max(-90, Math.min(90, eastNorth[i]));
-                } else if (dir == AxisDirection.EAST || dir == AxisDirection.WEST) {
+                } else if (AxisDirection.EAST.equals(dir) || AxisDirection.WEST.equals(dir)) {
                     westSouth[i] = Math.max(-180, Math.min(180, westSouth[i]));
                     eastNorth[i] = Math.max(-180, Math.min(180, eastNorth[i]));
                 }
