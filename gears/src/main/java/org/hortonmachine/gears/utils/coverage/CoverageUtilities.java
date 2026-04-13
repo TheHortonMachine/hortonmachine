@@ -497,7 +497,7 @@ public class CoverageUtilities {
         // check if crs is geographic
         if (crs instanceof GeographicCRS) {
             // limit to bounds check (lat, lon) or (lon, lat)
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < upperCorner.getDimension(); i++) {
                 AxisDirection dir =  crs.getCoordinateSystem().getAxis(i).getDirection();
                 if (dir == AxisDirection.NORTH || dir == AxisDirection.SOUTH) {
                     westSouth[i] = Math.max(-90, Math.min(90, westSouth[i]));
