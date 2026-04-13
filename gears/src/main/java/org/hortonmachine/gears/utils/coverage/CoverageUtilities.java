@@ -55,6 +55,7 @@ import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.eclipse.imagen.media.range.NoDataContainer;
+import org.geotools.api.referencing.cs.AxisDirection;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -479,14 +480,8 @@ public class CoverageUtilities {
 
         Position lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
-        westSouth[1] = Math.max(-90, Math.min(90, westSouth[1]));
-        westSouth[0] = Math.max(-180, Math.min(180, westSouth[0]));
-
         Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
-        eastNorth[1] = Math.max(-90, Math.min(90, eastNorth[1]));
-        eastNorth[0] = Math.max(-180, Math.min(180, eastNorth[0]));
-
         GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
         int height = gridRange.height;
@@ -500,7 +495,18 @@ public class CoverageUtilities {
 
         CoordinateReferenceSystem crs = gridCoverage.getCoordinateReferenceSystem();
         // check if crs is geographic
-        if (crs != null && crs instanceof GeographicCRS) {
+        if (crs instanceof GeographicCRS) {
+            // limit to bounds check (lat, lon) or (lon, lat)
+            for (int i = 0; i < 2; i++) {
+                AxisDirection dir =  crs.getCoordinateSystem().getAxis(i).getDirection();
+                if (dir == AxisDirection.NORTH || dir == AxisDirection.SOUTH) {
+                    westSouth[i] = Math.max(-90, Math.min(90, westSouth[i]));
+                    eastNorth[i] = Math.max(-90, Math.min(90, eastNorth[i]));
+                } else if (dir == AxisDirection.EAST || dir == AxisDirection.WEST) {
+                    westSouth[i] = Math.max(-180, Math.min(180, westSouth[i]));
+                    eastNorth[i] = Math.max(-180, Math.min(180, eastNorth[i]));
+                }
+            }
             // convert to metric
             GeodeticCalculator gc = new GeodeticCalculator(crs);
             gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
