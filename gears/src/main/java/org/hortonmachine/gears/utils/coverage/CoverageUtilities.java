@@ -479,8 +479,13 @@ public class CoverageUtilities {
 
         Position lowerCorner = envelope.getLowerCorner();
         double[] westSouth = lowerCorner.getCoordinate();
+        westSouth[1] = Math.max(-90, Math.min(90, westSouth[1]));
+        westSouth[0] = Math.max(-180, Math.min(180, westSouth[0]));
+
         Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
+        eastNorth[1] = Math.max(-90, Math.min(90, eastNorth[1]));
+        eastNorth[0] = Math.max(-180, Math.min(180, eastNorth[0]));
 
         GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
