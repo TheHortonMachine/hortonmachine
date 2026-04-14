@@ -110,6 +110,7 @@ import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.coverage.RasterCellInfo;
+import org.hortonmachine.gears.utils.crs.ProjectionInfo;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
@@ -1911,6 +1912,10 @@ public class HM {
 		} else {
 			throw new IllegalArgumentException("Object must be a Map or List");
 		}
+	}
+    
+    public static ProjectionInfo getProjectionInfo(String epsgCode) throws Exception {
+		return new ProjectionInfo(epsgCode);
 	}
 
 }
