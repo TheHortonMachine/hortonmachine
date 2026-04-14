@@ -1,9 +1,17 @@
 package org.hortonmachine.gears.utils.crs;
 
+import org.eclipse.imagen.Interpolation;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.Operations;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -64,7 +72,24 @@ public class HMCrsTransformer {
 		return JTS.transform(envelope, null, mathTransform, numDensificationPoints);
 	}
 	
+	public SimpleFeatureCollection transform(SimpleFeatureCollection featureCollection) throws Exception {
+		init();
+		return new ReprojectingFeatureCollection(featureCollection, toCrs);
+	}
 	
+	public SimpleFeature transform(SimpleFeature feature) throws Exception {
+		init();
+		feature.setDefaultGeometry(transform((Geometry) feature.getDefaultGeometry()));
+		return feature;
+	}
 	
-
+	public HMRaster transform(HMRaster raster, GridGeometry2D gridGeometry, Interpolation interpolation) throws Exception {
+		init();
+		GridCoverage2D outRaster = (GridCoverage2D) Operations.DEFAULT.resample(raster.buildCoverage(), toCrs, gridGeometry, interpolation);
+		return HMRaster.fromGridCoverage(outRaster);
+	}
+	
+	public HMRaster transform(HMRaster raster) throws Exception {
+		return transform(raster, null, Interpolation.getInstance(Interpolation.INTERP_NEAREST));
+	}
 }

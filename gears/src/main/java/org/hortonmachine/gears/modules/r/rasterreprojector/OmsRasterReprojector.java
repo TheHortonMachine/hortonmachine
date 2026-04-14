@@ -49,6 +49,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.geotools.api.parameter.ParameterValueGroup;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
@@ -131,7 +132,7 @@ public class OmsRasterReprojector extends HMModel {
             return;
         }
 
-        CoordinateReferenceSystem targetCrs = CrsUtilities.getCrsFromEpsg(pCode, null);
+        CoordinateReferenceSystem targetCrs = HMCrsRegistry.INSTANCE.getCrs(pCode);
 
         Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
         if (pInterpolation.equals(BILINEAR)) {
