@@ -93,4 +93,8 @@ public enum HMCrsRegistry {
 		return CRS.decode("EPSG:" + normalized, longitudeFirst);
 	}
 
+	public static boolean crsEquals(CoordinateReferenceSystem fcCrs, CoordinateReferenceSystem _crs) {
+		return CRS.equalsIgnoreMetadata(fcCrs, _crs);
+	}
+
 }

@@ -56,6 +56,7 @@ import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -283,7 +284,7 @@ public class SpatialDbsImportUtils {
         int epsg = geometryColumns.srid;
         CoordinateReferenceSystem crs = null;
         try {
-            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + epsg);
+            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + epsg);
         } catch (Exception e1) {
             // ignore and try without
         }
@@ -336,10 +337,14 @@ public class SpatialDbsImportUtils {
             boolean noErrors = true;
             boolean autoCommit = conn.getAutoCommit();
             conn.setAutoCommit(false);
-            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql);
-                    SimpleFeatureIterator featureIterator = _crs != null
-                            ? new ReprojectingFeatureCollection(_featureCollection, _crs).features()
-                            : _featureCollection.features()) {
+            var fcCrs = _featureCollection.getSchema().getCoordinateReferenceSystem();
+            SimpleFeatureIterator featureIterator;
+            if (fcCrs != null && _crs != null && !HMCrsRegistry.crsEquals(fcCrs, _crs)) {
+				featureIterator = new ReprojectingFeatureCollection(_featureCollection, _crs).features();
+			} else {
+				featureIterator = _featureCollection.features();
+			}
+            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
                 int count = 0;
                 int batchCount = 0;
                 try {
