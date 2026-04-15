@@ -110,6 +110,7 @@ import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.coverage.RasterCellInfo;
+import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gears.utils.crs.ProjectionInfo;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -1916,6 +1917,10 @@ public class HM {
     
     public static ProjectionInfo getProjectionInfo(String epsgCode) throws Exception {
 		return new ProjectionInfo(epsgCode);
+	}
+    
+    public static HMCrsTransformer getCrsTransformer(String fromEpsg, String toEpsg) throws Exception {
+		return new HMCrsTransformer(fromEpsg, toEpsg);
 	}
 
 }

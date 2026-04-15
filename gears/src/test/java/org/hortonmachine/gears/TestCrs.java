@@ -6,6 +6,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+
 import org.eclipse.imagen.Interpolation;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
@@ -16,8 +18,10 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -30,6 +34,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
 
 public class TestCrs {
 
@@ -215,4 +220,5 @@ public class TestCrs {
         assertEquals(transformedRaster.getRows(), transformedRasterWithGrid.getRows());
         assertEquals(transformedValue, transformedRasterWithGrid.getValue(targetCoordinate), 0.1);
     }
+
 }
