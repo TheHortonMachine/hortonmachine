@@ -2449,6 +2449,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 renv.expandToInclude(bounds);
             }
         }
+        mapFrame.addOsmBackground();
 
         mapFrame.getMapPane().setDisplayArea(renv);
     }

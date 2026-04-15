@@ -98,6 +98,14 @@ public class HMMapframe extends JMapFrame {
     public void addLayer( Layer layer ) {
         content.addLayer(layer);
     }
+    
+    public void addOsmBackground() {
+		String baseURL = "http://tile.openstreetmap.org/";
+		TileService service = new OSMService("OpenStreetMap", baseURL);
+		TileLayer layer = new TileLayer(service);
+		layer.setTitle("OpenStreetMap");
+		addLayerBottom(layer);
+	}
 
     public void removeLayer( Layer layer ) {
         if (layer != null) {
@@ -312,11 +320,7 @@ public class HMMapframe extends JMapFrame {
         toolBar.add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
-                String baseURL = "http://tile.openstreetmap.org/";
-                TileService service = new OSMService("OpenStreetMap", baseURL);
-                TileLayer layer = new TileLayer(service);
-                layer.setTitle("OpenStreetMap");
-                mapFrame.addLayerBottom(layer);
+                mapFrame.addOsmBackground();
             }
         });
 
