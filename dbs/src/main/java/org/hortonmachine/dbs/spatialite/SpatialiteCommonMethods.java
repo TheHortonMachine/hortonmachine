@@ -441,20 +441,14 @@ public class SpatialiteCommonMethods {
 
     public static GeometryColumn getGeometryColumnsForTable( IHMConnection connection, SqlName tableName ) throws Exception {
         String attachedStr = "";
-        String tName = tableName .fixedDoubleName;
-        if (tName.indexOf('.') != -1) {
-            // if the tablename contains a dot, then it comes from an attached
-            // database
-
-            // get the database name
-            String[] split = tName.split("\\.");
-            attachedStr = split[0] + ".";
-            tName = split[1];
-            // logger.debug(MessageFormat.format("Considering attached database:
-            // {0}", attachedStr));
+        String tName = tableName.name;
+        if (tableName.schema != null) {
+            // If a schema is present in sqlite/spatialite it represents an
+            // attached database name, while the metadata tables still store the
+            // bare table name.
+            attachedStr = tableName.schema + ".";
         }
 
-        String tableNameNoApex = tName.replaceAll("'", ""); // in case added due to special name
         String sql = "select " + SpatialiteGeometryColumns.F_TABLE_NAME + ", " //
                 + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ", " //
                 + SpatialiteGeometryColumns.GEOMETRY_TYPE + "," //
@@ -462,7 +456,7 @@ public class SpatialiteCommonMethods {
                 + SpatialiteGeometryColumns.SRID + ", " //
                 + SpatialiteGeometryColumns.SPATIAL_INDEX_ENABLED + " from " //
                 + attachedStr + SpatialiteGeometryColumns.TABLENAME + " where Lower(" + SpatialiteGeometryColumns.F_TABLE_NAME
-                + ")=Lower('" + tableNameNoApex + "')";
+                + ")=Lower('" + tName + "')";
         try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
             if (rs.next()) {
                 SpatialiteGeometryColumns gc = new SpatialiteGeometryColumns();

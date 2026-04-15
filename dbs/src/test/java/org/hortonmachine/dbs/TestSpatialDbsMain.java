@@ -22,6 +22,7 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -130,6 +131,10 @@ public class TestSpatialDbsMain {
         assertEquals(0, foreignKeys.size());
         foreignKeys = db.getForeignKeys(MPOINTS_TABLE);
         assertEquals(1, foreignKeys.size());
+
+        GeometryColumn geometryColumns = db.getGeometryColumnsForTable(MPOLY_TABLE);
+        assertNotNull(geometryColumns);
+        assertEquals("the_geom", geometryColumns.geometryColumnName.toLowerCase());
     }
 
     @Test

@@ -68,18 +68,7 @@ public class DbsHelper {
         int indexOf = simpleSql.toLowerCase().indexOf("from");
         String afterFrom = simpleSql.substring(indexOf + 5).trim();
 
-        String tableName = null;
-        if (afterFrom.startsWith("'")) {
-            int nextAp = afterFrom.indexOf("'", 1) + 1;
-            tableName = afterFrom.substring(0, nextAp);
-        } else {
-            int nextSpace = afterFrom.indexOf(' ');
-            if (nextSpace == -1) {
-                tableName = afterFrom;
-            }else {
-                tableName = afterFrom.substring(0, nextSpace);
-            }
-        }
+        String tableName = extractFirstTableToken(afterFrom);
 
         if (tableName == null) {
             throw new RuntimeException("The geometry table name needs to be the first after the FROM keyword.");
@@ -183,6 +172,39 @@ public class DbsHelper {
             return fc;
         });
 
+    }
+
+    static String extractFirstTableToken( String afterFrom ) {
+        boolean inSingleQuotes = false;
+        boolean inDoubleQuotes = false;
+        boolean inBrackets = false;
+        for( int i = 0; i < afterFrom.length(); i++ ) {
+            char c = afterFrom.charAt(i);
+            if (c == '\'' && !inDoubleQuotes && !inBrackets) {
+                if (inSingleQuotes && i + 1 < afterFrom.length() && afterFrom.charAt(i + 1) == '\'') {
+                    i++;
+                    continue;
+                }
+                inSingleQuotes = !inSingleQuotes;
+            } else if (c == '"' && !inSingleQuotes && !inBrackets) {
+                if (inDoubleQuotes && i + 1 < afterFrom.length() && afterFrom.charAt(i + 1) == '"') {
+                    i++;
+                    continue;
+                }
+                inDoubleQuotes = !inDoubleQuotes;
+            } else if (c == '[' && !inSingleQuotes && !inDoubleQuotes) {
+                inBrackets = true;
+            } else if (c == ']' && inBrackets) {
+                if (i + 1 < afterFrom.length() && afterFrom.charAt(i + 1) == ']') {
+                    i++;
+                    continue;
+                }
+                inBrackets = false;
+            } else if (Character.isWhitespace(c) && !inSingleQuotes && !inDoubleQuotes && !inBrackets) {
+                return afterFrom.substring(0, i);
+            }
+        }
+        return afterFrom.isEmpty() ? null : afterFrom;
     }
 
 }
