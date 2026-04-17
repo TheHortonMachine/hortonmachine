@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.hortonmachine.gears.io.netcdf.geoframe;
+package org.hortonmachine.gears.io.geoframe;
 
 import java.io.IOException;
 import java.text.DateFormat;
