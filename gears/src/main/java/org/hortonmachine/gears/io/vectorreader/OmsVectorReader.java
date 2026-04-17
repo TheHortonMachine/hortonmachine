@@ -41,6 +41,7 @@ import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.filter.Filter;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
@@ -93,6 +94,11 @@ public class OmsVectorReader extends HMModel {
     @Description(OMSVECTORREADER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector = null;
+    
+    /**
+     * An optional filter to apply to the read features, where applicable.
+     */
+    public Filter filter;
 
     // PARAM NAMES START
     public static final String OMSVECTORREADER_DESCRIPTION = "Vectors features reader module.";
@@ -129,47 +135,48 @@ public class OmsVectorReader extends HMModel {
             if (outVector.getSchema().getCoordinateReferenceSystem() == null) {
                 pm.errorMessage("The coordinate reference system could not be defined for: " + reader.file);
             }
-        } else if (name.toLowerCase().contains("." + HMConstants.GPKG)) {
-        	SqlName spatialTable = null;
-            String dbPath = null;
-            if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
-            	// check if there is only one table, if not, throw an exception
-            	try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()){
-					db.open(vectorFile.getAbsolutePath());
-					db.initSpatialMetadata(null);
-					List<TableName> tables = db.getTables();
-					// extract spatial tables
-					for (TableName t : tables) {
-						GeometryColumn gc = db.getGeometryColumnsForTable(t.toSqlName());
-						if (gc != null) {
-							if (spatialTable != null) {
-								throw new ModelsIllegalargumentException(
-										"The geopackage contains several tables, the table name needs to be specified in the path after the #.", this);
-							} else {
-								spatialTable = t;
-								dbPath = vectorFile.getAbsolutePath();
-							}
-						}
-					}	
-					if (spatialTable == null) 
-						throw new ModelsIllegalargumentException(
-								"The table name needs to be specified in the geopackage path after the #.", this);
-            	}
-            } else {
-            	String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
-            	if (split.length == 1 || split[1].trim().length() == 0) {
-            		throw new ModelsIllegalargumentException(
-            				"The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
-            				this);
-            	}
-            	spatialTable = SqlName.m(split[1]);
-            	dbPath = split[0];
-            }
-            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
-                db.open(dbPath);
-                db.initSpatialMetadata(null);
-                outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, null);
-            }
+//        } else if (name.toLowerCase().contains("." + HMConstants.GPKG) && filter == null) {
+//        	// TODO this should be substituted by the geotools version
+//        	SqlName spatialTable = null;
+//            String dbPath = null;
+//            if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
+//            	// check if there is only one table, if not, throw an exception
+//            	try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()){
+//					db.open(vectorFile.getAbsolutePath());
+//					db.initSpatialMetadata(null);
+//					List<TableName> tables = db.getTables();
+//					// extract spatial tables
+//					for (TableName t : tables) {
+//						GeometryColumn gc = db.getGeometryColumnsForTable(t.toSqlName());
+//						if (gc != null) {
+//							if (spatialTable != null) {
+//								throw new ModelsIllegalargumentException(
+//										"The geopackage contains several tables, the table name needs to be specified in the path after the #.", this);
+//							} else {
+//								spatialTable = t;
+//								dbPath = vectorFile.getAbsolutePath();
+//							}
+//						}
+//					}	
+//					if (spatialTable == null) 
+//						throw new ModelsIllegalargumentException(
+//								"The table name needs to be specified in the geopackage path after the #.", this);
+//            	}
+//            } else {
+//            	String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
+//            	if (split.length == 1 || split[1].trim().length() == 0) {
+//            		throw new ModelsIllegalargumentException(
+//            				"The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
+//            				this);
+//            	}
+//            	spatialTable = SqlName.m(split[1]);
+//            	dbPath = split[0];
+//            }
+//            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+//                db.open(dbPath);
+//                db.initSpatialMetadata(null);
+//                outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, null);
+//            }
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else if (name.toLowerCase().endsWith("geojson") || name.toLowerCase().endsWith("json")) {
@@ -179,13 +186,28 @@ public class OmsVectorReader extends HMModel {
         	}
         } else {
         	Map<String, Object> params = new HashMap<>();
-        	params.put("url", vectorFile.toURI().toURL());
+        	// check geopackage with table name
+        	String typeName = null;
+        	if (name.toLowerCase().contains("." + HMConstants.GPKG) && name.toLowerCase().contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
+        		String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
+				params.put("dbtype", "geopkg");
+				params.put("database", split[0]);
+				if (split.length > 1 && split[1].trim().length() != 0) {
+					typeName = split[1];
+				}
+        	} else {
+        		params.put("url", vectorFile.toURI().toURL());
+        	}
         	
         	DataStore store = DataStoreFinder.getDataStore(params);
         	if (store== null)
         		throw new IOException("Format is currently not supported for file: " + name);
-        	SimpleFeatureSource fs = store.getFeatureSource(store.getTypeNames()[0]);
-        	outVector = fs.getFeatures();
+        	SimpleFeatureSource fs = store.getFeatureSource(typeName!=null? typeName : store.getTypeNames()[0]);
+        	if (filter != null) {
+				outVector = fs.getFeatures(filter);
+			} else {
+				outVector = fs.getFeatures();
+			}
         }
     }
 
@@ -197,13 +219,18 @@ public class OmsVectorReader extends HMModel {
      * @throws IOException
      */
     public static SimpleFeatureCollection readVector( String path ) throws Exception {
-        SimpleFeatureCollection fc = getFC(path);
+        SimpleFeatureCollection fc = getFC(path, null);
         return fc;
     }
+    
+    public  static SimpleFeatureCollection readVector( String path, Filter filter ) throws Exception {
+    	return getFC(path, filter);
+    }
 
-    private static SimpleFeatureCollection getFC( String path ) throws Exception {
+    private static SimpleFeatureCollection getFC( String path, Filter filter  ) throws Exception {
         OmsVectorReader reader = new OmsVectorReader();
         reader.file = path;
+        reader.filter = filter;
         reader.process();
         SimpleFeatureCollection fc = reader.outVector;
         return fc;
