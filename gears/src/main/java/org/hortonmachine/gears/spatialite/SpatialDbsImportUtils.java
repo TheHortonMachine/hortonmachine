@@ -454,6 +454,24 @@ public class SpatialDbsImportUtils {
      */
     public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, SqlName tableName, int featureLimit,
             int forceSrid, String whereStr ) throws SQLException, Exception {
+        return tableToFeatureFCollection(db, tableName, featureLimit, forceSrid, null, whereStr);
+    }
+
+    /**
+     * Get a table as featurecollection.
+     * 
+     * @param db the database.
+     * @param tableName the table to use.
+     * @param featureLimit limit in feature or -1.
+     * @param forceSrid a srid to force to or -1.
+     * @param envelope an optional spatial prefilter envelope.
+     * @param whereStr an optional where condition string.
+     * @return the extracted featurecollection.
+     * @throws SQLException
+     * @throws Exception
+     */
+    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, SqlName tableName, int featureLimit,
+            int forceSrid, Envelope envelope, String whereStr ) throws SQLException, Exception {
         DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
@@ -470,7 +488,7 @@ public class SpatialDbsImportUtils {
             crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
         }
 
-        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, null, featureLimit, forceSrid, whereStr);
+        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, envelope, featureLimit, forceSrid, whereStr);
         if (tableRecords.data.size() == 0) {
             return fc;
         }

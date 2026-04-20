@@ -1,8 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.geotools.api.filter.Filter;
 import org.geotools.api.style.Style;
@@ -30,9 +28,7 @@ public class TestHMStyle extends HMTestCase {
     }
 
     public void testPolygonStyleBuilderWithLabel() throws Exception {
-        Map<String, Object> font = new HashMap<>();
-        font.put("size", 36);
-        font.put("weight", "bold");
+        HMStyle.FontDef font = HMStyle.font().family("SansSerif").size(36).bold();
 
         HMStyle.Label label = HMStyle.label("NAME").font(font).anchor(0.5, 0.5).displacement(0, 10).rotation(0)
                 .fill("white");
@@ -49,6 +45,7 @@ public class TestHMStyle extends HMTestCase {
         assertEquals("1", polygon.getStrokeWidth());
 
         assertEquals("NAME", text.getLabelName());
+        assertEquals("SansSerif", text.getFontFamily());
         assertEquals("36", text.getFontSize());
         assertEquals("bold", text.getFontWeight());
         assertEquals(ColorUtilities.asHex("white"), text.getColor());
@@ -58,6 +55,17 @@ public class TestHMStyle extends HMTestCase {
         assertEquals("0.5", text.getAnchorY());
         assertEquals("0", text.getDisplacementX());
         assertEquals("10", text.getDisplacementY());
+    }
+
+    public void testPolygonStyleBuilderWithFontMapStillWorks() throws Exception {
+        HMStyle.Label label = HMStyle.label("NAME").font(java.util.Map.of("size", 18, "style", "italic"));
+        Style style = HMStyle.polygon().fill("green", 0.2).stroke("green", 1).label(label).build();
+
+        StyleWrapper wrapper = new StyleWrapper(style);
+        TextSymbolizerWrapper text = wrapper.getFirstTextSymbolizer();
+
+        assertEquals("18", text.getFontSize());
+        assertEquals("italic", text.getFontStyle());
     }
 
     public void testPolygonStyleOpacityShortcut() throws Exception {

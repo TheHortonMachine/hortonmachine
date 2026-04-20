@@ -10,10 +10,11 @@ import java.awt.image.BufferedImage;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -145,7 +146,6 @@ public class HMMapRenderer {
         }
 
         MapContent content = createMapContent(title);
-        CountDownLatch closedLatch = new CountDownLatch(1);
         JMapFrame frame = new JMapFrame(content);
         frame.setSize(width, height);
         frame.enableStatusBar(true);
@@ -154,18 +154,54 @@ public class HMMapRenderer {
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new java.awt.event.WindowAdapter(){
             @Override
+            public void windowClosing( java.awt.event.WindowEvent e ) {
+                cleanupFrame(frame, content);
+            }
+
+            @Override
             public void windowClosed( java.awt.event.WindowEvent e ) {
-                content.dispose();
-                closedLatch.countDown();
+                cleanupFrame(frame, content);
             }
         });
         frame.setVisible(true);
-        try {
-            closedLatch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+
+        while( frame.isDisplayable() ) {
+            try {
+                Thread.sleep(150);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
         }
         return frame;
+    }
+
+    private static void cleanupFrame( JMapFrame frame, MapContent content ) {
+        if (frame == null) {
+            return;
+        }
+
+        if (frame.getMapPane() != null) {
+            frame.getMapPane().setRenderingExecutor(null);
+            frame.getMapPane().setMapContent(null);
+            shutdownPaneTaskExecutor(frame);
+        }
+        if (content != null) {
+            content.dispose();
+        }
+    }
+
+    private static void shutdownPaneTaskExecutor( JMapFrame frame ) {
+        try {
+            Field paneTaskExecutorField = frame.getMapPane().getClass().getSuperclass().getDeclaredField("paneTaskExecutor");
+            paneTaskExecutorField.setAccessible(true);
+            Object executor = paneTaskExecutorField.get(frame.getMapPane());
+            if (executor instanceof ScheduledExecutorService) {
+                ((ScheduledExecutorService) executor).shutdownNow();
+            }
+        } catch (Exception e) {
+            // Best-effort cleanup: older/newer GeoTools versions may expose this differently.
+        }
     }
 
     public BufferedImage render() {

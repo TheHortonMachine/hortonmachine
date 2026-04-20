@@ -4,11 +4,11 @@ import static org.hortonmachine.gears.utils.style.StyleUtilities.ff;
 import static org.hortonmachine.gears.utils.style.StyleUtilities.sf;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.geotools.api.filter.Filter;
-import org.geotools.api.filter.expression.Expression;
 import org.geotools.api.style.AnchorPoint;
 import org.geotools.api.style.Displacement;
 import org.geotools.api.style.FeatureTypeStyle;
@@ -21,7 +21,6 @@ import org.geotools.api.style.Style;
 import org.geotools.api.style.Symbolizer;
 import org.geotools.api.style.TextSymbolizer;
 import org.geotools.filter.text.ecql.ECQL;
-import org.geotools.styling.StyleBuilder;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 
@@ -66,6 +65,10 @@ public class HMStyle {
 
     public static Label label( String fieldName ) {
         return new Label(fieldName);
+    }
+
+    public static FontDef font() {
+        return new FontDef();
     }
 
     public static Halo halo( Fill fill, double radius ) {
@@ -621,12 +624,27 @@ public class HMStyle {
             return halo(new Halo(color, radius));
         }
 
+        public Label font( FontDef fontDefinition ) {
+            if (fontDefinition == null) {
+                return this;
+            }
+            return applyFont(fontDefinition.family, fontDefinition.style, fontDefinition.weight, fontDefinition.size);
+        }
+
         public Label font( Map<String, Object> fontDefinition ) {
             Object family = fontDefinition.get("family");
             Object style = fontDefinition.get("style");
             Object weight = fontDefinition.get("weight");
             Object size = fontDefinition.get("size");
 
+            return applyFont(family, style, weight, size);
+        }
+
+        public HMStyle plus( Object part ) {
+            return new HMStyle().add(this).add(part);
+        }
+
+        private Label applyFont( Object family, Object style, Object weight, Object size ) {
             if (family != null) {
                 fontFamily = String.valueOf(family);
             }
@@ -646,23 +664,61 @@ public class HMStyle {
             return this;
         }
 
-        public HMStyle plus( Object part ) {
-            return new HMStyle().add(this).add(part);
+        private Font toGtFont() {
+            return sf.font(Collections.singletonList(ff.literal(fontFamily)), ff.literal(fontStyle),
+                    ff.literal(fontWeight), ff.literal(fontSize));
+        }
+    }
+
+    public static class FontDef {
+        private String family;
+        private String style;
+        private String weight;
+        private Object size;
+
+        public FontDef family( String family ) {
+            this.family = family;
+            return this;
         }
 
-        private Font toGtFont() {
-            StyleBuilder styleBuilder = StyleUtilities.sb;
-            boolean italic = !"normal".equalsIgnoreCase(fontStyle);
-            boolean bold = "bold".equalsIgnoreCase(fontWeight);
-            Font font = styleBuilder.createFont(fontFamily, italic, bold, Double.parseDouble(fontSize));
-            List<Expression> family = font.getFamily();
-            if (!family.isEmpty()) {
-                family.set(0, ff.literal(fontFamily));
-            }
-            font.setStyle(ff.literal(fontStyle));
-            font.setWeight(ff.literal(fontWeight));
-            font.setSize(ff.literal(fontSize));
-            return font;
+        public FontDef style( String style ) {
+            this.style = style;
+            return this;
+        }
+
+        public FontDef italic() {
+            this.style = "italic";
+            return this;
+        }
+
+        public FontDef normalStyle() {
+            this.style = "normal";
+            return this;
+        }
+
+        public FontDef weight( String weight ) {
+            this.weight = weight;
+            return this;
+        }
+
+        public FontDef bold() {
+            this.weight = "bold";
+            return this;
+        }
+
+        public FontDef normalWeight() {
+            this.weight = "normal";
+            return this;
+        }
+
+        public FontDef size( Number size ) {
+            this.size = size;
+            return this;
+        }
+
+        public FontDef size( String size ) {
+            this.size = size;
+            return this;
         }
     }
 }
