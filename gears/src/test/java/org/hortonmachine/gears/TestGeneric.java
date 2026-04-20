@@ -84,6 +84,9 @@ public class TestGeneric extends HMTestCase {
         expectedHex = "#000000";
         checkColor(hex, expectedHex);
 
+        assertEquals("#00ff00", ColorUtilities.asHex("green"));
+        assertEquals("#808080", ColorUtilities.asHex("grey"));
+        assertEquals("#ff0000", ColorUtilities.asHex("255,0,0"));
     }
 
     private void checkColor( String hex, String expectedHex ) {

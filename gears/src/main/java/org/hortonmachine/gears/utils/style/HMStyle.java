@@ -22,6 +22,7 @@ import org.geotools.api.style.Symbolizer;
 import org.geotools.api.style.TextSymbolizer;
 import org.geotools.filter.text.ecql.ECQL;
 import org.geotools.styling.StyleBuilder;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 
 /**
@@ -147,7 +148,12 @@ public class HMStyle {
     }
 
     public HMStyle opacity( Number opacity ) {
-        this.pointFill = new Fill(pointFill.color, opacity.doubleValue());
+        double opacityValue = opacity.doubleValue();
+        if (geometryType == EGeometryType.POINT) {
+            this.pointFill = new Fill(pointFill.color, opacityValue);
+        } else if (fill != null) {
+            this.fill = new Fill(fill.color, opacityValue);
+        }
         return this;
     }
 
@@ -468,7 +474,7 @@ public class HMStyle {
         }
 
         private org.geotools.api.style.Fill toGtFill() {
-            org.geotools.api.style.Fill gtFill = sf.createFill(ff.literal(color));
+            org.geotools.api.style.Fill gtFill = sf.createFill(ff.literal(ColorUtilities.asHex(color)));
             gtFill.setOpacity(ff.literal(valueOf(opacity)));
             return gtFill;
         }
@@ -508,7 +514,8 @@ public class HMStyle {
         }
 
         private org.geotools.api.style.Stroke toGtStroke() {
-            org.geotools.api.style.Stroke gtStroke = sf.createStroke(ff.literal(color), ff.literal(valueOf(width)));
+            org.geotools.api.style.Stroke gtStroke = sf.createStroke(ff.literal(ColorUtilities.asHex(color)),
+                    ff.literal(valueOf(width)));
             if (opacity != null) {
                 gtStroke.setOpacity(ff.literal(valueOf(opacity)));
             }

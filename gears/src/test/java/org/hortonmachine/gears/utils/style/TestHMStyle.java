@@ -8,6 +8,7 @@ import org.geotools.api.filter.Filter;
 import org.geotools.api.style.Style;
 import org.geotools.filter.text.cql2.CQL;
 import org.hortonmachine.gears.utils.HMTestCase;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 
 public class TestHMStyle extends HMTestCase {
 
@@ -21,9 +22,9 @@ public class TestHMStyle extends HMTestCase {
 
         assertEquals("square", point.getMarkName());
         assertEquals("10", point.getSize());
-        assertEquals("#FF0000", point.getFillColor());
+        assertEquals(ColorUtilities.asHex("#FF0000"), point.getFillColor());
         assertEquals("0.5", point.getFillOpacity());
-        assertEquals("green", point.getStrokeColor());
+        assertEquals(ColorUtilities.asHex("green"), point.getStrokeColor());
         assertEquals("0.1", point.getStrokeWidth());
         assertEquals("45", point.getRotation());
     }
@@ -42,21 +43,34 @@ public class TestHMStyle extends HMTestCase {
         PolygonSymbolizerWrapper polygon = rule.getGeometrySymbolizersWrapper().adapt(PolygonSymbolizerWrapper.class);
         TextSymbolizerWrapper text = wrapper.getFirstTextSymbolizer();
 
-        assertEquals("green", polygon.getFillColor());
+        assertEquals(ColorUtilities.asHex("green"), polygon.getFillColor());
         assertEquals("0.2", polygon.getFillOpacity());
-        assertEquals("green", polygon.getStrokeColor());
+        assertEquals(ColorUtilities.asHex("green"), polygon.getStrokeColor());
         assertEquals("1", polygon.getStrokeWidth());
 
         assertEquals("NAME", text.getLabelName());
         assertEquals("36", text.getFontSize());
         assertEquals("bold", text.getFontWeight());
-        assertEquals("white", text.getColor());
-        assertEquals("green", text.getHaloColor());
+        assertEquals(ColorUtilities.asHex("white"), text.getColor());
+        assertEquals(ColorUtilities.asHex("green"), text.getHaloColor());
         assertEquals("3", text.getHaloRadius());
         assertEquals("0.5", text.getAnchorX());
         assertEquals("0.5", text.getAnchorY());
         assertEquals("0", text.getDisplacementX());
         assertEquals("10", text.getDisplacementY());
+    }
+
+    public void testPolygonStyleOpacityShortcut() throws Exception {
+        Style style = HMStyle.polygon().fill("green").opacity(0.2).stroke("green", 1).build();
+
+        StyleWrapper wrapper = new StyleWrapper(style);
+        RuleWrapper rule = wrapper.getFirstRule();
+        PolygonSymbolizerWrapper polygon = rule.getGeometrySymbolizersWrapper().adapt(PolygonSymbolizerWrapper.class);
+
+        assertEquals(ColorUtilities.asHex("green"), polygon.getFillColor());
+        assertEquals("0.2", polygon.getFillOpacity());
+        assertEquals(ColorUtilities.asHex("green"), polygon.getStrokeColor());
+        assertEquals("1", polygon.getStrokeWidth());
     }
 
     public void testLineStyleBuilderWithLabel() throws Exception {
@@ -69,12 +83,12 @@ public class TestHMStyle extends HMTestCase {
         LineSymbolizerWrapper line = rule.getGeometrySymbolizersWrapper().adapt(LineSymbolizerWrapper.class);
         TextSymbolizerWrapper text = wrapper.getFirstTextSymbolizer();
 
-        assertEquals("#0000FF", line.getStrokeColor());
+        assertEquals(ColorUtilities.asHex("#0000FF"), line.getStrokeColor());
         assertEquals("2", line.getStrokeWidth());
 
         assertEquals("name", text.getLabelName());
-        assertEquals("white", text.getColor());
-        assertEquals("blue", text.getHaloColor());
+        assertEquals(ColorUtilities.asHex("white"), text.getColor());
+        assertEquals(ColorUtilities.asHex("blue"), text.getHaloColor());
         assertEquals("2", text.getHaloRadius());
     }
 
@@ -102,13 +116,13 @@ public class TestHMStyle extends HMTestCase {
         assertEquals("scalerank > 6", CQL.toCQL(rules.get(1).getRule().getFilter()));
 
         assertEquals("name", text1.getLabelName());
-        assertEquals("white", text1.getColor());
-        assertEquals("blue", text1.getHaloColor());
+        assertEquals(ColorUtilities.asHex("white"), text1.getColor());
+        assertEquals(ColorUtilities.asHex("blue"), text1.getHaloColor());
         assertEquals("2", text1.getHaloRadius());
 
         assertEquals("name", text2.getLabelName());
-        assertEquals("white", text2.getColor());
-        assertEquals("blue", text2.getHaloColor());
+        assertEquals(ColorUtilities.asHex("white"), text2.getColor());
+        assertEquals(ColorUtilities.asHex("blue"), text2.getHaloColor());
         assertEquals("2", text2.getHaloRadius());
     }
 }

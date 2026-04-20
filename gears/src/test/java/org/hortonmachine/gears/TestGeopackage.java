@@ -14,6 +14,8 @@ import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.LineString;
+import org.locationtech.jts.geom.MultiPolygon;
+import org.locationtech.jts.geom.Polygon;
 import org.geotools.api.feature.simple.SimpleFeature;
 /**
  * Test Geopackage.
@@ -26,14 +28,24 @@ public class TestGeopackage extends HMTestCase {
     public void testMultiVectorGeopackageIO() throws Exception {
         String polygonTable = "polygontest";
         String lineTable = "linetest";
+        String multiPolygonTable = "multipolygontest";
 
         SimpleFeatureCollection polygonFC = HMTestMaps.getTestLeftFC();
         LineString line = GeometryUtilities.createDummyLine();
         SimpleFeatureCollection lineFc = FeatureUtilities.featureCollectionFromGeometry(DefaultGeographicCRS.WGS84, line);
+        Polygon polygon1 = GeometryUtilities.createDummyPolygon();
+        Polygon polygon2 = (Polygon) GeometryUtilities.createDummyPolygon().copy();
+        polygon2.apply(org.locationtech.jts.geom.util.AffineTransformation.translationInstance(20, 20));
+        polygon2.geometryChanged();
+        MultiPolygon multiPolygon = GeometryUtilities.gf().createMultiPolygon(new Polygon[]{polygon1, polygon2});
+        SimpleFeatureCollection multiPolygonFc = FeatureUtilities.featureCollectionFromGeometry(DefaultGeographicCRS.WGS84,
+                multiPolygon);
 
         File tmpGpkg = File.createTempFile("hm_test_multi_vector_", "." + HMConstants.GPKG);
         OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + polygonTable, polygonFC);
         OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + lineTable, lineFc);
+        OmsVectorWriter.writeVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + multiPolygonTable,
+                multiPolygonFc);
 
         SimpleFeatureCollection readPolygonFC = OmsVectorReader
                 .readVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + polygonTable);
@@ -48,6 +60,14 @@ public class TestGeopackage extends HMTestCase {
         assertEquals(4326, srid);
         features = FeatureUtilities.featureCollectionToList(readLinesFC);
         assertEquals(1, features.size());
+
+        SimpleFeatureCollection readMultiPolygonFC = OmsVectorReader
+                .readVector(tmpGpkg.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + multiPolygonTable);
+        srid = CrsUtilities.getSrid(readMultiPolygonFC.getSchema().getCoordinateReferenceSystem());
+        assertEquals(4326, srid);
+        features = FeatureUtilities.featureCollectionToList(readMultiPolygonFC);
+        assertEquals(1, features.size());
+        assertTrue(features.get(0).getDefaultGeometry() instanceof MultiPolygon);
 
     }
 

@@ -45,6 +45,7 @@ import org.geotools.api.filter.Filter;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
+import org.geotools.filter.text.cql2.CQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
@@ -135,48 +136,47 @@ public class OmsVectorReader extends HMModel {
             if (outVector.getSchema().getCoordinateReferenceSystem() == null) {
                 pm.errorMessage("The coordinate reference system could not be defined for: " + reader.file);
             }
-//        } else if (name.toLowerCase().contains("." + HMConstants.GPKG) && filter == null) {
-//        	// TODO this should be substituted by the geotools version
-//        	SqlName spatialTable = null;
-//            String dbPath = null;
-//            if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
-//            	// check if there is only one table, if not, throw an exception
-//            	try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()){
-//					db.open(vectorFile.getAbsolutePath());
-//					db.initSpatialMetadata(null);
-//					List<TableName> tables = db.getTables();
-//					// extract spatial tables
-//					for (TableName t : tables) {
-//						GeometryColumn gc = db.getGeometryColumnsForTable(t.toSqlName());
-//						if (gc != null) {
-//							if (spatialTable != null) {
-//								throw new ModelsIllegalargumentException(
-//										"The geopackage contains several tables, the table name needs to be specified in the path after the #.", this);
-//							} else {
-//								spatialTable = t;
-//								dbPath = vectorFile.getAbsolutePath();
-//							}
-//						}
-//					}	
-//					if (spatialTable == null) 
-//						throw new ModelsIllegalargumentException(
-//								"The table name needs to be specified in the geopackage path after the #.", this);
-//            	}
-//            } else {
-//            	String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
-//            	if (split.length == 1 || split[1].trim().length() == 0) {
-//            		throw new ModelsIllegalargumentException(
-//            				"The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
-//            				this);
-//            	}
-//            	spatialTable = SqlName.m(split[1]);
-//            	dbPath = split[0];
-//            }
-//            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
-//                db.open(dbPath);
-//                db.initSpatialMetadata(null);
-//                outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, null);
-//            }
+        } else if (name.toLowerCase().contains("." + HMConstants.GPKG)) {
+            SqlName spatialTable = null;
+            String dbPath = null;
+            if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
+                try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+                    db.open(vectorFile.getAbsolutePath());
+                    db.initSpatialMetadata(null);
+                    List<TableName> tables = db.getTables();
+                    for( TableName t : tables ) {
+                        GeometryColumn gc = db.getGeometryColumnsForTable(t.toSqlName());
+                        if (gc != null) {
+                            if (spatialTable != null) {
+                                throw new ModelsIllegalargumentException(
+                                        "The geopackage contains several tables, the table name needs to be specified in the path after the #.",
+                                        this);
+                            }
+                            spatialTable = t.toSqlName();
+                            dbPath = vectorFile.getAbsolutePath();
+                        }
+                    }
+                    if (spatialTable == null) {
+                        throw new ModelsIllegalargumentException(
+                                "The table name needs to be specified in the geopackage path after the #.", this);
+                    }
+                }
+            } else {
+                String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
+                if (split.length == 1 || split[1].trim().length() == 0) {
+                    throw new ModelsIllegalargumentException(
+                            "The geopackage contains several tables, the table neame needs to be specified in the path after the #.",
+                            this);
+                }
+                spatialTable = SqlName.m(split[1]);
+                dbPath = split[0];
+            }
+            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+                db.open(dbPath);
+                db.initSpatialMetadata(null);
+                String whereStr = filter != null ? CQL.toCQL(filter) : null;
+                outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, whereStr);
+            }
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else if (name.toLowerCase().endsWith("geojson") || name.toLowerCase().endsWith("json")) {

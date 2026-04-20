@@ -19,6 +19,11 @@
 package org.hortonmachine.gears.utils.colors;
 
 import java.awt.Color;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * An utilities class for handling colors.
@@ -27,6 +32,15 @@ import java.awt.Color;
  * @since 0.7.4
  */
 public class ColorUtilities {
+
+    private static final Map<String, Color> NAMED_COLORS = new HashMap<>();
+
+    static {
+        registerColorConstants();
+        NAMED_COLORS.put("grey", Color.GRAY);
+        NAMED_COLORS.put("darkgrey", Color.DARK_GRAY);
+        NAMED_COLORS.put("lightgrey", Color.LIGHT_GRAY);
+    }
 
     /**
      * Converts a color string.
@@ -118,6 +132,51 @@ public class ColorUtilities {
     }
 
     /**
+     * Convert a color definition to {@link Color}.
+     *
+     * <p>Supports hex strings, rgb/rgba strings in the form {@code r,g,b[,a]} or
+     * {@code r g b [a]}, and well known named colors such as {@code green},
+     * {@code red}, {@code darkGray} and aliases like {@code grey}.</p>
+     *
+     * @param colorString the color definition.
+     * @return the parsed color.
+     */
+    public static Color fromString( String colorString ) {
+        if (colorString == null) {
+            throw new IllegalArgumentException("Color string can't be null.");
+        }
+        String normalized = colorString.trim();
+        if (normalized.isEmpty()) {
+            throw new IllegalArgumentException("Color string can't be empty.");
+        }
+
+        if (normalized.startsWith("#") || normalized.matches("(?i)[0-9a-f]{1,6}")) {
+            return fromHex(normalized);
+        }
+        if (normalized.contains(",") || normalized.matches(".*\\d+\\s+\\d+.*")) {
+            return colorFromRbgString(normalized);
+        }
+
+        String key = normalized.toLowerCase(Locale.ROOT).replaceAll("[\\s_-]+", "");
+        Color color = NAMED_COLORS.get(key);
+        if (color != null) {
+            return color;
+        }
+
+        throw new IllegalArgumentException("Unsupported color: " + colorString);
+    }
+
+    /**
+     * Convert a color definition to a normalized hex representation.
+     *
+     * @param colorString the color definition.
+     * @return the normalized hex string.
+     */
+    public static String asHex( String colorString ) {
+        return asHex(fromString(colorString));
+    }
+
+    /**
      * Add alpha to a color.
      * 
      * @param color the color to make transparent.
@@ -126,6 +185,20 @@ public class ColorUtilities {
     public static Color makeTransparent( Color color, int alpha ) {
         Color transparentColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
         return transparentColor;
+    }
+
+    private static void registerColorConstants() {
+        for( Field field : Color.class.getFields() ) {
+            if (!Modifier.isStatic(field.getModifiers()) || field.getType() != Color.class) {
+                continue;
+            }
+            try {
+                Color color = (Color) field.get(null);
+                NAMED_COLORS.put(field.getName().toLowerCase(Locale.ROOT), color);
+            } catch (IllegalAccessException e) {
+                // Ignore inaccessible constants and continue with the remaining ones.
+            }
+        }
     }
 
 }
