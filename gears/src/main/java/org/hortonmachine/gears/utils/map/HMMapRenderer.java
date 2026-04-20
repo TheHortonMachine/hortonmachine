@@ -252,6 +252,15 @@ public class HMMapRenderer {
             }
         }
     }
+    
+    public static void renderAnimated( List<String> imagePaths, String outPath, int timeIntervalMilliseconds, boolean loop )
+			throws IOException {
+		List<BufferedImage> images = new ArrayList<>();
+		for (String path : imagePaths) {
+			images.add(ImageIO.read(new File(path)));
+		}
+		renderAnimated(images, new File(outPath), timeIntervalMilliseconds, loop);
+	}
 
     private void expandBounds( ReferencedEnvelope envelope ) {
         if (envelope == null || envelope.isEmpty()) {
