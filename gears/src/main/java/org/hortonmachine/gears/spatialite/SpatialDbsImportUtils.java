@@ -44,6 +44,7 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.datatypes.EDataType;
+import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.h2gis.H2GisDb;
@@ -481,11 +482,11 @@ public class SpatialDbsImportUtils {
             if (forceSrid == -1) {
                 forceSrid = geometryColumn.srid;
             } else {
-                forceCrs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
+                forceCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
             }
-            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
+            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + geometryColumn.srid);
         } else {
-            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
+            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
         }
 
         QueryResult tableRecords = db.getTableRecordsMapIn(tableName, envelope, featureLimit, forceSrid, whereStr);
@@ -496,7 +497,7 @@ public class SpatialDbsImportUtils {
         int geometryIndex = tableRecords.geometryIndex;
         int latIndex = -1;
         int lonIndex = -1;
-        Geometry sampleGeom = null;
+        Class< ? > geometryClass = null;
         if (geometryIndex == -1) {
             for( String fieldName : tableRecords.names ) {
                 if (fieldName.toLowerCase().startsWith("lat")) {
@@ -508,7 +509,7 @@ public class SpatialDbsImportUtils {
             if (latIndex == -1 || lonIndex == -1)
                 throw new IllegalArgumentException("Not a geometric layer.");
         } else {
-            sampleGeom = (Geometry) tableRecords.data.get(0)[geometryIndex];
+            geometryClass = determineGeometryClass(tableRecords, geometryIndex, geometryColumn);
         }
 
         List<String> names = tableRecords.names;
@@ -527,7 +528,6 @@ public class SpatialDbsImportUtils {
         }
         for( int i = 0; i < names.size(); i++ ) {
             if (geometryIndex != -1 && i == geometryIndex) {
-                Class< ? > geometryClass = sampleGeom.getClass();
                 b.add(geometryColumn.geometryColumnName, geometryClass);
                 continue;
             }
@@ -579,6 +579,9 @@ public class SpatialDbsImportUtils {
                 newObjects[0] = point;
                 builder.addAll(newObjects);
             } else {
+                if (geometryIndex != -1) {
+                    objects[geometryIndex] = adaptGeometry((Geometry) objects[geometryIndex], geometryClass);
+                }
                 builder.addAll(objects);
             }
 
@@ -586,6 +589,59 @@ public class SpatialDbsImportUtils {
             fc.add(feature);
         }
         return fc;
+    }
+
+    /**
+     * This check is necessary since often the metadata in gpkg shows Polygon, but then contains also MultiPolygons
+     * or even different geometries. In that case, we need to check the actual geometry types in the table and adapt the metadata accordingly, otherwise
+     * 
+     * 
+     * @param tableRecords
+     * @param geometryIndex
+     * @param geometryColumn
+     * @return
+     */
+    private static Class< ? > determineGeometryClass( QueryResult tableRecords, int geometryIndex, GeometryColumn geometryColumn ) {
+        EGeometryType metadataType = geometryColumn != null ? geometryColumn.geometryType : null;
+        EGeometryType resolvedType = metadataType;
+        for( Object[] row : tableRecords.data ) {
+            Geometry geometry = (Geometry) row[geometryIndex];
+            if (geometry == null) {
+                continue;
+            }
+            EGeometryType rowType = EGeometryType.forGeometry(geometry);
+            if (resolvedType == null || resolvedType == EGeometryType.UNKNOWN) {
+                resolvedType = rowType;
+            } else if (resolvedType == rowType) {
+                continue;
+            } else if (resolvedType.isCompatibleWith(rowType)) {
+                resolvedType = rowType;
+            } else if (!rowType.isCompatibleWith(resolvedType)) {
+                resolvedType = EGeometryType.GEOMETRY;
+                break;
+            }
+        }
+
+        if (resolvedType == null || resolvedType == EGeometryType.UNKNOWN) {
+            return Geometry.class;
+        }
+        return resolvedType.getClazz();
+    }
+
+    private static Geometry adaptGeometry( Geometry geometry, Class< ? > geometryClass ) {
+        if (geometry == null || geometryClass == null || geometryClass.isInstance(geometry)) {
+            return geometry;
+        }
+        if (geometryClass == MultiPolygon.class && geometry instanceof Polygon) {
+            return geometry.getFactory().createMultiPolygon(new Polygon[]{(Polygon) geometry});
+        }
+        if (geometryClass == MultiLineString.class && geometry instanceof LineString) {
+            return geometry.getFactory().createMultiLineString(new LineString[]{(LineString) geometry});
+        }
+        if (geometryClass == MultiPoint.class && geometry instanceof Point) {
+            return geometry.getFactory().createMultiPoint(new Point[]{(Point) geometry});
+        }
+        return geometry;
     }
 
     public static DefaultFeatureCollection tableGeomsToFeatureFCollection( ASpatialDb db, SqlName tableName, int forceSrid,

@@ -137,7 +137,7 @@ public class OmsVectorWriter extends HMModel {
                 boolean existed = db.open(dbPath);
                 db.initSpatialMetadata(null);
 
-                CoordinateReferenceSystem crs = inVector.getBounds().getCoordinateReferenceSystem();
+                CoordinateReferenceSystem crs = inVector.getSchema().getCoordinateReferenceSystem();
                 Integer srid = CrsUtilities.getSrid(crs);
                 if (srid == null && suggestedSrid != null) {
                 	srid = suggestedSrid;
