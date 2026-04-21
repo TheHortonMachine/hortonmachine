@@ -49,7 +49,10 @@ public class HMStyle {
     private Halo halo;
     private final List<Stroke> conditionalStrokes = new ArrayList<>();
     private final List<Fill> conditionalFills = new ArrayList<>();
-    private Object pendingConditionTarget;
+    private final List<Label> conditionalLabels = new ArrayList<>();
+    private Fill pendingFill;
+    private Stroke pendingStroke;
+    private Label pendingLabel;
 
     public static HMStyle point() {
         return new HMStyle().asPoint();
@@ -113,13 +116,13 @@ public class HMStyle {
     public HMStyle fill( Fill fill ) {
         if (fill.hasFilter()) {
             conditionalFills.add(fill);
-            pendingConditionTarget = null;
+            pendingFill = null;
         } else if (geometryType == EGeometryType.POINT) {
             this.pointFill = fill;
-            pendingConditionTarget = fill;
+            pendingFill = fill;
         } else {
             this.fill = fill;
-            pendingConditionTarget = fill;
+            pendingFill = fill;
         }
         return this;
     }
@@ -135,13 +138,13 @@ public class HMStyle {
     public HMStyle stroke( Stroke stroke ) {
         if (stroke.hasFilter()) {
             conditionalStrokes.add(stroke);
-            pendingConditionTarget = null;
+            pendingStroke = null;
         } else if (geometryType == EGeometryType.POINT) {
             this.pointStroke = stroke;
-            pendingConditionTarget = stroke;
+            pendingStroke = stroke;
         } else {
             this.stroke = stroke;
-            pendingConditionTarget = stroke;
+            pendingStroke = stroke;
         }
         return this;
     }
@@ -153,9 +156,17 @@ public class HMStyle {
     public HMStyle opacity( Number opacity ) {
         double opacityValue = opacity.doubleValue();
         if (geometryType == EGeometryType.POINT) {
+            Fill previousPointFill = this.pointFill;
             this.pointFill = new Fill(pointFill.color, opacityValue);
+            if (pendingFill == previousPointFill) {
+                pendingFill = this.pointFill;
+            }
         } else if (fill != null) {
+            Fill previousFill = this.fill;
             this.fill = new Fill(fill.color, opacityValue);
+            if (pendingFill == previousFill) {
+                pendingFill = this.fill;
+            }
         }
         return this;
     }
@@ -166,7 +177,13 @@ public class HMStyle {
     }
 
     public HMStyle label( Label label ) {
-        this.label = label;
+        if (label.hasFilter()) {
+            conditionalLabels.add(label);
+            pendingLabel = null;
+        } else {
+            this.label = label;
+            pendingLabel = label;
+        }
         return this;
     }
 
@@ -184,27 +201,33 @@ public class HMStyle {
     }
 
     public HMStyle where( Filter filter ) {
-        if (pendingConditionTarget == null) {
-            throw new IllegalStateException("where(...) can only be applied right after fill(...) or stroke(...).");
+        if (pendingFill == null && pendingStroke == null && pendingLabel == null) {
+            throw new IllegalStateException("where(...) can only be applied right after fill(...), stroke(...) or label(...).");
         }
-        if (pendingConditionTarget instanceof Stroke) {
-            Stroke pendingStroke = (Stroke) pendingConditionTarget;
+        if (pendingStroke != null) {
             pendingStroke.where(filter);
             if (this.stroke == pendingStroke) {
                 this.stroke = null;
             }
             conditionalStrokes.add(pendingStroke);
-        } else if (pendingConditionTarget instanceof Fill) {
-            Fill pendingFill = (Fill) pendingConditionTarget;
+        }
+        if (pendingFill != null) {
             pendingFill.where(filter);
             if (this.fill == pendingFill) {
                 this.fill = null;
             }
             conditionalFills.add(pendingFill);
-        } else {
-            throw new IllegalStateException("Conditional styling is currently supported only for fill and stroke.");
         }
-        pendingConditionTarget = null;
+        if (pendingLabel != null) {
+            pendingLabel.where(filter);
+            if (this.label == pendingLabel) {
+                this.label = null;
+            }
+            conditionalLabels.add(pendingLabel);
+        }
+        pendingFill = null;
+        pendingStroke = null;
+        pendingLabel = null;
         return this;
     }
 
@@ -240,7 +263,10 @@ public class HMStyle {
             }
             conditionalStrokes.addAll(other.conditionalStrokes);
             conditionalFills.addAll(other.conditionalFills);
-            pendingConditionTarget = null;
+            conditionalLabels.addAll(other.conditionalLabels);
+            pendingFill = null;
+            pendingStroke = null;
+            pendingLabel = null;
             if (other.geometryType == EGeometryType.POINT) {
                 pointType = other.pointType;
                 pointSize = other.pointSize;
@@ -273,7 +299,7 @@ public class HMStyle {
             rule.setFilter(ruleSpec.filter);
             rule.symbolizers().add(createGeometrySymbolizer(ruleSpec));
 
-            TextSymbolizer textSymbolizer = createTextSymbolizer();
+            TextSymbolizer textSymbolizer = createTextSymbolizer(ruleSpec.labelOverride != null ? ruleSpec.labelOverride : label);
             if (textSymbolizer != null) {
                 rule.symbolizers().add(textSymbolizer);
             }
@@ -330,23 +356,24 @@ public class HMStyle {
         return polygonSymbolizer;
     }
 
-    private TextSymbolizer createTextSymbolizer() {
-        if (label == null) {
+    private TextSymbolizer createTextSymbolizer( Label labelToUse ) {
+        if (labelToUse == null) {
             return null;
         }
         TextSymbolizer textSymbolizer = sf.createTextSymbolizer();
-        textSymbolizer.setLabel(label.fromField ? ff.property(label.fieldName) : ff.literal(label.fieldName));
-        textSymbolizer.setFont(label.toGtFont());
-        textSymbolizer.setFill(label.fill != null ? label.fill.toGtFill() : new Fill(StyleUtilities.DEFAULT_COLOR).toGtFill());
+        textSymbolizer.setLabel(labelToUse.fromField ? ff.property(labelToUse.fieldName) : ff.literal(labelToUse.fieldName));
+        textSymbolizer.setFont(labelToUse.toGtFont());
+        textSymbolizer
+                .setFill(labelToUse.fill != null ? labelToUse.fill.toGtFill() : new Fill(StyleUtilities.DEFAULT_COLOR).toGtFill());
 
-        Halo effectiveHalo = label.halo != null ? label.halo : halo;
+        Halo effectiveHalo = labelToUse.halo != null ? labelToUse.halo : halo;
         if (effectiveHalo != null) {
             textSymbolizer.setHalo(effectiveHalo.toGtHalo());
         }
 
         if (geometryType == EGeometryType.POINT || geometryType == EGeometryType.POLYGON) {
-            PointPlacement pointPlacement = sf.createPointPlacement(toAnchorPoint(label.anchor),
-                    toDisplacement(label.displacement), ff.literal(valueOf(label.rotation)));
+            PointPlacement pointPlacement = sf.createPointPlacement(toAnchorPoint(labelToUse.anchor),
+                    toDisplacement(labelToUse.displacement), ff.literal(valueOf(labelToUse.rotation)));
             textSymbolizer.setLabelPlacement(pointPlacement);
         }
 
@@ -399,6 +426,9 @@ public class HMStyle {
         for( Fill conditionalFill : conditionalFills ) {
             getOrCreateRuleSpec(ruleSpecs, conditionalFill.filter).fillOverride = conditionalFill;
         }
+        for( Label conditionalLabel : conditionalLabels ) {
+            getOrCreateRuleSpec(ruleSpecs, conditionalLabel.filter).labelOverride = conditionalLabel;
+        }
 
         if (ruleSpecs.isEmpty()) {
             ruleSpecs.add(new RuleSpec(null));
@@ -439,6 +469,7 @@ public class HMStyle {
         private final Filter filter;
         private Stroke strokeOverride;
         private Fill fillOverride;
+        private Label labelOverride;
 
         private RuleSpec( Filter filter ) {
             this.filter = filter;
@@ -565,6 +596,7 @@ public class HMStyle {
         private double[] anchor = new double[]{0.5, 0.5};
         private double[] displacement = new double[]{0.0, 0.0};
         private double rotation = 0.0;
+        private Filter filter;
 
         public Label( String fieldName ) {
             this.fieldName = fieldName;
@@ -624,6 +656,15 @@ public class HMStyle {
             return halo(new Halo(color, radius));
         }
 
+        public Label where( String cqlFilter ) {
+            return where(parseFilter(cqlFilter));
+        }
+
+        public Label where( Filter filter ) {
+            this.filter = filter;
+            return this;
+        }
+
         public Label font( FontDef fontDefinition ) {
             if (fontDefinition == null) {
                 return this;
@@ -662,6 +703,10 @@ public class HMStyle {
                 }
             }
             return this;
+        }
+
+        private boolean hasFilter() {
+            return filter != null;
         }
 
         private Font toGtFont() {
