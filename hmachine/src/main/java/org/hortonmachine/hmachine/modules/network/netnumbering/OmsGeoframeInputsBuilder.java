@@ -255,12 +255,11 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					Envelope env = lakeGeom.getEnvelopeInternal();
 					if (rasterBounds.getEnvelopeInternal().intersects(env)) {
 						// TODO would be good to check with basin geom
-						String type = SubbasinsTypeField.LAKE.key();
+						String type = SubbasinsTypeField.NATURAL_LAKE.key();
 						if (inLakeTypeFieldName != null
 								&& lakesFC.getSchema().getDescriptor(inLakeTypeFieldName) != null) {
 							String lakeValue = (String) lakeF.getAttribute(inLakeTypeFieldName);
-							if (lakeValue.equals(SubbasinsTypeField.ARTIFICIAL_LAKE.key())
-									|| lakeValue.equals(SubbasinsTypeField.NATURAL_LAKE.key())) {
+							if (lakeValue.equals(SubbasinsTypeField.ARTIFICIAL_LAKE.key())) {
 								type = lakeValue;
 							}
 						}
@@ -640,7 +639,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		List<Integer> checkValueList = new ArrayList<>();
 
 		boolean isLake = lakesIdList.contains(basinNum);
-		int k =0;
+		int k = 0;
 		if (!isLake) {
 			k = lakesIdList.indexOf(basinNum);
 			// get network pieces inside basin
@@ -767,7 +766,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		if (basinPolygon instanceof Polygon) {
 			dumpBasin = GeometryUtilities.gf().createMultiPolygon(new Polygon[] { (Polygon) basinPolygon });
 		}
-		String featureUserType = (isLake && lakesTypeList != null && lakesTypeList.size()>k) ? lakesTypeList.get(k)
+		String featureUserType = (isLake && lakesTypeList != null && lakesTypeList.size() > k) ? lakesTypeList.get(k)
 				: SubbasinsTypeField.HILLSOLOPE.key();
 		int id = extractId(streamGaugeFC, basinPolygon);
 		Object[] basinValues = new Object[] { dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2,
@@ -1159,11 +1158,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				String s = raw.toString().trim();
 				if (s.isEmpty())
 					continue;
-				Object g = f.getDefaultGeometry();
-				if (!(g instanceof Geometry))
-					continue;
-
-				Geometry pointGeom = (Geometry) g;
+				Geometry pointGeom = (Geometry) f.getDefaultGeometry();
 
 				boolean inside = polygon.intersects(pointGeom);
 				if (!inside)
@@ -1189,7 +1184,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 	 */
 	public enum SubbasinsTypeField {
 
-		HILLSOLOPE("Hillslope"), ARTIFICIAL_LAKE("Artificial Lake"), NATURAL_LAKE("Artificial Lake"), LAKE("Lake");
+		HILLSOLOPE("Hillslope"), ARTIFICIAL_LAKE("Artificial Lake"), NATURAL_LAKE("Natural Lake");
 
 		private final String key;
 
