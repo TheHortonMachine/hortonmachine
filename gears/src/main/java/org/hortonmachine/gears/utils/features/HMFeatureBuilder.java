@@ -63,8 +63,8 @@ public class HMFeatureBuilder {
     public HMFeatureBuilder geom(String name, Class<?> geometryClass, CoordinateReferenceSystem crs) throws Exception {
 		checkSchemaNotBuilt();
 		typeBuilder.setDefaultGeometry(name);
-		typeBuilder.add(name, geometryClass);
 		typeBuilder.setCRS(crs);
+		typeBuilder.add(name, geometryClass);
 		attributeCount++;
 		return this;
 	}

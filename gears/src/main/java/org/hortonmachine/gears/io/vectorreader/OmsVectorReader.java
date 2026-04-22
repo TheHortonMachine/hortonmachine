@@ -41,9 +41,16 @@ import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.data.FileDataStore;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureSource;
+import org.geotools.api.filter.BinaryLogicOperator;
 import org.geotools.api.filter.Filter;
+import org.geotools.api.filter.Not;
+import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.filter.expression.Literal;
+import org.geotools.api.filter.spatial.BBOX;
+import org.geotools.api.filter.spatial.BinarySpatialOperator;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureCollection;
+import org.geotools.feature.collection.FilteringSimpleFeatureCollection;
 import org.geotools.geojson.feature.FeatureJSON;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -71,6 +78,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
 
 @Description(OMSVECTORREADER_DESCRIPTION)
 @Documentation(OMSVECTORREADER_DOCUMENTATION)
@@ -174,8 +183,19 @@ public class OmsVectorReader extends HMModel {
             try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
                 db.open(dbPath);
                 db.initSpatialMetadata(null);
-                String whereStr = filter != null ? CQL.toCQL(filter) : null;
-                outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, whereStr);
+                if (filter != null) {
+                    Envelope spatialEnvelope = extractSpatialEnvelope(filter);
+                    if (spatialEnvelope != null) {
+                        SimpleFeatureCollection prefiltered = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1,
+                                -1, spatialEnvelope, null);
+                        outVector = new FilteringSimpleFeatureCollection(prefiltered, filter);
+                    } else {
+                        String whereStr = CQL.toCQL(filter);
+                        outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, whereStr);
+                    }
+                } else {
+                    outVector = SpatialDbsImportUtils.tableToFeatureFCollection(db, spatialTable, -1, -1, null);
+                }
             }
         } else if (name.toLowerCase().endsWith("properties")) {
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
@@ -241,6 +261,58 @@ public class OmsVectorReader extends HMModel {
         FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
         SimpleFeatureSource featureSource = store.getFeatureSource();
         return featureSource.getBounds();
+    }
+
+    private static Envelope extractSpatialEnvelope( Filter filter ) {
+        if (filter == null || filter == Filter.INCLUDE || filter == Filter.EXCLUDE) {
+            return null;
+        }
+        if (filter instanceof BBOX bbox) {
+            var bounds = bbox.getBounds();
+            if (bounds != null) {
+                return new Envelope(bounds.getMinX(), bounds.getMaxX(), bounds.getMinY(), bounds.getMaxY());
+            }
+            return null;
+        }
+        if (filter instanceof BinarySpatialOperator spatialOperator) {
+            Geometry geometry = extractLiteralGeometry(spatialOperator.getExpression1());
+            if (geometry == null) {
+                geometry = extractLiteralGeometry(spatialOperator.getExpression2());
+            }
+            if (geometry != null && !geometry.isEmpty()) {
+                return geometry.getEnvelopeInternal();
+            }
+            return null;
+        }
+        if (filter instanceof BinaryLogicOperator logicOperator) {
+            Envelope merged = null;
+            for( Filter child : logicOperator.getChildren() ) {
+                Envelope childEnvelope = extractSpatialEnvelope(child);
+                if (childEnvelope != null) {
+                    if (merged == null) {
+                        merged = new Envelope(childEnvelope);
+                    } else {
+                        merged.expandToInclude(childEnvelope);
+                    }
+                }
+            }
+            return merged;
+        }
+        if (filter instanceof Not) {
+            return null;
+        }
+        return null;
+    }
+
+    private static Geometry extractLiteralGeometry( Expression expression ) {
+        if (!(expression instanceof Literal)) {
+            return null;
+        }
+        Object value = expression.evaluate(null);
+        if (value instanceof Geometry) {
+            return (Geometry) value;
+        }
+        return expression.evaluate(null, Geometry.class);
     }
 
 }

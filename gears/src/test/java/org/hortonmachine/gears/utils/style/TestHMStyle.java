@@ -1,8 +1,6 @@
 package org.hortonmachine.gears.utils.style;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.geotools.api.filter.Filter;
 import org.geotools.api.style.Style;
@@ -30,9 +28,7 @@ public class TestHMStyle extends HMTestCase {
     }
 
     public void testPolygonStyleBuilderWithLabel() throws Exception {
-        Map<String, Object> font = new HashMap<>();
-        font.put("size", 36);
-        font.put("weight", "bold");
+        HMStyle.FontDef font = HMStyle.font().family("SansSerif").size(36).bold();
 
         HMStyle.Label label = HMStyle.label("NAME").font(font).anchor(0.5, 0.5).displacement(0, 10).rotation(0)
                 .fill("white");
@@ -49,6 +45,7 @@ public class TestHMStyle extends HMTestCase {
         assertEquals("1", polygon.getStrokeWidth());
 
         assertEquals("NAME", text.getLabelName());
+        assertEquals("SansSerif", text.getFontFamily());
         assertEquals("36", text.getFontSize());
         assertEquals("bold", text.getFontWeight());
         assertEquals(ColorUtilities.asHex("white"), text.getColor());
@@ -58,6 +55,17 @@ public class TestHMStyle extends HMTestCase {
         assertEquals("0.5", text.getAnchorY());
         assertEquals("0", text.getDisplacementX());
         assertEquals("10", text.getDisplacementY());
+    }
+
+    public void testPolygonStyleBuilderWithFontMapStillWorks() throws Exception {
+        HMStyle.Label label = HMStyle.label("NAME").font(java.util.Map.of("size", 18, "style", "italic"));
+        Style style = HMStyle.polygon().fill("green", 0.2).stroke("green", 1).label(label).build();
+
+        StyleWrapper wrapper = new StyleWrapper(style);
+        TextSymbolizerWrapper text = wrapper.getFirstTextSymbolizer();
+
+        assertEquals("18", text.getFontSize());
+        assertEquals("italic", text.getFontStyle());
     }
 
     public void testPolygonStyleOpacityShortcut() throws Exception {
@@ -124,5 +132,50 @@ public class TestHMStyle extends HMTestCase {
         assertEquals(ColorUtilities.asHex("white"), text2.getColor());
         assertEquals(ColorUtilities.asHex("blue"), text2.getHaloColor());
         assertEquals("2", text2.getHaloRadius());
+    }
+
+    public void testConditionalPolygonFillAndStrokeShareTheSameWhereClause() throws Exception {
+        Style style = HMStyle.polygon().fill("red").stroke("red", 2).where("POP_EST > 80000000").fill("blue")
+                .stroke("blue", 2).where("POP_EST > 1000000 and POP_EST <= 80000000").fill("green").stroke("green", 2)
+                .where("POP_EST <= 1000000").build();
+
+        StyleWrapper wrapper = new StyleWrapper(style);
+        List<RuleWrapper> rules = wrapper.getFeatureTypeStylesWrapperList().get(0).getRulesWrapperList();
+
+        assertEquals(3, rules.size());
+
+        PolygonSymbolizerWrapper polygon1 = rules.get(0).getGeometrySymbolizersWrapper().adapt(PolygonSymbolizerWrapper.class);
+        PolygonSymbolizerWrapper polygon2 = rules.get(1).getGeometrySymbolizersWrapper().adapt(PolygonSymbolizerWrapper.class);
+        PolygonSymbolizerWrapper polygon3 = rules.get(2).getGeometrySymbolizersWrapper().adapt(PolygonSymbolizerWrapper.class);
+
+        assertEquals("POP_EST > 80000000", CQL.toCQL(rules.get(0).getRule().getFilter()));
+        assertEquals(ColorUtilities.asHex("red"), polygon1.getFillColor());
+        assertEquals(ColorUtilities.asHex("red"), polygon1.getStrokeColor());
+        assertEquals("2", polygon1.getStrokeWidth());
+
+        assertEquals("POP_EST > 1000000 AND POP_EST <= 80000000", CQL.toCQL(rules.get(1).getRule().getFilter()));
+        assertEquals(ColorUtilities.asHex("blue"), polygon2.getFillColor());
+        assertEquals(ColorUtilities.asHex("blue"), polygon2.getStrokeColor());
+        assertEquals("2", polygon2.getStrokeWidth());
+
+        assertEquals("POP_EST <= 1000000", CQL.toCQL(rules.get(2).getRule().getFilter()));
+        assertEquals(ColorUtilities.asHex("green"), polygon3.getFillColor());
+        assertEquals(ColorUtilities.asHex("green"), polygon3.getStrokeColor());
+        assertEquals("2", polygon3.getStrokeWidth());
+    }
+
+    public void testConditionalPolygonLabelFollowsTheWhereClause() throws Exception {
+        Style style = HMStyle.polygon().fill("red").stroke("red", 2).label(HMStyle.label("NAME").fill("white"))
+                .where("POP_EST > 80000000").fill("green").stroke("green", 2).build();
+
+        StyleWrapper wrapper = new StyleWrapper(style);
+        List<RuleWrapper> rules = wrapper.getFeatureTypeStylesWrapperList().get(0).getRulesWrapperList();
+
+        assertEquals(1, rules.size());
+        assertEquals("POP_EST > 80000000", CQL.toCQL(rules.get(0).getRule().getFilter()));
+
+        TextSymbolizerWrapper text = rules.get(0).getTextSymbolizersWrapper();
+        assertEquals("NAME", text.getLabelName());
+        assertEquals(ColorUtilities.asHex("white"), text.getColor());
     }
 }
