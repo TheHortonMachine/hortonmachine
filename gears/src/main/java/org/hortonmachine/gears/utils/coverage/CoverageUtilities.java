@@ -55,6 +55,7 @@ import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.eclipse.imagen.media.range.NoDataContainer;
+import org.geotools.api.referencing.cs.AxisDirection;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -481,7 +482,6 @@ public class CoverageUtilities {
         double[] westSouth = lowerCorner.getCoordinate();
         Position upperCorner = envelope.getUpperCorner();
         double[] eastNorth = upperCorner.getCoordinate();
-
         GridGeometry2D gridGeometry = gridCoverage.getGridGeometry();
         GridEnvelope2D gridRange = gridGeometry.getGridRange2D();
         int height = gridRange.height;
@@ -494,8 +494,19 @@ public class CoverageUtilities {
         double yRes = XAffineTransform.getScaleY0(gridToCRS);
 
         CoordinateReferenceSystem crs = gridCoverage.getCoordinateReferenceSystem();
-        // check if crs is geographic
-        if (crs != null && crs instanceof GeographicCRS) {
+        // check if crs is geographic, angular
+        if (crs instanceof GeographicCRS) {
+            // limit to bounds check (lat, lon) or (lon, lat)
+            for (int i = 0; i < upperCorner.getDimension(); i++) {
+                AxisDirection dir =  crs.getCoordinateSystem().getAxis(i).getDirection();
+                if (AxisDirection.NORTH.equals(dir) || AxisDirection.SOUTH.equals(dir)) {
+                    westSouth[i] = Math.max(-90, Math.min(90, westSouth[i]));
+                    eastNorth[i] = Math.max(-90, Math.min(90, eastNorth[i]));
+                } else if (AxisDirection.EAST.equals(dir) || AxisDirection.WEST.equals(dir)) {
+                    westSouth[i] = Math.max(-180, Math.min(180, westSouth[i]));
+                    eastNorth[i] = Math.max(-180, Math.min(180, eastNorth[i]));
+                }
+            }
             // convert to metric
             GeodeticCalculator gc = new GeodeticCalculator(crs);
             gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
