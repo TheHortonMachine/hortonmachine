@@ -1,8 +1,9 @@
-package org.hortonmachine.gears.utils.map;
+package org.hortonmachine.gui.utils;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.GraphicsEnvironment;
+import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Rectangle2D;
@@ -11,6 +12,7 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,18 +27,29 @@ import javax.imageio.metadata.IIOMetadata;
 import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.FileImageOutputStream;
 import javax.imageio.stream.ImageOutputStream;
+import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.style.Style;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.FeatureLayer;
+import org.geotools.map.GridCoverageLayer;
+import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.swing.JMapFrame;
+import org.geotools.tile.TileService;
+import org.geotools.tile.impl.osm.OSMService;
+import org.geotools.tile.util.TileLayer;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.utils.OsCheck;
+import org.hortonmachine.gears.utils.OsCheck.OSType;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.style.HMStyle;
 
@@ -48,11 +61,12 @@ import org.hortonmachine.gears.utils.style.HMStyle;
  */
 public class HMMapRenderer {
 
-    private int width = 800;
-    private int height = 600;
+    private int width = 1400;
+    private int height = 1000;
     private ReferencedEnvelope bounds;
     private Color backgroundColor = Color.WHITE;
-    private final List<VectorLayerSpec> layers = new ArrayList<>();
+    private final List<LayerSpec> layers = new ArrayList<>();
+	private boolean addOsm;
 
     public HMMapRenderer() {
     }
@@ -120,16 +134,48 @@ public class HMMapRenderer {
         return addLayer(featureSource.getFeatures(), style);
     }
 
+    public HMMapRenderer addLayer( HMRaster raster, Style style ) throws IOException {
+        if (raster == null) {
+            throw new IllegalArgumentException("Raster cannot be null.");
+        }
+        return addLayer(raster.buildCoverage(), style);
+    }
+
+    public HMMapRenderer addLayer( GridCoverage2D coverage, Style style ) {
+        if (coverage == null) {
+            throw new IllegalArgumentException("Coverage cannot be null.");
+        }
+        Style effectiveStyle = style != null ? style : RasterStyleUtilities.createDefaultRasterStyle();
+        layers.add(new RasterLayerSpec(coverage, effectiveStyle));
+        if (bounds == null) {
+            expandBounds(new ReferencedEnvelope(coverage.getEnvelope2D()));
+        }
+        return this;
+    }
+
     public MapContent createMapContent() {
         return createMapContent("MapRenderer");
     }
+    
+    public void addOsmBackground() {
+		addOsm = true;
+	}
 
     public MapContent createMapContent( String title ) {
         ReferencedEnvelope renderBounds = resolveBounds();
 
         MapContent content = new MapContent();
         content.setTitle(title != null ? title : "MapRenderer");
-        for( VectorLayerSpec layerSpec : layers ) {
+        
+        if (addOsm) {
+    		String baseURL = "http://tile.openstreetmap.org/";
+    		TileService service = new OSMService("OpenStreetMap", baseURL);
+    		TileLayer layer = new TileLayer(service);
+    		layer.setTitle("OpenStreetMap");
+    		content.addLayer(layer);
+        }
+        
+        for( LayerSpec layerSpec : layers ) {
             content.addLayer(layerSpec.toLayer());
         }
         content.getViewport().setBounds(fitToImageRatio(renderBounds, width, height));
@@ -164,6 +210,7 @@ public class HMMapRenderer {
             }
         });
         frame.setVisible(true);
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         while( frame.isDisplayable() ) {
             try {
@@ -275,8 +322,8 @@ public class HMMapRenderer {
 
     private ReferencedEnvelope inferBounds() {
         ReferencedEnvelope inferred = null;
-        for( VectorLayerSpec layer : layers ) {
-            ReferencedEnvelope layerBounds = toReferencedEnvelope(layer.bounds);
+        for( LayerSpec layer : layers ) {
+            ReferencedEnvelope layerBounds = toReferencedEnvelope(layer.getBounds());
             if (layerBounds == null || layerBounds.isEmpty()) {
                 continue;
             }
@@ -300,10 +347,16 @@ public class HMMapRenderer {
         return renderBounds;
     }
 
-    private static class VectorLayerSpec {
+    private interface LayerSpec {
+        Layer toLayer();
+
+        org.geotools.api.geometry.Bounds getBounds();
+    }
+
+    private static class VectorLayerSpec implements LayerSpec {
         private final SimpleFeatureCollection featureCollection;
         private final Style style;
-        private final ReferencedEnvelope bounds;
+        private final org.geotools.api.geometry.Bounds bounds;
 
         private VectorLayerSpec( SimpleFeatureCollection featureCollection, Style style ) {
             this.featureCollection = featureCollection;
@@ -311,10 +364,40 @@ public class HMMapRenderer {
             this.bounds = featureCollection != null ? featureCollection.getBounds() : null;
         }
 
-        private FeatureLayer toLayer() {
+        @Override
+        public FeatureLayer toLayer() {
             FeatureLayer layer = new FeatureLayer(featureCollection, style);
             layer.setStyle(style);
             return layer;
+        }
+
+        @Override
+        public org.geotools.api.geometry.Bounds getBounds() {
+            return bounds;
+        }
+    }
+
+    private static class RasterLayerSpec implements LayerSpec {
+        private final GridCoverage2D coverage;
+        private final Style style;
+        private final org.geotools.api.geometry.Bounds bounds;
+
+        private RasterLayerSpec( GridCoverage2D coverage, Style style ) {
+            this.coverage = coverage;
+            this.style = style;
+            this.bounds = coverage != null ? coverage.getEnvelope2D() : null;
+        }
+
+        @Override
+        public GridCoverageLayer toLayer() {
+            GridCoverageLayer layer = new GridCoverageLayer(coverage, style);
+            layer.setStyle(style);
+            return layer;
+        }
+
+        @Override
+        public org.geotools.api.geometry.Bounds getBounds() {
+            return bounds;
         }
     }
 

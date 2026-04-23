@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
 import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.spi.ImageWriterSpi;
 
 import org.eclipse.imagen.ImageLayout;
 import org.eclipse.imagen.iterator.RandomIter;
@@ -368,36 +369,63 @@ public class HM {
     	dumpVector(vector, source, null);
     }
 
-    public static String getRegisteredRasterFormats() {
-        ServiceLoader<ImageReaderSpi> loader = ServiceLoader.load(ImageReaderSpi.class);
+	public static String getRegisteredRasterFormats() {
+		StringBuilder sb = new StringBuilder();
+		ServiceLoader<ImageReaderSpi> loader = ServiceLoader.load(ImageReaderSpi.class);
+		TreeSet<String> extSet = new TreeSet<String>();
+		Iterator<ImageReaderSpi> iterator = loader.iterator();
+		sb.append("Registered reader formats:").append("\n");
+		while (iterator.hasNext()) {
+			try {
+				ImageReaderSpi imageReaderSpi = (ImageReaderSpi) iterator.next();
+				String[] fileSuffixes = imageReaderSpi.getFileSuffixes();
+				if (fileSuffixes.length > 0) {
+					String[] formatNames = imageReaderSpi.getFormatNames();
+//		            String vendorName = imageReaderSpi.getVendorName();
+//		            sb.append(vendorName).append("\n");
+					for (int i = 0; i < formatNames.length; i++) {
+						if (extSet.add(formatNames[i].toLowerCase())) {
+							sb.append(formatNames[i]).append(" ");
+						}
+					}
+					String suff = Arrays.toString(fileSuffixes);
+					if (extSet.add(suff.toLowerCase())) {
+						sb.append("\t").append(suff).append("\n");
+					}
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		ServiceLoader<ImageWriterSpi> writerLoader = ServiceLoader.load(ImageWriterSpi.class);
+		Iterator<ImageWriterSpi> writerIterator = writerLoader.iterator();
+		sb.append("\nRegistered writer formats:").append("\n");
+		extSet = new TreeSet<String>();
+		while (writerIterator.hasNext()) {
+			try {
+				ImageWriterSpi imageWriterSpi = (ImageWriterSpi) writerIterator.next();
+				String[] fileSuffixes = imageWriterSpi.getFileSuffixes();
+				if (fileSuffixes.length > 0) {
+					String[] formatNames = imageWriterSpi.getFormatNames();
+					// String vendorName = imageWriterSpi.getVendorName();
+					// sb.append(vendorName).append("\n");
+					for (int i = 0; i < formatNames.length; i++) {
+						if (extSet.add(formatNames[i].toLowerCase())) {
+							sb.append(formatNames[i]).append(" ");
+						}
+					}
+					String suff = Arrays.toString(fileSuffixes);
+					if (extSet.add(suff.toLowerCase())) {
+						sb.append("\t").append(suff).append("\n");
+					}
+				}
+			} catch (Exception e) {
+				// ignore
+			}
+		}
 
-        StringBuilder sb = new StringBuilder();
-        TreeSet<String> extSet = new TreeSet<String>();
-        Iterator<ImageReaderSpi> iterator = loader.iterator();
-        while( iterator.hasNext() ) {
-            try {
-                ImageReaderSpi imageReaderSpi = (ImageReaderSpi) iterator.next();
-                String[] fileSuffixes = imageReaderSpi.getFileSuffixes();
-                if (fileSuffixes.length > 0) {
-                    String[] formatNames = imageReaderSpi.getFormatNames();
-//            String vendorName = imageReaderSpi.getVendorName();
-//            sb.append(vendorName).append("\n");
-                    for( int i = 0; i < formatNames.length; i++ ) {
-                        if (extSet.add(formatNames[i].toLowerCase())) {
-                            sb.append(formatNames[i]).append(" ");
-                        }
-                    }
-                    String suff = Arrays.toString(fileSuffixes);
-                    if (extSet.add(suff.toLowerCase())) {
-                        sb.append("\t").append(suff).append("\n");
-                    }
-                }
-            } catch (Exception e) {
-                // ignore
-            }
-        }
-        return sb.toString();
-    }
+		return sb.toString();
+	}
 
     public static STRtree getSpatialIndex( List<List<Object>> objects ) {
         STRtree tree = new STRtree();
@@ -1272,6 +1300,11 @@ public class HM {
     public static Style styleForColorTable( String tableName, double min, double max, double opacity ) throws Exception {
         return new SLDReader().read(
                 RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity)));
+    }
+    
+    public static org.geotools.api.style.Style styleForColorTableGT( String tableName, double min, double max, double opacity ) throws Exception {
+    	var s = styleForColorTable(tableName, min, max, opacity);
+    	return s.getGtStyle();
     }
 
     public static void makeSldStyleForRaster( String tableName, String rasterPath ) throws Exception {

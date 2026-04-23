@@ -34,6 +34,7 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -161,6 +162,10 @@ public class HMRaster implements AutoCloseable {
     	return fromGridCoverageWritable(null, coverage);
     }
     
+    public static HMRaster fromFile(String path) throws Exception {
+    	return fromFile(new File(path));
+    }
+    
     public static HMRaster fromFile(File file) throws Exception {
     	var gc = OmsRasterReader.readRaster(file.getAbsolutePath());
     	return fromGridCoverage(gc);
@@ -170,10 +175,20 @@ public class HMRaster implements AutoCloseable {
         return name;
     }
 
+    /**
+     * Get the region map of this raster.
+     * 
+     * @return the region map of this raster.
+     */
     public RegionMap getRegionMap() {
         return RegionMap.fromRegionMap(regionMap);
     }
     
+	/**
+	 * Get the region map of the actual data contained in this raster, i.e. the bounding box of the valid values.
+	 * 
+	 * @return the region map of the actual data contained in this raster.
+	 */
 	public RegionMap getDataRegionMap() {
 		// loop over the region map and find the actual data region
 		int minRow = Integer.MAX_VALUE;
@@ -805,6 +820,11 @@ public class HMRaster implements AutoCloseable {
             System.out.println();
         }
     }
+    
+    public void writeToFile( String path ) throws Exception {
+		GridCoverage2D coverage = buildCoverage();
+		OmsRasterWriter.writeRaster(path,coverage);
+	}
 
     private static class CategoriesInCell {
         int mostPresentValue = 0;

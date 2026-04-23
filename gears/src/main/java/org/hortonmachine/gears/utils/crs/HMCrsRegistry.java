@@ -96,5 +96,12 @@ public enum HMCrsRegistry {
 	public static boolean crsEquals(CoordinateReferenceSystem fcCrs, CoordinateReferenceSystem _crs) {
 		return CRS.equalsIgnoreMetadata(fcCrs, _crs);
 	}
+	
+	public static String getCodeFromCrs( CoordinateReferenceSystem crs ) throws Exception {
+        return CrsUtilities.getCodeFromCrs(crs);
+    }
 
+    public static Integer getSrid( CoordinateReferenceSystem crs ) throws FactoryException {
+        return CrsUtilities.getSrid(crs);
+    }
 }
