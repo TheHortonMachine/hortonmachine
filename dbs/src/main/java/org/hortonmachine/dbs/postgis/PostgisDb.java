@@ -519,27 +519,11 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
         List<String[]> tableColumnsInfo = getTableColumns(tableName);
         List<String> tableColumns = new ArrayList<>();
         for( String[] info : tableColumnsInfo ) {
-            if (DbsUtilities.isReservedName(info[0])) {
-                info[0] = DbsUtilities.fixReservedNameForQuery(info[0]);
+            String columnName = info[0];
+            if (hasGeom && columnName.equalsIgnoreCase(gCol.geometryColumnName)) {
+                continue;
             }
-            info[0] = DbsUtilities.fixColumnName(info[0]);
-            tableColumns.add(info[0]);
-        }
-        if (hasGeom) {
-            if (!tableColumns.remove(gCol.geometryColumnName)) {
-                String gColLower = gCol.geometryColumnName.toLowerCase();
-                int index = -1;
-                for( int i = 0; i < tableColumns.size(); i++ ) {
-                    String tableColumn = tableColumns.get(i);
-                    if (tableColumn.toLowerCase().equals(gColLower)) {
-                        index = i;
-                        break;
-                    }
-                }
-                if (index != -1) {
-                    tableColumns.remove(index);
-                }
-            }
+            tableColumns.add(SqlName.qualified(null, columnName).fixedDoubleName);
         }
 
         String sql = "SELECT ";
@@ -548,10 +532,11 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
             items.add(tableColumns.get(i));
         }
         if (hasGeom) {
+            String geomColumnName = SqlName.qualified(null, gCol.geometryColumnName).fixedDoubleName;
             if (reprojectSrid == -1 || reprojectSrid == gCol.srid) {
-                items.add(gCol.geometryColumnName);
+                items.add(geomColumnName);
             } else {
-                items.add("ST_Transform(" + gCol.geometryColumnName + "," + reprojectSrid + ") AS " + gCol.geometryColumnName);
+                items.add("ST_Transform(" + geomColumnName + "," + reprojectSrid + ") AS " + geomColumnName);
             }
         }
         String itemsWithComma = DbsUtilities.joinByComma(items);

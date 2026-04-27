@@ -170,15 +170,8 @@ public class SqlName {
             return true;
         }
 
-        boolean hasUpper = false;
-        boolean hasLower = false;
         for( char c : part.toCharArray() ) {
             if (Character.isUpperCase(c)) {
-                hasUpper = true;
-            } else if (Character.isLowerCase(c)) {
-                hasLower = true;
-            }
-            if (hasUpper && hasLower) {
                 return true;
             }
         }

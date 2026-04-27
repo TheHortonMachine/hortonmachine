@@ -280,7 +280,7 @@ public class PGDb extends ADb {
     public boolean hasTable( SqlName tableName ) throws Exception {
         String sql = "SELECT table_name FROM INFORMATION_SCHEMA.TABLES "
                 + "WHERE (TABLE_TYPE='BASE TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL') "+
-                " and upper(table_name) = upper('" + tableName.name + "')";
+                " and upper(table_name) = upper('" + escapeSqlLiteral(tableName.name) + "')" + schemaSqlFilter(tableName, "table_schema");
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
@@ -295,8 +295,8 @@ public class PGDb extends ADb {
     }
 
     public ETableType getTableType( SqlName tableName ) throws Exception {
-        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName.name
-                + "') and table_Schema!='information_schema'";
+        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + escapeSqlLiteral(tableName.name)
+                + "') and table_Schema!='information_schema'" + schemaSqlFilter(tableName, "table_schema");
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
 
@@ -335,7 +335,7 @@ public class PGDb extends ADb {
         });
 
         String sql = "select column_name, data_type from information_schema.columns where upper(table_name)=upper('"
-                + tableName.name + "') and table_Schema!='information_schema'";
+                + escapeSqlLiteral(tableName.name) + "') and table_Schema!='information_schema'" + schemaSqlFilter(tableName, "table_schema");
         return execOnConnection(connection -> {
             List<String[]> colInfo = new ArrayList<>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -365,7 +365,8 @@ public class PGDb extends ADb {
                 "        AS kcu ON tc.constraint_name = kcu.constraint_name " + //
                 "    JOIN information_schema.constraint_column_usage  " + //
                 "        AS ccu ON ccu.constraint_name = tc.constraint_name " + //
-                "WHERE constraint_type = 'FOREIGN KEY' and upper(tc.table_name)=upper('" + tableName.name + "')";
+                "WHERE constraint_type = 'FOREIGN KEY' and upper(tc.table_name)=upper('" + escapeSqlLiteral(tableName.name) + "')"
+                        + schemaSqlFilter(tableName, "tc.table_schema");
 
         return execOnConnection(connection -> {
             List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
@@ -446,7 +447,18 @@ public class PGDb extends ADb {
                 "  a.attnum = c.colnum , " + //
                 "  pg_indexes pi " + //
                 "  where pi.indexname=irel.relname " + //
-                "  and upper(trel.relname)=upper('" + tableName.name + "')";
+                "  and upper(trel.relname)=upper('" + escapeSqlLiteral(tableName.name) + "')" + schemaSqlFilter(tableName, "tnsp.nspname");
+    }
+
+    private String schemaSqlFilter( SqlName tableName, String columnName ) {
+        if (tableName.schema == null) {
+            return "";
+        }
+        return " and upper(" + columnName + ")=upper('" + escapeSqlLiteral(tableName.schema) + "')";
+    }
+
+    private String escapeSqlLiteral( String value ) {
+        return value.replace("'", "''");
     }
 
     @Override

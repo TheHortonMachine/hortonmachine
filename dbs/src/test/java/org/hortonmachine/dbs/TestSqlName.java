@@ -55,4 +55,14 @@ public class TestSqlName {
         assertEquals("public_mixed_Case", tableName.nameForIndex());
         assertEquals(tableName.fixedDoubleName, tableName.toSqlName().fixedDoubleName);
     }
+
+    @Test
+    public void testUppercaseIdentifierRendering() {
+        SqlName name = SqlName.qualified("vermessung", "GPS_LINE");
+        assertEquals("vermessung.GPS_LINE", name.getFullname());
+        assertEquals("vermessung.\"GPS_LINE\"", name.fixedDoubleName);
+
+        TableName tableName = new TableName("GPS_LINE", "vermessung", ETableType.TABLE);
+        assertEquals(name.fixedDoubleName, tableName.fixedDoubleName);
+    }
 }

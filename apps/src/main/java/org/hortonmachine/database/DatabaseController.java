@@ -537,10 +537,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         if (currentConnectedSqlDatabase != null) {
                                             if (currentConnectedSqlDatabase instanceof ASpatialDb) {
                                                 queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
-                                                        SqlName.m(currentSelectedTable.tableName.getFullName()), null, SQL_ONSELECT_LIMIT, -1, null);
+                                                        currentSelectedTable.tableName.toSqlName(), null, SQL_ONSELECT_LIMIT, -1, null);
                                             } else {
                                                 queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
-                                                        "select * from " + currentSelectedTable.tableName, SQL_ONSELECT_LIMIT);
+                                                        "select * from " + currentSelectedTable.tableName.fixedDoubleName, SQL_ONSELECT_LIMIT);
                                             }
                                         } 
                                     } catch (Exception e) {
@@ -775,7 +775,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     if (currentSelectedColumn != null) {
                         return new StringSelection(currentSelectedColumn.columnName);
                     } else if (currentSelectedTable != null) {
-                        return new StringSelection(currentSelectedTable.tableName.getFullName());
+                        return new StringSelection(currentSelectedTable.tableName.fixedDoubleName);
                     }
                 }
                 return new StringSelection("");
