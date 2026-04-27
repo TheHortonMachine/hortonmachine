@@ -38,6 +38,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -100,6 +101,7 @@ import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
@@ -202,6 +204,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private HMMapframe mapFrame;
 
     private DatabaseTreeCellRenderer databaseTreeCellRenderer;
+    private SwingWorker<Void, SchemaLevel> databaseLevelLoader;
 
     private JTextPane currentSqlEditorArea;
     private JTextPane[] editorPanesArray;
@@ -1913,12 +1916,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
 
-                setRightTreeRenderer();
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
-
-                SwingUtilities.invokeLater(() -> {
-                    layoutTree(dbLevel, false);
-                });
+                showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, false);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
@@ -1953,6 +1951,100 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
     }
 
+    private void showDatabaseTreeAndLoadLevelsAsync( ADb db, boolean expandNodes ) {
+        DbLevel dbLevel = DbLevel.createEmptyDbLevel(db);
+        String dbPath = db.getDatabasePath();
+        SwingUtilities.invokeLater(() -> {
+            if (currentConnectedSqlDatabase != db) {
+                return;
+            }
+            setRightTreeRenderer();
+            layoutTree(dbLevel, expandNodes);
+            setDbTreeTitle(dbPath + " (loading schemas...)");
+            startDatabaseLevelLoader(db, dbLevel, dbPath, expandNodes);
+        });
+    }
+
+    private void startDatabaseLevelLoader( ADb db, DbLevel dbLevel, String dbPath, boolean expandNodes ) {
+        cancelDatabaseLevelLoader();
+        SwingWorker<Void, SchemaLevel> loader = new SwingWorker<Void, SchemaLevel>(){
+            private int loadedSchemas = 0;
+
+            @Override
+            protected Void doInBackground() {
+                try {
+                    HashMap<String, HashMap<String, List<String>>> schema2Type2TablesMap = db.getTablesMap();
+                    if (schema2Type2TablesMap == null) {
+                        return null;
+                    }
+                    for( String schemaName : schema2Type2TablesMap.keySet() ) {
+                        if (isCancelled()) {
+                            break;
+                        }
+                        Map<String, List<String>> type2TablesMap = schema2Type2TablesMap.get(schemaName);
+                        SchemaLevel schemaLevel = DbLevel.getSchemaLevel(db, dbLevel, schemaName, type2TablesMap);
+                        if (schemaLevel != null && !isCancelled()) {
+                            publish(schemaLevel);
+                        }
+                    }
+                } catch (Exception e) {
+                    if (!isCancelled() && currentConnectedSqlDatabase == db && databaseLevelLoader == this) {
+                        Logger.INSTANCE.insertError("", "Error loading database metadata...", e);
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void process( List<SchemaLevel> chunks ) {
+                if (isCancelled() || currentConnectedSqlDatabase != db || databaseLevelLoader != this) {
+                    return;
+                }
+                if (!(databaseTreeView._databaseTree.getModel() instanceof DatabaseTreeModel)) {
+                    return;
+                }
+                DatabaseTreeModel model = (DatabaseTreeModel) databaseTreeView._databaseTree.getModel();
+                if (model.getRoot() != dbLevel) {
+                    return;
+                }
+
+                TreePath rootPath = new TreePath(dbLevel);
+                for( SchemaLevel schemaLevel : chunks ) {
+                    schemaLevel.parent = dbLevel;
+                    int schemaIndex = dbLevel.schemasList.size();
+                    dbLevel.schemasList.add(schemaLevel);
+                    model.fireTreeNodesInserted(rootPath, new int[]{schemaIndex}, new Object[]{schemaLevel});
+                    loadedSchemas++;
+
+                    if (expandNodes) {
+                        TreePath schemaPath = rootPath.pathByAddingChild(schemaLevel);
+                        expandTreeToLevel(databaseTreeView._databaseTree, schemaPath, 1);
+                    }
+                }
+                setDbTreeTitle(dbPath + " (loading schemas: " + loadedSchemas + ")");
+            }
+
+            @Override
+            protected void done() {
+                if (databaseLevelLoader == this) {
+                    databaseLevelLoader = null;
+                    if (currentConnectedSqlDatabase == db) {
+                        setDbTreeTitle(dbPath);
+                    }
+                }
+            }
+        };
+        databaseLevelLoader = loader;
+        loader.execute();
+    }
+
+    private void cancelDatabaseLevelLoader() {
+        if (databaseLevelLoader != null && !databaseLevelLoader.isDone()) {
+            databaseLevelLoader.cancel(true);
+        }
+        databaseLevelLoader = null;
+    }
+
     protected void openDatabase( EDb dbType, String dbfilePath, String user, String pwd ) {
         if (dbfilePath == null && dbType == null) {
             return;
@@ -1974,8 +2066,6 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             boolean hadError = false;
             try {
-                DbLevel dbLevel = null;
-                String dbPath;
                 if (dbType == EDb.SPATIALITE) {
                     if (SpatialiteCommonMethods.isSqliteFile(new File(dbfilePath))) {
                         currentConnectedSqlDatabase = new GTSpatialiteThreadsafeDb();
@@ -2012,14 +2102,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     hadError = true;
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
-                dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
-                dbPath = currentConnectedSqlDatabase.getDatabasePath();
-                setRightTreeRenderer();
-                var _dbLevel = dbLevel;
-                SwingUtilities.invokeLater(() -> {
-                    layoutTree(_dbLevel, true);
-                    setDbTreeTitle(dbPath);
-                });
+                showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
@@ -2087,13 +2170,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedSqlDatabase.open(_urlString);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
 
-                setRightTreeRenderer();
-                DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
-
-                SwingUtilities.invokeLater(() -> {
-                    layoutTree(dbLevel, true);
-                    setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
-                });
+                showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
@@ -2178,6 +2255,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
 
     protected void closeCurrentDb( boolean manually ) throws Exception {
+        cancelDatabaseLevelLoader();
         setDbTreeTitle(DB_TREE_TITLE);
         layoutTree(null, false);
         loadDataViewer(null);
@@ -2407,11 +2485,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected void refreshDatabaseTree() throws Exception {
         if (currentConnectedSqlDatabase != null) {
-            DbLevel dbLevel = gatherDatabaseLevels(currentConnectedSqlDatabase);
-            SwingUtilities.invokeLater(() -> {
-                setDbTreeTitle(currentConnectedSqlDatabase.getDatabasePath());
-                layoutTree(dbLevel, true);
-            });
+            showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
         } 
     }
 

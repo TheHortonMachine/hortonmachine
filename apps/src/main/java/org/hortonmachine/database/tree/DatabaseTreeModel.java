@@ -165,4 +165,11 @@ public class DatabaseTreeModel implements TreeModel {
         }
     }
 
+    public void fireTreeNodesInserted( TreePath parentPath, int[] childIndices, Object[] children ) {
+        TreeModelEvent event = new TreeModelEvent(this, parentPath, childIndices, children);
+        for( TreeModelListener listener : listenerList.getListeners(TreeModelListener.class) ) {
+            listener.treeNodesInserted(event);
+        }
+    }
+
 }

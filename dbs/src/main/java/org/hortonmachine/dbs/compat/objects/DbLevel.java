@@ -20,7 +20,6 @@ package org.hortonmachine.dbs.compat.objects;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -58,6 +57,27 @@ public class DbLevel {
      * @throws Exception
      */
     public static DbLevel getDbLevel( ADb db ) throws Exception {
+        DbLevel dbLevel = createEmptyDbLevel(db);
+
+        HashMap<String, HashMap<String, List<String>>> currentDatabaseSchema2Type2TablesMap = db.getTablesMap();
+
+        for( String schemaName : currentDatabaseSchema2Type2TablesMap.keySet() ) {
+            var type2TablesMap = currentDatabaseSchema2Type2TablesMap.get(schemaName);
+            SchemaLevel schemaLevel = getSchemaLevel(db, dbLevel, schemaName, type2TablesMap);
+            if (schemaLevel != null) {
+                dbLevel.schemasList.add(schemaLevel);
+            }
+        }
+        return dbLevel;
+    }
+
+    /**
+     * Create an empty root level for a database.
+     *
+     * @param db the database.
+     * @return the empty {@link DbLevel}.
+     */
+    public static DbLevel createEmptyDbLevel( ADb db ) {
         DbLevel dbLevel = new DbLevel();
         String databasePath = db.getDatabasePath();
         File dbFile = new File(databasePath);
@@ -65,41 +85,50 @@ public class DbLevel {
         String dbName = DbsUtilities.getNameWithoutExtention(dbFile);
         dbLevel.dbName = dbName;
         dbLevel.parent = db;
-
-        HashMap<String, HashMap<String, List<String>>> currentDatabaseSchema2Type2TablesMap = db.getTablesMap();
-
-        for( String schemaName : currentDatabaseSchema2Type2TablesMap.keySet() ) {
-            SchemaLevel schemaLevel = new SchemaLevel();
-            schemaLevel.schemaName = schemaName;
-
-            var type2TablesMap = currentDatabaseSchema2Type2TablesMap.get(schemaName);
-            if (type2TablesMap == null) {
-                continue;
-            }
-            
-            for (Entry<String, List<String>> entry : type2TablesMap.entrySet()) {
-                String typeName = entry.getKey();
-                List<String> tablesMap = entry.getValue();
-                TableTypeLevel tableTypeLevel = new TableTypeLevel();
-                tableTypeLevel.parent = schemaLevel;
-                tableTypeLevel.typeName = typeName;
-                for( String tableName : tablesMap ) {
-                    TableName tableNameObj = new TableName(tableName, schemaName, ETableType.fromType(typeName)); 
-                    TableLevel tableLevel = new TableLevel();
-                    tableLevel.parent = tableTypeLevel;
-                    tableLevel.tableName = tableNameObj;
-                    tableLevel.tableType = ETableType.fromType(typeName);
-                    getColumnsList(db, tableLevel);
-                    tableTypeLevel.tablesList.add(tableLevel);
-                }
-                schemaLevel.tableTypesList.add(tableTypeLevel);
-            }
-            dbLevel.schemasList.add(schemaLevel);
-        }
         return dbLevel;
     }
 
-    private static void getColumnsList(ADb db, TableLevel tableLevel) {
+    /**
+     * Build a schema level and its table/column metadata.
+     *
+     * @param db the database.
+     * @param dbLevel the parent database level.
+     * @param schemaName the schema name.
+     * @param type2TablesMap tables grouped by table type.
+     * @return the schema level, or {@code null} when the schema has no table map.
+     */
+    public static SchemaLevel getSchemaLevel( ADb db, DbLevel dbLevel, String schemaName,
+            Map<String, List<String>> type2TablesMap ) {
+        if (type2TablesMap == null) {
+            return null;
+        }
+
+        SchemaLevel schemaLevel = new SchemaLevel();
+        schemaLevel.parent = dbLevel;
+        schemaLevel.schemaName = schemaName;
+
+        for( Entry<String, List<String>> entry : type2TablesMap.entrySet() ) {
+            String typeName = entry.getKey();
+            List<String> tablesMap = entry.getValue();
+            TableTypeLevel tableTypeLevel = new TableTypeLevel();
+            tableTypeLevel.parent = schemaLevel;
+            tableTypeLevel.typeName = typeName;
+            ETableType tableType = ETableType.fromType(typeName);
+            for( String tableName : tablesMap ) {
+                TableName tableNameObj = new TableName(tableName, schemaName, tableType);
+                TableLevel tableLevel = new TableLevel();
+                tableLevel.parent = tableTypeLevel;
+                tableLevel.tableName = tableNameObj;
+                tableLevel.tableType = tableType;
+                getColumnsList(db, tableLevel);
+                tableTypeLevel.tablesList.add(tableLevel);
+            }
+            schemaLevel.tableTypesList.add(tableTypeLevel);
+        }
+        return schemaLevel;
+    }
+
+    private static void getColumnsList( ADb db, TableLevel tableLevel ) {
         TableName tableName = tableLevel.tableName;
         var columnsListTmp = new ArrayList<ColumnLevel>();
         SqlName sqlName = SqlName.m(tableName.getFullName());
@@ -165,6 +194,7 @@ public class DbLevel {
             columnsListTmp.add(columnLevel);
         }
         tableLevel.columnsList = columnsListTmp;
+        tableLevel.isLoaded = true;
     }
 
 
