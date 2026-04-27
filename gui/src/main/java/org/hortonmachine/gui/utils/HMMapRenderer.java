@@ -196,7 +196,7 @@ public class HMMapRenderer {
         frame.setSize(width, height);
         frame.enableStatusBar(true);
         frame.enableToolBar(true);
-        frame.enableTool(JMapFrame.Tool.ZOOM, JMapFrame.Tool.PAN, JMapFrame.Tool.RESET);
+        frame.enableTool(JMapFrame.Tool.ZOOM, JMapFrame.Tool.PAN, JMapFrame.Tool.RESET, JMapFrame.Tool.INFO);
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         frame.addWindowListener(new java.awt.event.WindowAdapter(){
             @Override
