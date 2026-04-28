@@ -165,10 +165,24 @@ public class DatabaseTreeModel implements TreeModel {
         }
     }
 
+    public void fireTreeStructureChanged( TreePath path ) {
+        TreeModelEvent event = new TreeModelEvent(this, path);
+        for( TreeModelListener listener : listenerList.getListeners(TreeModelListener.class) ) {
+            listener.treeStructureChanged(event);
+        }
+    }
+
     public void fireTreeNodesInserted( TreePath parentPath, int[] childIndices, Object[] children ) {
         TreeModelEvent event = new TreeModelEvent(this, parentPath, childIndices, children);
         for( TreeModelListener listener : listenerList.getListeners(TreeModelListener.class) ) {
             listener.treeNodesInserted(event);
+        }
+    }
+
+    public void fireTreeNodesChanged( TreePath parentPath, int[] childIndices, Object[] children ) {
+        TreeModelEvent event = new TreeModelEvent(this, parentPath, childIndices, children);
+        for( TreeModelListener listener : listenerList.getListeners(TreeModelListener.class) ) {
+            listener.treeNodesChanged(event);
         }
     }
 

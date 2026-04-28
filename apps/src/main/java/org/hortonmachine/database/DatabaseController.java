@@ -103,6 +103,7 @@ import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
@@ -204,7 +205,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private HMMapframe mapFrame;
 
     private DatabaseTreeCellRenderer databaseTreeCellRenderer;
-    private SwingWorker<Void, SchemaLevel> databaseLevelLoader;
+    private SwingWorker<Void, DatabaseLoadEvent> databaseLevelLoader;
 
     private JTextPane currentSqlEditorArea;
     private JTextPane[] editorPanesArray;
@@ -213,6 +214,24 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private DatabaseTreeView databaseTreeView;
     private SqlEditorView sqlEditorView;
     private DataTableView dataTableView;
+
+    private static class DatabaseLoadEvent {
+        private final SchemaLevel schemaLevel;
+        private final TableLevel tableLevel;
+
+        private DatabaseLoadEvent( SchemaLevel schemaLevel, TableLevel tableLevel ) {
+            this.schemaLevel = schemaLevel;
+            this.tableLevel = tableLevel;
+        }
+
+        private static DatabaseLoadEvent schema( SchemaLevel schemaLevel ) {
+            return new DatabaseLoadEvent(schemaLevel, null);
+        }
+
+        private static DatabaseLoadEvent table( TableLevel tableLevel ) {
+            return new DatabaseLoadEvent(null, tableLevel);
+        }
+    }
 
     public DatabaseController( GuiBridgeHandler guiBridge ) {
         this.guiBridge = guiBridge;
@@ -1967,8 +1986,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     private void startDatabaseLevelLoader( ADb db, DbLevel dbLevel, String dbPath, boolean expandNodes ) {
         cancelDatabaseLevelLoader();
-        SwingWorker<Void, SchemaLevel> loader = new SwingWorker<Void, SchemaLevel>(){
+        SwingWorker<Void, DatabaseLoadEvent> loader = new SwingWorker<Void, DatabaseLoadEvent>(){
             private int loadedSchemas = 0;
+            private int loadedTables = 0;
 
             @Override
             protected Void doInBackground() {
@@ -1977,15 +1997,23 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     if (schema2Type2TablesMap == null) {
                         return null;
                     }
+                    List<SchemaLevel> schemaLevels = new ArrayList<>();
                     for( String schemaName : schema2Type2TablesMap.keySet() ) {
                         if (isCancelled()) {
                             break;
                         }
                         Map<String, List<String>> type2TablesMap = schema2Type2TablesMap.get(schemaName);
-                        SchemaLevel schemaLevel = DbLevel.getSchemaLevel(db, dbLevel, schemaName, type2TablesMap);
+                        SchemaLevel schemaLevel = DbLevel.getSchemaLevel(db, dbLevel, schemaName, type2TablesMap, false);
                         if (schemaLevel != null && !isCancelled()) {
-                            publish(schemaLevel);
+                            publish(DatabaseLoadEvent.schema(schemaLevel));
+                            schemaLevels.add(schemaLevel);
                         }
+                    }
+                    for( SchemaLevel schemaLevel : schemaLevels ) {
+                        if (isCancelled()) {
+                            break;
+                        }
+                        loadTableInfos(db, schemaLevel);
                     }
                 } catch (Exception e) {
                     if (!isCancelled() && currentConnectedSqlDatabase == db && databaseLevelLoader == this) {
@@ -1995,8 +2023,22 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 return null;
             }
 
+            private void loadTableInfos( ADb db, SchemaLevel schemaLevel ) {
+                for( TableTypeLevel tableTypeLevel : schemaLevel.tableTypesList ) {
+                    for( TableLevel tableLevel : tableTypeLevel.tablesList ) {
+                        if (isCancelled()) {
+                            return;
+                        }
+                        DbLevel.loadTableInfo(db, tableLevel);
+                        if (!isCancelled()) {
+                            publish(DatabaseLoadEvent.table(tableLevel));
+                        }
+                    }
+                }
+            }
+
             @Override
-            protected void process( List<SchemaLevel> chunks ) {
+            protected void process( List<DatabaseLoadEvent> chunks ) {
                 if (isCancelled() || currentConnectedSqlDatabase != db || databaseLevelLoader != this) {
                     return;
                 }
@@ -2009,19 +2051,25 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
 
                 TreePath rootPath = new TreePath(dbLevel);
-                for( SchemaLevel schemaLevel : chunks ) {
-                    schemaLevel.parent = dbLevel;
-                    int schemaIndex = dbLevel.schemasList.size();
-                    dbLevel.schemasList.add(schemaLevel);
-                    model.fireTreeNodesInserted(rootPath, new int[]{schemaIndex}, new Object[]{schemaLevel});
-                    loadedSchemas++;
+                for( DatabaseLoadEvent chunk : chunks ) {
+                    if (chunk.schemaLevel != null) {
+                        SchemaLevel schemaLevel = chunk.schemaLevel;
+                        schemaLevel.parent = dbLevel;
+                        int schemaIndex = dbLevel.schemasList.size();
+                        dbLevel.schemasList.add(schemaLevel);
+                        model.fireTreeNodesInserted(rootPath, new int[]{schemaIndex}, new Object[]{schemaLevel});
+                        loadedSchemas++;
 
-                    if (expandNodes) {
-                        TreePath schemaPath = rootPath.pathByAddingChild(schemaLevel);
-                        expandTreeToLevel(databaseTreeView._databaseTree, schemaPath, 1);
+                        if (expandNodes) {
+                            TreePath schemaPath = rootPath.pathByAddingChild(schemaLevel);
+                            expandTreeToLevel(databaseTreeView._databaseTree, schemaPath, 1);
+                        }
+                    } else if (chunk.tableLevel != null) {
+                        publishTableInfoUpdate(model, dbLevel, chunk.tableLevel);
+                        loadedTables++;
                     }
                 }
-                setDbTreeTitle(dbPath + " (loading schemas: " + loadedSchemas + ")");
+                setDbTreeTitle(dbPath + " (loading schemas: " + loadedSchemas + ", tables: " + loadedTables + ")");
             }
 
             @Override
@@ -2036,6 +2084,26 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         };
         databaseLevelLoader = loader;
         loader.execute();
+    }
+
+    private void publishTableInfoUpdate( DatabaseTreeModel model, DbLevel dbLevel, TableLevel tableLevel ) {
+        TableTypeLevel tableTypeLevel = tableLevel.parent;
+        if (tableTypeLevel == null || tableTypeLevel.parent == null || tableTypeLevel.parent.parent != dbLevel) {
+            return;
+        }
+        SchemaLevel schemaLevel = tableTypeLevel.parent;
+        int schemaIndex = dbLevel.schemasList.indexOf(schemaLevel);
+        int tableTypeIndex = schemaLevel.tableTypesList.indexOf(tableTypeLevel);
+        int tableIndex = tableTypeLevel.tablesList.indexOf(tableLevel);
+        if (schemaIndex < 0 || tableTypeIndex < 0 || tableIndex < 0) {
+            return;
+        }
+
+        TreePath tableTypePath = new TreePath(new Object[]{dbLevel, schemaLevel, tableTypeLevel});
+        model.fireTreeNodesChanged(tableTypePath, new int[]{tableIndex}, new Object[]{tableLevel});
+
+        TreePath tablePath = tableTypePath.pathByAddingChild(tableLevel);
+        model.fireTreeStructureChanged(tablePath);
     }
 
     private void cancelDatabaseLevelLoader() {

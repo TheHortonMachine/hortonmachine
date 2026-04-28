@@ -99,6 +99,22 @@ public class DbLevel {
      */
     public static SchemaLevel getSchemaLevel( ADb db, DbLevel dbLevel, String schemaName,
             Map<String, List<String>> type2TablesMap ) {
+        return getSchemaLevel(db, dbLevel, schemaName, type2TablesMap, true);
+    }
+
+    /**
+     * Build a schema level.
+     *
+     * @param db the database.
+     * @param dbLevel the parent database level.
+     * @param schemaName the schema name.
+     * @param type2TablesMap tables grouped by table type.
+     * @param loadTableInfo if {@code true}, column, geometry, foreign key and index
+     *        metadata are loaded for every table.
+     * @return the schema level, or {@code null} when the schema has no table map.
+     */
+    public static SchemaLevel getSchemaLevel( ADb db, DbLevel dbLevel, String schemaName,
+            Map<String, List<String>> type2TablesMap, boolean loadTableInfo ) {
         if (type2TablesMap == null) {
             return null;
         }
@@ -120,12 +136,26 @@ public class DbLevel {
                 tableLevel.parent = tableTypeLevel;
                 tableLevel.tableName = tableNameObj;
                 tableLevel.tableType = tableType;
-                getColumnsList(db, tableLevel);
+                if (loadTableInfo) {
+                    loadTableInfo(db, tableLevel);
+                }
                 tableTypeLevel.tablesList.add(tableLevel);
             }
             schemaLevel.tableTypesList.add(tableTypeLevel);
         }
         return schemaLevel;
+    }
+
+    public static void loadTableInfo( ADb db, TableLevel tableLevel ) {
+        if (tableLevel.isLoaded) {
+            return;
+        }
+        synchronized (tableLevel) {
+            if (tableLevel.isLoaded) {
+                return;
+            }
+            getColumnsList(db, tableLevel);
+        }
     }
 
     private static void getColumnsList( ADb db, TableLevel tableLevel ) {
