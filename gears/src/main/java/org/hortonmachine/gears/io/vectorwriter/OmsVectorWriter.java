@@ -133,31 +133,40 @@ public class OmsVectorWriter extends HMModel {
             SqlName table = SqlName.m(split[1]);
             String dbPath = split[0];
 
-            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
-                boolean existed = db.open(dbPath);
-                db.initSpatialMetadata(null);
+			try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+				boolean existed = db.open(dbPath);
+				db.initSpatialMetadata(null);
 
-                CoordinateReferenceSystem crs = inVector.getSchema().getCoordinateReferenceSystem();
-                Integer srid = CrsUtilities.getSrid(crs);
-                if (srid == null && suggestedSrid != null) {
-                	srid = suggestedSrid;
+				CoordinateReferenceSystem crs = inVector.getSchema().getCoordinateReferenceSystem();
+				Integer srid = CrsUtilities.getSrid(crs);
+				if (srid == null && suggestedSrid != null) {
+					srid = suggestedSrid;
 				}
-                if (srid != null) {
-                	db.addCRS("EPSG", srid, crs.toWKT());
-                } else {
-                	pm.errorMessage("Unable to find epsg code for projection.");
-                }
+				if (srid != null) {
+					db.addCRS("EPSG", srid, crs.toWKT());
+				} else {
+					pm.errorMessage("Unable to find epsg code for projection.");
+				}
 
-                if (db.hasTable(table) && !doOverwrite) {
-                    throw new ModelsIOException("Overwriting is disabled. First delete the data.", this);
-                }
+				if (db.hasTable(table)) {
+					if (!doOverwrite) {
+						throw new ModelsIOException("Overwriting is disabled. First delete the data.", this);
+					} else {
+						pm.message("Overwriting existing table: " + table);
+						try {
+							db.deleteGeoTable(table);
+						} catch (Exception e) {
+							pm.errorMessage("Error while dropping existing table: " + e.getMessage());
+						}
+					}
+				}
 
-                if (!db.hasTable(table) || !existed) {
-                    SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
-                }
-                SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, false, pm);
-                db.updateFeatureTableBounds(table);
-            }
+				if (!db.hasTable(table) || !existed) {
+					SpatialDbsImportUtils.createTableFromSchema(db, inVector.getSchema(), table, null, false);
+				}
+				SpatialDbsImportUtils.importFeatureCollection(db, inVector, table, -1, false, pm);
+				db.updateFeatureTableBounds(table);
+			}
         } else {
             throw new IOException("Format is currently not supported for file: " + name);
         }
