@@ -6,8 +6,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-
 import org.eclipse.imagen.Interpolation;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
@@ -18,23 +16,20 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gears.utils.crs.fixes.HMCylindricalEqualArea;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
 public class TestCrs {
 
@@ -105,7 +100,7 @@ public class TestCrs {
         HMCrsTransformer transformer = new HMCrsTransformer(sourceCrs, targetCrs);
         transformer.setAcceptLenientDatumShift(true);
 
-        HMCrsTransformer transformerFromCodes = new HMCrsTransformer("EPSG:32632", "EPSG:4326", true);
+        HMCrsTransformer transformerFromCodes = new HMCrsTransformer("EPSG:32632", "EPSG:4326", false, true);
         transformerFromCodes.setAcceptLenientDatumShift(true);
 
         MathTransform mathTransform = transformer.getMathTransform();
@@ -189,6 +184,34 @@ public class TestCrs {
         assertEquals(expected.x, transformedPoint.getX(), TOL_DEGREES);
         assertEquals(expected.y, transformedPoint.getY(), TOL_DEGREES);
         assertEquals(Integer.valueOf(7), transformedFeature.getAttribute("id"));
+    }
+
+    @Test
+    public void testHMCrsTransformer4326To102700() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+
+        // EPSG:4326 uses (lat, lon) axis order by default in GeoTools.
+        // fromLongitudeFirst=true lets us pass (lon, lat) as expected by most callers.
+        // EPSG:102700 (Montana State Plane, NAD83) is a projected CRS whose default
+        // axis order is already (easting, northing), so toLongitudeFirst=false.
+        HMCrsTransformer transformer = new HMCrsTransformer("EPSG:4326", "EPSG:102700", true, false);
+        transformer.setAcceptLenientDatumShift(true);
+
+        // A point near the centre of Montana: lon=-109.5, lat=47.0
+        Coordinate source4326 = new Coordinate(-109.5, 47.0);
+        Coordinate projected = transformer.transform(source4326);
+
+        // Montana State Plane values should be in the hundreds-of-thousands of metres range
+        assertTrue("Easting should be positive", projected.x > 0);
+        assertTrue("Northing should be positive", projected.y > 0);
+
+        // Round-trip back to 4326
+        HMCrsTransformer inverse = new HMCrsTransformer("EPSG:102700", "EPSG:4326", false, true);
+        inverse.setAcceptLenientDatumShift(true);
+        Coordinate roundTrip = inverse.transform(projected);
+
+        assertEquals(source4326.x, roundTrip.x, TOL_DEGREES);
+        assertEquals(source4326.y, roundTrip.y, TOL_DEGREES);
     }
 
     @Test
