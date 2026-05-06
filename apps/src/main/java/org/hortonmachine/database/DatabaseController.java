@@ -302,6 +302,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     return super.getCellRenderer(row, column);
                 }
             };
+            table.setShowGrid(true);
+            table.setGridColor(Color.LIGHT_GRAY);
             JScrollPane dataTablesScrollpane = new JScrollPane(table);
             panel1.add(dataTablesScrollpane, BorderLayout.CENTER);
             if (i == 0) {
@@ -1788,6 +1790,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             TableColumn tableColumn = currentDataTable.getColumnModel().getColumn(column);
             int preferredWidth = tableColumn.getMinWidth();
             int maxWidth = tableColumn.getMaxWidth();
+
+            TableCellRenderer headerRenderer = tableColumn.getHeaderRenderer();
+            if (headerRenderer == null) {
+                headerRenderer = currentDataTable.getTableHeader().getDefaultRenderer();
+            }
+            Component headerComp = headerRenderer.getTableCellRendererComponent(
+                    currentDataTable, tableColumn.getHeaderValue(), false, false, 0, column);
+            preferredWidth = Math.max(preferredWidth, headerComp.getPreferredSize().width);
 
             for( int row = 0; row < currentDataTable.getRowCount(); row++ ) {
                 TableCellRenderer cellRenderer = currentDataTable.getCellRenderer(row, column);
