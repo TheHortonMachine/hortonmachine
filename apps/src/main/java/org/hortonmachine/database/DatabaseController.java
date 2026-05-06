@@ -54,6 +54,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -470,8 +471,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     return;
                 }
 
-                String[] sqlHistory = oldSqlCommands.toArray(new String[0]);
-                String selected = GuiUtilities.showComboDialog(this, "HISTORY", "", sqlHistory, null);
+                String selected = SqlHistoryDialog.show(this, oldSqlCommands);
                 if (selected != null) {
                     addTextToQueryEditor(selected);
                 }
