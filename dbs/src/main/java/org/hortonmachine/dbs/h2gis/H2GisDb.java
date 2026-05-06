@@ -399,7 +399,7 @@ public class H2GisDb extends ASpatialDb {
                     gc.coordinatesDimension = rs.getInt(4);
                     gc.srid = rs.getInt(5);
 
-                    if (tablesWithIndex.contains(name)) {
+                    if (tablesWithIndex.stream().anyMatch(name::equalsIgnoreCase)) {
                         gc.isSpatialIndexEnabled = 1;
                     }
                     return gc;
