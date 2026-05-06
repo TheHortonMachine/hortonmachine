@@ -1,7 +1,9 @@
 package org.hortonmachine.gears.io.wcs.wcs100;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.io.SequenceInputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -193,9 +195,32 @@ public class WebCoverageService100 implements IWebCoverageService {
         HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
 
         if (response.statusCode() == 200) {
-            // Save the response to a file
-            Path outputPath = Path.of(outputFilePath);
-            Files.copy(response.body(), outputPath, StandardCopyOption.REPLACE_EXISTING);
+            InputStream responseStream = response.body();
+            // Peek at the first bytes to detect XML error bodies regardless of Content-Type
+            byte[] firstBytes = responseStream.readNBytes(512);
+            String beginning = new String(firstBytes).trim();
+            boolean isError = beginning.toLowerCase().contains("serviceexception") || beginning.contains("exceptionreport");
+            if (isError) {
+                byte[] rest = responseStream.readAllBytes();
+                byte[] allBytes = new byte[firstBytes.length + rest.length];
+                System.arraycopy(firstBytes, 0, allBytes, 0, firstBytes.length);
+                System.arraycopy(rest, 0, allBytes, firstBytes.length, rest.length);
+                String body = new String(allBytes);
+                String stripped = body
+                	    .replaceAll("<[^>]+>", " ")          // remove XML/HTML tags
+                	    .replace("&quot;", "\"")             // unescape entities
+                	    .replace("&apos;", "'")
+                	    .replace("&amp;",  "&")
+                	    .replace("&lt;",   "<")
+                	    .replace("&gt;",   ">")
+                	    .replaceAll("\\s{2,}", " ")          // collapse whitespace
+                	    .trim();
+                throw new Exception(stripped + "\n\nfor request URL: " + finalUrl);
+            } else {
+                Path outputPath = Path.of(outputFilePath);
+                InputStream combined = new SequenceInputStream(new ByteArrayInputStream(firstBytes), responseStream);
+                Files.copy(combined, outputPath, StandardCopyOption.REPLACE_EXISTING);
+            }
         } else {
             InputStream responseStream = response.body();
             byte[] responseBytes = responseStream.readAllBytes();
