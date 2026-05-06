@@ -495,10 +495,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
 
                 LinkedHashMap<String, String> templatesMap = CommonQueries.getTemplatesMap(currentConnectedSqlDatabase.getType());
-                String[] sqlTemplates = templatesMap.keySet().toArray(new String[0]);
-                String selected = GuiUtilities.showComboDialog(this, "TEMPLATES", "", sqlTemplates, null);
-                if (selected != null) {
-                    String sql = templatesMap.get(selected);
+                String sql = SqlTemplatesDialog.show(this, templatesMap);
+                if (sql != null) {
                     addTextToQueryEditor(sql);
                 }
             } catch (Exception e1) {
