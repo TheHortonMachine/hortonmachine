@@ -16,21 +16,36 @@
  */
 package org.hortonmachine.modules;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.labeler.OmsLabeler;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
 
+@Description("Connected components labeling operation")
+@Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
+@Keywords("Labeling, Raster")
+@Label(HMConstants.RASTERPROCESSING)
 @Name("labeler")
+@Status(Status.DRAFT)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Labeler extends OmsLabeler {
 
     @Description("The map to label.")
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap = null;
 
     @Description("The resulting map.")
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;
 

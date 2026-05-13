@@ -23,6 +23,8 @@ package org.hortonmachine.gears.io.geoframe;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import oms3.annotations.*;
 
 @Description("Buffer for 1D Richards simulation.")
@@ -32,6 +34,7 @@ import oms3.annotations.*;
 //@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 //@Name("shortradbal")
 //@Status(Status.CERTIFIED)
+@UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 
 public class RichardsSoluteADEBuffer1D {

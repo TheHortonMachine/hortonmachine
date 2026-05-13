@@ -22,6 +22,8 @@ package org.hortonmachine.gears.io.geoframe;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import oms3.annotations.*;
 
 @Description("Buffer for 1D heat diffusion simulation. This component temporarily the output and then passes them to "
@@ -32,6 +34,7 @@ import oms3.annotations.*;
 //@Label("GEOframe.B")
 @Name("HeatDiffusionBuffer1D")
 @Status(Status.CERTIFIED)
+@UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 
 public class HeatDiffusionFreezingThawingBufferWithSurfaceEnergyBudget1D {

@@ -21,6 +21,9 @@
 package org.hortonmachine.gears.io.geoframe;
 
 import java.io.IOException;
+
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -32,6 +35,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.ArrayDouble.D1;
@@ -47,6 +51,7 @@ import ucar.nc2.Variable;
 //@Label("GEOframe.NETCDF")
 @Name("readFreezingThawing1Dgrid")
 @Status(Status.CERTIFIED)
+@UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 
 public class ReadNetCDFHeatDiffusionGrid1D {

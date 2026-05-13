@@ -33,13 +33,24 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Name("rconvert")
+@Description("Converts a raster to another type.")
+@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
+@Keywords("Raster, Conversion, Type")
+@Label(HMConstants.RASTERPROCESSING)
+@Name("rasterconverter")
+@Status(Status.DRAFT)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class RasterConverter extends OmsRasterConverter {
 
     @Description(OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION)

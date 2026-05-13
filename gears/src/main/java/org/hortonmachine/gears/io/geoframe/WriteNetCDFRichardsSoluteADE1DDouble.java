@@ -31,6 +31,9 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.TimeZone;
+
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import java.util.Map.Entry;
 
 import oms3.annotations.Author;
@@ -40,6 +43,7 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 import ucar.ma2.Array;
 import ucar.ma2.ArrayDouble;
@@ -60,7 +64,7 @@ import ucar.nc2.Variable;
 //@Name("shortradbal")
 //@Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
-
+@UI(HMConstants.HIDE_UI_HINT)
 
 public class WriteNetCDFRichardsSoluteADE1DDouble {
 

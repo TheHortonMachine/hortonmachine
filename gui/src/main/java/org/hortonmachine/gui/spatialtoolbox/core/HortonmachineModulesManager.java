@@ -125,6 +125,9 @@ public class HortonmachineModulesManager {
                 continue;
             }
             String name = clazz.getSimpleName();
+            if (name.startsWith("Oms")) {
+                continue;
+            }
             if (!moduleNames2Classes.containsKey(name)) {
                 moduleNames2Classes.put(name, clazz);
             }

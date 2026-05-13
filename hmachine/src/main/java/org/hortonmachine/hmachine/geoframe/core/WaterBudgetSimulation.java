@@ -22,6 +22,7 @@ import org.geoframe.rainsnowseparation.RainSnowSeparationPointCase;
 import org.geoframe.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay;
 import org.geoframe.snowmelting.pointcase.SnowMeltingPointCaseDegreeDay.SnowStepResult;
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.DynamicDoubleArray;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetParameters;
@@ -34,7 +35,9 @@ import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Initialize;
 import oms3.annotations.Out;
+import oms3.annotations.UI;
 
+@UI(HMConstants.HIDE_UI_HINT)
 public class WaterBudgetSimulation extends HMModel {
 	@Description("Root node of the topology. after each simulation it contains the discharges of all nodes.")
 	@In

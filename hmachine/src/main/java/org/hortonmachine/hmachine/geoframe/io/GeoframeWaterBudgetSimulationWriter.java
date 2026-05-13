@@ -40,7 +40,7 @@ import oms3.annotations.Status;
 @Description("A module to write water budget simulation results into the database.")
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
 @Keywords("simulation, writer, basin, value, database")
-@Label("WaterBudgetSimulationWriter")
+@Label("")
 @Name("WaterBudgetSimulationWriter")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")

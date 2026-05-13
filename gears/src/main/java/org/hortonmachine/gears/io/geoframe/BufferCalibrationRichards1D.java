@@ -22,6 +22,8 @@ package org.hortonmachine.gears.io.geoframe;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import oms3.annotations.*;
 
 @Description("Extract values in the calibration points for 1D Richards simulation.")
@@ -31,6 +33,7 @@ import oms3.annotations.*;
 //@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 //@Name("shortradbal")
 //@Status(Status.CERTIFIED)
+@UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 
 public class BufferCalibrationRichards1D {

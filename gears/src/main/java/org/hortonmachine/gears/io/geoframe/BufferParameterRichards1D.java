@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import oms3.annotations.*;
 
 @Description("Prepare parameter vector for calibration.")
@@ -32,6 +34,7 @@ import oms3.annotations.*;
 //@Label(JGTConstants.HYDROGEOMORPHOLOGY)
 //@Name("shortradbal")
 //@Status(Status.CERTIFIED)
+@UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 
 public class BufferParameterRichards1D {
