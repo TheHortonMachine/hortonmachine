@@ -44,7 +44,7 @@ import ucar.nc2.Variable;
 @Documentation("")
 @Author(name = "Niccolo' Tubini", contact = "tubini.niccolo@gmail.com")
 @Keywords("Soil heat conduction, phase change, frozen soil, GEOframe, Permafrostnet")
-@Label("GEOframe.NETCDF")
+//@Label("GEOframe.NETCDF")
 @Name("readFreezingThawing1Dgrid")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
