@@ -1,6 +1,5 @@
 org.hortonmachine.modules.Ab
 org.hortonmachine.modules.Aspect
-org.hortonmachine.modules.BaseflowWaterVolume
 org.hortonmachine.modules.BasinShape
 org.hortonmachine.modules.BobTheBuilder
 org.hortonmachine.modules.Buffer
@@ -28,10 +27,6 @@ org.hortonmachine.modules.FileIterator
 org.hortonmachine.modules.FilesInFolderOrganizer
 org.hortonmachine.modules.FlowDirections
 org.hortonmachine.modules.Gc
-org.hortonmachine.modules.GdalInfo
-org.hortonmachine.modules.GdalInstaller
-org.hortonmachine.modules.GdalRaster2TiffConverter
-org.hortonmachine.modules.GdalTilesGeopackageCreator
 org.hortonmachine.modules.GeoframeInputsBuilder
 org.hortonmachine.modules.Geomorphon
 org.hortonmachine.modules.GeomorphonMaximaFinder
@@ -52,7 +47,6 @@ org.hortonmachine.modules.HecrasInputBuilder
 org.hortonmachine.modules.Hillshade
 org.hortonmachine.modules.HoleFiller
 org.hortonmachine.modules.ImageMosaicCreator
-org.hortonmachine.modules.InfiltratedWaterVolume
 org.hortonmachine.modules.Insolation
 org.hortonmachine.modules.IntensityClassifierDebrisFlowTN
 org.hortonmachine.modules.IntensityClassifierFlood
@@ -94,15 +88,6 @@ org.hortonmachine.modules.NetNumbering
 org.hortonmachine.modules.NetcdfGridDumper
 org.hortonmachine.modules.NetcdfInfo
 org.hortonmachine.modules.NetworkAttributesBuilder
-org.hortonmachine.modules.PdalConverterLas2Gltf
-org.hortonmachine.modules.PdalFilterElm
-org.hortonmachine.modules.PdalFilterOutliers
-org.hortonmachine.modules.PdalFilterPmf
-org.hortonmachine.modules.PdalFilterRange
-org.hortonmachine.modules.PdalFilterReturns
-org.hortonmachine.modules.PdalFilterSmrf
-org.hortonmachine.modules.PdalInfo
-org.hortonmachine.modules.PdalInstaller
 org.hortonmachine.modules.Peakflow
 org.hortonmachine.modules.Pitfiller
 org.hortonmachine.modules.PointsRasterizer
@@ -113,6 +98,7 @@ org.hortonmachine.modules.Profile
 org.hortonmachine.modules.RangeLookup
 org.hortonmachine.modules.Raster2Xyz
 org.hortonmachine.modules.RasterCatToFeatureAttribute
+org.hortonmachine.modules.RasterCompare
 org.hortonmachine.modules.RasterConverter
 org.hortonmachine.modules.RasterCorrector
 org.hortonmachine.modules.RasterDiff
@@ -125,15 +111,19 @@ org.hortonmachine.modules.RasterReader
 org.hortonmachine.modules.RasterReprojector
 org.hortonmachine.modules.RasterResizer
 org.hortonmachine.modules.RasterResolutionResampler
+org.hortonmachine.modules.RasterSubsampler
 org.hortonmachine.modules.RasterSummary
 org.hortonmachine.modules.RasterTransformer
+org.hortonmachine.modules.RasterTransitionClasses
 org.hortonmachine.modules.RasterValueRounder
 org.hortonmachine.modules.RasterVectorIntersector
 org.hortonmachine.modules.RasterWriter
 org.hortonmachine.modules.RescaledDistance
+org.hortonmachine.modules.SWYBaseflowRouting
+org.hortonmachine.modules.SWYQuickflow
+org.hortonmachine.modules.SWYRechargeRouting
 org.hortonmachine.modules.SaintGeo
 org.hortonmachine.modules.ScanLineRasterizer
-org.hortonmachine.modules.ScsRunoff
 org.hortonmachine.modules.Shalstab
 org.hortonmachine.modules.Shp2DxfConverter
 org.hortonmachine.modules.Skyview
@@ -169,4 +159,3 @@ org.hortonmachine.modules.VoronoiDiagram
 org.hortonmachine.modules.Wateroutlet
 org.hortonmachine.modules.WindowSampler
 org.hortonmachine.modules.Xyz2Raster
-org.hortonmachine.modules.RasterTransitionClasses

@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.List;
 import java.util.Set;
 
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.modules.Modules;
 
@@ -47,6 +48,9 @@ public class ServiceGenerator {
         
         List<String > names = new ArrayList<String>();
         for( Entry<String, Class< ? >> cl : cls ) {
+            if (!HMModel.class.isAssignableFrom(cl.getValue())) {
+                continue;
+            }
             String canonicalName = cl.getValue().getCanonicalName();
             names.add(canonicalName);
         }

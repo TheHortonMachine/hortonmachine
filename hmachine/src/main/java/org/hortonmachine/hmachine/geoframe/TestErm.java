@@ -298,8 +298,9 @@ public class TestErm extends HMModel {
 			int calibrationThreadCount = 20;
 			CostFunctions costFunction = CostFunctions.KGE;
 
-			var precipReader = new GeoframeEnvDatabaseIterator(maxBasinId);
+			var precipReader = new GeoframeEnvDatabaseIterator();
 			precipReader.db = envDb;
+			precipReader.pMaxBasinId = maxBasinId;
 			precipReader.pParameterId = 2; // precip
 			precipReader.tStart = fromTS;
 			precipReader.tEnd = toTS;
@@ -307,18 +308,20 @@ public class TestErm extends HMModel {
 				precipReader.preCacheData();
 			}
 
-			var tempReader = new GeoframeEnvDatabaseIterator(maxBasinId);
+			var tempReader = new GeoframeEnvDatabaseIterator();
 			tempReader.db = envDb;
 			tempReader.pParameterId = 4; // temperature
+			tempReader.pMaxBasinId = maxBasinId;
 			tempReader.tStart = fromTS;
 			tempReader.tEnd = toTS;
 			if (doCalibration) {
 				tempReader.preCacheData();
 			}
 
-			var etpReader = new GeoframeEnvDatabaseIterator(maxBasinId);
+			var etpReader = new GeoframeEnvDatabaseIterator();
 			etpReader.db = envDb;
 			etpReader.pParameterId = 1; // etp
+			etpReader.pMaxBasinId = maxBasinId;
 			etpReader.tStart = fromTS;
 			etpReader.tEnd = toTS;
 			if (doCalibration) {

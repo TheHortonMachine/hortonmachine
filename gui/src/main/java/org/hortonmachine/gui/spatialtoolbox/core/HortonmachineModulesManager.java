@@ -26,12 +26,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.HortonMachine;
 import org.hortonmachine.lesto.Lesto;
 import org.hortonmachine.modules.Modules;
@@ -108,6 +110,16 @@ public class HortonmachineModulesManager {
             }
 
             moduleNames2Classes.put(name, entry.getValue());
+        }
+
+        // pick up any external modules registered via SPI
+        ServiceLoader<HMModel> spiModules = ServiceLoader.load(HMModel.class);
+        for( HMModel spiModule : spiModules ) {
+            Class< ? > clazz = spiModule.getClass();
+            String name = clazz.getSimpleName();
+            if (!moduleNames2Classes.containsKey(name)) {
+                moduleNames2Classes.put(name, clazz);
+            }
         }
 
         Collection<Class< ? >> classesList = moduleNames2Classes.values();

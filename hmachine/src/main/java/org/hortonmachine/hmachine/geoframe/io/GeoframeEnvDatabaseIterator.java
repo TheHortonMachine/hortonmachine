@@ -56,6 +56,10 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
     @Description("The parameter id to read to define the measure type to read.")
     @In
     public Integer pParameterId = null;
+    
+    @Description("The maximum basin id in play.")
+    @In
+    public Integer pMaxBasinId = null;
 
     @Description("Novalue")
     @In
@@ -97,10 +101,6 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	private double[][] cachedData = null;
 
 	
-	public GeoframeEnvDatabaseIterator(int maxBasinId) {
-		 outData = new double[maxBasinId + 1];
-	}
-	
 	/**
 	 * Pre-caches all data in memory.
 	 * 
@@ -122,7 +122,8 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
     	if(rs != null) {
     		return;
     	}
-    	checkNull(pParameterId, db);
+    	checkNull(pParameterId, db, pMaxBasinId);
+    	outData = new double[pMaxBasinId + 1];
     	
     	String sql = "SELECT ts, basin_id, value FROM measurement WHERE parameter_id = ?";
     	

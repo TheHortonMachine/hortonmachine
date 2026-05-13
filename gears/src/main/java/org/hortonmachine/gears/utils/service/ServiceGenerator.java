@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Map.Entry;
 
 import org.hortonmachine.gears.JGrassGears;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import java.util.ArrayList;
@@ -48,6 +49,9 @@ public class ServiceGenerator {
         Set<Entry<String, Class< ? >>> cls = jgg.moduleName2Class.entrySet();
         List<String > names = new ArrayList<String>();
         for( Entry<String, Class< ? >> cl : cls ) {
+            if (!HMModel.class.isAssignableFrom(cl.getValue())) {
+                continue;
+            }
             String canonicalName = cl.getValue().getCanonicalName();
             names.add(canonicalName);
         }
