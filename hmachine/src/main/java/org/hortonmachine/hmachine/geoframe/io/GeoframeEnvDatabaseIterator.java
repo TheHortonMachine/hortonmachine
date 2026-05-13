@@ -39,6 +39,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description("A time, basin id and value per timestep iterator, from db.")
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
@@ -46,6 +47,7 @@ import oms3.annotations.Status;
 @Label("Time Basin Value Db Iterator")
 @Name("TimeBasinValueDbIterator")
 @Status(40)
+@UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 public class GeoframeEnvDatabaseIterator extends HMModel {
 

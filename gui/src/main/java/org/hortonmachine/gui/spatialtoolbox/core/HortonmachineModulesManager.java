@@ -116,6 +116,14 @@ public class HortonmachineModulesManager {
         ServiceLoader<HMModel> spiModules = ServiceLoader.load(HMModel.class);
         for( HMModel spiModule : spiModules ) {
             Class< ? > clazz = spiModule.getClass();
+            UI uiHints = clazz.getAnnotation(UI.class);
+            if (uiHints != null && uiHints.value().contains(HMConstants.HIDE_UI_HINT)) {
+                continue;
+            }
+            Label label = clazz.getAnnotation(Label.class);
+            if (label != null && label.value().trim().isEmpty()) {
+                continue;
+            }
             String name = clazz.getSimpleName();
             if (!moduleNames2Classes.containsKey(name)) {
                 moduleNames2Classes.put(name, clazz);
@@ -136,8 +144,11 @@ public class HortonmachineModulesManager {
                 }
 
                 Label category = moduleClass.getAnnotation(Label.class);
+                if (category != null && category.value().trim().isEmpty()) {
+                    continue;
+                }
                 String categoryStr = HMConstants.OTHER;
-                if (category != null && categoryStr.trim().length() > 1) {
+                if (category != null) {
                     categoryStr = category.value();
                 }
 
@@ -194,9 +205,9 @@ public class HortonmachineModulesManager {
                     modulesList4Category.add(module);
                 }
 
-            } catch (NoClassDefFoundError e) {
+            } catch (Exception | NoClassDefFoundError e) {
                 if (moduleClass != null)
-                    Logger.INSTANCE.insertError("", "ERROR", e.getCause());
+                    Logger.INSTANCE.insertError("", "ERROR in module " + moduleClass.getName(), e);
             }
         }
 
