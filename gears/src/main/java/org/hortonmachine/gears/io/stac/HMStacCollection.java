@@ -344,7 +344,7 @@ public class HMStacCollection {
                     GridCoverage2D readRaster = null;
 
                     if (this.client != null) {
-                        readRaster = rasterHandler.readRaster(readRegion, client);
+                        readRaster = rasterHandler.readRaster(readRegion, this.client);
                     } else {
                         readRaster = rasterHandler.readRaster(readRegion);
                     }
