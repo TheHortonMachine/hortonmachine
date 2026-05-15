@@ -341,7 +341,13 @@ public class HMStacCollection {
 
                     RegionMap readRegion = RegionMap.fromBoundsAndGrid(roiEnvCurrentAssetCrs.getMinX(), roiEnvCurrentAssetCrs.getMaxX(),
                             roiEnvCurrentAssetCrs.getMinY(), roiEnvCurrentAssetCrs.getMaxY(), cols, rows);
-                    GridCoverage2D readRaster = rasterHandler.readRaster(readRegion);
+                    GridCoverage2D readRaster = null;
+
+                    if (this.client != null) {
+                        readRaster = rasterHandler.readRaster(readRegion, client);
+                    } else {
+                        readRaster = rasterHandler.readRaster(readRegion);
+                    }
                     outRaster.mapRaster(null, HMRaster.fromGridCoverage(readRaster), mergeMode);
                     readRaster.dispose(true);
                 }
