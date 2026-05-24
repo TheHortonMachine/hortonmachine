@@ -297,6 +297,8 @@ public class DatabaseViewer extends DatabaseController {
 
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSelectOrderedAscOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSelectOrderedDescOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectGroupCountOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateValueAction(guiBridge, this));

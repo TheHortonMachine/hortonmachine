@@ -122,6 +122,30 @@ public class SqlTemplatesAndActions {
         };
     }
 
+    public Action getSelectOrderedAscOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Select ordered ASC on column"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String columnName = column.columnName;
+                String tableName = column.parent.tableName.getFullName();
+                String query = sqlTemplates.selectOrderedOnColumn(columnName, SqlName.m(tableName), true);
+                spatialiteViewer.addTextToQueryEditor(query);
+            }
+        };
+    }
+
+    public Action getSelectOrderedDescOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Select ordered DESC on column"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String columnName = column.columnName;
+                String tableName = column.parent.tableName.getFullName();
+                String query = sqlTemplates.selectOrderedOnColumn(columnName, SqlName.m(tableName), false);
+                spatialiteViewer.addTextToQueryEditor(query);
+            }
+        };
+    }
+
     public Action getSelectGroupCountOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Select and group-count on column"){
             @Override
