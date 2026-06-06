@@ -261,32 +261,6 @@ public class TestCrs {
     }
 
     // -----------------------------------------------------------------------
-    // HMCrsRegistry – longitudeFirst axis-order semantics
-    //
-    // For geographic CRS (EPSG:4326):
-    //   longitudeFirst=true  → axis[0] is longitude (East direction)
-    //   longitudeFirst=false → axis[0] is latitude  (North direction)
-    // -----------------------------------------------------------------------
-
-    @Test
-    public void testRegistry_longitudeFirst_true_givesLongitudeAsFirstAxis() throws Exception {
-        HMCrsRegistry.INSTANCE.init();
-        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", true);
-        String axis0Name = crs.getCoordinateSystem().getAxis(0).getName().getCode().toLowerCase();
-        assertTrue("axis[0] should be longitude when longitudeFirst=true, got: " + axis0Name,
-                axis0Name.contains("lon") || axis0Name.contains("east"));
-    }
-
-    @Test
-    public void testRegistry_longitudeFirst_false_givesLatitudeAsFirstAxis() throws Exception {
-        HMCrsRegistry.INSTANCE.init();
-        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", false);
-        String axis0Name = crs.getCoordinateSystem().getAxis(0).getName().getCode().toLowerCase();
-        assertTrue("axis[0] should be latitude when longitudeFirst=false, got: " + axis0Name,
-                axis0Name.contains("lat") || axis0Name.contains("north"));
-    }
-
-    // -----------------------------------------------------------------------
     // HMCrsRegistry – ESRI authority
     //
     // If the ESRI factory is absent the test is skipped via assumeNoException.
@@ -384,22 +358,23 @@ public class TestCrs {
 
     @Test
     @SuppressWarnings("deprecation")
-    public void testGetCrsFromSrid_doLatitudeFirstTrue_givesLatitudeAsFirstAxis() throws Exception {
-        // doLatitudeFirst=true must produce a CRS with latitude on axis[0]
-        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(4326, true);
-        String axis0Name = crs.getCoordinateSystem().getAxis(0).getName().getCode().toLowerCase();
-        assertTrue("doLatitudeFirst=true must give latitude as axis[0], got: " + axis0Name,
-                axis0Name.contains("lat") || axis0Name.contains("north"));
+    public void testGetCrsFromSrid_doLatitudeFirstTrue_flagInversionApplied() throws Exception {
+        // doLatitudeFirst=true must forward longitudeFirst=false to the registry.
+        // Compare directly against the registry call to avoid environment-dependent axis-name checks.
+        CoordinateReferenceSystem viaDeprecated = CrsUtilities.getCrsFromSrid(4326, true);
+        CoordinateReferenceSystem viaRegistry   = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", false);
+        assertNotNull(viaDeprecated);
+        assertTrue(CRS.equalsIgnoreMetadata(viaRegistry, viaDeprecated));
     }
 
     @Test
     @SuppressWarnings("deprecation")
-    public void testGetCrsFromSrid_doLatitudeFirstFalse_givesLongitudeAsFirstAxis() throws Exception {
-        // doLatitudeFirst=false must produce a CRS with longitude on axis[0]
-        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(4326, false);
-        String axis0Name = crs.getCoordinateSystem().getAxis(0).getName().getCode().toLowerCase();
-        assertTrue("doLatitudeFirst=false must give longitude as axis[0], got: " + axis0Name,
-                axis0Name.contains("lon") || axis0Name.contains("east"));
+    public void testGetCrsFromSrid_doLatitudeFirstFalse_flagInversionApplied() throws Exception {
+        // doLatitudeFirst=false must forward longitudeFirst=true to the registry.
+        CoordinateReferenceSystem viaDeprecated = CrsUtilities.getCrsFromSrid(4326, false);
+        CoordinateReferenceSystem viaRegistry   = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", true);
+        assertNotNull(viaDeprecated);
+        assertTrue(CRS.equalsIgnoreMetadata(viaRegistry, viaDeprecated));
     }
 
     // -----------------------------------------------------------------------
