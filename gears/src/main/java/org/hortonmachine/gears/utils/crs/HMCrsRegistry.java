@@ -6,6 +6,7 @@ import java.util.Map;
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.referencing.CRS;
+import org.hortonmachine.dbs.utils.CrsId;
 
 public enum HMCrsRegistry {
 	INSTANCE;
@@ -78,19 +79,55 @@ public enum HMCrsRegistry {
 	}
 
 	
-	public CoordinateReferenceSystem getCrs(String epsgCode) throws FactoryException {
-		return getCrs(epsgCode, false);
+	/**
+	 * Get a {@link CoordinateReferenceSystem} from a code string using the authority-declared axis
+	 * order ({@code longitudeFirst = false}).
+	 *
+	 * <p>For EPSG geographic CRS (e.g. {@code "EPSG:4326"}) the authority-declared order is
+	 * <b>(latitude, longitude)</b>. For EPSG projected CRS (e.g. {@code "EPSG:32632"} UTM) it is
+	 * <b>(easting, northing)</b>. Call {@link #getCrs(String, boolean) getCrs(code, true)} when you
+	 * need longitude/easting first for a geographic CRS.
+	 *
+	 * @param crsCode authority-qualified code (e.g. {@code "EPSG:4326"}, {@code "ESRI:102700"}) or a
+	 *                bare integer treated as EPSG (e.g. {@code "4326"}).
+	 * @see #getCrs(String, boolean)
+	 */
+	public CoordinateReferenceSystem getCrs( String crsCode ) throws FactoryException {
+		return getCrs(crsCode, false);
 	}
-	
-	public CoordinateReferenceSystem getCrs(String epsgCode, boolean longitudeFirst) throws FactoryException {
-		init();
 
-		String normalized = epsgCode.toUpperCase().replace("EPSG:", "").trim();
-		CoordinateReferenceSystem custom = addedCrsObjects.get(normalized);
-		if (custom != null) {
-			return custom;
+	/**
+	 * Get a {@link CoordinateReferenceSystem} from a code string with explicit axis order control.
+	 *
+	 * <p>Accepts authority-qualified strings such as {@code "EPSG:4326"} or {@code "ESRI:102700"},
+	 * as well as bare integers which default to EPSG. Custom WKTs registered via {@link #addCrs}
+	 * are checked first (EPSG codes only).
+	 *
+	 * <p><b>longitudeFirst semantics</b> (mirrors {@link org.geotools.referencing.CRS#decode(String, boolean)}):
+	 * <ul>
+	 *   <li>{@code false} — authority-declared axis order. For EPSG geographic CRS this is
+	 *       <b>(latitude, longitude)</b>; for EPSG projected CRS typically <b>(easting, northing)</b>.
+	 *       Use this when strict EPSG compliance is required.</li>
+	 *   <li>{@code true} — force longitude (or easting) as the first axis. For EPSG:4326 this
+	 *       gives <b>(longitude, latitude)</b>, which is the convention used by most mapping
+	 *       libraries, WGS 84 bounding boxes, and GeoJSON.</li>
+	 * </ul>
+	 *
+	 * @param crsCode       authority-qualified code (e.g. {@code "EPSG:4326"}, {@code "ESRI:102700"})
+	 *                      or a bare integer treated as EPSG (e.g. {@code "4326"}).
+	 * @param longitudeFirst {@code true} to put longitude/easting first; {@code false} for the
+	 *                       authority-declared order (latitude first for geographic CRS).
+	 */
+	public CoordinateReferenceSystem getCrs( String crsCode, boolean longitudeFirst ) throws FactoryException {
+		init();
+		CrsId crsId = CrsId.of(crsCode);
+		if (crsId.isEpsg()) {
+			CoordinateReferenceSystem custom = addedCrsObjects.get(String.valueOf(crsId.code));
+			if (custom != null) {
+				return custom;
+			}
 		}
-		return CRS.decode("EPSG:" + normalized, longitudeFirst);
+		return CRS.decode(crsId.toAuthorityCode(), longitudeFirst);
 	}
 
 	public static boolean crsEquals(CoordinateReferenceSystem fcCrs, CoordinateReferenceSystem _crs) {
