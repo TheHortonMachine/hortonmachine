@@ -38,6 +38,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -294,13 +295,14 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
 			DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
+			DefaultFeatureCollection streamGaugeFC = new DefaultFeatureCollection();
 
 			StringBuilder csvText = new StringBuilder();
 
-			csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview;is_lake");
+			csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview;type");
 
 			if (inStreamGauge != null) {
-				csvText.append(";sg_id");
+				csvText.append(";stream_gauge_id");
 			}
 			csvText.append("\n");
 
@@ -579,13 +581,13 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 			pm.beginTask("Extract vector basins...", basinId2geomMap.size());
 			List<Geometry> _netGeometries = netGeometries;
-			SimpleFeatureCollection streamGaugeFC = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
+			SimpleFeatureCollection breackPoints = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
 
 			basinId2geomMap.entrySet().stream().forEach(entry -> {
 				try {
 					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder,
-							basinCentroidsBuilder, singleNetBuilder, allBasinsFC, allNetworksFC, streamGaugeFC, csvText,
-							lakesIdList, lakesTypeList, entry);
+							basinCentroidsBuilder, singleNetBuilder, getSFStreamGauge(crs, Point.class), allBasinsFC,
+							allNetworksFC, streamGaugeFC, breackPoints, csvText, lakesIdList, lakesTypeList, entry);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -620,15 +622,23 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), null, false);
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC,
 						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), -1, false, pm);
+
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
+						SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC,
+						SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), -1, false, pm);
+
 			}
 		}
+
 	}
 
 	private void extractBasin(HMRaster subBasins, HMRaster pit, HMRaster sky, HMRaster drain, HMRaster net,
 			CoordinateReferenceSystem crs, List<Geometry> netGeometries, SimpleFeatureBuilder basinsBuilder,
 			SimpleFeatureBuilder basinCentroidsBuilder, SimpleFeatureBuilder singleNetBuilder,
-			DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection allNetworksFC,
-			SimpleFeatureCollection streamGaugeFC, StringBuilder csvText, List<Integer> lakesIdList,
+			SimpleFeatureBuilder streamGaugeBuilder, DefaultFeatureCollection allBasinsFC,
+			DefaultFeatureCollection allNetworksFC, DefaultFeatureCollection streamGaugeFC,
+			SimpleFeatureCollection breackPointFC, StringBuilder csvText, List<Integer> lakesIdList,
 			List<String> lakesTypeList, Entry<Integer, Geometry> entry) throws Exception, ModelsIOException {
 		int basinNum = entry.getKey();
 //        pm.message("Processing basin " + basinNum + "...");
@@ -768,7 +778,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		}
 		String featureUserType = (isLake && lakesTypeList != null && lakesTypeList.size() > k) ? lakesTypeList.get(k)
 				: SubbasinsTypeField.HILLSOLOPE.key();
-		int id = extractId(streamGaugeFC, basinPolygon);
+		int id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
 		Object[] basinValues = new Object[] { dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2,
 				mainNetLength, skyview, featureUserType, id };
 		basinsBuilder.addAll(basinValues);
@@ -829,7 +839,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		csvText.append(areaKm2).append(";");
 		csvText.append(mainNetLength).append(";");
 		csvText.append(featureUserType).append(';');
-		if (streamGaugeFC != null) {
+		if (breackPointFC != null) {
 			csvText.append(id);
 		}
 		csvText.append(skyview).append("\n");
@@ -936,7 +946,19 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		b.add("length_m", Double.class);
 		b.add("skyview", Double.class);
 		b.add("type", Integer.class);
-		b.add("sg_id", Integer.class);
+		b.add("stream_gauge_id", Integer.class);
+		SimpleFeatureType type = b.buildFeatureType();
+		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+		return builder;
+	}
+
+	private SimpleFeatureBuilder getSFStreamGauge(CoordinateReferenceSystem crs, Class<?> geom) {
+		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+		b.setName(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE);
+		b.setCRS(crs);
+		b.add("the_geom", geom);
+		b.add("stream_gauge_id", Integer.class);
+		b.add("basinid", Integer.class);
 		SimpleFeatureType type = b.buildFeatureType();
 		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 		return builder;
@@ -1131,23 +1153,28 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 	 * {@link HMConstants#intNovalue}. If a candidate gauge is found but its ID
 	 * cannot be parsed as an integer, that feature is ignored.
 	 * </p>
+	 * 
+	 * @param streamGaugeBuilder
 	 *
-	 * @param streamGaugeFC feature collection containing stream-gauge point
-	 *                      features.
-	 * @param polygon       basin polygon geometry used to test
-	 *                      containment/intersection.
+	 * @param breackPoint        feature collection containing stream-gauge point
+	 *                           features.
+	 * @param polygon            basin polygon geometry used to test
+	 *                           containment/intersection.
+	 * @param basinId
+	 * @param streamGaugeFC2
 	 * @return the parsed gauge ID if exactly one valid gauge intersects the
 	 *         polygon; {@link HMConstants#intNovalue} if none is found.
 	 * @throws IllegalStateException if more than one valid gauge intersects the
 	 *                               polygon.
 	 */
 
-	public int extractId(SimpleFeatureCollection streamGaugeFC, Geometry polygon) {
+	public int extractId(SimpleFeatureBuilder streamGaugeBuilder, SimpleFeatureCollection breackPoint, Geometry polygon,
+			DefaultFeatureCollection streamGaugeFC2, int basinId) {
 
 		int id = HMConstants.intNovalue;
 		int validCount = 0;
 
-		try (SimpleFeatureIterator it = streamGaugeFC.features()) {
+		try (SimpleFeatureIterator it = breackPoint.features()) {
 			while (it.hasNext()) {
 				SimpleFeature f = it.next();
 
@@ -1167,6 +1194,15 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				if (validCount == 1) {
 					try {
 						id = Integer.parseInt(s);
+
+						streamGaugeBuilder.set("the_geom", pointGeom);
+						streamGaugeBuilder.set("streamGaugeId", id);
+						streamGaugeBuilder.set("basinId", basinId);
+
+						SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
+						streamGaugeFC2.add(newFeature);
+						streamGaugeBuilder.reset();
+
 					} catch (NumberFormatException ex) {
 						continue;
 					}
@@ -1197,5 +1233,4 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		}
 
 	}
-
 }
