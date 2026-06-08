@@ -212,6 +212,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private JTextPane[] editorPanesArray;
     private JTable[] dataTablesArray;
     private JTable currentDataTable;
+    private String currentDataTableName = null;
+    private QueryResult currentQueryResult = null;
+    private TableLevel currentDataTableLevel = null;
     private DatabaseTreeView databaseTreeView;
     private SqlEditorView sqlEditorView;
     private DataTableView dataTableView;
@@ -268,6 +271,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
         dataTableView._formatDatesPatternTextField.setText("date, ts, timestamp");
         dataTableView._formatDatesCheckbox.setSelected(true); // on by default
+        dataTableView._formatDatesCheckbox.addActionListener(e -> refreshCurrentTableView());
 
         JTabbedPane tabbedDataViewerPane = new JTabbedPane();
         JTabbedPane tabbedEditorPane = new JTabbedPane();
@@ -299,6 +303,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             panel1.setLayout(new BorderLayout());
             tabbedDataViewerPane.addTab("Viewer " + (i + 1), panel1);
             JTable table = new JTable(){
+                @Override
+                public boolean isCellEditable( int row, int column ) {
+                    return currentDataTableName == null || currentQueryResult == null || currentQueryResult.pkIndex < 0;
+                }
                 public TableCellRenderer getCellRenderer( int row, int column ) {
                     return super.getCellRenderer(row, column);
                 }
@@ -579,6 +587,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         currentDataTable.setModel(new DefaultTableModel(values, names));
                                         return;
                                     }
+                                    currentDataTableName = currentSelectedTable != null
+                                            ? currentSelectedTable.tableName.fixedDoubleName
+                                            : null;
+                                    currentDataTableLevel = currentSelectedTable;
                                     loadDataViewer(queryResult);
                                 }
                             };
@@ -1725,13 +1737,125 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                } else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    int row = table.rowAtPoint(e.getPoint());
+                    int col = table.columnAtPoint(e.getPoint());
+                    if (row >= 0 && col >= 0) {
+                        editCellValueInDb(table, row, col);
+                    }
                 }
-
             }
         });
     }
 
+    private void editCellValueInDb( JTable table, int row, int col ) {
+        if (currentDataTableName == null || currentQueryResult == null || currentQueryResult.pkIndex < 0) {
+            return;
+        }
+        int pkCol = currentQueryResult.pkIndex;
+        if (col == pkCol) {
+            return;
+        }
+
+        int modelCol = table.convertColumnIndexToModel(col);
+        int modelPkCol = table.convertColumnIndexToModel(pkCol);
+        String colName = table.getModel().getColumnName(modelCol);
+        String pkColName = table.getModel().getColumnName(modelPkCol);
+        Object currentValue = table.getModel().getValueAt(row, modelCol);
+        Object pkValue = table.getModel().getValueAt(row, modelPkCol);
+
+        if (pkValue == null || "NULL".equals(pkValue.toString())) {
+            GuiUtilities.showWarningMessage(this, null, "Cannot edit: primary key value is NULL.");
+            return;
+        }
+
+        if (dataTableView._formatDatesCheckbox.isSelected()) {
+            String[] patternSplit = dataTableView._formatDatesPatternTextField.getText().split(",");
+            for( String pattern : patternSplit ) {
+                if (pkColName.toLowerCase().contains(pattern.trim().toLowerCase())) {
+                    GuiUtilities.showWarningMessage(this, null,
+                            "Cannot edit: primary key '" + pkColName + "' is displayed as a formatted date.\nDisable date formatting to allow editing.");
+                    return;
+                }
+            }
+        }
+
+        String currentValueStr = (currentValue == null || "NULL".equals(currentValue.toString())) ? "" : currentValue.toString();
+
+        JTextArea textArea = new JTextArea(currentValueStr, 5, 40);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(450, 150));
+
+        int result = JOptionPane.showConfirmDialog(this, scrollPane,
+                "Edit [" + colName + "]   (PK: " + pkColName + " = " + pkValue + ")",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String newValueStr = textArea.getText();
+        Object newValueObj;
+        if (newValueStr.trim().equalsIgnoreCase("NULL")) {
+            newValueObj = null;
+        } else {
+            try {
+                newValueObj = Long.parseLong(newValueStr.trim());
+            } catch (NumberFormatException e1) {
+                try {
+                    newValueObj = Double.parseDouble(newValueStr.trim());
+                } catch (NumberFormatException e2) {
+                    newValueObj = newValueStr;
+                }
+            }
+        }
+
+        String sql = "UPDATE " + currentDataTableName + " SET \"" + colName + "\" = ? WHERE \"" + pkColName + "\" = ?";
+        try {
+            currentConnectedSqlDatabase.executeInsertUpdateDeletePreparedSql(sql, new Object[]{newValueObj, pkValue});
+            refreshCurrentTableView();
+        } catch (Exception ex) {
+            GuiUtilities.showErrorMessage(this, "Error updating value: " + ex.getMessage());
+            Logger.INSTANCE.insertError("", "Error updating cell value", ex);
+        }
+    }
+
+    private void refreshCurrentTableView() {
+        if (currentDataTableLevel == null || currentConnectedSqlDatabase == null) {
+            return;
+        }
+        TableLevel tableLevel = currentDataTableLevel;
+        SwingWorker<QueryResult, Void> worker = new SwingWorker<>() {
+            @Override
+            protected QueryResult doInBackground() throws Exception {
+                if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+                    return ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
+                            tableLevel.tableName.toSqlName(), null, SQL_ONSELECT_LIMIT, -1, null);
+                } else {
+                    return currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
+                            "select * from " + tableLevel.tableName.fixedDoubleName, SQL_ONSELECT_LIMIT);
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    QueryResult qr = get();
+                    currentDataTableName = tableLevel.tableName.fixedDoubleName;
+                    currentDataTableLevel = tableLevel;
+                    loadDataViewer(qr);
+                } catch (Exception ex) {
+                    Logger.INSTANCE.insertError("", "Error refreshing table view", ex);
+                }
+            }
+        };
+        worker.execute();
+    }
+
     protected void loadDataViewer( QueryResult queryResult ) {
+        this.currentQueryResult = queryResult;
         if (queryResult == null) {
             currentDataTable.setModel(new DefaultTableModel());
             return;
@@ -1818,6 +1942,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
 
         dataTableView._recordCountTextfield.setText(values.length + " in " + millisToTimeString(queryResult.queryTimeMillis));
+
+        if (queryResult.pkIndex >= 0 && queryResult.pkIndex < currentDataTable.getColumnCount()) {
+            TableColumn pkColumn = currentDataTable.getColumnModel().getColumn(queryResult.pkIndex);
+            TableCellRenderer defaultHeaderRenderer = currentDataTable.getTableHeader().getDefaultRenderer();
+            pkColumn.setHeaderRenderer(( table, value, isSelected, hasFocus, row, col ) -> {
+                Component c = defaultHeaderRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                c.setFont(c.getFont().deriveFont(java.awt.Font.BOLD));
+                return c;
+            });
+        }
     }
 
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
@@ -2346,6 +2480,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected boolean runQuery( String sqlText, IHMProgressMonitor pm ) {
+        currentDataTableName = null;
+        currentDataTableLevel = null;
         if (pm == null) {
             pm = this.pm;
         }
