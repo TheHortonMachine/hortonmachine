@@ -53,7 +53,7 @@ import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSVECTORREPROJECTOR_DESCRIPTION)
@@ -98,10 +98,11 @@ public class OmsVectorReprojector extends HMModel {
             return;
         }
 
-        CoordinateReferenceSystem targetCrs = CrsUtilities.getCrsFromEpsg(pCode, doLongitudeFirst);
+        boolean longitudeFirst = doLongitudeFirst != null && doLongitudeFirst;
+        CoordinateReferenceSystem targetCrs = HMCrsRegistry.INSTANCE.getCrs(pCode, longitudeFirst);
         if (pForceCode != null) {
             pm.beginTask("Forcing input crs...", IHMProgressMonitor.UNKNOWN);
-            CoordinateReferenceSystem forcedCrs = CrsUtilities.getCrsFromEpsg(pForceCode);
+            CoordinateReferenceSystem forcedCrs = HMCrsRegistry.INSTANCE.getCrs(pForceCode);
             inVector = new ForceCoordinateSystemFeatureResults(inVector, forcedCrs);
             pm.done();
         }

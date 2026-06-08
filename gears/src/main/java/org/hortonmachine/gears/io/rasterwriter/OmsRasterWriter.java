@@ -52,6 +52,7 @@ import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.geotools.api.parameter.GeneralParameterValue;
@@ -161,6 +162,10 @@ public class OmsRasterWriter extends HMModel {
 
     }
 
+    public static void writeRaster( String path, HMRaster raster) throws Exception {
+    	writeRaster(path, raster.buildCoverage());
+    }
+    
     public static void writeRaster( String path, GridCoverage2D coverage ) throws Exception {
         OmsRasterWriter writer = new OmsRasterWriter();
         writer.inRaster = coverage;

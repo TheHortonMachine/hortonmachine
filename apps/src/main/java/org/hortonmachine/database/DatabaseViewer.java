@@ -22,6 +22,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,6 +43,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -295,6 +297,8 @@ public class DatabaseViewer extends DatabaseController {
 
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSelectOrderedAscOnColumnAction(selectedColumn, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getSelectOrderedDescOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectGroupCountOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateOnColumnAction(selectedColumn, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateValueAction(guiBridge, this));
@@ -565,6 +569,24 @@ public class DatabaseViewer extends DatabaseController {
     public void onClose() {
         SettingsController.onCloseHandleSettings();
         super.onClose();
+    }
+
+    public static void openInNewWindow( ConnectionData connectionData ) {
+        DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
+        final DatabaseViewer controller = new DatabaseViewer(gBridge);
+        SettingsController.applySettings(controller);
+        String title = "HortonMachine Database Viewer - " + connectionData.connectionLabel;
+        final JFrame frame = gBridge.showWindow(controller.asJComponent(), title);
+        GuiUtilities.setDefaultFrameIcon(frame);
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter(){
+            @Override
+            public void windowClosing( WindowEvent e ) {
+                controller.onClose();
+                frame.dispose();
+            }
+        });
+        controller.openDatabase(connectionData, false);
     }
 
     public static void main( String[] args ) throws Exception {

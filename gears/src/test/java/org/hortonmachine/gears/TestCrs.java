@@ -5,12 +5,12 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-
-import java.io.File;
+import static org.junit.Assume.assumeNoException;
 
 import org.eclipse.imagen.Interpolation;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -18,23 +18,21 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gears.utils.crs.fixes.HMCylindricalEqualArea;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
 public class TestCrs {
 
@@ -105,7 +103,7 @@ public class TestCrs {
         HMCrsTransformer transformer = new HMCrsTransformer(sourceCrs, targetCrs);
         transformer.setAcceptLenientDatumShift(true);
 
-        HMCrsTransformer transformerFromCodes = new HMCrsTransformer("EPSG:32632", "EPSG:4326", true);
+        HMCrsTransformer transformerFromCodes = new HMCrsTransformer("EPSG:32632", "EPSG:4326", false, true);
         transformerFromCodes.setAcceptLenientDatumShift(true);
 
         MathTransform mathTransform = transformer.getMathTransform();
@@ -190,6 +188,198 @@ public class TestCrs {
         assertEquals(expected.y, transformedPoint.getY(), TOL_DEGREES);
         assertEquals(Integer.valueOf(7), transformedFeature.getAttribute("id"));
     }
+
+    @Test
+    public void testHMCrsTransformer4326To102700() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+
+        // EPSG:4326 uses (lat, lon) axis order by default in GeoTools.
+        // fromLongitudeFirst=true lets us pass (lon, lat) as expected by most callers.
+        // EPSG:102700 (Montana State Plane, NAD83) is a projected CRS whose default
+        // axis order is already (easting, northing), so toLongitudeFirst=false.
+        HMCrsTransformer transformer = new HMCrsTransformer("EPSG:4326", "EPSG:102700", true, false);
+        transformer.setAcceptLenientDatumShift(true);
+
+        // A point near the centre of Montana: lon=-109.5, lat=47.0
+        Coordinate source4326 = new Coordinate(-109.5, 47.0);
+        Coordinate projected = transformer.transform(source4326);
+
+        // Montana State Plane values should be in the hundreds-of-thousands of metres range
+        assertTrue("Easting should be positive", projected.x > 0);
+        assertTrue("Northing should be positive", projected.y > 0);
+
+        // Round-trip back to 4326
+        HMCrsTransformer inverse = new HMCrsTransformer("EPSG:102700", "EPSG:4326", false, true);
+        inverse.setAcceptLenientDatumShift(true);
+        Coordinate roundTrip = inverse.transform(projected);
+
+        assertEquals(source4326.x, roundTrip.x, TOL_DEGREES);
+        assertEquals(source4326.y, roundTrip.y, TOL_DEGREES);
+    }
+
+    // -----------------------------------------------------------------------
+    // HMCrsRegistry – EPSG codes, bare integers, lowercase authority
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testRegistry_epsg4326() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+        assertNotNull(HMCrsRegistry.INSTANCE.getCrs("EPSG:4326"));
+    }
+
+    @Test
+    public void testRegistry_epsg32632() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+        assertNotNull(HMCrsRegistry.INSTANCE.getCrs("EPSG:32632"));
+    }
+
+    @Test
+    public void testRegistry_lowercaseAuthority_epsg4326() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+        CoordinateReferenceSystem byUpper = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326");
+        CoordinateReferenceSystem byLower = HMCrsRegistry.INSTANCE.getCrs("epsg:4326");
+        assertNotNull(byLower);
+        assertTrue(CRS.equalsIgnoreMetadata(byUpper, byLower));
+    }
+
+    @Test
+    public void testRegistry_bareInt4326_treatedAsEpsg() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+        CoordinateReferenceSystem byFull = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326");
+        CoordinateReferenceSystem byInt  = HMCrsRegistry.INSTANCE.getCrs("4326");
+        assertNotNull(byInt);
+        assertTrue(CRS.equalsIgnoreMetadata(byFull, byInt));
+    }
+
+    @Test
+    public void testRegistry_bareInt32632_treatedAsEpsg() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+        CoordinateReferenceSystem byFull = HMCrsRegistry.INSTANCE.getCrs("EPSG:32632");
+        CoordinateReferenceSystem byInt  = HMCrsRegistry.INSTANCE.getCrs("32632");
+        assertNotNull(byInt);
+        assertTrue(CRS.equalsIgnoreMetadata(byFull, byInt));
+    }
+
+    // -----------------------------------------------------------------------
+    // HMCrsRegistry – ESRI authority
+    //
+    // If the ESRI factory is absent the test is skipped via assumeNoException.
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testRegistry_esri102700() {
+        HMCrsRegistry.INSTANCE.init();
+        CoordinateReferenceSystem crs;
+        try {
+            crs = HMCrsRegistry.INSTANCE.getCrs("ESRI:102700");
+        } catch (FactoryException e) {
+            assumeNoException("ESRI CRS factory not available on this classpath", e);
+            return;
+        }
+        assertNotNull(crs);
+    }
+
+    @Test
+    public void testRegistry_esri102700_andEpsg102700_bothDecodable() throws Exception {
+        HMCrsRegistry.INSTANCE.init();
+        CoordinateReferenceSystem epsgCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:102700");
+        assertNotNull("EPSG:102700 should decode to a non-null CRS", epsgCrs);
+
+        CoordinateReferenceSystem esriCrs;
+        try {
+            esriCrs = HMCrsRegistry.INSTANCE.getCrs("ESRI:102700");
+        } catch (FactoryException e) {
+            assumeNoException("ESRI CRS factory not available on this classpath", e);
+            return;
+        }
+        assertNotNull("ESRI:102700 should decode to a non-null CRS", esriCrs);
+
+        // getCodeFromCrs prefers EPSG when an EPSG lookup succeeds — both may
+        // produce "EPSG:102700", which is the expected and correct behaviour.
+        String epsgId = CrsUtilities.getCodeFromCrs(epsgCrs);
+        String esriId = CrsUtilities.getCodeFromCrs(esriCrs);
+        assertTrue("authority prefix must be present", epsgId.contains(":"));
+        assertTrue("authority prefix must be present", esriId.contains(":"));
+    }
+
+    // -----------------------------------------------------------------------
+    // CrsUtilities.getCodeFromCrs – encoding round-trips (not deprecated)
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testGetCodeFromCrs_epsg4326_roundTrip() throws Exception {
+        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326");
+        assertEquals("EPSG:4326", CrsUtilities.getCodeFromCrs(crs));
+    }
+
+    @Test
+    public void testGetCodeFromCrs_epsg32632_roundTrip() throws Exception {
+        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:32632");
+        assertEquals("EPSG:32632", CrsUtilities.getCodeFromCrs(crs));
+    }
+
+    @Test
+    public void testGetCodeFromCrs_alwaysIncludesAuthorityPrefix() throws Exception {
+        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326");
+        assertTrue(CrsUtilities.getCodeFromCrs(crs).contains(":"));
+    }
+
+    // -----------------------------------------------------------------------
+    // CrsUtilities.getCrsFromSrid (no-flag variant) – backwards compatibility
+    // -----------------------------------------------------------------------
+
+    @Test
+    public void testGetCrsFromSrid_4326_backwardsCompat() {
+        // getCrsFromSrid(4326) uses a fast-path shortcut that returns CrsUtilities.WGS84 directly
+        assertSame(CrsUtilities.WGS84, CrsUtilities.getCrsFromSrid(4326));
+    }
+
+    @Test
+    public void testGetCrsFromSrid_32632_backwardsCompat() throws Exception {
+        CoordinateReferenceSystem byRegistry = HMCrsRegistry.INSTANCE.getCrs("EPSG:32632");
+        CoordinateReferenceSystem bySrid = CrsUtilities.getCrsFromSrid(32632);
+        assertNotNull(bySrid);
+        assertTrue(CRS.equalsIgnoreMetadata(byRegistry, bySrid));
+    }
+
+    // -----------------------------------------------------------------------
+    // CrsUtilities deprecated methods – verify they still work and that
+    // the doLatitudeFirst flag is now semantically correct (true = lat first).
+    // -----------------------------------------------------------------------
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testGetCrsFromEpsg_noFlag_backwardsCompat() throws Exception {
+        CoordinateReferenceSystem byRegistry = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326");
+        CoordinateReferenceSystem byOld = CrsUtilities.getCrsFromEpsg("EPSG:4326");
+        assertNotNull(byOld);
+        assertTrue(CRS.equalsIgnoreMetadata(byRegistry, byOld));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testGetCrsFromSrid_doLatitudeFirstTrue_flagInversionApplied() throws Exception {
+        // doLatitudeFirst=true must forward longitudeFirst=false to the registry.
+        // Compare directly against the registry call to avoid environment-dependent axis-name checks.
+        CoordinateReferenceSystem viaDeprecated = CrsUtilities.getCrsFromSrid(4326, true);
+        CoordinateReferenceSystem viaRegistry   = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", false);
+        assertNotNull(viaDeprecated);
+        assertTrue(CRS.equalsIgnoreMetadata(viaRegistry, viaDeprecated));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testGetCrsFromSrid_doLatitudeFirstFalse_flagInversionApplied() throws Exception {
+        // doLatitudeFirst=false must forward longitudeFirst=true to the registry.
+        CoordinateReferenceSystem viaDeprecated = CrsUtilities.getCrsFromSrid(4326, false);
+        CoordinateReferenceSystem viaRegistry   = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", true);
+        assertNotNull(viaDeprecated);
+        assertTrue(CRS.equalsIgnoreMetadata(viaRegistry, viaDeprecated));
+    }
+
+    // -----------------------------------------------------------------------
+    // (existing raster test follows)
+    // -----------------------------------------------------------------------
 
     @Test
     public void testHMCrsTransformerRasterMethods() throws Exception {

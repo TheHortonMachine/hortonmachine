@@ -29,6 +29,7 @@ import org.geotools.referencing.CRS;
 import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.AbstractSingleCRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.dbs.utils.CrsId;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.FactoryException;
@@ -177,56 +178,44 @@ public class CrsUtilities {
     }
 
     /**
-     * Get the code from a {@link CoordinateReferenceSystem}.
+     * Get the authority-qualified code string (e.g. {@code "EPSG:4326"} or {@code "ESRI:102700"})
+     * from a {@link CoordinateReferenceSystem}.
      *
      * @param crs the crs to get the code from.
-     *
-     * @return the code, that can be used with {@link CRS#decode(String)} to recreate the crs.
-     *
+     * @return the authority-qualified code, usable with {@link CRS#decode(String)}.
      * @throws Exception
      */
     public static String getCodeFromCrs( CoordinateReferenceSystem crs ) throws Exception {
-        String code = null;
-        try {
-            Integer epsg = getSrid(crs);
-            code = "EPSG:" + epsg; //$NON-NLS-1$
-        } catch (Exception e) {
-            // try non epsg
-            code = CRS.lookupIdentifier(crs, true);
+        Integer epsg = getSrid(crs);
+        if (epsg != null) {
+            return CrsId.ofEpsg(epsg).toAuthorityCode();
         }
-        return code;
-    }
-
-    public static Integer getSrid( CoordinateReferenceSystem crs ) throws FactoryException {
-        Integer epsg = null;
-        try {
-            epsg = CRS.lookupEpsgCode(crs, true);
-        } catch (Exception e) {
-            // ignore and return null
-        }
-        return epsg;
+        return CRS.lookupIdentifier(crs, true);
     }
 
     /**
-     * Get the {@link CoordinateReferenceSystem} from a epsg srid number. 
-     * 
-     * @param srid the srid number.
+     * Returns the EPSG integer code for the given CRS, or {@code null} if it is not an EPSG CRS.
+     */
+    public static Integer getSrid( CoordinateReferenceSystem crs ) throws FactoryException {
+        try {
+            return CRS.lookupEpsgCode(crs, true);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@link CoordinateReferenceSystem} from a bare EPSG integer code.
+     *
+     * @param srid the EPSG integer code.
      * @return the crs or null.
      */
     public static CoordinateReferenceSystem getCrsFromSrid( int srid ) {
-        return getCrsFromSrid(srid, null);
-    }
-
-    public static CoordinateReferenceSystem getCrsFromSrid( int srid, Boolean doLatitudeFirst ) {
-        if (srid == 4326 && doLatitudeFirst == null) {
+        if (srid == WGS84_SRID) {
             return WGS84;
         }
         try {
-            if (doLatitudeFirst == null) {
-                return HMCrsRegistry.INSTANCE.getCrs("EPSG:" + srid);
-            } else {
-                return HMCrsRegistry.INSTANCE.getCrs("EPSG:" + srid, doLatitudeFirst);
-            }
+            return HMCrsRegistry.INSTANCE.getCrs(CrsId.ofEpsg(srid).toAuthorityCode());
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -234,20 +223,90 @@ public class CrsUtilities {
     }
 
     /**
-     * Get the {@link CoordinateReferenceSystem} from an epsg definition. 
-     * 
-     * @param epsgPlusCode the code as EPSG:4326
-     * @param doLatitudeFirst see {@link CRS#decode(String, boolean)}
-     * @return the crs.
+     * Get the {@link CoordinateReferenceSystem} from a bare EPSG integer code with explicit axis order.
+     *
+     * @param srid            the EPSG integer code.
+     * @param doLatitudeFirst {@code true} to put latitude first, {@code false} for longitude first,
+     *                        {@code null} for the default axis order.
+     * @return the crs or null.
+     * @deprecated Use {@link HMCrsRegistry#getCrs(String, boolean)} directly with
+     *             {@code longitudeFirst = !doLatitudeFirst}.
      */
-    public static CoordinateReferenceSystem getCrsFromEpsg( String epsgPlusCode, Boolean doLatitudeFirst ) {
-        String sridString = epsgPlusCode.replaceFirst("EPSG:", "").replaceFirst("epsg:", "");
-        int srid = Integer.parseInt(sridString);
-        return getCrsFromSrid(srid, doLatitudeFirst);
+    @Deprecated
+    public static CoordinateReferenceSystem getCrsFromSrid( int srid, Boolean doLatitudeFirst ) {
+        if (srid == WGS84_SRID && doLatitudeFirst == null) {
+            return WGS84;
+        }
+        try {
+            if (doLatitudeFirst == null) {
+                return HMCrsRegistry.INSTANCE.getCrs(CrsId.ofEpsg(srid).toAuthorityCode());
+            }
+            return HMCrsRegistry.INSTANCE.getCrs(CrsId.ofEpsg(srid).toAuthorityCode(), !doLatitudeFirst);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
+    /**
+     * Get the {@link CoordinateReferenceSystem} from an authority-qualified code string such as
+     * {@code "EPSG:4326"} or {@code "ESRI:102700"}. Bare integers default to EPSG.
+     *
+     * @param crsCode the authority-qualified code (or bare integer).
+     * @return the crs or null.
+     * @deprecated Use {@link HMCrsRegistry#getCrs(String)} directly.
+     */
+    @Deprecated
+    public static CoordinateReferenceSystem getCrsFromCode( String crsCode ) {
+        try {
+            return HMCrsRegistry.INSTANCE.getCrs(crsCode);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@link CoordinateReferenceSystem} from an authority-qualified code string with explicit
+     * axis order.
+     *
+     * @param crsCode         the authority-qualified code (or bare integer).
+     * @param doLatitudeFirst {@code true} to put latitude first, {@code false} for longitude first,
+     *                        {@code null} for the default axis order.
+     * @return the crs or null.
+     * @deprecated Use {@link HMCrsRegistry#getCrs(String, boolean)} directly with
+     *             {@code longitudeFirst = !doLatitudeFirst}.
+     */
+    @Deprecated
+    public static CoordinateReferenceSystem getCrsFromCode( String crsCode, Boolean doLatitudeFirst ) {
+        try {
+            if (doLatitudeFirst == null) {
+                return HMCrsRegistry.INSTANCE.getCrs(crsCode);
+            }
+            return HMCrsRegistry.INSTANCE.getCrs(crsCode, !doLatitudeFirst);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Get the {@link CoordinateReferenceSystem} from an EPSG code string such as {@code "EPSG:4326"}.
+     *
+     * @param doLatitudeFirst {@code true} to put latitude first, {@code false} for longitude first,
+     *                        {@code null} for the default axis order.
+     * @deprecated Use {@link HMCrsRegistry#getCrs(String, boolean)} directly with
+     *             {@code longitudeFirst = !doLatitudeFirst}.
+     */
+    @Deprecated
+    public static CoordinateReferenceSystem getCrsFromEpsg( String epsgPlusCode, Boolean doLatitudeFirst ) {
+        return getCrsFromCode(epsgPlusCode, doLatitudeFirst);
+    }
+
+    /** @deprecated Use {@link HMCrsRegistry#getCrs(String)} directly. */
+    @Deprecated
     public static CoordinateReferenceSystem getCrsFromEpsg( String epsgPlusCode ) {
-        return getCrsFromEpsg(epsgPlusCode, null);
+        return getCrsFromCode(epsgPlusCode);
     }
 
     /**

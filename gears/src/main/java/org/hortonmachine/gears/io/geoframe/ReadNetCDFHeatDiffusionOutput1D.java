@@ -20,6 +20,9 @@
 package org.hortonmachine.gears.io.geoframe;
 
 import java.io.IOException;
+
+import org.hortonmachine.gears.libs.modules.HMConstants;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -31,6 +34,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 import oms3.annotations.Unit;
 import ucar.ma2.ArrayDouble;
 import ucar.ma2.ArrayDouble.D1;
@@ -43,8 +47,9 @@ import ucar.nc2.Variable;
 @Documentation("")
 @Author(name = "Niccolo' Tubini", contact = "tubini.niccolo@gmail.com")
 @Keywords("Soil heat conduction, GEOframe")
-@Label("GEOframe.NETCDF")
+//@Label("GEOframe.NETCDF")
 //@Name("")
+@UI(HMConstants.HIDE_UI_HINT)
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
 

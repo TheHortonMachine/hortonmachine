@@ -26,6 +26,7 @@ import org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
@@ -52,7 +53,7 @@ public class TestVectorReprojector extends HMTestCase {
         reprojector.process();
 
         CoordinateReferenceSystem sourceCRS = HMTestMaps.getCrs();
-        CoordinateReferenceSystem targetCRS = CrsUtilities.getCrsFromSrid(4326);
+        CoordinateReferenceSystem targetCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326");
 
         MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
 

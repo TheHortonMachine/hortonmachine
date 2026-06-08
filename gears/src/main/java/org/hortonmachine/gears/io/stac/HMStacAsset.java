@@ -42,7 +42,9 @@ public class HMStacAsset {
 		JsonNode epsgNode = assetNode.get("proj:code");
 		if (epsgNode != null) {
 			String epsgCode = epsgNode.textValue();
-			if (epsgCode.toLowerCase().startsWith("epsg:")) {
+			if (epsgCode != null && epsgCode.toLowerCase().startsWith("epsg:")) {
+				// Corner case when proj:code is defined, but it's null :(
+				// Example: https://stac.terrascope.be/collections/lcfm-lcm-10/items/LCFM_LCM-10_V100_2020_S57W072_MAP for the asset "Preview" before applying the predicate
 				try {
 					epsg = Integer.parseInt(epsgCode.substring(5));
 				} catch (NumberFormatException e) {

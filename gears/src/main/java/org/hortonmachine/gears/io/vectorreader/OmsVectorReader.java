@@ -137,6 +137,7 @@ public class OmsVectorReader extends HMModel {
         File vectorFile = new File(file);
         String name = vectorFile.getName();
         if (name.toLowerCase().endsWith(HMConstants.SHP)) {
+        	checkExistence(vectorFile);
             OmsShapefileFeatureReader reader = new OmsShapefileFeatureReader();
             reader.file = vectorFile.getAbsolutePath();
             reader.pm = pm;
@@ -149,6 +150,7 @@ public class OmsVectorReader extends HMModel {
             SqlName spatialTable = null;
             String dbPath = null;
             if (!name.contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
+            	checkExistence(vectorFile);
                 try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
                     db.open(vectorFile.getAbsolutePath());
                     db.initSpatialMetadata(null);
@@ -179,6 +181,7 @@ public class OmsVectorReader extends HMModel {
                 }
                 spatialTable = SqlName.m(split[1]);
                 dbPath = split[0];
+                checkExistence(new File(dbPath));
             }
             try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
                 db.open(dbPath);
@@ -198,8 +201,10 @@ public class OmsVectorReader extends HMModel {
                 }
             }
         } else if (name.toLowerCase().endsWith("properties")) {
+        	checkExistence(vectorFile);
             outVector = OmsPropertiesFeatureReader.readPropertiesfile(vectorFile.getAbsolutePath());
         } else if (name.toLowerCase().endsWith("geojson") || name.toLowerCase().endsWith("json")) {
+        	checkExistence(vectorFile);
         	FeatureJSON fjson = new FeatureJSON();
         	try (Reader r = new FileReader(vectorFile)) {
         	    outVector = (SimpleFeatureCollection) fjson.readFeatureCollection(r);
@@ -210,12 +215,14 @@ public class OmsVectorReader extends HMModel {
         	String typeName = null;
         	if (name.toLowerCase().contains("." + HMConstants.GPKG) && name.toLowerCase().contains(HMConstants.DB_TABLE_PATH_SEPARATOR)) {
         		String[] split = file.split(HMConstants.DB_TABLE_PATH_SEPARATOR);
+        		checkExistence(new File(split[0]));
 				params.put("dbtype", "geopkg");
 				params.put("database", split[0]);
 				if (split.length > 1 && split[1].trim().length() != 0) {
 					typeName = split[1];
 				}
         	} else {
+        		checkExistence(vectorFile);
         		params.put("url", vectorFile.toURI().toURL());
         	}
         	
@@ -230,6 +237,12 @@ public class OmsVectorReader extends HMModel {
 			}
         }
     }
+
+	private void checkExistence(File vectorFile) {
+		if (!vectorFile.exists()) {
+			throw new ModelsIllegalargumentException("The input file does not exist: " + vectorFile, this);
+		}
+	}
 
     /**
      * Fast read access mode. 

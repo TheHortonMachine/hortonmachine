@@ -1078,12 +1078,23 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
 
     /**
      * Delete a geo-table with all attached indexes and stuff.
-     * 
+     *
      * @param tableName
      * @throws Exception
      */
     public void deleteGeoTable( SqlName tableName ) throws Exception {
-        String sql = getType().getSqlTemplates().dropTable(tableName, null);
+        // Get geometry column before dropping anything so we can clean up the rtree
+        String geomColumn = null;
+        try {
+            GeometryColumn gc = getGeometryColumnsForTable(tableName);
+            if (gc != null) {
+                geomColumn = gc.geometryColumnName;
+            }
+        } catch (Exception e) {
+            // ignore, table may not have geometry metadata
+        }
+
+        String sql = getType().getSqlTemplates().dropTable(tableName, geomColumn);
         sqliteDb.executeInsertUpdateDeleteSql(sql);
     }
 

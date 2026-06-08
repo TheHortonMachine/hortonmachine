@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.modules.ClassField;
 import org.scannotation.AnnotationDB;
 import org.scannotation.ClasspathUrlFinder;
@@ -149,87 +150,91 @@ public class HortonMachine {
 
             Set<Entry<String, Class< ? >>> moduleName2ClassEntries = moduleName2Class.entrySet();
             for( Entry<String, Class< ? >> moduleName2ClassEntry : moduleName2ClassEntries ) {
-                String moduleName = moduleName2ClassEntry.getKey();
-                Class< ? > moduleClass = moduleName2ClassEntry.getValue();
-                Status annotation = moduleClass.getAnnotation(Status.class);
-                if (annotation == null) {
-                    System.out.println("Missing status: " + moduleClass.getCanonicalName());
-                    continue;
-                }
-                String statusString = null;
-                int status = annotation.value();
-                switch( status ) {
-                case Status.CERTIFIED:
-                    statusString = "CERTIFIED";
-                    break;
-                case Status.DRAFT:
-                    statusString = "DRAFT";
-                    break;
-                case Status.TESTED:
-                    statusString = "TESTED";
-                    break;
-                default:
-                    statusString = "UNKNOWN";
-                    break;
-                }
+					String moduleName = moduleName2ClassEntry.getKey();
+					try {
+					Class< ? > moduleClass = moduleName2ClassEntry.getValue();
+					Status annotation = moduleClass.getAnnotation(Status.class);
+					if (annotation == null) {
+						Logger.INSTANCE.e("Missing status: " + moduleClass.getCanonicalName());
+					    continue;
+					}
+					String statusString = null;
+					int status = annotation.value();
+					switch( status ) {
+					case Status.CERTIFIED:
+					    statusString = "CERTIFIED";
+					    break;
+					case Status.DRAFT:
+					    statusString = "DRAFT";
+					    break;
+					case Status.TESTED:
+					    statusString = "TESTED";
+					    break;
+					default:
+					    statusString = "UNKNOWN";
+					    break;
+					}
 
-                classNames.add(moduleName);
+					classNames.add(moduleName);
 
-                List<ClassField> tmpfields = new ArrayList<ClassField>();
-                Object annotatedObject = moduleClass.newInstance();
-                ComponentAccess cA = new ComponentAccess(annotatedObject);
-                Collection<Access> inputs = cA.inputs();
-                for( Access access : inputs ) {
-                    Field field = access.getField();
-                    String name = field.getName();
-                    Description descriptionAnnot = field.getAnnotation(Description.class);
-                    String description = name;
-                    if (descriptionAnnot != null) {
-                        description = descriptionAnnot.value();
-                        if (description == null) {
-                            description = name;
-                        }
-                    }
-                    Class< ? > fieldClass = field.getType();
-                    ClassField cf = new ClassField();
-                    cf.isIn = true;
-                    cf.fieldName = name;
-                    cf.fieldDescription = description;
-                    cf.fieldClass = fieldClass;
-                    cf.parentClass = moduleClass;
-                    cf.parentClassStatus = statusString;
-                    if (!fieldNamesList.contains(name)) {
-                        fieldNamesList.add(name);
-                    }
-                    tmpfields.add(cf);
+					List<ClassField> tmpfields = new ArrayList<ClassField>();
+					Object annotatedObject = moduleClass.newInstance();
+					ComponentAccess cA = new ComponentAccess(annotatedObject);
+					Collection<Access> inputs = cA.inputs();
+					for( Access access : inputs ) {
+					    Field field = access.getField();
+					    String name = field.getName();
+					    Description descriptionAnnot = field.getAnnotation(Description.class);
+					    String description = name;
+					    if (descriptionAnnot != null) {
+					        description = descriptionAnnot.value();
+					        if (description == null) {
+					            description = name;
+					        }
+					    }
+					    Class< ? > fieldClass = field.getType();
+					    ClassField cf = new ClassField();
+					    cf.isIn = true;
+					    cf.fieldName = name;
+					    cf.fieldDescription = description;
+					    cf.fieldClass = fieldClass;
+					    cf.parentClass = moduleClass;
+					    cf.parentClassStatus = statusString;
+					    if (!fieldNamesList.contains(name)) {
+					        fieldNamesList.add(name);
+					    }
+					    tmpfields.add(cf);
 
-                }
-                Collection<Access> outputs = cA.outputs();
-                for( Access access : outputs ) {
-                    Field field = access.getField();
-                    String name = field.getName();
-                    Description descriptionAnnot = field.getAnnotation(Description.class);
-                    String description = name;
-                    if (descriptionAnnot != null) {
-                        description = descriptionAnnot.value();
-                        if (description == null) {
-                            description = name;
-                        }
-                    }
-                    Class< ? > fieldClass = field.getType();
-                    ClassField cf = new ClassField();
-                    cf.isOut = true;
-                    cf.fieldName = name;
-                    cf.fieldDescription = description;
-                    cf.fieldClass = fieldClass;
-                    cf.parentClass = moduleClass;
-                    cf.parentClassStatus = statusString;
-                    if (!fieldNamesList.contains(name)) {
-                        fieldNamesList.add(name);
-                    }
-                    tmpfields.add(cf);
-                }
-                moduleName2Fields.put(moduleName, tmpfields);
+					}
+					Collection<Access> outputs = cA.outputs();
+					for( Access access : outputs ) {
+					    Field field = access.getField();
+					    String name = field.getName();
+					    Description descriptionAnnot = field.getAnnotation(Description.class);
+					    String description = name;
+					    if (descriptionAnnot != null) {
+					        description = descriptionAnnot.value();
+					        if (description == null) {
+					            description = name;
+					        }
+					    }
+					    Class< ? > fieldClass = field.getType();
+					    ClassField cf = new ClassField();
+					    cf.isOut = true;
+					    cf.fieldName = name;
+					    cf.fieldDescription = description;
+					    cf.fieldClass = fieldClass;
+					    cf.parentClass = moduleClass;
+					    cf.parentClassStatus = statusString;
+					    if (!fieldNamesList.contains(name)) {
+					        fieldNamesList.add(name);
+					    }
+					    tmpfields.add(cf);
+					}
+					moduleName2Fields.put(moduleName, tmpfields);
+				} catch (Exception e) {
+					Logger.INSTANCE.e("Failed to load module: " + moduleName);
+				}
             }
             Collections.sort(fieldNamesList);
             allFields = (String[]) fieldNamesList.toArray(new String[fieldNamesList.size()]);

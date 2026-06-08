@@ -116,7 +116,58 @@ public class CommonQueries {
                         + "CREATE SPATIAL INDEX myspatialindex ON newtablename(the_geom);");
                 break;
             case POSTGIS:
-                templatesMap.put("reproject table", "ALTER TABLE tableName ALTER COLUMN the_geom\n  TYPE Geometry(geomtype, toSrid) \n  USING ST_Transform(the_geom, toSrid);");
+                templatesMap.put("reproject table",
+                        "ALTER TABLE TABLENAME ALTER COLUMN geom\n"
+                        + "  TYPE Geometry(GEOMTYPE, NEWSRID)\n"
+                        + "  USING ST_Transform(geom, NEWSRID);");
+                templatesMap.put("list indexes on table",
+                        "SELECT indexname, indexdef\n"
+                        + "FROM pg_indexes\n"
+                        + "WHERE tablename = 'TABLENAME'\n"
+                        + "ORDER BY indexname;");
+                templatesMap.put("list spatial indexes",
+                        "SELECT tablename, indexname, indexdef\n"
+                        + "FROM pg_indexes\n"
+                        + "WHERE indexdef ILIKE '%using gist%'\n"
+                        + "ORDER BY tablename, indexname;");
+                templatesMap.put("create spatial index",
+                        "CREATE INDEX idx_TABLENAME_geom ON TABLENAME USING GIST (geom);");
+                templatesMap.put("check invalid geometries",
+                        "SELECT id, ST_IsValid(geom), ST_IsValidReason(geom)\n"
+                        + "FROM TABLENAME\n"
+                        + "WHERE NOT ST_IsValid(geom);");
+                templatesMap.put("fix invalid geometries",
+                        "UPDATE TABLENAME\n"
+                        + "SET geom = ST_MakeValid(geom)\n"
+                        + "WHERE NOT ST_IsValid(geom);");
+                templatesMap.put("nearest neighbor (KNN)",
+                        "SELECT *, geom <-> ST_MakePoint(X, Y)::geometry AS distance\n"
+                        + "FROM TABLENAME\n"
+                        + "ORDER BY geom <-> ST_MakePoint(X, Y)::geometry\n"
+                        + "LIMIT 10;");
+                templatesMap.put("within distance",
+                        "SELECT *\n"
+                        + "FROM TABLENAME\n"
+                        + "WHERE ST_DWithin(geom, ST_MakePoint(X, Y)::geometry, DISTANCE);");
+                templatesMap.put("dissolve / union by field",
+                        "SELECT FIELD, ST_Union(geom) AS geom\n"
+                        + "FROM TABLENAME\n"
+                        + "GROUP BY FIELD;");
+                templatesMap.put("geometry type count",
+                        "SELECT ST_GeometryType(geom), count(*)\n"
+                        + "FROM TABLENAME\n"
+                        + "GROUP BY ST_GeometryType(geom)\n"
+                        + "ORDER BY count(*) DESC;");
+                templatesMap.put("table disk size",
+                        "SELECT\n"
+                        + "  pg_size_pretty(pg_total_relation_size('TABLENAME')) AS total_size,\n"
+                        + "  pg_size_pretty(pg_relation_size('TABLENAME'))       AS table_size,\n"
+                        + "  pg_size_pretty(pg_indexes_size('TABLENAME'))        AS indexes_size;");
+                templatesMap.put("explain analyze",
+                        "EXPLAIN (ANALYZE, BUFFERS, FORMAT TEXT)\n"
+                        + "SELECT * FROM TABLENAME WHERE CONDITION;");
+                templatesMap.put("vacuum analyze",
+                        "VACUUM ANALYZE TABLENAME;");
                 break;
 
             default:

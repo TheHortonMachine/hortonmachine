@@ -35,7 +35,14 @@ public abstract class GeometryColumn {
     public EGeometryType geometryType;
     public int coordinatesDimension;
     public int srid;
+    /** CRS authority name, e.g. {@code "EPSG"} or {@code "ESRI"}. Defaults to EPSG for backwards compatibility. */
+    public String authority = "EPSG";
     public int isSpatialIndexEnabled;
+
+    /** Returns the authority-qualified CRS code, e.g. {@code "EPSG:4326"} or {@code "ESRI:102700"}. */
+    public String getCrsCode() {
+        return authority + ":" + srid;
+    }
     
     public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -45,6 +52,7 @@ public abstract class GeometryColumn {
 		sb.append("\tgeometryType=").append(geometryType).append(", \n");
 		sb.append("\tcoordinatesDimension=").append(coordinatesDimension).append(", \n");
 		sb.append("\tsrid=").append(srid).append(", \n");
+		sb.append("\tauthority=").append(authority).append(", \n");
 		sb.append("\tisSpatialIndexEnabled=").append(isSpatialIndexEnabled).append("\n");
 		sb.append("]");
 		return sb.toString();

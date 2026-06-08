@@ -285,6 +285,17 @@ public class HMModel {
         GridCoverage2D geodata = reader.outRaster;
         return geodata;
     }
+    
+    /**
+     * Fast default reading of raster from definition, but as HMRaster.
+     * 
+     * @param source the path to the raster.
+     * @return the read {@link HMRaster}.
+     * @throws Exception
+     */
+    public HMRaster getHMRaster( String source ) throws Exception {
+    	return HMRaster.fromFile(source);
+    }
 
     /**
      * Fast default reading of vector from definition. 

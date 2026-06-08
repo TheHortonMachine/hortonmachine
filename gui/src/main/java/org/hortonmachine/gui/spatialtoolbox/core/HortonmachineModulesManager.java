@@ -26,12 +26,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.HortonMachine;
 import org.hortonmachine.lesto.Lesto;
 import org.hortonmachine.modules.Modules;
@@ -110,6 +112,27 @@ public class HortonmachineModulesManager {
             moduleNames2Classes.put(name, entry.getValue());
         }
 
+        // pick up any external modules registered via SPI
+        ServiceLoader<HMModel> spiModules = ServiceLoader.load(HMModel.class);
+        for( HMModel spiModule : spiModules ) {
+            Class< ? > clazz = spiModule.getClass();
+            UI uiHints = clazz.getAnnotation(UI.class);
+            if (uiHints != null && uiHints.value().contains(HMConstants.HIDE_UI_HINT)) {
+                continue;
+            }
+            Label label = clazz.getAnnotation(Label.class);
+            if (label != null && label.value().trim().isEmpty()) {
+                continue;
+            }
+            String name = clazz.getSimpleName();
+            if (name.startsWith("Oms")) {
+                continue;
+            }
+            if (!moduleNames2Classes.containsKey(name)) {
+                moduleNames2Classes.put(name, clazz);
+            }
+        }
+
         Collection<Class< ? >> classesList = moduleNames2Classes.values();
         for( Class< ? > moduleClass : classesList ) {
             try {
@@ -124,8 +147,11 @@ public class HortonmachineModulesManager {
                 }
 
                 Label category = moduleClass.getAnnotation(Label.class);
+                if (category != null && category.value().trim().isEmpty()) {
+                    continue;
+                }
                 String categoryStr = HMConstants.OTHER;
-                if (category != null && categoryStr.trim().length() > 1) {
+                if (category != null) {
                     categoryStr = category.value();
                 }
 
@@ -182,9 +208,9 @@ public class HortonmachineModulesManager {
                     modulesList4Category.add(module);
                 }
 
-            } catch (NoClassDefFoundError e) {
+            } catch (Exception | NoClassDefFoundError e) {
                 if (moduleClass != null)
-                    Logger.INSTANCE.insertError("", "ERROR", e.getCause());
+                    Logger.INSTANCE.insertError("", "ERROR in module " + moduleClass.getName(), e);
             }
         }
 

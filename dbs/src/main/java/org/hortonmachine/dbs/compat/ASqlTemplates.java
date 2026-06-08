@@ -40,6 +40,11 @@ public abstract class ASqlTemplates {
         return query;
     }
 
+    public String selectOrderedOnColumn( String columnName, SqlName tableName, boolean ascending ) {
+        String order = ascending ? "ASC" : "DESC";
+        return "SELECT * FROM " + tableName.fixedDoubleName + " ORDER BY " + columnName + " " + order;
+    }
+
 
     public String updateOnColumn( SqlName tableName, String columnName ) {
         String query = "UPDATE " + tableName + " SET " + columnName + " = XXX";

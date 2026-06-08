@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.database;
 
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,8 +36,12 @@ import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
@@ -112,6 +117,30 @@ public class SqlTemplatesAndActions {
                 String columnName = column.columnName;
                 String tableName = column.parent.tableName.getFullName();
                 String query = sqlTemplates.selectOnColumn(columnName, SqlName.m(tableName));
+                spatialiteViewer.addTextToQueryEditor(query);
+            }
+        };
+    }
+
+    public Action getSelectOrderedAscOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Select ordered ASC on column"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String columnName = column.columnName;
+                String tableName = column.parent.tableName.getFullName();
+                String query = sqlTemplates.selectOrderedOnColumn(columnName, SqlName.m(tableName), true);
+                spatialiteViewer.addTextToQueryEditor(query);
+            }
+        };
+    }
+
+    public Action getSelectOrderedDescOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
+        return new AbstractAction("Select ordered DESC on column"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                String columnName = column.columnName;
+                String tableName = column.parent.tableName.getFullName();
+                String query = sqlTemplates.selectOrderedOnColumn(columnName, SqlName.m(tableName), false);
                 spatialiteViewer.addTextToQueryEditor(query);
             }
         };
@@ -1099,12 +1128,32 @@ public class SqlTemplatesAndActions {
                         String engineUrl = connectionData.connectionUrl.substring(0, lastSlash);
                         String dbName = connectionData.connectionUrl.substring(lastSlash + 1);
 
-                        String selectedName = GuiUtilities.showComboDialog(databaseViewer, "Select database",
-                                "Select the database to switch to", databasesNames.toArray(new String[0]), dbName);
-                        if (selectedName != null && !selectedName.equals(dbName)) {
-                            connectionData.connectionUrl = engineUrl + "/" + selectedName;
-                            connectionData.connectionLabel = selectedName;
-                            databaseViewer.openDatabase(connectionData, false);
+                        JComboBox<String> combo = new JComboBox<>(databasesNames.toArray(new String[0]));
+                        combo.setSelectedItem(dbName);
+                        JCheckBox openInNewWindowCheck = new JCheckBox("Open in new window");
+                        JPanel panel = new JPanel(new BorderLayout(0, 5));
+                        panel.add(new JLabel("Select the database to switch to:"), BorderLayout.NORTH);
+                        panel.add(combo, BorderLayout.CENTER);
+                        panel.add(openInNewWindowCheck, BorderLayout.SOUTH);
+
+                        int result = JOptionPane.showConfirmDialog(databaseViewer, panel, "Select database",
+                                JOptionPane.OK_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+                        if (result == JOptionPane.OK_OPTION) {
+                            String selectedName = (String) combo.getSelectedItem();
+                            boolean openNew = openInNewWindowCheck.isSelected();
+                            if (selectedName != null && (openNew || !selectedName.equals(dbName))) {
+                                ConnectionData newConnectionData = new ConnectionData();
+                                newConnectionData.dbType = connectionData.dbType;
+                                newConnectionData.connectionUrl = engineUrl + "/" + selectedName;
+                                newConnectionData.connectionLabel = selectedName;
+                                newConnectionData.user = connectionData.user;
+                                newConnectionData.password = connectionData.password;
+                                if (openNew) {
+                                    DatabaseViewer.openInNewWindow(newConnectionData);
+                                } else {
+                                    databaseViewer.openDatabase(newConnectionData, false);
+                                }
+                            }
                         }
                     } catch (Exception ex) {
                         GuiUtilities.handleError(databaseViewer, ex);

@@ -19,13 +19,24 @@ package org.hortonmachine.modules;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.morpher.OmsMorpher;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+@Description("Mophologic binary operations")
+@Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
+@Keywords("Dilation, Erosion, Skeletonize, Open, Close, Raster")
+@Label(HMConstants.RASTERPROCESSING)
 @Name("morpher")
+@Status(Status.DRAFT)
+@License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Morpher extends OmsMorpher {
 
     @Description("The map to morph.")

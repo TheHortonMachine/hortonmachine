@@ -19,7 +19,23 @@
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gears</artifactId>
 		</dependency>
-
+		
+		<dependency>
+		    <groupId>org.geoframe</groupId>
+		    <artifactId>erm</artifactId>
+		    <version>1.1.2</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.geoframe</groupId>
+		    <artifactId>rainsnowseparation</artifactId>
+		    <version>0.9.3</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.geoframe</groupId>
+		    <artifactId>snowmelting</artifactId>
+		    <version>0.9.3</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

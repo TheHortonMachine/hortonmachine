@@ -5,6 +5,8 @@ import java.io.File;
 import org.eclipse.imagen.Interpolation;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.GeographicCRS;
+import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -14,52 +16,116 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.projection.ProjectionException;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 
+/**
+ * Utility class for transforming geometries, features, and rasters between different
+ * coordinate reference systems (CRS).
+ */
 public class HMCrsTransformer {
+	private static final double SAFE_MAX_LAT = 89.9999;
+	private static final double SAFE_MAX_LON = 179.9999;
+	private static final Geometry SAFE_GEOGRAPHIC_EXTENT = new GeometryFactory().toGeometry(
+	        new Envelope(-SAFE_MAX_LON, SAFE_MAX_LON, -SAFE_MAX_LAT, SAFE_MAX_LAT));
 	
 	private CoordinateReferenceSystem fromCrs;
 	private CoordinateReferenceSystem toCrs;
 	private boolean acceptLenientDatumShift = true;
 	private MathTransform mathTransform;
 
+	/**
+	 * Creates a new HMCrsTransformer for transforming between the specified source and target CRS.
+	 * 
+	 * @param fromCrs
+	 * @param toCrs
+	 */
 	public HMCrsTransformer(CoordinateReferenceSystem fromCrs, CoordinateReferenceSystem toCrs) {
 		this.fromCrs = fromCrs;
 		this.toCrs = toCrs;
 	}
 	
-	public HMCrsTransformer(String fromEpsgCode, String toEpsgCode, boolean longitudeFirst) throws Exception {
-		this.fromCrs = HMCrsRegistry.INSTANCE.getCrs(fromEpsgCode, longitudeFirst);
-		this.toCrs = HMCrsRegistry.INSTANCE.getCrs(toEpsgCode, longitudeFirst);
+	/**
+	 * Creates a new HMCrsTransformer for transforming between the specified source 
+	 * and target CRS, with options for longitude-first axis order. 
+	 * 
+	 * @param fromEpsgCode
+	 * @param toEpsgCode
+	 * @param fromLongitudeFirst setting to true will attempt to retrieve the source CRS 
+	 * 			with longitude-first axis order.
+	 * @param toLongitudeFirst setting to true will attempt to retrieve the target CRS 
+	 * 			with longitude-first axis order.
+	 * @throws Exception
+	 */
+	public HMCrsTransformer(String fromEpsgCode, String toEpsgCode, boolean fromLongitudeFirst, boolean toLongitudeFirst) throws Exception {
+		this.fromCrs = HMCrsRegistry.INSTANCE.getCrs(fromEpsgCode, fromLongitudeFirst);
+		this.toCrs = HMCrsRegistry.INSTANCE.getCrs(toEpsgCode, toLongitudeFirst);
 	}
-	
+
+	/**
+	 * Creates a new HMCrsTransformer for transforming between the specified source and target CRS.
+	 * The CRS will be retrieved with the default axis order.
+	 * 
+	 * @param fromEpsgCode
+	 * @param toEpsgCode
+	 * @throws Exception
+	 */
 	public HMCrsTransformer(String fromEpsgCode, String toEpsgCode) throws Exception {
-		this(fromEpsgCode, toEpsgCode, false);
+		this(fromEpsgCode, toEpsgCode, false, false);
 	}
 	
+	/**
+	 * Sets whether to accept lenient datum shifts during transformation.
+	 * 
+	 * @param acceptLenientDatumShift
+	 */
 	public void setAcceptLenientDatumShift(boolean acceptLenientDatumShift) {
 		this.acceptLenientDatumShift = acceptLenientDatumShift;
 	}
 	
+	/**
+	 * Initializes the math transform if it has not been initialized yet.
+	 * 
+	 * @throws Exception
+	 */
 	private void init() throws Exception {
 		if (mathTransform == null) {
 			mathTransform = CRS.findMathTransform(fromCrs, toCrs, acceptLenientDatumShift);
 		}
 	}
 	
+	/**
+	 * Returns the MathTransform object for transforming between the source and target CRS.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
 	public MathTransform getMathTransform() throws Exception {
 		init();
 		return mathTransform;
 	}
 	
 	public Geometry transform(Geometry geometry) throws Exception {
-		init();
-		return JTS.transform(geometry, mathTransform);
+	    init();
+	    try {
+	        return JTS.transform(geometry, mathTransform);
+	    } catch (ProjectionException e) {
+	        if (!(fromCrs instanceof GeographicCRS) || !(toCrs instanceof ProjectedCRS)) {
+	            throw e; // not a pole/antimeridian issue, rethrow
+	        }
+	        Geometry clipped = geometry.intersection(SAFE_GEOGRAPHIC_EXTENT);
+	        if (clipped.isEmpty()) {
+	            throw e; // geometry was entirely outside safe extent, rethrow original
+	        }
+	        return JTS.transform(clipped, mathTransform);
+	    }
 	}
+
 	
 	public Coordinate transform(Coordinate coordinate) throws Exception {
 		init();

@@ -31,9 +31,11 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.Operations;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -123,8 +125,9 @@ public class HMRaster implements AutoCloseable {
     }
 
     /**
-     * Build a raster baking a geotools gridCoverage.
+     * Build a raster backing a geotools gridCoverage.
      * 
+     * @param name an optional name to give to the raster. If null, the name of the coverage is used.
      * @param coverage the coverage to use.
      * @return the HMRaster instance.
      */
@@ -148,21 +151,95 @@ public class HMRaster implements AutoCloseable {
         return hmRaster;
     }
 
+    /**
+     * Build a raster backing a geotools gridCoverage.
+     * 
+     * @param coverage the coverage to use.
+     * @return the HMRaster instance.
+     */
     public static HMRaster fromGridCoverage( GridCoverage2D coverage ) {
+        return fromGridCoverage(coverage, null);
+    }
+
+    /**
+	 * Build a raster backing a geotools gridCoverage, optionally extracting a single band.
+	 * 
+	 * @param coverage the coverage to use.
+	 * @param bandIndex optional index of the band to extract. If null, the first band is used.
+	 * @return the HMRaster instance.
+	 */
+    public static HMRaster fromGridCoverage( GridCoverage2D coverage, Integer bandIndex ) {
+    	if(bandIndex != null) {
+			coverage = extractBand(coverage, bandIndex);
+		}
         return fromGridCoverage(null, coverage);
     }
     
+    /**
+	 * Build a writable raster using a gridcoverage as template.
+	 * 
+	 * @param name an optional name to give to the raster. If null, the name of the coverage is used.
+	 * @param coverage the coverage to use as template for the writable raster.
+	 * @return the HMRaster instance.
+	 */
     public static HMRaster fromGridCoverageWritable( String name, GridCoverage2D coverage ) {
     	return new HMRaster.HMRasterWritableBuilder().
         		setName("pitfiller").setTemplate(coverage).setCopyValues(true).build();
 	}
     
+    /**
+     * Build a writable raster using a gridcoverage as template.
+     * 
+	 * @param coverage the coverage to use as template for the writable raster.
+	 * @return the HMRaster instance.
+     */
     public static HMRaster fromGridCoverageWritable(GridCoverage2D coverage ) {
     	return fromGridCoverageWritable(null, coverage);
     }
     
+    /**
+     * Build a raster from a file path.
+     * 
+     * @param path the path to the file.
+     * @return the HMRaster instance.
+     */
+    public static HMRaster fromFile(String path) throws Exception {
+    	return fromFile(new File(path));
+    }
+
+    /**
+	 * Build a raster from a file, optionally extracting a single band.
+	 * 
+	 * @param path the path to the file.
+	 * @param bandIndex optional index of the band to extract. If null, the first band is used.
+	 * @return the HMRaster instance.
+	 */
+    public static HMRaster fromFile(String path, Integer bandIndex) throws Exception {
+    	return fromFile(new File(path), bandIndex);
+    }
+    
+    /**
+	 * Build a raster from a file.
+	 * 
+	 * @param file the file to read.
+	 * @return the HMRaster instance.
+	 */
     public static HMRaster fromFile(File file) throws Exception {
+    	return fromFile(file, null);
+    }
+    
+    /**
+	 * Build a raster from a file, optionally extracting a single band.
+	 * 	
+	 * @param file the file to read.
+	 * @param bandIndex optional index of the band to extract. If null, the first band is used.
+	 * @return the HMRaster instance.
+	 */
+    public static HMRaster fromFile(File file, Integer bandIndex) throws Exception {
     	var gc = OmsRasterReader.readRaster(file.getAbsolutePath());
+    	if(bandIndex != null) {
+			gc = extractBand(gc, bandIndex);
+    	}
     	return fromGridCoverage(gc);
     }
     
@@ -170,10 +247,20 @@ public class HMRaster implements AutoCloseable {
         return name;
     }
 
+    /**
+     * Get the region map of this raster.
+     * 
+     * @return the region map of this raster.
+     */
     public RegionMap getRegionMap() {
         return RegionMap.fromRegionMap(regionMap);
     }
     
+	/**
+	 * Get the region map of the actual data contained in this raster, i.e. the bounding box of the valid values.
+	 * 
+	 * @return the region map of the actual data contained in this raster.
+	 */
 	public RegionMap getDataRegionMap() {
 		// loop over the region map and find the actual data region
 		int minRow = Integer.MAX_VALUE;
@@ -805,6 +892,16 @@ public class HMRaster implements AutoCloseable {
             System.out.println();
         }
     }
+    
+    public void writeToFile( String path ) throws Exception {
+		GridCoverage2D coverage = buildCoverage();
+		OmsRasterWriter.writeRaster(path,coverage);
+	}
+    
+	public static GridCoverage2D extractBand(GridCoverage2D coverage, int bandIndex) {
+		coverage = (GridCoverage2D) Operations.DEFAULT.selectSampleDimension(coverage, new int[]{bandIndex});
+		return coverage;
+	}
 
     private static class CategoriesInCell {
         int mostPresentValue = 0;

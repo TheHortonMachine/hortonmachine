@@ -45,7 +45,7 @@ import oms3.annotations.Range;
 import oms3.annotations.Status;
 
 @Description("Module that extracts a gridcoverage for a given area of interest, resampling it if necessary.")
-@Label("Area of interest")
+@Label("")
 @Name("Area of interest")
 @Documentation("")
 @Author(name = "Andrea Antonello, Falko Braeutigam", contact = "www.hydrologis.com")
