@@ -32,13 +32,13 @@ import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
-import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -54,6 +54,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
@@ -622,12 +623,12 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), null, false);
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC,
 						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), -1, false, pm);
-
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
-						SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC,
-						SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), -1, false, pm);
-
+				if (streamGaugeFC != null && streamGaugeFC.size() > 0) {
+					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
+							SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), null, false);
+					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC,
+							SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), -1, false, pm);
+				}
 			}
 		}
 
@@ -776,9 +777,11 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		if (basinPolygon instanceof Polygon) {
 			dumpBasin = GeometryUtilities.gf().createMultiPolygon(new Polygon[] { (Polygon) basinPolygon });
 		}
-		String featureUserType = (isLake && lakesTypeList != null && lakesTypeList.size() > k) ? lakesTypeList.get(k)
-				: SubbasinsTypeField.HILLSOLOPE.key();
-		int id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
+		String featureUserType = (isLake && lakesTypeList != null && lakesTypeList.size() > k)
+				? lakesTypeList.toString()
+				: SubbasinsTypeField.HILLSOLOPE.toString();
+
+		String id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
 		Object[] basinValues = new Object[] { dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2,
 				mainNetLength, skyview, featureUserType, id };
 		basinsBuilder.addAll(basinValues);
@@ -946,7 +949,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		b.add("length_m", Double.class);
 		b.add("skyview", Double.class);
 		b.add("type", Integer.class);
-		b.add("stream_gauge_id", Integer.class);
+		b.add("stream_gauge_id", String.class);
 		SimpleFeatureType type = b.buildFeatureType();
 		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 		return builder;
@@ -957,8 +960,8 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		b.setName(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE);
 		b.setCRS(crs);
 		b.add("the_geom", geom);
-		b.add("stream_gauge_id", Integer.class);
-		b.add("basinid", Integer.class);
+		b.add("stream_gauge_id", String.class);
+		b.add("basin_id", Integer.class);
 		SimpleFeatureType type = b.buildFeatureType();
 		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 		return builder;
@@ -1168,51 +1171,30 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 	 *                               polygon.
 	 */
 
-	public int extractId(SimpleFeatureBuilder streamGaugeBuilder, SimpleFeatureCollection breackPoint, Geometry polygon,
-			DefaultFeatureCollection streamGaugeFC2, int basinId) {
+	public String extractId(SimpleFeatureBuilder streamGaugeBuilder, SimpleFeatureCollection breackPoint,
+			Geometry polygon, DefaultFeatureCollection streamGaugeFC2, int basinId) {
 
-		int id = HMConstants.intNovalue;
-		int validCount = 0;
+		var filter = HMFilter.intersects(breackPoint, polygon);
 
-		try (SimpleFeatureIterator it = breackPoint.features()) {
-			while (it.hasNext()) {
-				SimpleFeature f = it.next();
+		SimpleFeatureCollection subCollection = breackPoint.subCollection(filter);
 
-				Object raw = f.getAttribute(inIDStreamGaugeFieldName);
-				if (raw == null)
-					continue;
+		SimpleFeature first = DataUtilities.first(subCollection);
+		if (first != null) {
+			//@todo check if the field exist
+			String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
 
-				String s = raw.toString().trim();
-				if (s.isEmpty())
-					continue;
-				Geometry pointGeom = (Geometry) f.getDefaultGeometry();
+			streamGaugeBuilder.set("the_geom", first.getDefaultGeometry());
+			streamGaugeBuilder.set("stream_gauge_id", id);
+			streamGaugeBuilder.set("basin_id", basinId);
 
-				boolean inside = polygon.intersects(pointGeom);
-				if (!inside)
-					continue;
-				validCount++;
-				if (validCount == 1) {
-					try {
-						id = Integer.parseInt(s);
-
-						streamGaugeBuilder.set("the_geom", pointGeom);
-						streamGaugeBuilder.set("streamGaugeId", id);
-						streamGaugeBuilder.set("basinId", basinId);
-
-						SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
-						streamGaugeFC2.add(newFeature);
-						streamGaugeBuilder.reset();
-
-					} catch (NumberFormatException ex) {
-						continue;
-					}
-				} else {
-					throw new IllegalStateException("Expected 1 valid point in polygon, found at least " + validCount);
-				}
-			}
+			SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
+			streamGaugeFC2.add(newFeature);
+			streamGaugeBuilder.reset();
+			return id;
 		}
 
-		return id;
+		return null;
+
 	}
 
 	/**
@@ -1231,6 +1213,5 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		public String key() {
 			return key;
 		}
-
 	}
 }
