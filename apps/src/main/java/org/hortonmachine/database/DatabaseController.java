@@ -1300,7 +1300,37 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                 };
 
-                JMenuItem item = new JMenuItem(loadConnectionAction);
+                AbstractAction recentConnectionAction = new AbstractAction("Open recent connection"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedBytes = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_RECENT_DATABASES,
+                                    new byte[0]);
+                            List<ConnectionData> recentList = savedBytes.length > 0
+                                    ? (List<ConnectionData>) SqlTemplatesAndActions.convertFromBytes(savedBytes)
+                                    : new ArrayList<>();
+                            recentList.removeIf(c -> c.connectionLabel == null);
+                            if (recentList.isEmpty()) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null,
+                                        "No recent connections available.");
+                            } else {
+                                ConnectionData selected = RecentConnectionsDialog.show(
+                                        DatabaseController.this, recentList);
+                                if (selected != null) {
+                                    openDatabase(selected, false);
+                                }
+                            }
+                        } catch (Exception e1) {
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
+                        }
+                    }
+                };
+
+                JMenuItem item = new JMenuItem(recentConnectionAction);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenuConnectButton.addSeparator();
+                item = new JMenuItem(loadConnectionAction);
                 popupMenuConnectButton.add(item);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 item = new JMenuItem(removeAction);
@@ -1336,6 +1366,33 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             }
         });
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addToRecentConnections( ConnectionData cd ) {
+        try {
+            if (cd == null || cd.connectionUrl == null || cd.connectionUrl.trim().isEmpty())
+                return;
+            if (cd.connectionLabel == null || cd.connectionLabel.trim().isEmpty()) {
+                String url = cd.connectionUrl.replace('\\', '/');
+                int slash = url.lastIndexOf('/');
+                String fileName = slash >= 0 ? url.substring(slash + 1) : url;
+                int dot = fileName.lastIndexOf('.');
+                cd.connectionLabel = dot > 0 ? fileName.substring(0, dot) : fileName;
+            }
+            byte[] savedBytes = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_RECENT_DATABASES, new byte[0]);
+            List<ConnectionData> recentList = savedBytes.length > 0
+                    ? (List<ConnectionData>) SqlTemplatesAndActions.convertFromBytes(savedBytes)
+                    : new ArrayList<>();
+            recentList.removeIf(c -> cd.connectionUrl.equals(c.connectionUrl) && cd.dbType == c.dbType);
+            recentList.add(0, cd);
+            if (recentList.size() > 10)
+                recentList = recentList.subList(0, 10);
+            PreferencesHandler.setPreference(DatabaseGuiUtils.HM_RECENT_DATABASES,
+                    SqlTemplatesAndActions.convertObjectToBytes(recentList));
+        } catch (Exception e) {
+            Logger.INSTANCE.insertError("", "Error saving recent connection", e);
+        }
     }
 
     private void addDataTableContextMenu( JTable table ) {
@@ -2313,6 +2370,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
+                ConnectionData recentCd = new ConnectionData();
+                recentCd.dbType = dbType != null ? dbType.getCode() : -1;
+                recentCd.connectionUrl = dbfilePath;
+                recentCd.user = user;
+                recentCd.password = pwd;
+                addToRecentConnections(recentCd);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
@@ -2381,6 +2444,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
 
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
+                ConnectionData recentCd = new ConnectionData();
+                recentCd.dbType = _type.getCode();
+                recentCd.connectionUrl = _urlString;
+                recentCd.user = user;
+                recentCd.password = _pwd;
+                addToRecentConnections(recentCd);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
