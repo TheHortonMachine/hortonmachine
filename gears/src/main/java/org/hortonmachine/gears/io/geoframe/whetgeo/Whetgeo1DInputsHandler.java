@@ -3,6 +3,7 @@ package org.hortonmachine.gears.io.geoframe.whetgeo;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,19 +59,307 @@ public class Whetgeo1DInputsHandler {
 
     private ADb db;
 
+    // -------------------------------------------------------------------------
+    // Output fields – mirror ReadNetCDFHeatDiffusionGrid1D
+    // -------------------------------------------------------------------------
+
+    /** Number of control volumes. */
+    public int KMAX;
+
+    /** Eta coordinate of volume centroids (zero at surface, negative downward). */
+    public double[] eta;
+    /** Eta coordinate of volume interfaces (KMAX+1). */
+    public double[] etaDual;
+
+    /** Z coordinate of volume centroids (zero at column bottom, positive upward). */
+    public double[] z;
+    /** Z coordinate of volume interfaces (KMAX+1). */
+    public double[] zDual;
+
+    /** Water suction initial condition per centroid. */
+    public double[] psi;
+    /** Temperature initial condition per centroid [K]. */
+    public double[] temperatureIC;
+
+    /** Distance between consecutive centroids / boundary (KMAX+1). */
+    public double[] spaceDelta;
+    /** Control-volume thickness per centroid. */
+    public double[] controlVolume;
+
+    /** Equation-state label per centroid. */
+    public int[] equationStateID;
+    /** Parameter-set label per centroid. */
+    public int[] parameterID;
+
+    /** Soil-particles density per parameter set [kg m-3]. Not in DB – remains null. */
+    public double[] soilParticlesDensity;
+    /** Soil-particles thermal conductivity per parameter set [W m-1 K-1]. Not in DB – remains null. */
+    public double[] soilParticlesThermalConductivity;
+    /** Soil-particles specific heat capacity per parameter set [J kg-1 K-1]. Not in DB – remains null. */
+    public double[] soilParticlesSpecificHeatCapacity;
+
+    /** Saturated volumetric water content per parameter set [-]. */
+    public double[] thetaS;
+    /** Residual volumetric water content per parameter set [-]. */
+    public double[] thetaR;
+
+    /** Melting temperature per parameter set [K]. Not in DB – remains null. */
+    public double[] meltingTemperature;
+
+    /** Hydraulic conductivity at saturation per parameter set [m s-1]. */
+    public double[] Ks;
+    /** Aquitard compressibility per parameter set [Pa-1]. */
+    public double[] alphaSS;
+    /** Water compressibility per parameter set [Pa-1]. */
+    public double[] betaSS;
+
+    /** SWRC parameter 1 per parameter set. */
+    public double[] par1SWRC;
+    /** SWRC parameter 2 per parameter set. */
+    public double[] par2SWRC;
+    /** SWRC parameter 3 per parameter set. */
+    public double[] par3SWRC;
+    /** SWRC parameter 4 per parameter set. */
+    public double[] par4SWRC;
+    /** SWRC parameter 5 per parameter set. */
+    public double[] par5SWRC;
+
+    // -------------------------------------------------------------------------
+
     /**
      * Create a Whetgeo1DInputsHandler from a database.
      */
     public Whetgeo1DInputsHandler(ADb db) {
         this.db = db;
-
-        // TODO: check that the db contains the required tables and columns, and throw an exception if not
     }
 
-    public void read() {
-        // TODO reads all necessary information to public fields. These will be used later from the module.
+    /**
+     * Read all parameters from the database into the public fields.
+     *
+     * <p>Mirrors the output of {@code ReadNetCDFHeatDiffusionGrid1D}.
+     */
+    public void read() throws Exception {
+        readGrid();
+        readSwrcParameters();
+        readInitialConditions();
+    }
 
+    // ---- private helpers ----------------------------------------------------
 
+    private void readGrid() throws Exception {
+        SqlName gridTable = SqlName.m(TABLE_GRID);
+        String sql = String.format("""
+                SELECT %s, %s, %s, %s FROM %s ORDER BY %s DESC
+                """,
+                COL_GRID_ETA, COL_GRID_K, COL_GRID_EQUATION_STATE_ID, COL_GRID_PARAMETER_ID,
+                gridTable.fixedDoubleName, COL_GRID_ETA);
+
+        // Collect all rows (including the K=0 sentinel that marks the bottom boundary)
+        final List<double[]> etaKRows = new ArrayList<>();     // [eta, K]
+        final List<int[]>    idRows   = new ArrayList<>();     // [equationStateID, parameterID]
+        db.execOnResultSet(sql, rs -> {
+            while (rs.next()) {
+                etaKRows.add(new double[]{rs.getDouble(1), rs.getInt(2)});
+                idRows.add(new int[]{rs.getInt(3), rs.getInt(4)});
+            }
+            return null;
+        });
+
+        // Compute KMAX (sum of K values, sentinel rows with K=0 contribute nothing)
+        KMAX = 0;
+        for (double[] row : etaKRows) {
+            KMAX += (int) row[1];
+        }
+
+        eta             = new double[KMAX];
+        z               = new double[KMAX];
+        controlVolume   = new double[KMAX];
+        equationStateID = new int[KMAX];
+        parameterID     = new int[KMAX];
+        etaDual         = new double[KMAX + 1];
+        zDual           = new double[KMAX + 1];
+        spaceDelta      = new double[KMAX + 1];
+
+        // Build centroid and interface arrays layer by layer
+        int globalIdx = 0;
+        for (int i = 0; i < etaKRows.size(); i++) {
+            double etaTop = etaKRows.get(i)[0];
+            int    K      = (int) etaKRows.get(i)[1];
+            if (K == 0) continue; // sentinel row – only used as bottom boundary of previous layer
+
+            double etaBottom = etaKRows.get(i + 1)[0]; // next row provides the lower boundary
+            double cellSize  = (etaTop - etaBottom) / K;
+
+            if (globalIdx == 0) {
+                etaDual[0] = etaTop; // surface interface
+            }
+
+            for (int j = 0; j < K; j++) {
+                eta[globalIdx]             = etaTop - (j + 0.5) * cellSize;
+                controlVolume[globalIdx]   = cellSize;
+                equationStateID[globalIdx] = idRows.get(i)[0];
+                parameterID[globalIdx]     = idRows.get(i)[1];
+                etaDual[globalIdx + 1]     = etaTop - (j + 1) * cellSize;
+                globalIdx++;
+            }
+        }
+
+        // Shift to z coordinate (zero at column bottom, positive upward)
+        double zBottom = etaDual[KMAX];
+        for (int i = 0; i < KMAX; i++) {
+            z[i] = eta[i] - zBottom;
+        }
+        for (int i = 0; i <= KMAX; i++) {
+            zDual[i] = etaDual[i] - zBottom;
+        }
+
+        // spaceDelta: distances between consecutive centroids, with half-cell at each boundary
+        spaceDelta[0] = etaDual[0] - eta[0];
+        for (int i = 1; i < KMAX; i++) {
+            spaceDelta[i] = eta[i - 1] - eta[i];
+        }
+        spaceDelta[KMAX] = eta[KMAX - 1] - etaDual[KMAX];
+    }
+
+    private void readSwrcParameters() throws Exception {
+        // Build colName → parType map from the dictionary table
+        SqlName dictTable = SqlName.m(TABLE_DICTIONARY);
+        String dictSql = String.format("""
+                SELECT %s, %s FROM %s
+                """,
+                COL_DICTIONARY_VAL1, COL_DICTIONARY_VAL2,
+                dictTable.fixedDoubleName);
+
+        final Map<String, String> colToParType = new HashMap<>();
+        db.execOnResultSet(dictSql, rs -> {
+            while (rs.next()) {
+                colToParType.put(rs.getString(1), rs.getString(2));
+            }
+            return null;
+        });
+
+        // Reverse: parType → column name in swrc_parameters (first match wins)
+        List<String> swrcCols = List.of(
+                COL_RICHARDS_N, COL_RICHARDS_ALPHA,
+                COL_RICHARDS_THETAS, COL_RICHARDS_THETAR,
+                COL_RICHARDS_ALPHA_SPECIFIC_STORAGE, COL_RICHARDS_BETA_SPECIFIC_STORAGE,
+                COL_RICHARDS_KS);
+        final Map<String, String> parTypeToCol = new HashMap<>();
+        for (String col : swrcCols) {
+            String parType = colToParType.get(col);
+            if (parType != null) {
+                parTypeToCol.putIfAbsent(parType, col);
+            }
+        }
+
+        SqlName paramTable = SqlName.m(TABLE_RICHARDS_PARAMETERS);
+        int numParams = (int) db.getCount(paramTable);
+
+        thetaS   = new double[numParams];
+        thetaR   = new double[numParams];
+        Ks       = new double[numParams];
+        alphaSS  = new double[numParams];
+        betaSS   = new double[numParams];
+        par1SWRC = new double[numParams];
+        par2SWRC = new double[numParams];
+        par3SWRC = new double[numParams];
+        par4SWRC = new double[numParams];
+        par5SWRC = new double[numParams];
+
+        // Map column name → 1-based index in the SELECT below
+        Map<String, Integer> colIdx = Map.of(
+                COL_RICHARDS_ID,                       1,
+                COL_RICHARDS_THETAS,                   2,
+                COL_RICHARDS_THETAR,                   3,
+                COL_RICHARDS_N,                        4,
+                COL_RICHARDS_ALPHA,                    5,
+                COL_RICHARDS_ALPHA_SPECIFIC_STORAGE,   6,
+                COL_RICHARDS_BETA_SPECIFIC_STORAGE,    7,
+                COL_RICHARDS_KS,                       8);
+
+        String paramSql = String.format("""
+                SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s ORDER BY %s
+                """,
+                COL_RICHARDS_ID, COL_RICHARDS_THETAS, COL_RICHARDS_THETAR,
+                COL_RICHARDS_N, COL_RICHARDS_ALPHA,
+                COL_RICHARDS_ALPHA_SPECIFIC_STORAGE, COL_RICHARDS_BETA_SPECIFIC_STORAGE,
+                COL_RICHARDS_KS,
+                paramTable.fixedDoubleName, COL_RICHARDS_ID);
+
+        db.execOnResultSet(paramSql, rs -> {
+            while (rs.next()) {
+                int idx  = rs.getInt(1) - 1; // id is 1-based
+                thetaS[idx]  = rs.getDouble(2);
+                thetaR[idx]  = rs.getDouble(3);
+                alphaSS[idx] = rs.getDouble(6);
+                betaSS[idx]  = rs.getDouble(7);
+                Ks[idx]      = rs.getDouble(8);
+
+                // Fill parXSWRC via dictionary mapping
+                for (int p = 1; p <= 5; p++) {
+                    String colName = parTypeToCol.get("par" + p);
+                    if (colName == null) continue;
+                    double val = rs.getDouble(colIdx.get(colName));
+                    switch (p) {
+                        case 1 -> par1SWRC[idx] = val;
+                        case 2 -> par2SWRC[idx] = val;
+                        case 3 -> par3SWRC[idx] = val;
+                        case 4 -> par4SWRC[idx] = val;
+                        case 5 -> par5SWRC[idx] = val;
+                    }
+                }
+            }
+            return null;
+        });
+    }
+
+    private void readInitialConditions() throws Exception {
+        SqlName icTable = SqlName.m(TABLE_IC);
+        String sql = String.format("""
+                SELECT %s, %s, %s FROM %s ORDER BY %s DESC
+                """,
+                COL_IC_ETA, COL_IC_PSI0, COL_IC_T0,
+                icTable.fixedDoubleName, COL_IC_ETA);
+
+        // IC points sorted surface-first (eta DESC)
+        final List<double[]> icPoints = new ArrayList<>();
+        db.execOnResultSet(sql, rs -> {
+            while (rs.next()) {
+                icPoints.add(new double[]{rs.getDouble(1), rs.getDouble(2), rs.getDouble(3)});
+            }
+            return null;
+        });
+
+        psi           = new double[KMAX];
+        temperatureIC = new double[KMAX];
+
+        for (int i = 0; i < KMAX; i++) {
+            double etaCell = eta[i];
+
+            // Clamp above the shallowest IC point
+            if (etaCell >= icPoints.get(0)[0]) {
+                psi[i]           = icPoints.get(0)[1];
+                temperatureIC[i] = icPoints.get(0)[2];
+                continue;
+            }
+            // Clamp below the deepest IC point
+            if (etaCell <= icPoints.get(icPoints.size() - 1)[0]) {
+                psi[i]           = icPoints.get(icPoints.size() - 1)[1];
+                temperatureIC[i] = icPoints.get(icPoints.size() - 1)[2];
+                continue;
+            }
+            // Linear interpolation between the two enclosing IC points
+            for (int k = 0; k < icPoints.size() - 1; k++) {
+                double eta1 = icPoints.get(k)[0];
+                double eta2 = icPoints.get(k + 1)[0];
+                if (etaCell <= eta1 && etaCell >= eta2) {
+                    double t = (etaCell - eta1) / (eta2 - eta1);
+                    psi[i]           = icPoints.get(k)[1] + t * (icPoints.get(k + 1)[1] - icPoints.get(k)[1]);
+                    temperatureIC[i] = icPoints.get(k)[2] + t * (icPoints.get(k + 1)[2] - icPoints.get(k)[2]);
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -353,9 +642,16 @@ public class Whetgeo1DInputsHandler {
 
 
     public static void main(String[] args) throws Exception {
-        ADb db = EDb.GEOPACKAGE.getDb();
-        db.open("/home/hydrologis/pCloudDrive/MYCLOUD/G-ANT/lavori/2026_unitn/geospace/netcdf_conversion/whetgeo_1d_inputs.gpkg");
-        createDbFromCsv("/home/hydrologis/pCloudDrive/MYCLOUD/G-ANT/lavori/2026_unitn/geospace/netcdf_conversion/", db);
+        try(ADb db = EDb.GEOPACKAGE.getDb()){
+            db.open("/home/hydrologis/pCloudDrive/MYCLOUD/G-ANT/lavori/2026_unitn/geospace/netcdf_conversion/whetgeo_1d_inputs.gpkg");
+            // createDbFromCsv("/home/hydrologis/pCloudDrive/MYCLOUD/G-ANT/lavori/2026_unitn/geospace/netcdf_conversion/", db);
+            
+            var reader = new Whetgeo1DInputsHandler(db);
+            reader.read();
+            System.out.println("KMAX: " + reader.KMAX);
+        }
+
+    
     }
 
 }
