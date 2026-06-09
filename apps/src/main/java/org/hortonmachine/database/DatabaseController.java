@@ -467,6 +467,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 closeCurrentDb(true);
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
+                GuiUtilities.showErrorMessage(this, e1.getMessage());
             }
         });
 
@@ -490,6 +491,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
+                GuiUtilities.showErrorMessage(this, e1.getMessage());
             }
         });
 
@@ -513,6 +515,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
+                GuiUtilities.showErrorMessage(this, e1.getMessage());
             }
         });
 
@@ -897,6 +900,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                         } catch (Exception e1) {
                             Logger.INSTANCE.insertError("", "ERROR", e1);
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
 
@@ -1591,10 +1595,26 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                     	int index = 0;
                                     	long[] x = new long[selectedRows.length];
                                         double[] y = new double[selectedRows.length];
+                                        long previousTime = -1;
                                         for( int r : selectedRows ) {
                                             Object xObj = table.getValueAt(r, selectedCols[0]);
                                             Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            x[index] = ((Number) xObj).longValue();
+                                            long tmp;
+                                            if (xObj instanceof Number) {
+                                                tmp = ((Number) xObj).longValue();
+                                                // check if it duplicates the previous time and in case ignore it by adding 1 millisecond
+                                                if (tmp == previousTime) {
+                                                    tmp += 1;
+                                                }
+                                                previousTime = tmp;
+                                            } else {
+                                                tmp = DbsUtilities.dbDateFormatter.parse(xObj.toString()).getTime();
+                                                if (tmp == previousTime) {
+                                                    tmp += 1;
+                                                }
+                                                previousTime = tmp;
+                                            }
+                                            x[index] = tmp;
                                             y[index] = ((Number) yObj).doubleValue();
                                             index++;
                                         }
@@ -1682,6 +1702,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 								}
                             } catch (Exception ex) {
                                 Logger.INSTANCE.insertError("", "ERROR", ex);
+                                GuiUtilities.showErrorMessage(popupMenu, ex.getMessage());
                             }
                         }
 
@@ -1946,6 +1967,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     loadDataViewer(qr);
                 } catch (Exception ex) {
                     Logger.INSTANCE.insertError("", "Error refreshing table view", ex);
+                    GuiUtilities.showErrorMessage(DatabaseController.this, ex.getMessage());
                 }
             }
         };
@@ -2179,6 +2201,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                pm.errorMessage("Error creating database: " + e.getMessage());
                 hadError = true;
             } finally {
                 logConsole.finishProcess();
@@ -2407,6 +2430,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                 } catch (Exception e) {
                     Logger.INSTANCE.insertError("", "ERROR", e);
+                    pm.errorMessage("Error opening database: " + e.getMessage());
                     hadError = true;
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
@@ -2420,6 +2444,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                pm.errorMessage("Error opening database: " + e.getMessage());
                 hadError = true;
             } finally {
                 logConsole.finishProcess();
@@ -2494,6 +2519,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                pm.errorMessage("Error connecting to database: " + e.getMessage());
                 hadError = true;
             } finally {
                 logConsole.finishProcess();
