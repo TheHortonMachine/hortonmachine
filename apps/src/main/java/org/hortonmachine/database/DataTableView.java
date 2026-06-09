@@ -25,6 +25,7 @@ public class DataTableView extends JPanel
    JTextField _recordCountTextfield = new JTextField();
    JCheckBox _formatDatesCheckbox = new JCheckBox();
    JTextField _formatDatesPatternTextField = new JTextField();
+   JTextField _selectionStatsTextfield = new JTextField();
 
    /**
     * Default constructor
@@ -146,7 +147,7 @@ public class DataTableView extends JPanel
    public JPanel createPanel2()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.4),FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.5)","CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(0.3),FILL:8DLU:NONE,FILL:DEFAULT:GROW(0.7)","CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -156,6 +157,9 @@ public class DataTableView extends JPanel
 
       _recordCountTextfield.setName("recordCountTextfield");
       jpanel1.add(_recordCountTextfield,cc.xy(3,2));
+
+      _selectionStatsTextfield.setName("selectionStatsTextfield");
+      jpanel1.add(_selectionStatsTextfield,cc.xy(5,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1 });
       return jpanel1;

@@ -266,6 +266,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 .setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
 
         dataTableView._recordCountTextfield.setEditable(false);
+        dataTableView._selectionStatsTextfield.setEditable(false);
 
         sqlEditorView._sqlEditorAreaPanel.setLayout(new BorderLayout());
 
@@ -319,6 +320,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentDataTable = table;
             }
             dataTablesArray[i] = table;
+
+            table.getSelectionModel().addListSelectionListener(e -> updateSelectionStats(table));
+            table.getColumnModel().getSelectionModel().addListSelectionListener(e -> updateSelectionStats(table));
 
             addDataTableContextMenu(table);
         }
@@ -1367,6 +1371,42 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             }
         });
+    }
+
+    private void updateSelectionStats( JTable table ) {
+        if (table != currentDataTable) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        int[] cols = table.getSelectedColumns();
+        if (rows.length == 0 || cols.length == 0) {
+            dataTableView._selectionStatsTextfield.setText("");
+            return;
+        }
+        double sum = 0;
+        int count = 0;
+        for( int r : rows ) {
+            for( int c : cols ) {
+                Object val = table.getValueAt(r, c);
+                if (val instanceof Number) {
+                    sum += ((Number) val).doubleValue();
+                    count++;
+                }
+            }
+        }
+        if (count == 0) {
+            dataTableView._selectionStatsTextfield.setText("");
+        } else {
+            double avg = sum / count;
+            String sumStr = (sum == Math.floor(sum) && !Double.isInfinite(sum))
+                    ? String.valueOf((long) sum)
+                    : String.format("%.6g", sum);
+            String avgStr = (avg == Math.floor(avg) && !Double.isInfinite(avg))
+                    ? String.valueOf((long) avg)
+                    : String.format("%.6g", avg);
+            dataTableView._selectionStatsTextfield
+                    .setText("Sum: " + sumStr + "   Avg: " + avgStr + "   (n=" + count + ")");
+        }
     }
 
     @SuppressWarnings("unchecked")
