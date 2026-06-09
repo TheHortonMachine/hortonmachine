@@ -79,9 +79,9 @@ public class Whetgeo1DInputsHandler {
      */
 	public double[] etaDual;
 
-	/** Z coordinate of volume centroids. */
+	/** Z coordinate of volume centroids. Direction is positive upwards, starting from the bottom boundary. */
 	public double[] z;
-	/** Z coordinate of volume interfaces (KMAX+1). */
+	/** Z coordinate of volume interfaces (KMAX+1). Direction is positive upwards, starting from the bottom boundary. */
 	public double[] zDual;
 
 	/** Water suction initial condition at top and bottom interfaces. */
