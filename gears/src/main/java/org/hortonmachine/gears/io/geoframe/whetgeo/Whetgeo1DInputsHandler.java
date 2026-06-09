@@ -137,8 +137,6 @@ public class Whetgeo1DInputsHandler {
 	/** SWRC parameter 5 per parameter set. */
 	public double[] par5SWRC;
 
-	// -------------------------------------------------------------------------
-
 	/**
 	 * Create a Whetgeo1DInputsHandler from a database.
 	 */
@@ -163,8 +161,6 @@ public class Whetgeo1DInputsHandler {
 		readSwrcParameters();
 		readInitialConditions();
 	}
-
-	// ---- private helpers ----------------------------------------------------
 
 	private void readGrid() throws Exception {
 		SqlName gridTable = SqlName.m(TABLE_GRID);
