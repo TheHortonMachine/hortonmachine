@@ -254,7 +254,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         rightSplitPanel.setDividerLocation(0.3);
 
         _mainSplitPane.setRightComponent(rightSplitPanel);
-        _mainSplitPane.setDividerLocation(0.3);
+        _mainSplitPane.setDividerLocation(0.45);
 
         String[] oldSqlCommandsArray = PreferencesHandler.getPreference("HM_OLD_SQL_COMMANDS", new String[0]);
         for( String oldSql : oldSqlCommandsArray ) {
@@ -529,7 +529,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
 
         try {
-            databaseTreeView._databaseTreeView.setMinimumSize(new Dimension(300, 200));
+            databaseTreeView._databaseTreeView.setMinimumSize(new Dimension(350, 200));
+            databaseTreeView.setPreferredSize(new Dimension(400, 600));
 
             addJtreeDragNDrop();
 
