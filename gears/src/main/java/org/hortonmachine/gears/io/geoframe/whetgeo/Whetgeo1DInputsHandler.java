@@ -2,10 +2,13 @@ package org.hortonmachine.gears.io.geoframe.whetgeo;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -24,11 +27,13 @@ public class Whetgeo1DInputsHandler {
 	 * Names for input files and corresponding database tables and columns. These
 	 * are fixed by convention and must match the CSV files
 	 */
+	public static final double NODATA = -9999.0;
+
 	public static final String PREFIX = "geoframe_whetgeo1d";
 	public static final String TABLE_DICTIONARY = "swrc_parameter_types";
 	public static final String TABLE_IC = "initial_condition";
 	public static final String TABLE_GRID = "grid_geometry";
-	public static final String TABLE_RICHARDS_PARAMETERS = "swrc_parameters";
+	public static final String TABLE_SWRC_PARAMETERS = "swrc_parameters";
 	public static final String TABLE_TEMPERATURE_BOTTOM_INTERFACE = "temperature_bottom_interface";
 	public static final String TABLE_TEMPERATURE_TOP_INTERFACE = "temperature_top_interface";
 
@@ -48,15 +53,19 @@ public class Whetgeo1DInputsHandler {
 	public static final String COL_GRID_EQUATION_STATE_ID = "equationStateID";
 	public static final String COL_GRID_PARAMETER_ID = "parameterID";
 
-	// richards_parameters columns
-	public static final String COL_RICHARDS_ID = "id";
-	public static final String COL_RICHARDS_THETAS = "thetaS";
-	public static final String COL_RICHARDS_THETAR = "thetaR";
-	public static final String COL_RICHARDS_N = "n";
-	public static final String COL_RICHARDS_ALPHA = "alpha";
-	public static final String COL_RICHARDS_ALPHA_SPECIFIC_STORAGE = "alphaSpecificStorage";
-	public static final String COL_RICHARDS_BETA_SPECIFIC_STORAGE = "betaSpecificStorage";
-	public static final String COL_RICHARDS_KS = "Ks";
+	// swrc_parameters columns
+	public static final String COL_SWRC_ID = "id";
+	public static final String COL_SWRC_SP_DENSITY = "spDensity";
+	public static final String COL_SWRC_SP_CONDUCTIVITY = "spConductivity";
+	public static final String COL_SWRC_SP_SPECIFIC_HEAT = "spSpecificHeatCapacity";
+	public static final String COL_SWRC_THETAS = "thetaS";
+	public static final String COL_SWRC_THETAR = "thetaR";
+	public static final String COL_SWRC_MELTING_T = "meltingT";
+	public static final String COL_SWRC_N = "n";
+	public static final String COL_SWRC_ALPHA = "alpha";
+	public static final String COL_SWRC_ALPHA_SPECIFIC_STORAGE = "alphaSpecificStorage";
+	public static final String COL_SWRC_BETA_SPECIFIC_STORAGE = "betaSpecificStorage";
+	public static final String COL_SWRC_KS = "Ks";
 
 	// temperature columns (both bottom and top interface tables)
 	public static final String COL_TEMPERATURE_TIMESTAMP = "timestamp";
@@ -66,22 +75,30 @@ public class Whetgeo1DInputsHandler {
 	/** Number of control volumes. */
 	public int KMAX;
 
-	/** 
-     * Eta coordinate of volume centroids. 
-     * 
-     * <p>The 'primal' grid holds the centroids, where the state variables are defined.
-     */
+	/**
+	 * Eta coordinate of volume centroids.
+	 * 
+	 * <p>
+	 * The 'primal' grid holds the centroids, where the state variables are defined.
+	 */
 	public double[] eta;
-	/** 
-     * Eta coordinate of volume interfaces (KMAX+1). 
-     * 
-     * <p>The 'dual' grid holds the interfaces, where the fluxes are computed.
-     */
+	/**
+	 * Eta coordinate of volume interfaces (KMAX+1).
+	 * 
+	 * <p>
+	 * The 'dual' grid holds the interfaces, where the fluxes are computed.
+	 */
 	public double[] etaDual;
 
-	/** Z coordinate of volume centroids. Direction is positive upwards, starting from the bottom boundary. */
+	/**
+	 * Z coordinate of volume centroids. Direction is positive upwards, starting
+	 * from the bottom boundary.
+	 */
 	public double[] z;
-	/** Z coordinate of volume interfaces (KMAX+1). Direction is positive upwards, starting from the bottom boundary. */
+	/**
+	 * Z coordinate of volume interfaces (KMAX+1). Direction is positive upwards,
+	 * starting from the bottom boundary.
+	 */
 	public double[] zDual;
 
 	/** Water suction initial condition at top and bottom interfaces. */
@@ -99,16 +116,11 @@ public class Whetgeo1DInputsHandler {
 	/** Parameter-set label per centroid. */
 	public int[] parameterID;
 
-	/** Soil-particles density per parameter set [kg m-3]. NOT IN DB */
+	/** Soil-particles density per parameter set [kg m-3]. */
 	public double[] soilParticlesDensity;
-	/**
-	 * Soil-particles thermal conductivity per parameter set [W m-1 K-1]. NOT IN DB
-	 */
+	/** Soil-particles thermal conductivity per parameter set [W m-1 K-1]. */
 	public double[] soilParticlesThermalConductivity;
-	/**
-	 * Soil-particles specific heat capacity per parameter set [J kg-1 K-1]. NOT IN
-	 * DB
-	 */
+	/** Soil-particles specific heat capacity per parameter set [J kg-1 K-1]. */
 	public double[] soilParticlesSpecificHeatCapacity;
 
 	/** Saturated volumetric water content per parameter set [-]. */
@@ -116,7 +128,7 @@ public class Whetgeo1DInputsHandler {
 	/** Residual volumetric water content per parameter set [-]. */
 	public double[] thetaR;
 
-	/** Melting temperature per parameter set [K]. NOT IN DB */
+	/** Melting temperature per parameter set [K]. */
 	public double[] meltingTemperature;
 
 	/** Hydraulic conductivity at saturation per parameter set [m s-1]. */
@@ -143,12 +155,11 @@ public class Whetgeo1DInputsHandler {
 	public Whetgeo1DInputsHandler(ADb db) {
 		this.db = db;
 	}
-	
+
 	public Whetgeo1DInputsHandler(String dbPath) throws Exception {
 		this.db = EDb.GEOPACKAGE.getDb();
 		this.db.open(dbPath);
 	}
-	
 
 	/**
 	 * Read all parameters from the database into the public fields.
@@ -180,10 +191,12 @@ public class Whetgeo1DInputsHandler {
 			return null;
 		});
 
-		// Compute KMAX (sum of K values, sentinel rows with K=0 contribute nothing)
+		// Compute KMAX (sum of K values; sentinel rows with K<=0 contribute nothing)
 		KMAX = 0;
 		for (double[] row : etaKRows) {
-			KMAX += (int) row[1];
+			int k = (int) row[1];
+			if (k > 0)
+				KMAX += k;
 		}
 
 		eta = new double[KMAX];
@@ -199,10 +212,10 @@ public class Whetgeo1DInputsHandler {
 		int globalIdx = 0;
 		for (int i = 0; i < etaKRows.size(); i++) {
 			double[] etaKRow = etaKRows.get(i);
-            double etaTop = etaKRow[0];
+			double etaTop = etaKRow[0];
 			int K = (int) etaKRow[1];
-			if (K == 0)
-				continue; // k = 0 is bottom layer, already handled with previous interface
+			if (K <= 0)
+				continue; // sentinel row (bottom boundary, K stored as 0 or -9999)
 
 			double etaBottom = etaKRows.get(i + 1)[0]; // next row provides the lower boundary
 			double cellSize = (etaTop - etaBottom) / K;
@@ -215,7 +228,7 @@ public class Whetgeo1DInputsHandler {
 				eta[globalIdx] = etaTop - (j + 0.5) * cellSize;
 				controlVolume[globalIdx] = cellSize;
 				int[] idsRow = idsRows.get(i);
-                equationStateID[globalIdx] = idsRow[0];
+				equationStateID[globalIdx] = idsRow[0];
 				parameterID[globalIdx] = idsRow[1];
 				etaDual[globalIdx + 1] = etaTop - (j + 1) * cellSize;
 				globalIdx++;
@@ -231,12 +244,37 @@ public class Whetgeo1DInputsHandler {
 			zDual[i] = etaDual[i] - zBottom;
 		}
 
-		// spaceDelta: distances between consecutive centroids, with half-cell at each boundary
 		spaceDelta[0] = etaDual[0] - eta[0];
 		for (int i = 1; i < KMAX; i++) {
 			spaceDelta[i] = eta[i - 1] - eta[i];
 		}
 		spaceDelta[KMAX] = eta[KMAX - 1] - etaDual[KMAX];
+
+		// Arrays were built surface-first (ORDER BY eta DESC); reverse to bottom-to-top
+		reverseDoubles(eta);
+		reverseDoubles(z);
+		reverseDoubles(controlVolume);
+		reverseInts(equationStateID);
+		reverseInts(parameterID);
+		reverseDoubles(etaDual);
+		reverseDoubles(zDual);
+		reverseDoubles(spaceDelta);
+	}
+
+	private static void reverseDoubles(double[] arr) {
+		for (int i = 0, j = arr.length - 1; i < j; i++, j--) {
+			double tmp = arr[i];
+			arr[i] = arr[j];
+			arr[j] = tmp;
+		}
+	}
+
+	private static void reverseInts(int[] arr) {
+		for (int i = 0, j = arr.length - 1; i < j; i++, j--) {
+			int tmp = arr[i];
+			arr[i] = arr[j];
+			arr[j] = tmp;
+		}
 	}
 
 	private void readSwrcParameters() throws Exception {
@@ -254,57 +292,103 @@ public class Whetgeo1DInputsHandler {
 			return null;
 		});
 
-		// column name in swrc_parameters (first match wins)
-		List<String> swrcCols = List.of(COL_RICHARDS_N, COL_RICHARDS_ALPHA, COL_RICHARDS_THETAS, COL_RICHARDS_THETAR,
-				COL_RICHARDS_ALPHA_SPECIFIC_STORAGE, COL_RICHARDS_BETA_SPECIFIC_STORAGE, COL_RICHARDS_KS);
+		// column names that may map to parXSWRC via the dictionary
 		final Map<String, String> parTypeToCol = new HashMap<>();
-		for (String col : swrcCols) {
+		for (String col : List.of(COL_SWRC_N, COL_SWRC_ALPHA)) {
 			String parType = colToParType.get(col);
 			if (parType != null) {
 				parTypeToCol.putIfAbsent(parType, col);
 			}
 		}
 
-		SqlName paramTable = SqlName.m(TABLE_RICHARDS_PARAMETERS);
-		int numParams = (int) db.getCount(paramTable);
+		// Discover which columns are actually present in the table
+		Set<String> existingCols = new HashSet<>();
+		db.execOnResultSet("PRAGMA table_info(\"" + TABLE_SWRC_PARAMETERS + "\")", rs -> {
+			while (rs.next()) {
+				existingCols.add(rs.getString(2)); // column 2 is 'name'
+			}
+			return null;
+		});
 
-		thetaS = new double[numParams];
-		thetaR = new double[numParams];
-		Ks = new double[numParams];
-		alphaSS = new double[numParams];
-		betaSS = new double[numParams];
-		par1SWRC = new double[numParams];
-		par2SWRC = new double[numParams];
-		par3SWRC = new double[numParams];
-		par4SWRC = new double[numParams];
-		par5SWRC = new double[numParams];
+		// Build dynamic SELECT: id first, then every known column that exists
+		List<String> selectCols = new ArrayList<>();
+		selectCols.add(COL_SWRC_ID);
+		for (String knownCol : List.of(COL_SWRC_SP_DENSITY, COL_SWRC_SP_CONDUCTIVITY, COL_SWRC_SP_SPECIFIC_HEAT,
+				COL_SWRC_THETAS, COL_SWRC_THETAR, COL_SWRC_MELTING_T, COL_SWRC_ALPHA, COL_SWRC_N,
+				COL_SWRC_ALPHA_SPECIFIC_STORAGE, COL_SWRC_BETA_SPECIFIC_STORAGE, COL_SWRC_KS)) {
+			if (existingCols.contains(knownCol)) {
+				selectCols.add(knownCol);
+			}
+		}
 
-		// Map column name → 1-based index in the SELECT below
-		Map<String, Integer> colIdx = Map.of(COL_RICHARDS_ID, 1, COL_RICHARDS_THETAS, 2, COL_RICHARDS_THETAR, 3,
-				COL_RICHARDS_N, 4, COL_RICHARDS_ALPHA, 5, COL_RICHARDS_ALPHA_SPECIFIC_STORAGE, 6,
-				COL_RICHARDS_BETA_SPECIFIC_STORAGE, 7, COL_RICHARDS_KS, 8);
+		// 1-based position of each column in the SELECT
+		final Map<String, Integer> colIdx = new HashMap<>();
+		for (int i = 0; i < selectCols.size(); i++) {
+			colIdx.put(selectCols.get(i), i + 1);
+		}
 
-		String paramSql = String.format("""
-				SELECT %s, %s, %s, %s, %s, %s, %s, %s FROM %s ORDER BY %s
-				""", COL_RICHARDS_ID, COL_RICHARDS_THETAS, COL_RICHARDS_THETAR, COL_RICHARDS_N, COL_RICHARDS_ALPHA,
-				COL_RICHARDS_ALPHA_SPECIFIC_STORAGE, COL_RICHARDS_BETA_SPECIFIC_STORAGE, COL_RICHARDS_KS,
-				paramTable.fixedDoubleName, COL_RICHARDS_ID);
+		SqlName paramTable = SqlName.m(TABLE_SWRC_PARAMETERS);
+		// Arrays are 1-indexed: index 0 is an unused dummy; parameterID values start at
+		// 1
+		int arraySize = (int) db.getCount(paramTable) + 1;
+
+		if (existingCols.contains(COL_SWRC_SP_DENSITY))
+			soilParticlesDensity = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_SP_CONDUCTIVITY))
+			soilParticlesThermalConductivity = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_SP_SPECIFIC_HEAT))
+			soilParticlesSpecificHeatCapacity = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_THETAS))
+			thetaS = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_THETAR))
+			thetaR = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_MELTING_T))
+			meltingTemperature = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_ALPHA_SPECIFIC_STORAGE))
+			alphaSS = new double[arraySize];
+		if (existingCols.contains(COL_SWRC_BETA_SPECIFIC_STORAGE))
+			betaSS = new double[arraySize];
+		Ks = new double[arraySize];
+		if (!existingCols.contains(COL_SWRC_KS)) {
+			for (int i = 1; i < arraySize; i++)
+				Ks[i] = NODATA;
+		}
+		par1SWRC = new double[arraySize];
+		par2SWRC = new double[arraySize];
+		par3SWRC = new double[arraySize];
+		par4SWRC = new double[arraySize];
+		par5SWRC = new double[arraySize];
+
+		String paramSql = "SELECT " + String.join(", ", selectCols) + " FROM " + paramTable.fixedDoubleName
+				+ " ORDER BY " + COL_SWRC_ID;
 
 		db.execOnResultSet(paramSql, rs -> {
 			while (rs.next()) {
-				int idx = rs.getInt(1) - 1; // id is 1-based
-				thetaS[idx] = rs.getDouble(2);
-				thetaR[idx] = rs.getDouble(3);
-				alphaSS[idx] = rs.getDouble(6);
-				betaSS[idx] = rs.getDouble(7);
-				Ks[idx] = rs.getDouble(8);
+				int idx = rs.getInt(1); // id is 1-based; use directly as array index
+				if (soilParticlesDensity != null)
+					soilParticlesDensity[idx] = rs.getDouble(colIdx.get(COL_SWRC_SP_DENSITY));
+				if (soilParticlesThermalConductivity != null)
+					soilParticlesThermalConductivity[idx] = rs.getDouble(colIdx.get(COL_SWRC_SP_CONDUCTIVITY));
+				if (soilParticlesSpecificHeatCapacity != null)
+					soilParticlesSpecificHeatCapacity[idx] = rs.getDouble(colIdx.get(COL_SWRC_SP_SPECIFIC_HEAT));
+				if (thetaS != null)
+					thetaS[idx] = rs.getDouble(colIdx.get(COL_SWRC_THETAS));
+				if (thetaR != null)
+					thetaR[idx] = rs.getDouble(colIdx.get(COL_SWRC_THETAR));
+				if (meltingTemperature != null)
+					meltingTemperature[idx] = rs.getDouble(colIdx.get(COL_SWRC_MELTING_T));
+				if (alphaSS != null)
+					alphaSS[idx] = rs.getDouble(colIdx.get(COL_SWRC_ALPHA_SPECIFIC_STORAGE));
+				if (betaSS != null)
+					betaSS[idx] = rs.getDouble(colIdx.get(COL_SWRC_BETA_SPECIFIC_STORAGE));
+				if (existingCols.contains(COL_SWRC_KS))
+					Ks[idx] = rs.getDouble(colIdx.get(COL_SWRC_KS));
 
-				// Fill parXSWRC via dictionary mapping
+				// Fill parXSWRC via dictionary mapping; absent mappings get NODATA
 				for (int p = 1; p <= 5; p++) {
 					String colName = parTypeToCol.get("par" + p);
-					if (colName == null)
-						continue;
-					double val = rs.getDouble(colIdx.get(colName));
+					double val = (colName == null || !colIdx.containsKey(colName)) ? NODATA
+							: rs.getDouble(colIdx.get(colName));
 					switch (p) {
 					case 1 -> par1SWRC[idx] = val;
 					case 2 -> par2SWRC[idx] = val;
@@ -337,8 +421,8 @@ public class Whetgeo1DInputsHandler {
 		double etaBot = icPoints.get(1)[0];
 		double psiTop = icPoints.get(0)[1];
 		double psiBot = icPoints.get(1)[1];
-		double tTop   = icPoints.get(0)[2];
-		double tBot   = icPoints.get(1)[2];
+		double tTop = icPoints.get(0)[2];
+		double tBot = icPoints.get(1)[2];
 
 		psi = new double[KMAX];
 		temperatureIC = new double[KMAX];
@@ -346,19 +430,27 @@ public class Whetgeo1DInputsHandler {
 		// TODO check this is correct: linear interpolation in eta coordinate?
 		for (int i = 0; i < KMAX; i++) {
 			double t = (eta[i] - etaTop) / (etaBot - etaTop);
-			psi[i]           = psiTop + t * (psiBot - psiTop);
-			temperatureIC[i] = tTop   + t * (tBot   - tTop);
+			psi[i] = psiTop + t * (psiBot - psiTop);
+			temperatureIC[i] = tTop + t * (tBot - tTop);
 		}
 	}
 
-	/** Buffered cursor over the bottom-interface temperature table. Must be closed after use. */
-	public WhetgeoTemperatureIterator iterateTemperatureBottomInterface( int bufferSize ) throws Exception {
-		return new WhetgeoTemperatureIterator(db, TABLE_TEMPERATURE_BOTTOM_INTERFACE, COL_TEMPERATURE_TIMESTAMP, bufferSize);
+	/**
+	 * Buffered cursor over the bottom-interface temperature table. Must be closed
+	 * after use.
+	 */
+	public WhetgeoTemperatureIterator iterateTemperatureBottomInterface(int bufferSize) throws Exception {
+		return new WhetgeoTemperatureIterator(db, TABLE_TEMPERATURE_BOTTOM_INTERFACE, COL_TEMPERATURE_TIMESTAMP,
+				bufferSize);
 	}
 
-	/** Buffered cursor over the top-interface temperature table. Must be closed after use. */
-	public WhetgeoTemperatureIterator iterateTemperatureTopInterface( int bufferSize ) throws Exception {
-		return new WhetgeoTemperatureIterator(db, TABLE_TEMPERATURE_TOP_INTERFACE, COL_TEMPERATURE_TIMESTAMP, bufferSize);
+	/**
+	 * Buffered cursor over the top-interface temperature table. Must be closed
+	 * after use.
+	 */
+	public WhetgeoTemperatureIterator iterateTemperatureTopInterface(int bufferSize) throws Exception {
+		return new WhetgeoTemperatureIterator(db, TABLE_TEMPERATURE_TOP_INTERFACE, COL_TEMPERATURE_TIMESTAMP,
+				bufferSize);
 	}
 
 	/**
@@ -373,14 +465,43 @@ public class Whetgeo1DInputsHandler {
 	 * @param db            the database to populate.
 	 */
 	public static void createDbFromCsv(String csvFolderPath, ADb db) throws Exception {
-		populateDictionary(new File(csvFolderPath, TABLE_DICTIONARY + ".csv"), db);
-		populateIc(new File(csvFolderPath, TABLE_IC + ".csv"), db);
-		populateInputGrid(new File(csvFolderPath, TABLE_GRID + ".csv"), db);
-		populateRichardsParameters(new File(csvFolderPath, TABLE_RICHARDS_PARAMETERS + ".csv"), db);
-		populateTemperature(new File(csvFolderPath, TABLE_TEMPERATURE_BOTTOM_INTERFACE + ".csv"),
-				TABLE_TEMPERATURE_BOTTOM_INTERFACE, db);
-		populateTemperature(new File(csvFolderPath, TABLE_TEMPERATURE_TOP_INTERFACE + ".csv"),
-				TABLE_TEMPERATURE_TOP_INTERFACE, db);
+		File csv;
+
+		csv = new File(csvFolderPath, TABLE_DICTIONARY + ".csv");
+		if (csv.exists())
+			populateDictionary(csv, db);
+		else
+			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
+
+		csv = new File(csvFolderPath, TABLE_IC + ".csv");
+		if (csv.exists())
+			populateIc(csv, db);
+		else
+			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
+
+		csv = new File(csvFolderPath, TABLE_GRID + ".csv");
+		if (csv.exists())
+			populateInputGrid(csv, db);
+		else
+			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
+
+		csv = new File(csvFolderPath, TABLE_SWRC_PARAMETERS + ".csv");
+		if (csv.exists())
+			populateSwrcParameters(csv, db);
+		else
+			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
+
+		csv = new File(csvFolderPath, TABLE_TEMPERATURE_BOTTOM_INTERFACE + ".csv");
+		if (csv.exists())
+			populateTemperature(csv, TABLE_TEMPERATURE_BOTTOM_INTERFACE, db);
+		else
+			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
+
+		csv = new File(csvFolderPath, TABLE_TEMPERATURE_TOP_INTERFACE + ".csv");
+		if (csv.exists())
+			populateTemperature(csv, TABLE_TEMPERATURE_TOP_INTERFACE, db);
+		else
+			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
 	}
 
 	private static void populateDictionary(File csv, ADb db) throws Exception {
@@ -439,9 +560,9 @@ public class Whetgeo1DInputsHandler {
 					if (line.isEmpty())
 						continue;
 					String[] parts = line.split(",", -1);
-					pStmt.setDouble(1, Double.parseDouble(parts[0].trim()));
-					pStmt.setDouble(2, Double.parseDouble(parts[1].trim()));
-					pStmt.setDouble(3, Double.parseDouble(parts[2].trim()));
+					pStmt.setDouble(1, parseDoubleOrNaN(parts[0]));
+					pStmt.setDouble(2, parseDoubleOrNaN(parts[1]));
+					pStmt.setDouble(3, parseDoubleOrNaN(parts[2]));
 					pStmt.addBatch();
 				}
 				pStmt.executeBatch();
@@ -477,18 +598,11 @@ public class Whetgeo1DInputsHandler {
 					if (line.isEmpty())
 						continue;
 					String[] parts = line.split(",", -1);
-					pStmt.setDouble(1, Double.parseDouble(parts[1].trim()));
+					pStmt.setDouble(1, parseDoubleOrNaN(parts[1]));
 					pStmt.setString(2, parts[0].trim());
-					pStmt.setInt(3, Integer.parseInt(parts[2].trim()));
-					try {
-						pStmt.setInt(4, Integer.parseInt(parts[3].trim()));
-						pStmt.setInt(5, Integer.parseInt(parts[4].trim()));
-					} catch (NumberFormatException e) {
-						if (!parts[3].trim().equals("nan") && !parts[4].trim().equals("nan")) {
-							throw new IllegalArgumentException(
-									"Error parsing line " + (i + 1) + " in " + csv.getName() + ": " + line, e);
-						}
-					}
+					pStmt.setInt(3, parseIntOrNaN(parts[2]));
+					pStmt.setInt(4, parseIntOrNaN(parts[3]));
+					pStmt.setInt(5, parseIntOrNaN(parts[4]));
 					pStmt.addBatch();
 				}
 				pStmt.executeBatch();
@@ -499,24 +613,62 @@ public class Whetgeo1DInputsHandler {
 		});
 	}
 
-	private static void populateRichardsParameters(File csv, ADb db) throws Exception {
-		SqlName tableName = SqlName.m(TABLE_RICHARDS_PARAMETERS);
+	private static double parseDoubleOrNaN(String str) {
+		try {
+			return Double.parseDouble(str.trim());
+		} catch (NumberFormatException e) {
+			if (str.trim().equalsIgnoreCase("nan")) {
+				return Double.NaN;
+			} else {
+				throw new IllegalArgumentException("Error parsing double value: " + str, e);
+			}
+		}
+	}
+
+	private static int parseIntOrNaN(String str) {
+		try {
+			return Integer.parseInt(str.trim());
+		} catch (NumberFormatException e) {
+			if (str.trim().equalsIgnoreCase("nan")) {
+				return -9999;
+			} else {
+				throw new IllegalArgumentException("Error parsing integer value: " + str, e);
+			}
+		}
+	}
+
+	private static void populateSwrcParameters(File csv, ADb db) throws Exception {
+		List<String> lines = Files.readAllLines(csv.toPath());
+
+		// Line 0 is the header: column names in CSV order
+		String[] headerParts = lines.get(0).split(",", -1);
+		List<String> csvCols = new ArrayList<>();
+		for (String part : headerParts) {
+			csvCols.add(part.trim());
+		}
+		int numCols = csvCols.size();
+
+		SqlName tableName = SqlName.m(TABLE_SWRC_PARAMETERS);
 		if (!db.hasTable(tableName)) {
-			db.createTable(tableName, COL_RICHARDS_ID + " INTEGER PRIMARY KEY", COL_RICHARDS_THETAS + " REAL",
-					COL_RICHARDS_THETAR + " REAL", COL_RICHARDS_N + " REAL", COL_RICHARDS_ALPHA + " REAL",
-					COL_RICHARDS_ALPHA_SPECIFIC_STORAGE + " REAL", COL_RICHARDS_BETA_SPECIFIC_STORAGE + " REAL",
-					COL_RICHARDS_KS + " REAL");
+			String[] fieldDefs = new String[1 + numCols];
+			fieldDefs[0] = COL_SWRC_ID + " INTEGER PRIMARY KEY";
+			for (int i = 0; i < numCols; i++) {
+				fieldDefs[1 + i] = csvCols.get(i) + " REAL";
+			}
+			db.createTable(tableName, fieldDefs);
 		}
 		if (db.getCount(tableName) > 0)
 			return;
 
-		List<String> lines = Files.readAllLines(csv.toPath());
-		String sql = String.format("""
-				INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s)
-				VALUES (?,?,?,?,?,?,?,?)
-				""", tableName.fixedDoubleName, COL_RICHARDS_ID, COL_RICHARDS_THETAS, COL_RICHARDS_THETAR,
-				COL_RICHARDS_N, COL_RICHARDS_ALPHA, COL_RICHARDS_ALPHA_SPECIFIC_STORAGE,
-				COL_RICHARDS_BETA_SPECIFIC_STORAGE, COL_RICHARDS_KS);
+		// Build INSERT SQL dynamically from header columns
+		StringBuilder colList = new StringBuilder(COL_SWRC_ID);
+		StringBuilder placeholders = new StringBuilder("?");
+		for (String col : csvCols) {
+			colList.append(", ").append(col);
+			placeholders.append(", ?");
+		}
+		String sql = "INSERT INTO " + tableName.fixedDoubleName + " (" + colList + ") VALUES (" + placeholders + ")";
+
 		db.execOnConnection(conn -> {
 			boolean autoCommit = conn.getAutoCommit();
 			conn.setAutoCommit(false);
@@ -524,19 +676,15 @@ public class Whetgeo1DInputsHandler {
 				int id = 0;
 				for (int i = 1; i < lines.size(); i++) {
 					String line = lines.get(i).trim();
-					// skip blank lines and comment lines (e.g. "#1 Sand, Bonan 2018 Tab 8.3")
+					// skip blank lines and comment lines (e.g. "# sand")
 					if (line.isEmpty() || line.startsWith("#"))
 						continue;
 					id++;
 					String[] parts = line.split(",", -1);
 					pStmt.setInt(1, id);
-					pStmt.setDouble(2, Double.parseDouble(parts[0].trim()));
-					pStmt.setDouble(3, Double.parseDouble(parts[1].trim()));
-					pStmt.setDouble(4, Double.parseDouble(parts[2].trim()));
-					pStmt.setDouble(5, Double.parseDouble(parts[3].trim()));
-					pStmt.setDouble(6, Double.parseDouble(parts[4].trim()));
-					pStmt.setDouble(7, Double.parseDouble(parts[5].trim()));
-					pStmt.setDouble(8, Double.parseDouble(parts[6].trim()));
+					for (int j = 0; j < numCols; j++) {
+						pStmt.setDouble(j + 2, parseDoubleOrNaN(parts[j]));
+					}
 					pStmt.addBatch();
 				}
 				pStmt.executeBatch();
@@ -636,13 +784,16 @@ public class Whetgeo1DInputsHandler {
 	}
 
 	public static void main(String[] args) throws Exception {
+		String dbPath = "/home/hydrologis/TMP/UNITN/whetgeo1d/whetgeo_1d_inputs__heat_diffusion_case.gpkg";
+
+		// Files.deleteIfExists(Path.of(dbPath));
 		try (ADb db = EDb.GEOPACKAGE.getDb()) {
-			db.open("/home/hydrologis/pCloudDrive/MYCLOUD/G-ANT/lavori/2026_unitn/geospace/netcdf_conversion/whetgeo_1d_inputs.gpkg");
-			// createDbFromCsv("/home/hydrologis/pCloudDrive/MYCLOUD/G-ANT/lavori/2026_unitn/geospace/netcdf_conversion/",
-			// db);
+			db.open(dbPath);
+			 createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/heat_diffusion_case_csv/",db);
 
 			var reader = new Whetgeo1DInputsHandler(db);
 			reader.read();
+			System.out.println("KMAX: " + reader.KMAX);
 
 		}
 

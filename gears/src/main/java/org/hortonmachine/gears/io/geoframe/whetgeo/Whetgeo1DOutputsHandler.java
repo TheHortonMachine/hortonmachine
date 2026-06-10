@@ -106,10 +106,24 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	/** Bottom boundary condition value for this step. */
 	public double bottomBC;
 
+	/**
+	 * When true, existing output tables are dropped and recreated on the first
+	 * {@link #write()} call.
+	 */
+	public boolean dropAndRecreate = false;
+
+	/**
+	 * Minimum interval between writes, in minutes. A value of 0 (default) writes
+	 * every step. When positive, a step is written only if at least this many
+	 * minutes have elapsed since the last written step.
+	 */
+	public int writeIntervalMinutes = 0;
+
 	private final ADb db;
 	private final int bufferSize;
 
 	private boolean initialized = false;
+	private long lastWrittenTimestamp = Long.MIN_VALUE;
 	private int KMAX;
 	private int DUALKMAX;
 
@@ -142,6 +156,13 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		if (!initialized) {
 			initialize();
 		}
+		if (writeIntervalMinutes > 0 && lastWrittenTimestamp != Long.MIN_VALUE) {
+			long intervalMillis = (long) writeIntervalMinutes * 60 * 1000;
+			if (timestamp - lastWrittenTimestamp < intervalMillis) {
+				return;
+			}
+		}
+		lastWrittenTimestamp = timestamp;
 		tsBuf.add(new long[] { timestamp });
 		temperatureBuf.add(temperature.clone());
 		thetaBuf.add(theta.clone());
@@ -170,6 +191,12 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		SqlName stateTable = SqlName.m(TABLE_OUTPUT_STATE);
 		SqlName fluxTable = SqlName.m(TABLE_OUTPUT_FLUX);
 		SqlName scalarsTable = SqlName.m(TABLE_OUTPUT_SCALARS);
+
+		if (dropAndRecreate) {
+			for (String t : List.of(TABLE_OUTPUT_GRID, TABLE_OUTPUT_STATE, TABLE_OUTPUT_FLUX, TABLE_OUTPUT_SCALARS)) {
+				db.executeInsertUpdateDeleteSql("DROP TABLE IF EXISTS \"" + t + "\"");
+			}
+		}
 
 		if (!db.hasTable(gridTable)) {
 			db.createTable(gridTable, COL_ETA + " REAL PRIMARY KEY", COL_CONTROL_VOLUME + " REAL", COL_PSI + " REAL",
