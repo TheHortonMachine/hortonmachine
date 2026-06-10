@@ -118,13 +118,7 @@ import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
-import org.hortonmachine.gears.utils.CyclicSupplier;
 import org.hortonmachine.gears.utils.PreferencesHandler;
-import org.hortonmachine.gears.utils.chart.CategoryHistogram;
-import org.hortonmachine.gears.utils.chart.Scatter;
-import org.hortonmachine.gears.utils.chart.TimeSeries;
-import org.hortonmachine.gears.utils.colors.DefaultTables;
-import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -135,8 +129,6 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1559,154 +1551,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     popupMenu.add(itemToString);
                 }
                 if (proposeChart) {
-                    JMenuItem item1 = new JMenuItem(new AbstractAction("Chart values"){
-                        private static final long serialVersionUID = 1L;
-                        @Override
-                        public void actionPerformed( ActionEvent e ) {
-                            try {
-                                int chartsCount = selectedCols.length - 1;
-
-                                String xLabel = table.getColumnName(selectedCols[0]);
-                                String timePatterns = dataTableView._formatDatesPatternTextField.getText();
-
-                                Scatter scatterChart = null;
-                                CategoryHistogram categoryHistogram = null;
-                                TimeSeries timeSeriesChart = null;
-                        		List<double[]> timeSeriesValuesList = new ArrayList<>();
-                        		List<long[]> timeSeriesTimesList = new ArrayList<>();
-                        		List<String> timeSeriesNames = new ArrayList<>();
-
-                                for( int i = 0; i < chartsCount; i++ ) {
-                                    Object tmpX = table.getValueAt(0, selectedCols[0]);
-                                    boolean doCat = true;
-                                    boolean doTime = false;
-                                    if (tmpX instanceof Number) {
-                                        doCat = false;
-                                    }
-                                    if (timePatterns.contains(xLabel) ) {
-                                    	doTime = true;
-									}
-                                    Object tmpY = table.getValueAt(0, selectedCols[i + 1]);
-                                    if (!(tmpY instanceof Number)) {
-                                        break;
-                                    }
-
-                                    if (doTime) {
-                                    	int index = 0;
-                                    	long[] x = new long[selectedRows.length];
-                                        double[] y = new double[selectedRows.length];
-                                        long previousTime = -1;
-                                        for( int r : selectedRows ) {
-                                            Object xObj = table.getValueAt(r, selectedCols[0]);
-                                            Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            long tmp;
-                                            if (xObj instanceof Number) {
-                                                tmp = ((Number) xObj).longValue();
-                                                // check if it duplicates the previous time and in case ignore it by adding 1 millisecond
-                                                if (tmp == previousTime) {
-                                                    tmp += 1;
-                                                }
-                                                previousTime = tmp;
-                                            } else {
-                                                tmp = DbsUtilities.dbDateFormatter.parse(xObj.toString()).getTime();
-                                                if (tmp == previousTime) {
-                                                    tmp += 1;
-                                                }
-                                                previousTime = tmp;
-                                            }
-                                            x[index] = tmp;
-                                            y[index] = ((Number) yObj).doubleValue();
-                                            index++;
-                                        }
-										timeSeriesTimesList.add(x);
-										timeSeriesValuesList.add(y);
-										String seriesName = table.getColumnName(selectedCols[i + 1]);
-										timeSeriesNames.add(seriesName);
-									} else if (doCat) {
-                                        if (categoryHistogram == null) {
-                                            String[] xStr = new String[selectedRows.length];
-                                            double[] y = new double[selectedRows.length];
-                                            int index = 0;
-                                            for( int r : selectedRows ) {
-                                                Object xObj = table.getValueAt(r, selectedCols[0]);
-                                                Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                                xStr[index] = xObj.toString();
-                                                y[index] = ((Number) yObj).doubleValue();
-                                                index++;
-                                            }
-                                            categoryHistogram = new CategoryHistogram(xStr, y);
-                                        }
-                                    } else {
-                                        if (scatterChart == null) {
-                                            scatterChart = new Scatter("");
-                                            List<Boolean> showLines = new ArrayList<Boolean>();
-                                            for( int j = 0; j < chartsCount; j++ ) {
-                                                showLines.add(true);
-                                            }
-                                            scatterChart.setShowLines(showLines);
-                                            scatterChart.setXLabel(xLabel);
-                                            scatterChart.setYLabel("");
-                                        }
-                                        double[] x = new double[selectedRows.length];
-                                        double[] y = new double[selectedRows.length];
-                                        String seriesName = table.getColumnName(selectedCols[i + 1]);
-                                        int index = 0;
-                                        for( int r : selectedRows ) {
-                                            Object xObj = table.getValueAt(r, selectedCols[0]);
-                                            Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            x[index] = ((Number) xObj).doubleValue();
-                                            y[index] = ((Number) yObj).doubleValue();
-                                            index++;
-                                        }
-                                        scatterChart.addSeries(seriesName, x, y);
-                                    }
-                                }
-                                
-                                if (timeSeriesNames.size() > 0) {
-									timeSeriesChart = new TimeSeries("", timeSeriesNames,
-											timeSeriesTimesList, timeSeriesValuesList);
-									timeSeriesChart.setXLabel(xLabel);
-									timeSeriesChart.setYLabel("");
-									List<Color> colorList = new ArrayList<>();
-									colorList.add(Color.BLUE);
-									colorList.add(Color.RED);
-									colorList.add(Color.GREEN);
-									List<Color> tableColors = new DefaultTables().getTableColors(EColorTables.contrasting130.name());
-									colorList.addAll(tableColors);
-									var cyclicTableColors = new CyclicSupplier<Color>(colorList);
-									Color[] colors = new Color[timeSeriesNames.size()];
-									for (int i = 0; i < timeSeriesNames.size(); i++) {
-										colors[i] = cyclicTableColors.next();
-									}
-									timeSeriesChart.setColors(colors);
-								}
-
-                                Dimension dimension = new Dimension(1000, 800);
-                                JFreeChart chart = null;
-                                if (scatterChart != null) {
-									chart = scatterChart.getChart();
-                                } else if (categoryHistogram != null) {
-                                    chart = categoryHistogram.getChart();
-                                } else if (timeSeriesChart != null) {
-                                	chart = timeSeriesChart.getChart();
-                                } else {
-                                    GuiUtilities.showWarningMessage(popupMenu, "Charting of selected data not possible.");
-                                    return;
-                                }
-                                if (chart != null) {
-                                	ChartPanel chartPanel = new ChartPanel(chart, true);
-                                	chartPanel.setPreferredSize(dimension);
-                                	JPanel p = new JPanel(new BorderLayout());
-                                	p.add(chartPanel, BorderLayout.CENTER);
-                                	GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
-								}
-                            } catch (Exception ex) {
-                                Logger.INSTANCE.insertError("", "ERROR", ex);
-                                GuiUtilities.showErrorMessage(popupMenu, ex.getMessage());
-                            }
-                        }
-
-                    });
+                    JMenuItem item1 = new JMenuItem(new DataTableChartAction(
+                            table, selectedCols, selectedRows,
+                            dataTableView._formatDatesPatternTextField.getText(),
+                            popupMenu));
                     item1.setHorizontalTextPosition(JMenuItem.RIGHT);
                     popupMenu.add(item1);
                 }
