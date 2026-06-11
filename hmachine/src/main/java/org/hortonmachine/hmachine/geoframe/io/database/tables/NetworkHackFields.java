@@ -1,6 +1,6 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-public enum NetworkHackFields implements TableFields {
+public enum NetworkHackFields implements TableField {
 
     HACK("hack", Double.class);
 

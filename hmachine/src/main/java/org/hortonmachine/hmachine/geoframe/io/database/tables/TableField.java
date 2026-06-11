@@ -1,6 +1,6 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-public interface TableFields {
+public interface TableField {
 	public String columnName();
 
 	public Class<?> javaType();

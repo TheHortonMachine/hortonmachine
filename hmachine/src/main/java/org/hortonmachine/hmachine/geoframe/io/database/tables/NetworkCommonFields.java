@@ -2,7 +2,7 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
 import org.locationtech.jts.geom.LineString;
 
-public enum NetworkCommonFields implements TableFields {
+public enum NetworkCommonFields implements TableField {
 
 	GEOM("the_geom", LineString.class),
     BASIN_ID("basinid", Integer.class),

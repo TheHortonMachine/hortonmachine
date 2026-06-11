@@ -1,15 +1,15 @@
 package org.hortonmachine.hmachine.geoframe.io.database;
 
-import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinMultiPolygonTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.CalibrationTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.EnvTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.ForecastTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.RawTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.SimulationTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.TableFields;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologyTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.ClaibrationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.EnvSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.ForecastSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.RawDataSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.SimulationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema;
 
 /**
  * List of tables required for GeoFrame rainfall-runoff simulations.
@@ -20,65 +20,63 @@ public enum GeoFrameTable {
 	/**
 	 * Basin metadata and properties.
 	 */
-	BASIN("basin", BasinMultiPolygonTable.class),
+	BASIN(new BasinSchema()),
 
 	/**
 	 * network topology
 	 */
-	TOPOLOGY("topology", TopologyTable.class),
+	TOPOLOGY(new TopologySchema()),
 
 	/**
 	 * Hydro-meteorological observations for each basin.
 	 */
-	HYDROMETEO("hydrometeo_data", HydroMeteoTable.class),
+	HYDROMETEO(new HydroMeteoSchema()),
 
 	/**
 	 * Hydro-meteorological from the meteorological network station.
 	 */
-	RAW_METEO("raw_meteo_data", RawTable.class),
+	RAW_METEO(new RawDataSchema()),
 
 	/**
 	 * Hydro-meteorological forecast.
 	 */
-	FORECAST_METEO("forecast_meteo_data", ForecastTable.class),
+	FORECAST_METEO(new ForecastSchema()),
 
-	HYDRO_METEO_STATION("hydro_meteo_station", HydroMeteoSation.class),
+	HYDRO_METEO_STATION(new HydroMeteoSationSchema()),
 
 	/**
 	 * Prefix used for simulation result tables.
 	 */ // station.
-	SIMULATION("simulation_", SimulationTable.class),
+	SIMULATION(new SimulationSchema()),
 
 	/**
 	 * Prefix used for calibration result tables.
 	 */
-	CALIBRATION_PREFIX("calibration_", CalibrationTable.class),
+	CALIBRATION(new ClaibrationSchema()),
 
 	/**
 	 * list of all variable
 	 * 
 	 */
-	VARIABLE("environmental_variables", EnvTable.class);
+	VARIABLE(new EnvSchema());
 
-	private final String name;
-	private Class<? extends TableFields> tableFields;
+	private AbstractSchema tableFields;
 
-	GeoFrameTable(String name, Class<? extends TableFields> tf) {
-		this.name = name;
+	GeoFrameTable(AbstractSchema tf) {
 		this.tableFields = tf;
 	}
 
 	public String tableName() {
-		return name;
+		return tableFields.tableName();
 	}
 
 	@Override
 	public String toString() {
-		return name;
+		return tableFields.tableName();
 	}
 
-	public String withSuffix(Object suffix) {
-		return name + suffix;
+	public AbstractSchema getSchema() {
+		return tableFields;
 	}
 
 }

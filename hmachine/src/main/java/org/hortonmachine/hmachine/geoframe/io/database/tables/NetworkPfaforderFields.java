@@ -1,6 +1,6 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-public enum NetworkPfaforderFields implements TableFields {
+public enum NetworkPfaforderFields implements TableField {
 
     PFAFORDER("pfaforder", Double.class);
 
