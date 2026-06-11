@@ -395,6 +395,9 @@ public class DbsUtilities {
     }
 
     public static String fixColumnName( String columnName ) {
+    	if (columnName == null || columnName.isEmpty()) {
+    		return columnName;
+    	}
         if (columnName.charAt(0) == '\'') {
             // already fixed
             return columnName;
