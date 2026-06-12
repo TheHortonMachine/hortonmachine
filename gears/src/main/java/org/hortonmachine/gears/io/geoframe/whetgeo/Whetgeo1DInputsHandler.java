@@ -789,11 +789,11 @@ public class Whetgeo1DInputsHandler {
 		// Files.deleteIfExists(Path.of(dbPath));
 		try (ADb db = EDb.GEOPACKAGE.getDb()) {
 			db.open(dbPath);
-			 createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/heat_diffusion_case_csv/",db);
+			 createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/heat_diffusion_case_csv_fem 20260610/",db);
 
-			var reader = new Whetgeo1DInputsHandler(db);
-			reader.read();
-			System.out.println("KMAX: " + reader.KMAX);
+//			var reader = new Whetgeo1DInputsHandler(db);
+//			reader.read();
+//			System.out.println("KMAX: " + reader.KMAX);
 
 		}
 
