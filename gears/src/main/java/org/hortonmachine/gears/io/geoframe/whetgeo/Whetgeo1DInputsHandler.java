@@ -3,6 +3,7 @@ package org.hortonmachine.gears.io.geoframe.whetgeo;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,6 +16,8 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.timeseries.OmsTimeSeriesReader;
 import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Inputs handler for Whetgeoinputs.
@@ -36,6 +39,15 @@ public class Whetgeo1DInputsHandler {
 	public static final String TABLE_SWRC_PARAMETERS = "swrc_parameters";
 	public static final String TABLE_TEMPERATURE_BOTTOM_INTERFACE = "temperature_bottom_interface";
 	public static final String TABLE_TEMPERATURE_TOP_INTERFACE = "temperature_top_interface";
+
+	// Timeseries tables — presence in the CSV folder determines which are imported.
+	// Table name = CSV filename without ".csv" (timeseries_*.csv convention).
+	public static final String TABLE_TIMESERIES_AIR_T = "timeseries_airT";
+	public static final String TABLE_TIMESERIES_WIND_VELOCITY = "timeseries_windVelocity";
+	public static final String TABLE_TIMESERIES_SW_RADIATION = "timeseries_TotalSolarRadiation";
+	public static final String TABLE_TIMESERIES_LW_DOWNWELLING = "timeseries_LWDownwelling";
+	public static final String TABLE_TIMESERIES_LATENT_HEAT = "timeseries_LatentHeat";
+	public static final String TABLE_TIMESERIES_NO_FLUX = "timeseries_noFlux";
 
 	// dictionary columns
 	public static final String COL_DICTIONARY_VAL1 = "val1";
@@ -454,6 +466,31 @@ public class Whetgeo1DInputsHandler {
 	}
 
 	/**
+	 * Buffered cursor over any timeseries table (e.g. atmospheric forcing). Use the
+	 * {@code TABLE_TIMESERIES_*} constants for the known table names. Must be
+	 * closed after use.
+	 */
+	public WhetgeoTemperatureIterator iterateTimeseries(String tableName, int bufferSize) throws Exception {
+		return new WhetgeoTemperatureIterator(db, tableName, COL_TEMPERATURE_TIMESTAMP, bufferSize);
+	}
+
+	/**
+	 * Buffered cursor over any timeseries table, filtered to a date range.
+	 *
+	 * @param startDate inclusive start, format {@code "yyyy-MM-dd HH:mm"} (UTC), or
+	 *                  null for no lower limit
+	 * @param endDate   inclusive end, format {@code "yyyy-MM-dd HH:mm"} (UTC), or
+	 *                  null for no upper limit
+	 */
+	public WhetgeoTemperatureIterator iterateTimeseries(String tableName, String startDate, String endDate,
+			int bufferSize) throws Exception {
+		DateTimeFormatter fmt = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").withZoneUTC();
+		Long startMs = (startDate != null) ? fmt.parseDateTime(startDate).getMillis() : null;
+		Long endMs = (endDate != null) ? fmt.parseDateTime(endDate).getMillis() : null;
+		return new WhetgeoTemperatureIterator(db, tableName, COL_TEMPERATURE_TIMESTAMP, startMs, endMs, bufferSize);
+	}
+
+	/**
 	 * Create a database from CSV files in the given folder.
 	 *
 	 * <p>
@@ -502,6 +539,20 @@ public class Whetgeo1DInputsHandler {
 			populateTemperature(csv, TABLE_TEMPERATURE_TOP_INTERFACE, db);
 		else
 			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
+
+		// Dynamically import any timeseries_*.csv files present in the folder.
+		// Table name = filename without ".csv". Handles SEB/FT+SEB atmospheric forcing.
+		csv = new File(csvFolderPath);
+		String[] allNames = csv.list();
+		if (allNames != null) {
+			Arrays.sort(allNames);
+			for (String name : allNames) {
+				if (name.startsWith("timeseries_") && name.endsWith(".csv")) {
+					String tableName = name.replace(".csv", "");
+					populateTemperature(new File(csv, name), tableName, db);
+				}
+			}
+		}
 	}
 
 	private static void populateDictionary(File csv, ADb db) throws Exception {
@@ -784,12 +835,12 @@ public class Whetgeo1DInputsHandler {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String dbPath = "/home/hydrologis/TMP/UNITN/whetgeo1d/whetgeo_1d_inputs__heat_diffusion_case.gpkg";
+		String dbPath = "/home/hydrologis/TMP/UNITN/whetgeo1d/TestHeatDiffusionSurfaceEnergyBalance/HeatDiffusionSurfaceEnergyBalance.gpkg";
 
 		// Files.deleteIfExists(Path.of(dbPath));
 		try (ADb db = EDb.GEOPACKAGE.getDb()) {
 			db.open(dbPath);
-			createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/heat_diffusion_case_csv_fem 20260610/", db);
+			createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/TestHeatDiffusionSurfaceEnergyBalance/", db);
 
 //			var reader = new Whetgeo1DInputsHandler(db);
 //			reader.read();
