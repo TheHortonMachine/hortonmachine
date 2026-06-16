@@ -156,10 +156,25 @@ public class DataTableChartAction extends AbstractAction {
                 timeSeriesChart.setXLabel(xLabel);
                 timeSeriesChart.setYLabel("");
                 List<Color> colorList = new ArrayList<>();
-                colorList.add(Color.BLUE);
-                colorList.add(Color.RED);
-                colorList.add(Color.GREEN);
-                colorList.addAll(new DefaultTables().getTableColors(EColorTables.contrasting130.name()));
+                colorList.add(Color.BLUE);                   // 1. blue
+                colorList.add(Color.RED);                    // 2. red
+                colorList.add(Color.GREEN);                  // 3. green
+                colorList.add(new Color(255, 127,   0));     // 4. orange
+                colorList.add(new Color(148,   0, 211));     // 5. violet
+                colorList.add(new Color(  0, 206, 209));     // 6. dark turquoise
+                colorList.add(new Color(255, 215,   0));     // 7. gold
+                colorList.add(new Color(255,  20, 147));     // 8. deep pink
+                colorList.add(new Color(139,  69,  19));     // 9. saddle brown
+                colorList.add(new Color( 64,  64,  64));     // 10. dark gray
+
+                List<Color> tableColors = new DefaultTables().getTableColors(EColorTables.contrasting130.name());
+                int tableColorCount = tableColors.size();
+                // stride by ~tableColorCount/4 so early picks come from different visual regions
+                // tableColorCount=131 is prime so any stride 1..130 visits all entries exactly once
+                int colorStride = Math.max(1, tableColorCount / 4);
+                for (int ci = 0; ci < tableColorCount; ci++) {
+                    colorList.add(tableColors.get((ci * colorStride) % tableColorCount));
+                }
                 var cyclicColors = new CyclicSupplier<Color>(colorList);
                 timeColors = new Color[timeSeriesNames.size()];
                 for( int i = 0; i < timeSeriesNames.size(); i++ ) {
