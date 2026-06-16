@@ -2,7 +2,6 @@ package org.hortonmachine.gears.io.geoframe.whetgeo;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +20,7 @@ import org.joda.time.DateTime;
  * Inputs handler for Whetgeoinputs.
  *
  * @author Andrea Antonello (https://g-ant.eu)
+ * @since 2026-06
  */
 public class Whetgeo1DInputsHandler {
 	/*
@@ -789,7 +789,7 @@ public class Whetgeo1DInputsHandler {
 		// Files.deleteIfExists(Path.of(dbPath));
 		try (ADb db = EDb.GEOPACKAGE.getDb()) {
 			db.open(dbPath);
-			 createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/heat_diffusion_case_csv_fem 20260610/",db);
+			createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/heat_diffusion_case_csv_fem 20260610/", db);
 
 //			var reader = new Whetgeo1DInputsHandler(db);
 //			reader.read();

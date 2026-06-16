@@ -27,10 +27,19 @@ import org.hortonmachine.dbs.utils.SqlName;
  * </ul>
  *
  * <p>
- * Extended schema (freezing-thawing with surface energy balance): enabled
- * automatically when {@link #iceContent} is set to a non-null array before the
- * first {@link #write()} call. Adds {@code ice_content} to {@code output_state}
- * and energy-balance columns to {@code output_scalars}.
+ * Schema is selected automatically on the first {@link #write()} call based on
+ * which fields are non-null:
+ * <ol>
+ * <li><b>Base</b> — {@link #airT} and {@link #iceContent} both null: temperature,
+ * theta, internal_energy; error, top_bc, bottom_bc.</li>
+ * <li><b>SEB</b> — {@link #airT} non-null, {@link #iceContent} null: same as base
+ * plus energy-balance scalars in {@code output_scalars}.</li>
+ * <li><b>FT+SEB</b> — {@link #iceContent} non-null (implies SEB): same as SEB
+ * plus {@code ice_content} in {@code output_state}.</li>
+ * </ol>
+ * 
+ * @author Andrea Antonello (https://g-ant.eu)
+ * @since 2026-06
  */
 public class Whetgeo1DOutputsHandler implements AutoCloseable {
 
@@ -80,11 +89,9 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public double topBC;
 	public double bottomBC;
 
-	// Set iceContent to a non-null array before the first write() to activate the
-	// extended schema. All energy-balance scalars below are then also written.
-	// TODO check if this works as intended
 	public double[] iceContent;
-	public double airT;
+	/** Set to non-null to activate the SEB (or FT+SEB) schema. Null = base schema. */
+	public Double airT;
 	public double shortWaveIn;
 	public double shortWaveOut;
 	public double longWaveIn;
@@ -112,6 +119,7 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private int KMAX;
 	private int DUALKMAX;
 
+	private boolean withSurfaceEnergyBalance;
 	private boolean withIceContent;
 
 	private String SQL_INSERT_STATE;
@@ -168,6 +176,8 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 
 		if (withIceContent) {
 			iceContentBuf.add(iceContent.clone());
+		}
+		if (withSurfaceEnergyBalance) {
 			energyBalanceBuf.add(new double[] { airT, shortWaveIn, shortWaveOut, longWaveIn, longWaveOut,
 					sensibleHeatFlux, latentHeatFlux, heatFluxBottom });
 		}
@@ -187,14 +197,21 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		KMAX = eta.length;
 		DUALKMAX = etaDual.length;
 
-		// SOLVER OUTPUT TYPES
-		// Each flag controls schema creation, SQL preparation, and flush branching.
-		// TODO check if this holds with new types added
+		// Capability detection
+		// Determine which output schema to use based on which fields are non-null:
+		// * airT == null && iceContent == null -> base schema (temperature, theta, internal_energy; error, top_bc, bottom_bc)
+		// * airT != null  -> SEB schema (same as base plus surface-energy-balance scalars in output_scalars)
+		// * iceContent != null -> FT+SEB schema (same as SEB plus freeze-thaw state in output_state)
+		// Add new checks here when further solver output types are introduced.
 		withIceContent = (iceContent != null);
+		withSurfaceEnergyBalance = (airT != null) || withIceContent;
+		// -------------------------------------------------------------------------
 
+		if (withSurfaceEnergyBalance) {
+			energyBalanceBuf = new ArrayList<>();
+		}
 		if (withIceContent) {
 			iceContentBuf = new ArrayList<>();
-			energyBalanceBuf = new ArrayList<>();
 		}
 
 		SqlName gridTable = SqlName.m(TABLE_OUTPUT_GRID);
@@ -258,7 +275,7 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		}
 
 		if (!db.hasTable(scalarsTable)) {
-			if (withIceContent) {
+			if (withSurfaceEnergyBalance) {
 				db.createTable(scalarsTable, COL_ID + " INTEGER PRIMARY KEY", COL_TIMESTAMP + " INTEGER",
 						COL_ERROR + " REAL", COL_TOP_BC + " REAL", COL_BOTTOM_BC + " REAL", COL_AIR_T + " REAL",
 						COL_SHORT_WAVE_IN + " REAL", COL_SHORT_WAVE_OUT + " REAL", COL_LONG_WAVE_IN + " REAL",
@@ -277,7 +294,14 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 					VALUES (?, ?, ?, ?, ?, ?)
 					""", TABLE_OUTPUT_STATE, COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA, COL_INTERNAL_ENERGY,
 					COL_ICE_CONTENT);
+		} else {
+			SQL_INSERT_STATE = String.format("""
+					INSERT INTO %s (%s, %s, %s, %s, %s)
+					VALUES (?, ?, ?, ?, ?)
+					""", TABLE_OUTPUT_STATE, COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA, COL_INTERNAL_ENERGY);
+		}
 
+		if (withSurfaceEnergyBalance) {
 			SQL_INSERT_SCALARS = String.format("""
 					INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -285,11 +309,6 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 					COL_SHORT_WAVE_IN, COL_SHORT_WAVE_OUT, COL_LONG_WAVE_IN, COL_LONG_WAVE_OUT, COL_SENSIBLE_HEAT_FLUX,
 					COL_LATENT_HEAT_FLUX, COL_HEAT_FLUX_BOTTOM);
 		} else {
-			SQL_INSERT_STATE = String.format("""
-					INSERT INTO %s (%s, %s, %s, %s, %s)
-					VALUES (?, ?, ?, ?, ?)
-					""", TABLE_OUTPUT_STATE, COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA, COL_INTERNAL_ENERGY);
-
 			SQL_INSERT_SCALARS = String.format("""
 					INSERT INTO %s (%s, %s, %s, %s)
 					VALUES (?, ?, ?, ?)
@@ -327,7 +346,7 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 						ps.setDouble(3, T[k]);
 						ps.setDouble(4, th[k]);
 						ps.setDouble(5, ie[k]);
-						if (withIceContent)
+						if (ic != null)
 							ps.setDouble(6, ic[k]);
 						ps.addBatch();
 					}
@@ -357,7 +376,7 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 					ps.setDouble(2, errorBuf.get(r));
 					ps.setDouble(3, topBCBuf.get(r));
 					ps.setDouble(4, bottomBCBuf.get(r));
-					if (withIceContent) {
+					if (withSurfaceEnergyBalance) {
 						double[] eb = energyBalanceBuf.get(r);
 						ps.setDouble(5, eb[0]); // airT
 						ps.setDouble(6, eb[1]); // shortWaveIn
@@ -388,6 +407,8 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		bottomBCBuf.clear();
 		if (withIceContent) {
 			iceContentBuf.clear();
+		}
+		if (withSurfaceEnergyBalance) {
 			energyBalanceBuf.clear();
 		}
 	}
