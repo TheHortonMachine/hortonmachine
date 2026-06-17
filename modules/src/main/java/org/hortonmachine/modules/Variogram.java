@@ -48,7 +48,7 @@ import oms3.annotations.UI;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.modules.statistics.kriging.old.OmsVariogram;
+import org.hortonmachine.hmachine.modules.statistics.krigingexp.old.OmsVariogram;
 
 @Description(OMSVARIOGRAM_DESCRIPTION)
 @Author(name = OMSVARIOGRAM_AUTHORNAMES, contact = OMSVARIOGRAM_AUTHORCONTACTS)
