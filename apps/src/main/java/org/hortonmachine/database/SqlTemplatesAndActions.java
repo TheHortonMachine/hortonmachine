@@ -378,6 +378,22 @@ public class SqlTemplatesAndActions {
         };
     }
 
+    public Action getReconnectDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
+        return new AbstractAction("Reconnect"){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                if (databaseViewer.currentConnectedSqlDatabase == null) {
+                    return;
+                }
+                EDb type = databaseViewer.currentConnectedSqlDatabase.getType();
+                String path = databaseViewer.currentConnectedSqlDatabase.getDatabasePath();
+                String user = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_USER, "sa");
+                String pwd  = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_JDBC_LAST_PWD, "");
+                databaseViewer.openDatabase(type, path, user, pwd);
+            }
+        };
+    }
+
     public Action getCopyDatabasePathAction( DatabaseViewer spatialiteViewer ) {
         return new AbstractAction("Copy path"){
             @Override

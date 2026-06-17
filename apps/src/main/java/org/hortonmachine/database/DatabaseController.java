@@ -118,13 +118,7 @@ import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
-import org.hortonmachine.gears.utils.CyclicSupplier;
 import org.hortonmachine.gears.utils.PreferencesHandler;
-import org.hortonmachine.gears.utils.chart.CategoryHistogram;
-import org.hortonmachine.gears.utils.chart.Scatter;
-import org.hortonmachine.gears.utils.chart.TimeSeries;
-import org.hortonmachine.gears.utils.colors.DefaultTables;
-import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -135,8 +129,6 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.HMMapframe;
 import org.hortonmachine.gui.utils.ImageCache;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
 import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -212,6 +204,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private JTextPane[] editorPanesArray;
     private JTable[] dataTablesArray;
     private JTable currentDataTable;
+    private String currentDataTableName = null;
+    private QueryResult currentQueryResult = null;
+    private TableLevel currentDataTableLevel = null;
     private DatabaseTreeView databaseTreeView;
     private SqlEditorView sqlEditorView;
     private DataTableView dataTableView;
@@ -251,7 +246,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         rightSplitPanel.setDividerLocation(0.3);
 
         _mainSplitPane.setRightComponent(rightSplitPanel);
-        _mainSplitPane.setDividerLocation(0.3);
+        _mainSplitPane.setDividerLocation(0.45);
 
         String[] oldSqlCommandsArray = PreferencesHandler.getPreference("HM_OLD_SQL_COMMANDS", new String[0]);
         for( String oldSql : oldSqlCommandsArray ) {
@@ -263,11 +258,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 .setToolTipText("1000 is default and used when no valid number is supplied. -1 means no limit.");
 
         dataTableView._recordCountTextfield.setEditable(false);
+        dataTableView._selectionStatsTextfield.setEditable(false);
 
         sqlEditorView._sqlEditorAreaPanel.setLayout(new BorderLayout());
 
         dataTableView._formatDatesPatternTextField.setText("date, ts, timestamp");
         dataTableView._formatDatesCheckbox.setSelected(true); // on by default
+        dataTableView._formatDatesCheckbox.addActionListener(e -> refreshCurrentTableView());
 
         JTabbedPane tabbedDataViewerPane = new JTabbedPane();
         JTabbedPane tabbedEditorPane = new JTabbedPane();
@@ -299,6 +296,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             panel1.setLayout(new BorderLayout());
             tabbedDataViewerPane.addTab("Viewer " + (i + 1), panel1);
             JTable table = new JTable(){
+                @Override
+                public boolean isCellEditable( int row, int column ) {
+                    return currentDataTableName == null || currentQueryResult == null || currentQueryResult.pkIndex < 0;
+                }
                 public TableCellRenderer getCellRenderer( int row, int column ) {
                     return super.getCellRenderer(row, column);
                 }
@@ -311,6 +312,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentDataTable = table;
             }
             dataTablesArray[i] = table;
+
+            table.getSelectionModel().addListSelectionListener(e -> updateSelectionStats(table));
+            table.getColumnModel().getSelectionModel().addListSelectionListener(e -> updateSelectionStats(table));
 
             addDataTableContextMenu(table);
         }
@@ -455,6 +459,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 closeCurrentDb(true);
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
+                GuiUtilities.showErrorMessage(this, e1.getMessage());
             }
         });
 
@@ -478,6 +483,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
+                GuiUtilities.showErrorMessage(this, e1.getMessage());
             }
         });
 
@@ -501,6 +507,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 }
             } catch (Exception e1) {
                 Logger.INSTANCE.insertError("", "ERROR", e1);
+                GuiUtilities.showErrorMessage(this, e1.getMessage());
             }
         });
 
@@ -521,7 +528,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         });
 
         try {
-            databaseTreeView._databaseTreeView.setMinimumSize(new Dimension(300, 200));
+            databaseTreeView._databaseTreeView.setMinimumSize(new Dimension(350, 200));
+            databaseTreeView.setPreferredSize(new Dimension(400, 600));
 
             addJtreeDragNDrop();
 
@@ -579,6 +587,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                                         currentDataTable.setModel(new DefaultTableModel(values, names));
                                         return;
                                     }
+                                    currentDataTableName = currentSelectedTable != null
+                                            ? currentSelectedTable.tableName.fixedDoubleName
+                                            : null;
+                                    currentDataTableLevel = currentSelectedTable;
                                     loadDataViewer(queryResult);
                                 }
                             };
@@ -880,6 +892,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
                         } catch (Exception e1) {
                             Logger.INSTANCE.insertError("", "ERROR", e1);
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
                         }
                     }
 
@@ -1288,7 +1301,37 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                 };
 
-                JMenuItem item = new JMenuItem(loadConnectionAction);
+                AbstractAction recentConnectionAction = new AbstractAction("Open recent connection"){
+                    @Override
+                    public void actionPerformed( ActionEvent e ) {
+                        try {
+                            byte[] savedBytes = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_RECENT_DATABASES,
+                                    new byte[0]);
+                            List<ConnectionData> recentList = savedBytes.length > 0
+                                    ? (List<ConnectionData>) SqlTemplatesAndActions.convertFromBytes(savedBytes)
+                                    : new ArrayList<>();
+                            recentList.removeIf(c -> c.connectionLabel == null);
+                            if (recentList.isEmpty()) {
+                                GuiUtilities.showWarningMessage(DatabaseController.this, null,
+                                        "No recent connections available.");
+                            } else {
+                                ConnectionData selected = RecentConnectionsDialog.show(
+                                        DatabaseController.this, recentList);
+                                if (selected != null) {
+                                    openDatabase(selected, false);
+                                }
+                            }
+                        } catch (Exception e1) {
+                            GuiUtilities.showErrorMessage(DatabaseController.this, e1.getMessage());
+                        }
+                    }
+                };
+
+                JMenuItem item = new JMenuItem(recentConnectionAction);
+                popupMenuConnectButton.add(item);
+                item.setHorizontalTextPosition(JMenuItem.RIGHT);
+                popupMenuConnectButton.addSeparator();
+                item = new JMenuItem(loadConnectionAction);
                 popupMenuConnectButton.add(item);
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 item = new JMenuItem(removeAction);
@@ -1324,6 +1367,69 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
             }
         });
+    }
+
+    private void updateSelectionStats( JTable table ) {
+        if (table != currentDataTable) {
+            return;
+        }
+        int[] rows = table.getSelectedRows();
+        int[] cols = table.getSelectedColumns();
+        if (rows.length == 0 || cols.length == 0) {
+            dataTableView._selectionStatsTextfield.setText("");
+            return;
+        }
+        double sum = 0;
+        int count = 0;
+        for( int r : rows ) {
+            for( int c : cols ) {
+                Object val = table.getValueAt(r, c);
+                if (val instanceof Number) {
+                    sum += ((Number) val).doubleValue();
+                    count++;
+                }
+            }
+        }
+        if (count == 0) {
+            dataTableView._selectionStatsTextfield.setText("");
+        } else {
+            double avg = sum / count;
+            String sumStr = (sum == Math.floor(sum) && !Double.isInfinite(sum))
+                    ? String.valueOf((long) sum)
+                    : String.format("%.6g", sum);
+            String avgStr = (avg == Math.floor(avg) && !Double.isInfinite(avg))
+                    ? String.valueOf((long) avg)
+                    : String.format("%.6g", avg);
+            dataTableView._selectionStatsTextfield
+                    .setText("Sum: " + sumStr + "   Avg: " + avgStr + "   (n=" + count + ")");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addToRecentConnections( ConnectionData cd ) {
+        try {
+            if (cd == null || cd.connectionUrl == null || cd.connectionUrl.trim().isEmpty())
+                return;
+            if (cd.connectionLabel == null || cd.connectionLabel.trim().isEmpty()) {
+                String url = cd.connectionUrl.replace('\\', '/');
+                int slash = url.lastIndexOf('/');
+                String fileName = slash >= 0 ? url.substring(slash + 1) : url;
+                int dot = fileName.lastIndexOf('.');
+                cd.connectionLabel = dot > 0 ? fileName.substring(0, dot) : fileName;
+            }
+            byte[] savedBytes = PreferencesHandler.getPreference(DatabaseGuiUtils.HM_RECENT_DATABASES, new byte[0]);
+            List<ConnectionData> recentList = savedBytes.length > 0
+                    ? (List<ConnectionData>) SqlTemplatesAndActions.convertFromBytes(savedBytes)
+                    : new ArrayList<>();
+            recentList.removeIf(c -> cd.connectionUrl.equals(c.connectionUrl) && cd.dbType == c.dbType);
+            recentList.add(0, cd);
+            if (recentList.size() > 10)
+                recentList = recentList.subList(0, 10);
+            PreferencesHandler.setPreference(DatabaseGuiUtils.HM_RECENT_DATABASES,
+                    SqlTemplatesAndActions.convertObjectToBytes(recentList));
+        } catch (Exception e) {
+            Logger.INSTANCE.insertError("", "Error saving recent connection", e);
+        }
     }
 
     private void addDataTableContextMenu( JTable table ) {
@@ -1445,137 +1551,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     popupMenu.add(itemToString);
                 }
                 if (proposeChart) {
-                    JMenuItem item1 = new JMenuItem(new AbstractAction("Chart values"){
-                        private static final long serialVersionUID = 1L;
-                        @Override
-                        public void actionPerformed( ActionEvent e ) {
-                            try {
-                                int chartsCount = selectedCols.length - 1;
-
-                                String xLabel = table.getColumnName(selectedCols[0]);
-                                String timePatterns = dataTableView._formatDatesPatternTextField.getText();
-
-                                Scatter scatterChart = null;
-                                CategoryHistogram categoryHistogram = null;
-                                TimeSeries timeSeriesChart = null;
-                        		List<double[]> timeSeriesValuesList = new ArrayList<>();
-                        		List<long[]> timeSeriesTimesList = new ArrayList<>();
-                        		List<String> timeSeriesNames = new ArrayList<>();
-
-                                for( int i = 0; i < chartsCount; i++ ) {
-                                    Object tmpX = table.getValueAt(0, selectedCols[0]);
-                                    boolean doCat = true;
-                                    boolean doTime = false;
-                                    if (tmpX instanceof Number) {
-                                        doCat = false;
-                                    }
-                                    if (timePatterns.contains(xLabel) ) {
-                                    	doTime = true;
-									}
-                                    Object tmpY = table.getValueAt(0, selectedCols[i + 1]);
-                                    if (!(tmpY instanceof Number)) {
-                                        break;
-                                    }
-
-                                    if (doTime) {
-                                    	int index = 0;
-                                    	long[] x = new long[selectedRows.length];
-                                        double[] y = new double[selectedRows.length];
-                                        for( int r : selectedRows ) {
-                                            Object xObj = table.getValueAt(r, selectedCols[0]);
-                                            Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            x[index] = ((Number) xObj).longValue();
-                                            y[index] = ((Number) yObj).doubleValue();
-                                            index++;
-                                        }
-										timeSeriesTimesList.add(x);
-										timeSeriesValuesList.add(y);
-										String seriesName = table.getColumnName(selectedCols[i + 1]);
-										timeSeriesNames.add(seriesName);
-									} else if (doCat) {
-                                        if (categoryHistogram == null) {
-                                            String[] xStr = new String[selectedRows.length];
-                                            double[] y = new double[selectedRows.length];
-                                            int index = 0;
-                                            for( int r : selectedRows ) {
-                                                Object xObj = table.getValueAt(r, selectedCols[0]);
-                                                Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                                xStr[index] = xObj.toString();
-                                                y[index] = ((Number) yObj).doubleValue();
-                                                index++;
-                                            }
-                                            categoryHistogram = new CategoryHistogram(xStr, y);
-                                        }
-                                    } else {
-                                        if (scatterChart == null) {
-                                            scatterChart = new Scatter("");
-                                            List<Boolean> showLines = new ArrayList<Boolean>();
-                                            for( int j = 0; j < chartsCount; j++ ) {
-                                                showLines.add(true);
-                                            }
-                                            scatterChart.setShowLines(showLines);
-                                            scatterChart.setXLabel(xLabel);
-                                            scatterChart.setYLabel("");
-                                        }
-                                        double[] x = new double[selectedRows.length];
-                                        double[] y = new double[selectedRows.length];
-                                        String seriesName = table.getColumnName(selectedCols[i + 1]);
-                                        int index = 0;
-                                        for( int r : selectedRows ) {
-                                            Object xObj = table.getValueAt(r, selectedCols[0]);
-                                            Object yObj = table.getValueAt(r, selectedCols[i + 1]);
-                                            x[index] = ((Number) xObj).doubleValue();
-                                            y[index] = ((Number) yObj).doubleValue();
-                                            index++;
-                                        }
-                                        scatterChart.addSeries(seriesName, x, y);
-                                    }
-                                }
-                                
-                                if (timeSeriesNames.size() > 0) {
-									timeSeriesChart = new TimeSeries("", timeSeriesNames,
-											timeSeriesTimesList, timeSeriesValuesList);
-									timeSeriesChart.setXLabel(xLabel);
-									timeSeriesChart.setYLabel("");
-									List<Color> colorList = new ArrayList<>();
-									colorList.add(Color.BLUE);
-									colorList.add(Color.RED);
-									colorList.add(Color.GREEN);
-									List<Color> tableColors = new DefaultTables().getTableColors(EColorTables.contrasting130.name());
-									colorList.addAll(tableColors);
-									var cyclicTableColors = new CyclicSupplier<Color>(colorList);
-									Color[] colors = new Color[timeSeriesNames.size()];
-									for (int i = 0; i < timeSeriesNames.size(); i++) {
-										colors[i] = cyclicTableColors.next();
-									}
-									timeSeriesChart.setColors(colors);
-								}
-
-                                Dimension dimension = new Dimension(1000, 800);
-                                JFreeChart chart = null;
-                                if (scatterChart != null) {
-									chart = scatterChart.getChart();
-                                } else if (categoryHistogram != null) {
-                                    chart = categoryHistogram.getChart();
-                                } else if (timeSeriesChart != null) {
-                                	chart = timeSeriesChart.getChart();
-                                } else {
-                                    GuiUtilities.showWarningMessage(popupMenu, "Charting of selected data not possible.");
-                                    return;
-                                }
-                                if (chart != null) {
-                                	ChartPanel chartPanel = new ChartPanel(chart, true);
-                                	chartPanel.setPreferredSize(dimension);
-                                	JPanel p = new JPanel(new BorderLayout());
-                                	p.add(chartPanel, BorderLayout.CENTER);
-                                	GuiUtilities.openDialogWithPanel(p, "Chart from cells", dimension, false);
-								}
-                            } catch (Exception ex) {
-                                Logger.INSTANCE.insertError("", "ERROR", ex);
-                            }
-                        }
-
-                    });
+                    JMenuItem item1 = new JMenuItem(new DataTableChartAction(
+                            table, selectedCols, selectedRows,
+                            dataTableView._formatDatesPatternTextField.getText(),
+                            popupMenu));
                     item1.setHorizontalTextPosition(JMenuItem.RIGHT);
                     popupMenu.add(item1);
                 }
@@ -1725,13 +1704,126 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             public void mouseClicked( MouseEvent e ) {
                 if (SwingUtilities.isRightMouseButton(e)) {
                     popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                } else if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    int row = table.rowAtPoint(e.getPoint());
+                    int col = table.columnAtPoint(e.getPoint());
+                    if (row >= 0 && col >= 0) {
+                        editCellValueInDb(table, row, col);
+                    }
                 }
-
             }
         });
     }
 
+    private void editCellValueInDb( JTable table, int row, int col ) {
+        if (currentDataTableName == null || currentQueryResult == null || currentQueryResult.pkIndex < 0) {
+            return;
+        }
+        int pkCol = currentQueryResult.pkIndex;
+        if (col == pkCol) {
+            return;
+        }
+
+        int modelCol = table.convertColumnIndexToModel(col);
+        int modelPkCol = table.convertColumnIndexToModel(pkCol);
+        String colName = table.getModel().getColumnName(modelCol);
+        String pkColName = table.getModel().getColumnName(modelPkCol);
+        Object currentValue = table.getModel().getValueAt(row, modelCol);
+        Object pkValue = table.getModel().getValueAt(row, modelPkCol);
+
+        if (pkValue == null || "NULL".equals(pkValue.toString())) {
+            GuiUtilities.showWarningMessage(this, null, "Cannot edit: primary key value is NULL.");
+            return;
+        }
+
+        if (dataTableView._formatDatesCheckbox.isSelected()) {
+            String[] patternSplit = dataTableView._formatDatesPatternTextField.getText().split(",");
+            for( String pattern : patternSplit ) {
+                if (pkColName.toLowerCase().contains(pattern.trim().toLowerCase())) {
+                    GuiUtilities.showWarningMessage(this, null,
+                            "Cannot edit: primary key '" + pkColName + "' is displayed as a formatted date.\nDisable date formatting to allow editing.");
+                    return;
+                }
+            }
+        }
+
+        String currentValueStr = (currentValue == null || "NULL".equals(currentValue.toString())) ? "" : currentValue.toString();
+
+        JTextArea textArea = new JTextArea(currentValueStr, 5, 40);
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(450, 150));
+
+        int result = JOptionPane.showConfirmDialog(this, scrollPane,
+                "Edit [" + colName + "]   (PK: " + pkColName + " = " + pkValue + ")",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String newValueStr = textArea.getText();
+        Object newValueObj;
+        if (newValueStr.trim().equalsIgnoreCase("NULL")) {
+            newValueObj = null;
+        } else {
+            try {
+                newValueObj = Long.parseLong(newValueStr.trim());
+            } catch (NumberFormatException e1) {
+                try {
+                    newValueObj = Double.parseDouble(newValueStr.trim());
+                } catch (NumberFormatException e2) {
+                    newValueObj = newValueStr;
+                }
+            }
+        }
+
+        String sql = "UPDATE " + currentDataTableName + " SET \"" + colName + "\" = ? WHERE \"" + pkColName + "\" = ?";
+        try {
+            currentConnectedSqlDatabase.executeInsertUpdateDeletePreparedSql(sql, new Object[]{newValueObj, pkValue});
+            refreshCurrentTableView();
+        } catch (Exception ex) {
+            GuiUtilities.showErrorMessage(this, "Error updating value: " + ex.getMessage());
+            Logger.INSTANCE.insertError("", "Error updating cell value", ex);
+        }
+    }
+
+    private void refreshCurrentTableView() {
+        if (currentDataTableLevel == null || currentConnectedSqlDatabase == null) {
+            return;
+        }
+        TableLevel tableLevel = currentDataTableLevel;
+        SwingWorker<QueryResult, Void> worker = new SwingWorker<>() {
+            @Override
+            protected QueryResult doInBackground() throws Exception {
+                if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+                    return ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
+                            tableLevel.tableName.toSqlName(), null, SQL_ONSELECT_LIMIT, -1, null);
+                } else {
+                    return currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
+                            "select * from " + tableLevel.tableName.fixedDoubleName, SQL_ONSELECT_LIMIT);
+                }
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    QueryResult qr = get();
+                    currentDataTableName = tableLevel.tableName.fixedDoubleName;
+                    currentDataTableLevel = tableLevel;
+                    loadDataViewer(qr);
+                } catch (Exception ex) {
+                    Logger.INSTANCE.insertError("", "Error refreshing table view", ex);
+                    GuiUtilities.showErrorMessage(DatabaseController.this, ex.getMessage());
+                }
+            }
+        };
+        worker.execute();
+    }
+
     protected void loadDataViewer( QueryResult queryResult ) {
+        this.currentQueryResult = queryResult;
         if (queryResult == null) {
             currentDataTable.setModel(new DefaultTableModel());
             return;
@@ -1818,6 +1910,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
 
         dataTableView._recordCountTextfield.setText(values.length + " in " + millisToTimeString(queryResult.queryTimeMillis));
+
+        if (queryResult.pkIndex >= 0 && queryResult.pkIndex < currentDataTable.getColumnCount()) {
+            TableColumn pkColumn = currentDataTable.getColumnModel().getColumn(queryResult.pkIndex);
+            TableCellRenderer defaultHeaderRenderer = currentDataTable.getTableHeader().getDefaultRenderer();
+            pkColumn.setHeaderRenderer(( table, value, isSelected, hasFocus, row, col ) -> {
+                Component c = defaultHeaderRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+                c.setFont(c.getFont().deriveFont(java.awt.Font.BOLD));
+                return c;
+            });
+        }
     }
 
     private void layoutTree( DbLevel dbLevel, boolean expandNodes ) {
@@ -1947,6 +2049,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                pm.errorMessage("Error creating database: " + e.getMessage());
                 hadError = true;
             } finally {
                 logConsole.finishProcess();
@@ -2175,13 +2278,21 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     }
                 } catch (Exception e) {
                     Logger.INSTANCE.insertError("", "ERROR", e);
+                    pm.errorMessage("Error opening database: " + e.getMessage());
                     hadError = true;
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
+                ConnectionData recentCd = new ConnectionData();
+                recentCd.dbType = dbType != null ? dbType.getCode() : -1;
+                recentCd.connectionUrl = dbfilePath;
+                recentCd.user = user;
+                recentCd.password = pwd;
+                addToRecentConnections(recentCd);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                pm.errorMessage("Error opening database: " + e.getMessage());
                 hadError = true;
             } finally {
                 logConsole.finishProcess();
@@ -2247,9 +2358,16 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
 
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
+                ConnectionData recentCd = new ConnectionData();
+                recentCd.dbType = _type.getCode();
+                recentCd.connectionUrl = _urlString;
+                recentCd.user = user;
+                recentCd.password = _pwd;
+                addToRecentConnections(recentCd);
             } catch (Exception e) {
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
+                pm.errorMessage("Error connecting to database: " + e.getMessage());
                 hadError = true;
             } finally {
                 logConsole.finishProcess();
@@ -2346,6 +2464,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected boolean runQuery( String sqlText, IHMProgressMonitor pm ) {
+        currentDataTableName = null;
+        currentDataTableLevel = null;
         if (pm == null) {
             pm = this.pm;
         }
