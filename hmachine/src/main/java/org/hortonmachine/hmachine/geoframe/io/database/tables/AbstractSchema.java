@@ -3,7 +3,7 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public abstract class AbstractSchema implements GeoframeDBSchema {
+public abstract class AbstractSchema {
 
 	protected final String tableName;
 	protected final Class<? extends TableField> fieldClass;
@@ -14,12 +14,10 @@ public abstract class AbstractSchema implements GeoframeDBSchema {
 		this.fieldClass = fieldClass;
 	}
 
-	@Override
 	public String tableName() {
 		return tableName;
 	}
 
-	@Override
 	public TableField[] fields() {
 		return fieldClass.getEnumConstants();
 	}
@@ -32,6 +30,10 @@ public abstract class AbstractSchema implements GeoframeDBSchema {
 	public String buildSelectAll() {
 		TableField[] fields = this.fieldClass.getEnumConstants();
 		return this.buildSelect(fields);
+	}
+
+	public String createTableSql() {
+		return tableName;
 	}
 
 }

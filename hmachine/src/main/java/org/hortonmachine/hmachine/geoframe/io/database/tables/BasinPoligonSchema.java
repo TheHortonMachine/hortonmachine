@@ -40,10 +40,4 @@ public final class BasinPoligonSchema extends AbstractSchema implements GeoTable
 		return null;
 	}
 
-	@Override
-	public String createTableSql() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

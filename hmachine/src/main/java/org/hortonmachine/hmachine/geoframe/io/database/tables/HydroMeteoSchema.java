@@ -6,16 +6,25 @@ public class HydroMeteoSchema extends AbstractSchema {
 	}
 
 	public enum HydroMeteoField implements TableField {
-		;
+		TS("ts", Long.class), BASIN_ID("basin_id", Integer.class), VAR_ID("avr_id", Integer.class),
+		VALUE("value", Double.class), DATA_ORIGIN("data_origin", String.class);
+
+		private final String columnName;
+		private final Class<?> javaType;
+
+		HydroMeteoField(String columnName, Class<?> javaType) {
+			this.columnName = columnName;
+			this.javaType = javaType;
+		}
 
 		public String columnName() {
 			// TODO Auto-generated method stub
-			return null;
+			return columnName;
 		}
 
 		public Class<?> javaType() {
 			// TODO Auto-generated method stub
-			return null;
+			return javaType;
 		}
 
 	}

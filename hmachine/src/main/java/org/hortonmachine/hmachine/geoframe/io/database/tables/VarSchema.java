@@ -1,18 +1,18 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-public class TopologySchema extends AbstractSchema {
-	public TopologySchema() {
-		super("topology", TopologyField.class);
-		// TODO Auto-generated constructor stub
+public class VarSchema extends AbstractSchema {
+	public VarSchema() {
+		super("environmental_variables", VarField.class);
 	}
 
-	public enum TopologyField implements TableField {
-		UPPSTREAM_BASIN("upstream_basin_id", Integer.class), DOWNSTREAM_BASIN("downstream_basin_id", Integer.class);
+	public enum VarField implements TableField {
+		VAR_ID("var_id", Integer.class), NAME("name", String.class), UNIT("unit", String.class),
+		DESCRIPTION("description", String.class);
 
 		private final String columnName;
 		private final Class<?> javaType;
 
-		TopologyField(String columnName, Class<?> javaType) {
+		VarField(String columnName, Class<?> javaType) {
 			this.columnName = columnName;
 			this.javaType = javaType;
 		}
@@ -34,4 +34,5 @@ public class TopologySchema extends AbstractSchema {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }
