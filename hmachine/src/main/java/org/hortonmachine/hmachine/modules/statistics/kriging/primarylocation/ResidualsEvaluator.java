@@ -1,5 +1,6 @@
 package org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation;
 
+import org.apache.commons.math3.distribution.TDistribution;
 import org.hortonmachine.gears.utils.math.regressions.PolyTrendLine;
 import org.hortonmachine.gears.utils.math.regressions.RegressionLine;
 
@@ -45,25 +46,24 @@ public class ResidualsEvaluator {
 		try {
 			if (doDetrended && zStations.length > 2) {
 
-                RegressionLine t = new PolyTrendLine(regressionOrder);
-                t.setValues(zStations, hStations);
+				RegressionLine t = new PolyTrendLine(regressionOrder);
+				t.setValues(hStations, zStations);
 
-                double[] regressionParameters = t.getRegressionParameters();
-                trendIntercept = regressionParameters[0];
-                trendCoefficient = regressionParameters[1];
-                hResiduals = t.getResiduals();
-                
-                // TODO implement the check using p-values.  
-//                if (t.getPValue() > 0.05) {
-//					isPValueOk = true;
-//				} else {
-//					trendIntercept = 0;
-//					trendCoefficient = 0;
-//					hResiduals = hStations;
-//				}
-				
-                
-                // ORIGINAL CODE BASED ON FLANAGAN
+				double[] regressionParameters = t.getRegressionParameters();
+				double[] regressionSatandardError = t.getRegressionParametersErrors();
+				trendIntercept = regressionParameters[0];
+				trendCoefficient = regressionParameters[1];
+				hResiduals = t.getResiduals();
+
+				if (getPValue(regressionParameters, regressionSatandardError, hStations.length)[1] < 0.05) {
+					isPValueOk = true;
+				} else {
+					trendIntercept = 0;
+					trendCoefficient = 0;
+					hResiduals = hStations;
+				}
+
+				// ORIGINAL CODE BASED ON FLANAGAN
 //				Regression r = new Regression(zStations, hStations);
 //				r.polynomial(regressionOrder);
 //				/*
@@ -85,8 +85,8 @@ public class ResidualsEvaluator {
 //				}
 			}
 		} catch (Exception e) {
-			//TODO: maybe meessange handler
-		    System.err.println("Error in ResidualsEvaluator: " + e.getMessage());
+			// TODO: maybe meessange handler
+			System.err.println("Error in ResidualsEvaluator: " + e.getMessage());
 			isPValueOk = false;
 			hResiduals = hStations;
 			trendIntercept = 0;
@@ -94,17 +94,36 @@ public class ResidualsEvaluator {
 		}
 
 	}
-/**
- * @todo
- *
- * @param zStations
- * @param hStations
- * @param doDetrended
- * @param regressionOrder
- * @return
- */
-	public final static ResidualsEvaluator create(double[] zStations, double[] hStations,
-			boolean doDetrended, int regressionOrder) {
+
+	/**
+	 * 
+	 * @param coefficent
+	 * @param standardError
+	 * @param nSample
+	 * @return
+	 */
+	private double[] getPValue(double[] coefficent, double[] standardError, int nSample) {
+		int df = nSample - coefficent.length;
+		TDistribution td = new TDistribution(df);
+		double[] pValues = new double[coefficent.length];
+		for (int i = 0; i < coefficent.length; i++) {
+			double tValue = coefficent[i] / standardError[i];
+			pValues[i] = 2.0 * (1.0 - td.cumulativeProbability(Math.abs(tValue)));
+		}
+		return pValues;
+	}
+
+	/**
+	 * @todo
+	 *
+	 * @param zStations
+	 * @param hStations
+	 * @param doDetrended
+	 * @param regressionOrder
+	 * @return
+	 */
+	public final static ResidualsEvaluator create(double[] zStations, double[] hStations, boolean doDetrended,
+			int regressionOrder) {
 		ResidualsEvaluator residualsEvaluator = new ResidualsEvaluator();
 		residualsEvaluator.doDetrended = doDetrended;
 		residualsEvaluator.hStations = hStations;
