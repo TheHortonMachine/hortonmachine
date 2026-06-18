@@ -1,6 +1,7 @@
 package org.hortonmachine.hmachine.geoframe.io.database;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinPoligonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.ClaibrationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.EnvSchema;
@@ -20,8 +21,12 @@ public enum GeoFrameTable {
 	/**
 	 * Basin metadata and properties.
 	 */
-	BASIN(new BasinSchema()),
+	BASIN_POINT(new BasinSchema()),
 
+	/**
+	 * Basin metadata and properties.
+	 */
+	BASIN(new BasinPoligonSchema()),
 	/**
 	 * network topology
 	 */

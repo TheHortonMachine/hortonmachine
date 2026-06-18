@@ -6,4 +6,5 @@ public interface GeoframeDBSchema {
 	String tableName();
 
 	TableField[] fields();
+
 }

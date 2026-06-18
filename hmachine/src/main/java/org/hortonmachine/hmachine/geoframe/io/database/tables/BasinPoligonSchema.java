@@ -1,11 +1,10 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.jts.geom.MultiPolygon;
 
-public final class BasinPoligonSchema extends AbstractSchema implements GeoTableSchema {
+public final class BasinPoligonSchema extends GeoAbstractSchema {
 
-	protected BasinPoligonSchema() {
+	public BasinPoligonSchema() {
 		super("basin", BasinMultiPolygonField.class);
 	}
 
@@ -32,12 +31,6 @@ public final class BasinPoligonSchema extends AbstractSchema implements GeoTable
 			return javaType;
 		}
 
-	}
-
-	@Override
-	public SimpleFeatureBuilder getSFBuilder() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

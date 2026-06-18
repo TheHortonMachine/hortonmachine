@@ -1,9 +1,8 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.locationtech.jts.geom.Point;
 
-public final class BasinSchema extends AbstractSchema implements GeoTableSchema {
+public final class BasinSchema extends GeoAbstractSchema {
 
 	public BasinSchema() {
 		// TODO Auto-generated constructor stub
@@ -39,9 +38,4 @@ public final class BasinSchema extends AbstractSchema implements GeoTableSchema 
 		return "";
 	}
 
-	@Override
-	public SimpleFeatureBuilder getSFBuilder() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
