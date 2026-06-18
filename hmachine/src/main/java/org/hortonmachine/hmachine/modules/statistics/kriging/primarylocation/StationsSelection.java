@@ -241,8 +241,7 @@ public class StationsSelection {
 
 				dDifX = idx - x2;
 				dDifY = idy - y2;
-				// I remove sqrt, I suppose we don't need the sqrt
-				distanceVector[jj] = dDifX * dDifX + dDifY * dDifY;
+				distanceVector[jj] =  Math.sqrt(dDifX* dDifX + dDifY * dDifY);
 				pos[jj] = jj;
 			}
 

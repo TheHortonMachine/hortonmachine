@@ -34,7 +34,7 @@ public class KrigingFlagTest {
 	@Before
 	public void setUp() throws Exception {
 		kriging = new KrigingTest();
-		kriging.parallelComputation = true;
+		kriging.parallelComputation = false;
 		// Build a SimpleFeatureType with a geometry, station id, and z attribute.
 		SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
 		typeBuilder.setName("Station");
@@ -113,54 +113,53 @@ public class KrigingFlagTest {
 
 	}
 
-	// TODO disabled due to residual evaluator not yet properly ported.
-//	@Test
-//	public void testNearest() throws Exception {
-//		// Set up StationsSelection with neighbor selection turned off.
-//
-//		// Create inData mapping station id to measured values.
-//		HashMap<Integer, double[]> inData = new HashMap<>();
-//		inData.put(1, new double[] { 100.0 });
-//		inData.put(2, new double[] { 100.0 });
-//		inData.put(3, new double[] { 100.0 });
-//		inData.put(4, new double[] { 100.0 });
-//		inData.put(5, new double[] { 400.0 });
-//		inData.put(6, new double[] { 400.0 });
-//		inData.put(7, new double[] { 400.0 });
-//		inData.put(8, new double[] { 400.0 });
-//		kriging.inStations = collection;
-//		kriging.inData = inData;
-//		kriging.doIncludeZero = true;
-//		kriging.doLogarithmic = false;
-//		kriging.fStationsid = "id";
-//		kriging.fStationsZ = "z";
-//		kriging.nugget = 0;
-//		kriging.doDetrended = false;
-//		kriging.sill = 10;
-//		kriging.range = 15;
-//		kriging.inNumCloserStations = 4;
-//		kriging.pSemivariogramType = "exponential";
-//		kriging.execute();
-//		HashMap<Integer, double[]> results = kriging.outData;
-//		double firstValue = results.get(1)[0];
-//		assertTrue(" not bounded", firstValue == 100);
-//		assertTrue(" not bounded", firstValue > 90);
-//		double secondValue = results.get(2)[0];
-//		assertTrue(" not bounded", secondValue == 400);
-//		assertTrue(" not bounded", secondValue > 390);
-//
-//		kriging.inNumCloserStations = 0;
-//		kriging.maxdist = 8.0;
-//		kriging.execute();
-//		results = kriging.outData;
-//		firstValue = results.get(1)[0];
-//		assertTrue(" not bounded", firstValue == 100);
-//		assertTrue(" not bounded", firstValue > 90);
-//		secondValue = results.get(2)[0];
-//		assertTrue(" not bounded", secondValue == 400);
-//		assertTrue(" not bounded", secondValue > 390);
-//
-//	}
+	@Test
+	public void testNearest() throws Exception {
+		// Set up StationsSelection with neighbor selection turned off.
+
+		// Create inData mapping station id to measured values.
+		HashMap<Integer, double[]> inData = new HashMap<>();
+		inData.put(1, new double[] { 100.0 });
+		inData.put(2, new double[] { 100.0 });
+		inData.put(3, new double[] { 100.0 });
+		inData.put(4, new double[] { 100.0 });
+		inData.put(5, new double[] { 400.0 });
+		inData.put(6, new double[] { 400.0 });
+		inData.put(7, new double[] { 400.0 });
+		inData.put(8, new double[] { 400.0 });
+		kriging.inStations = collection;
+		kriging.inData = inData;
+		kriging.doIncludeZero = true;
+		kriging.doLogarithmic = false;
+		kriging.fStationsid = "id";
+		kriging.fStationsZ = "z";
+		kriging.nugget = 0;
+		kriging.doDetrended = false;
+		kriging.sill = 10;
+		kriging.range = 15;
+		kriging.inNumCloserStations = 4;
+		kriging.pSemivariogramType = "exponential";
+		kriging.execute();
+		HashMap<Integer, double[]> results = kriging.outData;
+		double firstValue = results.get(1)[0];
+		assertTrue(" not bounded", firstValue == 100);
+		assertTrue(" not bounded", firstValue > 90);
+		double secondValue = results.get(2)[0];
+		assertTrue(" not bounded", secondValue == 400);
+		assertTrue(" not bounded", secondValue > 390);
+
+		kriging.inNumCloserStations = 0;
+		kriging.maxdist = 8.0;
+		kriging.execute();
+		results = kriging.outData;
+		firstValue = results.get(1)[0];
+		assertTrue(" not bounded", firstValue == 100);
+		assertTrue(" not bounded", firstValue > 90);
+		secondValue = results.get(2)[0];
+		assertTrue(" not bounded", secondValue == 400);
+		assertTrue(" not bounded", secondValue > 390);
+
+	}
 
 	private class KrigingTest extends Kriging {
 
