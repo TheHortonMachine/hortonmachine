@@ -520,8 +520,7 @@ public class HMRaster implements AutoCloseable {
      * @return the world coordinate.
      */
     public Coordinate getWorld( int col, int row ) {
-        Coordinate coordinate = CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
-        return coordinate;
+        return CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
     }
     
 	public void makeNullBorders() {
@@ -695,8 +694,8 @@ public class HMRaster implements AutoCloseable {
         for( int r = fromRow; r <= toRow; r++ ) {
             for( int c = fromCol; c <= toCol; c++ ) {
                 if (isContained(c, r)) {
-                    Coordinate coordinate = getWorld(c, r);
-                    double otherRasterValue = otherRaster.getValue(coordinate);
+                    Coordinate otherRasterCoordinate =otherRaster.getWorld(c,r);
+                    double otherRasterValue = otherRaster.getValue(otherRasterCoordinate);
                     if (!otherRaster.isNovalue(otherRasterValue)) {
                         double thisRasterValue = getValue(c, r);
 
