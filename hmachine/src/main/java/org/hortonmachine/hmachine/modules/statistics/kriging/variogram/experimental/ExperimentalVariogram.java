@@ -26,7 +26,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
-import org.hortonmachine.hmachine.modules.statistics.kriging.utils.StationsSelection;
+import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -42,256 +42,288 @@ import oms3.annotations.Status;
 
 @Description("Experimental semivariogram algorithm.")
 @Documentation("Experimental semivariogram")
-@Author(name = "Giuseppe Formetta, Francesco Adami, Silvia Franceschi & Marialaura Bancheri")
+@Author(name = "Giuseppe Formetta, Francesco Adami, Silvia Franceschi & Marialaura Bancheri, Daniele Andreis")
 @Keywords("Experimental semivariogram, Kriging, Hydrology")
 @Label(HMConstants.STATISTICS)
 @Name("variogram")
 @Status(Status.CERTIFIED)
 @License("General Public License Version 3 (GPLv3)")
+@SuppressWarnings("nls")
 public class ExperimentalVariogram extends HMModel {
 
-    @Description("The vector of the measurement point, containing the position of the stations.")
-    @In
-    public SimpleFeatureCollection inStations = null;
-
-    @Description("The field of the vector of stations, defining the id.")
-    @In
-    public String fStationsid = null;
-
-    @Description("The file with the measured data, to be interpolated.")
-    @In
-    public HashMap<Integer, double[]> inData = null;
-
-    @Description("Include zeros in computations (default is true).")
-    @In
-    public boolean doIncludezero = true;
-
-    @Description("Specified cutoff")
-    @In
-    public double Cutoffinput;
-
-    @Description("In the case of kriging with neighbor, inNumCloserStations is the number "
-            + "of stations the algorithm has to consider")
-    @In
-    public int inNumCloserStations;
-
-    @Description("Number of bins to consider in the anlysis")
-    @In
-    public int Cutoff_divide;
+	@Description("The vector of the measurement point, containing the position of the stations.")
+	@In
+	public SimpleFeatureCollection inStations = null;
+
+	@Description("The field of the vector of stations, defining the id.")
+	@In
+	public String fStationsid = null;
+
+	@Description("The file with the measured data, to be interpolated.")
+	@In
+	public HashMap<Integer, double[]> inData = null;
+
+	@Description("Include zeros in computations (default is true).")
+	@In
+	public boolean doIncludezero = true;
+
+	@Description("Specified cutoff")
+	@In
+	public double Cutoffinput;
+
+	@Description("In the case of kriging with neighbor, inNumCloserStations is the number "
+			+ "of stations the algorithm has to consider")
+	@In
+	public int inNumCloserStations;
+
+	@Description("Number of bins to consider in the anlysis")
+	@In
+	public int Cutoff_divide;
+
+	@Description("The Experimental Distances.")
+	@Out
+	public HashMap<Integer, double[]> outDistances;
+
+	@Description("The Experimental Variogram.")
+	@Out
+	public HashMap<Integer, double[]> outExperimentalVariogram;
+	@Description("The numbers of pairs at certain lag.")
+	@Out
+	public HashMap<Integer, double[]>  outNumberPairsPerBin;
+	@Out
+	public int differents;
+	@Out
+	public boolean areAllEquals;
+	@Description("The progress monitor.")
+	@In
+	public IHMProgressMonitor pm = new LogProgressMonitor();
+
+	/**
+	 * Process.
+	 *
+	 * @throws Exception the exception
+	 */
+	@Execute
+	public void process() throws Exception {
+
+		StationsSelection stations = new StationsSelection();
+
+		stations.inStations = inStations;
+		stations.inData = inData;
+		stations.doIncludezero = doIncludezero;
+		stations.fStationsid = fStationsid;
+
+		stations.execute();
+
+		differents = stations.n1;
+		areAllEquals = stations.areAllEquals;
+		double[] xStations = stations.xStationInitialSet;
+		double[] yStations = stations.yStationInitialSet;
+		double[] hStations = stations.hStationInitialSet;
+
+		// number of different stations
+		if (differents > 2) {
+
+			double[][] outResult = processAlgorithm(xStations, yStations, hStations, Cutoffinput);
+			storeResult(outResult);
+
+		} else {
+			System.out.println("Only 1 data >0 or All the data are equal. Variogram is not running");
+		}
+
+	}
+
+	/**
+	 * Process algorithm.
+	 *
+	 * @param xStation    the vector containing the x value of the station
+	 * @param yStation    the vector containing the y value of the station
+	 * @param hStation    the vector containing the variable value of the station
+	 * @param Cutoffinput the cutoff input
+	 * @retur			double[] xStations = null, yStations = null, zStations = null, hResiduals = null;
+n the double[][] matrix of the results of the processing
+	 */
+	private double[][] processAlgorithm(double[] xStation, double yStation[], double[] hStation, double Cutoffinput) {
+
+		double x1, x2, y1, y2;
+		double dDifX, dDifY;
+		double value;
+		double mean = 0;
+		double maxDistance = 0;
+
+		double Cutoff;
+		int iCount = xStation.length;
+		double distanceMatrix[][] = new double[iCount][iCount];
 
-    @Description("The Experimental Distances.")
-    @Out
-    public HashMap<Integer, double[]> outDistances;
+		double x_max = xStation[0], y_max = yStation[0], diagonal;
+		double x_min = xStation[0], y_min = yStation[0];
+		for (int i = 1; i < iCount - 1; i++) {
 
-    @Description("The Experimental Variogram.")
-    @Out
-    public HashMap<Integer, double[]> outExperimentalVariogram;
+			x_min = Math.min(x_min, xStation[i]);
+			y_min = Math.min(y_min, yStation[i]);
+			x_max = Math.max(x_max, xStation[i]);
+			y_max = Math.max(y_max, yStation[i]);
 
-    int differents;
+		}
 
-    @Description("The progress monitor.")
-    @In
-    public IHMProgressMonitor pm = new LogProgressMonitor();
+		diagonal = Math.sqrt((x_max - x_min) * (x_max - x_min) + (y_max - y_min) * (y_max - y_min));
 
-    /**
-     * Process.
-     *
-     * @throws Exception the exception
-     */
-    @Execute
-    public void process() throws Exception {
+		if (Cutoffinput == 0) {
+			Cutoff = diagonal / 3;
+		} else {
+			Cutoff = Cutoffinput;
+		}
+		// Compute the distance matrix
+		for (int i = 0; i < iCount - 1; i++) {
+			x1 = xStation[i];
+			y1 = yStation[i];
+			value = hStation[i];
 
-        StationsSelection stations = new StationsSelection();
+			mean += value;
 
-        stations.inStations = inStations;
-        stations.inData = inData;
-        stations.doIncludezero = doIncludezero;
-        stations.fStationsid = fStationsid;
+			for (int j = 0; j < iCount - 1; j++) {
 
-        stations.execute();
+				x2 = xStation[j];
+				y2 = yStation[j];
 
-        differents = stations.n1;
+				dDifX = x2 - x1;
+				dDifY = y2 - y1;
 
-        double[] xStations = stations.xStationInitialSet;
-        double[] yStations = stations.yStationInitialSet;
-        double[] hStations = stations.hStationInitialSet;
-        int[] idStations = stations.idStationInitialSet;
+				// Pitagora theorem
+				distanceMatrix[i][j] = Math.sqrt(dDifX * dDifX + dDifY * dDifY);
 
-        // number of different stations
-        if (differents > 2) {
+				maxDistance = Math.max(maxDistance, distanceMatrix[i][j]);
 
-            double[][] outResult = processAlgorithm(xStations, yStations, hStations, Cutoffinput);
-            storeResult(outResult);
+			}
+		}
 
-        } else {
-            System.out.println("Only 1 data >0 or All the data are equal. Variogram is not running");
-        }
+		// compute the mean of the input hStation
+		mean /= iCount;
 
-    }
+		return calculate(Cutoff, distanceMatrix, hStation, mean, maxDistance);
 
-    /**
-     * Process algorithm.
-     *
-     * @param xStation the vector containing the x value of the station
-     * @param yStation the vector containing the y value of the station
-     * @param hStation the vector containing the variable value of the station
-     * @param cutoffInput the cutoff input
-     * @return the double[][] matrix of the results of the processing
-     */
-    private double[][] processAlgorithm( double[] xStation, double yStation[], double[] hStation, double cutoffInput ) {
+	}
 
-        double x1, x2, y1, y2;
-        double dDifX, dDifY;
-        double value;
-        double mean = 0;
-        double maxDistance = 0;
+	/**
+	 * Calculate the variances and the distances
+	 *
+	 * @param cutoff         the cutoff
+	 * @param distanceMatrix the distance matrix
+	 * @param hStation       the vector containing the variable value of the station
+	 * @param mean           the mean value of the input data
+	 * @param maxDistance    the max distance value
+	 * @return the double[][] matrix with the results (the variances and the
+	 *         distances)
+	 */
+	public double[][] calculate(double cutoff, double[][] distanceMatrix, double[] hStation, double mean,
+			double maxDistance) {
 
-        double cutoff;
-        int iCount = xStation.length;
-        double distanceMatrix[][] = new double[iCount][iCount];
+		Cutoff_divide = (Cutoff_divide == 0) ? 15 : Cutoff_divide;
+		double binAmplitude = cutoff / Cutoff_divide;
 
-        double x_max = xStation[0], y_max = yStation[0], diagonal;
-        double x_min = xStation[0], y_min = yStation[0];
-        for( int i = 1; i < iCount - 1; i++ ) {
+		// number of distance for each bin
+		int iClasses = (int) (maxDistance / binAmplitude + 2);
 
-            x_min = Math.min(x_min, xStation[i]);
-            y_min = Math.min(y_min, yStation[i]);
-            x_max = Math.max(x_max, xStation[i]);
-            y_max = Math.max(y_max, yStation[i]);
+		// definition of the vectors containing the variance, covariance, semivariance,
+		// number of the points in the specified bin..
 
-        }
+		double[] m_dSemivar = new double[iClasses];
 
-        diagonal = Math.sqrt((x_max - x_min) * (x_max - x_min) + (y_max - y_min) * (y_max - y_min));
+		int[] iPointsInClass = new int[iClasses];
 
-        if (cutoffInput == 0) {
-            cutoff = diagonal / 3;
-        } else
-            cutoff = cutoffInput;
+		double[] m_ddist = new double[iClasses];
 
-        // Compute the distance matrix
-        for( int i = 0; i < iCount - 1; i++ ) {
-            x1 = xStation[i];
-            y1 = yStation[i];
-            value = hStation[i];
+		int contaNONzero = 0;
 
-            mean += value;
+		for (int i = 0; i < distanceMatrix.length; i++) {
+			// first cycle input hStation
+			double value1 = hStation[i];
 
-            for( int j = 0; j < iCount - 1; j++ ) {
+			for (int j = i + 1; j < distanceMatrix.length; j++) {
+				if (distanceMatrix[i][j] > 0 && distanceMatrix[i][j] < cutoff) {
 
-                x2 = xStation[j];
-                y2 = yStation[j];
+					// return the class of considered distance
+					int iClass = (int) Math.floor((distanceMatrix[i][j]) / binAmplitude);
 
-                dDifX = x2 - x1;
-                dDifY = y2 - y1;
+					// counts the number of distances of each class
+					iPointsInClass[iClass]++;
 
-                // Pitagora theorem
-                distanceMatrix[i][j] = Math.sqrt(dDifX * dDifX + dDifY * dDifY);
+					// second cycle input hStation
+					double value2 = hStation[j];
 
-                maxDistance = Math.max(maxDistance, distanceMatrix[i][j]);
+					// compute the numerator of the semivariance
+					double dSemivar = Math.pow((value1 - value2), 2.);
 
-            }
-        }
+					// sum all the semivariances for the considered class
 
-        // compute the mean of the input hStation
-        mean /= (double) iCount;
+					m_dSemivar[iClass] += dSemivar;
 
-        return calculate(cutoff, distanceMatrix, hStation, mean, maxDistance);
+					m_ddist[iClass] += distanceMatrix[i][j];
 
-    }
+				}
+			}
 
-    /**
-     * Calculate the variances and the distances
-     *
-     * @param cutoff the cutoff
-     * @param distanceMatrix the distance matrix
-     * @param hStation the vector containing the variable value of the station
-     * @param mean the mean value of the input data
-     * @param maxDistance the max distance value
-     * @return the double[][] matrix with the results (the variances and the distances)
-     */
-    public double[][] calculate( double cutoff, double[][] distanceMatrix, double[] hStation, double mean, double maxDistance ) {
+		}
 
-        Cutoff_divide = (Cutoff_divide == 0) ? 15 : Cutoff_divide;
-        double binAmplitude = cutoff / Cutoff_divide;
+		double[][] result = new double[Cutoff_divide][3];
 
-        // number of distance for each bin
-        int iClasses = (int) (maxDistance / binAmplitude + 2);
+		for (int i = 0; i < Cutoff_divide; i++) {
 
-        // definition of the vectors containing the variance, covariance, semivariance,
-        // number of the points in the specified bin..
+			contaNONzero = (iPointsInClass[i] == 0) ? contaNONzero : contaNONzero + 1;
 
-        double[] m_dSemivar = new double[iClasses];
+			// Compute the semivariance
+			m_dSemivar[i] = (iPointsInClass[i] == 0) ? 0 : m_dSemivar[i] / (2. * iPointsInClass[i]);
 
-        int[] iPointsInClass = new int[iClasses];
+			// Compute the mean distance for each class
+			m_ddist[i] = (iPointsInClass[i] == 0) ? 0 : m_ddist[i] / iPointsInClass[i];
 
-        double[] m_ddist = new double[iClasses];
+			result[i][0] = m_ddist[i];
+			result[i][1] = m_dSemivar[i];
+			result[i][2] = iPointsInClass[i];
+		}
 
-        int contaNONzero = 0;
+		return result;
 
-        for( int i = 0; i < distanceMatrix.length; i++ ) {
-            // first cycle input hStation
-            double value1 = hStation[i];
+	}
 
-            for( int j = i + 1; j < distanceMatrix.length; j++ ) {
-                if (distanceMatrix[i][j] > 0 && distanceMatrix[i][j] < cutoff) {
+	/**
+	 * Store result.
+	 *
+	 * @param result are the resulting variances and the distances
+	 * @throws SchemaException the schema exception
+	 */
+	private void storeResult(double[][] result) throws SchemaException {
+		outDistances = new HashMap<>();
+		outExperimentalVariogram = new HashMap<>();
+		outNumberPairsPerBin = new HashMap<>();
 
-                    // return the class of considered distance
-                    int iClass = (int) Math.floor((distanceMatrix[i][j]) / binAmplitude);
+		for (int i = 0; i < result.length; i++) {
+			outDistances.put(i, new double[] { result[i][0] });
+			outExperimentalVariogram.put(i, new double[] { result[i][1] });
+			outNumberPairsPerBin.put(i, new double[] { result[i][2] });
+		}
+	}
 
-                    // counts the number of distances of each class
-                    iPointsInClass[iClass]++;
-
-                    // second cycle input hStation
-                    double value2 = hStation[j];
-
-                    // compute the numerator of the semivariance
-                    double dSemivar = Math.pow((value1 - value2), 2.);
-
-                    // sum all the semivariances for the considered class
-
-                    m_dSemivar[iClass] += dSemivar;
-
-                    m_ddist[iClass] += distanceMatrix[i][j];
-
-                }
-            }
-
-        }
-
-        double[][] result = new double[Cutoff_divide][2];
-
-        for( int i = 0; i < Cutoff_divide; i++ ) {
-
-            contaNONzero = (iPointsInClass[i] == 0) ? contaNONzero : contaNONzero + 1;
-
-            // Compute the semivariance
-            m_dSemivar[i] = (iPointsInClass[i] == 0) ? 0 : m_dSemivar[i] / (2. * iPointsInClass[i]);
-
-            // Compute the mean distance for each class
-            m_ddist[i] = (iPointsInClass[i] == 0) ? 0 : m_ddist[i] / iPointsInClass[i];
-
-            result[i][0] = m_ddist[i];
-            result[i][1] = m_dSemivar[i];
-        }
-
-        return result;
-
-    }
-
-    /**
-     * Store result.
-     *
-     * @param result are the resulting variances and the distances
-     * @throws SchemaException the schema exception
-     */
-    private void storeResult( double[][] result ) throws SchemaException {
-        outDistances = new HashMap<Integer, double[]>();
-        outExperimentalVariogram = new HashMap<Integer, double[]>();
-
-        for( int i = 0; i < result.length; i++ ) {
-            outDistances.put(i, new double[]{result[i][0]});
-            outExperimentalVariogram.put(i, new double[]{result[i][1]});
-        }
-    }
+	public final static ExperimentalVariogram create(String fStationsid,
+				SimpleFeatureCollection inStations, boolean doIncludeZero, int cutoffDivide, double cutoffInput,
+				int numCloseStation) {
+			ExperimentalVariogram expVariogram = new ExperimentalVariogram();
+			expVariogram.fStationsid = fStationsid;
+			expVariogram.inStations = inStations;
+			expVariogram.doIncludezero = doIncludeZero;
+			expVariogram.inNumCloserStations = numCloseStation;
+			if (cutoffDivide > 0) {
+				expVariogram.Cutoff_divide = cutoffDivide;
+			}
+			if (cutoffInput > 0) {
+				expVariogram.Cutoffinput = cutoffInput;
+			}
+	//		HashMap<Integer, double[]> tmpInData = new HashMap<Integer, double[]>();
+	//		for (int i = 0; i < idArray.length; i++) {
+	//			tmpInData.put(idArray[i], new double[] { hresiduals[i] });
+	//		}
+	//		expVariogram.inData = tmpInData;
+			return expVariogram;
+		}
 
 }

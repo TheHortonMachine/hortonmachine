@@ -21,10 +21,22 @@ package org.hortonmachine.gears.io.geoframe;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 
-import oms3.annotations.*;
+import oms3.annotations.Author;
+import oms3.annotations.Description;
+import oms3.annotations.Documentation;
+import oms3.annotations.Execute;
+import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.License;
+import oms3.annotations.Name;
+import oms3.annotations.Out;
+import oms3.annotations.Status;
+import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description("Buffer for 1D heat diffusion simulation. This component temporarily the output and then passes them to "
 		+ "the writer component")
@@ -42,7 +54,7 @@ public class HeatDiffusionBuffer1D {
 	@Description("Output variables of the current time step")
 	@In 
 	@Unit ("-")
-	public ArrayList<double[]> inputVariable;
+	public List<double[]> inputVariable;
 
 	@Description("Date of the current time step")
 	@In 

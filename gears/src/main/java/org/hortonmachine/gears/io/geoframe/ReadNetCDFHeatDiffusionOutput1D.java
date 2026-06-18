@@ -57,8 +57,8 @@ public class ReadNetCDFHeatDiffusionOutput1D {
 
 	@Description("File name of NetCDF containing grid data")
 	@In
-	public String gridFilename;
 
+	public String gridFilename;
 
 	@Description("Temperature")
 	@Out

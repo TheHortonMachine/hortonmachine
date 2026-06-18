@@ -98,7 +98,7 @@ public interface IWaterBudgetSimulationRunner {
 		int idIndex = queryResult.names.indexOf("basinid");
 		for (int i = 0; i < queryResult.data.size(); i++) {
 			Object[] row = queryResult.data.get(i);
-			int basinId = (int) row[idIndex];
+			int basinId = ((Number) row[idIndex]).intValue();
 			Geometry basinGeom = (Geometry) row[queryResult.geometryIndex];
 			double area = basinGeom.getArea() / 1_000_000.0; // in km2
 			basinAreas[basinId] = area;

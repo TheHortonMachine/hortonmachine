@@ -245,7 +245,16 @@ public class SpatialiteCommonMethods {
                         if (pk.equals("1")) {
                             hasPk = true;
                         }
-
+                    }
+                    if (name == null || name.isEmpty()) {
+                        if (hasPk) {
+                            // empty-named PK — promote to "fid" (matches QGIS convention),
+                            // or "_fid" if a "fid" column already exists
+                            boolean fidTaken = columnsInfo.stream().anyMatch(c -> "fid".equalsIgnoreCase(c[0]));
+                            name = fidTaken ? "_fid" : "fid";
+                        } else {
+                            continue;
+                        }
                     }
                     columnsInfo.add(new String[]{name, type, pk});
                 }

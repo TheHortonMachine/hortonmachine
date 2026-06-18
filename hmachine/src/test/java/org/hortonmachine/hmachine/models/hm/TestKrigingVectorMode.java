@@ -13,10 +13,10 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
-import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingVectorMode;
-import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.VariogramFunction;
-import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.VariogramFunctionFitter;
-import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.ITheoreticalVariogram;
+import org.hortonmachine.hmachine.modules.statistics.krigingexp.OmsKrigingVectorMode;
+import org.hortonmachine.hmachine.modules.statistics.krigingexp.variogram.VariogramFunction;
+import org.hortonmachine.hmachine.modules.statistics.krigingexp.variogram.VariogramFunctionFitter;
+import org.hortonmachine.hmachine.modules.statistics.krigingexp.variogram.theoretical.ITheoreticalVariogram;
 import org.junit.Test;
 
 /**

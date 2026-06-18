@@ -341,6 +341,7 @@ public class DatabaseViewer extends DatabaseController {
     protected List<Action> makeDatabaseAction( final DbLevel dbLevel ) {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getRefreshDatabaseAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getReconnectDatabaseAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSwitchDatabaseAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getDropDatabaseAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getViewActiveSessionsAction(guiBridge, this));
