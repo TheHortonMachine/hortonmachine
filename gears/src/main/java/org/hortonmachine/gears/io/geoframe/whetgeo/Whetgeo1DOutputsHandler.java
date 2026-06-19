@@ -9,7 +9,7 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.utils.SqlName;
 
 /**
- * DB-based output handler for 1D heat solver results.
+ * DB-based output handler for 1D heat/Richards solver results.
  *
  * <p>
  * Set the per-step fields and call {@link #write()} once per solver step. Rows
@@ -27,17 +27,16 @@ import org.hortonmachine.dbs.utils.SqlName;
  * </ul>
  *
  * <p>
- * Schema is selected automatically on the first {@link #write()} call based on
- * which fields are non-null:
- * <ol>
- * <li><b>Base</b> — {@link #airT} and {@link #iceContent} both null: temperature,
- * theta, internal_energy; error, top_bc, bottom_bc.</li>
- * <li><b>SEB</b> — {@link #airT} non-null, {@link #iceContent} null: same as base
- * plus energy-balance scalars in {@code output_scalars}.</li>
- * <li><b>FT+SEB</b> — {@link #iceContent} non-null (implies SEB): same as SEB
- * plus {@code ice_content} in {@code output_state}.</li>
- * </ol>
- * 
+ * {@link #temperature}, {@link #theta}, {@link #heatFlux} and {@link #error}
+ * are always required. Every other output field is independently optional:
+ * leaving it null before the first {@link #write()} omits its column(s)
+ * entirely; setting it adds the column(s) to the relevant table. This lets
+ * each solver opt into exactly the columns it produces, without a fixed
+ * enumeration of "modes". The surface-energy-balance scalars ({@link #airT}
+ * and its 7 companions) are written as one bundle, keyed on {@link #airT}
+ * being non-null, since they only ever come from the same physical
+ * sub-model.
+ *
  * @author Andrea Antonello (https://g-ant.eu)
  * @since 2026-06
  */
@@ -58,12 +57,15 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public static final String COL_TEMPERATURE = "temperature";
 	public static final String COL_THETA = "theta";
 	public static final String COL_INTERNAL_ENERGY = "internal_energy";
-	public static final String COL_ICE_CONTENT = "ice_content"; 
+	public static final String COL_ICE_CONTENT = "ice_content";
+	public static final String COL_WATER_SUCTION = "water_suction";
 	public static final String COL_HEAT_FLUX = "heat_flux";
+	public static final String COL_DARCY_VELOCITY = "darcy_velocity";
 	public static final String COL_ERROR = "error";
 	public static final String COL_TOP_BC = "top_bc";
 	public static final String COL_BOTTOM_BC = "bottom_bc";
-	public static final String COL_AIR_T = "air_t"; 
+	public static final String COL_ERROR_VOLUME = "error_volume";
+	public static final String COL_AIR_T = "air_t";
 	public static final String COL_SHORT_WAVE_IN = "short_wave_in";
 	public static final String COL_SHORT_WAVE_OUT = "short_wave_out";
 	public static final String COL_LONG_WAVE_IN = "long_wave_in";
@@ -79,18 +81,24 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public double[] psi;
 	public double[] temperatureIC;
 
-	//  base outputs (written every step)
+	// mandatory per-step outputs — every solver produces these
 	public long timestamp;
 	public double[] temperature;
 	public double[] theta;
-	public double[] internalEnergy;
 	public double[] heatFlux;
 	public double error;
-	public double topBC;
-	public double bottomBC;
 
+	// optional per-step outputs. Each is independently activated by being
+	// non-null before the first write() — leave null to omit its column(s).
+	public double[] internalEnergy;
 	public double[] iceContent;
-	/** Set to non-null to activate the SEB (or FT+SEB) schema. Null = base schema. */
+	public double[] waterSuction;
+	public double[] darcyVelocity;
+	public Double topBC;
+	public Double bottomBC;
+	public Double errorVolume;
+
+	// surface-energy-balance bundle: always set together, keyed on airT != null
 	public Double airT;
 	public double shortWaveIn;
 	public double shortWaveOut;
@@ -119,8 +127,14 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private int KMAX;
 	private int DUALKMAX;
 
-	private boolean withSurfaceEnergyBalance;
+	private boolean withInternalEnergy;
 	private boolean withIceContent;
+	private boolean withWaterSuction;
+	private boolean withDarcyVelocity;
+	private boolean withTopBC;
+	private boolean withBottomBC;
+	private boolean withErrorVolume;
+	private boolean withSurfaceEnergyBalance;
 
 	private String SQL_INSERT_STATE;
 	private String SQL_INSERT_FLUX;
@@ -129,13 +143,16 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private final List<long[]> tsBuf = new ArrayList<>();
 	private final List<double[]> temperatureBuf = new ArrayList<>();
 	private final List<double[]> thetaBuf = new ArrayList<>();
-	private final List<double[]> internalEnergyBuf = new ArrayList<>();
 	private final List<double[]> heatFluxBuf = new ArrayList<>();
 	private final List<Double> errorBuf = new ArrayList<>();
-	private final List<Double> topBCBuf = new ArrayList<>();
-	private final List<Double> bottomBCBuf = new ArrayList<>();
 
+	private List<double[]> internalEnergyBuf;
 	private List<double[]> iceContentBuf;
+	private List<double[]> waterSuctionBuf;
+	private List<double[]> darcyVelocityBuf;
+	private List<Double> topBCBuf;
+	private List<Double> bottomBCBuf;
+	private List<Double> errorVolumeBuf;
 	// energy balance scalars packed as double[8]:
 	// [airT, shortWaveIn, shortWaveOut, longWaveIn, longWaveOut, sensible, latent,
 	// heatFluxBottom]
@@ -168,14 +185,29 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		tsBuf.add(new long[] { timestamp });
 		temperatureBuf.add(temperature.clone());
 		thetaBuf.add(theta.clone());
-		internalEnergyBuf.add(internalEnergy.clone());
 		heatFluxBuf.add(heatFlux.clone());
 		errorBuf.add(error);
-		topBCBuf.add(topBC);
-		bottomBCBuf.add(bottomBC);
 
+		if (withInternalEnergy) {
+			internalEnergyBuf.add(internalEnergy.clone());
+		}
 		if (withIceContent) {
 			iceContentBuf.add(iceContent.clone());
+		}
+		if (withWaterSuction) {
+			waterSuctionBuf.add(waterSuction.clone());
+		}
+		if (withDarcyVelocity) {
+			darcyVelocityBuf.add(darcyVelocity.clone());
+		}
+		if (withTopBC) {
+			topBCBuf.add(topBC);
+		}
+		if (withBottomBC) {
+			bottomBCBuf.add(bottomBC);
+		}
+		if (withErrorVolume) {
+			errorVolumeBuf.add(errorVolume);
 		}
 		if (withSurfaceEnergyBalance) {
 			energyBalanceBuf.add(new double[] { airT, shortWaveIn, shortWaveOut, longWaveIn, longWaveOut,
@@ -193,26 +225,50 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		flush();
 	}
 
+	private static String placeholders(int n) {
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < n; i++) {
+			if (i > 0)
+				sb.append(", ");
+			sb.append("?");
+		}
+		return sb.toString();
+	}
+
 	private void initialize() throws Exception {
 		KMAX = eta.length;
 		DUALKMAX = etaDual.length;
 
-		// Capability detection
-		// Determine which output schema to use based on which fields are non-null:
-		// * airT == null && iceContent == null -> base schema (temperature, theta, internal_energy; error, top_bc, bottom_bc)
-		// * airT != null  -> SEB schema (same as base plus surface-energy-balance scalars in output_scalars)
-		// * iceContent != null -> FT+SEB schema (same as SEB plus freeze-thaw state in output_state)
-		// Add new checks here when further solver output types are introduced.
+		// ---- Capability detection -------------------------------------------
+		// Each optional output field independently activates its own column(s)
+		// when set (non-null) before the first write(). Add new flags here when
+		// further solver output types are introduced — no fixed "mode" enum needed.
+		withInternalEnergy = (internalEnergy != null);
 		withIceContent = (iceContent != null);
-		withSurfaceEnergyBalance = (airT != null) || withIceContent;
-		// -------------------------------------------------------------------------
+		withWaterSuction = (waterSuction != null);
+		withDarcyVelocity = (darcyVelocity != null);
+		withTopBC = (topBC != null);
+		withBottomBC = (bottomBC != null);
+		withErrorVolume = (errorVolume != null);
+		withSurfaceEnergyBalance = (airT != null);
+		// ----------------------------------------------------------------------
 
-		if (withSurfaceEnergyBalance) {
-			energyBalanceBuf = new ArrayList<>();
-		}
-		if (withIceContent) {
+		if (withInternalEnergy)
+			internalEnergyBuf = new ArrayList<>();
+		if (withIceContent)
 			iceContentBuf = new ArrayList<>();
-		}
+		if (withWaterSuction)
+			waterSuctionBuf = new ArrayList<>();
+		if (withDarcyVelocity)
+			darcyVelocityBuf = new ArrayList<>();
+		if (withTopBC)
+			topBCBuf = new ArrayList<>();
+		if (withBottomBC)
+			bottomBCBuf = new ArrayList<>();
+		if (withErrorVolume)
+			errorVolumeBuf = new ArrayList<>();
+		if (withSurfaceEnergyBalance)
+			energyBalanceBuf = new ArrayList<>();
 
 		SqlName gridTable = SqlName.m(TABLE_OUTPUT_GRID);
 		SqlName stateTable = SqlName.m(TABLE_OUTPUT_STATE);
@@ -253,72 +309,83 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			});
 		}
 
+		// output_state: timestamp, eta, temperature, theta + active optional columns
+		List<String> stateCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA));
+		if (withInternalEnergy)
+			stateCols.add(COL_INTERNAL_ENERGY);
+		if (withIceContent)
+			stateCols.add(COL_ICE_CONTENT);
+		if (withWaterSuction)
+			stateCols.add(COL_WATER_SUCTION);
+
 		if (!db.hasTable(stateTable)) {
-			if (withIceContent) {
-				db.createTable(stateTable, COL_ID + " INTEGER PRIMARY KEY", COL_TIMESTAMP + " INTEGER",
-						COL_ETA + " REAL", COL_TEMPERATURE + " REAL", COL_THETA + " REAL",
-						COL_INTERNAL_ENERGY + " REAL", COL_ICE_CONTENT + " REAL");
-			} else {
-				db.createTable(stateTable, COL_ID + " INTEGER PRIMARY KEY", COL_TIMESTAMP + " INTEGER",
-						COL_ETA + " REAL", COL_TEMPERATURE + " REAL", COL_THETA + " REAL",
-						COL_INTERNAL_ENERGY + " REAL");
+			List<String> stateFieldDefs = new ArrayList<>();
+			stateFieldDefs.add(COL_ID + " INTEGER PRIMARY KEY");
+			for (String c : stateCols) {
+				stateFieldDefs.add(c + (c.equals(COL_TIMESTAMP) ? " INTEGER" : " REAL"));
 			}
+			db.createTable(stateTable, stateFieldDefs.toArray(new String[0]));
 			db.createIndex(stateTable, COL_TIMESTAMP, false);
 			db.createIndex(stateTable, COL_ETA, false);
 		}
 
+		// output_flux: timestamp, eta_dual, heat_flux + active optional columns
+		List<String> fluxCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ETA_DUAL, COL_HEAT_FLUX));
+		if (withDarcyVelocity)
+			fluxCols.add(COL_DARCY_VELOCITY);
+
 		if (!db.hasTable(fluxTable)) {
-			db.createTable(fluxTable, COL_ID + " INTEGER PRIMARY KEY", COL_TIMESTAMP + " INTEGER",
-					COL_ETA_DUAL + " REAL", COL_HEAT_FLUX + " REAL");
+			List<String> fluxFieldDefs = new ArrayList<>();
+			fluxFieldDefs.add(COL_ID + " INTEGER PRIMARY KEY");
+			for (String c : fluxCols) {
+				fluxFieldDefs.add(c + (c.equals(COL_TIMESTAMP) ? " INTEGER" : " REAL"));
+			}
+			db.createTable(fluxTable, fluxFieldDefs.toArray(new String[0]));
 			db.createIndex(fluxTable, COL_TIMESTAMP, false);
 			db.createIndex(fluxTable, COL_ETA_DUAL, false);
 		}
 
+		// output_scalars: timestamp, error + active optional columns
+		List<String> scalarCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ERROR));
+		if (withTopBC)
+			scalarCols.add(COL_TOP_BC);
+		if (withBottomBC)
+			scalarCols.add(COL_BOTTOM_BC);
+		if (withErrorVolume)
+			scalarCols.add(COL_ERROR_VOLUME);
+		if (withSurfaceEnergyBalance) {
+			scalarCols.addAll(List.of(COL_AIR_T, COL_SHORT_WAVE_IN, COL_SHORT_WAVE_OUT, COL_LONG_WAVE_IN,
+					COL_LONG_WAVE_OUT, COL_SENSIBLE_HEAT_FLUX, COL_LATENT_HEAT_FLUX, COL_HEAT_FLUX_BOTTOM));
+		}
+
 		if (!db.hasTable(scalarsTable)) {
-			if (withSurfaceEnergyBalance) {
-				db.createTable(scalarsTable, COL_ID + " INTEGER PRIMARY KEY", COL_TIMESTAMP + " INTEGER",
-						COL_ERROR + " REAL", COL_TOP_BC + " REAL", COL_BOTTOM_BC + " REAL", COL_AIR_T + " REAL",
-						COL_SHORT_WAVE_IN + " REAL", COL_SHORT_WAVE_OUT + " REAL", COL_LONG_WAVE_IN + " REAL",
-						COL_LONG_WAVE_OUT + " REAL", COL_SENSIBLE_HEAT_FLUX + " REAL", COL_LATENT_HEAT_FLUX + " REAL",
-						COL_HEAT_FLUX_BOTTOM + " REAL");
-			} else {
-				db.createTable(scalarsTable, COL_ID + " INTEGER PRIMARY KEY", COL_TIMESTAMP + " INTEGER",
-						COL_ERROR + " REAL", COL_TOP_BC + " REAL", COL_BOTTOM_BC + " REAL");
+			List<String> scalarFieldDefs = new ArrayList<>();
+			scalarFieldDefs.add(COL_ID + " INTEGER PRIMARY KEY");
+			for (String c : scalarCols) {
+				scalarFieldDefs.add(c + (c.equals(COL_TIMESTAMP) ? " INTEGER" : " REAL"));
 			}
+			db.createTable(scalarsTable, scalarFieldDefs.toArray(new String[0]));
 			db.createIndex(scalarsTable, COL_TIMESTAMP, false);
 		}
 
-		if (withIceContent) {
-			SQL_INSERT_STATE = String.format("""
-					INSERT INTO %s (%s, %s, %s, %s, %s, %s)
-					VALUES (?, ?, ?, ?, ?, ?)
-					""", TABLE_OUTPUT_STATE, COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA, COL_INTERNAL_ENERGY,
-					COL_ICE_CONTENT);
-		} else {
-			SQL_INSERT_STATE = String.format("""
-					INSERT INTO %s (%s, %s, %s, %s, %s)
-					VALUES (?, ?, ?, ?, ?)
-					""", TABLE_OUTPUT_STATE, COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA, COL_INTERNAL_ENERGY);
-		}
+		String stateColsCsv = String.join(", ", stateCols);
+		String fluxColsCsv = String.join(", ", fluxCols);
+		String scalarColsCsv = String.join(", ", scalarCols);
 
-		if (withSurfaceEnergyBalance) {
-			SQL_INSERT_SCALARS = String.format("""
-					INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-					""", TABLE_OUTPUT_SCALARS, COL_TIMESTAMP, COL_ERROR, COL_TOP_BC, COL_BOTTOM_BC, COL_AIR_T,
-					COL_SHORT_WAVE_IN, COL_SHORT_WAVE_OUT, COL_LONG_WAVE_IN, COL_LONG_WAVE_OUT, COL_SENSIBLE_HEAT_FLUX,
-					COL_LATENT_HEAT_FLUX, COL_HEAT_FLUX_BOTTOM);
-		} else {
-			SQL_INSERT_SCALARS = String.format("""
-					INSERT INTO %s (%s, %s, %s, %s)
-					VALUES (?, ?, ?, ?)
-					""", TABLE_OUTPUT_SCALARS, COL_TIMESTAMP, COL_ERROR, COL_TOP_BC, COL_BOTTOM_BC);
-		}
+		SQL_INSERT_STATE = String.format("""
+				INSERT INTO %s (%s)
+				VALUES (%s)
+				""", TABLE_OUTPUT_STATE, stateColsCsv, placeholders(stateCols.size()));
 
 		SQL_INSERT_FLUX = String.format("""
-				INSERT INTO %s (%s, %s, %s)
-				VALUES (?, ?, ?)
-				""", TABLE_OUTPUT_FLUX, COL_TIMESTAMP, COL_ETA_DUAL, COL_HEAT_FLUX);
+				INSERT INTO %s (%s)
+				VALUES (%s)
+				""", TABLE_OUTPUT_FLUX, fluxColsCsv, placeholders(fluxCols.size()));
+
+		SQL_INSERT_SCALARS = String.format("""
+				INSERT INTO %s (%s)
+				VALUES (%s)
+				""", TABLE_OUTPUT_SCALARS, scalarColsCsv, placeholders(scalarCols.size()));
 
 		initialized = true;
 	}
@@ -338,16 +405,21 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 					long ts = tsBuf.get(r)[0];
 					double[] T = temperatureBuf.get(r);
 					double[] th = thetaBuf.get(r);
-					double[] ie = internalEnergyBuf.get(r);
+					double[] ie = withInternalEnergy ? internalEnergyBuf.get(r) : null;
 					double[] ic = withIceContent ? iceContentBuf.get(r) : null;
+					double[] ws = withWaterSuction ? waterSuctionBuf.get(r) : null;
 					for (int k = 0; k < KMAX; k++) {
-						ps.setLong(1, ts);
-						ps.setDouble(2, eta[k]);
-						ps.setDouble(3, T[k]);
-						ps.setDouble(4, th[k]);
-						ps.setDouble(5, ie[k]);
+						int pos = 1;
+						ps.setLong(pos++, ts);
+						ps.setDouble(pos++, eta[k]);
+						ps.setDouble(pos++, T[k]);
+						ps.setDouble(pos++, th[k]);
+						if (ie != null)
+							ps.setDouble(pos++, ie[k]);
 						if (ic != null)
-							ps.setDouble(6, ic[k]);
+							ps.setDouble(pos++, ic[k]);
+						if (ws != null)
+							ps.setDouble(pos++, ws[k]);
 						ps.addBatch();
 					}
 				}
@@ -359,10 +431,14 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 				for (int r = 0; r < n; r++) {
 					long ts = tsBuf.get(r)[0];
 					double[] hf = heatFluxBuf.get(r);
+					double[] dv = withDarcyVelocity ? darcyVelocityBuf.get(r) : null;
 					for (int k = 0; k < DUALKMAX; k++) {
-						ps.setLong(1, ts);
-						ps.setDouble(2, etaDual[k]);
-						ps.setDouble(3, hf[k]);
+						int pos = 1;
+						ps.setLong(pos++, ts);
+						ps.setDouble(pos++, etaDual[k]);
+						ps.setDouble(pos++, hf[k]);
+						if (dv != null)
+							ps.setDouble(pos++, dv[k]);
 						ps.addBatch();
 					}
 				}
@@ -372,20 +448,20 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			// output_scalars: 1 row per timestep
 			try (IHMPreparedStatement ps = conn.prepareStatement(SQL_INSERT_SCALARS)) {
 				for (int r = 0; r < n; r++) {
-					ps.setLong(1, tsBuf.get(r)[0]);
-					ps.setDouble(2, errorBuf.get(r));
-					ps.setDouble(3, topBCBuf.get(r));
-					ps.setDouble(4, bottomBCBuf.get(r));
+					int pos = 1;
+					ps.setLong(pos++, tsBuf.get(r)[0]);
+					ps.setDouble(pos++, errorBuf.get(r));
+					if (withTopBC)
+						ps.setDouble(pos++, topBCBuf.get(r));
+					if (withBottomBC)
+						ps.setDouble(pos++, bottomBCBuf.get(r));
+					if (withErrorVolume)
+						ps.setDouble(pos++, errorVolumeBuf.get(r));
 					if (withSurfaceEnergyBalance) {
 						double[] eb = energyBalanceBuf.get(r);
-						ps.setDouble(5, eb[0]); // airT
-						ps.setDouble(6, eb[1]); // shortWaveIn
-						ps.setDouble(7, eb[2]); // shortWaveOut
-						ps.setDouble(8, eb[3]); // longWaveIn
-						ps.setDouble(9, eb[4]); // longWaveOut
-						ps.setDouble(10, eb[5]); // sensibleHeatFlux
-						ps.setDouble(11, eb[6]); // latentHeatFlux
-						ps.setDouble(12, eb[7]); // heatFluxBottom
+						for (double v : eb) {
+							ps.setDouble(pos++, v);
+						}
 					}
 					ps.addBatch();
 				}
@@ -400,16 +476,23 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		tsBuf.clear();
 		temperatureBuf.clear();
 		thetaBuf.clear();
-		internalEnergyBuf.clear();
 		heatFluxBuf.clear();
 		errorBuf.clear();
-		topBCBuf.clear();
-		bottomBCBuf.clear();
-		if (withIceContent) {
+		if (withInternalEnergy)
+			internalEnergyBuf.clear();
+		if (withIceContent)
 			iceContentBuf.clear();
-		}
-		if (withSurfaceEnergyBalance) {
+		if (withWaterSuction)
+			waterSuctionBuf.clear();
+		if (withDarcyVelocity)
+			darcyVelocityBuf.clear();
+		if (withTopBC)
+			topBCBuf.clear();
+		if (withBottomBC)
+			bottomBCBuf.clear();
+		if (withErrorVolume)
+			errorVolumeBuf.clear();
+		if (withSurfaceEnergyBalance)
 			energyBalanceBuf.clear();
-		}
 	}
 }

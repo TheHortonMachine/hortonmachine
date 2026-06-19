@@ -835,12 +835,13 @@ public class Whetgeo1DInputsHandler {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String dbPath = "/home/hydrologis/TMP/UNITN/whetgeo1d/TestHeatDiffusionSurfaceEnergyBalance/HeatDiffusionSurfaceEnergyBalance.gpkg";
+		String folder = "/home/hydrologis/TMP/UNITN/whetgeo1d/TestHeatDiffusionSurfaceEnergyBalance_small/";
+		String dbPath = folder + "HeatDiffusionSurfaceEnergyBalance.gpkg";
 
 		// Files.deleteIfExists(Path.of(dbPath));
 		try (ADb db = EDb.GEOPACKAGE.getDb()) {
 			db.open(dbPath);
-			createDbFromCsv("/home/hydrologis/TMP/UNITN/whetgeo1d/TestHeatDiffusionSurfaceEnergyBalance/", db);
+			createDbFromCsv(folder, db);
 
 //			var reader = new Whetgeo1DInputsHandler(db);
 //			reader.read();
