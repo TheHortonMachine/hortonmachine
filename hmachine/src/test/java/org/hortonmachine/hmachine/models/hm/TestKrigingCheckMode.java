@@ -9,7 +9,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
-import org.hortonmachine.hmachine.modules.statistics.kriging.OmsKrigingCheckMode;
+import org.hortonmachine.hmachine.modules.statistics.krigingexp.OmsKrigingCheckMode;
 import org.junit.Test;
 
 /**

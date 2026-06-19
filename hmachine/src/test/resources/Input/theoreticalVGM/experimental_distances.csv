@@ -1,0 +1,9 @@
+@T,table
+Created,2016-09-21 14:06
+Author,HortonMachine library
+@H,timestamp,value_0,value_1,value_2,value_3,value_4,value_5,value_6,value_7,value_8,value_9,value_10,value_11,value_12,value_13,value_14
+ID,,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14
+Type,Date,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double,Double
+Format,yyyy-MM-dd HH:mm,,,,,,,,,,,,,,,
+,2000-01-01 00:00,0.058114391347480185,0.23422427739525878,0.37321885571772795,0.5118371177860551,0.6733352627776554,0.8149120066371441,0.9727905407601171,1.1078533267697956,1.2646826143875196,1.4087218542000806,1.5543001112603538,1.7147863213174153,1.852652474779846,2.009859806443001,2.1454622126336917
+
