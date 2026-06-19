@@ -6,6 +6,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.ClaibrationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.NetworkSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.RawDataSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.SimulationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema;
@@ -16,16 +17,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.VarSchema;
  * 
  * @author Daniele Andreis
  */
-public enum GeoFrameTable {
-	/**
-	 * Basin metadata and properties.
-	 */
-	BASIN_POINT(new BasinSchema()),
-
-	/**
-	 * Basin metadata and properties.
-	 */
-	BASIN(new BasinPoligonSchema()),
+public enum GeoFrameSimpleTable {
 	/**
 	 * network topology
 	 */
@@ -41,8 +33,6 @@ public enum GeoFrameTable {
 	 */
 	RAW_METEO(new RawDataSchema()),
 
-
-	HYDRO_METEO_STATION(new HydroMeteoSationSchema()),
 
 	/**
 	 * Prefix used for simulation result tables.
@@ -62,7 +52,7 @@ public enum GeoFrameTable {
 
 	private AbstractSchema tableFields;
 
-	GeoFrameTable(AbstractSchema tf) {
+	GeoFrameSimpleTable(AbstractSchema tf) {
 		this.tableFields = tf;
 	}
 

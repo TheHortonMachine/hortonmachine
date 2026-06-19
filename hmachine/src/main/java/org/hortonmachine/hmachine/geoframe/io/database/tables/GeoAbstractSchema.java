@@ -12,10 +12,10 @@ public abstract class GeoAbstractSchema extends AbstractSchema implements GeoTab
 	}
 
 	@Override
-	public SimpleFeatureBuilder getSFBuilder(CoordinateReferenceSystem crs, String name) {
+	public SimpleFeatureBuilder getSFBuilder(CoordinateReferenceSystem crs) {
 		TableField[] columns = fields();
 		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-		b.setName("basin");
+		b.setName(this.tableName);
 		b.setCRS(crs);
 		for (TableField col : columns) {
 			b.add(col.columnName(), col.javaType());

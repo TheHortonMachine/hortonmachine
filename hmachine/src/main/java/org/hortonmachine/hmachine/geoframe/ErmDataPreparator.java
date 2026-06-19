@@ -22,6 +22,8 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
@@ -30,7 +32,6 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsGeoframeInputsBuilder;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
@@ -277,7 +278,7 @@ public class ErmDataPreparator extends HMModel {
 					pm.message("Not overwriting existing basin skyview: " + p.basinSkyview);
 				}
 
-				if (p.shouldRun(p.basinNetnum) || !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))) {
+				if (p.shouldRun(p.basinNetnum) || !db.hasTable(SqlName.m(GeoFrameSimpleTable.TOPOLOGY.tableName()))) {
 					pm.message("Running NetNumbering...");
 					OmsNetNumbering nn = new OmsNetNumbering();
 					nn.pm = pm;
@@ -296,8 +297,8 @@ public class ErmDataPreparator extends HMModel {
 					makeQgisStyleForRaster(EColorTables.contrasting.name(), p.basinNetbasinsDesired, 0);
 				}
 
-				if (!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE))
-						|| !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE))) {
+				if (!db.hasTable(SqlName.m(GeoFrameGeoTable.BASIN.tableName()))
+						|| !db.hasTable(GeoFrameGeoTable.NET.tableName())) {
 					pm.message("Building GeoframeInputs...");
 					OmsGeoframeInputsBuilder b = new OmsGeoframeInputsBuilder();
 					b.pm = pm;
@@ -388,7 +389,6 @@ public class ErmDataPreparator extends HMModel {
 			return overwrite || !new File(path).exists();
 		}
 	}
-
 
 	public static void main(String[] args) throws Exception {
 		ErmDataPreparator prep = new ErmDataPreparator();

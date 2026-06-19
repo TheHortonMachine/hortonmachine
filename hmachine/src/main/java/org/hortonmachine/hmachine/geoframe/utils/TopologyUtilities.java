@@ -5,15 +5,15 @@ import java.util.HashMap;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema.TopologyField;
 
 public class TopologyUtilities {
 
 	public static TopologyNode getRootNodeFromDb(ADb db) throws Exception {
-		QueryResult result = db.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE,
-				-1);
-		int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
-		int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
+		QueryResult result = db.getTableRecordsMapFromRawSql("select * from " + GeoFrameSimpleTable.TOPOLOGY.tableName(), -1);
+		int fromIndex = result.names.indexOf(TopologyField.UPPSTREAM_BASIN.columnName());
+		int toIndex = result.names.indexOf(TopologyField.DOWNSTREAM_BASIN.columnName());
 
 		HashMap<Integer, TopologyNode> topologyBasinsMap = new HashMap<>();
 		for (Object[] row : result.data) {

@@ -31,7 +31,7 @@ public class TopologySchema extends AbstractSchema {
 
 	@Override
 	public String createTableSql() {
-		// TODO Auto-generated method stub
-		return null;
+		return "CREATE TABLE " + this.tableName + " ( " + TopologyField.UPPSTREAM_BASIN.columnName() + " INTEGER, "
+				+ TopologyField.DOWNSTREAM_BASIN.columnName() + " INTEGER " + ");";
 	}
 }
