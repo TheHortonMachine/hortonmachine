@@ -56,6 +56,9 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinPoligonSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
@@ -927,32 +930,11 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 	}
 
 	private SimpleFeatureBuilder getBasinsBuilder(CoordinateReferenceSystem crs) {
-		return getSFBasinBuilder(crs, MultiPolygon.class);
+		return new BasinPoligonSchema().getSFBuilder(crs, GeoFrameTable.BASIN.name());
 	}
 
 	private SimpleFeatureBuilder getBasinCentroidsBuilder(CoordinateReferenceSystem crs) {
-		return getSFBasinBuilder(crs, Point.class);
-	}
-
-	// change becouse centroid and nbasins looks very similar
-	private SimpleFeatureBuilder getSFBasinBuilder(CoordinateReferenceSystem crs, Class<?> geom) {
-		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-		b.setName("basin");
-		b.setCRS(crs);
-		b.add("the_geom", geom);
-		b.add("basinid", Integer.class);
-		b.add("centrx", Double.class);
-		b.add("centry", Double.class);
-		b.add("elev_m", Double.class);
-		b.add("avgelev_m", Double.class);
-		b.add("area_km2", Double.class);
-		b.add("length_m", Double.class);
-		b.add("skyview", Double.class);
-		b.add("type", Integer.class);
-		b.add("stream_gauge_id", String.class);
-		SimpleFeatureType type = b.buildFeatureType();
-		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-		return builder;
+		return new BasinSchema().getSFBuilder(crs, GeoFrameTable.BASIN_POINT.name());
 	}
 
 	private SimpleFeatureBuilder getSFStreamGauge(CoordinateReferenceSystem crs, Class<?> geom) {
@@ -1180,7 +1162,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 		SimpleFeature first = DataUtilities.first(subCollection);
 		if (first != null) {
-			//@todo check if the field exist
+			// @todo check if the field exist
 			String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
 
 			streamGaugeBuilder.set("the_geom", first.getDefaultGeometry());

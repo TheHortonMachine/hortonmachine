@@ -29,6 +29,10 @@ public class HydroMeteoSchema extends AbstractSchema {
 
 	}
 
+	public enum DataOrigin {
+		OBSERVED, INTERPOLATED;
+	}
+
 	@Override
 	public String createTableSql() {
 		// TODO Auto-generated method stub
