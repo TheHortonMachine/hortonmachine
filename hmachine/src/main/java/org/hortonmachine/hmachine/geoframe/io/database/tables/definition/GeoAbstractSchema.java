@@ -1,10 +1,20 @@
-package org.hortonmachine.hmachine.geoframe.io.database.tables;
+package org.hortonmachine.hmachine.geoframe.io.database.tables.definition;
 
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 
+/**
+ * Base schema for geospatial tables linked to GeoTools feature models.
+ *
+ * <p>
+ * This class builds a {@link SimpleFeatureBuilder} from the declared
+ * {@link TableField} enum, mapping each column name and Java type into a
+ * {@link SimpleFeatureType}.
+ * 
+ * @author Daniele Andreis
+ */
 public abstract class GeoAbstractSchema extends AbstractSchema implements GeoTableSchema {
 
 	protected GeoAbstractSchema(String tableName, Class<? extends TableField> fieldClass) {

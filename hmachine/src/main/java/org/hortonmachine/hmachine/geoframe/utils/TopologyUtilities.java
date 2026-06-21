@@ -6,7 +6,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema.TopologyField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
 
 public class TopologyUtilities {
 

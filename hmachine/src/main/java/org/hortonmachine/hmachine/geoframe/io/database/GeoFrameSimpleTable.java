@@ -1,16 +1,16 @@
 package org.hortonmachine.hmachine.geoframe.io.database;
 
-import org.hortonmachine.hmachine.geoframe.io.database.tables.AbstractSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinPoligonSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.ClaibrationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.NetworkSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.RawDataSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.SimulationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.VarSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.ClaibrationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.NetworkSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.RawDataSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.SimulationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 
 /**
  * List of tables required for GeoFrame rainfall-runoff simulations.
@@ -33,11 +33,12 @@ public enum GeoFrameSimpleTable {
 	 */
 	RAW_METEO(new RawDataSchema()),
 
-
 	/**
 	 * Prefix used for simulation result tables.
 	 */ // station.
 	SIMULATION(new SimulationSchema()),
+
+	VAR(new VarSchema()),
 
 	/**
 	 * Prefix used for calibration result tables.

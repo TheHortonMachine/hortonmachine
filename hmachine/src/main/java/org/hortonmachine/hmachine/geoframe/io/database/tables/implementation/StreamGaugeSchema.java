@@ -1,11 +1,22 @@
-package org.hortonmachine.hmachine.geoframe.io.database.tables;
+package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
+import java.util.List;
+
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.locationtech.jts.geom.Point;
 
 /**
  * @deprecated change wit HydroMeteoStation?
+ *
+ * 
+ * 
+ * @author Daniele Andreis
+ *
+ *
  */
-public class StreamGaugeSchema extends AbstractSchema {
+public class StreamGaugeSchema extends GeoAbstractSchema {
 
 	protected StreamGaugeSchema() {
 		super("stream_gauge", StreamGaugeField.class);
@@ -34,8 +45,16 @@ public class StreamGaugeSchema extends AbstractSchema {
 		}
 	}
 
+
+
 	@Override
-	public String createTableSql() {
+	protected List<TableField> primaryKey() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected List<ForeignKey> foreignKeys() {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,11 +1,22 @@
-package org.hortonmachine.hmachine.geoframe.io.database.tables;
+package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
+import java.util.List;
+
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.locationtech.jts.geom.Point;
 
+/**
+ * Schema definition for the "centroid of the basin" table.
+ *
+ * <p>
+ * This table stores the centroid of each basin, the centoid is a point
+ * geometries.
+ * 
+ */
 public final class BasinSchema extends GeoAbstractSchema {
 
 	public BasinSchema() {
-		// TODO Auto-generated constructor stub
 		super("basin", BasinCentroidField.class);
 	}
 
@@ -33,9 +44,18 @@ public final class BasinSchema extends GeoAbstractSchema {
 		}
 	}
 
+
+
 	@Override
-	public String createTableSql() {
-		return "";
+	protected List<TableField> primaryKey() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected List<ForeignKey> foreignKeys() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

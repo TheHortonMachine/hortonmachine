@@ -1,7 +1,19 @@
-package org.hortonmachine.hmachine.geoframe.io.database.tables;
+package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
+import java.util.List;
+
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.locationtech.jts.geom.MultiPolygon;
-
+/**
+ * Schema definition for the "basin" table.
+ *
+ * <p>This table stores basin geometries as multipolygons and associated summary
+ * attributes (typically derived from geomorphological analysis).
+ *
+ * <p>Each record represents a basin with its geometric representation and
+ * aggregated physical properties such as area, elevation...
+ */
 public final class BasinPoligonSchema extends GeoAbstractSchema {
 
 	public BasinPoligonSchema() {
@@ -35,6 +47,18 @@ public final class BasinPoligonSchema extends GeoAbstractSchema {
 
 	@Override
 	public String createTableSql() {
+		return null;
+	}
+
+	@Override
+	protected List<TableField> primaryKey() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	protected List<ForeignKey> foreignKeys() {
+		// TODO Auto-generated method stub
 		return null;
 	}
 
