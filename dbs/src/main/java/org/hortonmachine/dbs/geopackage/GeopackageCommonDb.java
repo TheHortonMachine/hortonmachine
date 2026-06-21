@@ -794,7 +794,9 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            return resultSet.getInt(index);
+                            // SQLite INTEGER is up to 64-bit, use getLong to avoid truncation
+                            long val = resultSet.getLong(index);
+                            return resultSet.wasNull() ? null : val;
                         } catch (Exception e) {
                             e.printStackTrace();
                             return null;
@@ -808,7 +810,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            return resultSet.getInt(index);
+                            int val = resultSet.getInt(index);
+                            return resultSet.wasNull() ? null : val;
                         } catch (Exception e) {
                             e.printStackTrace();
                             return null;
@@ -822,7 +825,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            return resultSet.getFloat(index);
+                            float val = resultSet.getFloat(index);
+                            return resultSet.wasNull() ? null : val;
                         } catch (Exception e) {
                             e.printStackTrace();
                             return null;
@@ -836,7 +840,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            return resultSet.getDouble(index);
+                            double val = resultSet.getDouble(index);
+                            return resultSet.wasNull() ? null : val;
                         } catch (Exception e) {
                             e.printStackTrace();
                             return null;
@@ -850,7 +855,8 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
                     @Override
                     public Object getObject( IHMResultSet resultSet, int index ) {
                         try {
-                            return resultSet.getLong(index);
+                            long val = resultSet.getLong(index);
+                            return resultSet.wasNull() ? null : val;
                         } catch (Exception e) {
                             e.printStackTrace();
                             return null;

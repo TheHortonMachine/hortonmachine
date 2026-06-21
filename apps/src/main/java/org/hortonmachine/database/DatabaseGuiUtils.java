@@ -7,6 +7,7 @@ public class DatabaseGuiUtils {
     public static final String HM_JDBC_LAST_URL = "hm_jdbc_last_url";
     public static final String HM_JDBC_LAST_USER = "hm_jdbc_last_user";
     public static final String HM_JDBC_LAST_PWD = "hm_jdbc_last_pwd";
+    public static final String HM_RECENT_DATABASES = "hm-recent-databases";
 
 
 

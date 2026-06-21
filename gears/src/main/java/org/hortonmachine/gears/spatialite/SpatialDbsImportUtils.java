@@ -309,16 +309,20 @@ public class SpatialDbsImportUtils {
                     qMarks += ",?";
                 }
             } else {
-                if (!tableColumns.contains(attrName.toUpperCase())) {
+                // Strip any surrounding double-quotes that GeoTools may add to reserved-word
+                // attribute names; PRAGMA table_info always returns bare column names.
+                String bareAttrName = attrName.replace("\"", "");
+                if (!tableColumns.contains(bareAttrName.toUpperCase())) {
                     pm.errorMessage(
-                            "The imported shapefile doesn't seem to match the table's schema. Doesn't exist: " + attrName);
+                            "The imported shapefile doesn't seem to match the table's schema. Doesn't exist: " + bareAttrName);
                     return false;
                 }
-                if (DbsUtilities.isReservedName(attrName)) {
-                    attrName = DbsUtilities.fixReservedNameForQuery(attrName);
+                String sqlAttrName = bareAttrName;
+                if (DbsUtilities.isReservedName(sqlAttrName)) {
+                    sqlAttrName = DbsUtilities.fixReservedNameForQuery(sqlAttrName);
                 }
-                attrName = DbsUtilities.fixColumnName(attrName);
-                valueNames += "," + attrName;
+                sqlAttrName = DbsUtilities.fixColumnName(sqlAttrName);
+                valueNames += "," + sqlAttrName;
                 qMarks += ",?";
             }
         }

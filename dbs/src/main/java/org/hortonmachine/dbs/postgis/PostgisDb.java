@@ -21,6 +21,7 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -517,9 +518,11 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
         boolean hasGeom = gCol != null;
 
         List<String[]> tableColumnsInfo = getTableColumns(tableName);
+        Map<String, String> columnPkMap = new HashMap<>();
         List<String> tableColumns = new ArrayList<>();
         for( String[] info : tableColumnsInfo ) {
             String columnName = info[0];
+            columnPkMap.put(columnName.toLowerCase(), info[2]);
             if (hasGeom && columnName.equalsIgnoreCase(gCol.geometryColumnName)) {
                 continue;
             }
@@ -582,6 +585,9 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
                     queryResult.types.add(columnTypeName);
                     if (hasGeom && columnName.equals(_gCol.geometryColumnName)) {
                         queryResult.geometryIndex = i - 1;
+                    }
+                    if ("1".equals(columnPkMap.get(columnName.toLowerCase()))) {
+                        queryResult.pkIndex = i - 1;
                     }
                 }
 
