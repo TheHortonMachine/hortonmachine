@@ -4,29 +4,20 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinPoligonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.ClaibrationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.EnvSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.ForecastSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.NetworkSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.RawDataSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.SimulationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.VarSchema;
 
 /**
  * List of tables required for GeoFrame rainfall-runoff simulations.
  * 
  * @author Daniele Andreis
  */
-public enum GeoFrameTable {
-	/**
-	 * Basin metadata and properties.
-	 */
-	BASIN_POINT(new BasinSchema()),
-
-	/**
-	 * Basin metadata and properties.
-	 */
-	BASIN(new BasinPoligonSchema()),
+public enum GeoFrameSimpleTable {
 	/**
 	 * network topology
 	 */
@@ -42,12 +33,6 @@ public enum GeoFrameTable {
 	 */
 	RAW_METEO(new RawDataSchema()),
 
-	/**
-	 * Hydro-meteorological forecast.
-	 */
-	FORECAST_METEO(new ForecastSchema()),
-
-	HYDRO_METEO_STATION(new HydroMeteoSationSchema()),
 
 	/**
 	 * Prefix used for simulation result tables.
@@ -63,11 +48,11 @@ public enum GeoFrameTable {
 	 * list of all variable
 	 * 
 	 */
-	VARIABLE(new EnvSchema());
+	VARIABLE(new VarSchema());
 
 	private AbstractSchema tableFields;
 
-	GeoFrameTable(AbstractSchema tf) {
+	GeoFrameSimpleTable(AbstractSchema tf) {
 		this.tableFields = tf;
 	}
 

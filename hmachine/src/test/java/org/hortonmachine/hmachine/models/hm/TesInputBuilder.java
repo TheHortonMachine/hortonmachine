@@ -6,9 +6,10 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsGeoframeInputsBuilder;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.hortonmachine.hmachine.utils.HMTestCase;
 
 public class TesInputBuilder extends HMModel {
@@ -86,7 +87,7 @@ public class TesInputBuilder extends HMModel {
 
 			try {
 
-				if (!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))) {
+				if (!db.hasTable(SqlName.m(GeoFrameSimpleTable.TOPOLOGY.tableName()))) {
 					OmsNetNumbering nn = new OmsNetNumbering();
 					nn.inFlow = getRaster(basindrain);
 					nn.inNet = getRaster(basinnet);
@@ -101,8 +102,8 @@ public class TesInputBuilder extends HMModel {
 
 				}
 
-				if (!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE))
-						|| !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE))) {
+				if (!db.hasTable(SqlName.m(GeoFrameGeoTable.BASIN.tableName()))
+						|| !db.hasTable(SqlName.m(GeoFrameGeoTable.NET.tableName()))) {
 					OmsGeoframeInputsBuilder builder = new OmsGeoframeInputsBuilder();
 					builder.inPitfiller = basinpit;
 					builder.inDrain = basindrain;

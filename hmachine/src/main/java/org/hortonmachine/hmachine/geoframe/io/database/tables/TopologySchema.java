@@ -7,23 +7,31 @@ public class TopologySchema extends AbstractSchema {
 	}
 
 	public enum TopologyField implements TableField {
-		;
+		UPPSTREAM_BASIN("upstream_basin_id", Integer.class), DOWNSTREAM_BASIN("downstream_basin_id", Integer.class);
+
+		private final String columnName;
+		private final Class<?> javaType;
+
+		TopologyField(String columnName, Class<?> javaType) {
+			this.columnName = columnName;
+			this.javaType = javaType;
+		}
 
 		public String columnName() {
 			// TODO Auto-generated method stub
-			return null;
+			return columnName;
 		}
 
 		public Class<?> javaType() {
 			// TODO Auto-generated method stub
-			return null;
+			return javaType;
 		}
 
 	}
 
 	@Override
 	public String createTableSql() {
-		// TODO Auto-generated method stub
-		return null;
+		return "CREATE TABLE " + this.tableName + " ( " + TopologyField.UPPSTREAM_BASIN.columnName() + " INTEGER, "
+				+ TopologyField.DOWNSTREAM_BASIN.columnName() + " INTEGER " + ");";
 	}
 }

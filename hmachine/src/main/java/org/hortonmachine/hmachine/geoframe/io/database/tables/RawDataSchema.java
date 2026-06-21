@@ -8,18 +8,28 @@ public class RawDataSchema extends AbstractSchema {
 	}
 
 	public enum RawField implements TableField {
-		;
+
+		TS("ts", Long.class), STATION_ID("basin_id", Integer.class), VAR_ID("avr_id", Integer.class),
+		VALUE("value", Double.class), DATA_ORIGIN("data_origin", String.class);
+
+		private final String columnName;
+		private final Class<?> javaType;
+
+		RawField(String columnName, Class<?> javaType) {
+			this.columnName = columnName;
+			this.javaType = javaType;
+		}
 
 		@Override
 		public String columnName() {
 			// TODO Auto-generated method stub
-			return null;
+			return columnName;
 		}
 
 		@Override
 		public Class<?> javaType() {
 			// TODO Auto-generated method stub
-			return null;
+			return javaType;
 		}
 
 	}

@@ -35,7 +35,6 @@ public final class BasinPoligonSchema extends GeoAbstractSchema {
 
 	@Override
 	public String createTableSql() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

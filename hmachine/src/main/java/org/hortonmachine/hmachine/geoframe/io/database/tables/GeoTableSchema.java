@@ -6,6 +6,6 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 public interface GeoTableSchema {
 
 
-	SimpleFeatureBuilder getSFBuilder(CoordinateReferenceSystem crs, String name);
+	SimpleFeatureBuilder getSFBuilder(CoordinateReferenceSystem crs);
 
 }

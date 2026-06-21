@@ -21,7 +21,7 @@ import org.hortonmachine.gears.utils.chart.TimeSeries;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameGeoTable;
 import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Geometry;
 
@@ -93,7 +93,7 @@ public interface IWaterBudgetSimulationRunner {
 	}
     
 	static double[] getBasinAreas(ASpatialDb db, int maxBasinId) throws Exception {
-		QueryResult queryResult = db.getTableRecordsMapIn(GeoframeUtils.GEOFRAME_BASIN_TABLE, null, -1, -1, null);
+		QueryResult queryResult = db.getTableRecordsMapIn(GeoFrameGeoTable.BASIN.tableName(), null, -1, -1, null);
 		double[] basinAreas = new double[maxBasinId + 1];
 		int idIndex = queryResult.names.indexOf("basinid");
 		for (int i = 0; i < queryResult.data.size(); i++) {
@@ -107,7 +107,7 @@ public interface IWaterBudgetSimulationRunner {
 	}
 	
 	static int getMaxBasinId(ADb db) throws Exception {
-		int maxBasinId = db.getLong("select max(basinid) from " + GeoframeUtils.GEOFRAME_BASIN_TABLE).intValue();
+		int maxBasinId = db.getLong("select max(basinid) from " + GeoFrameGeoTable.BASIN.tableName()).intValue();
 		return maxBasinId;
 	}
 

@@ -56,14 +56,16 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameTable;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinPoligonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoTableSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema.TopologyField;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
 import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -190,9 +192,9 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
 			if (inGeoframeDb != null) {
 				QueryResult result = inGeoframeDb
-						.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE, -1);
-				int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
-				int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
+						.getTableRecordsMapFromRawSql("select * from " + GeoFrameSimpleTable.TOPOLOGY.tableName(), -1);
+				int fromIndex = result.names.indexOf(TopologyField.UPPSTREAM_BASIN.columnName());
+				int toIndex = result.names.indexOf(TopologyField.DOWNSTREAM_BASIN.columnName());
 				for (Object[] row : result.data) {
 					int currentBasinId = ((Number) row[fromIndex]).intValue();
 					int childBasinId = ((Number) row[toIndex]).intValue();
@@ -550,8 +552,8 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					// finally rewrite the topology file.
 					if (inGeoframeDb != null) {
 						// clear old topology table
-						inGeoframeDb
-								.executeInsertUpdateDeleteSql("DELETE FROM " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE);
+						inGeoframeDb.executeInsertUpdateDeleteSql(
+								"DELETE FROM " + GeoFrameSimpleTable.TOPOLOGY.tableName());
 
 						StringBuilder errorSb = new StringBuilder("Not adding again: \n");
 						List<String> topology = new ArrayList<>();
@@ -617,20 +619,24 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					FileUtilities.writeFile(csvText.toString(), csvFile);
 				}
 			} else {
+				String basinTable = GeoFrameSimpleTable.TOPOLOGY.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(),
-						SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC,
-						SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE), -1, false, pm);
+						SqlName.m(basinTable), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
+						false, pm);
 
+				String networkTable = GeoFrameGeoTable.NET.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
-						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC,
-						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), -1, false, pm);
+						SqlName.m(networkTable), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC, SqlName.m(networkTable), -1,
+						false, pm);
 				if (streamGaugeFC != null && streamGaugeFC.size() > 0) {
+					String streamGAuge = GeoFrameGeoTable.HYDRO_METEO_STATION.tableName();
+
 					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
-							SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), null, false);
-					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC,
-							SqlName.m(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE), -1, false, pm);
+							SqlName.m(streamGAuge), null, false);
+					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, SqlName.m(streamGAuge),
+							-1, false, pm);
 				}
 			}
 		}
@@ -877,8 +883,8 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		String record = basin.id + " " + downid;
 		if (!topology.contains(record)) {
 			topology.add(record);
-			String sql = "INSERT INTO " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ("
-					+ GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + ", " + GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO
+			String sql = "INSERT INTO " + GeoFrameSimpleTable.TOPOLOGY.name() + " ("
+					+ TopologyField.UPPSTREAM_BASIN.columnName() + ", " + TopologyField.DOWNSTREAM_BASIN.columnName()
 					+ ") VALUES (" + basin.id + ", " + downid + ")";
 			inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 
@@ -930,23 +936,15 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 	}
 
 	private SimpleFeatureBuilder getBasinsBuilder(CoordinateReferenceSystem crs) {
-		return new BasinPoligonSchema().getSFBuilder(crs, GeoFrameTable.BASIN.name());
+		return GeoFrameGeoTable.BASIN.getSchema().getSFBuilder(crs);
 	}
 
 	private SimpleFeatureBuilder getBasinCentroidsBuilder(CoordinateReferenceSystem crs) {
-		return new BasinSchema().getSFBuilder(crs, GeoFrameTable.BASIN_POINT.name());
+		return GeoFrameGeoTable.BASIN_POINT.getSchema().getSFBuilder(crs);
 	}
 
 	private SimpleFeatureBuilder getSFStreamGauge(CoordinateReferenceSystem crs, Class<?> geom) {
-		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-		b.setName(GeoframeUtils.GEOFRAME_STREAM_GAUGE_TABLE);
-		b.setCRS(crs);
-		b.add("the_geom", geom);
-		b.add("stream_gauge_id", String.class);
-		b.add("basin_id", Integer.class);
-		SimpleFeatureType type = b.buildFeatureType();
-		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-		return builder;
+		return GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSFBuilder(crs);
 	}
 
 //    private SimpleFeatureBuilder getNetBuilder( CoordinateReferenceSystem crs ) {
@@ -961,20 +959,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 //        return builder;
 //    }
 	private SimpleFeatureBuilder getSingleNetBuilder(CoordinateReferenceSystem crs) {
-		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-		b.setName("net");
-		b.setCRS(crs);
-		b.add("the_geom", LineString.class);
-		b.add("basinid", Integer.class);
-		b.add("length_m", Double.class);
-		if (useHack) {
-			b.add("hack", Double.class);
-		} else {
-			b.add("pfaforder", Double.class);
-		}
-		SimpleFeatureType type = b.buildFeatureType();
-		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-		return builder;
+		return GeoFrameGeoTable.NET.getSchema().getSFBuilder(crs);
 	}
 
 	private Basin getRootBasin(Map<Integer, Geometry> basinId2geomMap, List<Basin> allBasins) throws Exception {
@@ -982,9 +967,9 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		HashMap<Integer, Basin> id2BasinMap = new HashMap<>();
 		if (inGeoframeDb != null) {
 			QueryResult result = inGeoframeDb
-					.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE, -1);
-			int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
-			int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
+					.getTableRecordsMapFromRawSql("select * from " + GeoFrameSimpleTable.TOPOLOGY.tableName(), -1);
+			int fromIndex = result.names.indexOf(TopologyField.UPPSTREAM_BASIN.columnName());
+			int toIndex = result.names.indexOf(TopologyField.DOWNSTREAM_BASIN.columnName());
 			for (Object[] row : result.data) {
 				int currentBasinId = ((Number) row[fromIndex]).intValue();
 				int childBasinId = ((Number) row[toIndex]).intValue();

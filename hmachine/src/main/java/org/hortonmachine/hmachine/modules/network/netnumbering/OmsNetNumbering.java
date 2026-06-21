@@ -48,7 +48,8 @@ import org.hortonmachine.gears.libs.modules.NetLink;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema.TopologyField;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
@@ -73,533 +74,531 @@ import oms3.annotations.Unit;
 @License(OMSNETNUMBERING_LICENSE)
 public class OmsNetNumbering extends HMModel {
 
-    @Description(OMSNETNUMBERING_inFlow_DESCRIPTION)
-    @In
-    public GridCoverage2D inFlow = null;
+	@Description(OMSNETNUMBERING_inFlow_DESCRIPTION)
+	@In
+	public GridCoverage2D inFlow = null;
 
-    @Description(OMSNETNUMBERING_inTca_DESCRIPTION)
-    @In
-    public GridCoverage2D inTca = null;
+	@Description(OMSNETNUMBERING_inTca_DESCRIPTION)
+	@In
+	public GridCoverage2D inTca = null;
 
-    @Description(OMSNETNUMBERING_inNet_DESCRIPTION)
-    @In
-    public GridCoverage2D inNet = null;
+	@Description(OMSNETNUMBERING_inNet_DESCRIPTION)
+	@In
+	public GridCoverage2D inNet = null;
 
-    @Description(OMSNETNUMBERING_inPoints_DESCRIPTION)
-    @In
-    public SimpleFeatureCollection inPoints = null;
+	@Description(OMSNETNUMBERING_inPoints_DESCRIPTION)
+	@In
+	public SimpleFeatureCollection inPoints = null;
 
-    @Description(OMSNETNUMBERING_desiredArea_DESCRIPTION)
-    @Unit("m2")
-    @In
-    public Double pDesiredArea = null;
+	@Description(OMSNETNUMBERING_desiredArea_DESCRIPTION)
+	@Unit("m2")
+	@In
+	public Double pDesiredArea = null;
 
-    @Description(OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION)
-    @Unit("%")
-    @In
-    public Double pDesiredAreaDelta = null;
+	@Description(OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION)
+	@Unit("%")
+	@In
+	public Double pDesiredAreaDelta = null;
 
-    // @Description(OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION)
-    // @In
-    // public int pMaxAllowedConfluences = -1;
+	// @Description(OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION)
+	// @In
+	// public int pMaxAllowedConfluences = -1;
 
-    @Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
-    @Out
-    public GridCoverage2D outNetnum = null;
+	@Description(OMSNETNUMBERING_outNetnum_DESCRIPTION)
+	@Out
+	public GridCoverage2D outNetnum = null;
 
-    @Description(OMSNETNUMBERING_outBasins_DESCRIPTION)
-    @Out
-    public GridCoverage2D outBasins = null;
+	@Description(OMSNETNUMBERING_outBasins_DESCRIPTION)
+	@Out
+	public GridCoverage2D outBasins = null;
 
-    @Description(OMSNETNUMBERING_outDesiredBasins_DESCRIPTION)
-    @Out
-    public GridCoverage2D outDesiredBasins = null;
+	@Description(OMSNETNUMBERING_outDesiredBasins_DESCRIPTION)
+	@Out
+	public GridCoverage2D outDesiredBasins = null;
 
-    @Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
-    @Out
-    public String outMindmap = null;
+	@Description(OMSNETNUMBERING_outMindmap_DESCRIPTION)
+	@Out
+	public String outMindmap = null;
 
-    @Description(OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION)
-    @Out
-    public String outGeoframeTopology = null;
+	@Description(OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION)
+	@Out
+	public String outGeoframeTopology = null;
 
-    @Description(OMSNETNUMBERING_outBasinsInfo_DESCRIPTION)
-    @Out
-    public String outBasinsInfo = null;
+	@Description(OMSNETNUMBERING_outBasinsInfo_DESCRIPTION)
+	@Out
+	public String outBasinsInfo = null;
 
-    @Description(OMSNETNUMBERING_outMindmapDesired_DESCRIPTION)
-    @Out
-    public String outDesiredMindmap = null;
-    
-    /**
-     * Optional geoframe database to write the topology into.
-     * 
-     * If this is set, the topology text output is not created.
-     */
-    public ADb inGeoframeDb = null; 
+	@Description(OMSNETNUMBERING_outMindmapDesired_DESCRIPTION)
+	@Out
+	public String outDesiredMindmap = null;
 
-    public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
-    public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
-    public static final String OMSNETNUMBERING_KEYWORDS = "Network, SplitSubbasins";
-    public static final String OMSNETNUMBERING_LABEL = NETWORK;
-    public static final String OMSNETNUMBERING_NAME = "netnum";
-    public static final int OMSNETNUMBERING_STATUS = 40;
-    public static final String OMSNETNUMBERING_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSNETNUMBERING_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo";
-    public static final String OMSNETNUMBERING_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSNETNUMBERING_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSNETNUMBERING_inTca_DESCRIPTION = "The map of total contributing area.";
-    public static final String OMSNETNUMBERING_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSNETNUMBERING_inPoints_DESCRIPTION = "The monitoringpoints vector map.";
-    public static final String OMSNETNUMBERING_fPointId_DESCRIPTION = "The name of the node id field in mode 2.";
-    public static final String OMSNETNUMBERING_outNetnum_DESCRIPTION = "The map of netnumbering";
-    public static final String OMSNETNUMBERING_outBasins_DESCRIPTION = "The map of subbasins";
-    public static final String OMSNETNUMBERING_outDesiredBasins_DESCRIPTION = "The map of desired size subbasins";
-    public static final String OMSNETNUMBERING_outMindmap_DESCRIPTION = "Output mindmap (plantuml).";
-    public static final String OMSNETNUMBERING_outMindmapDesired_DESCRIPTION = "Output desired mindmap (plantuml).";
-    public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size in the projection's unit.";
-    public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
-    public static final String OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION = "The maximum number of channels that can converge into 1 node (-1 = no limit). Works only in desired area mode.";
-    public static final String OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION = "The optional geoframe topology output file.";
-    public static final String OMSNETNUMBERING_outBasinsInfo_DESCRIPTION = "The optional basins info output file.";
+	/**
+	 * Optional geoframe database to write the topology into.
+	 * 
+	 * If this is set, the topology text output is not created.
+	 */
+	public ADb inGeoframeDb = null;
 
-    private int nCols;
+	public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
+	public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
+	public static final String OMSNETNUMBERING_KEYWORDS = "Network, SplitSubbasins";
+	public static final String OMSNETNUMBERING_LABEL = NETWORK;
+	public static final String OMSNETNUMBERING_NAME = "netnum";
+	public static final int OMSNETNUMBERING_STATUS = 40;
+	public static final String OMSNETNUMBERING_LICENSE = "General Public License Version 3 (GPLv3)";
+	public static final String OMSNETNUMBERING_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo";
+	public static final String OMSNETNUMBERING_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
+	public static final String OMSNETNUMBERING_inFlow_DESCRIPTION = "The map of flowdirections.";
+	public static final String OMSNETNUMBERING_inTca_DESCRIPTION = "The map of total contributing area.";
+	public static final String OMSNETNUMBERING_inNet_DESCRIPTION = "The map of the network.";
+	public static final String OMSNETNUMBERING_inPoints_DESCRIPTION = "The monitoringpoints vector map.";
+	public static final String OMSNETNUMBERING_fPointId_DESCRIPTION = "The name of the node id field in mode 2.";
+	public static final String OMSNETNUMBERING_outNetnum_DESCRIPTION = "The map of netnumbering";
+	public static final String OMSNETNUMBERING_outBasins_DESCRIPTION = "The map of subbasins";
+	public static final String OMSNETNUMBERING_outDesiredBasins_DESCRIPTION = "The map of desired size subbasins";
+	public static final String OMSNETNUMBERING_outMindmap_DESCRIPTION = "Output mindmap (plantuml).";
+	public static final String OMSNETNUMBERING_outMindmapDesired_DESCRIPTION = "Output desired mindmap (plantuml).";
+	public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size in the projection's unit.";
+	public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
+	public static final String OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION = "The maximum number of channels that can converge into 1 node (-1 = no limit). Works only in desired area mode.";
+	public static final String OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION = "The optional geoframe topology output file.";
+	public static final String OMSNETNUMBERING_outBasinsInfo_DESCRIPTION = "The optional basins info output file.";
 
-    private int nRows;
+	private int nCols;
 
-    private double xres;
+	private int nRows;
 
-    private double yres;
+	private double xres;
 
-    @Execute
-    public void process() throws Exception {
-        if (!concatOr(outNetnum == null, doReset)) {
-            return;
-        }
-        checkNull(inFlow, inNet);
-        
-        HMRaster flowRaster = HMRaster.fromGridCoverageWritable(inFlow);
-        flowRaster.makeNullBorders();
-        HMRaster netRaster = HMRaster.fromGridCoverage(inNet);
-        
-        HMRaster tcaRaster = null;
-        if (inTca != null) {
-        	tcaRaster = HMRaster.fromGridCoverageWritable(inTca);
-        } else {
-        	if (pDesiredArea != null) {
+	private double yres;
+
+	@Execute
+	public void process() throws Exception {
+		if (!concatOr(outNetnum == null, doReset)) {
+			return;
+		}
+		checkNull(inFlow, inNet);
+
+		HMRaster flowRaster = HMRaster.fromGridCoverageWritable(inFlow);
+		flowRaster.makeNullBorders();
+		HMRaster netRaster = HMRaster.fromGridCoverage(inNet);
+
+		HMRaster tcaRaster = null;
+		if (inTca != null) {
+			tcaRaster = HMRaster.fromGridCoverageWritable(inTca);
+		} else {
+			if (pDesiredArea != null) {
 				throw new ModelsRuntimeException("TCA input is required when desired area parameter is set.", this);
 			}
-        }
-        RegionMap regionMap = flowRaster.getRegionMap();
-        nCols = regionMap.getCols();
-        nRows = regionMap.getRows();
-        xres = regionMap.getXres();
-        yres = regionMap.getYres();
+		}
+		RegionMap regionMap = flowRaster.getRegionMap();
+		nCols = regionMap.getCols();
+		nRows = regionMap.getRows();
+		xres = regionMap.getXres();
+		yres = regionMap.getYres();
 
-        List<Geometry> pointsList = null;
-        if (inPoints != null) {
-            pointsList = FeatureUtilities.featureCollectionToGeometriesList(inPoints, true, null);
-        }
+		List<Geometry> pointsList = null;
+		if (inPoints != null) {
+			pointsList = FeatureUtilities.featureCollectionToGeometriesList(inPoints, true, null);
+		}
 
-        HMRaster netNumR = null;
-        try {
-            List<NetLink> linksList = new ArrayList<NetLink>();
+		HMRaster netNumR = null;
+		try {
+			List<NetLink> linksList = new ArrayList<NetLink>();
 			netNumR = ModelsEngine.netNumbering(flowRaster, netRaster, tcaRaster, pointsList, linksList, pm);
-            outNetnum = netNumR.buildCoverage();
+			outNetnum = netNumR.buildCoverage();
 
 			HMRaster subbasinRaster = ModelsEngine.extractSubbasins(flowRaster, netRaster, netNumR, pm);
-            outBasins = subbasinRaster.buildCoverage();
+			outBasins = subbasinRaster.buildCoverage();
 
-            int validCount = 0;
-            int invalidCount = 0;
-            try {
-                for( int r = 0; r < nRows; r++ ) {
-                    for( int c = 0; c < nCols; c++ ) {
-                        int value = subbasinRaster.getIntValue(c, r);
-                        if (!isNovalue(value)) {
-                            validCount++;
-                        } else {
-                            invalidCount++;
-                        }
-                    }
-                }
-
-                // now handle basin hierarchy
-                for( NetLink nl1 : linksList ) {
-                    for( NetLink nl2 : linksList ) {
-                        if (!nl1.equals(nl2)) {
-                            nl1.connect(nl2);
-                        }
-                    }
-                }
-
-                List<NetLink> rootNetLink = linksList.stream().filter(n -> n.getDownStreamLink() == null)
-                        .collect(Collectors.toList());
-                if (rootNetLink.size() > 1) {
-                    throw new ModelsRuntimeException("More than one link found to be root link. Check the dataset.", this);
-                }
-
-                // create mindmap
-                NetLink rootLink = rootNetLink.get(0);
-                StringBuilder sb = new StringBuilder();
-                sb.append("@startmindmap\n");
-                sb.append("* <b>basin stats</b>\\nvalid basin cells: " + validCount + "\\ntotal cells: "
-                        + (invalidCount + validCount) + "\\ntotal basin area: " + (validCount * xres * yres) + "\\nx res: " + xres
-                        + "\\ny res: " + yres + "\n");
-                String level = "*";
-                printLinkAsMindMap(rootLink, level, sb);
-                sb.append("@endmindmap\n");
-                outMindmap = sb.toString();
-
-                if (pDesiredArea != null) {
-                    HashMap<Integer, Integer> conversionMap = new HashMap<>();
-
-                    double desArea = pDesiredArea;
-                    double minArea = desArea - desArea * pDesiredAreaDelta / 100.0;
-
-                    for( NetLink netLink : linksList ) {
-                        // first handle the most upstream ones and aggregate them with their parents
-                        List<NetLink> upStreamLinks = netLink.getUpStreamLinks();
-
-                        if (!netLink.isFixed() && upStreamLinks.isEmpty()) {
-                            double area = getLinkOnlyArea(netLink);
-                            if (area < minArea) {
-                                NetLink parentLink = netLink.getDownStreamLink();
-                                if (parentLink != null) {
-                                    netLink.desiredChainNetLink = parentLink.num;
-                                    conversionMap.put(netLink.num, parentLink.num);
-                                    parentLink.getUpStreamLinks().remove(netLink);
-                                }
-                            }
-                        }
-                        // also consider basins that have 1 fixed upstream basin (case of monitoring
-                        // point)
-                        if (upStreamLinks.size() == 1 && upStreamLinks.get(0).isFixed()) {
-                            NetLink fixed = upStreamLinks.get(0);
-                            double area = getLinkOnlyArea(netLink);
-                            if (area < minArea && !netLink.isFixed()) {
-                                // if the area is too small we need to merge it downstream,
-                                // but only if the basin itself is not fixed. In that case
-                                // it just can't be changed in size, period.
-                                NetLink parentLink = netLink.getDownStreamLink();
-                                if (parentLink != null) {
-                                    netLink.desiredChainNetLink = parentLink.num;
-                                    conversionMap.put(netLink.num, parentLink.num);
-                                    parentLink.getUpStreamLinks().remove(netLink);
-                                    parentLink.getUpStreamLinks().add(fixed);
-                                }
-                            }
-                        }
-                    }
-
-                    int convertedSize;
-                    int postConvertedSize;
-                    do {
-                        convertedSize = conversionMap.size();
-                        List<NetLink> links = Arrays.asList(rootLink);
-                        aggregateBasins(links, conversionMap, minArea, desArea, 0);
-                        postConvertedSize = conversionMap.size();
-                    } while( postConvertedSize - convertedSize > 0 );
-
-                    // if (pMaxAllowedConfluences > 0) {
-                    // // review the tree and solve junctions with more than that number of
-                    // upstreams
-                    // do {
-                    // convertedSize = conversionMap.size();
-                    // List<NetLink> links = Arrays.asList(rootLink);
-                    // fixManyChannels(links, conversionMap);
-                    // postConvertedSize = conversionMap.size();
-                    // } while( postConvertedSize - convertedSize > 0 );
-                    // }
-
-                    sb = new StringBuilder();
-                    sb.append("@startmindmap\n");
-                    sb.append("* <b>basin stats</b>\\nvalid basin cells: " + validCount + "\\ntotal cells: "
-                            + (invalidCount + validCount) + "\\ntotal basin area: " + (validCount * xres * yres) + "\\nx res: "
-                            + xres + "\\ny res: " + yres + "\\ndesired cells: " + (desArea / xres / yres) + "\n");
-                    level = "*";
-                    printLinkAsMindMap(rootLink, level, sb);
-                    sb.append("@endmindmap\n");
-                    outDesiredMindmap = sb.toString();
-
-                    // build basins info
-                    StringBuilder basinsInfoSb = new StringBuilder();
-                    basinsInfoSb.append("basinid;outletX;outletY;area\n");
-                    printLinkAsIdOutletUpstreamArea(rootLink, inTca, inTca.getGridGeometry(), basinsInfoSb);
-                    outBasinsInfo = basinsInfoSb.toString();
-
-                    
-
-            		HMRaster desiredSubbasinsR = new HMRaster.HMRasterWritableBuilder().setName("desiredsubbasin").setTemplate(flowRaster)
-            				.setInitialValue(HMConstants.intNovalue).setDoInteger(true).setNoValue(HMConstants.intNovalue).build();
-                    for( int r = 0; r < nRows; r++ ) {
-                        for( int c = 0; c < nCols; c++ ) {
-                            int value = subbasinRaster.getIntValue(c, r);
-                            if (!subbasinRaster.isNovalue(value)) {
-                                Integer convertedBasinNum = conversionMap.get(value);
-                                if (convertedBasinNum != null) {
-                                    // check if the converted has been converted also in some
-                                    // different thread
-                                    Integer convertedBasinNumTmp = conversionMap.get(convertedBasinNum);
-                                    while( convertedBasinNumTmp != null ) {
-                                        convertedBasinNum = convertedBasinNumTmp;
-                                        convertedBasinNumTmp = conversionMap.get(convertedBasinNumTmp);
-                                    }
-                                    desiredSubbasinsR.setValue(c, r, convertedBasinNum);
-                                } else {
-                                	desiredSubbasinsR.setValue(c, r, value);
-                                }
-                            }
-                        }
-                    }
-                    outDesiredBasins = desiredSubbasinsR.buildCoverage();
-                    desiredSubbasinsR.close();
-                }
-
-                // build geoframe topology input
-                if (inGeoframeDb != null) {
-					makeGeoframeTopologyDb(inGeoframeDb, rootLink);
-				} else {
-	                StringBuilder geoframeSb = new StringBuilder();
-	                geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
-	                printLinkAsGeoframe(rootLink, geoframeSb);
-	                outGeoframeTopology = geoframeSb.toString();
+			int validCount = 0;
+			int invalidCount = 0;
+			try {
+				for (int r = 0; r < nRows; r++) {
+					for (int c = 0; c < nCols; c++) {
+						int value = subbasinRaster.getIntValue(c, r);
+						if (!isNovalue(value)) {
+							validCount++;
+						} else {
+							invalidCount++;
+						}
+					}
 				}
 
-            } finally {
-                subbasinRaster.close();
-            }
+				// now handle basin hierarchy
+				for (NetLink nl1 : linksList) {
+					for (NetLink nl2 : linksList) {
+						if (!nl1.equals(nl2)) {
+							nl1.connect(nl2);
+						}
+					}
+				}
 
-        } finally {
-            flowRaster.close();
-            netRaster.close();
-            if (tcaRaster != null)
-            	tcaRaster.close();
-            if (netNumR != null)
-                netNumR.close();
-        }
-    }
+				List<NetLink> rootNetLink = linksList.stream().filter(n -> n.getDownStreamLink() == null)
+						.collect(Collectors.toList());
+				if (rootNetLink.size() > 1) {
+					throw new ModelsRuntimeException("More than one link found to be root link. Check the dataset.",
+							this);
+				}
 
-    private void makeGeoframeTopologyDb(ADb db, NetLink rootLink) throws Exception {
-		// check if table topology exists
-    	if(!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))){
-    		// create the table
-    		String createTopologyTable = "CREATE TABLE " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ( " +
-					GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + " INTEGER, " +
-					GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO + " INTEGER " +
-					");";
-    		db.executeInsertUpdateDeleteSql(createTopologyTable);
+				// create mindmap
+				NetLink rootLink = rootNetLink.get(0);
+				StringBuilder sb = new StringBuilder();
+				sb.append("@startmindmap\n");
+				sb.append("* <b>basin stats</b>\\nvalid basin cells: " + validCount + "\\ntotal cells: "
+						+ (invalidCount + validCount) + "\\ntotal basin area: " + (validCount * xres * yres)
+						+ "\\nx res: " + xres + "\\ny res: " + yres + "\n");
+				String level = "*";
+				printLinkAsMindMap(rootLink, level, sb);
+				sb.append("@endmindmap\n");
+				outMindmap = sb.toString();
+
+				if (pDesiredArea != null) {
+					HashMap<Integer, Integer> conversionMap = new HashMap<>();
+
+					double desArea = pDesiredArea;
+					double minArea = desArea - desArea * pDesiredAreaDelta / 100.0;
+
+					for (NetLink netLink : linksList) {
+						// first handle the most upstream ones and aggregate them with their parents
+						List<NetLink> upStreamLinks = netLink.getUpStreamLinks();
+
+						if (!netLink.isFixed() && upStreamLinks.isEmpty()) {
+							double area = getLinkOnlyArea(netLink);
+							if (area < minArea) {
+								NetLink parentLink = netLink.getDownStreamLink();
+								if (parentLink != null) {
+									netLink.desiredChainNetLink = parentLink.num;
+									conversionMap.put(netLink.num, parentLink.num);
+									parentLink.getUpStreamLinks().remove(netLink);
+								}
+							}
+						}
+						// also consider basins that have 1 fixed upstream basin (case of monitoring
+						// point)
+						if (upStreamLinks.size() == 1 && upStreamLinks.get(0).isFixed()) {
+							NetLink fixed = upStreamLinks.get(0);
+							double area = getLinkOnlyArea(netLink);
+							if (area < minArea && !netLink.isFixed()) {
+								// if the area is too small we need to merge it downstream,
+								// but only if the basin itself is not fixed. In that case
+								// it just can't be changed in size, period.
+								NetLink parentLink = netLink.getDownStreamLink();
+								if (parentLink != null) {
+									netLink.desiredChainNetLink = parentLink.num;
+									conversionMap.put(netLink.num, parentLink.num);
+									parentLink.getUpStreamLinks().remove(netLink);
+									parentLink.getUpStreamLinks().add(fixed);
+								}
+							}
+						}
+					}
+
+					int convertedSize;
+					int postConvertedSize;
+					do {
+						convertedSize = conversionMap.size();
+						List<NetLink> links = Arrays.asList(rootLink);
+						aggregateBasins(links, conversionMap, minArea, desArea, 0);
+						postConvertedSize = conversionMap.size();
+					} while (postConvertedSize - convertedSize > 0);
+
+					// if (pMaxAllowedConfluences > 0) {
+					// // review the tree and solve junctions with more than that number of
+					// upstreams
+					// do {
+					// convertedSize = conversionMap.size();
+					// List<NetLink> links = Arrays.asList(rootLink);
+					// fixManyChannels(links, conversionMap);
+					// postConvertedSize = conversionMap.size();
+					// } while( postConvertedSize - convertedSize > 0 );
+					// }
+
+					sb = new StringBuilder();
+					sb.append("@startmindmap\n");
+					sb.append("* <b>basin stats</b>\\nvalid basin cells: " + validCount + "\\ntotal cells: "
+							+ (invalidCount + validCount) + "\\ntotal basin area: " + (validCount * xres * yres)
+							+ "\\nx res: " + xres + "\\ny res: " + yres + "\\ndesired cells: " + (desArea / xres / yres)
+							+ "\n");
+					level = "*";
+					printLinkAsMindMap(rootLink, level, sb);
+					sb.append("@endmindmap\n");
+					outDesiredMindmap = sb.toString();
+
+					// build basins info
+					StringBuilder basinsInfoSb = new StringBuilder();
+					basinsInfoSb.append("basinid;outletX;outletY;area\n");
+					printLinkAsIdOutletUpstreamArea(rootLink, inTca, inTca.getGridGeometry(), basinsInfoSb);
+					outBasinsInfo = basinsInfoSb.toString();
+
+					HMRaster desiredSubbasinsR = new HMRaster.HMRasterWritableBuilder().setName("desiredsubbasin")
+							.setTemplate(flowRaster).setInitialValue(HMConstants.intNovalue).setDoInteger(true)
+							.setNoValue(HMConstants.intNovalue).build();
+					for (int r = 0; r < nRows; r++) {
+						for (int c = 0; c < nCols; c++) {
+							int value = subbasinRaster.getIntValue(c, r);
+							if (!subbasinRaster.isNovalue(value)) {
+								Integer convertedBasinNum = conversionMap.get(value);
+								if (convertedBasinNum != null) {
+									// check if the converted has been converted also in some
+									// different thread
+									Integer convertedBasinNumTmp = conversionMap.get(convertedBasinNum);
+									while (convertedBasinNumTmp != null) {
+										convertedBasinNum = convertedBasinNumTmp;
+										convertedBasinNumTmp = conversionMap.get(convertedBasinNumTmp);
+									}
+									desiredSubbasinsR.setValue(c, r, convertedBasinNum);
+								} else {
+									desiredSubbasinsR.setValue(c, r, value);
+								}
+							}
+						}
+					}
+					outDesiredBasins = desiredSubbasinsR.buildCoverage();
+					desiredSubbasinsR.close();
+				}
+
+				// build geoframe topology input
+				if (inGeoframeDb != null) {
+					makeGeoframeTopologyDb(inGeoframeDb, rootLink);
+				} else {
+					StringBuilder geoframeSb = new StringBuilder();
+					geoframeSb.append(rootLink.num).append(" ").append(0).append("\n");
+					printLinkAsGeoframe(rootLink, geoframeSb);
+					outGeoframeTopology = geoframeSb.toString();
+				}
+
+			} finally {
+				subbasinRaster.close();
+			}
+
+		} finally {
+			flowRaster.close();
+			netRaster.close();
+			if (tcaRaster != null)
+				tcaRaster.close();
+			if (netNumR != null)
+				netNumR.close();
 		}
-		
-    	String insertSql = "INSERT INTO " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ( " +
-				GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + ", " +
-				GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO + " ) " +
-				"VALUES ( ?, ? );";
-    	db.executeInsertUpdateDeletePreparedSql(insertSql, new Object[] {rootLink.num, 0});
-    	
+	}
+
+	private void makeGeoframeTopologyDb(ADb db, NetLink rootLink) throws Exception {
+		// check if table topology exists
+		String topologyTableName = GeoFrameSimpleTable.TOPOLOGY.tableName();
+		if (!db.hasTable(SqlName.m(topologyTableName))) {
+			// create the table
+			String createTopologyTable = GeoFrameSimpleTable.TOPOLOGY.getSchema().createTableSql();
+			db.executeInsertUpdateDeleteSql(createTopologyTable);
+		}
+
+		String insertSql = "INSERT INTO " + topologyTableName + " ( " + TopologyField.UPPSTREAM_BASIN.columnName()
+				+ ", " + TopologyField.DOWNSTREAM_BASIN.columnName()+ " ) " + "VALUES ( ?, ? );";
+		db.executeInsertUpdateDeletePreparedSql(insertSql, new Object[] { rootLink.num, 0 });
+
 		printLinkToDb(rootLink, db, insertSql);
 	}
-    
+
 	private void printLinkToDb(NetLink node, ADb db, String insertSql) throws Exception {
 		for (NetLink upNode : node.getUpStreamLinks()) {
 			db.executeInsertUpdateDeletePreparedSql(insertSql, new Object[] { upNode.num, node.num });
 			printLinkToDb(upNode, db, insertSql);
 		}
 	}
-    
 
-	private void aggregateBasins( List<NetLink> currentLevelLinks, HashMap<Integer, Integer> conversionMap, double minArea,
-            double desArea, int level ) throws Exception {
+	private void aggregateBasins(List<NetLink> currentLevelLinks, HashMap<Integer, Integer> conversionMap,
+			double minArea, double desArea, int level) throws Exception {
 
-        for( NetLink netLink : currentLevelLinks ) {
-            List<NetLink> ups = netLink.getUpStreamLinks();
+		for (NetLink netLink : currentLevelLinks) {
+			List<NetLink> ups = netLink.getUpStreamLinks();
 
-            double area = getLinkOnlyArea(netLink);
-            if (area < minArea) {
-                if (!ups.isEmpty()) {
-                    while( area < minArea ) {
-                        // find nearest to area
-                        double minDelta = Double.POSITIVE_INFINITY;
-                        NetLink minDeltaLink = null;
-                        double minAddArea = 0;
-                        boolean hadOne = false;
-                        int fixedCounts = 0;
-                        for( NetLink nl : ups ) {
-                            if (nl.isFixed()) {
-                                // fixed ones can't be joined to downstream
-                                fixedCounts++;
-                                continue;
-                            }
-                            // check if it wasn't used already (i.e. it has no parent)
-                            if (nl.desiredChainNetLink == null) {
-                                hadOne = true;
+			double area = getLinkOnlyArea(netLink);
+			if (area < minArea) {
+				if (!ups.isEmpty()) {
+					while (area < minArea) {
+						// find nearest to area
+						double minDelta = Double.POSITIVE_INFINITY;
+						NetLink minDeltaLink = null;
+						double minAddArea = 0;
+						boolean hadOne = false;
+						int fixedCounts = 0;
+						for (NetLink nl : ups) {
+							if (nl.isFixed()) {
+								// fixed ones can't be joined to downstream
+								fixedCounts++;
+								continue;
+							}
+							// check if it wasn't used already (i.e. it has no parent)
+							if (nl.desiredChainNetLink == null) {
+								hadOne = true;
 
-                                double nlArea = getLinkOnlyArea(nl);
-                                double delta = Math.abs(desArea - (area + nlArea));
-                                if (delta < minDelta) {
-                                    minDelta = delta;
-                                    minDeltaLink = nl;
-                                    minAddArea = nlArea;
-                                }
-                            }
-                        }
-                        if (fixedCounts == ups.size() && fixedCounts != 0) {
-                            if (!netLink.isFixed()) {
-                                // all upstream are fixed and area is small, aggregate downstream
-                                // if the last basin is too small, let's aggregate it with the
-                                // parent
-                                NetLink parentLink = netLink.getDownStreamLink();
-                                netLink.desiredChainNetLink = parentLink.num;
-                                conversionMap.put(netLink.num, parentLink.num);
-                                parentLink.getUpStreamLinks().remove(netLink);
-                                for( NetLink nl : ups ) {
-                                    nl.setDownStreamLink(parentLink);
-                                }
-                                parentLink.getUpStreamLinks().addAll(ups);
-                                break;
-                            } else {
-                                // nothing to do here, go up one level and break out
-                                aggregateBasins(ups, conversionMap, minArea, desArea, level + 1);
-                                break;
-                            }
-                        } else {
-                            if (!hadOne) {
-                                // seems like the basins are not enough
-                                break;
-                            }
-                            if (minDeltaLink != null) {
-                                minDeltaLink.desiredChainNetLink = netLink.num;
-                                area += minAddArea;
+								double nlArea = getLinkOnlyArea(nl);
+								double delta = Math.abs(desArea - (area + nlArea));
+								if (delta < minDelta) {
+									minDelta = delta;
+									minDeltaLink = nl;
+									minAddArea = nlArea;
+								}
+							}
+						}
+						if (fixedCounts == ups.size() && fixedCounts != 0) {
+							if (!netLink.isFixed()) {
+								// all upstream are fixed and area is small, aggregate downstream
+								// if the last basin is too small, let's aggregate it with the
+								// parent
+								NetLink parentLink = netLink.getDownStreamLink();
+								netLink.desiredChainNetLink = parentLink.num;
+								conversionMap.put(netLink.num, parentLink.num);
+								parentLink.getUpStreamLinks().remove(netLink);
+								for (NetLink nl : ups) {
+									nl.setDownStreamLink(parentLink);
+								}
+								parentLink.getUpStreamLinks().addAll(ups);
+								break;
+							} else {
+								// nothing to do here, go up one level and break out
+								aggregateBasins(ups, conversionMap, minArea, desArea, level + 1);
+								break;
+							}
+						} else {
+							if (!hadOne) {
+								// seems like the basins are not enough
+								break;
+							}
+							if (minDeltaLink != null) {
+								minDeltaLink.desiredChainNetLink = netLink.num;
+								area += minAddArea;
 
-                                // adjust the upstream channel end and area
-                                conversionMap.put(minDeltaLink.num, netLink.num);
+								// adjust the upstream channel end and area
+								conversionMap.put(minDeltaLink.num, netLink.num);
 
-                                ups.remove(minDeltaLink);
-                                List<NetLink> minDeltaUpstreamLinks = minDeltaLink.getUpStreamLinks();
-                                for( NetLink nl : minDeltaUpstreamLinks ) {
-                                    nl.setDownStreamLink(netLink);
-                                }
-                                ups.addAll(minDeltaUpstreamLinks);
-                            }
-                        }
-                    }
-                } else {
-                    // if the last basin is too small, let's aggregate it with the parent
-                    if (!netLink.isFixed()) {
-                        NetLink parentLink = netLink.getDownStreamLink();
-                        netLink.desiredChainNetLink = parentLink.num;
-                        conversionMap.put(netLink.num, parentLink.num);
-                        parentLink.getUpStreamLinks().remove(netLink);
-                    }
-                }
-            } else {
-                // go up one level
-                if (!ups.isEmpty()) {
-                    aggregateBasins(ups, conversionMap, minArea, desArea, level + 1);
-                }
-            }
-        }
-    }
+								ups.remove(minDeltaLink);
+								List<NetLink> minDeltaUpstreamLinks = minDeltaLink.getUpStreamLinks();
+								for (NetLink nl : minDeltaUpstreamLinks) {
+									nl.setDownStreamLink(netLink);
+								}
+								ups.addAll(minDeltaUpstreamLinks);
+							}
+						}
+					}
+				} else {
+					// if the last basin is too small, let's aggregate it with the parent
+					if (!netLink.isFixed()) {
+						NetLink parentLink = netLink.getDownStreamLink();
+						netLink.desiredChainNetLink = parentLink.num;
+						conversionMap.put(netLink.num, parentLink.num);
+						parentLink.getUpStreamLinks().remove(netLink);
+					}
+				}
+			} else {
+				// go up one level
+				if (!ups.isEmpty()) {
+					aggregateBasins(ups, conversionMap, minArea, desArea, level + 1);
+				}
+			}
+		}
+	}
 
-    // private void fixManyChannels( List<NetLink> currentLevelLinks, HashMap<Integer, Integer>
-    // conversionMap ) throws Exception {
+	// private void fixManyChannels( List<NetLink> currentLevelLinks,
+	// HashMap<Integer, Integer>
+	// conversionMap ) throws Exception {
 
-    // for( NetLink netLink : currentLevelLinks ) {
-    // List<NetLink> ups = netLink.getUpStreamLinks();
+	// for( NetLink netLink : currentLevelLinks ) {
+	// List<NetLink> ups = netLink.getUpStreamLinks();
 
-    // int upsSize = ups.size();
-    // if (upsSize > pMaxAllowedConfluences) {
-    // // merge down the smalles up basins into the current
-    // int toRemove = upsSize - pMaxAllowedConfluences;
+	// int upsSize = ups.size();
+	// if (upsSize > pMaxAllowedConfluences) {
+	// // merge down the smalles up basins into the current
+	// int toRemove = upsSize - pMaxAllowedConfluences;
 
-    // List<NetLink> sortedUps = ups.stream().sorted(( nl1, nl2 ) -> {
-    // double a1 = getLinkOnlyArea(nl1);
-    // double a2 = getLinkOnlyArea(nl2);
-    // if (a1 > a2) {
-    // return 1;
-    // } else if (a2 > a1) {
-    // return -1;
-    // } else {
-    // return 0;
-    // }
-    // }).collect(Collectors.toList());
+	// List<NetLink> sortedUps = ups.stream().sorted(( nl1, nl2 ) -> {
+	// double a1 = getLinkOnlyArea(nl1);
+	// double a2 = getLinkOnlyArea(nl2);
+	// if (a1 > a2) {
+	// return 1;
+	// } else if (a2 > a1) {
+	// return -1;
+	// } else {
+	// return 0;
+	// }
+	// }).collect(Collectors.toList());
 
-    // int removedCount = 0;
-    // int iter = 0;
-    // while( removedCount < toRemove ) {
-    // NetLink upToRemove = sortedUps.get(iter);
-    // if (!upToRemove.isFixed()) {
-    // upToRemove.desiredChainNetLink = netLink.num;
-    // conversionMap.put(upToRemove.num, netLink.num);
-    // netLink.getUpStreamLinks().remove(upToRemove);
+	// int removedCount = 0;
+	// int iter = 0;
+	// while( removedCount < toRemove ) {
+	// NetLink upToRemove = sortedUps.get(iter);
+	// if (!upToRemove.isFixed()) {
+	// upToRemove.desiredChainNetLink = netLink.num;
+	// conversionMap.put(upToRemove.num, netLink.num);
+	// netLink.getUpStreamLinks().remove(upToRemove);
 
-    // List<NetLink> upUps = upToRemove.getUpStreamLinks();
-    // for( NetLink nl : upUps ) {
-    // nl.setDownStreamLink(netLink);
-    // }
-    // netLink.getUpStreamLinks().addAll(upUps);
-    // removedCount++;
-    // }
-    // iter++;
-    // if (iter == upsSize) {
-    // break;
-    // }
-    // }
+	// List<NetLink> upUps = upToRemove.getUpStreamLinks();
+	// for( NetLink nl : upUps ) {
+	// nl.setDownStreamLink(netLink);
+	// }
+	// netLink.getUpStreamLinks().addAll(upUps);
+	// removedCount++;
+	// }
+	// iter++;
+	// if (iter == upsSize) {
+	// break;
+	// }
+	// }
 
-    // if (removedCount < toRemove) {
-    // throw new ModelsIllegalargumentException(
-    // "Unable to remove converging channel to the desired parameter, due to presence of fixed
-    // channels.
-    // Check your input data.",
-    // this);
-    // }
-    // } else {
-    // fixManyChannels(ups, conversionMap);
-    // }
-    // }
-    // }
+	// if (removedCount < toRemove) {
+	// throw new ModelsIllegalargumentException(
+	// "Unable to remove converging channel to the desired parameter, due to
+	// presence of fixed
+	// channels.
+	// Check your input data.",
+	// this);
+	// }
+	// } else {
+	// fixManyChannels(ups, conversionMap);
+	// }
+	// }
+	// }
 
-    private double getLinkOnlyArea( NetLink netLink ) {
-        int tca = getLinkOnlyTca(netLink);
-        double area = tca * xres * yres;
-        return area;
-    }
+	private double getLinkOnlyArea(NetLink netLink) {
+		int tca = getLinkOnlyTca(netLink);
+		double area = tca * xres * yres;
+		return area;
+	}
 
-    private int getLinkOnlyTca( NetLink netLink ) {
-        int upLinksTca = 0;
-        for( NetLink nl : netLink.getUpStreamLinks() ) {
-            upLinksTca += nl.getTca();
-        }
-        int tca = netLink.getTca() - upLinksTca;
-        return tca;
-    }
+	private int getLinkOnlyTca(NetLink netLink) {
+		int upLinksTca = 0;
+		for (NetLink nl : netLink.getUpStreamLinks()) {
+			upLinksTca += nl.getTca();
+		}
+		int tca = netLink.getTca() - upLinksTca;
+		return tca;
+	}
 
-    private void printLinkAsMindMap( NetLink node, String previousLevel, StringBuilder sb ) {
-        String level = previousLevel + "*";
-        sb.append(level).append(" ").append(node.toMindMapString()).append("\n");
-        for( NetLink upNode : node.getUpStreamLinks() ) {
-            printLinkAsMindMap(upNode, level, sb);
-        }
-    }
+	private void printLinkAsMindMap(NetLink node, String previousLevel, StringBuilder sb) {
+		String level = previousLevel + "*";
+		sb.append(level).append(" ").append(node.toMindMapString()).append("\n");
+		for (NetLink upNode : node.getUpStreamLinks()) {
+			printLinkAsMindMap(upNode, level, sb);
+		}
+	}
 
-    private void printLinkAsGeoframe( NetLink node, StringBuilder sb ) {
-        for( NetLink upNode : node.getUpStreamLinks() ) {
-            sb.append(upNode.num).append(" ").append(node.num).append("\n");
-            printLinkAsGeoframe(upNode, sb);
-        }
-    }
+	private void printLinkAsGeoframe(NetLink node, StringBuilder sb) {
+		for (NetLink upNode : node.getUpStreamLinks()) {
+			sb.append(upNode.num).append(" ").append(node.num).append("\n");
+			printLinkAsGeoframe(upNode, sb);
+		}
+	}
 
-    private void printLinkAsIdOutletUpstreamArea( NetLink node, GridCoverage2D inTca, GridGeometry2D gridGeometry2D,
-            StringBuilder sb ) {
-        Coordinate coordinate = CoverageUtilities.coordinateFromColRow(node.downCol, node.downRow, gridGeometry2D);
+	private void printLinkAsIdOutletUpstreamArea(NetLink node, GridCoverage2D inTca, GridGeometry2D gridGeometry2D,
+			StringBuilder sb) {
+		Coordinate coordinate = CoverageUtilities.coordinateFromColRow(node.downCol, node.downRow, gridGeometry2D);
 
-        int tca = node.getTca();
-        double area = xres * yres * tca;
-        sb.append(node.num).append(";").append(coordinate.x).append(";").append(coordinate.y).append(";").append(area)
-                .append("\n");
-        for( NetLink upNode : node.getUpStreamLinks() ) {
-            printLinkAsIdOutletUpstreamArea(upNode, inTca, gridGeometry2D, sb);
-        }
-    }
+		int tca = node.getTca();
+		double area = xres * yres * tca;
+		sb.append(node.num).append(";").append(coordinate.x).append(";").append(coordinate.y).append(";").append(area)
+				.append("\n");
+		for (NetLink upNode : node.getUpStreamLinks()) {
+			printLinkAsIdOutletUpstreamArea(upNode, inTca, gridGeometry2D, sb);
+		}
+	}
 
 }
