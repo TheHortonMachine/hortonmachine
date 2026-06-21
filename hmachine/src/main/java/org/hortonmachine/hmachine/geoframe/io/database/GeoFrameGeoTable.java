@@ -1,17 +1,10 @@
 package org.hortonmachine.hmachine.geoframe.io.database;
 
-import org.hortonmachine.hmachine.geoframe.io.database.tables.AbstractSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinPoligonSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.BasinSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.ClaibrationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoAbstractSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.HydroMeteoSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.NetworkSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.RawDataSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.SimulationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.TopologySchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.VarSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.NetworkSchema;
 
 /**
  * List of tables required for GeoFrame rainfall-runoff simulations.
@@ -28,9 +21,13 @@ public enum GeoFrameGeoTable {
 	 * Basin metadata and properties.
 	 */
 	BASIN(new BasinPoligonSchema()),
-
+	/**
+	 * Network metadata and properties.
+	 */
 	NET(new NetworkSchema()),
-
+	/**
+	 * Network metadata and properties.
+	 */
 	HYDRO_METEO_STATION(new HydroMeteoSationSchema());
 
 	private GeoAbstractSchema tableFields;
