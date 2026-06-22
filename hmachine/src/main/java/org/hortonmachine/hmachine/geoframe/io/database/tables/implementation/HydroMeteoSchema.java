@@ -5,6 +5,7 @@ import java.util.List;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema.BasinMultiPolygonField;
 
@@ -13,7 +14,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Bas
  * 
  * @author Daniele Andreis
  */
-public class HydroMeteoSchema extends AbstractSchema {
+public class HydroMeteoSchema extends SimpleAbstractSchema {
 	public HydroMeteoSchema() {
 		super("hydrometeo_data", HydroMeteoField.class);
 	}

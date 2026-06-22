@@ -15,7 +15,7 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
  * 
  * @author Daniele Andreis
  */
-public abstract class GeoAbstractSchema extends AbstractSchema implements GeoTableSchema {
+public abstract class GeoAbstractSchema extends AbstractSchema implements GeoframeGeoTableSchema {
 
 	protected GeoAbstractSchema(String tableName, Class<? extends TableField> fieldClass) {
 		super(tableName, fieldClass);

@@ -4,14 +4,15 @@ import java.util.Date;
 import java.util.List;
 
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
+
 /**
  * 
  * 
  * @author Daniele Andreis
  */
-public class ClaibrationSchema extends AbstractSchema {
+public class ClaibrationSchema extends SimpleAbstractSchema {
 	private final static String PREFIX = "calibration_";
 
 	public ClaibrationSchema() {
@@ -34,16 +35,11 @@ public class ClaibrationSchema extends AbstractSchema {
 
 	}
 
-
-
-
-
 	@Override
 	protected List<TableField> primaryKey() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 
 	@Override
 	protected List<ForeignKey> foreignKeys() {
