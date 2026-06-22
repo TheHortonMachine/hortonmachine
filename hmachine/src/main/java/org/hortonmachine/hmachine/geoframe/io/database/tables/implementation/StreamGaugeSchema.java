@@ -1,8 +1,5 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
-import java.util.List;
-
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.locationtech.jts.geom.Point;
@@ -20,7 +17,6 @@ public class StreamGaugeSchema extends GeoAbstractSchema {
 
 	protected StreamGaugeSchema() {
 		super("stream_gauge", StreamGaugeField.class);
-		// TODO Auto-generated constructor stub
 	}
 
 	public enum StreamGaugeField implements TableField {
@@ -45,17 +41,4 @@ public class StreamGaugeSchema extends GeoAbstractSchema {
 		}
 	}
 
-
-
-	@Override
-	protected List<TableField> primaryKey() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected List<ForeignKey> foreignKeys() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

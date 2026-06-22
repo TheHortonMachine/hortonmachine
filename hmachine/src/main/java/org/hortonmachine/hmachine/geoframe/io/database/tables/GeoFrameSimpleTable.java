@@ -1,12 +1,8 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.ClaibrationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.NetworkSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.RawDataSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.SimulationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema;

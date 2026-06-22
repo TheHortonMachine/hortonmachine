@@ -58,7 +58,7 @@ import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoTableSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;

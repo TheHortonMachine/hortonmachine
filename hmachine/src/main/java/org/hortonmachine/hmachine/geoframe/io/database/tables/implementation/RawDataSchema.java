@@ -3,11 +3,9 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 import java.util.List;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.VarField;
-
-import com.google.errorprone.annotations.Var;
 
 /**
  * Schema for raw environmental data observations.
@@ -27,7 +25,7 @@ import com.google.errorprone.annotations.Var;
  *
  * @author Daniele Andreis
  */
-public class RawDataSchema extends AbstractSchema {
+public class RawDataSchema extends SimpleAbstractSchema {
 
 	public RawDataSchema() {
 		super("raw_data", RawField.class);
@@ -59,8 +57,6 @@ public class RawDataSchema extends AbstractSchema {
 		}
 
 	}
-
-
 
 	@Override
 	protected List<TableField> primaryKey() {
