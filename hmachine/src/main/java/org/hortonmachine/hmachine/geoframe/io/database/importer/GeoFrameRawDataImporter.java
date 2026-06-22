@@ -12,9 +12,20 @@
 
 package org.hortonmachine.hmachine.geoframe.io.database.importer;
 
-import org.hortonmachine.dbs.compat.ADb;
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -32,7 +43,11 @@ import oms3.annotations.UI;
 @Status(40)
 @UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class GeoFrameRawDataImporter {
+public class GeoFrameRawDataImporter extends HMModel {
+
+	@Description("A colum with the measurement point id")
+	@In
+	public StationType stationType = null;
 
 	@Description("A colum with the measurement point id")
 	@In
@@ -53,6 +68,12 @@ public class GeoFrameRawDataImporter {
 	@In
 	public String inGeoframeDBPath = null;
 
+	@In
+	public String inIdField = null;
+
+	@In
+	public String inElevationField = null;
+
 	public boolean doOverWrite = true;
 
 	public void process() {
@@ -61,11 +82,53 @@ public class GeoFrameRawDataImporter {
 			throw new IllegalArgumentException();
 		}
 		try {
-			ADb inGeoframeDb = EDb.SQLITE.getDb();
+			ASpatialDb inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
+			int[] ids = null;
+			if (inMeasurementsPointFilePath != null) {
+				SimpleFeatureCollection lakesFC = null;
+				lakesFC = getVector(inMeasurementsPointFilePath);
+				ids = new int[lakesFC.size()];
+				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
+						.getSFBuilder(lakesFC.getSchema().getCoordinateReferenceSystem());
+				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
+				try (SimpleFeatureIterator iterator = lakesFC.features()) {
+					while (iterator.hasNext()) {
+						SimpleFeature sourceFeature = iterator.next();
+						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
+						Integer id = (Integer) sourceFeature.getAttribute(inIdField);
+						Double elevation = (Double) sourceFeature.getAttribute(inElevationField);
 
+						builder.reset();
+						builder.add(geom);
+						builder.add(id);
+						builder.add(elevation);
+						builder.add(null); // basin_id
+						builder.add(stationType.name()); // type
+
+						SimpleFeature newFeature = builder.buildFeature(null);
+						outFC.add(newFeature);
+					}
+				}
+
+				var table = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName();
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, outFC.getSchema(), table, null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, outFC, table, -1, false, pm);
+
+			} else {
+				QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from "
+						+ GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " where type='" + stationType.name() + "'",
+						-1);
+				int idIndex = result.names.indexOf(HydroMeteoSation.ID.columnName());
+
+				var rows = result.data;
+				int l = result.data.size();
+				ids = new int[l];
+				for (int i = 0; i < l; i++) {
+					ids[i] = ((Number) rows.get(i)[idIndex]).intValue();
+				}
+			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

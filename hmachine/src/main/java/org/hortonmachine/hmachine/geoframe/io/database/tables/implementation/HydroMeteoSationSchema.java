@@ -20,8 +20,8 @@ public class HydroMeteoSationSchema extends GeoAbstractSchema {
 	}
 
 	public enum HydroMeteoSation implements TableField {
-		GEOM("the_geom", Point.class), ID("id", Integer.class), BASIN_ID("basin_id", Integer.class),
-		TYPE("type", String.class);
+		GEOM("the_geom", Point.class), ID("id", Integer.class), ELEVATIOB("elevation", Double.class),
+		BASIN_ID("basin_id", Integer.class), TYPE("type", String.class);
 
 		private final String columnName;
 		private final Class<?> javaType;

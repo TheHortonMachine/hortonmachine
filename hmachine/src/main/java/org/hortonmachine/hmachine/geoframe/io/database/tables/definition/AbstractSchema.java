@@ -3,6 +3,8 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.definition;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import org.hortonmachine.dbs.utils.SqlName;
+
 /**
  * Base class for database table schema definitions.
  *
@@ -71,5 +73,7 @@ public abstract class AbstractSchema {
 		return this.buildSelect(fields);
 	}
 
-	
+	public SqlName getSQLName() {
+		return SqlName.m(tableName);
+	}
 }
