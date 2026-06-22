@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.hortonmachine.hmachine.geoframe.io.database.importer.CreateTableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 
 /**
@@ -40,7 +41,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableFi
  *
  * @author Daniele Andreis
  */
-public class VarSchema extends AbstractSchema {
+public class VarSchema extends SimpleAbstractSchema {
 	public VarSchema() {
 		super("environmental_variables", VarField.class);
 	}

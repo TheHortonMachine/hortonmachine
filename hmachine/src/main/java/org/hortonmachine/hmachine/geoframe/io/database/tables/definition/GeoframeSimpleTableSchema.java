@@ -13,11 +13,6 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.definition;
  * 
  * @author Daniele Andreis
  */
-public interface GeoframeDBSchema {
+public interface GeoframeSimpleTableSchema {
 	public String createTableSql();
-
-	String tableName();
-
-	TableField[] fields();
-
 }

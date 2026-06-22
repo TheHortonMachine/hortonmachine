@@ -6,6 +6,7 @@ import java.util.List;
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
+
 /**
  * 
  * 
@@ -32,23 +33,6 @@ public class ClaibrationSchema extends AbstractSchema {
 			return null;
 		}
 
-	}
-
-
-
-
-
-	@Override
-	protected List<TableField> primaryKey() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
-	@Override
-	protected List<ForeignKey> foreignKeys() {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 }

@@ -14,7 +14,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
  *
  * @author Daniele Andreis
  */
-public interface GeoTableSchema {
+public interface GeoframeGeoTableSchema {
 	/**
 	 * Creates a feature builder for this schema.
 	 *

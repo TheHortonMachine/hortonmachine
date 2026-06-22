@@ -37,17 +37,4 @@ public final class NetworkSchema extends GeoAbstractSchema {
 		}
 	}
 
-
-
-	@Override
-	protected List<TableField> primaryKey() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	protected List<ForeignKey> foreignKeys() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }
