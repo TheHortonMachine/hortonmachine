@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe.io.database;
+package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;

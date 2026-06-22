@@ -2,8 +2,8 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
 import java.util.List;
 
-import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameGeoTable;
-import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema.BasinMultiPolygonField;

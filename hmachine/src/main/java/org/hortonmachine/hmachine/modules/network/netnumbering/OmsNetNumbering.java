@@ -48,7 +48,7 @@ import org.hortonmachine.gears.libs.modules.NetLink;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;

@@ -21,7 +21,7 @@ import org.hortonmachine.gears.utils.chart.TimeSeries;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
-import org.hortonmachine.hmachine.geoframe.io.database.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Geometry;
 
