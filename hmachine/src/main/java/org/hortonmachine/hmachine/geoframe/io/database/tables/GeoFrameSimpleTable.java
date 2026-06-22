@@ -1,6 +1,7 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.ClaibrationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.RawDataSchema;
@@ -47,9 +48,9 @@ public enum GeoFrameSimpleTable {
 	 */
 	VARIABLE(new VarSchema());
 
-	private AbstractSchema tableFields;
+	private SimpleAbstractSchema tableFields;
 
-	GeoFrameSimpleTable(AbstractSchema tf) {
+	GeoFrameSimpleTable(SimpleAbstractSchema tf) {
 		this.tableFields = tf;
 	}
 
@@ -62,7 +63,7 @@ public enum GeoFrameSimpleTable {
 		return tableFields.tableName();
 	}
 
-	public AbstractSchema getSchema() {
+	public SimpleAbstractSchema getSchema() {
 		return tableFields;
 	}
 
