@@ -290,7 +290,7 @@ public class HMStacCollection {
 
                 // If Assumed EPSG defined, then override everything with that
                 currentSrid = Objects.equals(assumedEpsg, NO_EPSG_DEFINED) ? currentSrid : assumedEpsg;
-                CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + currentSrid);
+                CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs(String.valueOf(currentSrid)); // Considered EPSG by default
 
                 IHMStacAssetHandler handler = asset.getHandler();
                 CoordinateReferenceSystem currentAssetCRS = null;
@@ -307,12 +307,12 @@ public class HMStacCollection {
 
                     if (firstAssetSrid == null) { // It's the first item then
                         firstAssetSrid = currentAssetSrid;
-                        CoordinateReferenceSystem outputCrs = CrsUtilities.getCrsFromSrid(firstAssetSrid);
+                        CoordinateReferenceSystem outputCrs =HMCrsRegistry.INSTANCE.getCrs(String.valueOf(firstAssetSrid), true);
                         ReferencedEnvelope roiEnvelopeFirstAssetCrs = new ReferencedEnvelope(latLongRegionMap.toEnvelope(),
                                 DefaultGeographicCRS.WGS84).transform(outputCrs, true);
 
                         roiGeometryFirstAssetCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstAssetCrs);
-                        firstAssetCRS = CRS.decode("EPSG:" + firstAssetSrid);
+                        firstAssetCRS = HMCrsRegistry.INSTANCE.getCrs(String.valueOf(firstAssetSrid), true);
                         cols = latLongRegionMap.getCols();
                         rows = latLongRegionMap.getRows();
 
