@@ -290,10 +290,9 @@ public class HMStacCollection {
 
                 // If Assumed EPSG defined, then override everything with that
                 currentSrid = Objects.equals(assumedEpsg, NO_EPSG_DEFINED) ? currentSrid : assumedEpsg;
-                CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs(String.valueOf(currentSrid)); // Considered EPSG by default
+                CoordinateReferenceSystem currentItemCRS = HMCrsRegistry.INSTANCE.getCrs(String.valueOf(currentSrid), true); // Considered EPSG by default
 
                 IHMStacAssetHandler handler = asset.getHandler();
-                CoordinateReferenceSystem currentAssetCRS = null;
 
                 if (handler instanceof IHMStacAssetRasterHandler rasterHandler) {
 
