@@ -36,6 +36,7 @@ import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.License;
@@ -55,10 +56,6 @@ public class GeoFrameRawDataImporter extends HMModel {
 	@Description("A colum with the measurement point id")
 	@In
 	public StationType stationType = null;
-
-	@Description("A colum with the measurement point id")
-	@In
-	public String inMeasurementPointIdFieldName = null;
 
 	@Description("Input station/measured location vector point.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
@@ -101,6 +98,7 @@ public class GeoFrameRawDataImporter extends HMModel {
 
 	private IHMConnection conn;
 
+	@Execute
 	public void process() {
 
 		if (inGeoframeDBPath == null) {
@@ -117,11 +115,12 @@ public class GeoFrameRawDataImporter extends HMModel {
 				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
 						.getSFBuilder(lakesFC.getSchema().getCoordinateReferenceSystem());
 				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
+				int i = 0;
 				try (SimpleFeatureIterator iterator = lakesFC.features()) {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
 						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
-						Integer id = (Integer) sourceFeature.getAttribute(inIdField);
+						Long id = (Long) sourceFeature.getAttribute(inIdField);
 						Double elevation = (Double) sourceFeature.getAttribute(inElevationField);
 
 						builder.reset();
@@ -133,6 +132,8 @@ public class GeoFrameRawDataImporter extends HMModel {
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
+						ids[i] = id.intValue();
+						i++;
 					}
 				}
 
@@ -161,12 +162,16 @@ public class GeoFrameRawDataImporter extends HMModel {
 			reader.idfield = "ID";
 			reader.tStart = inStartDate;
 			reader.tEnd = inStartDate;
+			reader.fileNovalue = "-9999";
+
 			// TODO this is the right way for hourly and daily but not for weekly or and
 			// yearly
 			reader.tTimestep = timeResolution.toMinutes();
+			reader.initProcess();
 			while (reader.doProcess) {
 				reader.nextRecord();
 				HashMap<Integer, double[]> values = reader.outData;
+				System.out.println(reader.tCurrent);
 				for (int id : ids) {
 					double[] data = values.get(id);
 					if (data != null) {
@@ -175,6 +180,7 @@ public class GeoFrameRawDataImporter extends HMModel {
 					}
 				}
 			}
+			reader.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
