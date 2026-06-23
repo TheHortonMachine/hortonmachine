@@ -2,6 +2,7 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.definition;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.hortonmachine.dbs.utils.SqlName;
 
@@ -76,4 +77,21 @@ public abstract class AbstractSchema {
 	public SqlName getSQLName() {
 		return SqlName.m(tableName);
 	}
+
+	/**
+	 * Builds a SELECT statement including all table fields.
+	 *
+	 * @return a SELECT statement containing all schema fields
+	 */
+	public String buildInsertAll() {
+		TableField[] fields = this.fieldClass.getEnumConstants();
+
+		String columns = Arrays.stream(fields).map(TableField::columnName).collect(Collectors.joining(", "));
+
+		String placeholders = IntStream.range(0, fields.length).mapToObj(i -> "?").collect(Collectors.joining(", "));
+
+		return "INSERT INTO " + tableName + " (" + columns + ") VALUES (" + placeholders + ")";
+
+	}
+
 }

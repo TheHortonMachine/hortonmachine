@@ -92,7 +92,16 @@ public class VarSchema extends SimpleAbstractSchema {
 	}
 
 	public enum TimeResolution {
-		HOURLY, DAILY, MONTHLY, YEARLY
+		HOURLY, DAILY, MONTHLY, YEARLY;
+
+		public int toMinutes() {
+			return switch (this) {
+			case HOURLY -> 60;
+			case DAILY -> 24 * 60;
+			case MONTHLY -> 30 * 24 * 60;
+			case YEARLY -> 365 * 24 * 60;
+			};
+		}
 	}
 
 }

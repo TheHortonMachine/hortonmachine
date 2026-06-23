@@ -27,7 +27,7 @@ public abstract class SimpleAbstractSchema extends AbstractSchema implements Geo
 	public String createTableSql() {
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("CREATE TABLE ").append(tableName()).append(" (\n");
+		sb.append("CREATE TABLE  IF NOT EXISTS ").append(tableName()).append(" (\n");
 
 		List<TableField> cols = List.of(fields());
 

@@ -12,19 +12,26 @@
 
 package org.hortonmachine.hmachine.geoframe.io.database.importer;
 
+import java.util.HashMap;
+
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.IHMConnection;
+import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
@@ -74,7 +81,25 @@ public class GeoFrameRawDataImporter extends HMModel {
 	@In
 	public String inElevationField = null;
 
+	@In
+	public String inStartDate = null;
+
+	@In
+	public String inEndDate = null;
+
+	@In
+	public int inVariableType = -1;
+
+	@In
+	public TimeResolution timeResolution = null;
+
 	public boolean doOverWrite = true;
+
+	private ASpatialDb inGeoframeDb = null;
+
+	private IHMPreparedStatement ps = null;
+
+	private IHMConnection conn;
 
 	public void process() {
 
@@ -82,7 +107,7 @@ public class GeoFrameRawDataImporter extends HMModel {
 			throw new IllegalArgumentException();
 		}
 		try {
-			ASpatialDb inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
+			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
 			int[] ids = null;
 			if (inMeasurementsPointFilePath != null) {
@@ -128,9 +153,58 @@ public class GeoFrameRawDataImporter extends HMModel {
 					ids[i] = ((Number) rows.get(i)[idIndex]).intValue();
 				}
 			}
+
+			var reader = new OmsTimeSeriesIteratorReader();
+			var formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
+
+			reader.file = inMeasurementDataFilePath;
+			reader.idfield = "ID";
+			reader.tStart = inStartDate;
+			reader.tEnd = inStartDate;
+			// TODO this is the right way for hourly and daily but not for weekly or and
+			// yearly
+			reader.tTimestep = timeResolution.toMinutes();
+			while (reader.doProcess) {
+				reader.nextRecord();
+				HashMap<Integer, double[]> values = reader.outData;
+				for (int id : ids) {
+					double[] data = values.get(id);
+					if (data != null) {
+						long ts = formatter.parseMillis(reader.tCurrent);
+						insert(ts, id, data[0]);
+					}
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	// TODO copied from the simulation writer
+	private void ensureOpen() throws Exception {
+		if (ps != null) {
+			return;
+		}
+		// make sure the output table exists
+		String sql = GeoFrameSimpleTable.RAW_METEO.getSchema().createTableSql();
+		inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+		String insertSql = GeoFrameSimpleTable.RAW_METEO.getSchema().buildInsertAll();
+		conn = inGeoframeDb.getConnectionInternal();
+		ps = conn.prepareStatement(insertSql);
+	}
+
+	public void insert(long currentT, int stationId, double value) throws Exception {
+		ensureOpen();
+		conn.enableAutocommit(false);
+		ps.setLong(1, currentT);
+		ps.setInt(2, stationId);
+		ps.setInt(3, inVariableType);
+		ps.setDouble(4, value);
+
+		ps.addBatch();
+		ps.executeBatch();
+		conn.commit();
+		conn.enableAutocommit(true);
 	}
 
 }
