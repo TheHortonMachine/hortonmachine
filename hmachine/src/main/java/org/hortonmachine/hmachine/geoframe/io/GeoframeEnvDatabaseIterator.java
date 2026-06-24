@@ -133,7 +133,7 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 		checkNull(pParameterId, db, pMaxBasinId);
 		outData = new double[pMaxBasinId + 1];
 
-		String sql = "SELECT %s, %s, %s FROM measurement WHERE parameter_id = ?".formatted(TS, BASIN_ID, VALUE, TABLE);
+		String sql = "SELECT %s, %s, %s FROM %s WHERE parameter_id = ?".formatted(TS, BASIN_ID, VALUE, TABLE);
 
 		if (tStart != null) {
 			// add start time condition

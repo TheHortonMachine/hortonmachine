@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe.io;
+package org.hortonmachine.hmachine.geoframe;
 
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.database.importer.GeoFrameRawDataImporter;
@@ -67,7 +67,6 @@ public class TestIO extends HMModel {
 
 	public static void main(String[] args) throws Exception {
 		new TestIO();
-		;
 	}
 
 }
