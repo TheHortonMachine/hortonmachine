@@ -41,6 +41,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
+import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.datatypes.EDataType;
@@ -77,599 +78,617 @@ import org.locationtech.jts.geom.Polygon;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class SpatialDbsImportUtils {
-    private static final String FID = "fid";
+	private static final String FID = "fid";
 
-    private static final String PK_UID = "PK_UID";
+	private static final String PK_UID = "PK_UID";
 
-    private static final Logger logger = Logger.INSTANCE;
+	private static final Logger logger = Logger.INSTANCE;
 
-    public static final String GEOMFIELD_FOR_SHAPEFILE = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
+	public static final String GEOMFIELD_FOR_SHAPEFILE = ASpatialDb.DEFAULT_GEOM_FIELD_NAME;
 
-    /**
-     * Create a spatial table using a shapefile as schema.
-     * 
-     * @param db the database to use.
-     * @param shapeFile the shapefile to use.
-     * @param newTableName the new name of the table. If null, the shp name is used.
-     * @param forceSrid an optional srid to force the table to.
-     * @return the name of the created table.
-     * @param avoidSpatialIndex if <code>true</code>, no spatial index will be created. This is useful if many records 
-     *          have to be inserted and the index will be created later manually.
-     * @return the name of the created table.
-     * @throws Exception
-     */
-    public static SqlName createTableFromShp( ASpatialDb db, File shapeFile, SqlName newTableName, String forceSrid,
-            boolean avoidSpatialIndex ) throws Exception {
-    	SimpleFeatureCollection fc = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
-    	SimpleFeatureType schema = fc.getSchema();
+	/**
+	 * Create a spatial table using a shapefile as schema.
+	 * 
+	 * @param db           the database to use.
+	 * @param shapeFile    the shapefile to use.
+	 * @param newTableName the new name of the table. If null, the shp name is used.
+	 * @param forceSrid    an optional srid to force the table to.
+	 * @return the name of the created table.
+	 * @param avoidSpatialIndex if <code>true</code>, no spatial index will be
+	 *                          created. This is useful if many records have to be
+	 *                          inserted and the index will be created later
+	 *                          manually.
+	 * @return the name of the created table.
+	 * @throws Exception
+	 */
+	public static SqlName createTableFromShp(ASpatialDb db, File shapeFile, SqlName newTableName, String forceSrid,
+			boolean avoidSpatialIndex) throws Exception {
+		SimpleFeatureCollection fc = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
+		SimpleFeatureType schema = fc.getSchema();
 //        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
 //        SimpleFeatureSource featureSource = store.getFeatureSource();
 //        SimpleFeatureType schema = featureSource.getSchema();
-        if (newTableName == null) {
-            newTableName = SqlName.m(FileUtilities.getNameWithoutExtention(shapeFile));
-        }
-        return createTableFromSchema(db, schema, newTableName, forceSrid, avoidSpatialIndex);
-    }
+		if (newTableName == null) {
+			newTableName = SqlName.m(FileUtilities.getNameWithoutExtention(shapeFile));
+		}
+		return createTableFromSchema(db, schema, newTableName, forceSrid, avoidSpatialIndex);
+	}
 
-    /**
-     * Create a spatial table using a schema.
-     * 
-     * @param db the database to use.
-     * @param schema the schema to use.
-     * @param newTableName the new name of the table. If null, the shp name is used.
-     * @param forceSrid an optional srid to force the table to.
-     * @return the name of the created table.
-     * @param avoidSpatialIndex if <code>true</code>, no spatial index will be created. This is useful if many records 
-     *          have to be inserted and the index will be created later manually.
-     * @throws Exception
-     */
-    public static SqlName createTableFromSchema( ASpatialDb db, SimpleFeatureType schema, SqlName newTableName, String forceSrid,
-            boolean avoidSpatialIndex ) throws Exception {
-        GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
+	/**
+	 * Create a spatial table using a schema.
+	 * 
+	 * @param db           the database to use.
+	 * @param schema       the schema to use.
+	 * @param newTableName the new name of the table. If null, the shp name is used.
+	 * @param forceSrid    an optional srid to force the table to.
+	 * @return the name of the created table.
+	 * @param avoidSpatialIndex if <code>true</code>, no spatial index will be
+	 *                          created. This is useful if many records have to be
+	 *                          inserted and the index will be created later
+	 *                          manually.
+	 * @throws Exception
+	 */
+	public static SqlName createTableFromSchema(ASpatialDb db, SimpleFeatureType schema, SqlName newTableName,
+			String forceSrid, boolean avoidSpatialIndex) throws Exception {
+		GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
 
-        ADatabaseSyntaxHelper dsh = db.getType().getDatabaseSyntaxHelper();
+		ADatabaseSyntaxHelper dsh = db.getType().getDatabaseSyntaxHelper();
 
-        List<String> attrSql = new ArrayList<String>();
-        attrSql.add(FID + " " + dsh.LONG_PRIMARYKEY_AUTOINCREMENT());
+		List<String> attrSql = new ArrayList<String>();
+		attrSql.add(FID + " " + dsh.LONG_PRIMARYKEY_AUTOINCREMENT());
 
-        String fidField = FeatureUtilities.findAttributeName(schema, FID);
-        List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
-        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-            String attrName = attributeDescriptor.getLocalName();
+		String fidField = FeatureUtilities.findAttributeName(schema, FID);
+		List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
+		for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
+			String attrName = attributeDescriptor.getLocalName();
 
-            if (fidField != null && fidField.equals(attrName)) {
-                continue;
-            } else if (attributeDescriptor instanceof GeometryDescriptor) {
-                continue;
-            } else if (attrName.equalsIgnoreCase(PK_UID)) {
-                continue;
-            }
+			if (fidField != null && fidField.equals(attrName)) {
+				continue;
+			} else if (attributeDescriptor instanceof GeometryDescriptor) {
+				continue;
+			} else if (attrName.equalsIgnoreCase(PK_UID)) {
+				continue;
+			}
 
-            if (DbsUtilities.isReservedName(attrName)) {
-                attrName = DbsUtilities.fixReservedNameForQuery(attrName);
-            }
-            attrName = DbsUtilities.fixColumnName(attrName);
-            Class< ? > binding = attributeDescriptor.getType().getBinding();
-            if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
-                attrSql.add(attrName + " " + dsh.REAL());
-            } else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
-                attrSql.add(attrName + " " + dsh.INTEGER());
-            } else if (binding.isAssignableFrom(String.class)) {
-                attrSql.add(attrName + " " + dsh.TEXT());
-            } else {
-                attrSql.add(attrName + " " + dsh.TEXT());
-            }
-        }
+			if (DbsUtilities.isReservedName(attrName)) {
+				attrName = DbsUtilities.fixReservedNameForQuery(attrName);
+			}
+			attrName = DbsUtilities.fixColumnName(attrName);
+			Class<?> binding = attributeDescriptor.getType().getBinding();
+			if (binding.isAssignableFrom(Double.class) || binding.isAssignableFrom(Float.class)) {
+				attrSql.add(attrName + " " + dsh.REAL());
+			} else if (binding.isAssignableFrom(Long.class) || binding.isAssignableFrom(Integer.class)) {
+				attrSql.add(attrName + " " + dsh.INTEGER());
+			} else if (binding.isAssignableFrom(String.class)) {
+				attrSql.add(attrName + " " + dsh.TEXT());
+			} else {
+				attrSql.add(attrName + " " + dsh.TEXT());
+			}
+		}
 
-        String typeString = null;
-        var type = geometryDescriptor.getType();
-        Class< ? > binding = type.getBinding();
-        if (binding.isAssignableFrom(MultiPolygon.class)) {
-            typeString = "MULTIPOLYGON";
-        } else if (binding.isAssignableFrom(Polygon.class)) {
-            typeString = "POLYGON";
-        } else if (binding.isAssignableFrom(MultiLineString.class)) {
-            typeString = "MULTILINESTRING";
-        } else if (binding.isAssignableFrom(LineString.class)) {
-            typeString = "LINESTRING";
-        } else if (binding.isAssignableFrom(MultiPoint.class)) {
-            typeString = "MULTIPOINT";
-        } else if (binding.isAssignableFrom(Point.class)) {
-            typeString = "POINT";
-        }
-        if (typeString != null) {
-            String sridString = forceSrid; // forced srid rules, if available
-            if (sridString == null) {
-                String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
-                if (codeFromCrs == null || codeFromCrs.toLowerCase().contains("null")) {
-                    codeFromCrs = "4326"; // fallback on 4326
-                }
-                sridString = codeFromCrs.replaceFirst("EPSG:", "");
-            }
-            if (db instanceof SpatialiteDb) {
-                SpatialiteDb spatialiteDb = (SpatialiteDb) db;
-                spatialiteDb.createTable(newTableName, attrSql.toArray(new String[0]));
-                spatialiteDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, sridString,
-                        avoidSpatialIndex);
-            } else if (db instanceof PostgisDb) {
-                PostgisDb postgisDb = (PostgisDb) db;
-                postgisDb.createTable(newTableName, attrSql.toArray(new String[0]));
-                postgisDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, sridString,
-                        avoidSpatialIndex);
-            } else if (db instanceof H2GisDb) {
-                H2GisDb h2gisDb = (H2GisDb) db;
-                String typeStringExtra = typeString;
-                // String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
-                attrSql.add(GEOMFIELD_FOR_SHAPEFILE + " " + typeStringExtra);
-                String[] array = attrSql.toArray(new String[0]);
-                h2gisDb.createTable(newTableName, array);
-                h2gisDb.addSrid(newTableName, sridString, GEOMFIELD_FOR_SHAPEFILE);
-                if (!avoidSpatialIndex)
-                    h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
-            } else if (db instanceof GeopackageDb) {
-                GeopackageCommonDb gpkgDb = (GeopackageCommonDb) db;
+		String typeString = null;
+		var type = geometryDescriptor.getType();
+		Class<?> binding = type.getBinding();
+		if (binding.isAssignableFrom(MultiPolygon.class)) {
+			typeString = "MULTIPOLYGON";
+		} else if (binding.isAssignableFrom(Polygon.class)) {
+			typeString = "POLYGON";
+		} else if (binding.isAssignableFrom(MultiLineString.class)) {
+			typeString = "MULTILINESTRING";
+		} else if (binding.isAssignableFrom(LineString.class)) {
+			typeString = "LINESTRING";
+		} else if (binding.isAssignableFrom(MultiPoint.class)) {
+			typeString = "MULTIPOINT";
+		} else if (binding.isAssignableFrom(Point.class)) {
+			typeString = "POINT";
+		}
+		if (typeString != null) {
+			String sridString = forceSrid; // forced srid rules, if available
+			if (sridString == null) {
+				String codeFromCrs = CrsUtilities.getCodeFromCrs(schema.getCoordinateReferenceSystem());
+				if (codeFromCrs == null || codeFromCrs.toLowerCase().contains("null")) {
+					codeFromCrs = "4326"; // fallback on 4326
+				}
+				sridString = codeFromCrs.replaceFirst("EPSG:", "");
+			}
+			if (db instanceof SpatialiteDb) {
+				SpatialiteDb spatialiteDb = (SpatialiteDb) db;
+				spatialiteDb.createTable(newTableName, attrSql.toArray(new String[0]));
+				spatialiteDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, sridString,
+						avoidSpatialIndex);
+			} else if (db instanceof PostgisDb) {
+				PostgisDb postgisDb = (PostgisDb) db;
+				postgisDb.createTable(newTableName, attrSql.toArray(new String[0]));
+				postgisDb.addGeometryXYColumnAndIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE, typeString, sridString,
+						avoidSpatialIndex);
+			} else if (db instanceof H2GisDb) {
+				H2GisDb h2gisDb = (H2GisDb) db;
+				String typeStringExtra = typeString;
+				// String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
+				attrSql.add(GEOMFIELD_FOR_SHAPEFILE + " " + typeStringExtra);
+				String[] array = attrSql.toArray(new String[0]);
+				h2gisDb.createTable(newTableName, array);
+				h2gisDb.addSrid(newTableName, sridString, GEOMFIELD_FOR_SHAPEFILE);
+				if (!avoidSpatialIndex)
+					h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
+			} else if (db instanceof GeopackageDb) {
+				GeopackageCommonDb gpkgDb = (GeopackageCommonDb) db;
 
-                int srid = Integer.parseInt(sridString);
-                CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(srid);
-                gpkgDb.addCRS("EPSG", srid, crs.toWKT());
+				int srid = Integer.parseInt(sridString);
+				CoordinateReferenceSystem crs = CrsUtilities.getCrsFromSrid(srid);
+				gpkgDb.addCRS("EPSG", srid, crs.toWKT());
 
-                String[] array = attrSql.toArray(new String[0]);
-                gpkgDb.createSpatialTable(newTableName, Integer.parseInt(sridString), GEOMFIELD_FOR_SHAPEFILE + " " + typeString,
-                        array, null, avoidSpatialIndex);
-            }
-        } else {
-            db.createTable(newTableName, attrSql.toArray(new String[0]));
-        }
+				String[] array = attrSql.toArray(new String[0]);
+				gpkgDb.createSpatialTable(newTableName, Integer.parseInt(sridString),
+						GEOMFIELD_FOR_SHAPEFILE + " " + typeString, array, null, avoidSpatialIndex);
+			}
+		} else {
+			db.createTable(newTableName, attrSql.toArray(new String[0]));
+		}
 
-        return newTableName;
-    }
+		return newTableName;
+	}
 
-    /**
-     * Import a shapefile into a table.
-     * 
-     * @param db the database to use.
-     * @param shapeFile the shapefile to import.
-     * @param tableName the name of the table to import to.
-     * @param limit if > 0, a limit to the imported features is applied.
-     * @param useFromTextForGeom if true, the wkt form is used to insert geometries.
-     * @param pm the progress monitor.
-     * @return <code>false</code>, is an error occurred. 
-     * @throws Exception
-     */
-    public static boolean importShapefile( ASpatialDb db, File shapeFile, SqlName tableName, int limit, boolean useFromTextForGeom,
-            IHMProgressMonitor pm ) throws Exception {
-    	SimpleFeatureCollection features = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
+	/**
+	 * Import a shapefile into a table.
+	 * 
+	 * @param db                 the database to use.
+	 * @param shapeFile          the shapefile to import.
+	 * @param tableName          the name of the table to import to.
+	 * @param limit              if > 0, a limit to the imported features is
+	 *                           applied.
+	 * @param useFromTextForGeom if true, the wkt form is used to insert geometries.
+	 * @param pm                 the progress monitor.
+	 * @return <code>false</code>, is an error occurred.
+	 * @throws Exception
+	 */
+	public static boolean importShapefile(ASpatialDb db, File shapeFile, SqlName tableName, int limit,
+			boolean useFromTextForGeom, IHMProgressMonitor pm) throws Exception {
+		SimpleFeatureCollection features = OmsVectorReader.readVector(shapeFile.getAbsolutePath());
 //        FileDataStore store = FileDataStoreFinder.getDataStore(shapeFile);
 //        SimpleFeatureSource featureSource = store.getFeatureSource();
 //        SimpleFeatureCollection features = featureSource.getFeatures();
 
-        return importFeatureCollection(db, features, tableName, limit, useFromTextForGeom, pm);
+		return importFeatureCollection(db, features, tableName, limit, useFromTextForGeom, pm);
 
-    }
+	}
 
-    /**
-     * Import a featureCollection into a table.
-     * 
-     * @param db the database to use.
-     * @param featureCollection the featureCollection to import.
-     * @param tableName the name of the table to import to.
-     * @param limit if > 0, a limit to the imported features is applied.
-     * @param useFromTextForGeom if true, the wkt form is used to insert geometries.
-     * @param pm the progress monitor.
-     * @return <code>false</code>, is an error occurred. 
-     * @throws Exception
-     */
-    public static boolean importFeatureCollection( ASpatialDb db, SimpleFeatureCollection featureCollection, SqlName tableName,
-            int limit, boolean useFromTextForGeom, IHMProgressMonitor pm ) throws Exception {
-    	if(pm == null) {
-    		pm = new DummyProgressMonitor();
-    	}
-        SimpleFeatureType schema = featureCollection.getSchema();
-        List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
+	/**
+	 * Import a featureCollection into a table.
+	 * 
+	 * @param db                 the database to use.
+	 * @param featureCollection  the featureCollection to import.
+	 * @param tableName          the name of the table to import to.
+	 * @param limit              if > 0, a limit to the imported features is
+	 *                           applied.
+	 * @param useFromTextForGeom if true, the wkt form is used to insert geometries.
+	 * @param pm                 the progress monitor.
+	 * @return <code>false</code>, is an error occurred.
+	 * @throws Exception
+	 */
+	public static boolean importFeatureCollection(ASpatialDb db, SimpleFeatureCollection featureCollection,
+			SqlName tableName, int limit, boolean useFromTextForGeom, IHMProgressMonitor pm) throws Exception {
+		if (pm == null) {
+			pm = new DummyProgressMonitor();
+		}
+		SimpleFeatureType schema = featureCollection.getSchema();
+		List<AttributeDescriptor> attributeDescriptors = schema.getAttributeDescriptors();
 
-        int featureCount = featureCollection.size();
+		int featureCount = featureCollection.size();
 
-        List<String[]> tableInfo = db.getTableColumns(tableName);
-        List<String> tableColumns = new ArrayList<>();
-        boolean hasFid = false;
-        for( String[] item : tableInfo ) {
-            String colName = item[0].toUpperCase();
-            tableColumns.add(colName);
-            if (colName.equalsIgnoreCase(FID)) {
-                hasFid = true;
-            }
-        }
-        GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
-        String gCol = geometryColumns.geometryColumnName;
+		List<String[]> tableInfo = db.getTableColumns(tableName);
+		List<String> tableColumns = new ArrayList<>();
+		boolean hasFid = false;
+		for (String[] item : tableInfo) {
+			String colName = item[0].toUpperCase();
+			tableColumns.add(colName);
+			if (colName.equalsIgnoreCase(FID)) {
+				hasFid = true;
+			}
+		}
+		GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
+		String gCol = geometryColumns.geometryColumnName;
 
-        int epsg = geometryColumns.srid;
-        CoordinateReferenceSystem crs = null;
-        try {
-            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + epsg);
-        } catch (Exception e1) {
-            // ignore and try without
-        }
-        List<String> attrNames = new ArrayList<>();
-        String valueNames = hasFid ? FID : "";
-        String qMarks = hasFid ? "?" : "";
-        for( AttributeDescriptor attributeDescriptor : attributeDescriptors ) {
-            String attrName = attributeDescriptor.getLocalName();
-            String fidField = FeatureUtilities.findAttributeName(schema, FID);
-            if (fidField != null && fidField.equals(attrName)) {
-                continue;
-            } else if (attrName.equalsIgnoreCase("PK_UID")) {
-                continue;
-            }
-            attrNames.add(attrName);
-            if (attributeDescriptor instanceof GeometryDescriptor) {
-                valueNames += "," + gCol;
-                if (useFromTextForGeom) {
-                    qMarks += ",ST_GeomFromText(?, " + epsg + ")";
-                } else {
-                    qMarks += ",?";
-                }
-            } else {
-                // Strip any surrounding double-quotes that GeoTools may add to reserved-word
-                // attribute names; PRAGMA table_info always returns bare column names.
-                String bareAttrName = attrName.replace("\"", "");
-                if (!tableColumns.contains(bareAttrName.toUpperCase())) {
-                    pm.errorMessage(
-                            "The imported shapefile doesn't seem to match the table's schema. Doesn't exist: " + bareAttrName);
-                    return false;
-                }
-                String sqlAttrName = bareAttrName;
-                if (DbsUtilities.isReservedName(sqlAttrName)) {
-                    sqlAttrName = DbsUtilities.fixReservedNameForQuery(sqlAttrName);
-                }
-                sqlAttrName = DbsUtilities.fixColumnName(sqlAttrName);
-                valueNames += "," + sqlAttrName;
-                qMarks += ",?";
-            }
-        }
-        if (valueNames.startsWith(",")) {
-            valueNames = valueNames.substring(1);
-            qMarks = qMarks.substring(1);
-        }
-        String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
+		int epsg = geometryColumns.srid;
+		CoordinateReferenceSystem crs = null;
+		try {
+			crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + epsg);
+		} catch (Exception e1) {
+			// ignore and try without
+		}
+		List<String> attrNames = new ArrayList<>();
+		String valueNames = hasFid ? FID : "";
+		String qMarks = hasFid ? "?" : "";
+		for (AttributeDescriptor attributeDescriptor : attributeDescriptors) {
+			String attrName = attributeDescriptor.getLocalName();
+			String fidField = FeatureUtilities.findAttributeName(schema, FID);
+			if (fidField != null && fidField.equals(attrName)) {
+				continue;
+			} else if (attrName.equalsIgnoreCase("PK_UID")) {
+				continue;
+			}
+			attrNames.add(attrName);
+			if (attributeDescriptor instanceof GeometryDescriptor) {
+				valueNames += "," + gCol;
+				if (useFromTextForGeom) {
+					qMarks += ",ST_GeomFromText(?, " + epsg + ")";
+				} else {
+					qMarks += ",?";
+				}
+			} else {
+				// Strip any surrounding double-quotes that GeoTools may add to reserved-word
+				// attribute names; PRAGMA table_info always returns bare column names.
+				String bareAttrName = attrName.replace("\"", "");
+				if (!tableColumns.contains(bareAttrName.toUpperCase())) {
+					pm.errorMessage("The imported shapefile doesn't seem to match the table's schema. Doesn't exist: "
+							+ bareAttrName);
+					return false;
+				}
+				String sqlAttrName = bareAttrName;
+				if (DbsUtilities.isReservedName(sqlAttrName)) {
+					sqlAttrName = DbsUtilities.fixReservedNameForQuery(sqlAttrName);
+				}
+				sqlAttrName = DbsUtilities.fixColumnName(sqlAttrName);
+				valueNames += "," + sqlAttrName;
+				qMarks += ",?";
+			}
+		}
+		if (valueNames.startsWith(",")) {
+			valueNames = valueNames.substring(1);
+			qMarks = qMarks.substring(1);
+		}
+		String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
-        IGeometryParser gp = db.getType().getGeometryParser();
+		IGeometryParser gp = db.getType().getGeometryParser();
 
-        boolean _hasFid = hasFid;
-        var _pm = pm;
-        CoordinateReferenceSystem _crs = crs;
-        SimpleFeatureCollection _featureCollection = featureCollection;
-        return db.execOnConnection(conn -> {
-            boolean noErrors = true;
-            boolean autoCommit = conn.getAutoCommit();
-            conn.setAutoCommit(false);
-            var fcCrs = _featureCollection.getSchema().getCoordinateReferenceSystem();
-            SimpleFeatureIterator featureIterator;
-            if (fcCrs != null && _crs != null && !HMCrsRegistry.crsEquals(fcCrs, _crs)) {
+		boolean _hasFid = hasFid;
+		var _pm = pm;
+		CoordinateReferenceSystem _crs = crs;
+		SimpleFeatureCollection _featureCollection = featureCollection;
+		return db.execOnConnection(conn -> {
+			boolean noErrors = true;
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			var fcCrs = _featureCollection.getSchema().getCoordinateReferenceSystem();
+			SimpleFeatureIterator featureIterator;
+			if (fcCrs != null && _crs != null && !HMCrsRegistry.crsEquals(fcCrs, _crs)) {
 				featureIterator = new ReprojectingFeatureCollection(_featureCollection, _crs).features();
 			} else {
 				featureIterator = _featureCollection.features();
 			}
-            try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
-                int count = 0;
-                int batchCount = 0;
-                try {
-                    long fidBkp = 0;
-                    while( featureIterator.hasNext() ) {
-                        SimpleFeature f = (SimpleFeature) featureIterator.next();
+			try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+				int count = 0;
+				int batchCount = 0;
+				try {
+					long fidBkp = 0;
+					if (_hasFid) {
+						long fid = db.getMax(tableName,db.getProperColumnNameCase(tableName, FID));
+						
+						if (fid > 0) {
+							fidBkp = fid + 1;
+						}
+					}
+					while (featureIterator.hasNext()) {
+						SimpleFeature f = (SimpleFeature) featureIterator.next();
 
-                        int shift = 1;
-                        if (_hasFid) {
-                            long featureId = fidBkp++;
-                            try {
-                                featureId = FeatureUtilities.getFeatureId(f);
-                            } catch (Exception e) {
-                                // ignore
-                            }
-                            pStmt.setLong(1, featureId);
-                            shift = 2;
-                        }
+						int shift = 1;
+						if (_hasFid) {
+							long featureId = fidBkp++;
+							try {
+								featureId = FeatureUtilities.getFeatureId(f);
+							} catch (Exception e) {
+								// ignore
+							}
+							pStmt.setLong(1, featureId);
+							shift = 2;
+						}
 
-                        for( int i = 0; i < attrNames.size(); i++ ) {
-                            Object object = f.getAttribute(attrNames.get(i));
+						for (int i = 0; i < attrNames.size(); i++) {
+							Object object = f.getAttribute(attrNames.get(i));
 
-                            int iPlus = i + shift;
-                            if (object == null) {
-                                pStmt.setObject(iPlus, null);
-                            } else if (object instanceof Double) {
-                                pStmt.setDouble(iPlus, (Double) object);
-                            } else if (object instanceof Float) {
-                                pStmt.setFloat(iPlus, (Float) object);
-                            } else if (object instanceof Integer) {
-                                pStmt.setInt(iPlus, (Integer) object);
-                            } else if (object instanceof Long) {
-                                pStmt.setLong(iPlus, (Long) object);
-                            } else if (object instanceof String) {
-                                pStmt.setString(iPlus, (String) object);
-                            } else if (object instanceof Geometry) {
-                                Geometry geom = (Geometry) object;
-                                if (useFromTextForGeom) {
-                                    pStmt.setString(iPlus, geom.toText());
-                                } else {
-                                    geom.setSRID(epsg);
-                                    pStmt.setObject(iPlus, gp.toSqlObject(geom));
-                                }
-                            } else if (object instanceof Clob) {
-                                String string = ((Clob) object).toString();
-                                pStmt.setString(iPlus, string);
-                            } else if (object instanceof Date) {
-                                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                pStmt.setString(iPlus, dateFormatter.format(object));
-                            } else if (object instanceof java.util.Date) {
-                                SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                                pStmt.setString(iPlus, dateFormatter.format(object));
-                            } else {
-                                pStmt.setString(iPlus, object.toString());
-                            }
-                        }
-                        pStmt.addBatch();
-                        count++;
-                        batchCount++;
-                        if (batchCount % DbsUtilities.DEFAULT_BULK_INSERT_CHUNK_SIZE == 0) {
-                            _pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
-                                    IHMProgressMonitor.UNKNOWN);
-                            pStmt.executeBatch();
-                            _pm.done();
-                            batchCount = 0;
-                        }
-                        if (limit > 0 && count >= limit) {
-                            break;
-                        }
-                    }
-                    if (batchCount > 0) {
-                        _pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
-                                IHMProgressMonitor.UNKNOWN);
-                        pStmt.executeBatch();
-                        _pm.done();
-                    }
-                } catch (Exception e) {
-                    logger.insertError("SpatialDbsImportUtils", "error", e);
-                    noErrors = false;
-                } finally {
-                    featureIterator.close();
-                }
-            }
-            conn.setAutoCommit(autoCommit);
-            try (IHMStatement pStmt = conn.createStatement()) {
-                try {
-                    pStmt.executeQuery("Select updateLayerStatistics();");
-                } catch (Exception e) {
-                    // ignore
-                }
-            }
-            return noErrors;
-        });
-    }
+							int iPlus = i + shift;
+							if (object == null) {
+								pStmt.setObject(iPlus, null);
+							} else if (object instanceof Double) {
+								pStmt.setDouble(iPlus, (Double) object);
+							} else if (object instanceof Float) {
+								pStmt.setFloat(iPlus, (Float) object);
+							} else if (object instanceof Integer) {
+								pStmt.setInt(iPlus, (Integer) object);
+							} else if (object instanceof Long) {
+								pStmt.setLong(iPlus, (Long) object);
+							} else if (object instanceof String) {
+								pStmt.setString(iPlus, (String) object);
+							} else if (object instanceof Geometry) {
+								Geometry geom = (Geometry) object;
+								if (useFromTextForGeom) {
+									pStmt.setString(iPlus, geom.toText());
+								} else {
+									geom.setSRID(epsg);
+									pStmt.setObject(iPlus, gp.toSqlObject(geom));
+								}
+							} else if (object instanceof Clob) {
+								String string = ((Clob) object).toString();
+								pStmt.setString(iPlus, string);
+							} else if (object instanceof Date) {
+								SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+								pStmt.setString(iPlus, dateFormatter.format(object));
+							} else if (object instanceof java.util.Date) {
+								SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+								pStmt.setString(iPlus, dateFormatter.format(object));
+							} else {
+								pStmt.setString(iPlus, object.toString());
+							}
+						}
+						pStmt.addBatch();
+						count++;
+						batchCount++;
+						if (batchCount % DbsUtilities.DEFAULT_BULK_INSERT_CHUNK_SIZE == 0) {
+							_pm.beginTask("Batch import " + batchCount + " features. ( " + count + " of " + featureCount
+									+ " )", IHMProgressMonitor.UNKNOWN);
+							pStmt.executeBatch();
+							_pm.done();
+							batchCount = 0;
+						}
+						if (limit > 0 && count >= limit) {
+							break;
+						}
+					}
+					if (batchCount > 0) {
+						_pm.beginTask(
+								"Batch import " + batchCount + " features. ( " + count + " of " + featureCount + " )",
+								IHMProgressMonitor.UNKNOWN);
+						pStmt.executeBatch();
+						_pm.done();
+					}
+				} catch (Exception e) {
+					logger.insertError("SpatialDbsImportUtils", "error", e);
+					noErrors = false;
+				} finally {
+					featureIterator.close();
+				}
+			}
+			conn.setAutoCommit(autoCommit);
+			try (IHMStatement pStmt = conn.createStatement()) {
+				try {
+					pStmt.executeQuery("Select updateLayerStatistics();");
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+			return noErrors;
+		});
+	}
 
-    /**
-     * Get a table as featurecollection.
-     * 
-     * @param db the database.
-     * @param tableName the table to use.
-     * @param featureLimit limit in feature or -1.
-     * @param forceSrid a srid to force to or -1.
-     * @param whereStr an optional where condition string.
-     * @return the extracted featurecollection.
-     * @throws SQLException
-     * @throws Exception
-     */
-    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, SqlName tableName, int featureLimit,
-            int forceSrid, String whereStr ) throws SQLException, Exception {
-        return tableToFeatureFCollection(db, tableName, featureLimit, forceSrid, null, whereStr);
-    }
+	/**
+	 * Get a table as featurecollection.
+	 * 
+	 * @param db           the database.
+	 * @param tableName    the table to use.
+	 * @param featureLimit limit in feature or -1.
+	 * @param forceSrid    a srid to force to or -1.
+	 * @param whereStr     an optional where condition string.
+	 * @return the extracted featurecollection.
+	 * @throws SQLException
+	 * @throws Exception
+	 */
+	public static DefaultFeatureCollection tableToFeatureFCollection(ASpatialDb db, SqlName tableName, int featureLimit,
+			int forceSrid, String whereStr) throws SQLException, Exception {
+		return tableToFeatureFCollection(db, tableName, featureLimit, forceSrid, null, whereStr);
+	}
 
-    /**
-     * Get a table as featurecollection.
-     * 
-     * @param db the database.
-     * @param tableName the table to use.
-     * @param featureLimit limit in feature or -1.
-     * @param forceSrid a srid to force to or -1.
-     * @param envelope an optional spatial prefilter envelope.
-     * @param whereStr an optional where condition string.
-     * @return the extracted featurecollection.
-     * @throws SQLException
-     * @throws Exception
-     */
-    public static DefaultFeatureCollection tableToFeatureFCollection( ASpatialDb db, SqlName tableName, int featureLimit,
-            int forceSrid, Envelope envelope, String whereStr ) throws SQLException, Exception {
-        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+	/**
+	 * Get a table as featurecollection.
+	 * 
+	 * @param db           the database.
+	 * @param tableName    the table to use.
+	 * @param featureLimit limit in feature or -1.
+	 * @param forceSrid    a srid to force to or -1.
+	 * @param envelope     an optional spatial prefilter envelope.
+	 * @param whereStr     an optional where condition string.
+	 * @return the extracted featurecollection.
+	 * @throws SQLException
+	 * @throws Exception
+	 */
+	public static DefaultFeatureCollection tableToFeatureFCollection(ASpatialDb db, SqlName tableName, int featureLimit,
+			int forceSrid, Envelope envelope, String whereStr) throws SQLException, Exception {
+		DefaultFeatureCollection fc = new DefaultFeatureCollection();
 
-        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
-        CoordinateReferenceSystem forceCrs = null;
-        CoordinateReferenceSystem crs;
-        if (geometryColumn != null) {
-            if (forceSrid == -1) {
-                forceSrid = geometryColumn.srid;
-            } else {
-                forceCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
-            }
-            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + geometryColumn.srid);
-        } else {
-            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
-        }
+		GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
+		CoordinateReferenceSystem forceCrs = null;
+		CoordinateReferenceSystem crs;
+		if (geometryColumn != null) {
+			if (forceSrid == -1) {
+				forceSrid = geometryColumn.srid;
+			} else {
+				forceCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
+			}
+			crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + geometryColumn.srid);
+		} else {
+			crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
+		}
 
-        QueryResult tableRecords = db.getTableRecordsMapIn(tableName, envelope, featureLimit, forceSrid, whereStr);
-        if (tableRecords.data.size() == 0) {
-            return fc;
-        }
+		QueryResult tableRecords = db.getTableRecordsMapIn(tableName, envelope, featureLimit, forceSrid, whereStr);
+		if (tableRecords.data.size() == 0) {
+			return fc;
+		}
 
-        int geometryIndex = tableRecords.geometryIndex;
-        int latIndex = -1;
-        int lonIndex = -1;
-        Class< ? > geometryClass = null;
-        if (geometryIndex == -1) {
-            for( String fieldName : tableRecords.names ) {
-                if (fieldName.toLowerCase().startsWith("lat")) {
-                    latIndex = tableRecords.names.indexOf(fieldName);
-                } else if (fieldName.toLowerCase().startsWith("lon")) {
-                    lonIndex = tableRecords.names.indexOf(fieldName);
-                }
-            }
-            if (latIndex == -1 || lonIndex == -1)
-                throw new IllegalArgumentException("Not a geometric layer.");
-        } else {
-            geometryClass = determineGeometryClass(tableRecords, geometryIndex, geometryColumn);
-        }
+		int geometryIndex = tableRecords.geometryIndex;
+		int latIndex = -1;
+		int lonIndex = -1;
+		Class<?> geometryClass = null;
+		if (geometryIndex == -1) {
+			for (String fieldName : tableRecords.names) {
+				if (fieldName.toLowerCase().startsWith("lat")) {
+					latIndex = tableRecords.names.indexOf(fieldName);
+				} else if (fieldName.toLowerCase().startsWith("lon")) {
+					lonIndex = tableRecords.names.indexOf(fieldName);
+				}
+			}
+			if (latIndex == -1 || lonIndex == -1)
+				throw new IllegalArgumentException("Not a geometric layer.");
+		} else {
+			geometryClass = determineGeometryClass(tableRecords, geometryIndex, geometryColumn);
+		}
 
-        List<String> names = tableRecords.names;
-        List<String> types = tableRecords.types;
+		List<String> names = tableRecords.names;
+		List<String> types = tableRecords.types;
 
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName(tableName.name);
-        if (forceCrs != null) {
-            b.setCRS(forceCrs);
-        } else {
-            b.setCRS(crs);
-        }
+		SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+		b.setName(tableName.name);
+		if (forceCrs != null) {
+			b.setCRS(forceCrs);
+		} else {
+			b.setCRS(crs);
+		}
 
-        if (latIndex != -1 && lonIndex != -1) {
-            b.add(GEOMFIELD_FOR_SHAPEFILE, Point.class);
-        }
-        for( int i = 0; i < names.size(); i++ ) {
-            if (geometryIndex != -1 && i == geometryIndex) {
-                b.add(geometryColumn.geometryColumnName, geometryClass);
-                continue;
-            }
-            Class< ? > fieldClass = null;
-            String typeStr = types.get(i);
-            EDataType type = EDataType.getType4Name(typeStr);
-            switch( type ) {
-            case DOUBLE:
-                fieldClass = Double.class;
-                break;
-            case FLOAT:
-                fieldClass = Float.class;
-                break;
-            case INTEGER:
-                fieldClass = Integer.class;
-                break;
-            case LONG:
-                fieldClass = Long.class;
-                break;
-            case BOOLEAN:
-                fieldClass = Integer.class;
-                break;
-            case DATE:
-            case DATETIME:
-                fieldClass = String.class;
-                break;
-            case TEXT:
-                fieldClass = String.class;
-                break;
-            default:
-                fieldClass = String.class;
-                break;
-            }
-            b.add(names.get(i), fieldClass);
-        }
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+		if (latIndex != -1 && lonIndex != -1) {
+			b.add(GEOMFIELD_FOR_SHAPEFILE, Point.class);
+		}
+		for (int i = 0; i < names.size(); i++) {
+			if (geometryIndex != -1 && i == geometryIndex) {
+				b.add(geometryColumn.geometryColumnName, geometryClass);
+				continue;
+			}
+			Class<?> fieldClass = null;
+			String typeStr = types.get(i);
+			EDataType type = EDataType.getType4Name(typeStr);
+			switch (type) {
+			case DOUBLE:
+				fieldClass = Double.class;
+				break;
+			case FLOAT:
+				fieldClass = Float.class;
+				break;
+			case INTEGER:
+				fieldClass = Integer.class;
+				break;
+			case LONG:
+				fieldClass = Long.class;
+				break;
+			case BOOLEAN:
+				fieldClass = Integer.class;
+				break;
+			case DATE:
+			case DATETIME:
+				fieldClass = String.class;
+				break;
+			case TEXT:
+				fieldClass = String.class;
+				break;
+			default:
+				fieldClass = String.class;
+				break;
+			}
+			b.add(names.get(i), fieldClass);
+		}
+		SimpleFeatureType type = b.buildFeatureType();
+		SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 
-        int count = tableRecords.data.size();
-        for( int i = 0; i < count; i++ ) {
-            Object[] objects = tableRecords.data.get(i);
+		int count = tableRecords.data.size();
+		for (int i = 0; i < count; i++) {
+			Object[] objects = tableRecords.data.get(i);
 
-            if (latIndex != -1 && lonIndex != -1) {
-                double lat = ((Number) objects[latIndex]).doubleValue();
-                double lon = ((Number) objects[lonIndex]).doubleValue();
-                Point point = GeometryUtilities.gf().createPoint(new Coordinate(lon, lat));
-                Object[] newObjects = new Object[objects.length + 1];
-                System.arraycopy(objects, 0, newObjects, 1, objects.length);
-                newObjects[0] = point;
-                builder.addAll(newObjects);
-            } else {
-                if (geometryIndex != -1) {
-                    objects[geometryIndex] = adaptGeometry((Geometry) objects[geometryIndex], geometryClass);
-                }
-                builder.addAll(objects);
-            }
+			if (latIndex != -1 && lonIndex != -1) {
+				double lat = ((Number) objects[latIndex]).doubleValue();
+				double lon = ((Number) objects[lonIndex]).doubleValue();
+				Point point = GeometryUtilities.gf().createPoint(new Coordinate(lon, lat));
+				Object[] newObjects = new Object[objects.length + 1];
+				System.arraycopy(objects, 0, newObjects, 1, objects.length);
+				newObjects[0] = point;
+				builder.addAll(newObjects);
+			} else {
+				if (geometryIndex != -1) {
+					objects[geometryIndex] = adaptGeometry((Geometry) objects[geometryIndex], geometryClass);
+				}
+				builder.addAll(objects);
+			}
 
-            SimpleFeature feature = builder.buildFeature(null);
-            fc.add(feature);
-        }
-        return fc;
-    }
+			SimpleFeature feature = builder.buildFeature(null);
+			fc.add(feature);
+		}
+		return fc;
+	}
 
-    /**
-     * This check is necessary since often the metadata in gpkg shows Polygon, but then contains also MultiPolygons
-     * or even different geometries. In that case, we need to check the actual geometry types in the table and adapt the metadata accordingly, otherwise
-     * 
-     * 
-     * @param tableRecords
-     * @param geometryIndex
-     * @param geometryColumn
-     * @return
-     */
-    private static Class< ? > determineGeometryClass( QueryResult tableRecords, int geometryIndex, GeometryColumn geometryColumn ) {
-        EGeometryType metadataType = geometryColumn != null ? geometryColumn.geometryType : null;
-        EGeometryType resolvedType = metadataType;
-        for( Object[] row : tableRecords.data ) {
-            Geometry geometry = (Geometry) row[geometryIndex];
-            if (geometry == null) {
-                continue;
-            }
-            EGeometryType rowType = EGeometryType.forGeometry(geometry);
-            if (resolvedType == null || resolvedType == EGeometryType.UNKNOWN) {
-                resolvedType = rowType;
-            } else if (resolvedType == rowType) {
-                continue;
-            } else if (resolvedType.isCompatibleWith(rowType)) {
-                resolvedType = rowType;
-            } else if (!rowType.isCompatibleWith(resolvedType)) {
-                resolvedType = EGeometryType.GEOMETRY;
-                break;
-            }
-        }
+	/**
+	 * This check is necessary since often the metadata in gpkg shows Polygon, but
+	 * then contains also MultiPolygons or even different geometries. In that case,
+	 * we need to check the actual geometry types in the table and adapt the
+	 * metadata accordingly, otherwise
+	 * 
+	 * 
+	 * @param tableRecords
+	 * @param geometryIndex
+	 * @param geometryColumn
+	 * @return
+	 */
+	private static Class<?> determineGeometryClass(QueryResult tableRecords, int geometryIndex,
+			GeometryColumn geometryColumn) {
+		EGeometryType metadataType = geometryColumn != null ? geometryColumn.geometryType : null;
+		EGeometryType resolvedType = metadataType;
+		for (Object[] row : tableRecords.data) {
+			Geometry geometry = (Geometry) row[geometryIndex];
+			if (geometry == null) {
+				continue;
+			}
+			EGeometryType rowType = EGeometryType.forGeometry(geometry);
+			if (resolvedType == null || resolvedType == EGeometryType.UNKNOWN) {
+				resolvedType = rowType;
+			} else if (resolvedType == rowType) {
+				continue;
+			} else if (resolvedType.isCompatibleWith(rowType)) {
+				resolvedType = rowType;
+			} else if (!rowType.isCompatibleWith(resolvedType)) {
+				resolvedType = EGeometryType.GEOMETRY;
+				break;
+			}
+		}
 
-        if (resolvedType == null || resolvedType == EGeometryType.UNKNOWN) {
-            return Geometry.class;
-        }
-        return resolvedType.getClazz();
-    }
+		if (resolvedType == null || resolvedType == EGeometryType.UNKNOWN) {
+			return Geometry.class;
+		}
+		return resolvedType.getClazz();
+	}
 
-    private static Geometry adaptGeometry( Geometry geometry, Class< ? > geometryClass ) {
-        if (geometry == null || geometryClass == null || geometryClass.isInstance(geometry)) {
-            return geometry;
-        }
-        if (geometryClass == MultiPolygon.class && geometry instanceof Polygon) {
-            return geometry.getFactory().createMultiPolygon(new Polygon[]{(Polygon) geometry});
-        }
-        if (geometryClass == MultiLineString.class && geometry instanceof LineString) {
-            return geometry.getFactory().createMultiLineString(new LineString[]{(LineString) geometry});
-        }
-        if (geometryClass == MultiPoint.class && geometry instanceof Point) {
-            return geometry.getFactory().createMultiPoint(new Point[]{(Point) geometry});
-        }
-        return geometry;
-    }
+	private static Geometry adaptGeometry(Geometry geometry, Class<?> geometryClass) {
+		if (geometry == null || geometryClass == null || geometryClass.isInstance(geometry)) {
+			return geometry;
+		}
+		if (geometryClass == MultiPolygon.class && geometry instanceof Polygon) {
+			return geometry.getFactory().createMultiPolygon(new Polygon[] { (Polygon) geometry });
+		}
+		if (geometryClass == MultiLineString.class && geometry instanceof LineString) {
+			return geometry.getFactory().createMultiLineString(new LineString[] { (LineString) geometry });
+		}
+		if (geometryClass == MultiPoint.class && geometry instanceof Point) {
+			return geometry.getFactory().createMultiPoint(new Point[] { (Point) geometry });
+		}
+		return geometry;
+	}
 
-    public static DefaultFeatureCollection tableGeomsToFeatureFCollection( ASpatialDb db, SqlName tableName, int forceSrid,
-            String geomPrefix, String geomPostfix, String whereStr ) throws SQLException, Exception {
+	public static DefaultFeatureCollection tableGeomsToFeatureFCollection(ASpatialDb db, SqlName tableName,
+			int forceSrid, String geomPrefix, String geomPostfix, String whereStr) throws SQLException, Exception {
 
-        GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
-        CoordinateReferenceSystem crs;
-        if (geometryColumn != null) {
-            if (forceSrid == -1) {
-                forceSrid = geometryColumn.srid;
-            }
-            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
-        } else {
-            crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
-        }
+		GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
+		CoordinateReferenceSystem crs;
+		if (geometryColumn != null) {
+			if (forceSrid == -1) {
+				forceSrid = geometryColumn.srid;
+			}
+			crs = CrsUtilities.getCrsFromEpsg("EPSG:" + geometryColumn.srid);
+		} else {
+			crs = CrsUtilities.getCrsFromEpsg("EPSG:" + forceSrid);
+		}
 
-        List<Geometry> tableRecords = db.getGeometriesIn(tableName, (Envelope) null, geomPrefix, geomPostfix, whereStr);
+		List<Geometry> tableRecords = db.getGeometriesIn(tableName, (Envelope) null, geomPrefix, geomPostfix, whereStr);
 
-        SimpleFeatureCollection fc;
-        if (tableRecords.size() > 0) {
-            fc = FeatureUtilities.featureCollectionFromGeometry(crs, tableRecords.toArray(new Geometry[tableRecords.size()]));
-        } else {
-            fc = new DefaultFeatureCollection();
-        }
-        return (DefaultFeatureCollection) fc;
-    }
+		SimpleFeatureCollection fc;
+		if (tableRecords.size() > 0) {
+			fc = FeatureUtilities.featureCollectionFromGeometry(crs,
+					tableRecords.toArray(new Geometry[tableRecords.size()]));
+		} else {
+			fc = new DefaultFeatureCollection();
+		}
+		return (DefaultFeatureCollection) fc;
+	}
 }

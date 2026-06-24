@@ -87,10 +87,11 @@ public class GeoFrameRawDataImporter extends HMModel {
 	@In
 	public int inVariableType = -1;
 
+	// TODO maybe to infer from data
 	@In
 	public TimeResolution timeResolution = null;
 
-	public boolean doOverWrite = true;
+	public boolean doOverWrite = false;
 
 	private ASpatialDb inGeoframeDb = null;
 
@@ -108,6 +109,19 @@ public class GeoFrameRawDataImporter extends HMModel {
 			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
 			int[] ids = null;
+			var stationTable = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName();
+			var dataTable = GeoFrameSimpleTable.RAW_METEO.getSchema().getSQLName();
+
+			if (doOverWrite) {
+				if (inGeoframeDb.hasTable(dataTable)) {
+					inGeoframeDb.executeInsertUpdateDeleteSql("DROP TABLE " + dataTable);
+				}
+				// TODO drop for geopackage!!!!
+				if (inGeoframeDb.hasTable(stationTable)) {
+					inGeoframeDb.executeInsertUpdateDeleteSql("DROP TABLE " + stationTable);
+				}
+			}
+
 			if (inMeasurementsPointFilePath != null) {
 				SimpleFeatureCollection lakesFC = null;
 				lakesFC = getVector(inMeasurementsPointFilePath);
@@ -121,8 +135,13 @@ public class GeoFrameRawDataImporter extends HMModel {
 						SimpleFeature sourceFeature = iterator.next();
 						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
 						Long id = (Long) sourceFeature.getAttribute(inIdField);
-						Double elevation = (Double) sourceFeature.getAttribute(inElevationField);
-
+						if (id == null) {
+							continue;
+						}
+						Double elevation = null;
+						if (inElevationField != null) {
+							elevation = (Double) sourceFeature.getAttribute(inElevationField);
+						}
 						builder.reset();
 						builder.add(geom);
 						builder.add(id);
@@ -137,9 +156,12 @@ public class GeoFrameRawDataImporter extends HMModel {
 					}
 				}
 
-				var table = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName();
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, outFC.getSchema(), table, null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, outFC, table, -1, false, pm);
+				if (!inGeoframeDb.hasTable(stationTable)) {
+					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, outFC.getSchema(), stationTable, null,
+							false);
+				}
+
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, outFC, stationTable, -1, false, pm);
 
 			} else {
 				QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from "
@@ -154,33 +176,32 @@ public class GeoFrameRawDataImporter extends HMModel {
 					ids[i] = ((Number) rows.get(i)[idIndex]).intValue();
 				}
 			}
-
-			var reader = new OmsTimeSeriesIteratorReader();
-			var formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
-
-			reader.file = inMeasurementDataFilePath;
-			reader.idfield = "ID";
-			reader.tStart = inStartDate;
-			reader.tEnd = inStartDate;
-			reader.fileNovalue = "-9999";
-
-			// TODO this is the right way for hourly and daily but not for weekly or and
-			// yearly
-			reader.tTimestep = timeResolution.toMinutes();
-			reader.initProcess();
-			while (reader.doProcess) {
-				reader.nextRecord();
-				HashMap<Integer, double[]> values = reader.outData;
-				System.out.println(reader.tCurrent);
-				for (int id : ids) {
-					double[] data = values.get(id);
-					if (data != null) {
-						long ts = formatter.parseMillis(reader.tCurrent);
-						insert(ts, id, data[0]);
+			if (inMeasurementDataFilePath != null) {
+				var reader = new OmsTimeSeriesIteratorReader();
+				var formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
+				reader.file = inMeasurementDataFilePath;
+				reader.idfield = "ID";
+				reader.tStart = inStartDate;
+				reader.tEnd = inStartDate;
+				reader.fileNovalue = "-9999";
+				// TODO this is the right way for hourly and daily but not for weekly or and
+				// yearly
+				reader.tTimestep = timeResolution.toMinutes();
+				reader.initProcess();
+				while (reader.doProcess) {
+					reader.nextRecord();
+					HashMap<Integer, double[]> values = reader.outData;
+					System.out.println(reader.tCurrent);
+					for (int id : ids) {
+						double[] data = values.get(id);
+						if (data != null) {
+							long ts = formatter.parseMillis(reader.tCurrent);
+							insert(ts, id, data[0]);
+						}
 					}
 				}
+				reader.close();
 			}
-			reader.close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

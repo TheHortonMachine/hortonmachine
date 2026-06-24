@@ -50,7 +50,7 @@ public class CreateTableUtils {
 		 * evapotranspiration????
 		 */
 		return List.of(new EnvironmentalVariable(1, "Evapotranspiration", mmFlux, "Evapotraspiration"),
-				new EnvironmentalVariable(1, "Precipitation", mmFlux, "Accumulated precipitation"),
+				new EnvironmentalVariable(2, "Precipitation", mmFlux, "Accumulated precipitation"),
 				new EnvironmentalVariable(4, "Temperature", temperatureUnit, "Air temperature"),
 				new EnvironmentalVariable(3, "Radiation", radiationUnit, "Incoming solar radiation"),
 				new EnvironmentalVariable(5, "Discharge", dischargeUnit, "River discharge"));

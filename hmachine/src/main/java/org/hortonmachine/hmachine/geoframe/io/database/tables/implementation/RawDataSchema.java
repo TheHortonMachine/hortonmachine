@@ -61,7 +61,7 @@ public class RawDataSchema extends SimpleAbstractSchema {
 	@Override
 	protected List<TableField> primaryKey() {
 		// TODO Auto-generated method stub
-		return List.of(RawField.STATION_ID);
+		return List.of(RawField.STATION_ID, RawField.TS, RawField.VAR_ID);
 	}
 
 	@Override
