@@ -12,8 +12,11 @@
 
 package org.hortonmachine.hmachine.geoframe.utils;
 
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION;
+
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -21,27 +24,18 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.geotools.api.data.DataSourceException;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
-import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema.BasinCentroidField;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
-import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
-import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
-import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.SingleStepVariogramEvaluator;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylorEtpModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -53,6 +47,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description("Populate the db with hydrometeo data at centroid")
 @Author(name = "Daniele Andreis")
@@ -71,8 +66,31 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 	@Description("reader")
 	@In
-	public GeoframeEnvDatabaseIterator variableReader;
+	public GeoframeEnvDatabaseIterator inNetReader;
 
+	@Description("reader")
+	@In
+	public GeoframeEnvDatabaseIterator tempReader;
+
+	@Description("reader")
+	@In
+	public GeoframeEnvDatabaseIterator pressureReader;
+
+	@In
+	public boolean isHourly;
+
+	@Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
+	@In
+	@Unit("m")
+	public double pAlpha = 0;
+
+	@Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)
+	@In
+	public double pGmorn = 0;
+
+	@Description(OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION)
+	@In
+	public double pGnight = 0;
 	private ASpatialDb inGeoframeDb = null;
 
 	private IHMPreparedStatement ps = null;
@@ -101,31 +119,38 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 	@Execute
 	public void process() throws Exception {
+		// TODO for now I not implements the radiation part we have to choose te model.
+		// I have use for ET0 a modle from hortonmachin (but other model are similar)
+		// for radiation seesms me thatr models are not the same.
 		rootNode = TopologyUtilities.getRootNodeFromDb(inGeoframeDb);
 
-		if (variableReader.isPreCachingMode()) {
-			double[] variableData = variableReader.getCached(timestepIndex);
+		if (inNetReader.isPreCachingMode()) {
+			double[] inNetData = inNetReader.getCached(timestepIndex);
+			double[] tempData = tempReader.getCached(timestepIndex);
+			double[] pressureData = pressureReader.getCached(timestepIndex);
+			while (inNetData != null && tempData != null && pressureData != null) {
 
-			while (variableData != null) {
-
-				processTimestep(variableData);
+				processTimestep(inNetData, tempData, pressureData);
 				timestepIndex++;
-				variableData = variableReader.getCached(timestepIndex);
-
+				inNetData = inNetReader.getCached(timestepIndex);
+				tempData = tempReader.getCached(timestepIndex);
+				pressureData = pressureReader.getCached(timestepIndex);
 			}
 		} else {
-			while (variableReader.next()) {
+			while (inNetReader.next() && tempReader.next() && pressureReader.next()) {
 
-				double[] variableData = variableReader.outData;
+				double[] inNetData = inNetReader.getCached(timestepIndex);
+				double[] tempData = tempReader.getCached(timestepIndex);
+				double[] pressureData = pressureReader.getCached(timestepIndex);
 
-				processTimestep(variableData);
+				processTimestep(inNetData, tempData, pressureData);
 			}
 		}
 
 	}
 
-	private void processTimestep(double[] variableMap) throws Exception {
-		String pTs = variableReader.tCurrent;
+	private void processTimestep(double[] inNetMap, double[] temperatureMap, double[] pressureMap) throws Exception {
+		String pTs = inNetReader.tCurrent;
 
 		// reset nodes values
 		rootNode.visitUpstream(node -> {
@@ -142,7 +167,7 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 			executor.submit(() -> {
 				try {
 					try {
-						processTimestepForBasin(variableMap, node);
+						processTimestepForBasin(inNetMap, temperatureMap, pressureMap, node);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -163,15 +188,19 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 	}
 
-	private void processTimestepForBasin(double[] variableMap, TopologyNode node) throws SQLException, Exception {
+	private void processTimestepForBasin(double[] inNetMap, double[] temperatureMap, double[] pressureMap,
+			TopologyNode node) throws SQLException, Exception {
 		int basinId = node.basinId;
 
-		double radiation = 0;
-		double et0 = 0;
+		double et0 = OmsPresteyTaylorEtpModel.getET(pGmorn, pGnight, pAlpha, inNetMap[basinId],
+				OmsPresteyTaylorEtpModel.DEFAULT_HOURLY_NET_RADIATION, temperatureMap[basinId],
+				OmsPresteyTaylorEtpModel.DEFAULT_TEMPERATURE, pressureMap[basinId],
+				OmsPresteyTaylorEtpModel.DEFAULT_PRESSURE, isHourly, inNetReader.tCurrent);
 
 		try {
-			insert(EnvironmentalVariableType.RADIATION.getId(), basinId, variableReader.currentT, radiation);
-			insert(EnvironmentalVariableType.EVAPOTRANSPIRATION.getId(), basinId, variableReader.currentT, et0);
+			// insert(EnvironmentalVariableType.RADIATION.getId(), basinId,
+			// variableReader.currentT, radiation);
+			insert(EnvironmentalVariableType.EVAPOTRANSPIRATION.getId(), basinId, inNetReader.currentT, et0);
 
 		} catch (Exception e) {
 			e.printStackTrace();

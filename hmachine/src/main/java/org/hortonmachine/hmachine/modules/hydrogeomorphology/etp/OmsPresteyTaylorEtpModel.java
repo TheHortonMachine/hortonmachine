@@ -74,10 +74,10 @@ import org.joda.time.format.DateTimeFormatter;
 @UI(OMSPRESTEYTAYLORETPMODEL_UI)
 public class OmsPresteyTaylorEtpModel extends HMModel {
 
-	private static final double DEFAULT_DAILY_NET_RADIATION = 300.0;
-	private static final double DEFAULT_HOURLY_NET_RADIATION = 100.0;
-	private static final double DEFAULT_TEMPERATURE = 15.0;
-	private static final double DEFAULT_PRESSURE = 100.0;
+	public static final double DEFAULT_DAILY_NET_RADIATION = 300.0;
+	public static final double DEFAULT_HOURLY_NET_RADIATION = 100.0;
+	public static final double DEFAULT_TEMPERATURE = 15.0;
+	public static final double DEFAULT_PRESSURE = 100.0;
 
 	private static final double RAD_TO_DAY = 0.0864;
 	private static final double RAD_TO_HOUR = 0.0864 / 24.0;
