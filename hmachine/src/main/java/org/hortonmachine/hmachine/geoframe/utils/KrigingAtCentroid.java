@@ -12,13 +12,8 @@
 
 package org.hortonmachine.hmachine.geoframe.utils;
 
-import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Map;
 
 import org.geotools.api.data.DataSourceException;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -31,7 +26,6 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
-import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
@@ -115,7 +109,6 @@ public class KrigingAtCentroid extends HMModel {
 
 	private int threadPoolSize = 4;
 
-	private TopologyNode rootNode;
 
 	@Initialize
 	public void init() {
@@ -134,7 +127,6 @@ public class KrigingAtCentroid extends HMModel {
 	@Execute
 	public void process() throws Exception {
 		HashMap<Integer, double[]> h = null;
-		rootNode = TopologyUtilities.getRootNodeFromDb(inGeoframeDb);
 		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
 				HydroMeteoSation.TYPE.columnName() + "='" + StationType.METEO + "'");
@@ -171,51 +163,11 @@ public class KrigingAtCentroid extends HMModel {
 
 		var variogram = SingleStepVariogramEvaluator.createVariogram(stations, h, doDetrended, doIncludeZero,
 				doLogarithmic, variogramType, cutoffDivide, cutoffInput);
-		// reset nodes values
-		rootNode.visitUpstream(node -> {
-			node.value = Double.NaN;
-			node.accumulatedValue = Double.NaN;
-		});
 
-		Set<TopologyNode> nodes = new HashSet<>();
-
-		// do parallel processing with threadPoolSize threads
-		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
-		CountDownLatch latch = new CountDownLatch(nodes.size());
-		for (TopologyNode node : nodes) {
-			executor.submit(() -> {
-				try {
-					try {
-						processTimestepForBasin(variableMap, h, variogram, node, inStations);
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				} finally {
-					latch.countDown();
-				}
-			});
-		}
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new RuntimeException("Interrupted while waiting for basin parallel operation to finish", e);
-		} finally {
-			executor.shutdown();
-		}
-
-	}
-
-	private void processTimestepForBasin(double[] variableMap, HashMap<Integer, double[]> h,
-			HashMap<Integer, double[]> variogram, TopologyNode node, SimpleFeatureCollection stationsFC)
-			throws SQLException, Exception {
-		int basinId = node.basinId;
 		KrigingPointCase kriging = new KrigingPointCase();
 		SimpleFeatureCollection pointFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
-				GeoFrameGeoTable.BASIN_POINT.getSchema().getSQLName(), -1, -1, null,
-				BasinCentroidField.BASIN_ID.columnName() + "=" + basinId);
-		kriging.inStations = stationsFC;
+				GeoFrameGeoTable.BASIN_POINT.getSchema().getSQLName(), -1, -1, null, null);
+		kriging.inStations = inStations;
 		kriging.fStationsid = HydroMeteoSation.ID.columnName();
 		kriging.fStationsZ = HydroMeteoSation.ELEVATIOB.columnName();
 		kriging.inInterpolate = pointFC;
@@ -226,15 +178,21 @@ public class KrigingAtCentroid extends HMModel {
 		kriging.doDetrended = doDetrended;
 		kriging.doIncludeZero = doIncludeZero;
 		kriging.boundedToZero = boundToZero;
+		kriging.parallelComputation = true;
 
 		kriging.inData = h;
 		kriging.inTheoreticalVariogram = variogram;
 		kriging.execute();
 
-		double out = kriging.outData.get(basinId)[0];
-
 		try {
-			insert(variableReader.currentT, basinId, out);
+			HashMap<Integer, double[]> out = kriging.outData;
+
+			for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
+				int basinId = entry.getKey();
+				double value = entry.getValue()[0];
+				insert(variableReader.currentT, basinId, value);
+			}
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
