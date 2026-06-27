@@ -61,7 +61,7 @@
 
 
 		<postgis.version>2.5.0</postgis.version>
-		<postgresql.jdbc.version>42.7.7</postgresql.jdbc.version>
+		<postgresql.jdbc.version>42.7.11</postgresql.jdbc.version>
 
 		<performRelease>false</performRelease>
 
