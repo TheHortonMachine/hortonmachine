@@ -2,7 +2,7 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
 import java.util.List;
 
-import org.hortonmachine.hmachine.geoframe.io.database.importer.CreateTableUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.CreateTableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 
@@ -101,6 +101,21 @@ public class VarSchema extends SimpleAbstractSchema {
 			case MONTHLY -> 30 * 24 * 60;
 			case YEARLY -> 365 * 24 * 60;
 			};
+		}
+	}
+
+	public enum EnvironmentalVariableType {
+
+		EVAPOTRANSPIRATION(1), PRECIPITATION(2), RADIATION(3), TEMPERATURE(4), DISCHARGE(5);
+
+		private final int id;
+
+		EnvironmentalVariableType(int id) {
+			this.id = id;
+		}
+
+		public int getId() {
+			return id;
 		}
 	}
 

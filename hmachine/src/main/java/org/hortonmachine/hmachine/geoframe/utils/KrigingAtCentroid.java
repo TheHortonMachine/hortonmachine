@@ -38,7 +38,6 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema.BasinCentroidField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
 import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.SingleStepVariogramEvaluator;
@@ -57,11 +56,11 @@ import oms3.annotations.UI;
 @Description("Populate the db with hydrometeo data at centroid")
 @Author(name = "Daniele Andreis")
 @Keywords("time series, iterator, basin, value, database")
-@Name("VariableEvaluatorAtCentroid")
+@Name("GeoFrameRawDataImporter")
 @Status(40)
 @UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class VariableEvaluatorAtCentroid extends HMModel {
+public class KrigingAtCentroid extends HMModel {
 
 	// TODO it's betetr the string (to use also in OMS console or the db object)
 	@Description("Input database path")
@@ -69,9 +68,42 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 	@In
 	public String inGeoframeDBPath = null;
 
+	@In
+	public int inVariableType = -1;
+
 	@Description("reader")
 	@In
 	public GeoframeEnvDatabaseIterator variableReader;
+
+	@In
+	public boolean doLogarithmic = false;
+
+	// @In
+	private String variogramType;
+
+	@Description("The progress monitor.")
+	@In
+	public IHMProgressMonitor pm = new LogProgressMonitor();
+
+	@Description("Include zeros in computations (default is true).")
+	@In
+	public boolean doIncludeZero = true;
+
+	@Description("Include zeros in computations (default is true).")
+	@In
+	public int cutoffDivide = 0;
+
+	@Description("Switch for detrended mode.")
+	@In
+	public boolean doDetrended = false;
+
+	@Description("Specified cutoff")
+	@In
+	public double cutoffInput = 0.0;
+
+	public boolean doOverWrite = false;
+
+	public boolean boundToZero = false;
 
 	private ASpatialDb inGeoframeDb = null;
 
@@ -101,14 +133,23 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 	@Execute
 	public void process() throws Exception {
+		HashMap<Integer, double[]> h = null;
 		rootNode = TopologyUtilities.getRootNodeFromDb(inGeoframeDb);
-
+		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
+				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
+				HydroMeteoSation.TYPE.columnName() + "='" + StationType.METEO + "'");
+		var stations = new StationsSelection();
+		stations.inStations = inStations;
+		stations.doIncludezero = doIncludeZero;
+		stations.fStationsid = HydroMeteoSation.ID.columnName();
+		stations.fStationsZ = HydroMeteoSation.ELEVATIOB.columnName();
+		stations.doLogarithmic = doLogarithmic;
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
 
 			while (variableData != null) {
 
-				processTimestep(variableData);
+				processTimestep(variableData, stations, inStations, h);
 				timestepIndex++;
 				variableData = variableReader.getCached(timestepIndex);
 
@@ -118,15 +159,18 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 				double[] variableData = variableReader.outData;
 
-				processTimestep(variableData);
+				processTimestep(variableData, stations, inStations, h);
 			}
 		}
 
 	}
 
-	private void processTimestep(double[] variableMap) throws Exception {
+	private void processTimestep(double[] variableMap, StationsSelection stations, SimpleFeatureCollection inStations,
+			HashMap<Integer, double[]> h) throws Exception {
 		String pTs = variableReader.tCurrent;
 
+		var variogram = SingleStepVariogramEvaluator.createVariogram(stations, h, doDetrended, doIncludeZero,
+				doLogarithmic, variogramType, cutoffDivide, cutoffInput);
 		// reset nodes values
 		rootNode.visitUpstream(node -> {
 			node.value = Double.NaN;
@@ -142,7 +186,7 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 			executor.submit(() -> {
 				try {
 					try {
-						processTimestepForBasin(variableMap, node);
+						processTimestepForBasin(variableMap, h, variogram, node, inStations);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -163,16 +207,34 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 	}
 
-	private void processTimestepForBasin(double[] variableMap, TopologyNode node) throws SQLException, Exception {
+	private void processTimestepForBasin(double[] variableMap, HashMap<Integer, double[]> h,
+			HashMap<Integer, double[]> variogram, TopologyNode node, SimpleFeatureCollection stationsFC)
+			throws SQLException, Exception {
 		int basinId = node.basinId;
+		KrigingPointCase kriging = new KrigingPointCase();
+		SimpleFeatureCollection pointFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
+				GeoFrameGeoTable.BASIN_POINT.getSchema().getSQLName(), -1, -1, null,
+				BasinCentroidField.BASIN_ID.columnName() + "=" + basinId);
+		kriging.inStations = stationsFC;
+		kriging.fStationsid = HydroMeteoSation.ID.columnName();
+		kriging.fStationsZ = HydroMeteoSation.ELEVATIOB.columnName();
+		kriging.inInterpolate = pointFC;
+		kriging.fInterpolateid = BasinCentroidField.BASIN_ID.columnName();
+		kriging.fPointZ = BasinCentroidField.AVG_ELEVATION_M.columnName();
 
-		double radiation = 0;
-		double et0 = 0;
+		kriging.inNumCloserStations = 8;
+		kriging.doDetrended = doDetrended;
+		kriging.doIncludeZero = doIncludeZero;
+		kriging.boundedToZero = boundToZero;
+
+		kriging.inData = h;
+		kriging.inTheoreticalVariogram = variogram;
+		kriging.execute();
+
+		double out = kriging.outData.get(basinId)[0];
 
 		try {
-			insert(EnvironmentalVariableType.RADIATION.getId(), basinId, variableReader.currentT, radiation);
-			insert(EnvironmentalVariableType.EVAPOTRANSPIRATION.getId(), basinId, variableReader.currentT, et0);
-
+			insert(variableReader.currentT, basinId, out);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -203,13 +265,14 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 		ps = conn.prepareStatement(insertSql);
 	}
 
-	public void insert(int variableType, int basinId, long currentT, double value) throws Exception {
+	public void insert(long currentT, int basinId, double value) throws Exception {
 		ensureOpen();
 		conn.enableAutocommit(false);
 		ps.setLong(1, currentT);
 		ps.setInt(2, basinId);
-		ps.setInt(3, variableType);
+		ps.setInt(3, inVariableType);
 		ps.setDouble(4, value);
+
 		ps.addBatch();
 		ps.executeBatch();
 		conn.commit();

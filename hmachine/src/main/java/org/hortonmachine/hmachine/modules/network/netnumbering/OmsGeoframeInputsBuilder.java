@@ -299,7 +299,8 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCrs());
 			SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCrs());
 
-			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
+			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();			
+			DefaultFeatureCollection centroifdBasinFC = new DefaultFeatureCollection();
 			DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
 			DefaultFeatureCollection streamGaugeFC = new DefaultFeatureCollection();
 
@@ -593,7 +594,8 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				try {
 					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder,
 							basinCentroidsBuilder, singleNetBuilder, getSFStreamGauge(crs, Point.class), allBasinsFC,
-							allNetworksFC, streamGaugeFC, breackPoints, csvText, lakesIdList, lakesTypeList, entry);
+							centroifdBasinFC, allNetworksFC, streamGaugeFC, breackPoints, csvText, lakesIdList,
+							lakesTypeList, entry);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -619,11 +621,20 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					FileUtilities.writeFile(csvText.toString(), csvFile);
 				}
 			} else {
-				String basinTable = GeoFrameSimpleTable.TOPOLOGY.tableName();
+				String basinTable = GeoFrameGeoTable.BASIN.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(),
 						SqlName.m(basinTable), null, false);
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
 						false, pm);
+				
+				String basinCentroidTable = GeoFrameGeoTable.BASIN_POINT.tableName();
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, centroifdBasinFC.getSchema(),
+						SqlName.m(basinTable), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, centroifdBasinFC, SqlName.m(basinCentroidTable), -1,
+						false, pm);
+				
+				
+				
 
 				String networkTable = GeoFrameGeoTable.NET.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
@@ -647,9 +658,10 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			CoordinateReferenceSystem crs, List<Geometry> netGeometries, SimpleFeatureBuilder basinsBuilder,
 			SimpleFeatureBuilder basinCentroidsBuilder, SimpleFeatureBuilder singleNetBuilder,
 			SimpleFeatureBuilder streamGaugeBuilder, DefaultFeatureCollection allBasinsFC,
-			DefaultFeatureCollection allNetworksFC, DefaultFeatureCollection streamGaugeFC,
-			SimpleFeatureCollection breackPointFC, StringBuilder csvText, List<Integer> lakesIdList,
-			List<String> lakesTypeList, Entry<Integer, Geometry> entry) throws Exception, ModelsIOException {
+			DefaultFeatureCollection centroidBasinsFC, DefaultFeatureCollection allNetworksFC,
+			DefaultFeatureCollection streamGaugeFC, SimpleFeatureCollection breackPointFC, StringBuilder csvText,
+			List<Integer> lakesIdList, List<String> lakesTypeList, Entry<Integer, Geometry> entry)
+			throws Exception, ModelsIOException {
 		int basinNum = entry.getKey();
 //        pm.message("Processing basin " + basinNum + "...");
 		Geometry basinPolygon = entry.getValue();
@@ -811,7 +823,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				mainNetLength, skyview };
 		basinCentroidsBuilder.addAll(centroidValues);
 		SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
-
+		centroidBasinsFC.add(basinCentroidFeature);
 		// dump single centroid
 		if (inGeoframeDb == null) {
 			DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();

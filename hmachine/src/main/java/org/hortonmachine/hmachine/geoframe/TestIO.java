@@ -7,7 +7,9 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
 
 public class TestIO extends HMModel {
 	// NOCE
-
+	public final static String FROM_TS = "2015-10-01 01:00:00";;
+	
+	public final static String TO_TS = "2023-10-01 01:00:00";
 	public TestIO() {
 		String geoframeGpkg = "/home/andreisd/Desktop/geoframe_data.gpkg";
 
@@ -23,8 +25,8 @@ public class TestIO extends HMModel {
 
 			gfImporter.inMeasurementsPointFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/project_grid/data/meteo_data/stations_tot.shp";
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
-			gfImporter.inStartDate = "1990-01-01 01:00";
-			gfImporter.inEndDate = "1991-01-03 01:00";
+			gfImporter.inStartDate = FROM_TS;
+			gfImporter.inEndDate = TO_TS;
 			gfImporter.inVariableType = 4;
 			gfImporter.timeResolution = TimeResolution.HOURLY;
 			gfImporter.process();

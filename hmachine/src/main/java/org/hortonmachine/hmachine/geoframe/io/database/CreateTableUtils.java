@@ -1,8 +1,9 @@
-package org.hortonmachine.hmachine.geoframe.io.database.importer;
+package org.hortonmachine.hmachine.geoframe.io.database;
 
 import java.util.List;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.VarField;
 
@@ -13,6 +14,9 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
  * @author Daniele Andreis
  */
 public class CreateTableUtils {
+	
+
+	
 
 	public final static List<EnvironmentalVariable> getFixedEnviramentalVariable(TimeResolution resolution) {
 
@@ -20,7 +24,6 @@ public class CreateTableUtils {
 		String temperatureUnit = "°C";
 		String radiationUnit = null;
 		String dischargeUnit = "m³/s";
-		String precipitationUnit = null;
 
 		if (resolution != null) {
 			switch (resolution) {
@@ -49,10 +52,10 @@ public class CreateTableUtils {
 		 * TODO we can define potential evapotranspiration and actual
 		 * evapotranspiration????
 		 */
-		return List.of(new EnvironmentalVariable(1, "Evapotranspiration", mmFlux, "Evapotraspiration"),
-				new EnvironmentalVariable(2, "Precipitation", mmFlux, "Accumulated precipitation"),
-				new EnvironmentalVariable(4, "Temperature", temperatureUnit, "Air temperature"),
-				new EnvironmentalVariable(3, "Radiation", radiationUnit, "Incoming solar radiation"),
-				new EnvironmentalVariable(5, "Discharge", dischargeUnit, "River discharge"));
+		return List.of(new EnvironmentalVariable(EnvironmentalVariableType.EVAPOTRANSPIRATION.getId(), "Evapotranspiration", mmFlux, "Evapotraspiration"),
+				new EnvironmentalVariable(EnvironmentalVariableType.PRECIPITATION.getId(), "Precipitation", mmFlux, "Accumulated precipitation"),
+				new EnvironmentalVariable(EnvironmentalVariableType.TEMPERATURE.getId(), "Temperature", temperatureUnit, "Air temperature"),
+				new EnvironmentalVariable(EnvironmentalVariableType.RADIATION.getId(), "Radiation", radiationUnit, "Incoming solar radiation"),
+				new EnvironmentalVariable(EnvironmentalVariableType.DISCHARGE.getId(), "Discharge", dischargeUnit, "River discharge"));
 	}
 }
