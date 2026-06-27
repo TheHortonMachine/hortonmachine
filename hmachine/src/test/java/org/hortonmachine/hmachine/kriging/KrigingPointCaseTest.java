@@ -126,7 +126,7 @@ public class KrigingPointCaseTest {
 					double[] values = result.get(id);
 					double[] actual = predictedGstatR.get(id);
 					assertEquals(actual[0], values[0], 1);
-					System.out.println("actual is:" + actual[0] + " evaluate " + values[0]);
+//					System.out.println("actual is:" + actual[0] + " evaluate " + values[0]);
 					double error = Math.abs(actual[0] - values[0]);
 					meanError += error;
 					if (error < minError) {
@@ -140,7 +140,7 @@ public class KrigingPointCaseTest {
 
 				}
 				meanError = meanError / n;
-				System.out.println("mean error is:" + meanError + " max " + maxError + " min:" + minError);
+//				System.out.println("mean error is:" + meanError + " max " + maxError + " min:" + minError);
 
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -256,7 +256,7 @@ public class KrigingPointCaseTest {
 					double[] values = result.get(id);
 					double[] actual = predictedGstatR.get(id);
 					assertEquals(actual[0], values[0], 3);
-					System.out.println(" " + id + "  actual is:" + actual[0] + " evaluate " + values[0]);
+//					System.out.println(" " + id + "  actual is:" + actual[0] + " evaluate " + values[0]);
 					double error = Math.abs(actual[0] - values[0]);
 					meanError += error;
 					if (error < minError) {
@@ -270,12 +270,8 @@ public class KrigingPointCaseTest {
 
 				}
 				meanError = meanError / n;
-				System.out.println("mean error is:" + meanError + " max " + maxError + " min:" + minError);
+//				System.out.println("mean error is:" + meanError + " max " + maxError + " min:" + minError);
 
-			} catch (IOException e) {
-				e.printStackTrace();
-			} catch (CQLException e) {
-				e.printStackTrace();
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -490,11 +486,9 @@ public class KrigingPointCaseTest {
 			} else {
 				expected = 1.0;
 			}
-			//
 			while (iteratorTest.hasNext()) {
 				int id = iteratorTest.next();
 				double[] actual = result.get(id);
-				//
 				assertEquals(expected, actual[0], 0);
 			}
 			writer.inData = result;

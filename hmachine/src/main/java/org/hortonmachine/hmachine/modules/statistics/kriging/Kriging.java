@@ -285,7 +285,8 @@ public abstract class Kriging extends HMModel {
 
 					} else {
 
-						pm.errorMessage("No value for this time step");
+						// TODO make this a more informative message or throw an exception if appropriate.
+//						pm.errorMessage("No value for this time step");
 
 						interpolatedValue = inData.values().iterator().next()[0];
 
@@ -363,7 +364,8 @@ public abstract class Kriging extends HMModel {
 							interpolatedValue = inData.values().iterator().next()[0];
 						}
 					} else {
-						pm.errorMessage("No value for this time step");
+						// TODO make this a more informative message or throw an exception if appropriate.
+//						pm.errorMessage("No value for this time step");
 						// inData stores a single double[] value; use its first entry.
 						interpolatedValue = inData.values().iterator().next()[0];
 					}

@@ -136,6 +136,12 @@
 			</dependency>
 			<dependency>
 				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-dbs</artifactId>
+				<version>${revision}</version>
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
 				<artifactId>hm-gears</artifactId>
 				<version>${revision}</version>
 			</dependency>

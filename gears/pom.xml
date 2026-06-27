@@ -23,6 +23,12 @@
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-dbs</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-dbs</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>edu.colostate.omslab</groupId>
