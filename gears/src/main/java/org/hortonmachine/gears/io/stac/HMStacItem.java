@@ -115,7 +115,7 @@ public class HMStacItem {
             stacItem.epsg = (Integer) epsgObj;
 
             CoordinateReferenceSystem geometryCrs = feature.getFeatureType().getCoordinateReferenceSystem();
-            CoordinateReferenceSystem itemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + stacItem.epsg);
+            CoordinateReferenceSystem itemCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + stacItem.epsg, true);
             
             if(!CRS.equalsIgnoreMetadata(geometryCrs, itemCRS)) {
                 // update geometry with the data crs geometry
