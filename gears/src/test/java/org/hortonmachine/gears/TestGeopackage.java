@@ -5,17 +5,26 @@ import java.util.List;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.hortonmachine.dbs.TestUtilities;
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 import org.geotools.api.feature.simple.SimpleFeature;
 /**
  * Test Geopackage.
@@ -69,10 +78,49 @@ public class TestGeopackage extends HMTestCase {
         assertEquals(1, features.size());
         assertTrue(features.get(0).getDefaultGeometry() instanceof MultiPolygon);
 
-    }
+	}
 
-    public static void main( String[] args ) throws Exception {
-        new TestGeopackage().testMultiVectorGeopackageIO();
-    }
+	public void testInsertionOf2FeatureCollectionsInSameTable() throws Exception {
+
+		var geomsPointsList1 = new Geometry[] { g("POINT(1 1)"), g("POINT(2 2)"), g("POINT(3 3)") };
+		var geomsPointsList2 = new Geometry[] { g("POINT(4 4)"), g("POINT(5 5)"), g("POINT(6 6)") };
+
+		File gpkgFile = TestUtilities.createTmpFile(".gpkg");
+		gpkgFile.delete();
+		try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+			db.open(gpkgFile.getAbsolutePath());
+			db.initSpatialMetadata("WGS84");
+
+			SimpleFeatureCollection fc1 = FeatureUtilities
+					.featureCollectionFromGeometry(HMCrsRegistry.INSTANCE.getCrs("4326"), geomsPointsList1);
+			SimpleFeatureCollection fc2 = FeatureUtilities
+					.featureCollectionFromGeometry(HMCrsRegistry.INSTANCE.getCrs("4326"), geomsPointsList2);
+
+			SqlName tableName = SqlName.m("pointstest");
+			SpatialDbsImportUtils.createTableFromSchema(db, fc1.getSchema(), tableName, null, false);
+
+			SpatialDbsImportUtils.importFeatureCollection(db, fc1, tableName, -1, false, pm);
+			List<Geometry> geometries = db.getGeometries(tableName);
+			assertEquals(3, geometries.size());
+
+			SpatialDbsImportUtils.importFeatureCollection(db, fc2, tableName, -1, false, pm);
+			geometries = db.getGeometries(tableName);
+			assertEquals(6, geometries.size());
+
+		} finally {
+			gpkgFile.delete();
+		}
+	}
+
+	private Geometry g(String wkt) throws ParseException {
+		WKTReader wktReader = new WKTReader();
+		Geometry geometry = wktReader.read(wkt);
+		geometry.setSRID(4326);
+		return geometry;
+	}
+
+	public static void main(String[] args) throws Exception {
+		new TestGeopackage().testMultiVectorGeopackageIO();
+	}
 
 }

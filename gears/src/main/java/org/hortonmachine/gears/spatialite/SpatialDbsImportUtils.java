@@ -279,6 +279,17 @@ public class SpatialDbsImportUtils {
                 hasFid = true;
             }
         }
+        // if the table has a fid, we need to get the max fid to start from there, 
+        // else we get a primary key violation
+        long insertFid = 0;
+        if (hasFid) {
+			try {
+				insertFid = db.getMax(tableName, FID) + 1;
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+        
         GeometryColumn geometryColumns = db.getGeometryColumnsForTable(tableName);
         String gCol = geometryColumns.geometryColumnName;
 
@@ -338,6 +349,7 @@ public class SpatialDbsImportUtils {
         var _pm = pm;
         CoordinateReferenceSystem _crs = crs;
         SimpleFeatureCollection _featureCollection = featureCollection;
+        long[] _insertFid = {insertFid};
         return db.execOnConnection(conn -> {
             boolean noErrors = true;
             boolean autoCommit = conn.getAutoCommit();
@@ -353,19 +365,12 @@ public class SpatialDbsImportUtils {
                 int count = 0;
                 int batchCount = 0;
                 try {
-                    long fidBkp = 0;
                     while( featureIterator.hasNext() ) {
                         SimpleFeature f = (SimpleFeature) featureIterator.next();
 
                         int shift = 1;
                         if (_hasFid) {
-                            long featureId = fidBkp++;
-                            try {
-                                featureId = FeatureUtilities.getFeatureId(f);
-                            } catch (Exception e) {
-                                // ignore
-                            }
-                            pStmt.setLong(1, featureId);
+                            pStmt.setLong(1, _insertFid[0]++);
                             shift = 2;
                         }
 
@@ -433,6 +438,7 @@ public class SpatialDbsImportUtils {
                     featureIterator.close();
                 }
             }
+            conn.commit();
             conn.setAutoCommit(autoCommit);
             try (IHMStatement pStmt = conn.createStatement()) {
                 try {
