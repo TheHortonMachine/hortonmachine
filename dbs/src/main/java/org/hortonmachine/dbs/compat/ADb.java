@@ -450,11 +450,9 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
      * @throws Exception
      */
     public long getMax(SqlName tableName, String fieldName) throws Exception {
-        String sql = "select max(?) from " + tableName.fixedDoubleName;
+        String sql = "select max(" + fieldName + ") from " + tableName.fixedDoubleName;
         Long max = execOnConnection(connection -> {
-            try (IHMPreparedStatement stmt = connection.prepareStatement(sql)) {
-                stmt.setString(1, fieldName);
-                IHMResultSet rs = stmt.executeQuery();
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
                     return rs.getLong(1);
                 }

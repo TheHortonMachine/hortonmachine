@@ -18,7 +18,6 @@ import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.geopackage.Entry;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
-import org.hortonmachine.dbs.geopackage.GeopackageTableNames;
 import org.hortonmachine.dbs.geopackage.TileEntry;
 import org.hortonmachine.dbs.geopackage.TileMatrix;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -242,5 +241,4 @@ public class TestGeopackage {
             gpkgFile.delete();
         }
     }
-
 }

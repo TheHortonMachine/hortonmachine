@@ -307,7 +307,7 @@ public class OmsKrigingVectorModeOrig extends HMModel {
 
             } else {
 
-                pm.errorMessage("No value for this time step");
+//                pm.errorMessage("No value for this time step");
 
                 double[] value = inData.values().iterator().next();
                 result[j] = value[0];
