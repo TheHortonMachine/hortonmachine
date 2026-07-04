@@ -302,7 +302,7 @@ public class OmsKrigingCheckMode extends HMModel {
 
             } else {
 
-                pm.errorMessage("No value for this time step");
+//                pm.errorMessage("No value for this time step");
                 j = 0;
                 double[] value = inData.values().iterator().next();
                 result[j] = value[0];
