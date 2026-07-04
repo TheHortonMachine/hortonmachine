@@ -35,13 +35,14 @@ public abstract class SimpleAbstractSchema extends AbstractSchema implements Geo
 			TableField f = cols.get(i);
 
 			sb.append("    ").append(f.columnName()).append(" ").append(sqlType(f.javaType()));
-
-			sb.append(",\n");
+			if (i < cols.size() - 1) {
+				sb.append(",\n");
+			}
 		}
 
 		List<TableField> pk = primaryKey();
 
-		if (!pk.isEmpty()) {
+		if (pk != null && !pk.isEmpty()) {
 			sb.append("    PRIMARY KEY (");
 
 			for (int i = 0; i < pk.size(); i++) {
@@ -50,23 +51,25 @@ public abstract class SimpleAbstractSchema extends AbstractSchema implements Geo
 					sb.append(", ");
 			}
 
-			sb.append("),\n");
+			sb.append(")");
 		}
 
 		List<ForeignKey> fks = foreignKeys();
+		if (fks != null && !fks.isEmpty()) {
 
-		for (int i = 0; i < fks.size(); i++) {
+			for (int i = 0; i < fks.size(); i++) {
 
-			ForeignKey fk = fks.get(i);
+				ForeignKey fk = fks.get(i);
 
-			sb.append("    FOREIGN KEY (").append(fk.column().columnName()).append(") REFERENCES ")
-					.append(fk.refTable()).append("(").append(fk.refColumn().columnName()).append(")");
+				sb.append(" , \n  FOREIGN KEY (").append(fk.column().columnName()).append(") REFERENCES ")
+						.append(fk.refTable()).append("(").append(fk.refColumn().columnName()).append(")");
 
-			if (i < fks.size() - 1) {
-				sb.append(",");
+				if (i < fks.size() - 1) {
+					sb.append(",");
+				}
+
+				sb.append("\n");
 			}
-
-			sb.append("\n");
 		}
 
 		sb.append(");\n");

@@ -61,6 +61,8 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
@@ -299,7 +301,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCrs());
 			SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCrs());
 
-			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();			
+			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
 			DefaultFeatureCollection centroifdBasinFC = new DefaultFeatureCollection();
 			DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
 			DefaultFeatureCollection streamGaugeFC = new DefaultFeatureCollection();
@@ -626,15 +628,12 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 						SqlName.m(basinTable), null, false);
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
 						false, pm);
-				
+
 				String basinCentroidTable = GeoFrameGeoTable.BASIN_POINT.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, centroifdBasinFC.getSchema(),
-						SqlName.m(basinTable), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, centroifdBasinFC, SqlName.m(basinCentroidTable), -1,
-						false, pm);
-				
-				
-				
+						SqlName.m(basinCentroidTable), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, centroifdBasinFC,
+						SqlName.m(basinCentroidTable), -1, false, pm);
 
 				String networkTable = GeoFrameGeoTable.NET.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
@@ -1152,26 +1151,27 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 	public String extractId(SimpleFeatureBuilder streamGaugeBuilder, SimpleFeatureCollection breackPoint,
 			Geometry polygon, DefaultFeatureCollection streamGaugeFC2, int basinId) {
+		if (breackPoint != null) {
+			var filter = HMFilter.intersects(breackPoint, polygon);
 
-		var filter = HMFilter.intersects(breackPoint, polygon);
+			SimpleFeatureCollection subCollection = breackPoint.subCollection(filter);
 
-		SimpleFeatureCollection subCollection = breackPoint.subCollection(filter);
+			SimpleFeature first = DataUtilities.first(subCollection);
+			if (first != null) {
+				// @todo check if the field exist
+				String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
 
-		SimpleFeature first = DataUtilities.first(subCollection);
-		if (first != null) {
-			// @todo check if the field exist
-			String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
+				streamGaugeBuilder.set(HydroMeteoSation.GEOM.columnName(), first.getDefaultGeometry());
+				streamGaugeBuilder.set(HydroMeteoSation.ID.columnName(), id);
+				streamGaugeBuilder.set(HydroMeteoSation.BASIN_ID.columnName(), basinId);
+				streamGaugeBuilder.set(HydroMeteoSation.TYPE.columnName(), StationType.STREAM_GAUGE.name());
 
-			streamGaugeBuilder.set("the_geom", first.getDefaultGeometry());
-			streamGaugeBuilder.set("stream_gauge_id", id);
-			streamGaugeBuilder.set("basin_id", basinId);
-
-			SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
-			streamGaugeFC2.add(newFeature);
-			streamGaugeBuilder.reset();
-			return id;
+				SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
+				streamGaugeFC2.add(newFeature);
+				streamGaugeBuilder.reset();
+				return id;
+			}
 		}
-
 		return null;
 
 	}

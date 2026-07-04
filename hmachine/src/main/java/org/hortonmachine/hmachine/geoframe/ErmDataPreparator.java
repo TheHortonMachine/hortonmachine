@@ -181,102 +181,102 @@ public class ErmDataPreparator extends HMModel {
 			}
 
 			if (doBasinCutout) {
-				if (p.shouldRun(p.basin)) {
-					pm.message("Running ExtractBasin...");
-					OmsExtractBasin eb = new OmsExtractBasin();
-					eb.pm = pm;
-					eb.inFlow = OmsRasterReader.readRaster(p.drain);
-					eb.pEast = pOutletEasting;
-					eb.pNorth = pOutletNorthing;
-					eb.process();
-					OmsRasterWriter.writeRaster(p.basin, eb.outBasin);
-					makeQgisStyleForRaster(EColorTables.net.name(), p.basin, 0);
-				} else {
-					pm.message("Not overwriting existing basin cutout: " + p.basin);
-				}
-
-				if (p.shouldRun(p.basinResized)) {
-					pm.message("Resizing basin...");
-					OmsRasterResizer rr = new OmsRasterResizer();
-					rr.pm = pm;
-					GridCoverage2D basinGC = OmsRasterReader.readRaster(p.basin);
-					rr.inRaster = basinGC;
-					RegionMap rm = HMRaster.fromGridCoverage(basinGC).getDataRegionMap();
-					Envelope env = rm.toEnvelope();
-					Polygon poly = GeometryUtilities.createPolygonFromEnvelope(env);
-					SimpleFeatureCollection fc = FeatureUtilities
-							.featureCollectionFromGeometry(basinGC.getCoordinateReferenceSystem(), poly);
-					rr.inVector = fc;
-					rr.process();
-					OmsRasterWriter.writeRaster(p.basinResized, rr.outRaster);
-				} else {
-					pm.message("Not overwriting existing resized basin: " + p.basinResized);
-				}
-
-				if (p.shouldRun(p.basinPit)) {
-					pm.message("Cutting basin pit...");
-					OmsCutOut co = new OmsCutOut();
-					co.pm = pm;
-					co.inRaster = OmsRasterReader.readRaster(p.pit);
-					co.inMask = OmsRasterReader.readRaster(p.basinResized);
-					co.process();
-					OmsRasterWriter.writeRaster(p.basinPit, co.outRaster);
-					makeQgisStyleForRaster(EColorTables.elev.name(), p.basinPit, 0);
-				} else {
-					pm.message("Not overwriting existing basin pit: " + p.basinPit);
-				}
-
-				if (p.shouldRun(p.basinDrain)) {
-					pm.message("Cutting basin drain...");
-					OmsCutOut co = new OmsCutOut();
-					co.pm = pm;
-					co.inRaster = OmsRasterReader.readRaster(p.drain);
-					co.inMask = OmsRasterReader.readRaster(p.basinResized);
-					co.process();
-					OmsRasterWriter.writeRaster(p.basinDrain, co.outRaster);
-					makeQgisStyleForRaster(EColorTables.flow.name(), p.basinDrain, 0);
-				} else {
-					pm.message("Not overwriting existing basin drain: " + p.basinDrain);
-				}
-
-				if (p.shouldRun(p.basinTca)) {
-					pm.message("Cutting basin TCA...");
-					OmsCutOut co = new OmsCutOut();
-					co.pm = pm;
-					co.inRaster = OmsRasterReader.readRaster(p.tca);
-					co.inMask = OmsRasterReader.readRaster(p.basinResized);
-					co.process();
-					OmsRasterWriter.writeRaster(p.basinTca, co.outRaster);
-					makeQgisStyleForRaster(EColorTables.logarithmic.name(), p.basinTca, 0);
-				} else {
-					pm.message("Not overwriting existing basin TCA: " + p.basinTca);
-				}
-
-				if (p.shouldRun(p.basinNet)) {
-					pm.message("Cutting basin network...");
-					OmsCutOut co = new OmsCutOut();
-					co.pm = pm;
-					co.inRaster = OmsRasterReader.readRaster(p.net);
-					co.inMask = OmsRasterReader.readRaster(p.basinResized);
-					co.process();
-					OmsRasterWriter.writeRaster(p.basinNet, co.outRaster);
-					makeQgisStyleForRaster(EColorTables.net.name(), p.basinNet, 0);
-				} else {
-					pm.message("Not overwriting existing basin network: " + p.basinNet);
-				}
-
-				if (p.shouldRun(p.basinSkyview)) {
-					pm.message("Cutting basin skyview...");
-					OmsCutOut co = new OmsCutOut();
-					co.pm = pm;
-					co.inRaster = OmsRasterReader.readRaster(p.skyview);
-					co.inMask = OmsRasterReader.readRaster(p.basinResized);
-					co.process();
-					OmsRasterWriter.writeRaster(p.basinSkyview, co.outRaster);
-					makeQgisStyleForRaster(EColorTables.slope.name(), p.basinSkyview, 0);
-				} else {
-					pm.message("Not overwriting existing basin skyview: " + p.basinSkyview);
-				}
+//				if (p.shouldRun(p.basin)) {
+//					pm.message("Running ExtractBasin...");
+//					OmsExtractBasin eb = new OmsExtractBasin();
+//					eb.pm = pm;
+//					eb.inFlow = OmsRasterReader.readRaster(p.drain);
+//					eb.pEast = pOutletEasting;
+//					eb.pNorth = pOutletNorthing;
+//					eb.process();
+//					OmsRasterWriter.writeRaster(p.basin, eb.outBasin);
+//					makeQgisStyleForRaster(EColorTables.net.name(), p.basin, 0);
+//				} else {
+//					pm.message("Not overwriting existing basin cutout: " + p.basin);
+//				}
+//
+//				if (p.shouldRun(p.basinResized)) {
+//					pm.message("Resizing basin...");
+//					OmsRasterResizer rr = new OmsRasterResizer();
+//					rr.pm = pm;
+//					GridCoverage2D basinGC = OmsRasterReader.readRaster(p.basin);
+//					rr.inRaster = basinGC;
+//					RegionMap rm = HMRaster.fromGridCoverage(basinGC).getDataRegionMap();
+//					Envelope env = rm.toEnvelope();
+//					Polygon poly = GeometryUtilities.createPolygonFromEnvelope(env);
+//					SimpleFeatureCollection fc = FeatureUtilities
+//							.featureCollectionFromGeometry(basinGC.getCoordinateReferenceSystem(), poly);
+//					rr.inVector = fc;
+//					rr.process();
+//					OmsRasterWriter.writeRaster(p.basinResized, rr.outRaster);
+//				} else {
+//					pm.message("Not overwriting existing resized basin: " + p.basinResized);
+//				}
+//
+//				if (p.shouldRun(p.basinPit)) {
+//					pm.message("Cutting basin pit...");
+//					OmsCutOut co = new OmsCutOut();
+//					co.pm = pm;
+//					co.inRaster = OmsRasterReader.readRaster(p.pit);
+//					co.inMask = OmsRasterReader.readRaster(p.basinResized);
+//					co.process();
+//					OmsRasterWriter.writeRaster(p.basinPit, co.outRaster);
+//					makeQgisStyleForRaster(EColorTables.elev.name(), p.basinPit, 0);
+//				} else {
+//					pm.message("Not overwriting existing basin pit: " + p.basinPit);
+//				}
+//
+//				if (p.shouldRun(p.basinDrain)) {
+//					pm.message("Cutting basin drain...");
+//					OmsCutOut co = new OmsCutOut();
+//					co.pm = pm;
+//					co.inRaster = OmsRasterReader.readRaster(p.drain);
+//					co.inMask = OmsRasterReader.readRaster(p.basinResized);
+//					co.process();
+//					OmsRasterWriter.writeRaster(p.basinDrain, co.outRaster);
+//					makeQgisStyleForRaster(EColorTables.flow.name(), p.basinDrain, 0);
+//				} else {
+//					pm.message("Not overwriting existing basin drain: " + p.basinDrain);
+//				}
+//
+//				if (p.shouldRun(p.basinTca)) {
+//					pm.message("Cutting basin TCA...");
+//					OmsCutOut co = new OmsCutOut();
+//					co.pm = pm;
+//					co.inRaster = OmsRasterReader.readRaster(p.tca);
+//					co.inMask = OmsRasterReader.readRaster(p.basinResized);
+//					co.process();
+//					OmsRasterWriter.writeRaster(p.basinTca, co.outRaster);
+//					makeQgisStyleForRaster(EColorTables.logarithmic.name(), p.basinTca, 0);
+//				} else {
+//					pm.message("Not overwriting existing basin TCA: " + p.basinTca);
+//				}
+//
+//				if (p.shouldRun(p.basinNet)) {
+//					pm.message("Cutting basin network...");
+//					OmsCutOut co = new OmsCutOut();
+//					co.pm = pm;
+//					co.inRaster = OmsRasterReader.readRaster(p.net);
+//					co.inMask = OmsRasterReader.readRaster(p.basinResized);
+//					co.process();
+//					OmsRasterWriter.writeRaster(p.basinNet, co.outRaster);
+//					makeQgisStyleForRaster(EColorTables.net.name(), p.basinNet, 0);
+//				} else {
+//					pm.message("Not overwriting existing basin network: " + p.basinNet);
+//				}
+//
+//				if (p.shouldRun(p.basinSkyview)) {
+//					pm.message("Cutting basin skyview...");
+//					OmsCutOut co = new OmsCutOut();
+//					co.pm = pm;
+//					co.inRaster = OmsRasterReader.readRaster(p.skyview);
+//					co.inMask = OmsRasterReader.readRaster(p.basinResized);
+//					co.process();
+//					OmsRasterWriter.writeRaster(p.basinSkyview, co.outRaster);
+//					makeQgisStyleForRaster(EColorTables.slope.name(), p.basinSkyview, 0);
+//				} else {
+//					pm.message("Not overwriting existing basin skyview: " + p.basinSkyview);
+//				}
 
 				if (p.shouldRun(p.basinNetnum) || !db.hasTable(SqlName.m(GeoFrameSimpleTable.TOPOLOGY.tableName()))) {
 					pm.message("Running NetNumbering...");
@@ -308,7 +308,10 @@ public class ErmDataPreparator extends HMModel {
 					b.inNet = p.basinNet;
 					b.inSkyview = p.basinSkyview;
 					b.inBasins = p.basinNetbasinsDesired;
+					b.inStreamGauge = "/home/andreisd/Documents/project/uni/NON_SCALE/geomorfology/data/Noce/idrometri.shp";
+					b.inIDStreamGaugeFieldName = "idstazione";
 					b.inGeoframeDb = db;
+					
 					b.process();
 				}
 			}
@@ -392,7 +395,7 @@ public class ErmDataPreparator extends HMModel {
 
 	public static void main(String[] args) throws Exception {
 		ErmDataPreparator prep = new ErmDataPreparator();
-		prep.inDtm = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/inputs/dtm.tif";
+		prep.inDtm = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/dtm.tif";
 		prep.outGeopackageName = "geoframe_data.gpkg";
 		prep.doBasinCutout = true;
 		prep.pOutletEasting = 629720;
