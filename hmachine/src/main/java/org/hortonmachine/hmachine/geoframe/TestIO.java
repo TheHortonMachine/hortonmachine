@@ -7,21 +7,24 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
 
 public class TestIO extends HMModel {
 	// NOCE
-	public final static String FROM_TS = "2015-10-01 01:00:00";;
-	
-	public final static String TO_TS = "2023-10-01 01:00:00";
+	public final static String FROM_TS = "2015-10-01 01:00";;
+
+	public final static String TO_TS = "2015-11-01 01:00";
+
+	public final static String GEOFRAME_GPK = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/outputs/geoframe_data.gpkg";
+
 	public TestIO() {
-		String geoframeGpkg = "/home/andreisd/Desktop/geoframe_data.gpkg";
+		String geoframeGpkg = GEOFRAME_GPK;
 
 		try {
 
 			var gfImporter = new GeoFrameRawDataImporter();
 			// import the meteo network and the temperature (overwrite the previous)
 			gfImporter.stationType = StationType.METEO;
-			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/project_grid/data/meteo_data/temperature_gf_a.csv";
+			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/simulazioni/Centroid_NOCE_10km/data/meteo_data/temperature_gf_2.csv";
 			gfImporter.inIdField = "ID";
 			gfImporter.inElevationField = "z_dem";
-			gfImporter.doOverWrite = true;
+			gfImporter.doOverWrite = false;
 
 			gfImporter.inMeasurementsPointFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/project_grid/data/meteo_data/stations_tot.shp";
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
@@ -32,7 +35,7 @@ public class TestIO extends HMModel {
 			gfImporter.process();
 			// import the precipitation
 
-			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/project_grid/data/meteo_data/precipitation_cleaned.csv";
+			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/simulazioni/Centroid_NOCE_10km/data/meteo_data/precipitation_gf.csv";
 			gfImporter.doOverWrite = false;
 			gfImporter.inMeasurementsPointFilePath = null;
 			gfImporter.inGeoframeDBPath = geoframeGpkg;

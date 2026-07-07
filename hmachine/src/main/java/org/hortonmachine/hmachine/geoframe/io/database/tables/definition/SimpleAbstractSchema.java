@@ -43,7 +43,7 @@ public abstract class SimpleAbstractSchema extends AbstractSchema implements Geo
 		List<TableField> pk = primaryKey();
 
 		if (pk != null && !pk.isEmpty()) {
-			sb.append("    PRIMARY KEY (");
+			sb.append(", \n    PRIMARY KEY (");
 
 			for (int i = 0; i < pk.size(); i++) {
 				sb.append(pk.get(i).columnName());
@@ -64,9 +64,9 @@ public abstract class SimpleAbstractSchema extends AbstractSchema implements Geo
 				sb.append(" , \n  FOREIGN KEY (").append(fk.column().columnName()).append(") REFERENCES ")
 						.append(fk.refTable()).append("(").append(fk.refColumn().columnName()).append(")");
 
-				if (i < fks.size() - 1) {
-					sb.append(",");
-				}
+			//	if (i < fks.size() - 1) {
+			//		sb.append(",");
+			//	}
 
 				sb.append("\n");
 			}

@@ -1,6 +1,5 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.ClaibrationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema;

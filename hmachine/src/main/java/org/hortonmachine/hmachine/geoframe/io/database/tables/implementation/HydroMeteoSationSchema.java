@@ -1,7 +1,10 @@
 package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
+import java.util.List;
+
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema.ForeignKey;
 import org.locationtech.jts.geom.Point;
 
 /**
@@ -19,6 +22,8 @@ public class HydroMeteoSationSchema extends GeoAbstractSchema {
 		METEO, STREAM_GAUGE;
 	}
 
+	
+	
 	public enum HydroMeteoSation implements TableField {
 		GEOM("the_geom", Point.class), ID("id", Integer.class), ELEVATIOB("elevation", Double.class),
 		BASIN_ID("basin_id", Integer.class), TYPE("type", String.class);
@@ -40,6 +45,5 @@ public class HydroMeteoSationSchema extends GeoAbstractSchema {
 			// TODO Auto-generated method stub
 			return this.javaType;
 		}
-
 	}
 }

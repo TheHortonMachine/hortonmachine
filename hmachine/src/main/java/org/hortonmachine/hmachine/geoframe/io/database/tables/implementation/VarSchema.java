@@ -2,7 +2,7 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables.implementation;
 
 import java.util.List;
 
-import org.hortonmachine.hmachine.geoframe.io.database.CreateTableUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 
@@ -20,7 +20,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableFi
  * 
  * <p>
  * The table is automatically populated with a set of default variables by
- * {@link CreateTableUtils}:
+ * {@link TableUtils}:
  *
  * <ul>
  * <li>Precipitation (var_id = 2)</li>

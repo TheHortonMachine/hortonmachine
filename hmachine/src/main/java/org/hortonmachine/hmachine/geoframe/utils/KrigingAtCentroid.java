@@ -27,6 +27,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
+import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema.BasinCentroidField;
@@ -107,9 +108,6 @@ public class KrigingAtCentroid extends HMModel {
 
 	private int timestepIndex = 0;
 
-	private int threadPoolSize = 4;
-
-
 	@Initialize
 	public void init() {
 
@@ -127,10 +125,14 @@ public class KrigingAtCentroid extends HMModel {
 	@Execute
 	public void process() throws Exception {
 		HashMap<Integer, double[]> h = null;
+
+		inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
+		inGeoframeDb.open(inGeoframeDBPath);
 		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
 				HydroMeteoSation.TYPE.columnName() + "='" + StationType.METEO + "'");
 		var stations = new StationsSelection();
+
 		stations.inStations = inStations;
 		stations.doIncludezero = doIncludeZero;
 		stations.fStationsid = HydroMeteoSation.ID.columnName();
@@ -138,8 +140,8 @@ public class KrigingAtCentroid extends HMModel {
 		stations.doLogarithmic = doLogarithmic;
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
-
 			while (variableData != null) {
+				h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
 
 				processTimestep(variableData, stations, inStations, h);
 				timestepIndex++;
@@ -150,6 +152,7 @@ public class KrigingAtCentroid extends HMModel {
 			while (variableReader.next()) {
 
 				double[] variableData = variableReader.outData;
+				h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
 
 				processTimestep(variableData, stations, inStations, h);
 			}
@@ -159,7 +162,6 @@ public class KrigingAtCentroid extends HMModel {
 
 	private void processTimestep(double[] variableMap, StationsSelection stations, SimpleFeatureCollection inStations,
 			HashMap<Integer, double[]> h) throws Exception {
-		String pTs = variableReader.tCurrent;
 
 		var variogram = SingleStepVariogramEvaluator.createVariogram(stations, h, doDetrended, doIncludeZero,
 				doLogarithmic, variogramType, cutoffDivide, cutoffInput);

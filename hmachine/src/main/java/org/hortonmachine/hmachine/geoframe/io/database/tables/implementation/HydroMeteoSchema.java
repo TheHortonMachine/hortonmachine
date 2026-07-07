@@ -20,7 +20,7 @@ public class HydroMeteoSchema extends SimpleAbstractSchema {
 	}
 
 	public enum HydroMeteoField implements TableField {
-		TS("ts", Long.class), BASIN_ID("basin_id", Integer.class), VAR_ID("avr_id", Integer.class),
+		TS("ts", Long.class), BASIN_ID("basin_id", Integer.class), VAR_ID("var_id", Integer.class),
 		VALUE("value", Double.class), DATA_ORIGIN("data_origin", String.class);
 
 		private final String columnName;

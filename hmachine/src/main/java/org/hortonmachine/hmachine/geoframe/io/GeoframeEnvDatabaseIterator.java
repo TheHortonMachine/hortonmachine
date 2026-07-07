@@ -28,6 +28,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema.HydroMeteoField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.RawDataSchema.RawField;
 import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
@@ -81,6 +82,10 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	@Out
 	public String tCurrent;
 
+	@Description("The table")
+	@Out
+	public String table;
+
 //    @Description("The previous time read.")
 //    @Out
 //    public String tPrevious;
@@ -103,11 +108,14 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
 	private boolean doPreCache = false;
 	private double[][] cachedData = null;
-	private final static String TS = HydroMeteoField.TS.name();
-	private final static String BASIN_ID = HydroMeteoField.BASIN_ID.name();
-	private final static String VALUE = HydroMeteoField.VALUE.name();
-	private final static String VAR_ID = HydroMeteoField.VAR_ID.name();
-	private final static String TABLE = GeoFrameSimpleTable.HYDROMETEO.name();
+	private String tStsColumnName;
+
+	private String idColumnName;
+
+	private String valueColumnName;
+
+	private String varIdColumnName;
+
 
 	/**
 	 * Pre-caches all data in memory.
@@ -127,25 +135,27 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	}
 
 	private void ensureOpen() throws Exception {
+		defineTableAndField();
+
 		if (rs != null) {
 			return;
 		}
 		checkNull(pParameterId, db, pMaxBasinId);
 		outData = new double[pMaxBasinId + 1];
 
-		String sql = "SELECT %s, %s, %s FROM %s WHERE parameter_id = ?".formatted(TS, BASIN_ID, VALUE, TABLE);
+		String sql = "SELECT %s, %s, %s FROM %s WHERE %s = ?".formatted(tStsColumnName, idColumnName, valueColumnName, table, varIdColumnName);
 
 		if (tStart != null) {
 			// add start time condition
 			long startTs = str2ts(tStart);
-			sql += " AND " + TS + " >= " + startTs;
+			sql += " AND " + tStsColumnName + " >= " + startTs;
 		}
 		if (tEnd != null) {
 			// add end time condition
 			long endTs = str2ts(tEnd);
-			sql += " AND " + TS + "<= " + endTs;
+			sql += " AND " + tStsColumnName + "<= " + endTs;
 		}
-		sql += " ORDER BY %s, %s".formatted(TS, BASIN_ID);
+		sql += " ORDER BY %s, %s".formatted(tStsColumnName, idColumnName);
 		Connection connection = db.getJdbcConnection();
 
 		ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
@@ -169,6 +179,24 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 			rs = null;
 			ps = null;
 		}
+	}
+
+	private void defineTableAndField() {
+		// TODO Auto-generated method stub
+		if (table == GeoFrameSimpleTable.RAW_METEO.tableName()) {
+			tStsColumnName = RawField.TS.columnName();
+			idColumnName = RawField.STATION_ID.columnName();
+			valueColumnName = RawField.VALUE.columnName();
+			varIdColumnName =RawField.VAR_ID.columnName();
+
+
+		} else if (table == GeoFrameSimpleTable.HYDROMETEO.tableName()) {
+			tStsColumnName = HydroMeteoField.TS.columnName();
+			idColumnName = HydroMeteoField.BASIN_ID.columnName();
+			valueColumnName = HydroMeteoField.VALUE.columnName();
+			varIdColumnName =HydroMeteoField.VAR_ID.columnName();
+		}
+
 	}
 
 	public double[] getCached(int index) throws Exception {
@@ -207,11 +235,11 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
 		boolean hasNext = false;
 		do {
-			long ts = rs.getLong(TS);
+			long ts = rs.getLong(tStsColumnName);
 			currentT = ts;
 			tCurrent = ts2str(currentT);
-			int basinId = rs.getInt(BASIN_ID);
-			double value = rs.getDouble(VALUE);
+			int basinId = rs.getInt(idColumnName);
+			double value = rs.getDouble(valueColumnName);
 			outData[basinId] = value;
 
 			hasNext = true;
@@ -221,7 +249,7 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 				break;
 			}
 
-			long nextT = rs.getLong(TS);
+			long nextT = rs.getLong(tStsColumnName);
 			if (nextT != ts) {
 				break;
 			}

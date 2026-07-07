@@ -56,7 +56,7 @@ import oms3.annotations.Unit;
 @Status(40)
 @UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class VariableEvaluatorAtCentroid extends HMModel {
+public class PrestleyETAtCentroid extends HMModel {
 
 	// TODO it's betetr the string (to use also in OMS console or the db object)
 	@Description("Input database path")
@@ -70,11 +70,7 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 	@Description("reader")
 	@In
-	public GeoframeEnvDatabaseIterator tempReader;
-
-	@Description("reader")
-	@In
-	public GeoframeEnvDatabaseIterator pressureReader;
+	public GeoframeEnvDatabaseIterator inTempReader;
 
 	@In
 	public boolean isHourly;
@@ -126,24 +122,23 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 
 		if (inNetReader.isPreCachingMode()) {
 			double[] inNetData = inNetReader.getCached(timestepIndex);
-			double[] tempData = tempReader.getCached(timestepIndex);
-			double[] pressureData = pressureReader.getCached(timestepIndex);
-			while (inNetData != null && tempData != null && pressureData != null) {
-
-				processTimestep(inNetData, tempData, pressureData);
+			double[] tempData = inTempReader.getCached(timestepIndex);
+			// double[] pressureData = pressureReader.getCached(timestepIndex);
+			while (inNetData != null && tempData != null) {
+				processTimestep(inNetData, tempData, null);
 				timestepIndex++;
 				inNetData = inNetReader.getCached(timestepIndex);
-				tempData = tempReader.getCached(timestepIndex);
-				pressureData = pressureReader.getCached(timestepIndex);
+				tempData = inTempReader.getCached(timestepIndex);
+				// pressureData = pressureReader.getCached(timestepIndex);
 			}
 		} else {
-			while (inNetReader.next() && tempReader.next() && pressureReader.next()) {
+			while (inNetReader.next() && inTempReader.next()) {
 
 				double[] inNetData = inNetReader.getCached(timestepIndex);
-				double[] tempData = tempReader.getCached(timestepIndex);
-				double[] pressureData = pressureReader.getCached(timestepIndex);
+				double[] tempData = inTempReader.getCached(timestepIndex);
+				// double[] pressureData = pressureReader.getCached(timestepIndex);
 
-				processTimestep(inNetData, tempData, pressureData);
+				processTimestep(inNetData, tempData, null);
 			}
 		}
 
@@ -191,11 +186,14 @@ public class VariableEvaluatorAtCentroid extends HMModel {
 	private void processTimestepForBasin(double[] inNetMap, double[] temperatureMap, double[] pressureMap,
 			TopologyNode node) throws SQLException, Exception {
 		int basinId = node.basinId;
+		double net = inNetMap != null ? inNetMap[basinId] : -9999.0;
 
-		double et0 = OmsPresteyTaylorEtpModel.getET(pGmorn, pGnight, pAlpha, inNetMap[basinId],
-				OmsPresteyTaylorEtpModel.DEFAULT_HOURLY_NET_RADIATION, temperatureMap[basinId],
-				OmsPresteyTaylorEtpModel.DEFAULT_TEMPERATURE, pressureMap[basinId],
-				OmsPresteyTaylorEtpModel.DEFAULT_PRESSURE, isHourly, inNetReader.tCurrent);
+		double temperature = temperatureMap != null ? temperatureMap[basinId] : -9999.0;
+		double pressure = pressureMap != null ? pressureMap[basinId] : -9999.0;
+		double et0 = OmsPresteyTaylorEtpModel.getET(pGmorn, pGnight, pAlpha, net,
+				OmsPresteyTaylorEtpModel.DEFAULT_HOURLY_NET_RADIATION, temperature,
+				OmsPresteyTaylorEtpModel.DEFAULT_TEMPERATURE, pressure, OmsPresteyTaylorEtpModel.DEFAULT_PRESSURE,
+				isHourly, inNetReader.tCurrent);
 
 		try {
 			// insert(EnvironmentalVariableType.RADIATION.getId(), basinId,

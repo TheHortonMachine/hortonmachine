@@ -123,14 +123,14 @@ public class GeoFrameRawDataImporter extends HMModel {
 			}
 
 			if (inMeasurementsPointFilePath != null) {
-				SimpleFeatureCollection lakesFC = null;
-				lakesFC = getVector(inMeasurementsPointFilePath);
-				ids = new int[lakesFC.size()];
+				SimpleFeatureCollection inMeasurementPoints = null;
+				inMeasurementPoints = getVector(inMeasurementsPointFilePath);
+				ids = new int[inMeasurementPoints.size()];
 				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
-						.getSFBuilder(lakesFC.getSchema().getCoordinateReferenceSystem());
+						.getSFBuilder(inMeasurementPoints.getSchema().getCoordinateReferenceSystem());
 				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 				int i = 0;
-				try (SimpleFeatureIterator iterator = lakesFC.features()) {
+				try (SimpleFeatureIterator iterator = inMeasurementPoints.features()) {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
 						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
@@ -143,11 +143,11 @@ public class GeoFrameRawDataImporter extends HMModel {
 							elevation = (Double) sourceFeature.getAttribute(inElevationField);
 						}
 						builder.reset();
-						builder.add(geom);
-						builder.add(id);
-						builder.add(elevation);
-						builder.add(null); // basin_id
-						builder.add(stationType.name()); // type
+						builder.set(HydroMeteoSation.GEOM.columnName(), geom);
+						builder.set(HydroMeteoSation.ID.columnName(), id);
+						builder.set(HydroMeteoSation.ELEVATIOB.columnName(), elevation);
+						builder.set(HydroMeteoSation.BASIN_ID.columnName(), null); // basin_id
+						builder.set(HydroMeteoSation.TYPE.columnName(), stationType.name()); // type
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
@@ -155,7 +155,6 @@ public class GeoFrameRawDataImporter extends HMModel {
 						i++;
 					}
 				}
-
 				if (!inGeoframeDb.hasTable(stationTable)) {
 					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, outFC.getSchema(), stationTable, null,
 							false);
@@ -191,7 +190,6 @@ public class GeoFrameRawDataImporter extends HMModel {
 				while (reader.doProcess) {
 					reader.nextRecord();
 					HashMap<Integer, double[]> values = reader.outData;
-					System.out.println(reader.tCurrent);
 					for (int id : ids) {
 						double[] data = values.get(id);
 						if (data != null) {
