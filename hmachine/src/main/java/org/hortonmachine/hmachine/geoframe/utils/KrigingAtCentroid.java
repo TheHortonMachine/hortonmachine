@@ -202,7 +202,7 @@ public class KrigingAtCentroid extends HMModel {
 						pStmt.setInt(3, inVariableType);
 						pStmt.setDouble(4, value);
 						pStmt.addBatch();
-					}
+						System.out.println(variableReader.currentT);					}
 					pStmt.executeBatch();
 					conn.commit();
 					conn.setAutoCommit(autoCommit);
