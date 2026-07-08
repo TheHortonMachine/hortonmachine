@@ -13,6 +13,7 @@
 package org.hortonmachine.hmachine.geoframe.io.database.importer;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -20,17 +21,19 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.locationtech.jts.geom.Geometry;
 
@@ -51,7 +54,7 @@ import oms3.annotations.UI;
 @Status(40)
 @UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
-public class GeoFrameRawDataImporter extends HMModel {
+public class GeoframeRawDataImporter extends HMModel {
 
 	@Description("A colum with the measurement point id")
 	@In
@@ -95,10 +98,6 @@ public class GeoFrameRawDataImporter extends HMModel {
 
 	private ASpatialDb inGeoframeDb = null;
 
-	private IHMPreparedStatement ps = null;
-
-	private IHMConnection conn;
-
 	@Execute
 	public void process() {
 
@@ -108,23 +107,48 @@ public class GeoFrameRawDataImporter extends HMModel {
 		try {
 			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
+
 			int[] ids = null;
 			var stationTable = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName();
 			var dataTable = GeoFrameSimpleTable.RAW_METEO.getSchema().getSQLName();
+			var varTable = GeoFrameSimpleTable.VARIABLE.getSchema().getSQLName();
 
 			if (doOverWrite) {
+				if (inGeoframeDb.hasTable(varTable)) {
+					inGeoframeDb.executeInsertUpdateDeleteSql("DROP TABLE " + varTable);
+				}
 				if (inGeoframeDb.hasTable(dataTable)) {
 					inGeoframeDb.executeInsertUpdateDeleteSql("DROP TABLE " + dataTable);
 				}
-				// TODO drop for geopackage!!!!
 				if (inGeoframeDb.hasTable(stationTable)) {
-					inGeoframeDb.executeInsertUpdateDeleteSql("DROP TABLE " + stationTable);
+					if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+						gpDb.deleteGeoTable(stationTable);
+					} else {
+						inGeoframeDb.executeInsertUpdateDeleteSql("DROP TABLE " + stationTable);
+					}
 				}
 			}
 
+			// make sure the output tables exist
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.VARIABLE.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.VARIABLE.getSchema().createTableSql();
+				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+				String insertSql = GeoFrameSimpleTable.VARIABLE.getSchema().buildInsertAll();
+
+				List<EnvironmentalVariable> fixedEnviramentalVariables = TableUtils
+						.getFixedEnviramentalVariable(timeResolution);
+				for (EnvironmentalVariable var : fixedEnviramentalVariables) {
+					inGeoframeDb.executeInsertUpdateDeletePreparedSql(insertSql,
+							new Object[] { var.varId(), var.name(), var.unit(), var.description() });
+				}
+			}
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.RAW_METEO.getSchema().createTableSql();
+				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+			}
+
 			if (inMeasurementsPointFilePath != null) {
-				SimpleFeatureCollection inMeasurementPoints = null;
-				inMeasurementPoints = getVector(inMeasurementsPointFilePath);
+				SimpleFeatureCollection inMeasurementPoints = getVector(inMeasurementsPointFilePath);
 				ids = new int[inMeasurementPoints.size()];
 				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
 						.getSFBuilder(inMeasurementPoints.getSchema().getCoordinateReferenceSystem());
@@ -143,11 +167,11 @@ public class GeoFrameRawDataImporter extends HMModel {
 							elevation = (Double) sourceFeature.getAttribute(inElevationField);
 						}
 						builder.reset();
-						builder.set(HydroMeteoSation.GEOM.columnName(), geom);
-						builder.set(HydroMeteoSation.ID.columnName(), id);
-						builder.set(HydroMeteoSation.ELEVATION.columnName(), elevation);
-						builder.set(HydroMeteoSation.BASIN_ID.columnName(), null); // basin_id
-						builder.set(HydroMeteoSation.TYPE.columnName(), stationType.name()); // type
+						builder.set(HydroMeteoStation.GEOM.columnName(), geom);
+						builder.set(HydroMeteoStation.ID.columnName(), id);
+						builder.set(HydroMeteoStation.ELEVATION.columnName(), elevation);
+						builder.set(HydroMeteoStation.BASIN_ID.columnName(), null); // basin_id
+						builder.set(HydroMeteoStation.TYPE.columnName(), stationType.name()); // type
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
@@ -166,7 +190,7 @@ public class GeoFrameRawDataImporter extends HMModel {
 				QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from "
 						+ GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " where type='" + stationType.name() + "'",
 						-1);
-				int idIndex = result.names.indexOf(HydroMeteoSation.ID.columnName());
+				int idIndex = result.names.indexOf(HydroMeteoStation.ID.columnName());
 
 				var rows = result.data;
 				int l = result.data.size();
@@ -181,55 +205,46 @@ public class GeoFrameRawDataImporter extends HMModel {
 				reader.file = inMeasurementDataFilePath;
 				reader.idfield = "ID";
 				reader.tStart = inStartDate;
-				reader.tEnd = inStartDate;
+				reader.tEnd = inEndDate;
 				reader.fileNovalue = "-9999";
 				// TODO this is the right way for hourly and daily but not for weekly or and
 				// yearly
 				reader.tTimestep = timeResolution.toMinutes();
 				reader.initProcess();
-				while (reader.doProcess) {
-					reader.nextRecord();
-					HashMap<Integer, double[]> values = reader.outData;
-					for (int id : ids) {
-						double[] data = values.get(id);
-						if (data != null) {
-							long ts = formatter.parseMillis(reader.tCurrent);
-							insert(ts, id, data[0]);
+
+				String insertSql = GeoFrameSimpleTable.RAW_METEO.getSchema().buildInsertAll();
+				int[] _ids = ids;
+				inGeoframeDb.execOnConnection(conn -> {
+					boolean autoCommit = conn.getAutoCommit();
+					conn.setAutoCommit(false);
+					try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+						while (reader.doProcess) {
+							reader.nextRecord();
+							HashMap<Integer, double[]> values = reader.outData;
+							for (int id : _ids) {
+								double[] data = values.get(id);
+								if (data != null) {
+									long ts = formatter.parseMillis(reader.tCurrent);
+									pStmt.setLong(1, ts);
+									pStmt.setInt(2, id);
+									pStmt.setInt(3, inVariableType);
+									pStmt.setDouble(4, data[0]);
+									pStmt.addBatch();
+								}
+							}
 						}
+						pStmt.executeBatch();
+						conn.commit();
+						conn.setAutoCommit(autoCommit);
 					}
-				}
+					return null;
+				});
+
 				reader.close();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	// TODO copied from the simulation writer
-	private void ensureOpen() throws Exception {
-		if (ps != null) {
-			return;
-		}
-		// make sure the output table exists
-		String sql = GeoFrameSimpleTable.RAW_METEO.getSchema().createTableSql();
-		inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-		String insertSql = GeoFrameSimpleTable.RAW_METEO.getSchema().buildInsertAll();
-		conn = inGeoframeDb.getConnectionInternal();
-		ps = conn.prepareStatement(insertSql);
-	}
-
-	public void insert(long currentT, int stationId, double value) throws Exception {
-		ensureOpen();
-		conn.enableAutocommit(false);
-		ps.setLong(1, currentT);
-		ps.setInt(2, stationId);
-		ps.setInt(3, inVariableType);
-		ps.setDouble(4, value);
-
-		ps.addBatch();
-		ps.executeBatch();
-		conn.commit();
-		conn.enableAutocommit(true);
 	}
 
 }

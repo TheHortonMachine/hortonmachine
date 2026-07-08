@@ -4,11 +4,8 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
-import org.hortonmachine.hmachine.geoframe.utils.KrigingAtCentroid;
 import org.hortonmachine.hmachine.geoframe.utils.PrestleyETAtCentroid;
 
 public class TestPrestltEt extends HMModel {
@@ -21,20 +18,20 @@ public class TestPrestltEt extends HMModel {
 			db.open(geoframeGpkg);
 			var temperatureReader = new GeoframeEnvDatabaseIterator();
 			temperatureReader.db = db;
-			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId(); 
+			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId();
 
-			temperatureReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			temperatureReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			temperatureReader.tStart = TestIO.FROM_TS + ":00";
 			temperatureReader.tEnd = TestIO.TO_TS + ":00";
-			temperatureReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
+			temperatureReader.doRawData = false;
 
 			var netReader = new GeoframeEnvDatabaseIterator();
 			netReader.db = db;
-			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId(); 
-			netReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId();
+			netReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			netReader.tStart = TestIO.FROM_TS + ":00";
 			netReader.tEnd = TestIO.TO_TS + ":00";
-			netReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
+			netReader.doRawData = false;
 
 			var ptEt = new PrestleyETAtCentroid();
 			ptEt.inGeoframeDBPath = geoframeGpkg;

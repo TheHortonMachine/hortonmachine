@@ -401,14 +401,18 @@ public class ErmDataPreparator extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
+		String workspacePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
 		ErmDataPreparator prep = new ErmDataPreparator();
-		prep.inDtm = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/dtm.tif";
+		prep.inDtm = workspacePath + "dtm.tif";
 		prep.outGeopackageName = "geoframe_data.gpkg";
 		prep.doBasinCutout = true;
+		prep.pDrainThreshold = 2000;
+		prep.pDesiredArea = 1_000_000.0;
+		prep.pDesiredAreaDelta = 20.0;
 		prep.pOutletEasting = 629720;
 		prep.pOutletNorthing = 5127690;
 		prep.pStreamGaugeIDField = "idstazione";
-		prep.inStreamGauge = "/home/andreisd/Documents/project/uni/NON_SCALE/geomorfology/data/Noce/idrometri.shp";
+		prep.inStreamGauge = workspacePath + "idrometri.shp";
 		prep.process();
 	}
 }

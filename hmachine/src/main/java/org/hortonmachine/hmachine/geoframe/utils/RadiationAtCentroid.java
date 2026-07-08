@@ -176,7 +176,7 @@ public class RadiationAtCentroid extends HMModel {
 			double[] variableData = temperatureReader.getCached(timestepIndex);
 			while (variableData != null) {
 				var h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
-				processTimestep(h, temperatureReader.currentT);
+			//	processTimestep(h, temperatureReader.currentT);
 				timestepIndex++;
 				variableData = temperatureReader.getCached(timestepIndex);
 

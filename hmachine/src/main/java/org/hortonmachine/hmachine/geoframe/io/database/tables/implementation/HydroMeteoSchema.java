@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
@@ -32,12 +31,10 @@ public class HydroMeteoSchema extends SimpleAbstractSchema {
 		}
 
 		public String columnName() {
-			// TODO Auto-generated method stub
 			return columnName;
 		}
 
 		public Class<?> javaType() {
-			// TODO Auto-generated method stub
 			return javaType;
 		}
 
@@ -49,16 +46,14 @@ public class HydroMeteoSchema extends SimpleAbstractSchema {
 
 	@Override
 	protected List<TableField> primaryKey() {
-		// TODO Auto-generated method stub
 		return List.of(HydroMeteoField.TS, HydroMeteoField.BASIN_ID, HydroMeteoField.VAR_ID);
 	}
 
 	@Override
 	protected List<ForeignKey> foreignKeys() {
-		// TODO Auto-generated method stub
 		return List.of(
 				new ForeignKey(HydroMeteoField.BASIN_ID, GeoFrameGeoTable.BASIN.name(),
 						BasinMultiPolygonField.BASIN_ID),
-				new ForeignKey(HydroMeteoField.VAR_ID, GeoFrameSimpleTable.VAR.name(), VarSchema.VarField.VAR_ID));
+				new ForeignKey(HydroMeteoField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarSchema.VarField.VAR_ID));
 	}
 }

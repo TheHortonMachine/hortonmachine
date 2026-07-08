@@ -23,23 +23,23 @@ public class TestRadiation extends HMModel {
 			var temperatureReader = new GeoframeEnvDatabaseIterator();
 			temperatureReader.db = db;
 			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId(); // temperature
-			temperatureReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			temperatureReader.pMaxId= IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			temperatureReader.tStart = TestIO.FROM_TS + ":00";
 			temperatureReader.tEnd = TestIO.TO_TS + ":00";
-			temperatureReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
+			temperatureReader.doRawData = false;
 
 			var netReader = new GeoframeEnvDatabaseIterator();
 			netReader.db = db;
 			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId(); // temperature
-			netReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			netReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			netReader.tStart = TestIO.FROM_TS + ":00";
 			netReader.tEnd = TestIO.TO_TS + ":00";
-			netReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
+			netReader.doRawData = false;
 ;
 
 			var radiation = new RadiationAtCentroid();
 			radiation.inGeoframeDBPath = geoframeGpkg;
-			radiation.variableReader = temperatureReader;
+			radiation.temperatureReader = temperatureReader;
 			radiation.doHourly = true;
 			radiation.process();
 

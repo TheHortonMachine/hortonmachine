@@ -55,8 +55,8 @@ import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
@@ -787,7 +787,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				: SubbasinsTypeField.HILLSOLOPE.toString();
 
 		String id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
-		Object[] basinValues = new Object[] { dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2,
+		Object[] basinValues = new Object[] { dumpBasin, basinNum, elev, avgElev, 
 				mainNetLength, skyview, featureUserType, id };
 		basinsBuilder.addAll(basinValues);
 		SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
@@ -803,8 +803,6 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			}
 		}
 
-		Object[] centroidValues = new Object[] { basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2,
-				mainNetLength, skyview };
 		// dump single centroid
 		if (inGeoframeDb == null) {
 			DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
@@ -1138,10 +1136,10 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				// @todo check if the field exist
 				String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
 
-				streamGaugeBuilder.set(HydroMeteoSation.GEOM.columnName(), first.getDefaultGeometry());
-				streamGaugeBuilder.set(HydroMeteoSation.ID.columnName(), id);
-				streamGaugeBuilder.set(HydroMeteoSation.BASIN_ID.columnName(), basinId);
-				streamGaugeBuilder.set(HydroMeteoSation.TYPE.columnName(), StationType.STREAM_GAUGE.name());
+				streamGaugeBuilder.set(HydroMeteoStation.GEOM.columnName(), first.getDefaultGeometry());
+				streamGaugeBuilder.set(HydroMeteoStation.ID.columnName(), id);
+				streamGaugeBuilder.set(HydroMeteoStation.BASIN_ID.columnName(), basinId);
+				streamGaugeBuilder.set(HydroMeteoStation.TYPE.columnName(), StationType.STREAM_GAUGE.name());
 
 				SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
 				streamGaugeFC2.add(newFeature);

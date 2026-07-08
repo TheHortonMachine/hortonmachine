@@ -19,7 +19,6 @@ import org.geotools.api.data.DataSourceException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -31,8 +30,8 @@ import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
 import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
 import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.SingleStepVariogramEvaluator;
@@ -59,7 +58,7 @@ public class KrigingAtCentroid extends HMModel {
 
 	// TODO it's betetr the string (to use also in OMS console or the db object)
 	@Description("Input database path")
-	@UI(HMConstants.FILEIN_UI_HINT_DBF)
+	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGeoframeDBPath = null;
 
@@ -102,10 +101,6 @@ public class KrigingAtCentroid extends HMModel {
 
 	private ASpatialDb inGeoframeDb = null;
 
-	private IHMPreparedStatement ps = null;
-
-	private IHMConnection conn;
-
 	private int timestepIndex = 0;
 
 	@Initialize
@@ -118,6 +113,12 @@ public class KrigingAtCentroid extends HMModel {
 			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
 			check();
+			
+			// make sure the output table exists
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
+				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+			}
 		} catch (Exception e) {
 		}
 	}
@@ -130,13 +131,13 @@ public class KrigingAtCentroid extends HMModel {
 		inGeoframeDb.open(inGeoframeDBPath);
 		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
-				HydroMeteoSation.TYPE.columnName() + "='" + StationType.METEO + "'");
+				HydroMeteoStation.TYPE.columnName() + "='" + StationType.METEO + "'");
 		var stations = new StationsSelection();
 
 		stations.inStations = inStations;
 		stations.doIncludezero = doIncludeZero;
-		stations.fStationsid = HydroMeteoSation.ID.columnName();
-		stations.fStationsZ = HydroMeteoSation.ELEVATION.columnName();
+		stations.fStationsid = HydroMeteoStation.ID.columnName();
+		stations.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
 		stations.doLogarithmic = doLogarithmic;
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
@@ -170,8 +171,8 @@ public class KrigingAtCentroid extends HMModel {
 		SimpleFeatureCollection inBasinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
 		kriging.inStations = inStations;
-		kriging.fStationsid = HydroMeteoSation.ID.columnName();
-		kriging.fStationsZ = HydroMeteoSation.ELEVATION.columnName();
+		kriging.fStationsid = HydroMeteoStation.ID.columnName();
+		kriging.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
 		kriging.inInterpolate = inBasinsFC;
 		kriging.fInterpolateid = BasinMultiPolygonField.BASIN_ID.columnName();
 		kriging.fPointZ = BasinMultiPolygonField.AVG_ELEVATION_M.columnName();
@@ -187,13 +188,30 @@ public class KrigingAtCentroid extends HMModel {
 		kriging.execute();
 
 		try {
+			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
 			HashMap<Integer, double[]> out = kriging.outData;
 
-			for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
-				int basinId = entry.getKey();
-				double value = entry.getValue()[0];
-				insert(variableReader.currentT, basinId, value);
-			}
+
+			
+			inGeoframeDb.execOnConnection(conn -> {
+				boolean autoCommit = conn.getAutoCommit();
+				conn.setAutoCommit(false);
+				try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+					for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
+						int basinId = entry.getKey();
+						double value = entry.getValue()[0];
+						pStmt.setLong(1, variableReader.currentT);
+						pStmt.setInt(2, basinId);
+						pStmt.setInt(3, inVariableType);
+						pStmt.setDouble(4, value);
+						pStmt.addBatch();
+					}
+					pStmt.executeBatch();
+					conn.commit();
+					conn.setAutoCommit(autoCommit);
+				}
+				return null;
+			});
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -212,31 +230,4 @@ public class KrigingAtCentroid extends HMModel {
 			e.printStackTrace();
 		}
 	}
-
-	private void ensureOpen() throws Exception {
-		if (ps != null) {
-			return;
-		}
-		// make sure the output table exists
-		String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
-		inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-		String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
-		conn = inGeoframeDb.getConnectionInternal();
-		ps = conn.prepareStatement(insertSql);
-	}
-
-	public void insert(long currentT, int basinId, double value) throws Exception {
-		ensureOpen();
-		conn.enableAutocommit(false);
-		ps.setLong(1, currentT);
-		ps.setInt(2, basinId);
-		ps.setInt(3, inVariableType);
-		ps.setDouble(4, value);
-
-		ps.addBatch();
-		ps.executeBatch();
-		conn.commit();
-		conn.enableAutocommit(true);
-	}
-
 }

@@ -44,7 +44,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A time, basin id and value per timestep iterator, from db.")
+@Description("A time, basin/station id and value per timestep iterator, from db.")
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
 @Keywords("time series, iterator, basin, value, database")
 @Label("Time Basin Value Db Iterator")
@@ -62,9 +62,9 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	@In
 	public Integer pParameterId = null;
 
-	@Description("The maximum basin id in play.")
+	@Description("The maximum id in play.")
 	@In
-	public Integer pMaxBasinId = null;
+	public Integer pMaxId = null;
 
 	@Description("Novalue")
 	@In
@@ -82,9 +82,9 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	@Out
 	public String tCurrent;
 
-	@Description("The table")
-	@Out
-	public String table;
+	@Description("Toggle to read raw or interpolated meteo data")
+	@In
+	public boolean doRawData = false;
 
 //    @Description("The previous time read.")
 //    @Out
@@ -116,6 +116,8 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
 	private String varIdColumnName;
 
+	
+	private String table; 
 
 	/**
 	 * Pre-caches all data in memory.
@@ -140,8 +142,8 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 		if (rs != null) {
 			return;
 		}
-		checkNull(pParameterId, db, pMaxBasinId);
-		outData = new double[pMaxBasinId + 1];
+		checkNull(pParameterId, db, pMaxId);
+		outData = new double[pMaxId + 1];
 
 		String sql = "SELECT %s, %s, %s FROM %s WHERE %s = ?".formatted(tStsColumnName, idColumnName, valueColumnName, table, varIdColumnName);
 
@@ -182,15 +184,14 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 	}
 
 	private void defineTableAndField() {
-		// TODO Auto-generated method stub
-		if (table == GeoFrameSimpleTable.RAW_METEO.tableName()) {
+		if (doRawData) {
+			table = GeoFrameSimpleTable.RAW_METEO.tableName();
 			tStsColumnName = RawField.TS.columnName();
 			idColumnName = RawField.STATION_ID.columnName();
 			valueColumnName = RawField.VALUE.columnName();
 			varIdColumnName =RawField.VAR_ID.columnName();
-
-
-		} else if (table == GeoFrameSimpleTable.HYDROMETEO.tableName()) {
+		} else {
+			table = GeoFrameSimpleTable.HYDROMETEO.tableName();
 			tStsColumnName = HydroMeteoField.TS.columnName();
 			idColumnName = HydroMeteoField.BASIN_ID.columnName();
 			valueColumnName = HydroMeteoField.VALUE.columnName();
