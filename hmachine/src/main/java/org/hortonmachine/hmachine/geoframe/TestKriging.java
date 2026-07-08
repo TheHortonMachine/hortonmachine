@@ -31,6 +31,8 @@ public class TestKriging extends HMModel {
 					GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " WHERE " + //
 					HydroMeteoStation.TYPE.columnName() + " = '" + HydroMeteoStationSchema.StationType.METEO + "'").intValue();
 			valueReader.pMaxId = maxId;
+			valueReader.preCacheData();
+			
 			var krigingInterpolator = new KrigingAtCentroid();
 			krigingInterpolator.inGeoframeDBPath = geoframeGpkg;
 			krigingInterpolator.inVariableType = VarSchema.EnvironmentalVariableType.TEMPERATURE.getId();
