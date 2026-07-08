@@ -1,7 +1,6 @@
 package org.hortonmachine.gears;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
@@ -20,14 +19,13 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
-import org.hortonmachine.gears.utils.crs.fixes.HMCylindricalEqualArea;
 import org.junit.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -68,28 +66,17 @@ public class TestCrs {
         CoordinateReferenceSystem targetCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", true);
 
         MathTransform to4326 = CRS.findMathTransform(sourceCrs, targetCrs, true);
-        MathTransform to4326fixed = HMCylindricalEqualArea.createEpsg6933Inverse();
         MathTransform to6933 = CRS.findMathTransform(targetCrs, sourceCrs, true);
-        MathTransform to6933fixed = HMCylindricalEqualArea.createEpsg6933Forward();
 
         GeometryFactory gf = new GeometryFactory();
 
-        // THIS SHOWS THE CURRENT GEOTOOLS BUG BEHAVIOR
         Point p6933 = gf.createPoint(new Coordinate(964862.802509, 1269436.7435378));
         Point p4326 = (Point) JTS.transform(p6933, to4326);
         Point p6933Back = (Point) JTS.transform(p4326, to6933);
-        assertNotEquals(p4326.getX(), 10.0, TOL_DEGREES);
-        assertNotEquals(p4326.getY(), 10.0, TOL_DEGREES);
+        assertEquals(p4326.getX(), 10.0, TOL_DEGREES);
+        assertEquals(p4326.getY(), 10.0, TOL_DEGREES);
         assertEquals(p6933.getX(), p6933Back.getX(), TOL_METERS);
         assertEquals(p6933.getY(), p6933Back.getY(), TOL_METERS);
-
-        // THIS SHOWS THE FIXED BEHAVIOR
-        Point p4326fixed = (Point) JTS.transform(p6933, to4326fixed);
-        Point p6933BackFixed = (Point) JTS.transform(p4326fixed, to6933fixed);
-        assertEquals(p4326fixed.getX(), 10.0, TOL_DEGREES);
-        assertEquals(p4326fixed.getY(), 10.0, TOL_DEGREES);
-        assertEquals(p6933.getX(), p6933BackFixed.getX(), TOL_METERS);
-        assertEquals(p6933.getY(), p6933BackFixed.getY(), TOL_METERS);
     }
 
     @Test
