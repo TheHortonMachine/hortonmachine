@@ -12,7 +12,7 @@ import org.locationtech.jts.geom.Point;
 public class HydroMeteoStationSchema extends GeoAbstractSchema {
 
 	public HydroMeteoStationSchema() {
-		super("hydro_meteo_station", HydroMeteoStation.class);
+		super("station", HydroMeteoStation.class);
 	}
 
 	public enum StationType {

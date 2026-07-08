@@ -10,10 +10,10 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Hyd
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.utils.KrigingAtCentroid;
 
-public class TestKriging extends HMModel {
+public class ErmKriging extends HMModel {
 	// NOCE
 
-	public TestKriging() {
+	public ErmKriging() {
 		String geoframeGpkg = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
 		try {
 			
@@ -47,7 +47,7 @@ public class TestKriging extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new TestKriging();
+		new ErmKriging();
 	}
 
 }

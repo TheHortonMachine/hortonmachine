@@ -15,7 +15,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Bas
  */
 public class HydroMeteoSchema extends SimpleAbstractSchema {
 	public HydroMeteoSchema() {
-		super("hydrometeo_data", HydroMeteoField.class);
+		super("basin_data", HydroMeteoField.class);
 	}
 
 	public enum HydroMeteoField implements TableField {
