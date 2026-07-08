@@ -3,6 +3,7 @@ package org.hortonmachine.hmachine.geoframe;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.database.importer.GeoFrameRawDataImporter;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 
 public class TestIO extends HMModel {
@@ -30,7 +31,7 @@ public class TestIO extends HMModel {
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
 			gfImporter.inStartDate = FROM_TS;
 			gfImporter.inEndDate = TO_TS;
-			gfImporter.inVariableType = 4;
+			gfImporter.inVariableType = EnvironmentalVariableType.TEMPERATURE.getId();
 			gfImporter.timeResolution = TimeResolution.HOURLY;
 			gfImporter.process();
 			// import the precipitation
@@ -39,7 +40,7 @@ public class TestIO extends HMModel {
 			gfImporter.doOverWrite = false;
 			gfImporter.inMeasurementsPointFilePath = null;
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
-			gfImporter.inVariableType = 2;
+			gfImporter.inVariableType = EnvironmentalVariableType.PRECIPITATION.getId();
 			gfImporter.process();
 			// import the stream gauge and the first stream gauge (overwrite the previous)
 			gfImporter.stationType = StationType.STREAM_GAUGE;
@@ -52,7 +53,7 @@ public class TestIO extends HMModel {
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
 			gfImporter.inStartDate = null;
 			gfImporter.inEndDate = null;
-			gfImporter.inVariableType = 5;
+			gfImporter.inVariableType = EnvironmentalVariableType.DISCHARGE.getId();
 			gfImporter.timeResolution = TimeResolution.HOURLY;
 			gfImporter.process();
 
@@ -60,7 +61,7 @@ public class TestIO extends HMModel {
 			gfImporter.doOverWrite = false;
 			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/project_grid/data/discharge_data/Q_vermiglio.csv";
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
-			gfImporter.inVariableType = 5;
+			gfImporter.inVariableType = EnvironmentalVariableType.DISCHARGE.getId();
 			gfImporter.timeResolution = TimeResolution.HOURLY;
 			gfImporter.process();
 

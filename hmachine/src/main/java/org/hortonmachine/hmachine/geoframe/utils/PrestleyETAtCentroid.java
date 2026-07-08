@@ -156,6 +156,8 @@ public class PrestleyETAtCentroid extends HMModel {
 		Set<TopologyNode> nodes = new HashSet<>();
 
 		// do parallel processing with threadPoolSize threads
+		TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
+
 		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
 		CountDownLatch latch = new CountDownLatch(nodes.size());
 		for (TopologyNode node : nodes) {
@@ -208,7 +210,7 @@ public class PrestleyETAtCentroid extends HMModel {
 
 	private void check() {
 		try {
-			if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN_POINT.tableName())
+			if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
 					&& inGeoframeDb.hasTable(GeoFrameGeoTable.HYDRO_METEO_STATION.tableName())
 					&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
 				throw new DataSourceException("no suitable tables are present in db check");

@@ -30,7 +30,7 @@ import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema.BasinCentroidField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
 import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
@@ -136,7 +136,7 @@ public class KrigingAtCentroid extends HMModel {
 		stations.inStations = inStations;
 		stations.doIncludezero = doIncludeZero;
 		stations.fStationsid = HydroMeteoSation.ID.columnName();
-		stations.fStationsZ = HydroMeteoSation.ELEVATIOB.columnName();
+		stations.fStationsZ = HydroMeteoSation.ELEVATION.columnName();
 		stations.doLogarithmic = doLogarithmic;
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
@@ -167,14 +167,14 @@ public class KrigingAtCentroid extends HMModel {
 				doLogarithmic, variogramType, cutoffDivide, cutoffInput);
 
 		KrigingPointCase kriging = new KrigingPointCase();
-		SimpleFeatureCollection pointFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
-				GeoFrameGeoTable.BASIN_POINT.getSchema().getSQLName(), -1, -1, null, null);
+		SimpleFeatureCollection inBasinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
+				GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
 		kriging.inStations = inStations;
 		kriging.fStationsid = HydroMeteoSation.ID.columnName();
-		kriging.fStationsZ = HydroMeteoSation.ELEVATIOB.columnName();
-		kriging.inInterpolate = pointFC;
-		kriging.fInterpolateid = BasinCentroidField.BASIN_ID.columnName();
-		kriging.fPointZ = BasinCentroidField.AVG_ELEVATION_M.columnName();
+		kriging.fStationsZ = HydroMeteoSation.ELEVATION.columnName();
+		kriging.inInterpolate = inBasinsFC;
+		kriging.fInterpolateid = BasinMultiPolygonField.BASIN_ID.columnName();
+		kriging.fPointZ = BasinMultiPolygonField.AVG_ELEVATION_M.columnName();
 
 		kriging.inNumCloserStations = 8;
 		kriging.doDetrended = doDetrended;
@@ -203,7 +203,7 @@ public class KrigingAtCentroid extends HMModel {
 
 	private void check() {
 		try {
-			if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN_POINT.tableName())
+			if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
 					&& inGeoframeDb.hasTable(GeoFrameGeoTable.HYDRO_METEO_STATION.tableName())
 					&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
 				throw new DataSourceException("no suitable tables are present in db check");

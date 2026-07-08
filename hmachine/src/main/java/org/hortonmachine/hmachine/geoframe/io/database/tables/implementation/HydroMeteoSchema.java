@@ -7,7 +7,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.AbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.TableField;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema.BasinMultiPolygonField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 
 /**
  * 

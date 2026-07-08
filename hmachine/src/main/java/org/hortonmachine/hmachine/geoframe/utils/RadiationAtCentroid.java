@@ -19,7 +19,7 @@ import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema.BasinCentroidField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.radiation.NetRadiationPointCase;
 import org.hortonmachine.hmachine.geoframe.utils.radiation.LwrbPointCase.Lwrb;
@@ -80,7 +80,7 @@ public class RadiationAtCentroid extends HMModel {
 			throw new IllegalArgumentException();
 		}
 
-		if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN_POINT.tableName())
+		if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
 				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.tableName())
 				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
 			throw new DataSourceException("no suitable tables are present in db check");
@@ -88,8 +88,8 @@ public class RadiationAtCentroid extends HMModel {
 
 		inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 		inGeoframeDb.open(inGeoframeDBPath);
-		var inPoint = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
-				GeoFrameGeoTable.BASIN_POINT.getSchema().getSQLName(), -1, -1, null, null);
+		var inBasinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
+				GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
 
 		var skyview = getRaster(inSkyview);
 		lwrb.X = x;
@@ -98,17 +98,17 @@ public class RadiationAtCentroid extends HMModel {
 		lwrb.A_Cloud = aCloud;
 		lwrb.B_Cloud = bCloud;
 		lwrb.model = lwrvModeel;
-		lwrb.fStationsid = BasinCentroidField.BASIN_ID.columnName();
-		lwrb.inStations = inPoint;
+		lwrb.fStationsid = BasinMultiPolygonField.BASIN_ID.columnName();
+		lwrb.inStations = inBasinsFC;
 		lwrb.inSkyview = skyview;
 
 		List<Integer> ids = new ArrayList<>();
 
-		try (SimpleFeatureIterator it = inPoint.features()) {
+		try (SimpleFeatureIterator it = inBasinsFC.features()) {
 			while (it.hasNext()) {
 				SimpleFeature feature = it.next();
 
-				Integer id = ((Number) feature.getAttribute(BasinCentroidField.BASIN_ID.columnName())).intValue();
+				Integer id = ((Number) feature.getAttribute(BasinMultiPolygonField.BASIN_ID.columnName())).intValue();
 				ids.add(id);
 			}
 		}
@@ -120,8 +120,8 @@ public class RadiationAtCentroid extends HMModel {
 		lwrb.inHumidityValues = inNan;
 
 		swrb.doHourly = doHourly;
-		swrb.fStationsid = BasinCentroidField.BASIN_ID.columnName();
-		swrb.inStations = inPoint;
+		swrb.fStationsid = BasinMultiPolygonField.BASIN_ID.columnName();
+		swrb.inStations = inBasinsFC;
 		swrb.inDem = getRaster(dem);
 		swrb.inSkyview = skyview;
 		swrb.inHumidityValues = inNan;

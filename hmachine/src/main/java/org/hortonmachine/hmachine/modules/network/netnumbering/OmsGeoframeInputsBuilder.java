@@ -28,16 +28,13 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -58,9 +55,6 @@ import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPoligonSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
@@ -72,7 +66,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -298,7 +291,6 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					.collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
 
 			SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCrs());
-			SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCrs());
 			SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCrs());
 
 			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
@@ -492,6 +484,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 									var table = SqlName.m("error_basin_" + outBasin.id);
 									SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, fc.getSchema(), table,
 											null, false);
+									
 									SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, fc, table, -1, false,
 											pm);
 								} else {
@@ -594,10 +587,9 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 			basinId2geomMap.entrySet().stream().forEach(entry -> {
 				try {
-					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder,
-							basinCentroidsBuilder, singleNetBuilder, getSFStreamGauge(crs, Point.class), allBasinsFC,
-							centroifdBasinFC, allNetworksFC, streamGaugeFC, breackPoints, csvText, lakesIdList,
-							lakesTypeList, entry);
+					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder, singleNetBuilder,
+							getSFStreamGauge(crs, Point.class), allBasinsFC, centroifdBasinFC, allNetworksFC,
+							streamGaugeFC, breackPoints, csvText, lakesIdList, lakesTypeList, entry);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -629,12 +621,6 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
 						false, pm);
 
-				String basinCentroidTable = GeoFrameGeoTable.BASIN_POINT.tableName();
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, centroifdBasinFC.getSchema(),
-						SqlName.m(basinCentroidTable), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, centroifdBasinFC,
-						SqlName.m(basinCentroidTable), -1, false, pm);
-
 				String networkTable = GeoFrameGeoTable.NET.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
 						SqlName.m(networkTable), null, false);
@@ -642,7 +628,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 						false, pm);
 				if (streamGaugeFC != null && streamGaugeFC.size() > 0) {
 					String streamGAuge = GeoFrameGeoTable.HYDRO_METEO_STATION.tableName();
-
+                     //TODO create unique keys: ID+TYPE
 					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
 							SqlName.m(streamGAuge), null, false);
 					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, SqlName.m(streamGAuge),
@@ -655,12 +641,11 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 	private void extractBasin(HMRaster subBasins, HMRaster pit, HMRaster sky, HMRaster drain, HMRaster net,
 			CoordinateReferenceSystem crs, List<Geometry> netGeometries, SimpleFeatureBuilder basinsBuilder,
-			SimpleFeatureBuilder basinCentroidsBuilder, SimpleFeatureBuilder singleNetBuilder,
-			SimpleFeatureBuilder streamGaugeBuilder, DefaultFeatureCollection allBasinsFC,
-			DefaultFeatureCollection centroidBasinsFC, DefaultFeatureCollection allNetworksFC,
-			DefaultFeatureCollection streamGaugeFC, SimpleFeatureCollection breackPointFC, StringBuilder csvText,
-			List<Integer> lakesIdList, List<String> lakesTypeList, Entry<Integer, Geometry> entry)
-			throws Exception, ModelsIOException {
+			SimpleFeatureBuilder singleNetBuilder, SimpleFeatureBuilder streamGaugeBuilder,
+			DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection centroidBasinsFC,
+			DefaultFeatureCollection allNetworksFC, DefaultFeatureCollection streamGaugeFC,
+			SimpleFeatureCollection breackPointFC, StringBuilder csvText, List<Integer> lakesIdList,
+			List<String> lakesTypeList, Entry<Integer, Geometry> entry) throws Exception, ModelsIOException {
 		int basinNum = entry.getKey();
 //        pm.message("Processing basin " + basinNum + "...");
 		Geometry basinPolygon = entry.getValue();
@@ -820,13 +805,9 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 		Object[] centroidValues = new Object[] { basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2,
 				mainNetLength, skyview };
-		basinCentroidsBuilder.addAll(centroidValues);
-		SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
-		centroidBasinsFC.add(basinCentroidFeature);
 		// dump single centroid
 		if (inGeoframeDb == null) {
 			DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
-			singleCentroid.add(basinCentroidFeature);
 			File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
 			if (!centroidShpFile.exists() || doOverWrite) {
 				dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
@@ -948,10 +929,6 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 	private SimpleFeatureBuilder getBasinsBuilder(CoordinateReferenceSystem crs) {
 		return GeoFrameGeoTable.BASIN.getSchema().getSFBuilder(crs);
-	}
-
-	private SimpleFeatureBuilder getBasinCentroidsBuilder(CoordinateReferenceSystem crs) {
-		return GeoFrameGeoTable.BASIN_POINT.getSchema().getSFBuilder(crs);
 	}
 
 	private SimpleFeatureBuilder getSFStreamGauge(CoordinateReferenceSystem crs, Class<?> geom) {

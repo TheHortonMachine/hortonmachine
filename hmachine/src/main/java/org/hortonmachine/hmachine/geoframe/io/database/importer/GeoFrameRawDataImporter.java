@@ -145,7 +145,7 @@ public class GeoFrameRawDataImporter extends HMModel {
 						builder.reset();
 						builder.set(HydroMeteoSation.GEOM.columnName(), geom);
 						builder.set(HydroMeteoSation.ID.columnName(), id);
-						builder.set(HydroMeteoSation.ELEVATIOB.columnName(), elevation);
+						builder.set(HydroMeteoSation.ELEVATION.columnName(), elevation);
 						builder.set(HydroMeteoSation.BASIN_ID.columnName(), null); // basin_id
 						builder.set(HydroMeteoSation.TYPE.columnName(), stationType.name()); // type
 
