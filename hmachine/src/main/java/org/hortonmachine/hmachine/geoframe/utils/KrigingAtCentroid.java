@@ -127,8 +127,6 @@ public class KrigingAtCentroid extends HMModel {
 	public void process() throws Exception {
 		HashMap<Integer, double[]> h = null;
 
-		inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
-		inGeoframeDb.open(inGeoframeDBPath);
 		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
 				HydroMeteoStation.TYPE.columnName() + "='" + StationType.METEO + "'");
@@ -192,7 +190,6 @@ public class KrigingAtCentroid extends HMModel {
 			HashMap<Integer, double[]> out = kriging.outData;
 
 
-			
 			inGeoframeDb.execOnConnection(conn -> {
 				boolean autoCommit = conn.getAutoCommit();
 				conn.setAutoCommit(false);
@@ -212,7 +209,6 @@ public class KrigingAtCentroid extends HMModel {
 				}
 				return null;
 			});
-
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
