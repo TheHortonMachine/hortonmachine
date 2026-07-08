@@ -4,26 +4,33 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
-import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.KrigingAtCentroid;
 
 public class TestKriging extends HMModel {
 	// NOCE
 
 	public TestKriging() {
-		String geoframeGpkg = TestIO.GEOFRAME_GPK;
+		String geoframeGpkg = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
 		try {
+			
+			
 			ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb();
 			db.open(geoframeGpkg);
 			var valueReader = new GeoframeEnvDatabaseIterator();
 			valueReader.db = db;
 			valueReader.pParameterId = 4; // temperature
-			valueReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			valueReader.tStart = TestIO.FROM_TS + ":00";
 			valueReader.tEnd = TestIO.TO_TS + ":00";
-			valueReader.table = GeoFrameSimpleTable.RAW_METEO.tableName();
+			valueReader.doRawData = true;
+			
+			int maxId = db.getLong("select max("+ HydroMeteoStation.ID.columnName() +") from " + //
+					GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " WHERE " + //
+					HydroMeteoStation.TYPE.columnName() + " = '" + HydroMeteoStationSchema.StationType.METEO + "'").intValue();
+			valueReader.pMaxId = maxId;
 			var krigingInterpolator = new KrigingAtCentroid();
 			krigingInterpolator.inGeoframeDBPath = geoframeGpkg;
 			krigingInterpolator.inVariableType = VarSchema.EnvironmentalVariableType.TEMPERATURE.getId();
@@ -32,7 +39,6 @@ public class TestKriging extends HMModel {
 			krigingInterpolator.process();
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

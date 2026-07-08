@@ -46,13 +46,11 @@ public class RawDataSchema extends SimpleAbstractSchema {
 
 		@Override
 		public String columnName() {
-			// TODO Auto-generated method stub
 			return columnName;
 		}
 
 		@Override
 		public Class<?> javaType() {
-			// TODO Auto-generated method stub
 			return javaType;
 		}
 
@@ -60,13 +58,11 @@ public class RawDataSchema extends SimpleAbstractSchema {
 
 	@Override
 	protected List<TableField> primaryKey() {
-		// TODO Auto-generated method stub
 		return List.of(RawField.STATION_ID, RawField.TS, RawField.VAR_ID);
 	}
 
 	@Override
 	protected List<ForeignKey> foreignKeys() {
-		// TODO Auto-generated method stub
-		return List.of(new ForeignKey(RawField.VAR_ID, GeoFrameSimpleTable.VAR.name(), VarField.VAR_ID));
+		return List.of(new ForeignKey(RawField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarField.VAR_ID));
 	}
 }

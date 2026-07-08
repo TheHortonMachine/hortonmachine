@@ -31,8 +31,8 @@ import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
 import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
 import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.SingleStepVariogramEvaluator;
@@ -59,7 +59,7 @@ public class KrigingAtCentroid extends HMModel {
 
 	// TODO it's betetr the string (to use also in OMS console or the db object)
 	@Description("Input database path")
-	@UI(HMConstants.FILEIN_UI_HINT_DBF)
+	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGeoframeDBPath = null;
 
@@ -118,6 +118,15 @@ public class KrigingAtCentroid extends HMModel {
 			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
 			check();
+			
+			// make sure the output table exists
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
+				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+				String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
+				conn = inGeoframeDb.getConnectionInternal();
+				ps = conn.prepareStatement(insertSql);
+			}
 		} catch (Exception e) {
 		}
 	}
@@ -130,13 +139,13 @@ public class KrigingAtCentroid extends HMModel {
 		inGeoframeDb.open(inGeoframeDBPath);
 		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
-				HydroMeteoSation.TYPE.columnName() + "='" + StationType.METEO + "'");
+				HydroMeteoStation.TYPE.columnName() + "='" + StationType.METEO + "'");
 		var stations = new StationsSelection();
 
 		stations.inStations = inStations;
 		stations.doIncludezero = doIncludeZero;
-		stations.fStationsid = HydroMeteoSation.ID.columnName();
-		stations.fStationsZ = HydroMeteoSation.ELEVATION.columnName();
+		stations.fStationsid = HydroMeteoStation.ID.columnName();
+		stations.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
 		stations.doLogarithmic = doLogarithmic;
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
@@ -170,8 +179,8 @@ public class KrigingAtCentroid extends HMModel {
 		SimpleFeatureCollection inBasinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
 		kriging.inStations = inStations;
-		kriging.fStationsid = HydroMeteoSation.ID.columnName();
-		kriging.fStationsZ = HydroMeteoSation.ELEVATION.columnName();
+		kriging.fStationsid = HydroMeteoStation.ID.columnName();
+		kriging.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
 		kriging.inInterpolate = inBasinsFC;
 		kriging.fInterpolateid = BasinMultiPolygonField.BASIN_ID.columnName();
 		kriging.fPointZ = BasinMultiPolygonField.AVG_ELEVATION_M.columnName();
@@ -217,12 +226,7 @@ public class KrigingAtCentroid extends HMModel {
 		if (ps != null) {
 			return;
 		}
-		// make sure the output table exists
-		String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
-		inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-		String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
-		conn = inGeoframeDb.getConnectionInternal();
-		ps = conn.prepareStatement(insertSql);
+
 	}
 
 	public void insert(long currentT, int basinId, double value) throws Exception {

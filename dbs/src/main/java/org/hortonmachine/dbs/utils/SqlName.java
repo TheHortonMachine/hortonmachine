@@ -187,4 +187,13 @@ public class SqlName {
             this.name = name;
         }
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if (obj instanceof SqlName sn) {
+    		return name.equals(sn.name);
+		} else {
+			return false;
+		}
+    }
 }

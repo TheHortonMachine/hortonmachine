@@ -22,20 +22,20 @@ public class TestPrestltEt extends HMModel {
 			var temperatureReader = new GeoframeEnvDatabaseIterator();
 			temperatureReader.db = db;
 			temperatureReader.pParameterId = 4; // temperature
-			temperatureReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			temperatureReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			temperatureReader.tStart = TestIO.FROM_TS + ":00";
 			temperatureReader.tEnd = TestIO.TO_TS + ":00";
-			temperatureReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
+			temperatureReader.doRawData = false;
 			
 			
 			var netReader = new GeoframeEnvDatabaseIterator();
 			netReader.db = db;
 			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId(); // temperature
-			netReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			netReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			netReader.tStart = TestIO.FROM_TS + ":00";
 			netReader.tEnd = TestIO.TO_TS + ":00";
-			netReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
-			netReader.pMaxBasinId = 20063;
+			netReader.doRawData = false;
+			netReader.pMaxId = 20063;
 
 			var ptEt = new PrestleyETAtCentroid();
 			ptEt.inGeoframeDBPath = geoframeGpkg;

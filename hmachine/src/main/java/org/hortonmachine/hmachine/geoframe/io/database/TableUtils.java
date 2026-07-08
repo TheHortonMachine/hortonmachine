@@ -7,8 +7,8 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
@@ -77,7 +77,7 @@ public class TableUtils {
 			result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from "
 					+ GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " where type='" + StationType.METEO + "'", -1);
 
-			int idIndex = result.names.indexOf(HydroMeteoSation.ID.columnName());
+			int idIndex = result.names.indexOf(HydroMeteoStation.ID.columnName());
 
 			var rows = result.data;
 			int l = result.data.size();

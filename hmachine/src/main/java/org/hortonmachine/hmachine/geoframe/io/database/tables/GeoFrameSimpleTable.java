@@ -34,8 +34,6 @@ public enum GeoFrameSimpleTable {
 	 */ // station.
 	SIMULATION(new SimulationSchema()),
 
-	VAR(new VarSchema()),
-
 	/**
 	 * Prefix used for calibration result tables.
 	 */

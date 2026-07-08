@@ -96,7 +96,7 @@ public abstract class ErmBase extends HMModel {
 			String toTS) {
 		GeoframeEnvDatabaseIterator r = new GeoframeEnvDatabaseIterator();
 		r.db = db;
-		r.pMaxBasinId = maxBasinId;
+		r.pMaxId = maxBasinId;
 		r.pParameterId = parameterId;
 		r.tStart = fromTS;
 		r.tEnd = toTS;

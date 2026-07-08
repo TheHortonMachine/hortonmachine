@@ -73,7 +73,6 @@ public class TestErm extends HMModel {
 
 			// get the max basin id from the db
 			int maxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
-
 			double[] basinAreas = IWaterBudgetSimulationRunner.getBasinAreas(db, maxBasinId);
 
 			// get the topology from the db
@@ -95,7 +94,7 @@ public class TestErm extends HMModel {
 
 			var precipReader = new GeoframeEnvDatabaseIterator();
 			precipReader.db = db;
-			precipReader.pMaxBasinId = maxBasinId;
+			precipReader.pMaxId = maxBasinId;
 			precipReader.pParameterId = 2; // precip
 			precipReader.tStart = fromTS;
 			precipReader.tEnd = toTS;
@@ -106,7 +105,7 @@ public class TestErm extends HMModel {
 			var tempReader = new GeoframeEnvDatabaseIterator();
 			tempReader.db = db;
 			tempReader.pParameterId = 4; // temperature
-			tempReader.pMaxBasinId = maxBasinId;
+			tempReader.pMaxId = maxBasinId;
 			tempReader.tStart = fromTS;
 			tempReader.tEnd = toTS;
 			if (doCalibration) {
@@ -116,7 +115,7 @@ public class TestErm extends HMModel {
 			var etpReader = new GeoframeEnvDatabaseIterator();
 			etpReader.db = db;
 			etpReader.pParameterId = 1; // etp
-			etpReader.pMaxBasinId = maxBasinId;
+			etpReader.pMaxId = maxBasinId;
 			etpReader.tStart = fromTS;
 			etpReader.tEnd = toTS;
 			if (doCalibration) {

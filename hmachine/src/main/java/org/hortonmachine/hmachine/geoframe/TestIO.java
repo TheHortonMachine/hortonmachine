@@ -1,8 +1,8 @@
 package org.hortonmachine.hmachine.geoframe;
 
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.geoframe.io.database.importer.GeoFrameRawDataImporter;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.importer.GeoframeRawDataImporter;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 
@@ -19,7 +19,7 @@ public class TestIO extends HMModel {
 
 		try {
 
-			var gfImporter = new GeoFrameRawDataImporter();
+			var gfImporter = new GeoframeRawDataImporter();
 			// import the meteo network and the temperature (overwrite the previous)
 			gfImporter.stationType = StationType.METEO;
 			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/simulazioni/Centroid_NOCE_10km/data/meteo_data/temperature_gf_2.csv";
