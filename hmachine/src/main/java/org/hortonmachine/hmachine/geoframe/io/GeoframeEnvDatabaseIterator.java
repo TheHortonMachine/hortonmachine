@@ -108,6 +108,8 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
 	private boolean doPreCache = false;
 	private double[][] cachedData = null;
+	private long[] cachedTimestamps = null;
+	
 	private String tStsColumnName;
 
 	private String idColumnName;
@@ -166,15 +168,21 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
 		if (doPreCache) {
 			List<double[]> tmpCachedData = new java.util.ArrayList<>();
+			List<Long> tmpCachedTimestamps = new java.util.ArrayList<>();
 			while (internalNext()) {
 				double[] dataCopy = Arrays.copyOf(outData, outData.length);
 				tmpCachedData.add(dataCopy);
+				tmpCachedTimestamps.add(currentT);
 			}
+			// TODO make this better
 			cachedData = new double[tmpCachedData.size()][];
 			for (int i = 0; i < tmpCachedData.size(); i++) {
 				cachedData[i] = tmpCachedData.get(i);
 			}
-
+			cachedTimestamps = new long[tmpCachedTimestamps.size()];
+			for (int i = 0; i < tmpCachedTimestamps.size(); i++) {
+				cachedTimestamps[i] = tmpCachedTimestamps.get(i);
+			}
 			// close the result set and statement
 			rs.close();
 			ps.close();
@@ -208,6 +216,16 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 			return null;
 		}
 		return cachedData[index];
+	}
+	
+	public long getCachedTimestamp(int index) throws Exception {
+		if (!doPreCache) {
+			throw new Exception("Not in pre-cache mode, cannot get cached data.");
+		}
+		if (index >= cachedTimestamps.length) {
+			return -1;
+		}
+		return cachedTimestamps[index];
 	}
 
 	@Execute

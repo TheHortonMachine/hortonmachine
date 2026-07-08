@@ -137,14 +137,17 @@ public class KrigingAtCentroid extends HMModel {
 		stations.fStationsid = HydroMeteoStation.ID.columnName();
 		stations.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
 		stations.doLogarithmic = doLogarithmic;
+		
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
+			long timestep = variableReader.getCachedTimestamp(timestepIndex);
 			while (variableData != null) {
 				h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
 
-				processTimestep(variableData, stations, inStations, h);
+				processTimestep(variableData, stations, inStations, h, timestep);
 				timestepIndex++;
 				variableData = variableReader.getCached(timestepIndex);
+				timestep = variableReader.getCachedTimestamp(timestepIndex);
 
 			}
 		} else {
@@ -153,14 +156,14 @@ public class KrigingAtCentroid extends HMModel {
 				double[] variableData = variableReader.outData;
 				h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
 
-				processTimestep(variableData, stations, inStations, h);
+				processTimestep(variableData, stations, inStations, h, variableReader.currentT);
 			}
 		}
 
 	}
 
 	private void processTimestep(double[] variableMap, StationsSelection stations, SimpleFeatureCollection inStations,
-			HashMap<Integer, double[]> h) throws Exception {
+			HashMap<Integer, double[]> h, long currentT) throws Exception {
 
 		var variogram = SingleStepVariogramEvaluator.createVariogram(stations, h, doDetrended, doIncludeZero,
 				doLogarithmic, variogramType, cutoffDivide, cutoffInput);
@@ -189,7 +192,7 @@ public class KrigingAtCentroid extends HMModel {
 			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
 			HashMap<Integer, double[]> out = kriging.outData;
 
-
+			
 			inGeoframeDb.execOnConnection(conn -> {
 				boolean autoCommit = conn.getAutoCommit();
 				conn.setAutoCommit(false);
@@ -197,7 +200,7 @@ public class KrigingAtCentroid extends HMModel {
 					for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
 						int basinId = entry.getKey();
 						double value = entry.getValue()[0];
-						pStmt.setLong(1, variableReader.currentT);
+						pStmt.setLong(1, currentT);
 						pStmt.setInt(2, basinId);
 						pStmt.setInt(3, inVariableType);
 						pStmt.setDouble(4, value);
