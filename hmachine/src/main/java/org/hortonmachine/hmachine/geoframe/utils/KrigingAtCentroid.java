@@ -29,12 +29,16 @@ import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
 import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
 import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.SingleStepVariogramEvaluator;
+
+import com.mchange.v2.c3p0.util.TestUtils;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -113,7 +117,7 @@ public class KrigingAtCentroid extends HMModel {
 			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
 			check();
-			
+
 			// make sure the output table exists
 			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
 				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
@@ -137,30 +141,36 @@ public class KrigingAtCentroid extends HMModel {
 		stations.fStationsid = HydroMeteoStation.ID.columnName();
 		stations.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
 		stations.doLogarithmic = doLogarithmic;
+
+		int[] ids = TableUtils.getIntIdArray(inGeoframeDb, GeoFrameGeoTable.HYDRO_METEO_STATION.tableName(),
+				HydroMeteoStationSchema.HydroMeteoStation.ID.columnName()," where type='"
+						+ StationType.METEO + "'");
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
+			long timestep = variableReader.getCachedTimestamp(timestepIndex);
 			while (variableData != null) {
-				h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
+				h = TableUtils.getLegacyHMInput(variableData, ids);
 
-				processTimestep(variableData, stations, inStations, h);
+				processTimestep(variableData, stations, inStations, h, timestep);
 				timestepIndex++;
 				variableData = variableReader.getCached(timestepIndex);
+				timestep = variableReader.getCachedTimestamp(timestepIndex);
 
 			}
 		} else {
 			while (variableReader.next()) {
 
 				double[] variableData = variableReader.outData;
-				h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
+				h = TableUtils.getLegacyHMInput(variableData, ids);
 
-				processTimestep(variableData, stations, inStations, h);
+				processTimestep(variableData, stations, inStations, h, variableReader.currentT);
 			}
 		}
 
 	}
 
 	private void processTimestep(double[] variableMap, StationsSelection stations, SimpleFeatureCollection inStations,
-			HashMap<Integer, double[]> h) throws Exception {
+			HashMap<Integer, double[]> h, long currentT) throws Exception {
 
 		var variogram = SingleStepVariogramEvaluator.createVariogram(stations, h, doDetrended, doIncludeZero,
 				doLogarithmic, variogramType, cutoffDivide, cutoffInput);
@@ -189,7 +199,6 @@ public class KrigingAtCentroid extends HMModel {
 			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
 			HashMap<Integer, double[]> out = kriging.outData;
 
-
 			inGeoframeDb.execOnConnection(conn -> {
 				boolean autoCommit = conn.getAutoCommit();
 				conn.setAutoCommit(false);
@@ -197,12 +206,12 @@ public class KrigingAtCentroid extends HMModel {
 					for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
 						int basinId = entry.getKey();
 						double value = entry.getValue()[0];
-						pStmt.setLong(1, variableReader.currentT);
+						pStmt.setLong(1, currentT);
 						pStmt.setInt(2, basinId);
 						pStmt.setInt(3, inVariableType);
 						pStmt.setDouble(4, value);
 						pStmt.addBatch();
-						System.out.println(variableReader.currentT);					}
+					}
 					pStmt.executeBatch();
 					conn.commit();
 					conn.setAutoCommit(autoCommit);

@@ -209,7 +209,7 @@ public class Lwrb extends HMModel {
 			double soilTemperature = inSoilTempratureValuesHM.get(idStations[i])[0];
 
 			double humidity = pRH;
-			if (inHumidityValuesHM != null)
+			if (inHumidityValuesHM != null &&  inHumidityValuesHM.get(idStations[i])[0] != HMConstants.doubleNovalue)
 				humidity = inHumidityValuesHM.get(idStations[i])[0];
 
 			double clearnessIndex = 1;

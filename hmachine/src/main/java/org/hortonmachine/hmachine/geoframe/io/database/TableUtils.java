@@ -69,27 +69,48 @@ public class TableUtils {
 						"River discharge"));
 	}
 
-	public final static HashMap<Integer, double[]> getLegacyHMInput(double[] h, ASpatialDb inGeoframeDb) {
+	public final static HashMap<Integer, double[]> getLegacyHMInput(double[] h, int[] ids) {
 		// TODO Auto-generated method stub
-		QueryResult result;
 		HashMap<Integer, double[]> data = new HashMap<Integer, double[]>();
+	
+
 		try {
-			result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from "
-					+ GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " where type='" + StationType.METEO + "'", -1);
-
-			int idIndex = result.names.indexOf(HydroMeteoStation.ID.columnName());
-
-			var rows = result.data;
-			int l = result.data.size();
-			for (int i = 0; i < l; i++) {
-				int n = ((Number) rows.get(i)[idIndex]).intValue();
-				data.put(n, new double[] { h[n] });
+			for (int i = 0; i < ids.length; i++) {
+				data.put(ids[i], new double[] { h[ids[i]] });
 			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return data;
+	}
+
+	public final static int[] getIntIdArray(ASpatialDb inGeoframeDb, String tableName, String columnName,
+			String where) {
+		// TODO: pass as parameter result.data
+		QueryResult result;
+		try {
+			String sql = "select * from " + tableName;
+			if (where != null) {
+				sql = sql + " " + where;
+			}
+			result = inGeoframeDb.getTableRecordsMapFromRawSql(sql, -1);
+
+			int idIndex = result.names.indexOf(columnName);
+
+			var rows = result.data;
+			int l = result.data.size();
+			int[] ids = new int[l];
+			for (int i = 0; i < l; i++) {
+				ids[i] = ((Number) rows.get(i)[idIndex]).intValue();
+			}
+			return ids;
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+
 	}
 
 	public final static HashMap<Integer, double[]> getLegacyHMInputNaN(int[] id) {

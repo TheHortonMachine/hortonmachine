@@ -301,7 +301,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 				temperature = inTemperatureValues.get(idStations[i])[0];
 
 			double humidity = pRH;
-			if (inHumidityValues != null)
+			if (inHumidityValues != null && inHumidityValues.get(idStations[i])[0] != HMConstants.doubleNovalue)
 				humidity = inHumidityValues.get(idStations[i])[0];
 
 			// calculating the sun vector

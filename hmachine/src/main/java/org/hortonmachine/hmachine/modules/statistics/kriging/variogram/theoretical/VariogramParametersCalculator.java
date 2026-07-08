@@ -91,7 +91,7 @@ public class VariogramParametersCalculator {
 			 * OR (detrend enabled AND global detrended valid) -> return local anyway (!)
 			 *
 			 */
-			if (variogramOk || (globalVP==null || !globalVP.isValid()) || (doDetrend && !globalDeTrendedVP.isValid())) {
+			if (variogramOk || (globalVP == null || !globalVP.isValid()) || (doDetrend && !globalDeTrendedVP.isValid())) {
 				VariogramParameters myVariogramParam = new VariogramParameters.Builder(
 						semivariogramFitter.outSemivariogramType, semivariogramFitter.nugget, semivariogramFitter.range,
 						semivariogramFitter.sill).setLocal(true).setTrend(rEvaluator.isPValueOk)

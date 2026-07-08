@@ -1,9 +1,12 @@
 package org.hortonmachine.hmachine.geoframe.utils;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Map;
 
 import org.geotools.api.data.DataSourceException;
 import org.geotools.api.feature.simple.SimpleFeature;
@@ -15,11 +18,12 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
-import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.radiation.NetRadiationPointCase;
@@ -67,8 +71,11 @@ public class RadiationAtCentroid extends HMModel {
 	@Unit("-")
 	@In
 	public double epsilonS = 0.98;
-
+	@Description("Coefficient to take into account the cloud cover," + "set equal to 0 for clear sky conditions ")
+	@In
 	public double aCloud = 0;
+	@Description("Exponent  to take into account the cloud cover," + "set equal to 1 for clear sky conditions")
+	@In
 	public double bCloud = 1;
 	public boolean doHourly = true;
 	public double alpha = 0.26;
@@ -99,21 +106,19 @@ public class RadiationAtCentroid extends HMModel {
 	public String inSkyview;
 	@Description("reader")
 	@In
-	public GeoframeEnvDatabaseIterator temperatureReader;
+	public GeoframeEnvDatabaseIterator inTemperatureReader;
 	@Description("reader")
 	@In
-	public GeoframeEnvDatabaseIterator humifidtyReader = null;
+	public GeoframeEnvDatabaseIterator inHumifidtyReader = null;
 	@Description("reader")
 	@In
-	public GeoframeEnvDatabaseIterator clearSkyReader;
+	public GeoframeEnvDatabaseIterator inClearSkyReader;
 
-	private Lwrb lwrb = new Lwrb();
-	private ShortwaveRadiationBalancePointCase swrb = new ShortwaveRadiationBalancePointCase();
+	private Lwrb lwrb;
+	private ShortwaveRadiationBalancePointCase swrb;
 	private NetRadiationPointCase nrpc = new NetRadiationPointCase();
 	private ASpatialDb inGeoframeDb;
 	private int timestepIndex = 0;
-	private IHMConnection conn;
-	private IHMPreparedStatement ps;
 	private HashMap<Integer, double[]> inNan;
 
 	@Initialize
@@ -121,15 +126,26 @@ public class RadiationAtCentroid extends HMModel {
 		if (lwrvModeel == null || lwrvModeel.isEmpty()) {
 			throw new IllegalArgumentException();
 		}
+		if (inGeoframeDBPath == null) {
+			throw new IllegalArgumentException();
+		}
 
+		inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
+		inGeoframeDb.open(inGeoframeDBPath);
+
+		swrb = new ShortwaveRadiationBalancePointCase();
 		if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
 				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.tableName())
 				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
 			throw new DataSourceException("no suitable tables are present in db check");
 		}
 
-		inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
-		inGeoframeDb.open(inGeoframeDBPath);
+		if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
+			String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
+			inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+		}
+		lwrb = new Lwrb();
+		;
 		var inBasinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
 
@@ -166,58 +182,64 @@ public class RadiationAtCentroid extends HMModel {
 		swrb.inStationsFC = inBasinsFC;
 		swrb.inDem = getRaster(dem);
 		swrb.inSkyview = skyview;
+		swrb.pAlphag = pAlphagp;
+		swrb.pCmO3 = pCmO3;
+		swrb.pVisibility = visibility;
 		nrpc.alfa = alpha;
+
 	}
 
 	@Execute
 	public void process() throws Exception {
+		int[] ids = TableUtils.getIntIdArray(inGeoframeDb, GeoFrameGeoTable.BASIN.tableName(),
+				BasinPolygonSchema.BasinMultiPolygonField.BASIN_ID.columnName(), null);
+		if (inTemperatureReader.isPreCachingMode()) {
+			double[] variableData = inTemperatureReader.getCached(timestepIndex);
+			long timestep = inTemperatureReader.getCachedTimestamp(timestepIndex);
 
-		if (temperatureReader.isPreCachingMode()) {
-			double[] variableData = temperatureReader.getCached(timestepIndex);
 			while (variableData != null) {
-				var h = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
-			//	processTimestep(h, temperatureReader.currentT);
-				timestepIndex++;
-				variableData = temperatureReader.getCached(timestepIndex);
-
-			}
-		} else {
-			while (temperatureReader.next()) {
-
-				double[] variableData = temperatureReader.outData;
-				var temperature = TableUtils.getLegacyHMInput(variableData, inGeoframeDb);
-
+				var h = TableUtils.getLegacyHMInput(variableData, ids);
 				HashMap<Integer, double[]> humidity = inNan;
-				if (humifidtyReader != null) {
-					double[] humidityData = humifidtyReader.outData;
-					humidity = TableUtils.getLegacyHMInput(humidityData, inGeoframeDb);
+				if (inHumifidtyReader != null && inHumifidtyReader.isPreCachingMode()) {
+					double[] humidityData = inHumifidtyReader.getCached(timestepIndex);
+					humidity = TableUtils.getLegacyHMInput(humidityData, ids);
 				}
 
 				HashMap<Integer, double[]> clearSky = inNan;
 
-				if (clearSkyReader != null) {
-					double[] clearSkyData = clearSkyReader.outData;
-					clearSky = TableUtils.getLegacyHMInput(clearSkyData, inGeoframeDb);
+				if (inClearSkyReader != null && inClearSkyReader.isPreCachingMode()) {
+					double[] clearSkyData = inClearSkyReader.getCached(timestepIndex);
+					clearSky = TableUtils.getLegacyHMInput(clearSkyData, ids);
+				}
+				processTimestep(h, humidity, clearSky, timestep);
+				timestepIndex++;
+				variableData = inTemperatureReader.getCached(timestepIndex);
+				timestep = inTemperatureReader.getCachedTimestamp(timestepIndex);
+
+			}
+		} else {
+			while (inTemperatureReader.next()) {
+
+				double[] variableData = inTemperatureReader.outData;
+				var temperature = TableUtils.getLegacyHMInput(variableData, ids);
+
+				HashMap<Integer, double[]> humidity = inNan;
+				if (inHumifidtyReader != null) {
+					double[] humidityData = inHumifidtyReader.outData;
+					humidity = TableUtils.getLegacyHMInput(humidityData, ids);
+				}
+				HashMap<Integer, double[]> clearSky = inNan;
+				if (inClearSkyReader != null) {
+					double[] clearSkyData = inClearSkyReader.outData;
+					clearSky = TableUtils.getLegacyHMInput(clearSkyData, ids);
 				}
 				lwrb.inHumidityValuesHM = inNan;
 				swrb.inHumidityValues = inNan;
 
-				processTimestep(temperature, humidity, clearSky, temperatureReader.currentT);
+				processTimestep(temperature, humidity, clearSky, inTemperatureReader.currentT);
 			}
 		}
 
-	}
-
-	private void ensureOpen() throws Exception {
-		if (ps != null) {
-			return;
-		}
-		// make sure the output table exists
-		String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
-		inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-		String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
-		conn = inGeoframeDb.getConnectionInternal();
-		ps = conn.prepareStatement(insertSql);
 	}
 
 	private void processTimestep(HashMap<Integer, double[]> temperature, HashMap<Integer, double[]> humidity,
@@ -238,31 +260,38 @@ public class RadiationAtCentroid extends HMModel {
 			nrpc.inDownwellingValues = lwrb.outHMlongwaveDownwellingHM;
 			nrpc.inUpwellingValues = lwrb.outHMlongwaveUpwellingHM;
 			nrpc.process();
-			var out = nrpc.outHMnetRad;
+			HashMap<Integer, double[]> out = nrpc.outHMnetRad;
+			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
+			inGeoframeDb.execOnConnection(conn -> {
+				boolean autoCommit = conn.getAutoCommit();
+				conn.setAutoCommit(false);
+				try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+					for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
+						int basinId = entry.getKey();
+						double value = entry.getValue()[0];
+						pStmt.setLong(1, t);
+						pStmt.setInt(2, basinId);
+						pStmt.setInt(3, EnvironmentalVariableType.RADIATION.getId());
+						pStmt.setDouble(4, value);
+						DateTimeFormatter formatter = DateTimeFormatter
+						        .ofPattern("yyyy-MM-dd HH:mm:ss")
+						        .withZone(ZoneId.of("Europe/Rome"));
+						Instant instant = Instant.ofEpochMilli(t);
+						String data = formatter.format(instant);
+						System.out.println("date"+ data+"badin "+basinId +"value "+value);
+						pStmt.addBatch();
+					}
+					pStmt.executeBatch();
+					conn.commit();
+					conn.setAutoCommit(autoCommit);
+				}
+				return null;
+			});
 
-			for (Entry<Integer, double[]> entry : out.entrySet()) {
-				Integer basinId = entry.getKey();
-				double value = entry.getValue()[0];
-				insert(t, basinId, value);
-			}
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-
-	public void insert(long currentT, int basinId, double value) throws Exception {
-		ensureOpen();
-		conn.enableAutocommit(false);
-		ps.setLong(1, currentT);
-		ps.setInt(2, basinId);
-		ps.setInt(3, EnvironmentalVariableType.RADIATION.getId());
-		ps.setDouble(4, value);
-
-		ps.addBatch();
-		ps.executeBatch();
-		conn.commit();
-		conn.enableAutocommit(true);
 	}
 
 }

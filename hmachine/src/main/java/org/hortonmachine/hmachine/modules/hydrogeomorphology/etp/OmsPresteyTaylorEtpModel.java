@@ -142,7 +142,7 @@ public class OmsPresteyTaylorEtpModel extends HMModel {
 	@Out
 	public HashMap<Integer, double[]> outPTEtp;
 
-	private static DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
+	private static DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMMSS;
 
 	@Execute
 	public void process() throws Exception {

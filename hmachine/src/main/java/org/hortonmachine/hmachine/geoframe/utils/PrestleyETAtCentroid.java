@@ -17,7 +17,11 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETP
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION;
 
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
@@ -72,6 +76,10 @@ public class PrestleyETAtCentroid extends HMModel {
 	@In
 	public GeoframeEnvDatabaseIterator inTempReader;
 
+	@Description("reader")
+	@In
+	public GeoframeEnvDatabaseIterator inPressurReader;
+
 	@In
 	public boolean isHourly;
 
@@ -105,9 +113,12 @@ public class PrestleyETAtCentroid extends HMModel {
 		if (inGeoframeDBPath == null) {
 			throw new IllegalArgumentException();
 		}
+
+		// make sure the output table exists
 		try {
 			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
 			inGeoframeDb.open(inGeoframeDBPath);
+
 			check();
 		} catch (Exception e) {
 		}
@@ -123,28 +134,46 @@ public class PrestleyETAtCentroid extends HMModel {
 		if (inNetReader.isPreCachingMode()) {
 			double[] inNetData = inNetReader.getCached(timestepIndex);
 			double[] tempData = inTempReader.getCached(timestepIndex);
+			double[] pressureData = null;
+			if (inPressurReader != null && inPressurReader.isPreCachingMode()) {
+				pressureData = inPressurReader.getCached(timestepIndex);
+			}
 			// double[] pressureData = pressureReader.getCached(timestepIndex);
+			long timestep = inTempReader.getCachedTimestamp(timestepIndex);
 			while (inNetData != null && tempData != null) {
-				processTimestep(inNetData, tempData, null);
+
+				processTimestep(inNetData, tempData, pressureData, timestep);
 				timestepIndex++;
 				inNetData = inNetReader.getCached(timestepIndex);
 				tempData = inTempReader.getCached(timestepIndex);
-				// pressureData = pressureReader.getCached(timestepIndex);
+
+				if (inPressurReader != null && inPressurReader.isPreCachingMode()) {
+					pressureData = inPressurReader.getCached(timestepIndex);
+				} else {
+					pressureData = null;
+				}
+				timestep = inTempReader.getCachedTimestamp(timestepIndex);
+
 			}
 		} else {
 			while (inNetReader.next() && inTempReader.next()) {
 
-				double[] inNetData = inNetReader.getCached(timestepIndex);
-				double[] tempData = inTempReader.getCached(timestepIndex);
+				double[] inNetData = inNetReader.outData;
+				double[] tempData = inTempReader.outData;
 				// double[] pressureData = pressureReader.getCached(timestepIndex);
+				double[] pressureData = null;
+				if (inPressurReader != null && inPressurReader.next()) {
+					pressureData = inTempReader.outData;
+				}
 
-				processTimestep(inNetData, tempData, null);
+				processTimestep(inNetData, tempData, pressureData, inTempReader.currentT);
 			}
 		}
 
 	}
 
-	private void processTimestep(double[] inNetMap, double[] temperatureMap, double[] pressureMap) throws Exception {
+	private void processTimestep(double[] inNetMap, double[] temperatureMap, double[] pressureMap, long t)
+			throws Exception {
 		String pTs = inNetReader.tCurrent;
 
 		// reset nodes values
@@ -164,9 +193,8 @@ public class PrestleyETAtCentroid extends HMModel {
 			executor.submit(() -> {
 				try {
 					try {
-						processTimestepForBasin(inNetMap, temperatureMap, pressureMap, node);
+						processTimestepForBasin(inNetMap, temperatureMap, pressureMap, node, t);
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				} finally {
@@ -186,7 +214,7 @@ public class PrestleyETAtCentroid extends HMModel {
 	}
 
 	private void processTimestepForBasin(double[] inNetMap, double[] temperatureMap, double[] pressureMap,
-			TopologyNode node) throws SQLException, Exception {
+			TopologyNode node, long t) throws SQLException, Exception {
 		int basinId = node.basinId;
 		double net = inNetMap != null ? inNetMap[basinId] : -9999.0;
 
@@ -200,7 +228,29 @@ public class PrestleyETAtCentroid extends HMModel {
 		try {
 			// insert(EnvironmentalVariableType.RADIATION.getId(), basinId,
 			// variableReader.currentT, radiation);
-			insert(EnvironmentalVariableType.EVAPOTRANSPIRATION.getId(), basinId, inNetReader.currentT, et0);
+			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
+			inGeoframeDb.execOnConnection(conn -> {
+				boolean autoCommit = conn.getAutoCommit();
+				conn.setAutoCommit(false);
+				try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+					pStmt.setLong(1, t);
+					pStmt.setInt(2, basinId);
+					pStmt.setInt(3, EnvironmentalVariableType.EVAPOTRANSPIRATION.getId());
+					pStmt.setDouble(4, et0);
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+							.withZone(ZoneId.of("Europe/Rome"));
+					Instant instant = Instant.ofEpochMilli(t);
+					String data = formatter.format(instant);
+					System.out.println("date" + data + "badin " + basinId + "value " + et0);
+					pStmt.addBatch();
+
+					pStmt.executeBatch();
+					conn.commit();
+					conn.setAutoCommit(autoCommit);
+				}
+				return null;
+			});
+
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -210,9 +260,14 @@ public class PrestleyETAtCentroid extends HMModel {
 
 	private void check() {
 		try {
-			if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
-					&& inGeoframeDb.hasTable(GeoFrameGeoTable.HYDRO_METEO_STATION.tableName())
-					&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
+			if (inNetReader == null || inTempReader == null) {
+				throw new DataSourceException("no data reader for netradiation or temperature, check files name");
+			}
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
+				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+			}
+			if (!inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())) {
 				throw new DataSourceException("no suitable tables are present in db check");
 			}
 		} catch (Exception e) {
@@ -220,29 +275,6 @@ public class PrestleyETAtCentroid extends HMModel {
 		}
 	}
 
-	private void ensureOpen() throws Exception {
-		if (ps != null) {
-			return;
-		}
-		// make sure the output table exists
-		String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
-		inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-		String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
-		conn = inGeoframeDb.getConnectionInternal();
-		ps = conn.prepareStatement(insertSql);
-	}
 
-	public void insert(int variableType, int basinId, long currentT, double value) throws Exception {
-		ensureOpen();
-		conn.enableAutocommit(false);
-		ps.setLong(1, currentT);
-		ps.setInt(2, basinId);
-		ps.setInt(3, variableType);
-		ps.setDouble(4, value);
-		ps.addBatch();
-		ps.executeBatch();
-		conn.commit();
-		conn.enableAutocommit(true);
-	}
 
 }

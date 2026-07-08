@@ -4,44 +4,47 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
-import org.hortonmachine.hmachine.geoframe.utils.KrigingAtCentroid;
 import org.hortonmachine.hmachine.geoframe.utils.PrestleyETAtCentroid;
-import org.hortonmachine.hmachine.geoframe.utils.RadiationAtCentroid;
 
-public class TestRadiation extends HMModel {
+public class ErmPrestltEt extends HMModel {
 	// NOCE
 
-	public TestRadiation() {
+	public ErmPrestltEt() {
 		String geoframeGpkg = TestIO.GEOFRAME_GPK;
 		try {
 			ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb();
 			db.open(geoframeGpkg);
 			var temperatureReader = new GeoframeEnvDatabaseIterator();
 			temperatureReader.db = db;
-			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId(); // temperature
-			temperatureReader.pMaxId= IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId();
+
+			temperatureReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			temperatureReader.tStart = TestIO.FROM_TS + ":00";
 			temperatureReader.tEnd = TestIO.TO_TS + ":00";
 			temperatureReader.doRawData = false;
+			temperatureReader.preCacheData();
 
 			var netReader = new GeoframeEnvDatabaseIterator();
 			netReader.db = db;
-			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId(); // temperature
+			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId();
 			netReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			netReader.tStart = TestIO.FROM_TS + ":00";
 			netReader.tEnd = TestIO.TO_TS + ":00";
 			netReader.doRawData = false;
-;
+			netReader.preCacheData();
 
-			var radiation = new RadiationAtCentroid();
-			radiation.inGeoframeDBPath = geoframeGpkg;
-			radiation.temperatureReader = temperatureReader;
-			radiation.doHourly = true;
-			radiation.process();
+			var ptEt = new PrestleyETAtCentroid();
+			ptEt.inGeoframeDBPath = geoframeGpkg;
+			ptEt.isHourly = true;
+			ptEt.pAlpha = 1.26;
+			ptEt.inTempReader = temperatureReader;
+			ptEt.inNetReader = netReader;
+			ptEt.pGmorn = 0.35;
+			ptEt.pGnight = 0.75;
+			ptEt.init();
+			ptEt.process();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -50,7 +53,7 @@ public class TestRadiation extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new TestRadiation();
+		new ErmPrestltEt();
 	}
 
 }

@@ -28,7 +28,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
 public class RawDataSchema extends SimpleAbstractSchema {
 
 	public RawDataSchema() {
-		super("raw_data", RawField.class);
+		super("station_data", RawField.class);
 	}
 
 	public enum RawField implements TableField {
