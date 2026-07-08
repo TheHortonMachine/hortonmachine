@@ -88,16 +88,10 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 	@Unit("°C")
 	public HashMap<Integer, double[]> inTemperatureValues;
 
-	@Description("The double value of the  temperature, once read from the HashMap")
-	double temperature;
-
 	@Description("The Hashmap with the time series of the humidity values")
 	@In
 	@Unit("%")
 	public HashMap<Integer, double[]> inHumidityValues;
-
-	@Description("The double value of the  humidity, once read from the HashMap")
-	double humidity;
 
 	@Description("The map of the Digital Elevation Model")
 	@In
@@ -111,7 +105,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 
 	@Description("The shape file with the station measuremnts")
 	@In
-	public SimpleFeatureCollection inStations;
+	public SimpleFeatureCollection inStationsFC;
 
 	@Description("The name of the field containing the ID of the station in the shape file")
 	@In
@@ -133,7 +127,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 
 	@Description("The first day of the simulation.")
 	@In
-	public String tStartDate;
+	public String tCurrentDateString;
 
 	@Description("Ozone layer thickness in cm")
 	@In
@@ -227,7 +221,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 	@Out
 	public HashMap<Integer, double[]> outHMtotal = new HashMap<Integer, double[]>();
 
-	DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm").withZone(DateTimeZone.UTC);
+	DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMMSS;
 
 	WritableRaster normalWR;
 	int height;
@@ -243,9 +237,9 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 		// a day
 		// otherwise it adds an hour, "step" increments at the end of the process
 		// the actual date is needed to compute the actual sunrise and sunset
-		DateTime startDateTime = formatter.parseDateTime(tStartDate);
-		DateTime date = (doHourly == false) ? startDateTime.plusDays(step)
-				: startDateTime.plusHours(step).plusMinutes(30);
+		DateTime currentDateTime = formatter.parseDateTime(tCurrentDateString);
+		DateTime date = (doHourly == false) ? currentDateTime.plusDays(step)
+				: currentDateTime.plusHours(step).plusMinutes(30);
 
 		// from pixel coordinates (in coverage image) to geographic coordinates (in
 		// coverage CRS)
@@ -261,7 +255,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 
 			// starting from the shp file containing the stations, get the coordinate
 			// of each station
-			stationCoordinates = getCoordinate(inStations, fStationsid);
+			stationCoordinates = getCoordinate(inStationsFC, fStationsid);
 
 			// get the dimension of the DEM and the resolution
 			height = demWR.getHeight();
@@ -302,11 +296,11 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 			latitudeStation.add(Math.toRadians(idPoint[0].getY()));
 
 			// read the input data for the given station
-			temperature = defaultTemp;
+			double temperature = defaultTemp;
 			if (inTemperatureValues != null)
 				temperature = inTemperatureValues.get(idStations[i])[0];
 
-			humidity = pRH;
+			double humidity = pRH;
 			if (inHumidityValues != null)
 				humidity = inHumidityValues.get(idStations[i])[0];
 

@@ -20,7 +20,7 @@ public class TestKriging extends HMModel {
 			var valueReader = new GeoframeEnvDatabaseIterator();
 			valueReader.db = db;
 			valueReader.pParameterId = 4; // temperature
-			valueReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			valueReader.pMaxBasinId = 200000;
 			valueReader.tStart = TestIO.FROM_TS + ":00";
 			valueReader.tEnd = TestIO.TO_TS + ":00";
 			valueReader.table = GeoFrameSimpleTable.RAW_METEO.tableName();

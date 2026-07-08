@@ -10,19 +10,19 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.KrigingAtCentroid;
 import org.hortonmachine.hmachine.geoframe.utils.PrestleyETAtCentroid;
+import org.hortonmachine.hmachine.geoframe.utils.RadiationAtCentroid;
 
-public class TestPrestltEt extends HMModel {
+public class TestRadiation extends HMModel {
 	// NOCE
 
-	public TestPrestltEt() {
+	public TestRadiation() {
 		String geoframeGpkg = TestIO.GEOFRAME_GPK;
 		try {
 			ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb();
 			db.open(geoframeGpkg);
 			var temperatureReader = new GeoframeEnvDatabaseIterator();
 			temperatureReader.db = db;
-			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId(); 
-
+			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId(); // temperature
 			temperatureReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			temperatureReader.tStart = TestIO.FROM_TS + ":00";
 			temperatureReader.tEnd = TestIO.TO_TS + ":00";
@@ -30,21 +30,18 @@ public class TestPrestltEt extends HMModel {
 
 			var netReader = new GeoframeEnvDatabaseIterator();
 			netReader.db = db;
-			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId(); 
+			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId(); // temperature
 			netReader.pMaxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			netReader.tStart = TestIO.FROM_TS + ":00";
 			netReader.tEnd = TestIO.TO_TS + ":00";
 			netReader.table = GeoFrameSimpleTable.HYDROMETEO.tableName();
+;
 
-			var ptEt = new PrestleyETAtCentroid();
-			ptEt.inGeoframeDBPath = geoframeGpkg;
-			ptEt.isHourly = true;
-			ptEt.pAlpha = 1.26;
-			ptEt.inTempReader = temperatureReader;
-			ptEt.inNetReader = netReader;
-			ptEt.pGmorn = 0.35;
-			ptEt.pGnight = 0.75;
-			ptEt.process();
+			var radiation = new RadiationAtCentroid();
+			radiation.inGeoframeDBPath = geoframeGpkg;
+			radiation.variableReader = temperatureReader;
+			radiation.doHourly = true;
+			radiation.process();
 
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -53,7 +50,7 @@ public class TestPrestltEt extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new TestPrestltEt();
+		new TestRadiation();
 	}
 
 }
