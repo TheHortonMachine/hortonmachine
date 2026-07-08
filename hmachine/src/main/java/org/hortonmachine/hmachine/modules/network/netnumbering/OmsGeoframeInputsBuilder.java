@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.hmachine.modules.network.netnumbering;
+
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
@@ -27,14 +28,13 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
-import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
@@ -51,17 +51,21 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.HydroMeteoSation;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
 import org.hortonmachine.hmachine.modules.network.networkattributes.NetworkChannel;
 import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAttributesBuilder;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
@@ -89,94 +93,111 @@ import oms3.annotations.UI;
 @License("General Public License Version 3 (GPLv3)")
 public class OmsGeoframeInputsBuilder extends HMModel {
 
-    @Description("Input pitfiller raster map.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inPitfiller = null;
+	@Description("Input pitfiller raster map.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inPitfiller = null;
 
-    @Description("Input flowdirections raster map.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inDrain = null;
+	@Description("Input flowdirections raster map.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inDrain = null;
 
-    @Description("Input tca raster map.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inTca = null;
+	@Description("Input tca raster map.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inTca = null;
 
-    @Description("Input network raster map.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inNet = null;
+	@Description("Input network raster map.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inNet = null;
 
-    @Description("Input skyview factor raster map.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inSkyview = null;
+	@Description("Input skyview factor raster map.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inSkyview = null;
 
-    @Description("Input numbered basins raster map.")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @In
-    public String inBasins = null;
+	@Description("Input numbered basins raster map.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inBasins = null;
 
-    @Description("Optional input lakes vector map.")
-    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
-    @In
-    public String inLakes = null;
+	@Description("Optional input lakes vector map.")
+	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
+	@In
+	public String inLakes = null;
 
-    @Description("The geoframe topology file, mandatory in case of lakes.")
-    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
-    @In
-    public String inGeoframeTopology = null;
+	@Description("A colum with the lke type (artificial lake vs natural lake)")
+	@UI(HMConstants.MULTILINE_UI_HINT)
+	@In
+	public String inLakeTypeFieldName = null;
 
-    @Description(OmsRescaledDistance.OMSRESCALEDDISTANCE_pRatio_DESCRIPTION)
-    @In
-    public double pRatio = 50;
+	@Description("The geoframe topology file, mandatory in case of lakes.")
+	@UI(HMConstants.FILEIN_UI_HINT_GENERIC)
+	@In
+	public String inGeoframeTopology = null;
 
-    @Description("Output folder for the geoframe data preparation")
-    @UI(HMConstants.FOLDERIN_UI_HINT)
-    @In
-    public String outFolder = null;
-    
-    /**
-     * Geoframe db to work with.
-     * 
-     * If this is set, the folder outputs will not be created.
-     */
-    public ASpatialDb inGeoframeDb = null;
+	@Description(OmsRescaledDistance.OMSRESCALEDDISTANCE_pRatio_DESCRIPTION)
+	@In
+	public double pRatio = 50;
 
-    public boolean doOverWrite = true;
+	@Description("Output folder for the geoframe data preparation")
+	@UI(HMConstants.FOLDERIN_UI_HINT)
+	@In
+	public String outFolder = null;
 
-    /**
-     * If <code>true</code>, hack is used to find main network in basin, else pfafstetter.
-     */
-    public boolean useHack = true;
+	@Description("Input stream gauge vector point.")
+	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
+	@In
+	public String inStreamGauge = null;
 
-    @Execute
-    public void process() throws Exception {
-        checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins);
+	@Description("Input stream gauge vector point.")
+	@UI(HMConstants.MULTILINE_UI_HINT)
+	@In
+	public String inIDStreamGaugeFieldName = "ID";
 
-        try (HMRaster subBasins = HMRaster.fromGridCoverage(getRaster(inBasins));
-                HMRaster pit = HMRaster.fromGridCoverage(getRaster(inPitfiller));
-                HMRaster sky = HMRaster.fromGridCoverage(getRaster(inSkyview));
-                HMRaster drain = HMRaster.fromGridCoverage(getRaster(inDrain));
-                HMRaster net = HMRaster.fromGridCoverage(getRaster(inNet));
-                HMRaster tca = HMRaster.fromGridCoverage(getRaster(inTca));) {
+	/**
+	 * Geoframe db to work with.
+	 * 
+	 * If this is set, the folder outputs will not be created.
+	 */
+	public ASpatialDb inGeoframeDb = null;
 
-            // first check if topology and subbasins are the same for consistency
-        	TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
+	public boolean doOverWrite = true;
+
+	/**
+	 * If <code>true</code>, hack is used to find main network in basin, else
+	 * pfafstetter.
+	 */
+	public boolean useHack = true;
+
+	@Execute
+	public void process() throws Exception {
+		checkNull(inPitfiller, inDrain, inTca, inNet, inSkyview, inBasins);
+
+		try (HMRaster subBasins = HMRaster.fromGridCoverage(getRaster(inBasins));
+				HMRaster pit = HMRaster.fromGridCoverage(getRaster(inPitfiller));
+				HMRaster sky = HMRaster.fromGridCoverage(getRaster(inSkyview));
+				HMRaster drain = HMRaster.fromGridCoverage(getRaster(inDrain));
+				HMRaster net = HMRaster.fromGridCoverage(getRaster(inNet));
+				HMRaster tca = HMRaster.fromGridCoverage(getRaster(inTca));) {
+
+			// first check if topology and subbasins are the same for consistency
+			TreeSet<Integer> topologyBasinsSet = new TreeSet<>();
 			if (inGeoframeDb != null) {
-				QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE, -1);
-				int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
-				int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
-				for( Object[] row : result.data ) {
+				QueryResult result = inGeoframeDb
+						.getTableRecordsMapFromRawSql("select * from " + GeoFrameSimpleTable.TOPOLOGY.tableName(), -1);
+				int fromIndex = result.names.indexOf(TopologyField.UPPSTREAM_BASIN.columnName());
+				int toIndex = result.names.indexOf(TopologyField.DOWNSTREAM_BASIN.columnName());
+				for (Object[] row : result.data) {
 					int currentBasinId = ((Number) row[fromIndex]).intValue();
 					int childBasinId = ((Number) row[toIndex]).intValue();
 					topologyBasinsSet.add(childBasinId);
 					topologyBasinsSet.add(currentBasinId);
 				}
 				topologyBasinsSet.remove(0);
-			} else if(inGeoframeTopology != null) {				
+			} else if (inGeoframeTopology != null) {
 				List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
 				for (String line : topologyLines) {
 					String[] lineSplit = line.trim().split("\\s+");
@@ -218,220 +239,242 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			}
 
 			CoordinateReferenceSystem crs = subBasins.getCrs();
-            List<Polygon> cells = CoverageUtilities.gridcoverageToValuesAggregatedPolygons(subBasins, pm);
+			List<Polygon> cells = CoverageUtilities.gridcoverageToValuesAggregatedPolygons(subBasins, pm);
 //            SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(subBasins.getCrs(),
 //                    (Polygon[]) polygons.toArray(new Polygon[polygons.size()]));
 //
 //            OmsVectorWriter.writeVector("/storage/lavori_tmp/UNITN/dati_lombardia_3laghi/bacini_vettoriali.shp", fc);
 //        List<Polygon> cells = CoverageUtilities.gridcoverageToCellPolygons(subBasins, null, true, pm);
 
-            List<Geometry> lakesList = new ArrayList<>();
-            if (inLakes != null) {
-                SimpleFeatureCollection lakesFC = getVector(inLakes);
-                List<SimpleFeature> lakesFList = FeatureUtilities.featureCollectionToList(lakesFC);
-                // remove those that don't even cover the raster envelope
-                Polygon rasterBounds = FeatureUtilities.envelopeToPolygon(pit.getRegionMap().toEnvelope());
-                for( SimpleFeature lakeF : lakesFList ) {
-                    Geometry lakeGeom = (Geometry) lakeF.getDefaultGeometry();
-                    Envelope env = lakeGeom.getEnvelopeInternal();
-                    if (rasterBounds.getEnvelopeInternal().intersects(env)) {
-                        // TODO would be good to check with basin geom
-                        lakesList.add(lakeGeom);
-                    }
-                }
-            }
+			List<Geometry> lakesList = new ArrayList<>();
+			if (inLakes != null) {
+				SimpleFeatureCollection lakesFC = getVector(inLakes);
+				List<SimpleFeature> lakesFList = FeatureUtilities.featureCollectionToList(lakesFC);
+				// remove those that don't even cover the raster envelope
+				Polygon rasterBounds = FeatureUtilities.envelopeToPolygon(pit.getRegionMap().toEnvelope());
+				for (SimpleFeature lakeF : lakesFList) {
+					Geometry lakeGeom = (Geometry) lakeF.getDefaultGeometry();
+					Envelope env = lakeGeom.getEnvelopeInternal();
+					if (rasterBounds.getEnvelopeInternal().intersects(env)) {
+						// TODO would be good to check with basin geom
+						String type = SubbasinsTypeField.NATURAL_LAKE.key();
+						if (inLakeTypeFieldName != null
+								&& lakesFC.getSchema().getDescriptor(inLakeTypeFieldName) != null) {
+							String lakeValue = (String) lakeF.getAttribute(inLakeTypeFieldName);
+							if (lakeValue.equals(SubbasinsTypeField.ARTIFICIAL_LAKE.key())) {
+								type = lakeValue;
+							}
+						}
+						lakeGeom.setUserData(type);
+						lakesList.add(lakeGeom);
+					}
+				}
+			}
 
-            OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
-            netAttributesBuilder.pm = pm;
-            netAttributesBuilder.inDem = pit.buildCoverage();
-            netAttributesBuilder.inFlow = drain.buildCoverage();
-            netAttributesBuilder.inTca = tca.buildCoverage();
-            netAttributesBuilder.inNet = net.buildCoverage();
-            netAttributesBuilder.doHack = true;
-            netAttributesBuilder.onlyDoSimpleGeoms = false;
-            netAttributesBuilder.process();
-            SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
+			OmsNetworkAttributesBuilder netAttributesBuilder = new OmsNetworkAttributesBuilder();
+			netAttributesBuilder.pm = pm;
+			netAttributesBuilder.inDem = pit.buildCoverage();
+			netAttributesBuilder.inFlow = drain.buildCoverage();
+			netAttributesBuilder.inTca = tca.buildCoverage();
+			netAttributesBuilder.inNet = net.buildCoverage();
+			netAttributesBuilder.doHack = true;
+			netAttributesBuilder.onlyDoSimpleGeoms = false;
+			netAttributesBuilder.process();
+			SimpleFeatureCollection outNet = netAttributesBuilder.outNet;
 
-            String userDataField = useHack ? NetworkChannel.HACKNAME : NetworkChannel.PFAFNAME;
-            List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true, userDataField);
+			String userDataField = useHack ? NetworkChannel.HACKNAME : NetworkChannel.PFAFNAME;
+			List<Geometry> netGeometries = FeatureUtilities.featureCollectionToGeometriesList(outNet, true,
+					userDataField);
 
-            Map<Integer, List<Geometry>> collected = cells.parallelStream()
-                    .filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
-                    .collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
+			Map<Integer, List<Geometry>> collected = cells.parallelStream()
+					.filter(poly -> ((Number) poly.getUserData()).doubleValue() != HMConstants.doubleNovalue)
+					.collect(Collectors.groupingBy(poly -> ((Number) poly.getUserData()).intValue()));
 
-            SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCrs());
-            SimpleFeatureBuilder basinCentroidsBuilder = getBasinCentroidsBuilder(pit.getCrs());
-            SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCrs());
+			SimpleFeatureBuilder basinsBuilder = getBasinsBuilder(pit.getCrs());
+			SimpleFeatureBuilder singleNetBuilder = getSingleNetBuilder(pit.getCrs());
 
-            DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
-            DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
+			DefaultFeatureCollection allBasinsFC = new DefaultFeatureCollection();
+			DefaultFeatureCollection centroifdBasinFC = new DefaultFeatureCollection();
+			DefaultFeatureCollection allNetworksFC = new DefaultFeatureCollection();
+			DefaultFeatureCollection streamGaugeFC = new DefaultFeatureCollection();
 
-            StringBuilder csvText = new StringBuilder();
-            csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview\n");
+			StringBuilder csvText = new StringBuilder();
 
-            // aggregate basins and check for lakes
-            Map<Integer, Geometry> basinId2geomMap = new HashMap<>();
-            pm.beginTask("Join basin cells...", collected.size());
-            int maxBasinNum = 0;
-            for( Entry<Integer, List<Geometry>> entry : collected.entrySet() ) {
-                int basinNum = entry.getKey();
-                maxBasinNum = Math.max(maxBasinNum, basinNum);
+			csvText.append("#id;x;y;elev_m;avgelev_m;area_km2;netlength;centroid_skyview;type");
 
-                List<Geometry> polygons = entry.getValue();
-                Geometry basin = CascadedPolygonUnion.union(polygons);
+			if (inStreamGauge != null) {
+				csvText.append(";stream_gauge_id");
+			}
+			csvText.append("\n");
 
-                // extract largest basin
-                double maxArea = Double.NEGATIVE_INFINITY;
-                Geometry maxPolygon = basin;
-                int numGeometries = basin.getNumGeometries();
-                if (numGeometries > 1) {
-                    for( int i = 0; i < numGeometries; i++ ) {
-                        Geometry geometryN = basin.getGeometryN(i);
-                        double area = geometryN.getArea();
-                        if (area > maxArea) {
-                            maxArea = area;
-                            maxPolygon = geometryN;
-                        }
-                    }
-                }
+			// aggregate basins and check for lakes
+			Map<Integer, Geometry> basinId2geomMap = new HashMap<>();
+			pm.beginTask("Join basin cells...", collected.size());
+			int maxBasinNum = 0;
+			for (Entry<Integer, List<Geometry>> entry : collected.entrySet()) {
+				int basinNum = entry.getKey();
+				maxBasinNum = Math.max(maxBasinNum, basinNum);
 
-                // if lakes are available, they can't completely contain a basin
-                // and can't be completely contained in a basin
-                for( Geometry lakeGeom : lakesList ) {
-                    if (maxPolygon.contains(lakeGeom)) {
-                        throw new ModelsIllegalargumentException("A basin can't completely contain a lake. Check your data.",
-                                this);
-                    }
-                }
-                if (maxPolygon.isValid() && !maxPolygon.isEmpty()) {
-                    basinId2geomMap.put(basinNum, maxPolygon);
-                } else {
-                    pm.errorMessage("Not adding basin polygon: valid=" + maxPolygon.isValid() + " empyt=" + maxPolygon.isEmpty());
-                }
-                pm.worked(1);
-            }
-            pm.done();
+				List<Geometry> polygons = entry.getValue();
+				Geometry basin = CascadedPolygonUnion.union(polygons);
 
-            // if lakes are available, they have to contain at least one confluence
-            for( Geometry lakeGeom : lakesList ) {
-                PreparedGeometry preparedLake = PreparedGeometryFactory.prepare(lakeGeom);
-                boolean hasPoint = false;
-                for( Geometry netGeom : netGeometries ) {
-                    LineString line = (LineString) netGeom;
-                    Point startPoint = line.getStartPoint();
-                    Point endPoint = line.getEndPoint();
-                    if (preparedLake.contains(startPoint) || preparedLake.contains(endPoint)) {
-                        hasPoint = true;
-                        break;
-                    }
-                }
+				// extract largest basin
+				double maxArea = Double.NEGATIVE_INFINITY;
+				Geometry maxPolygon = basin;
+				int numGeometries = basin.getNumGeometries();
+				if (numGeometries > 1) {
+					for (int i = 0; i < numGeometries; i++) {
+						Geometry geometryN = basin.getGeometryN(i);
+						double area = geometryN.getArea();
+						if (area > maxArea) {
+							maxArea = area;
+							maxPolygon = geometryN;
+						}
+					}
+				}
 
-                if (!hasPoint) {
-                    throw new ModelsIllegalargumentException("A lake has to contain at least one confluence. Check your data.",
-                            this);
-                }
-            }
+				// if lakes are available, they can't completely contain a basin
+				// and can't be completely contained in a basin
+				for (Geometry lakeGeom : lakesList) {
+					if (maxPolygon.contains(lakeGeom)) {
+						throw new ModelsIllegalargumentException(
+								"A basin can't completely contain a lake. Check your data.", this);
+					}
+				}
+				if (maxPolygon.isValid() && !maxPolygon.isEmpty()) {
+					basinId2geomMap.put(basinNum, maxPolygon);
+				} else {
+					pm.errorMessage("Not adding basin polygon: valid=" + maxPolygon.isValid() + " empyt="
+							+ maxPolygon.isEmpty());
+				}
+				pm.worked(1);
+			}
+			pm.done();
 
-            // if lakes are available, we need to find the basins that intersect and cut the basins
-            // on
-            // them
-            List<Integer> lakesIdList = new ArrayList<>();
-            if (!lakesList.isEmpty()) {
-                List<Basin> allBasins = new ArrayList<>();
-                int nextBasinNum = maxBasinNum + 1;
-                Basin rootBasin = getRootBasin(basinId2geomMap, allBasins);
-                if (rootBasin != null) {
-                    List<Basin> nullGeomBasins = allBasins.parallelStream().filter(tmpBasin -> tmpBasin.basinGeometry == null)
-                            .collect(Collectors.toList());
-                    if (nullGeomBasins.size() > 0) {
-                        StringBuilder sb = new StringBuilder();
-                        sb.append("The following basins have corrupted or null geometries:");
-                        for( Basin nullBasin : nullGeomBasins ) {
-                            sb.append(nullBasin).append("\n");
-                        }
-                        sb.append("Unexpected behaviour could occurr, better check your input data.");
-                        pm.errorMessage(sb.toString());
-                    }
+			// if lakes are available, they have to contain at least one confluence
+			for (Geometry lakeGeom : lakesList) {
+				PreparedGeometry preparedLake = PreparedGeometryFactory.prepare(lakeGeom);
+				boolean hasPoint = false;
+				for (Geometry netGeom : netGeometries) {
+					LineString line = (LineString) netGeom;
+					Point startPoint = line.getStartPoint();
+					Point endPoint = line.getEndPoint();
+					if (preparedLake.contains(startPoint) || preparedLake.contains(endPoint)) {
+						hasPoint = true;
+						break;
+					}
+				}
 
-                    pm.beginTask("Handle lake-basin intersections...", lakesList.size());
-                    for( Geometry lakeGeom : lakesList ) {
-                        Basin outBasin = findFirstIntersecting(rootBasin, lakeGeom);
-                        if (outBasin != null) {
-                            // found the out basin. All others intersecting will drain into this
-                            List<Basin> intersectingBasins = allBasins.parallelStream().filter(tmpBasin -> {
-                                if (tmpBasin.basinGeometry == null) {
-                                    return false;
-                                }
-                                boolean isNotOutBasin = tmpBasin.id != outBasin.id;
-                                boolean intersectsLake = tmpBasin.basinGeometry.intersects(lakeGeom);
-                                return isNotOutBasin && intersectsLake;
-                            }).collect(Collectors.toList());
+				if (!hasPoint) {
+					throw new ModelsIllegalargumentException(
+							"A lake has to contain at least one confluence. Check your data.", this);
+				}
+			}
 
-                            // of the intersecting find those that are completely contained
-                            List<Basin> completelyContainedBasins = new ArrayList<>();
-                            List<Basin> justIntersectingBasins = new ArrayList<>();
-                            intersectingBasins.forEach(interBasin -> {
-                                if (lakeGeom.contains(interBasin.basinGeometry)) {
-                                    completelyContainedBasins.add(interBasin);
-                                } else {
-                                    justIntersectingBasins.add(interBasin);
-                                }
-                            });
-                            intersectingBasins = justIntersectingBasins;
+			// if lakes are available, we need to find the basins that intersect and cut the
+			// basins
+			// on
+			// them
+			List<Integer> lakesIdList = new ArrayList<>();
+			List<String> lakesTypeList = new ArrayList<String>();
 
-                            // create a new basin based on the lake
-                            Basin lakeBasin = new Basin();
-                            lakeBasin.basinGeometry = lakeGeom;
-                            lakeBasin.id = nextBasinNum++;
-                            lakesIdList.add(lakeBasin.id);
-                            lakeBasin.downStreamBasin = outBasin;
-                            lakeBasin.downStreamBasinId = outBasin.id;
-                            lakeBasin.upStreamBasins.addAll(intersectingBasins);
-                            basinId2geomMap.put(lakeBasin.id, lakeBasin.basinGeometry);
+			if (!lakesList.isEmpty()) {
+				List<Basin> allBasins = new ArrayList<>();
+				int nextBasinNum = maxBasinNum + 1;
+				Basin rootBasin = getRootBasin(basinId2geomMap, allBasins);
+				if (rootBasin != null) {
+					List<Basin> nullGeomBasins = allBasins.parallelStream()
+							.filter(tmpBasin -> tmpBasin.basinGeometry == null).collect(Collectors.toList());
+					if (nullGeomBasins.size() > 0) {
+						StringBuilder sb = new StringBuilder();
+						sb.append("The following basins have corrupted or null geometries:");
+						for (Basin nullBasin : nullGeomBasins) {
+							sb.append(nullBasin).append("\n");
+						}
+						sb.append("Unexpected behaviour could occurr, better check your input data.");
+						pm.errorMessage(sb.toString());
+					}
 
-                            // then disconnect completely contained basins up and down linking them
-                            // to
-                            // the lake
-                            for( Basin containedBasin : completelyContainedBasins ) {
-                                for( Basin tmpBasin : allBasins ) {
-                                    if (tmpBasin.id != containedBasin.id) {
-                                        // find basins that drain into the fully contained and
-                                        // relink
-                                        // them to the lake
-                                        if (tmpBasin.downStreamBasinId == containedBasin.id) {
-                                            tmpBasin.downStreamBasinId = lakeBasin.id;
-                                            tmpBasin.downStreamBasin = lakeBasin;
-                                        }
-                                        // find basins in which the completely contained drains into
-                                        // and
-                                        // relink with lake
-                                        Basin removeBasin = null;
-                                        if (tmpBasin.upStreamBasins != null) {
-                                            for( Basin tmpUpBasin : tmpBasin.upStreamBasins ) {
-                                                if (tmpUpBasin.id == containedBasin.id) {
-                                                    removeBasin = tmpUpBasin;
-                                                }
-                                            }
-                                        }
-                                        if (removeBasin != null) {
-                                            tmpBasin.upStreamBasins.remove(removeBasin);
-                                            tmpBasin.upStreamBasins.add(lakeBasin);
-                                        }
-                                    }
-                                }
-                                // at this point the containedBasin should be orphan
-                                containedBasin.downStreamBasin = null;
-                                containedBasin.upStreamBasins = null;
-                                basinId2geomMap.remove(containedBasin.id);
-                            }
+					pm.beginTask("Handle lake-basin intersections...", lakesList.size());
+					for (Geometry lakeGeom : lakesList) {
+						Basin outBasin = findFirstIntersecting(rootBasin, lakeGeom);
+						if (outBasin != null) {
+							// found the out basin. All others intersecting will drain into this
+							List<Basin> intersectingBasins = allBasins.parallelStream().filter(tmpBasin -> {
+								if (tmpBasin.basinGeometry == null) {
+									return false;
+								}
+								boolean isNotOutBasin = tmpBasin.id != outBasin.id;
+								boolean intersectsLake = tmpBasin.basinGeometry.intersects(lakeGeom);
+								return isNotOutBasin && intersectsLake;
+							}).collect(Collectors.toList());
 
-                            // handle interaction with downstream basin
-                            outBasin.upStreamBasins.removeAll(lakeBasin.upStreamBasins);
-                            outBasin.upStreamBasins.add(lakeBasin);
-                            Geometry geomToCut = basinId2geomMap.get(outBasin.id);
-                            Geometry newGeom;
-                            try {
-                                newGeom = geomToCut.difference(lakeGeom);
+							// of the intersecting find those that are completely contained
+							List<Basin> completelyContainedBasins = new ArrayList<>();
+							List<Basin> justIntersectingBasins = new ArrayList<>();
+							intersectingBasins.forEach(interBasin -> {
+								if (lakeGeom.contains(interBasin.basinGeometry)) {
+									completelyContainedBasins.add(interBasin);
+								} else {
+									justIntersectingBasins.add(interBasin);
+								}
+							});
+							intersectingBasins = justIntersectingBasins;
+
+							// create a new basin based on the lake
+							Basin lakeBasin = new Basin();
+							lakeBasin.basinGeometry = lakeGeom;
+							lakeBasin.id = nextBasinNum++;
+							lakesIdList.add(lakeBasin.id);
+							lakesTypeList.add((String) lakeGeom.getUserData());
+							lakeBasin.downStreamBasin = outBasin;
+							lakeBasin.downStreamBasinId = outBasin.id;
+							lakeBasin.upStreamBasins.addAll(intersectingBasins);
+							basinId2geomMap.put(lakeBasin.id, lakeBasin.basinGeometry);
+
+							// then disconnect completely contained basins up and down linking them
+							// to
+							// the lake
+							for (Basin containedBasin : completelyContainedBasins) {
+								for (Basin tmpBasin : allBasins) {
+									if (tmpBasin.id != containedBasin.id) {
+										// find basins that drain into the fully contained and
+										// relink
+										// them to the lake
+										if (tmpBasin.downStreamBasinId == containedBasin.id) {
+											tmpBasin.downStreamBasinId = lakeBasin.id;
+											tmpBasin.downStreamBasin = lakeBasin;
+										}
+										// find basins in which the completely contained drains into
+										// and
+										// relink with lake
+										Basin removeBasin = null;
+										if (tmpBasin.upStreamBasins != null) {
+											for (Basin tmpUpBasin : tmpBasin.upStreamBasins) {
+												if (tmpUpBasin.id == containedBasin.id) {
+													removeBasin = tmpUpBasin;
+												}
+											}
+										}
+										if (removeBasin != null) {
+											tmpBasin.upStreamBasins.remove(removeBasin);
+											tmpBasin.upStreamBasins.add(lakeBasin);
+										}
+									}
+								}
+								// at this point the containedBasin should be orphan
+								containedBasin.downStreamBasin = null;
+								containedBasin.upStreamBasins = null;
+								basinId2geomMap.remove(containedBasin.id);
+							}
+
+							// handle interaction with downstream basin
+							outBasin.upStreamBasins.removeAll(lakeBasin.upStreamBasins);
+							outBasin.upStreamBasins.add(lakeBasin);
+							Geometry geomToCut = basinId2geomMap.get(outBasin.id);
+							Geometry newGeom;
+							try {
+								newGeom = geomToCut.difference(lakeGeom);
 							} catch (Exception e) {
 								geomToCut.setUserData("basin_" + outBasin.id);
 								lakeGeom.setUserData("lake");
@@ -439,8 +482,11 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 										geomToCut, lakeGeom);
 								if (inGeoframeDb != null) {
 									var table = SqlName.m("error_basin_" + outBasin.id);
-				                    SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, fc.getSchema(), table, null, false);
-				                    SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, fc, table, -1, false, pm);
+									SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, fc.getSchema(), table,
+											null, false);
+									
+									SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, fc, table, -1, false,
+											pm);
 								} else {
 									File folder = new File(outFolder);
 									File errorFile = new File(folder,
@@ -455,55 +501,56 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 								continue;
 							}
-                            outBasin.basinGeometry = newGeom;
-                            basinId2geomMap.put(outBasin.id, newGeom);
+							outBasin.basinGeometry = newGeom;
+							basinId2geomMap.put(outBasin.id, newGeom);
 
-                            // handle interaction with upstream basins
-                            intersectingBasins.forEach(iBasin -> {
-                                iBasin.downStreamBasin = lakeBasin;
-                                iBasin.downStreamBasinId = lakeBasin.id;
+							// handle interaction with upstream basins
+							intersectingBasins.forEach(iBasin -> {
+								iBasin.downStreamBasin = lakeBasin;
+								iBasin.downStreamBasinId = lakeBasin.id;
 
-                                Geometry basinGeomToCut = basinId2geomMap.get(iBasin.id);
-                                Geometry newBasinGeom = basinGeomToCut.difference(lakeGeom);
-                                basinId2geomMap.put(iBasin.id, newBasinGeom);
-                            });
+								Geometry basinGeomToCut = basinId2geomMap.get(iBasin.id);
+								Geometry newBasinGeom = basinGeomToCut.difference(lakeGeom);
+								basinId2geomMap.put(iBasin.id, newBasinGeom);
+							});
 
-                            // we also need to cut the streams on the lakes
-                            List<Geometry> cutNetGeometries = new ArrayList<>();
-                            for( Geometry netGeom : netGeometries ) {
-                                if (netGeom.intersects(lakeGeom)) {
-                                    Geometry difference = netGeom.difference(lakeGeom);
-                                    if (!difference.isEmpty()) {
-                                        if (difference.getNumGeometries() > 1) {
-                                            // choose longest
-                                            Geometry longest = null;
-                                            double maxLength = -1;
-                                            for( int i = 0; i < difference.getNumGeometries(); i++ ) {
-                                                Geometry geometryN = difference.getGeometryN(i);
-                                                double l = geometryN.getLength();
-                                                if (l > maxLength) {
-                                                    maxLength = l;
-                                                    longest = geometryN;
-                                                }
-                                            }
-                                            difference = longest;
-                                        }
-                                        cutNetGeometries.add(difference);
-                                        difference.setUserData(netGeom.getUserData());
-                                    }
-                                } else {
-                                    cutNetGeometries.add(netGeom);
-                                }
-                            }
-                            netGeometries = cutNetGeometries;
-                        }
-                    }
+							// we also need to cut the streams on the lakes
+							List<Geometry> cutNetGeometries = new ArrayList<>();
+							for (Geometry netGeom : netGeometries) {
+								if (netGeom.intersects(lakeGeom)) {
+									Geometry difference = netGeom.difference(lakeGeom);
+									if (!difference.isEmpty()) {
+										if (difference.getNumGeometries() > 1) {
+											// choose longest
+											Geometry longest = null;
+											double maxLength = -1;
+											for (int i = 0; i < difference.getNumGeometries(); i++) {
+												Geometry geometryN = difference.getGeometryN(i);
+												double l = geometryN.getLength();
+												if (l > maxLength) {
+													maxLength = l;
+													longest = geometryN;
+												}
+											}
+											difference = longest;
+										}
+										cutNetGeometries.add(difference);
+										difference.setUserData(netGeom.getUserData());
+									}
+								} else {
+									cutNetGeometries.add(netGeom);
+								}
+							}
+							netGeometries = cutNetGeometries;
+						}
+					}
 
-                    // finally rewrite the topology file.
-                    if (inGeoframeDb != null) {
-                    	// clear old topology table
-						inGeoframeDb.executeInsertUpdateDeleteSql ("DELETE FROM " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE);
-						
+					// finally rewrite the topology file.
+					if (inGeoframeDb != null) {
+						// clear old topology table
+						inGeoframeDb.executeInsertUpdateDeleteSql(
+								"DELETE FROM " + GeoFrameSimpleTable.TOPOLOGY.tableName());
+
 						StringBuilder errorSb = new StringBuilder("Not adding again: \n");
 						List<String> topology = new ArrayList<>();
 						writeTopologyToDb(topology, rootBasin, errorSb);
@@ -511,7 +558,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 						if (!error.isBlank()) {
 							pm.errorMessage(error);
 						}
-                    	
+
 					} else if (inGeoframeTopology != null) {
 						File topoFile = new File(inGeoframeTopology);
 						String topoFilename = FileUtilities.getNameWithoutExtention(topoFile);
@@ -529,26 +576,29 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 						FileUtilities.writeFile(sb.toString(), newTopoFile);
 					}
-                } else {
-                    pm.errorMessage("Unable to find the basin topology.");
-                }
-            }
+				} else {
+					pm.errorMessage("Unable to find the basin topology.");
+				}
+			}
 
-            pm.beginTask("Extract vector basins...", basinId2geomMap.size());
-            List<Geometry> _netGeometries = netGeometries;
-            basinId2geomMap.entrySet().stream().forEach(entry -> {
-                try {
-                    extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder, basinCentroidsBuilder,
-                            singleNetBuilder, allBasinsFC, allNetworksFC, csvText, lakesIdList, entry);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            });
+			pm.beginTask("Extract vector basins...", basinId2geomMap.size());
+			List<Geometry> _netGeometries = netGeometries;
+			SimpleFeatureCollection breackPoints = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
+
+			basinId2geomMap.entrySet().stream().forEach(entry -> {
+				try {
+					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder, singleNetBuilder,
+							getSFStreamGauge(crs, Point.class), allBasinsFC, centroifdBasinFC, allNetworksFC,
+							streamGaugeFC, breackPoints, csvText, lakesIdList, lakesTypeList, entry);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
 //            for( Entry<Integer, Geometry> entry : basinId2geomMap.entrySet() ) {
 //                extractBasin(subBasins, pit, sky, drain, net, crs, netGeometries, basinsBuilder, basinCentroidsBuilder,
 //                        singleNetBuilder, allBasinsFC, allNetworksFC, csvText, lakesIdList, entry);
 //            }
-            pm.done();
+			pm.done();
 
 			if (inGeoframeDb == null) {
 				File folder = new File(outFolder);
@@ -565,131 +615,144 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					FileUtilities.writeFile(csvText.toString(), csvFile);
 				}
 			} else {
+				String basinTable = GeoFrameGeoTable.BASIN.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(),
-						SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC,
-						SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE), -1, false, pm);
+						SqlName.m(basinTable), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
+						false, pm);
 
+				String networkTable = GeoFrameGeoTable.NET.tableName();
 				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
-						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC,
-						SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE), -1, false, pm);
+						SqlName.m(networkTable), null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC, SqlName.m(networkTable), -1,
+						false, pm);
+				if (streamGaugeFC != null && streamGaugeFC.size() > 0) {
+					String streamGAuge = GeoFrameGeoTable.HYDRO_METEO_STATION.tableName();
+                     //TODO create unique keys: ID+TYPE
+					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
+							SqlName.m(streamGAuge), null, false);
+					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, SqlName.m(streamGAuge),
+							-1, false, pm);
+				}
 			}
-        }
-    }
+		}
 
-    private void extractBasin( HMRaster subBasins, HMRaster pit, HMRaster sky, HMRaster drain, HMRaster net,
-            CoordinateReferenceSystem crs, List<Geometry> netGeometries, SimpleFeatureBuilder basinsBuilder,
-            SimpleFeatureBuilder basinCentroidsBuilder, SimpleFeatureBuilder singleNetBuilder,
-            DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection allNetworksFC, StringBuilder csvText,
-            List<Integer> lakesIdList, Entry<Integer, Geometry> entry ) throws Exception, ModelsIOException {
-        int basinNum = entry.getKey();
+	}
+
+	private void extractBasin(HMRaster subBasins, HMRaster pit, HMRaster sky, HMRaster drain, HMRaster net,
+			CoordinateReferenceSystem crs, List<Geometry> netGeometries, SimpleFeatureBuilder basinsBuilder,
+			SimpleFeatureBuilder singleNetBuilder, SimpleFeatureBuilder streamGaugeBuilder,
+			DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection centroidBasinsFC,
+			DefaultFeatureCollection allNetworksFC, DefaultFeatureCollection streamGaugeFC,
+			SimpleFeatureCollection breackPointFC, StringBuilder csvText, List<Integer> lakesIdList,
+			List<String> lakesTypeList, Entry<Integer, Geometry> entry) throws Exception, ModelsIOException {
+		int basinNum = entry.getKey();
 //        pm.message("Processing basin " + basinNum + "...");
-        Geometry basinPolygon = entry.getValue();
+		Geometry basinPolygon = entry.getValue();
 
-        double mainNetLength = 0; // for lakes ==0
-        List<LineString> netPieces = new ArrayList<>();
-        List<Integer> checkValueList = new ArrayList<>();
+		double mainNetLength = 0; // for lakes ==0
+		List<LineString> netPieces = new ArrayList<>();
+		List<Integer> checkValueList = new ArrayList<>();
 
-        boolean isLake = lakesIdList.contains(basinNum);
-        if (!isLake) {
-            // get network pieces inside basin
-            int minCheckValue = Integer.MAX_VALUE;
-            HashMap<Integer, List<LineString>> checkValueList4Lines = new HashMap<>();
-            for( Geometry netGeom : netGeometries ) {
-                if (netGeom.intersects(basinPolygon)) {
-                    LengthIndexedLine lil = new LengthIndexedLine(netGeom);
-                    Coordinate centerCoord = lil.extractPoint(0.5);
-                    double value = subBasins.getValue(centerCoord);
-                    if ((int) value == basinNum) {
-                        Object userData = netGeom.getUserData();
+		boolean isLake = lakesIdList.contains(basinNum);
+		int k = 0;
+		if (!isLake) {
+			k = lakesIdList.indexOf(basinNum);
+			// get network pieces inside basin
+			int minCheckValue = Integer.MAX_VALUE;
+			HashMap<Integer, List<LineString>> checkValueList4Lines = new HashMap<>();
+			for (Geometry netGeom : netGeometries) {
+				if (netGeom.intersects(basinPolygon)) {
+					LengthIndexedLine lil = new LengthIndexedLine(netGeom);
+					Coordinate centerCoord = lil.extractPoint(0.5);
+					double value = subBasins.getValue(centerCoord);
+					if ((int) value == basinNum) {
+						Object userData = netGeom.getUserData();
 
-                        int checkValue;
-                        if (useHack) {
-                            checkValue = Integer.parseInt(userData.toString());
-                        } else {
-                            String pfaf = userData.toString();
-                            PfafstetterNumber p = new PfafstetterNumber(pfaf);
-                            checkValue = p.getOrder();
-                        }
-                        minCheckValue = Math.min(minCheckValue, checkValue);
-                        checkValueList.add(checkValue);
-                        List<LineString> list = checkValueList4Lines.get(checkValue);
-                        if (list == null) {
-                            list = new ArrayList<>();
-                        }
-                        list.add((LineString) netGeom);
-                        checkValueList4Lines.put(checkValue, list);
+						int checkValue;
+						if (useHack) {
+							checkValue = Integer.parseInt(userData.toString());
+						} else {
+							String pfaf = userData.toString();
+							PfafstetterNumber p = new PfafstetterNumber(pfaf);
+							checkValue = p.getOrder();
+						}
+						minCheckValue = Math.min(minCheckValue, checkValue);
+						checkValueList.add(checkValue);
+						List<LineString> list = checkValueList4Lines.get(checkValue);
+						if (list == null) {
+							list = new ArrayList<>();
+						}
+						list.add((LineString) netGeom);
+						checkValueList4Lines.put(checkValue, list);
 
-                        netPieces.add((LineString) netGeom);
+						netPieces.add((LineString) netGeom);
 
-                    }
-                }
-            }
-            if (minCheckValue != Integer.MAX_VALUE) {
-                List<LineString> minCheckValueLines = checkValueList4Lines.get(minCheckValue);
-                for( LineString minCheckValueLine : minCheckValueLines ) {
-                    mainNetLength += minCheckValueLine.getLength();
-                }
-            }
-        }
+					}
+				}
+			}
+			if (minCheckValue != Integer.MAX_VALUE) {
+				List<LineString> minCheckValueLines = checkValueList4Lines.get(minCheckValue);
+				for (LineString minCheckValueLine : minCheckValueLines) {
+					mainNetLength += minCheckValueLine.getLength();
+				}
+			}
+		}
 
-        Envelope basinEnvelope = basinPolygon.getEnvelopeInternal();
+		Envelope basinEnvelope = basinPolygon.getEnvelopeInternal();
 
-        Point basinCentroid = basinPolygon.getCentroid();
-        double areaM2 = basinPolygon.getArea();
-        double areaKm2 = areaM2 / 1000000.0;
+		Point basinCentroid = basinPolygon.getCentroid();
+		double areaM2 = basinPolygon.getArea();
+		double areaKm2 = areaM2 / 1000000.0;
 
-        Coordinate point = basinCentroid.getCoordinate();
-        double elev = pit.getValue(point);
-        double skyview = sky.getValue(point);
+		Coordinate point = basinCentroid.getCoordinate();
+		double elev = pit.getValue(point);
+		double skyview = sky.getValue(point);
 
-        // Extracting raster data for each basin
-        ReferencedEnvelope basinRefEnvelope = new ReferencedEnvelope(basinEnvelope, crs);
-        GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope, null);
-        WritableRaster clippedWR = CoverageUtilities.renderedImage2IntWritableRaster(clipped.getRenderedImage(), false);
+		// Extracting raster data for each basin
+		ReferencedEnvelope basinRefEnvelope = new ReferencedEnvelope(basinEnvelope, crs);
+		GridCoverage2D clipped = CoverageUtilities.clipCoverage(subBasins, basinRefEnvelope, null);
+		WritableRaster clippedWR = CoverageUtilities.renderedImage2IntWritableRaster(clipped.getRenderedImage(), false);
 
-        // we need to consider the lakes and lake cuts, so the polygon needs to be used
-        PreparedGeometry preparedBasinPolygon = PreparedGeometryFactory.prepare(basinPolygon);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(clipped);
-        GridGeometry2D clippedGG = clipped.getGridGeometry();
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, clippedGG);
-                if (preparedBasinPolygon.intersects(GeometryUtilities.gf().createPoint(coord))) {
-                    clippedWR.setSample(c, r, 0, basinNum);
-                    // TODO check
-                    // int value = clippedWR.getSample(c, r, 0);
-                    // if (value != basinNum) {
-                    // clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
-                    // }
-                } else {
-                    clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
-                }
-            }
-        }
+		// we need to consider the lakes and lake cuts, so the polygon needs to be used
+		PreparedGeometry preparedBasinPolygon = PreparedGeometryFactory.prepare(basinPolygon);
+		RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(clipped);
+		GridGeometry2D clippedGG = clipped.getGridGeometry();
+		int cols = regionMap.getCols();
+		int rows = regionMap.getRows();
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				Coordinate coord = CoverageUtilities.coordinateFromColRow(c, r, clippedGG);
+				if (preparedBasinPolygon.intersects(GeometryUtilities.gf().createPoint(coord))) {
+					clippedWR.setSample(c, r, 0, basinNum);
+					// TODO check
+					// int value = clippedWR.getSample(c, r, 0);
+					// if (value != basinNum) {
+					// clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
+					// }
+				} else {
+					clippedWR.setSample(c, r, 0, HMConstants.intNovalue);
+				}
+			}
+		}
 
+		GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap, crs);
 
-        GridCoverage2D maskCoverage = CoverageUtilities.buildCoverage("basin" + basinNum, clippedWR, regionMap,
-        		crs);
-        
-        GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope, null);
-        GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
-        
-        double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
-        double avgElev = minMaxAvgSum[2];
-        
-        File basinFolder = null;
+		GridCoverage2D clippedPit = CoverageUtilities.clipCoverage(pit, basinRefEnvelope, null);
+		GridCoverage2D cutPit = CoverageUtilities.coverageValuesMapper(clippedPit, maskCoverage);
+
+		double[] minMaxAvgSum = OmsRasterSummary.getMinMaxAvgSum(cutPit);
+		double avgElev = minMaxAvgSum[2];
+
+		File basinFolder = null;
 		if (inGeoframeDb == null) {
 			basinFolder = makeBasinFolder(basinNum);
-			
+
 			File pitFile = new File(basinFolder, "dtm_" + basinNum + ".asc");
 			if (!pitFile.exists() || doOverWrite) {
 				dumpRaster(cutPit, pitFile.getAbsolutePath());
 			}
-			
+
 			GridCoverage2D clippedSky = CoverageUtilities.clipCoverage(sky, basinRefEnvelope, null);
 			GridCoverage2D cutSky = CoverageUtilities.coverageValuesMapper(clippedSky, maskCoverage);
 			File skyFile = new File(basinFolder, "sky_" + basinNum + ".asc");
@@ -712,20 +775,25 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			}
 		}
 
-        // finalize feature writing
+		// finalize feature writing
 
-        // BASINS
-        Geometry dumpBasin = basinPolygon;
-        if (basinPolygon instanceof Polygon) {
-            dumpBasin = GeometryUtilities.gf().createMultiPolygon(new Polygon[]{(Polygon) basinPolygon});
-        }
-        Object[] basinValues = new Object[]{dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength, skyview,
-                isLake ? 1 : 0};
-        basinsBuilder.addAll(basinValues);
-        SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
-        allBasinsFC.add(basinFeature);
+		// BASINS
+		Geometry dumpBasin = basinPolygon;
+		if (basinPolygon instanceof Polygon) {
+			dumpBasin = GeometryUtilities.gf().createMultiPolygon(new Polygon[] { (Polygon) basinPolygon });
+		}
+		String featureUserType = (isLake && lakesTypeList != null && lakesTypeList.size() > k)
+				? lakesTypeList.toString()
+				: SubbasinsTypeField.HILLSOLOPE.toString();
 
-        // dump single subbasin
+		String id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
+		Object[] basinValues = new Object[] { dumpBasin, basinNum, point.x, point.y, elev, avgElev, areaKm2,
+				mainNetLength, skyview, featureUserType, id };
+		basinsBuilder.addAll(basinValues);
+		SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
+		allBasinsFC.add(basinFeature);
+
+		// dump single subbasin
 		if (inGeoframeDb == null) {
 			DefaultFeatureCollection singleBasin = new DefaultFeatureCollection();
 			singleBasin.add(basinFeature);
@@ -735,185 +803,137 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			}
 		}
 
-        Object[] centroidValues = new Object[]{basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2, mainNetLength,
-                skyview};
-        basinCentroidsBuilder.addAll(centroidValues);
-        SimpleFeature basinCentroidFeature = basinCentroidsBuilder.buildFeature(null);
-
-        // dump single centroid
+		Object[] centroidValues = new Object[] { basinCentroid, basinNum, point.x, point.y, elev, avgElev, areaKm2,
+				mainNetLength, skyview };
+		// dump single centroid
 		if (inGeoframeDb == null) {
 			DefaultFeatureCollection singleCentroid = new DefaultFeatureCollection();
-			singleCentroid.add(basinCentroidFeature);
 			File centroidShpFile = new File(basinFolder, "centroid_ID_" + basinNum + ".shp");
 			if (!centroidShpFile.exists() || doOverWrite) {
 				dumpVector(singleCentroid, centroidShpFile.getAbsolutePath());
 			}
 		}
 
-        // CHANNELS
-        if (!netPieces.isEmpty()) {
-            DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
-            for( int i = 0; i < netPieces.size(); i++ ) {
-                LineString netLine = netPieces.get(i);
-                Integer checkValue = checkValueList.get(i);
-                Object[] netValues = new Object[]{netLine, basinNum, netLine.getLength(), checkValue};
-                singleNetBuilder.addAll(netValues);
-                SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
+		// CHANNELS
+		if (!netPieces.isEmpty()) {
+			DefaultFeatureCollection singleNet = new DefaultFeatureCollection();
+			for (int i = 0; i < netPieces.size(); i++) {
+				LineString netLine = netPieces.get(i);
+				Integer checkValue = checkValueList.get(i);
+				Object[] netValues = new Object[] { netLine, basinNum, netLine.getLength(), checkValue };
+				singleNetBuilder.addAll(netValues);
+				SimpleFeature singleNetFeature = singleNetBuilder.buildFeature(null);
 
-                allNetworksFC.add(singleNetFeature);
-                singleNet.add(singleNetFeature);
-            }
-            if (inGeoframeDb == null) {
+				allNetworksFC.add(singleNetFeature);
+				singleNet.add(singleNetFeature);
+			}
+			if (inGeoframeDb == null) {
 				File netShpFile = new File(basinFolder, "network_complete_ID_" + basinNum + ".shp");
 				if (!netShpFile.exists() || doOverWrite) {
 					dumpVector(singleNet, netShpFile.getAbsolutePath());
 				}
-            }
-        }
+			}
+		}
 
-        csvText.append(basinNum).append(";");
-        csvText.append(point.x).append(";");
-        csvText.append(point.y).append(";");
-        csvText.append(elev).append(";");
-        csvText.append(avgElev).append(";");
-        csvText.append(areaKm2).append(";");
-        csvText.append(mainNetLength).append(";");
-        csvText.append(skyview).append("\n");
+		csvText.append(basinNum).append(";");
+		csvText.append(point.x).append(";");
+		csvText.append(point.y).append(";");
+		csvText.append(elev).append(";");
+		csvText.append(avgElev).append(";");
+		csvText.append(areaKm2).append(";");
+		csvText.append(mainNetLength).append(";");
+		csvText.append(featureUserType).append(';');
+		if (breackPointFC != null) {
+			csvText.append(id);
+		}
+		csvText.append(skyview).append("\n");
 
-        pm.worked(1);
-    }
+		pm.worked(1);
+	}
 
-    private void printSubbasins( TreeSet<Integer> subBasinsSet, TreeSet<Integer> topologyBasinsSet ) {
-        pm.message("Basins in subbasins but not in topology:");
-        for( Integer subbasinId : subBasinsSet ) {
-            if (!topologyBasinsSet.contains(subbasinId)) {
-                pm.message("\t->" + subbasinId);
-            }
-        }
-        pm.message("Basins in topology but not in subbasins:");
-        for( Integer topologyIdId : topologyBasinsSet ) {
-            if (!subBasinsSet.contains(topologyIdId)) {
-                pm.message("\t->" + topologyIdId);
-            }
-        }
+	private void printSubbasins(TreeSet<Integer> subBasinsSet, TreeSet<Integer> topologyBasinsSet) {
+		pm.message("Basins in subbasins but not in topology:");
+		for (Integer subbasinId : subBasinsSet) {
+			if (!topologyBasinsSet.contains(subbasinId)) {
+				pm.message("\t->" + subbasinId);
+			}
+		}
+		pm.message("Basins in topology but not in subbasins:");
+		for (Integer topologyIdId : topologyBasinsSet) {
+			if (!subBasinsSet.contains(topologyIdId)) {
+				pm.message("\t->" + topologyIdId);
+			}
+		}
 
-    }
+	}
 
-    private Geometry getMaxArea( Geometry newGeom ) {
-        if (newGeom.getNumGeometries() > 1) {
-            // we take only the basin with major area
-            Geometry biggest = null;
-            double maxArea = -1;
-            for( int i = 0; i < newGeom.getNumGeometries(); i++ ) {
-                Geometry geometryN = newGeom.getGeometryN(i);
-                double a = geometryN.getArea();
-                if (a > maxArea) {
-                    maxArea = a;
-                    biggest = geometryN;
-                }
-            }
-            newGeom = biggest;
-        }
-        return newGeom;
-    }
+	private void writeTopologyToDb(List<String> topology, Basin basin, StringBuilder errorSb) throws Exception {
+		int downid = 0;
+		if (basin.downStreamBasin != null) {
+			downid = basin.downStreamBasinId;
+		}
+		String record = basin.id + " " + downid;
+		if (!topology.contains(record)) {
+			topology.add(record);
+			String sql = "INSERT INTO " + GeoFrameSimpleTable.TOPOLOGY.name() + " ("
+					+ TopologyField.UPPSTREAM_BASIN.columnName() + ", " + TopologyField.DOWNSTREAM_BASIN.columnName()
+					+ ") VALUES (" + basin.id + ", " + downid + ")";
+			inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 
-    private void writeTopologyToDb( List<String> topology, Basin basin, StringBuilder errorSb ) throws Exception {
-        int downid = 0;
-        if (basin.downStreamBasin != null) {
-            downid = basin.downStreamBasinId;
-        }
-        String record = basin.id + " " + downid;
-        if (!topology.contains(record)) {
-            topology.add(record);
-            String sql = "INSERT INTO " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE + " ("
-					+ GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM + ", "
-					+ GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO + ") VALUES ("
-					+ basin.id + ", " + downid + ")";
-            inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+			for (Basin upBasin : basin.upStreamBasins) {
+				writeTopologyToDb(topology, upBasin, errorSb);
+			}
+		} else {
+			errorSb.append("  ->").append(record).append("\n");
+		}
+	}
 
-            for( Basin upBasin : basin.upStreamBasins ) {
-                writeTopology(topology, upBasin, errorSb);
-            }
-        } else {
-            errorSb.append("  ->").append(record).append("\n");
-        }
-    }
-    
-    private void writeTopology( List<String> topology, Basin basin, StringBuilder errorSb ) {
-        int downid = 0;
-        if (basin.downStreamBasin != null) {
-            downid = basin.downStreamBasinId;
-        }
-        String record = basin.id + " " + downid;
-        if (!topology.contains(record)) {
-            topology.add(record);
+	private void writeTopology(List<String> topology, Basin basin, StringBuilder errorSb) {
+		int downid = 0;
+		if (basin.downStreamBasin != null) {
+			downid = basin.downStreamBasinId;
+		}
+		String record = basin.id + " " + downid;
+		if (!topology.contains(record)) {
+			topology.add(record);
 
-            for( Basin upBasin : basin.upStreamBasins ) {
-                writeTopology(topology, upBasin, errorSb);
-            }
-        } else {
-            errorSb.append("  ->").append(record).append("\n");
-        }
+			for (Basin upBasin : basin.upStreamBasins) {
+				writeTopology(topology, upBasin, errorSb);
+			}
+		} else {
+			errorSb.append("  ->").append(record).append("\n");
+		}
 
-    }
+	}
 
-    private Basin findFirstIntersecting( Basin basin, Geometry lakeGeom ) {
-        if (basin.basinGeometry.intersects(lakeGeom)) {
-            return basin;
-        }
-        // move upstream and check
-        for( Basin upBasin : basin.upStreamBasins ) {
-            Basin firstIntersecting = findFirstIntersecting(upBasin, lakeGeom);
-            if (firstIntersecting != null) {
-                return firstIntersecting;
-            }
-        }
-        return null;
-    }
+	private Basin findFirstIntersecting(Basin basin, Geometry lakeGeom) {
+		if (basin.basinGeometry.intersects(lakeGeom)) {
+			return basin;
+		}
+		// move upstream and check
+		for (Basin upBasin : basin.upStreamBasins) {
+			Basin firstIntersecting = findFirstIntersecting(upBasin, lakeGeom);
+			if (firstIntersecting != null) {
+				return firstIntersecting;
+			}
+		}
+		return null;
+	}
 
-    private File makeBasinFolder( int basinNum ) throws ModelsIOException {
-        File folder = new File(outFolder);
-        File basinFolder = new File(folder, String.valueOf(basinNum));
-        FileUtilities.folderCheckMakeOrDie(basinFolder.getAbsolutePath());
-        return basinFolder;
-    }
+	private File makeBasinFolder(int basinNum) throws ModelsIOException {
+		File folder = new File(outFolder);
+		File basinFolder = new File(folder, String.valueOf(basinNum));
+		FileUtilities.folderCheckMakeOrDie(basinFolder.getAbsolutePath());
+		return basinFolder;
+	}
 
-    private SimpleFeatureBuilder getBasinsBuilder( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("basin");
-        b.setCRS(crs);
-        b.add("the_geom", MultiPolygon.class);
-        b.add("basinid", Integer.class);
-        b.add("centrx", Double.class);
-        b.add("centry", Double.class);
-        b.add("elev_m", Double.class);
-        b.add("avgelev_m", Double.class);
-        b.add("area_km2", Double.class);
-        b.add("length_m", Double.class);
-        b.add("skyview", Double.class);
-        b.add("islake", Integer.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        return builder;
-    }
+	private SimpleFeatureBuilder getBasinsBuilder(CoordinateReferenceSystem crs) {
+		return GeoFrameGeoTable.BASIN.getSchema().getSFBuilder(crs);
+	}
 
-    private SimpleFeatureBuilder getBasinCentroidsBuilder( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("basin");
-        b.setCRS(crs);
-        b.add("the_geom", Point.class);
-        b.add("basinid", Integer.class);
-        b.add("centrx", Double.class);
-        b.add("centry", Double.class);
-        b.add("elev_m", Double.class);
-        b.add("avgelev_m", Double.class);
-        b.add("area_km2", Double.class);
-        b.add("length_m", Double.class);
-        b.add("skyview", Double.class);
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        return builder;
-    }
+	private SimpleFeatureBuilder getSFStreamGauge(CoordinateReferenceSystem crs, Class<?> geom) {
+		return GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSFBuilder(crs);
+	}
 
 //    private SimpleFeatureBuilder getNetBuilder( CoordinateReferenceSystem crs ) {
 //        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
@@ -926,31 +946,19 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 //        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
 //        return builder;
 //    }
-    private SimpleFeatureBuilder getSingleNetBuilder( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("net");
-        b.setCRS(crs);
-        b.add("the_geom", LineString.class);
-        b.add("basinid", Integer.class);
-        b.add("length_m", Double.class);
-        if (useHack) {
-            b.add("hack", Double.class);
-        } else {
-            b.add("pfaforder", Double.class);
-        }
-        SimpleFeatureType type = b.buildFeatureType();
-        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        return builder;
-    }
+	private SimpleFeatureBuilder getSingleNetBuilder(CoordinateReferenceSystem crs) {
+		return GeoFrameGeoTable.NET.getSchema().getSFBuilder(crs);
+	}
 
-    private Basin getRootBasin( Map<Integer, Geometry> basinId2geomMap, List<Basin> allBasins ) throws Exception {
+	private Basin getRootBasin(Map<Integer, Geometry> basinId2geomMap, List<Basin> allBasins) throws Exception {
 
-    	HashMap<Integer, Basin> id2BasinMap = new HashMap<>();
-    	if (inGeoframeDb != null)	{
-			QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from " + GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE, -1);
-			int fromIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_FROM);
-			int toIndex = result.names.indexOf(GeoframeUtils.GEOFRAME_TOPOLOGY_FIELD_TO);
-			for( Object[] row : result.data ) {
+		HashMap<Integer, Basin> id2BasinMap = new HashMap<>();
+		if (inGeoframeDb != null) {
+			QueryResult result = inGeoframeDb
+					.getTableRecordsMapFromRawSql("select * from " + GeoFrameSimpleTable.TOPOLOGY.tableName(), -1);
+			int fromIndex = result.names.indexOf(TopologyField.UPPSTREAM_BASIN.columnName());
+			int toIndex = result.names.indexOf(TopologyField.DOWNSTREAM_BASIN.columnName());
+			for (Object[] row : result.data) {
 				int currentBasinId = ((Number) row[fromIndex]).intValue();
 				int childBasinId = ((Number) row[toIndex]).intValue();
 				Basin currentBasin = id2BasinMap.get(currentBasinId);
@@ -969,7 +977,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 					}
 				}
 			}
-    		
+
 		} else if (inGeoframeTopology != null) {
 			List<String> topologyLines = FileUtilities.readFileToLinesList(inGeoframeTopology);
 			for (String line : topologyLines) {
@@ -997,82 +1005,169 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				}
 			}
 		}
-        if (!id2BasinMap.isEmpty()) {
-            // find missing downstream basins
-            for( Entry<Integer, Basin> entry : id2BasinMap.entrySet() ) {
-                Basin basin = entry.getValue();
-                if (basin.downStreamBasin == null && basin.downStreamBasinId > 0) {
-                    // still need to link it
-                    Basin downBasin = id2BasinMap.get(basin.downStreamBasinId);
-                    basin.downStreamBasin = downBasin;
-                }
-            }
-            // find missing upstream basins
-            for( Entry<Integer, Basin> entry : id2BasinMap.entrySet() ) {
-                int id = entry.getKey();
-                Basin basin = entry.getValue();
-                // find basins that have me as downstream and add them as parents
-                for( Basin tmpBasin : id2BasinMap.values() ) {
-                    if (id != tmpBasin.id) {
-                        if (tmpBasin.downStreamBasinId == id && !basin.upStreamBasins.contains(tmpBasin)) {
-                            basin.upStreamBasins.add(tmpBasin);
-                        }
-                    }
-                }
-                // also add geometry
-                Geometry basinGeometry = basinId2geomMap.get(id);
-                if (basinGeometry != null) {
-                    basin.basinGeometry = basinGeometry;
+		if (!id2BasinMap.isEmpty()) {
+			// find missing downstream basins
+			for (Entry<Integer, Basin> entry : id2BasinMap.entrySet()) {
+				Basin basin = entry.getValue();
+				if (basin.downStreamBasin == null && basin.downStreamBasinId > 0) {
+					// still need to link it
+					Basin downBasin = id2BasinMap.get(basin.downStreamBasinId);
+					basin.downStreamBasin = downBasin;
+				}
+			}
+			// find missing upstream basins
+			for (Entry<Integer, Basin> entry : id2BasinMap.entrySet()) {
+				int id = entry.getKey();
+				Basin basin = entry.getValue();
+				// find basins that have me as downstream and add them as parents
+				for (Basin tmpBasin : id2BasinMap.values()) {
+					if (id != tmpBasin.id) {
+						if (tmpBasin.downStreamBasinId == id && !basin.upStreamBasins.contains(tmpBasin)) {
+							basin.upStreamBasins.add(tmpBasin);
+						}
+					}
+				}
+				// also add geometry
+				Geometry basinGeometry = basinId2geomMap.get(id);
+				if (basinGeometry != null) {
+					basin.basinGeometry = basinGeometry;
 
-                    // also add to complete list
-                    allBasins.add(basin);
-                } else {
-                    pm.errorMessage("Ignoring basin that has null geometry: " + basin.toString());
-                }
-            }
-            Basin rootBasin = id2BasinMap.values().stream().filter(b -> b.downStreamBasinId < 0).findFirst().get();
-            return rootBasin;
-        } else {
-            return null;
-        }
+					// also add to complete list
+					allBasins.add(basin);
+				} else {
+					pm.errorMessage("Ignoring basin that has null geometry: " + basin.toString());
+				}
+			}
+			Basin rootBasin = id2BasinMap.values().stream().filter(b -> b.downStreamBasinId < 0).findFirst().get();
+			return rootBasin;
+		} else {
+			return null;
+		}
 
-    }
+	}
 
-    private static class Basin {
-        int id = -1;
-        int downStreamBasinId = -1;
-        Geometry basinGeometry;
+	private static class Basin {
+		int id = -1;
+		int downStreamBasinId = -1;
+		Geometry basinGeometry;
 
-        Basin downStreamBasin;
-        List<Basin> upStreamBasins = new ArrayList<>();
-        @Override
-        public int hashCode() {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + id;
-            return result;
-        }
-        @Override
-        public boolean equals( Object obj ) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            Basin other = (Basin) obj;
-            if (id != other.id)
-                return false;
-            return true;
-        }
-        @Override
-        public String toString() {
-            return "Basin [\nid=" + id + //
-                    "\ndownStreamBasinId=" + downStreamBasinId + //
-                    "\nupStreamBasins=" + upStreamBasins.stream().map(b -> String.valueOf(b.id)).collect(Collectors.joining(","))
-                    + "\n]";
-        }
+		Basin downStreamBasin;
+		List<Basin> upStreamBasins = new ArrayList<>();
 
-    }
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + id;
+			return result;
+		}
 
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Basin other = (Basin) obj;
+			if (id != other.id)
+				return false;
+			return true;
+		}
+
+		@Override
+		public String toString() {
+			return "Basin [\nid=" + id + //
+					"\ndownStreamBasinId=" + downStreamBasinId + //
+					"\nupStreamBasins="
+					+ upStreamBasins.stream().map(b -> String.valueOf(b.id)).collect(Collectors.joining(",")) + "\n]";
+		}
+
+	}
+
+	/**
+	 * Extracts the stream-gauge identifier contained in a basin polygon.
+	 * <p>
+	 * The method looking for throughout the {@link SimpleFeatureCollection} of
+	 * basins if a stream gauge are inside a basin. A gauge is considered
+	 * <em>valid</em> if:
+	 * <ul>
+	 * <li>the attribute {@code inIDStreamGaugeFieldName} is not null and not blank
+	 * after trimming;</li>
+	 * <li>the default geometry is a {@link Geometry} (typically a point);</li>
+	 * <li>the geometry intersects the input polygon (basin).</li>
+	 * </ul>
+	 * </p>
+	 *
+	 * <p>
+	 * Assumption: a basin polygon can contains maximum one stream-gauge point. If
+	 * more than one valid gauge is found within the polygon, the method fails fast
+	 * by throwing an {@link IllegalStateException}.
+	 * </p>
+	 *
+	 * <p>
+	 * If no valid gauge is found, this method returns
+	 * {@link HMConstants#intNovalue}. If a candidate gauge is found but its ID
+	 * cannot be parsed as an integer, that feature is ignored.
+	 * </p>
+	 * 
+	 * @param streamGaugeBuilder
+	 *
+	 * @param breackPoint        feature collection containing stream-gauge point
+	 *                           features.
+	 * @param polygon            basin polygon geometry used to test
+	 *                           containment/intersection.
+	 * @param basinId
+	 * @param streamGaugeFC2
+	 * @return the parsed gauge ID if exactly one valid gauge intersects the
+	 *         polygon; {@link HMConstants#intNovalue} if none is found.
+	 * @throws IllegalStateException if more than one valid gauge intersects the
+	 *                               polygon.
+	 */
+
+	public String extractId(SimpleFeatureBuilder streamGaugeBuilder, SimpleFeatureCollection breackPoint,
+			Geometry polygon, DefaultFeatureCollection streamGaugeFC2, int basinId) {
+		if (breackPoint != null) {
+			var filter = HMFilter.intersects(breackPoint, polygon);
+
+			SimpleFeatureCollection subCollection = breackPoint.subCollection(filter);
+
+			SimpleFeature first = DataUtilities.first(subCollection);
+			if (first != null) {
+				// @todo check if the field exist
+				String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
+
+				streamGaugeBuilder.set(HydroMeteoSation.GEOM.columnName(), first.getDefaultGeometry());
+				streamGaugeBuilder.set(HydroMeteoSation.ID.columnName(), id);
+				streamGaugeBuilder.set(HydroMeteoSation.BASIN_ID.columnName(), basinId);
+				streamGaugeBuilder.set(HydroMeteoSation.TYPE.columnName(), StationType.STREAM_GAUGE.name());
+
+				SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
+				streamGaugeFC2.add(newFeature);
+				streamGaugeBuilder.reset();
+				return id;
+			}
+		}
+		return null;
+
+	}
+
+	/**
+	 * I put here temporary, for now only geoframeinputbuilder use this.
+	 */
+	public enum SubbasinsTypeField {
+
+		HILLSOLOPE("Hillslope"), ARTIFICIAL_LAKE("Artificial Lake"), NATURAL_LAKE("Natural Lake");
+
+		private final String key;
+
+		SubbasinsTypeField(String key) {
+			this.key = key;
+		}
+
+		public String key() {
+			return key;
+		}
+	}
 }

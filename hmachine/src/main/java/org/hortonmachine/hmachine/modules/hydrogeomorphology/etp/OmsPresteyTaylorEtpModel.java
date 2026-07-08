@@ -58,6 +58,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+import org.hamcrest.core.IsNull;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.joda.time.DateTime;
@@ -73,159 +74,176 @@ import org.joda.time.format.DateTimeFormatter;
 @UI(OMSPRESTEYTAYLORETPMODEL_UI)
 public class OmsPresteyTaylorEtpModel extends HMModel {
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
-    @In
-    @Unit("Watt m-2 ")
-    public HashMap<Integer, double[]> inNetradiation;
+	public static final double DEFAULT_DAILY_NET_RADIATION = 300.0;
+	public static final double DEFAULT_HOURLY_NET_RADIATION = 100.0;
+	public static final double DEFAULT_TEMPERATURE = 15.0;
+	public static final double DEFAULT_PRESSURE = 100.0;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION)
-    @In
-    @Unit("Watt m-2")
-    public double defaultDailyNetradiation = 300.0;
+	private static final double RAD_TO_DAY = 0.0864;
+	private static final double RAD_TO_HOUR = 0.0864 / 24.0;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION)
-    @In
-    @Unit("Watt m-2")
-    public double defaultHourlyNetradiation = 100.0;
+	@Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
+	@In
+	@Unit("Watt m-2 ")
+	public HashMap<Integer, double[]> inNetradiation;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION)
-    @In
-    public boolean doHourly;
+	@Description(OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION)
+	@In
+	@Unit("Watt m-2")
+	public double defaultDailyNetradiation = DEFAULT_DAILY_NET_RADIATION;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
-    @In
-    @Unit("C")
-    public HashMap<Integer, double[]> inTemp;
+	@Description(OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION)
+	@In
+	@Unit("Watt m-2")
+	public double defaultHourlyNetradiation = DEFAULT_HOURLY_NET_RADIATION;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
-    @In
-    @Unit("m")
-    public double pAlpha = 0;
+	@Description(OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION)
+	@In
+	public boolean doHourly;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)
-    @In
-    public double pGmorn = 0;
+	@Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
+	@In
+	@Unit("C")
+	public HashMap<Integer, double[]> inTemp;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION)
-    @In
-    public double pGnight = 0;
+	@Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
+	@In
+	@Unit("m")
+	public double pAlpha = 0;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION)
-    @In
-    @Unit("C")
-    public double defaultTemp = 15.0;
+	@Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)
+	@In
+	public double pGmorn = 0;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
-    @In
-    @Unit("KPa")
-    public HashMap<Integer, double[]> inPressure;
+	@Description(OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION)
+	@In
+	public double pGnight = 0;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION)
-    @In
-    @Unit("KPa")
-    public double defaultPressure = 100.0;
+	@Description(OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION)
+	@In
+	@Unit("C")
+	public double defaultTemp = DEFAULT_TEMPERATURE;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION)
-    @In
-    public String tCurrent;
+	@Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
+	@In
+	@Unit("KPa")
+	public HashMap<Integer, double[]> inPressure;
 
-    @Description(OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION)
-    @Unit("mm hour-1")
-    @Out
-    public HashMap<Integer, double[]> outPTEtp;
+	@Description(OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION)
+	@In
+	@Unit("KPa")
+	public double defaultPressure = DEFAULT_PRESSURE;
 
-    private DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
+	@Description(OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION)
+	@In
+	public String tCurrent;
 
-    @Execute
-    public void process() throws Exception {
-        checkNull(inTemp);
+	@Description(OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION)
+	@Unit("mm hour-1")
+	@Out
+	public HashMap<Integer, double[]> outPTEtp;
 
-        outPTEtp = new HashMap<Integer, double[]>();
-        Set<Entry<Integer, double[]>> entrySet = inTemp.entrySet();
-        for( Entry<Integer, double[]> entry : entrySet ) {
-            Integer basinId = entry.getKey();
+	private static DateTimeFormatter formatter = HMConstants.utcDateFormatterYYYYMMDDHHMM;
 
-            double temp = defaultTemp;
-            double t = entry.getValue()[0];
-            if (!isNovalue(t)) {
-                temp = t;
-            }
+	@Execute
+	public void process() throws Exception {
+		checkNull(inTemp);
 
-            double netradiation = 0;
-            if (doHourly == true) {
-                netradiation = defaultHourlyNetradiation * 0.0864 / 24.0;
-            } else {
-                netradiation = defaultDailyNetradiation * 0.0864;
-            }
-            if (inNetradiation != null) {
-                double n = inNetradiation.get(basinId)[0];
-                if (!isNovalue(n)) {
-                    if (doHourly == true) {
-                        netradiation = n * 0.0864 / 24.0;
-                    } else {
-                        netradiation = n * 0.0864;
-                    }
-                }
-            }
+		outPTEtp = new HashMap<Integer, double[]>();
+		Set<Entry<Integer, double[]>> entrySet = inTemp.entrySet();
+		for (Entry<Integer, double[]> entry : entrySet) {
+			Integer basinId = entry.getKey();
 
-            double pressure = defaultPressure;
-            if (inPressure != null) {
-                double p = inPressure.get(basinId)[0];
-                if (isNovalue(p)) {
-                    pressure = defaultPressure;
-                } else {
-                    pressure = p;
-                }
-            }
+			double t = entry.getValue()[0];
 
-            DateTime currentDatetime = formatter.parseDateTime(tCurrent);
-            int ora = currentDatetime.getHourOfDay();
-            boolean isLigth = false;
-            if (ora > 6 && ora < 18) {
-                isLigth = true;
-            }
+			double inputNetRadiation = HMConstants.doubleNovalue;
+			if (inNetradiation != null && inNetradiation.containsKey(basinId)) {
+				inputNetRadiation = inNetradiation.get(basinId)[0];
+			}
 
-            double etp = compute(pGmorn, pGnight, pAlpha, netradiation, temp, pressure, isLigth, doHourly);
-            outPTEtp.put(basinId, new double[]{etp});
-        }
-    }
+			double pressure = HMConstants.doubleNovalue;
+			;
+			if (inPressure != null && inPressure.containsKey(basinId)) {
+				pressure = inPressure.get(basinId)[0];
+			}
 
-    private double compute( double ggm, double ggn, double alpha, double NetRad, double AirTem, double AtmPres, boolean islight,
-            boolean ishourlyo ) {
-        double result = 0;
-        if (ishourlyo == true) {
-            double den_Delta = (AirTem + 237.3) * (AirTem + 237.3);
-            double exp_Delta = (17.27 * AirTem) / (AirTem + 237.3);
-            double num_Delta = 4098 * (0.6108 * Math.exp(exp_Delta));
-            double Delta = num_Delta / den_Delta;
+			double etp = getET(pGmorn, pGnight, pAlpha, inputNetRadiation,
+					doHourly ? defaultHourlyNetradiation : defaultHourlyNetradiation, t, defaultTemp, pressure,
+					defaultPressure, doHourly, tCurrent);
+			outPTEtp.put(basinId, new double[] { etp });
+		}
+	}
 
-            double lambda = 2.501 - 0.002361 * AirTem;
-            double gamma = 0.001013 * AtmPres / (0.622 * lambda);
+	public static double getNetRadiation(boolean doHourly, double inputNetRadiation,
+			double defaulRadiationNetradiation) {
 
-            double coeff_G;
-            if (islight == true) {
-                coeff_G = ggm;
-            } else {
-                coeff_G = ggn;
-            }
+		double radiation;
 
-            double G = coeff_G * NetRad;
+		if (!isNovalue(inputNetRadiation)) {
+			radiation = inputNetRadiation;
+		} else {
+			radiation = defaulRadiationNetradiation;
+		}
 
-            result = (alpha) * Delta * (NetRad - G) / ((gamma + Delta) * lambda);
+		return doHourly ? radiation * RAD_TO_HOUR : radiation * RAD_TO_DAY;
+	}
 
-        } else {
-            double den_Delta = (AirTem + 237.3) * (AirTem + 237.3);
-            double exp_Delta = (17.27 * AirTem) / (AirTem + 237.3);
-            double num_Delta = 4098 * (0.6108 * Math.exp(exp_Delta));
-            double Delta = num_Delta / den_Delta;
+	public static double getET(double ggm, double ggn, double alpha, double netRad, double defaultNetradiation,
+			double airTem, double defaultTemeperature, double atmPres, double defaultAtm, boolean isHourlyo,
+			String tCurrent) {
+		// check here
 
-            double lambda = 2.501 - 0.002361 * AirTem;
-            double gamma = 0.001013 * AtmPres / (0.622 * lambda);
+		double netradiation = getNetRadiation(isHourlyo, netRad, defaultNetradiation);
+		DateTime currentDatetime = formatter.parseDateTime(tCurrent);
 
-            result = (alpha) * Delta * (NetRad) / ((gamma + Delta) * lambda);
+		int ora = currentDatetime.getHourOfDay();
+		boolean isLigth = false;
+		if (ora > 6 && ora < 18) {
+			isLigth = true;
+		}
 
-        }
-        return result;
-    }
+		double temperature = !isNovalue(airTem) ? airTem : defaultTemeperature;
+		double pressure = !isNovalue(atmPres) ? atmPres : defaultAtm;
+
+		return compute(ggm, ggn, alpha, netradiation, temperature, pressure, isLigth, isHourlyo);
+	}
+
+	public static double compute(double ggm, double ggn, double alpha, double netRad, double airTem, double atmPres,
+			boolean islight, boolean ishourlyo) {
+		double result = 0;
+		if (ishourlyo == true) {
+			double den_Delta = (airTem + 237.3) * (airTem + 237.3);
+			double exp_Delta = (17.27 * airTem) / (airTem + 237.3);
+			double num_Delta = 4098 * (0.6108 * Math.exp(exp_Delta));
+			double Delta = num_Delta / den_Delta;
+
+			double lambda = 2.501 - 0.002361 * airTem;
+			double gamma = 0.001013 * atmPres / (0.622 * lambda);
+
+			double coeff_G;
+			if (islight == true) {
+				coeff_G = ggm;
+			} else {
+				coeff_G = ggn;
+			}
+
+			double G = coeff_G * netRad;
+
+			result = (alpha) * Delta * (netRad - G) / ((gamma + Delta) * lambda);
+
+		} else {
+			double den_Delta = (airTem + 237.3) * (airTem + 237.3);
+			double exp_Delta = (17.27 * airTem) / (airTem + 237.3);
+			double num_Delta = 4098 * (0.6108 * Math.exp(exp_Delta));
+			double Delta = num_Delta / den_Delta;
+
+			double lambda = 2.501 - 0.002361 * airTem;
+			double gamma = 0.001013 * atmPres / (0.622 * lambda);
+
+			result = (alpha) * Delta * (netRad) / ((gamma + Delta) * lambda);
+
+		}
+		return result;
+	}
 
 }
