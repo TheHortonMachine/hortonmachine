@@ -19,7 +19,6 @@ import org.geotools.api.data.DataSourceException;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -102,10 +101,6 @@ public class KrigingAtCentroid extends HMModel {
 
 	private ASpatialDb inGeoframeDb = null;
 
-	private IHMPreparedStatement ps = null;
-
-	private IHMConnection conn;
-
 	private int timestepIndex = 0;
 
 	@Initialize
@@ -123,9 +118,6 @@ public class KrigingAtCentroid extends HMModel {
 			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
 				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
 				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-				String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
-				conn = inGeoframeDb.getConnectionInternal();
-				ps = conn.prepareStatement(insertSql);
 			}
 		} catch (Exception e) {
 		}
@@ -196,13 +188,30 @@ public class KrigingAtCentroid extends HMModel {
 		kriging.execute();
 
 		try {
+			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
 			HashMap<Integer, double[]> out = kriging.outData;
 
-			for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
-				int basinId = entry.getKey();
-				double value = entry.getValue()[0];
-				insert(variableReader.currentT, basinId, value);
-			}
+
+			
+			inGeoframeDb.execOnConnection(conn -> {
+				boolean autoCommit = conn.getAutoCommit();
+				conn.setAutoCommit(false);
+				try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+					for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
+						int basinId = entry.getKey();
+						double value = entry.getValue()[0];
+						pStmt.setLong(1, variableReader.currentT);
+						pStmt.setInt(2, basinId);
+						pStmt.setInt(3, inVariableType);
+						pStmt.setDouble(4, value);
+						pStmt.addBatch();
+					}
+					pStmt.executeBatch();
+					conn.commit();
+					conn.setAutoCommit(autoCommit);
+				}
+				return null;
+			});
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -221,26 +230,4 @@ public class KrigingAtCentroid extends HMModel {
 			e.printStackTrace();
 		}
 	}
-
-	private void ensureOpen() throws Exception {
-		if (ps != null) {
-			return;
-		}
-
-	}
-
-	public void insert(long currentT, int basinId, double value) throws Exception {
-		ensureOpen();
-		conn.enableAutocommit(false);
-		ps.setLong(1, currentT);
-		ps.setInt(2, basinId);
-		ps.setInt(3, inVariableType);
-		ps.setDouble(4, value);
-
-		ps.addBatch();
-		ps.executeBatch();
-		conn.commit();
-		conn.enableAutocommit(true);
-	}
-
 }

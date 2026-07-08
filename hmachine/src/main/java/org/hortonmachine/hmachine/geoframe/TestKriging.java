@@ -36,6 +36,7 @@ public class TestKriging extends HMModel {
 			krigingInterpolator.inVariableType = VarSchema.EnvironmentalVariableType.TEMPERATURE.getId();
 			krigingInterpolator.variableReader = valueReader;
 			krigingInterpolator.cutoffDivide = 10;
+			krigingInterpolator.init();
 			krigingInterpolator.process();
 
 		} catch (Exception e) {
