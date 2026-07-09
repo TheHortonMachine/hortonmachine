@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.optimizers.CostFunctions;

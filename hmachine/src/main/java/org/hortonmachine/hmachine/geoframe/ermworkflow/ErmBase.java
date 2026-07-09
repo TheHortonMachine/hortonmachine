@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;

@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 
@@ -7,8 +7,8 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
  */
 public class ErmCommonData {
 	
-	public static String START_TIMESTAMP = "2015-10-01 01:00:00";
-	public static String END_TIMESTAMP = "2015-11-01 01:00:00";
+	public static String START_TIMESTAMP = "2015-10-01 01:00";
+	public static String END_TIMESTAMP = "2015-11-01 01:00";
 	public static TimeResolution TIME_RESOLUTION = TimeResolution.HOURLY;
 
 }

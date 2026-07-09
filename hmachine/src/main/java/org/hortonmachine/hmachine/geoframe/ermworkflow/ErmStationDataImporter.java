@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +28,7 @@ import oms3.annotations.UI;
 @Name("ermRawDataImporter")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
-public class ErmRawDataImporter extends HMModel {
+public class ErmStationDataImporter extends HMModel {
 
 	@Description("Input geoframe data geopackage.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
@@ -124,8 +124,8 @@ public class ErmRawDataImporter extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String workspace = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/";
-		ErmRawDataImporter ei = new ErmRawDataImporter();
+		String workspace = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
+		ErmStationDataImporter ei = new ErmStationDataImporter();
 		ei.inGpkg = workspace + "outputs/geoframe_data.gpkg";
 		ei.pStartTimestamp = ErmCommonData.START_TIMESTAMP;
 		ei.pEndTimestamp = ErmCommonData.END_TIMESTAMP;

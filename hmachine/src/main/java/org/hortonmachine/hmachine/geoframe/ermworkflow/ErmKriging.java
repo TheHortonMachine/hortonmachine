@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -60,7 +60,7 @@ public class ErmKriging extends HMModel {
 			pm.beginTask("Processing temperature data...", 1);
 			int type = 4;
 			int typeId = VarSchema.EnvironmentalVariableType.TEMPERATURE.getId();
-			if (doDeleteExistingData) {
+			if (doDeleteExistingData && db.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
 				db.executeInsertUpdateDeleteSql(
 						"DELETE FROM " + GeoFrameSimpleTable.BASINDATA.tableName() + " WHERE " + //
 								BasinDataField.VAR_ID.columnName() + " = " + typeId);
@@ -71,7 +71,7 @@ public class ErmKriging extends HMModel {
 			pm.beginTask("Processing precipitation data...", 1);
 			type = 2; // TODO is this the same as below?
 			typeId = VarSchema.EnvironmentalVariableType.PRECIPITATION.getId();
-			if (doDeleteExistingData) {
+			if (doDeleteExistingData && db.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
 				db.executeInsertUpdateDeleteSql(
 						"DELETE FROM " + GeoFrameSimpleTable.BASINDATA.tableName() + " WHERE " + //
 								BasinDataField.VAR_ID.columnName() + " = " + typeId);
@@ -86,8 +86,8 @@ public class ErmKriging extends HMModel {
 		var valueReader = new GeoframeEnvDatabaseIterator();
 		valueReader.db = db;
 		valueReader.pParameterId = type; // temperature
-		valueReader.tStart = pStartTimestamp;
-		valueReader.tEnd = pEndTimestamp;
+		valueReader.tStart = pStartTimestamp + ":00";
+		valueReader.tEnd = pEndTimestamp + ":00";
 		valueReader.doRawData = true;
 		valueReader.pMaxId = maxId;
 		valueReader.preCacheData();
