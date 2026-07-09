@@ -123,7 +123,7 @@ public class ErmRawDataImporter extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String workspace = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
+		String workspace = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/";
 		ErmRawDataImporter ei = new ErmRawDataImporter();
 		ei.inGpkg = workspace + "outputs/geoframe_data.gpkg";
 		ei.pStartTimestamp = "2015-10-01 01:00";

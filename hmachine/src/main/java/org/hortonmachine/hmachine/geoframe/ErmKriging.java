@@ -8,16 +8,15 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.KrigingAtCentroid;
 
 public class ErmKriging extends HMModel {
 	// NOCE
-
 	public ErmKriging() {
-		String geoframeGpkg = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
+		String geoframeGpkg = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/outputs/geoframe_data.gpkg";
 		try {
-			
-			
+
 			ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb();
 			db.open(geoframeGpkg);
 			var valueReader = new GeoframeEnvDatabaseIterator();
@@ -26,13 +25,14 @@ public class ErmKriging extends HMModel {
 			valueReader.tStart = TestIO.FROM_TS + ":00";
 			valueReader.tEnd = TestIO.TO_TS + ":00";
 			valueReader.doRawData = true;
-			
-			int maxId = db.getLong("select max("+ HydroMeteoStation.ID.columnName() +") from " + //
+
+			int maxId = db.getLong("select max(" + HydroMeteoStation.ID.columnName() + ") from " + //
 					GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " WHERE " + //
-					HydroMeteoStation.TYPE.columnName() + " = '" + HydroMeteoStationSchema.StationType.METEO + "'").intValue();
+					HydroMeteoStation.TYPE.columnName() + " = '" + HydroMeteoStationSchema.StationType.METEO + "'")
+					.intValue();
 			valueReader.pMaxId = maxId;
 			valueReader.preCacheData();
-			
+
 			var krigingInterpolator = new KrigingAtCentroid();
 			krigingInterpolator.inGeoframeDBPath = geoframeGpkg;
 			krigingInterpolator.inVariableType = VarSchema.EnvironmentalVariableType.TEMPERATURE.getId();

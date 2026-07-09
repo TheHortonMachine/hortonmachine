@@ -25,7 +25,7 @@ public class TestIO extends HMModel {
 			gfImporter.inMeasurementDataFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/simulazioni/Centroid_NOCE_10km/data/meteo_data/temperature_gf_2.csv";
 			gfImporter.inIdField = "ID";
 			gfImporter.inElevationField = "z_dem";
-			gfImporter.doOverWrite = false;
+			gfImporter.doOverWrite = true;
 
 			gfImporter.inMeasurementsPointFilePath = "/home/andreisd/Documents/project/uni/ARTICOLO_KRIGING/project_grid/data/meteo_data/stations_tot.shp";
 			gfImporter.inGeoframeDBPath = geoframeGpkg;
