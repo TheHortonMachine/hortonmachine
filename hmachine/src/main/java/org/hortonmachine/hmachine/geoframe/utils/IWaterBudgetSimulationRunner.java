@@ -22,6 +22,9 @@ import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema.StationDataField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Geometry;
 
@@ -78,9 +81,12 @@ public interface IWaterBudgetSimulationRunner {
     ) throws Exception;
     
     static double[] getObservedDischarge(ADb envDb, String fromTS, String toTS) throws Exception {
+    	int id = EnvironmentalVariableType.DISCHARGE.getId();
 		long from = GeoframeEnvDatabaseIterator.str2ts(fromTS);
 		long to = GeoframeEnvDatabaseIterator.str2ts(toTS);
-		String sql = "select ts, value from observed_discharge where ts >= " + from + " " + "and ts <= " + to
+		String sql = "select ts, value from " + GeoFrameSimpleTable.STATIONDATA.tableName() + " where "
+				+ StationDataField.VAR_ID.columnName() + " = " + id + " and "
+				+ "ts >= " + from + " and ts <= " + to
 				+ " order by ts asc";
 		QueryResult qr = envDb.getTableRecordsMapFromRawSql(sql, -1);
 		DynamicDoubleArray dda = new DynamicDoubleArray(10000, 10000);

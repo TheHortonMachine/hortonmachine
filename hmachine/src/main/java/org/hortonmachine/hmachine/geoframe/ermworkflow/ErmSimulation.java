@@ -55,7 +55,6 @@ public class ErmSimulation extends ErmBase {
     public static void main( String[] args ) throws Exception {
         ErmSimulation sim = new ErmSimulation();
         sim.inGeopackagePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/inputs/outputs/geoframe_data.gpkg";
-        sim.inEnvDataPath    = "/home/hydrologis/storage/lavori_tmp/GEOFRAME/env_data.sqlite";
     	sim.inFromTimestamp = "2015-10-01 01:00:00";
     	sim.inToTimestamp = "2023-10-01 01:00:00";
     	sim.pTimeStepMinutes = 60;
