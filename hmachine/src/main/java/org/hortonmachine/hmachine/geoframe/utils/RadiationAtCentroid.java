@@ -1,8 +1,5 @@
 package org.hortonmachine.hmachine.geoframe.utils;
 
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,16 +10,15 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
@@ -193,6 +189,8 @@ public class RadiationAtCentroid extends HMModel {
 	public void process() throws Exception {
 		int[] ids = TableUtils.getIntIdArray(inGeoframeDb, GeoFrameGeoTable.BASIN.tableName(),
 				BasinPolygonSchema.BasinMultiPolygonField.BASIN_ID.columnName(), null);
+		pm.beginTask("Processing radiation data...", -1);
+		int iteration = 0;
 		if (inTemperatureReader.isPreCachingMode()) {
 			double[] variableData = inTemperatureReader.getCached(timestepIndex);
 			long timestep = inTemperatureReader.getCachedTimestamp(timestepIndex);
@@ -211,6 +209,9 @@ public class RadiationAtCentroid extends HMModel {
 					double[] clearSkyData = inClearSkyReader.getCached(timestepIndex);
 					clearSky = TableUtils.getLegacyHMInput(clearSkyData, ids);
 				}
+				if (iteration++ % 1000 == 0) {
+					pm.message("Processing timestep " + UtcTimeUtilities.quickToString(timestep) + "...");
+				}
 				processTimestep(h, humidity, clearSky, timestep);
 				timestepIndex++;
 				variableData = inTemperatureReader.getCached(timestepIndex);
@@ -219,7 +220,6 @@ public class RadiationAtCentroid extends HMModel {
 			}
 		} else {
 			while (inTemperatureReader.next()) {
-
 				double[] variableData = inTemperatureReader.outData;
 				var temperature = TableUtils.getLegacyHMInput(variableData, ids);
 
@@ -236,14 +236,20 @@ public class RadiationAtCentroid extends HMModel {
 				lwrb.inHumidityValuesHM = inNan;
 				swrb.inHumidityValues = inNan;
 
+				if (iteration++ % 1000 == 0) {
+					pm.message("Processed timestep " + UtcTimeUtilities.quickToString(inTemperatureReader.currentT)
+							+ "...");
+				}
 				processTimestep(temperature, humidity, clearSky, inTemperatureReader.currentT);
+
 			}
 		}
+		pm.done();
 
 	}
 
 	private void processTimestep(HashMap<Integer, double[]> temperature, HashMap<Integer, double[]> humidity,
-			HashMap<Integer, double[]> clearSky, long t) {
+			HashMap<Integer, double[]> clearSky, long t) throws Exception {
 		lwrb.inAirTemperatureValuesHM = temperature;
 		lwrb.inSoilTempratureValuesHM = temperature;
 		lwrb.inHumidityValuesHM = humidity;
@@ -252,46 +258,35 @@ public class RadiationAtCentroid extends HMModel {
 		swrb.inTemperatureValues = temperature;
 
 		swrb.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(t);
-		try {
-			lwrb.process();
+		lwrb.process();
 
-			swrb.process();
-			nrpc.inShortwaveValues = swrb.outHMtotal;
-			nrpc.inDownwellingValues = lwrb.outHMlongwaveDownwellingHM;
-			nrpc.inUpwellingValues = lwrb.outHMlongwaveUpwellingHM;
-			nrpc.process();
-			HashMap<Integer, double[]> out = nrpc.outHMnetRad;
-			String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
-			inGeoframeDb.execOnConnection(conn -> {
-				boolean autoCommit = conn.getAutoCommit();
-				conn.setAutoCommit(false);
-				try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
-					for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
-						int basinId = entry.getKey();
-						double value = entry.getValue()[0];
-						pStmt.setLong(1, t);
-						pStmt.setInt(2, basinId);
-						pStmt.setInt(3, EnvironmentalVariableType.RADIATION.getId());
-						pStmt.setDouble(4, value);
-						DateTimeFormatter formatter = DateTimeFormatter
-						        .ofPattern("yyyy-MM-dd HH:mm:ss")
-						        .withZone(ZoneId.of("Europe/Rome"));
-						Instant instant = Instant.ofEpochMilli(t);
-						String data = formatter.format(instant);
-						System.out.println("date"+ data+"badin "+basinId +"value "+value);
-						pStmt.addBatch();
-					}
-					pStmt.executeBatch();
-					conn.commit();
-					conn.setAutoCommit(autoCommit);
+		swrb.process();
+		nrpc.inShortwaveValues = swrb.outHMtotal;
+		nrpc.inDownwellingValues = lwrb.outHMlongwaveDownwellingHM;
+		nrpc.inUpwellingValues = lwrb.outHMlongwaveUpwellingHM;
+		nrpc.process();
+		HashMap<Integer, double[]> out = nrpc.outHMnetRad;
+		String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
+		inGeoframeDb.execOnConnection(conn -> {
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+				for (Map.Entry<Integer, double[]> entry : out.entrySet()) {
+					int basinId = entry.getKey();
+					double value = entry.getValue()[0];
+					pStmt.setLong(1, t);
+					pStmt.setInt(2, basinId);
+					pStmt.setInt(3, EnvironmentalVariableType.RADIATION.getId());
+					pStmt.setDouble(4, value);
+					pStmt.addBatch();
 				}
-				return null;
-			});
+				pStmt.executeBatch();
+				conn.commit();
+				conn.setAutoCommit(autoCommit);
+			}
+			return null;
+		});
 
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 
 }
