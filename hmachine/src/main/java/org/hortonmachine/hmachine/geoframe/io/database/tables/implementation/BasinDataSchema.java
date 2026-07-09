@@ -13,19 +13,22 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Bas
  * 
  * @author Daniele Andreis
  */
-public class HydroMeteoSchema extends SimpleAbstractSchema {
-	public HydroMeteoSchema() {
-		super("basin_data", HydroMeteoField.class);
+public class BasinDataSchema extends SimpleAbstractSchema {
+	public BasinDataSchema() {
+		super("basin_data", BasinDataField.class);
 	}
 
-	public enum HydroMeteoField implements TableField {
-		TS("ts", Long.class), BASIN_ID("basin_id", Integer.class), VAR_ID("var_id", Integer.class),
-		VALUE("value", Double.class), DATA_ORIGIN("data_origin", String.class);
+	public enum BasinDataField implements TableField {
+		TS("ts", Long.class), //
+		BASIN_ID("basin_id", Integer.class), //
+		VAR_ID("var_id", Integer.class),
+		VALUE("value", Double.class), //
+		DATA_ORIGIN("data_origin", String.class);
 
 		private final String columnName;
 		private final Class<?> javaType;
 
-		HydroMeteoField(String columnName, Class<?> javaType) {
+		BasinDataField(String columnName, Class<?> javaType) {
 			this.columnName = columnName;
 			this.javaType = javaType;
 		}
@@ -46,14 +49,14 @@ public class HydroMeteoSchema extends SimpleAbstractSchema {
 
 	@Override
 	protected List<TableField> primaryKey() {
-		return List.of(HydroMeteoField.TS, HydroMeteoField.BASIN_ID, HydroMeteoField.VAR_ID);
+		return List.of(BasinDataField.TS, BasinDataField.BASIN_ID, BasinDataField.VAR_ID);
 	}
 
 	@Override
 	protected List<ForeignKey> foreignKeys() {
 		return List.of(
-				new ForeignKey(HydroMeteoField.BASIN_ID, GeoFrameGeoTable.BASIN.name(),
+				new ForeignKey(BasinDataField.BASIN_ID, GeoFrameGeoTable.BASIN.name(),
 						BasinMultiPolygonField.BASIN_ID),
-				new ForeignKey(HydroMeteoField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarSchema.VarField.VAR_ID));
+				new ForeignKey(BasinDataField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarSchema.VarField.VAR_ID));
 	}
 }

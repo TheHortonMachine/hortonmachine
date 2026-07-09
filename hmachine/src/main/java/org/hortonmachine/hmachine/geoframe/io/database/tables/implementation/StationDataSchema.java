@@ -25,21 +25,23 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
  *
  * @author Daniele Andreis
  */
-public class RawDataSchema extends SimpleAbstractSchema {
+public class StationDataSchema extends SimpleAbstractSchema {
 
-	public RawDataSchema() {
-		super("station_data", RawField.class);
+	public StationDataSchema() {
+		super("station_data", StationDataField.class);
 	}
 
-	public enum RawField implements TableField {
+	public enum StationDataField implements TableField {
 
-		TS("ts", Long.class), STATION_ID("station_id", Integer.class), VAR_ID("var_id", Integer.class),
+		TS("ts", Long.class), //
+		STATION_ID("station_id", Integer.class), //
+		VAR_ID("var_id", Integer.class), //
 		VALUE("value", Double.class);
 
 		private final String columnName;
 		private final Class<?> javaType;
 
-		RawField(String columnName, Class<?> javaType) {
+		StationDataField(String columnName, Class<?> javaType) {
 			this.columnName = columnName;
 			this.javaType = javaType;
 		}
@@ -58,11 +60,12 @@ public class RawDataSchema extends SimpleAbstractSchema {
 
 	@Override
 	protected List<TableField> primaryKey() {
-		return List.of(RawField.STATION_ID, RawField.TS, RawField.VAR_ID);
+		return List.of(StationDataField.STATION_ID, StationDataField.TS, StationDataField.VAR_ID);
 	}
 
 	@Override
 	protected List<ForeignKey> foreignKeys() {
-		return List.of(new ForeignKey(RawField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarField.VAR_ID));
+		return List
+				.of(new ForeignKey(StationDataField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarField.VAR_ID));
 	}
 }

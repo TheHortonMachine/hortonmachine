@@ -55,8 +55,8 @@ import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema.TopologyField;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 import org.hortonmachine.hmachine.modules.network.PfafstetterNumber;
@@ -1136,10 +1136,10 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				// @todo check if the field exist
 				String id = first.getAttribute(inIDStreamGaugeFieldName).toString();
 
-				streamGaugeBuilder.set(HydroMeteoStation.GEOM.columnName(), first.getDefaultGeometry());
-				streamGaugeBuilder.set(HydroMeteoStation.ID.columnName(), id);
-				streamGaugeBuilder.set(HydroMeteoStation.BASIN_ID.columnName(), basinId);
-				streamGaugeBuilder.set(HydroMeteoStation.TYPE.columnName(), StationType.STREAM_GAUGE.name());
+				streamGaugeBuilder.set(Station.GEOM.columnName(), first.getDefaultGeometry());
+				streamGaugeBuilder.set(Station.ID.columnName(), id);
+				streamGaugeBuilder.set(Station.BASIN_ID.columnName(), basinId);
+				streamGaugeBuilder.set(Station.TYPE.columnName(), StationType.STREAM_GAUGE.name());
 
 				SimpleFeature newFeature = streamGaugeBuilder.buildFeature(null);
 				streamGaugeFC2.add(newFeature);

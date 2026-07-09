@@ -27,8 +27,8 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema.HydroMeteoField;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.RawDataSchema.RawField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema.StationDataField;
 import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
@@ -193,17 +193,17 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 
 	private void defineTableAndField() {
 		if (doRawData) {
-			table = GeoFrameSimpleTable.RAW_METEO.tableName();
-			tStsColumnName = RawField.TS.columnName();
-			idColumnName = RawField.STATION_ID.columnName();
-			valueColumnName = RawField.VALUE.columnName();
-			varIdColumnName =RawField.VAR_ID.columnName();
+			table = GeoFrameSimpleTable.STATIONDATA.tableName();
+			tStsColumnName = StationDataField.TS.columnName();
+			idColumnName = StationDataField.STATION_ID.columnName();
+			valueColumnName = StationDataField.VALUE.columnName();
+			varIdColumnName =StationDataField.VAR_ID.columnName();
 		} else {
-			table = GeoFrameSimpleTable.HYDROMETEO.tableName();
-			tStsColumnName = HydroMeteoField.TS.columnName();
-			idColumnName = HydroMeteoField.BASIN_ID.columnName();
-			valueColumnName = HydroMeteoField.VALUE.columnName();
-			varIdColumnName =HydroMeteoField.VAR_ID.columnName();
+			table = GeoFrameSimpleTable.BASINDATA.tableName();
+			tStsColumnName = BasinDataField.TS.columnName();
+			idColumnName = BasinDataField.BASIN_ID.columnName();
+			valueColumnName = BasinDataField.VALUE.columnName();
+			varIdColumnName =BasinDataField.VAR_ID.columnName();
 		}
 
 	}

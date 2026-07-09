@@ -31,8 +31,8 @@ import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.locationtech.jts.geom.Geometry;
@@ -110,7 +110,7 @@ public class GeoframeRawDataImporter extends HMModel {
 
 			int[] ids = null;
 			var stationTable = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName();
-			var dataTable = GeoFrameSimpleTable.RAW_METEO.getSchema().getSQLName();
+			var dataTable = GeoFrameSimpleTable.STATIONDATA.getSchema().getSQLName();
 			var varTable = GeoFrameSimpleTable.VARIABLE.getSchema().getSQLName();
 
 			if (doOverWrite) {
@@ -142,8 +142,8 @@ public class GeoframeRawDataImporter extends HMModel {
 							new Object[] { var.varId(), var.name(), var.unit(), var.description() });
 				}
 			}
-			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.getSchema().getSQLName())) {
-				String sql = GeoFrameSimpleTable.RAW_METEO.getSchema().createTableSql();
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.STATIONDATA.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.STATIONDATA.getSchema().createTableSql();
 				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 			}
 
@@ -167,11 +167,11 @@ public class GeoframeRawDataImporter extends HMModel {
 							elevation = (Double) sourceFeature.getAttribute(inElevationField);
 						}
 						builder.reset();
-						builder.set(HydroMeteoStation.GEOM.columnName(), geom);
-						builder.set(HydroMeteoStation.ID.columnName(), id);
-						builder.set(HydroMeteoStation.ELEVATION.columnName(), elevation);
-						builder.set(HydroMeteoStation.BASIN_ID.columnName(), null); // basin_id
-						builder.set(HydroMeteoStation.TYPE.columnName(), stationType.name()); // type
+						builder.set(Station.GEOM.columnName(), geom);
+						builder.set(Station.ID.columnName(), id);
+						builder.set(Station.ELEVATION.columnName(), elevation);
+						builder.set(Station.BASIN_ID.columnName(), null); // basin_id
+						builder.set(Station.TYPE.columnName(), stationType.name()); // type
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
@@ -190,7 +190,7 @@ public class GeoframeRawDataImporter extends HMModel {
 				QueryResult result = inGeoframeDb.getTableRecordsMapFromRawSql("select * from "
 						+ GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " where type='" + stationType.name() + "'",
 						-1);
-				int idIndex = result.names.indexOf(HydroMeteoStation.ID.columnName());
+				int idIndex = result.names.indexOf(Station.ID.columnName());
 
 				var rows = result.data;
 				int l = result.data.size();
@@ -212,7 +212,7 @@ public class GeoframeRawDataImporter extends HMModel {
 				reader.tTimestep = timeResolution.toMinutes();
 				reader.initProcess();
 
-				String insertSql = GeoFrameSimpleTable.RAW_METEO.getSchema().buildInsertAll();
+				String insertSql = GeoFrameSimpleTable.STATIONDATA.getSchema().buildInsertAll();
 				int[] _ids = ids;
 				inGeoframeDb.execOnConnection(conn -> {
 					boolean autoCommit = conn.getAutoCommit();

@@ -2,7 +2,7 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.NetworkSchema;
 
 /**
@@ -22,7 +22,7 @@ public enum GeoFrameGeoTable {
 	/**
 	 * Network metadata and properties.
 	 */
-	HYDRO_METEO_STATION(new HydroMeteoStationSchema());
+	HYDRO_METEO_STATION(new StationSchema());
 
 	private GeoAbstractSchema tableFields;
 

@@ -46,7 +46,9 @@ public class VarSchema extends SimpleAbstractSchema {
 	}
 
 	public enum VarField implements TableField {
-		VAR_ID("var_id", Integer.class), NAME("name", String.class), UNIT("unit", String.class),
+		VAR_ID("var_id", Integer.class), //
+		NAME("name", String.class), //
+		UNIT("unit", String.class), //
 		DESCRIPTION("description", String.class);
 
 		private final String columnName;

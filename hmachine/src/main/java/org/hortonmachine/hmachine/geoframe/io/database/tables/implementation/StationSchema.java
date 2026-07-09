@@ -9,26 +9,27 @@ import org.locationtech.jts.geom.Point;
  * 
  * @author Daniele Andreis
  */
-public class HydroMeteoStationSchema extends GeoAbstractSchema {
+public class StationSchema extends GeoAbstractSchema {
 
-	public HydroMeteoStationSchema() {
-		super("station", HydroMeteoStation.class);
+	public StationSchema() {
+		super("station", Station.class);
 	}
 
 	public enum StationType {
 		METEO, STREAM_GAUGE;
 	}
 
-	
-	
-	public enum HydroMeteoStation implements TableField {
-		GEOM("the_geom", Point.class), ID("id", Integer.class), ELEVATION("elevation", Double.class),
-		BASIN_ID("basin_id", Integer.class), TYPE("type", String.class);
+	public enum Station implements TableField {
+		GEOM("the_geom", Point.class), //
+		ID("id", Integer.class), //
+		ELEVATION("elevation", Double.class), //
+		BASIN_ID("basin_id", Integer.class), //
+		TYPE("type", String.class);
 
 		private final String columnName;
 		private final Class<?> javaType;
 
-		HydroMeteoStation(String columnName, Class<?> javaType) {
+		Station(String columnName, Class<?> javaType) {
 			this.columnName = columnName;
 			this.javaType = javaType;
 		}

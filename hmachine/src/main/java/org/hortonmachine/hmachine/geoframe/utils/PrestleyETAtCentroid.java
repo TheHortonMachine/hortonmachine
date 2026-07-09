@@ -21,19 +21,15 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.geotools.api.data.DataSourceException;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
-import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.time.UtcTimeUtilities;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
@@ -97,13 +93,7 @@ public class PrestleyETAtCentroid extends HMModel {
 	public double pGnight = 0;
 	private ASpatialDb inGeoframeDb = null;
 
-	private IHMPreparedStatement ps = null;
-
-	private IHMConnection conn;
-
 	private int timestepIndex = 0;
-
-	private int threadPoolSize = 4;
 
 	private TopologyNode rootNode;
 
@@ -174,8 +164,6 @@ public class PrestleyETAtCentroid extends HMModel {
 
 	private void processTimestep(double[] inNetMap, double[] temperatureMap, double[] pressureMap, long t)
 			throws Exception {
-		String pTs = inNetReader.tCurrent;
-
 		// reset nodes values
 		rootNode.visitUpstream(node -> {
 			node.value = Double.NaN;
@@ -183,37 +171,37 @@ public class PrestleyETAtCentroid extends HMModel {
 		});
 
 		Set<TopologyNode> nodes = new HashSet<>();
-
-		// do parallel processing with threadPoolSize threads
 		TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
+		String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
+		inGeoframeDb.execOnConnection(conn -> {
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
+				for (TopologyNode node : nodes) {
+					var et0 = processTimestepForBasin(inNetMap, temperatureMap, pressureMap, node, t);
 
-		ExecutorService executor = Executors.newFixedThreadPool(threadPoolSize);
-		CountDownLatch latch = new CountDownLatch(nodes.size());
-		for (TopologyNode node : nodes) {
-			executor.submit(() -> {
-				try {
-					try {
-						processTimestepForBasin(inNetMap, temperatureMap, pressureMap, node, t);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				} finally {
-					latch.countDown();
+					pStmt.setLong(1, t);
+					pStmt.setInt(2, node.basinId);
+					pStmt.setInt(3, EnvironmentalVariableType.EVAPOTRANSPIRATION.getId());
+					pStmt.setDouble(4, et0);
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+							.withZone(ZoneId.of("Europe/Rome"));
+					Instant instant = Instant.ofEpochMilli(t);
+					String data = formatter.format(instant);
+					String quickToString = UtcTimeUtilities.quickToString(t);
+					System.out.println("date" + data + "/" + quickToString + " basin " + node.basinId + "value " + et0);
+					pStmt.addBatch();
 				}
-			});
-		}
-		try {
-			latch.await();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new RuntimeException("Interrupted while waiting for basin parallel operation to finish", e);
-		} finally {
-			executor.shutdown();
-		}
+				pStmt.executeBatch();
+				conn.commit();
+				conn.setAutoCommit(autoCommit);
+			}
+			return null;
+		});
 
 	}
 
-	private void processTimestepForBasin(double[] inNetMap, double[] temperatureMap, double[] pressureMap,
+	private double processTimestepForBasin(double[] inNetMap, double[] temperatureMap, double[] pressureMap,
 			TopologyNode node, long t) throws SQLException, Exception {
 		int basinId = node.basinId;
 		double net = inNetMap != null ? inNetMap[basinId] : -9999.0;
@@ -224,57 +212,20 @@ public class PrestleyETAtCentroid extends HMModel {
 				OmsPresteyTaylorEtpModel.DEFAULT_HOURLY_NET_RADIATION, temperature,
 				OmsPresteyTaylorEtpModel.DEFAULT_TEMPERATURE, pressure, OmsPresteyTaylorEtpModel.DEFAULT_PRESSURE,
 				isHourly, inNetReader.tCurrent);
-
-		try {
-			// insert(EnvironmentalVariableType.RADIATION.getId(), basinId,
-			// variableReader.currentT, radiation);
-			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
-			inGeoframeDb.execOnConnection(conn -> {
-				boolean autoCommit = conn.getAutoCommit();
-				conn.setAutoCommit(false);
-				try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
-					pStmt.setLong(1, t);
-					pStmt.setInt(2, basinId);
-					pStmt.setInt(3, EnvironmentalVariableType.EVAPOTRANSPIRATION.getId());
-					pStmt.setDouble(4, et0);
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-							.withZone(ZoneId.of("Europe/Rome"));
-					Instant instant = Instant.ofEpochMilli(t);
-					String data = formatter.format(instant);
-					System.out.println("date" + data + "badin " + basinId + "value " + et0);
-					pStmt.addBatch();
-
-					pStmt.executeBatch();
-					conn.commit();
-					conn.setAutoCommit(autoCommit);
-				}
-				return null;
-			});
-
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
+		return et0;
 	}
 
-	private void check() {
-		try {
-			if (inNetReader == null || inTempReader == null) {
-				throw new DataSourceException("no data reader for netradiation or temperature, check files name");
-			}
-			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
-				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
-				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
-			}
-			if (!inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())) {
-				throw new DataSourceException("no suitable tables are present in db check");
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
+	private void check() throws Exception {
+		if (inNetReader == null || inTempReader == null) {
+			throw new DataSourceException("no data reader for netradiation or temperature, check files name");
+		}
+		if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
+			String sql = GeoFrameSimpleTable.BASINDATA.getSchema().createTableSql();
+			inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+		}
+		if (!inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())) {
+			throw new DataSourceException("no suitable tables are present in db check");
 		}
 	}
-
-
 
 }

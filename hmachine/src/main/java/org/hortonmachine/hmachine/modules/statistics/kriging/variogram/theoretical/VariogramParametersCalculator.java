@@ -137,35 +137,30 @@ public class VariogramParametersCalculator {
 	}
 
 	public void setGlobalDeTrendedVp(VariogramParameters vpGlobalDetrended) {
-		// TODO Auto-generated method stub
 		if (vpGlobalDetrended != null) {
 			this.globalDeTrendedVP = vpGlobalDetrended;
 		}
 	}
 
 	public void setGlobalVp(VariogramParameters vpGlobal) {
-		// TODO Auto-generated method stub
 		if (vpGlobal != null) {
 			this.globalVP = vpGlobal;
 		}
 	}
 
 	public void setType(String semivariogramType) {
-		// TODO Auto-generated method stub
 		if (semivariogramType != null) {
 			this.semivariogramType = semivariogramType;
 		}
 	}
 
 	public void setCutOffdivide(int cutoffDivide) {
-		// TODO Auto-generated method stub
 		if (cutoffDivide > 0) {
 			this.cutoffDivide = cutoffDivide;
 		}
 	}
 
 	public void setCutOffInput(double cutoffInput) {
-		// TODO Auto-generated method stub
 		if (cutoffInput > 0) {
 			this.cutoffInput = cutoffInput;
 		}

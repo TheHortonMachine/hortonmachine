@@ -22,6 +22,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
@@ -29,16 +30,13 @@ import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.HydroMeteoStation;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.modules.statistics.kriging.pointcase.KrigingPointCase;
 import org.hortonmachine.hmachine.modules.statistics.kriging.primarylocation.StationsSelection;
 import org.hortonmachine.hmachine.modules.statistics.kriging.variogram.theoretical.SingleStepVariogramEvaluator;
-
-import com.mchange.v2.c3p0.util.TestUtils;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -119,8 +117,8 @@ public class KrigingAtCentroid extends HMModel {
 			check();
 
 			// make sure the output table exists
-			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
-				String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
+			if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
+				String sql = GeoFrameSimpleTable.BASINDATA.getSchema().createTableSql();
 				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 			}
 		} catch (Exception e) {
@@ -133,18 +131,18 @@ public class KrigingAtCentroid extends HMModel {
 
 		SimpleFeatureCollection inStations = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema().getSQLName(), -1, -1, null,
-				HydroMeteoStation.TYPE.columnName() + "='" + StationType.METEO + "'");
+				Station.TYPE.columnName() + "='" + StationType.METEO + "'");
 		var stations = new StationsSelection();
 
 		stations.inStations = inStations;
 		stations.doIncludezero = doIncludeZero;
-		stations.fStationsid = HydroMeteoStation.ID.columnName();
-		stations.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
+		stations.fStationsid = Station.ID.columnName();
+		stations.fStationsZ = Station.ELEVATION.columnName();
 		stations.doLogarithmic = doLogarithmic;
+		stations.pm = new DummyProgressMonitor();
 
 		int[] ids = TableUtils.getIntIdArray(inGeoframeDb, GeoFrameGeoTable.HYDRO_METEO_STATION.tableName(),
-				HydroMeteoStationSchema.HydroMeteoStation.ID.columnName()," where type='"
-						+ StationType.METEO + "'");
+				StationSchema.Station.ID.columnName()," where type='" + StationType.METEO + "'");
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
 			long timestep = variableReader.getCachedTimestamp(timestepIndex);
@@ -179,8 +177,8 @@ public class KrigingAtCentroid extends HMModel {
 		SimpleFeatureCollection inBasinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
 				GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
 		kriging.inStations = inStations;
-		kriging.fStationsid = HydroMeteoStation.ID.columnName();
-		kriging.fStationsZ = HydroMeteoStation.ELEVATION.columnName();
+		kriging.fStationsid = Station.ID.columnName();
+		kriging.fStationsZ = Station.ELEVATION.columnName();
 		kriging.inInterpolate = inBasinsFC;
 		kriging.fInterpolateid = BasinMultiPolygonField.BASIN_ID.columnName();
 		kriging.fPointZ = BasinMultiPolygonField.AVG_ELEVATION_M.columnName();
@@ -196,7 +194,7 @@ public class KrigingAtCentroid extends HMModel {
 		kriging.execute();
 
 		try {
-			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
+			String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
 			HashMap<Integer, double[]> out = kriging.outData;
 
 			inGeoframeDb.execOnConnection(conn -> {
@@ -228,7 +226,7 @@ public class KrigingAtCentroid extends HMModel {
 		try {
 			if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
 					&& inGeoframeDb.hasTable(GeoFrameGeoTable.HYDRO_METEO_STATION.tableName())
-					&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
+					&& inGeoframeDb.hasTable(GeoFrameSimpleTable.STATIONDATA.tableName()))) {
 				throw new DataSourceException("no suitable tables are present in db check");
 			}
 		} catch (Exception e) {

@@ -2,8 +2,8 @@ package org.hortonmachine.hmachine.geoframe.io.database.tables;
 
 import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.SimpleAbstractSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.ClaibrationSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoSchema;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.RawDataSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.SimulationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.TopologySchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
@@ -22,12 +22,12 @@ public enum GeoFrameSimpleTable {
 	/**
 	 * Hydro-meteorological observations for each basin.
 	 */
-	HYDROMETEO(new HydroMeteoSchema()),
+	BASINDATA(new BasinDataSchema()),
 
 	/**
 	 * Hydro-meteorological from the meteorological network station.
 	 */
-	RAW_METEO(new RawDataSchema()),
+	STATIONDATA(new StationDataSchema()),
 
 	/**
 	 * Prefix used for simulation result tables.

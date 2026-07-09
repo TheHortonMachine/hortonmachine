@@ -63,7 +63,6 @@ public class SingleStepVariogramEvaluator {
 					variogramType, cutoffDivide, cutoffInput);
 
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

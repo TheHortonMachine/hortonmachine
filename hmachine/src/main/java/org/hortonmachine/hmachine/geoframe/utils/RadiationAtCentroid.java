@@ -22,7 +22,7 @@ import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
@@ -135,13 +135,13 @@ public class RadiationAtCentroid extends HMModel {
 
 		swrb = new ShortwaveRadiationBalancePointCase();
 		if (!(inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())
-				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.tableName())
-				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.RAW_METEO.tableName()))) {
+				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.tableName())
+				&& inGeoframeDb.hasTable(GeoFrameSimpleTable.STATIONDATA.tableName()))) {
 			throw new DataSourceException("no suitable tables are present in db check");
 		}
 
-		if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.HYDROMETEO.getSchema().getSQLName())) {
-			String sql = GeoFrameSimpleTable.HYDROMETEO.getSchema().createTableSql();
+		if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
+			String sql = GeoFrameSimpleTable.BASINDATA.getSchema().createTableSql();
 			inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 		}
 		lwrb = new Lwrb();
@@ -261,7 +261,7 @@ public class RadiationAtCentroid extends HMModel {
 			nrpc.inUpwellingValues = lwrb.outHMlongwaveUpwellingHM;
 			nrpc.process();
 			HashMap<Integer, double[]> out = nrpc.outHMnetRad;
-			String insertSql = GeoFrameSimpleTable.HYDROMETEO.getSchema().buildInsertAll();
+			String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
 			inGeoframeDb.execOnConnection(conn -> {
 				boolean autoCommit = conn.getAutoCommit();
 				conn.setAutoCommit(false);

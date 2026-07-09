@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.database.importer.GeoframeRawDataImporter;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 
@@ -37,11 +37,11 @@ public class ErmRawDataImporter extends HMModel {
 
 	@Description("Data import start timestamp.")
 	@In
-	public String pStartTimestamp = "2015-10-01 01:00";
+	public String pStartTimestamp;
 
 	@Description("Data import end timestamp.")
 	@In
-	public String pEndTimestamp = "2015-11-01 01:00";
+	public String pEndTimestamp;
 
 	@Description("Data time resolution.")
 	@In
@@ -83,6 +83,7 @@ public class ErmRawDataImporter extends HMModel {
 	
 	@Execute
 	public void process() throws Exception {
+		checkNull(pStartTimestamp, pEndTimestamp);
 		checkFileExists(inGpkg);
 		var gfImporter = new GeoframeRawDataImporter();
 		gfImporter.inGeoframeDBPath = inGpkg;
@@ -126,9 +127,9 @@ public class ErmRawDataImporter extends HMModel {
 		String workspace = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/";
 		ErmRawDataImporter ei = new ErmRawDataImporter();
 		ei.inGpkg = workspace + "outputs/geoframe_data.gpkg";
-		ei.pStartTimestamp = "2015-10-01 01:00";
-		ei.pEndTimestamp = "2015-11-01 01:00";
-		ei.pTimeResolution = TimeResolution.HOURLY;
+		ei.pStartTimestamp = ErmCommonData.START_TIMESTAMP;
+		ei.pEndTimestamp = ErmCommonData.END_TIMESTAMP;
+		ei.pTimeResolution = ErmCommonData.TIME_RESOLUTION;
 		ei.inMeteoStations = workspace + "stations_tot.shp";
 		ei.inTemperaturesCsv = workspace + "temperature_gf_2.csv";
 		ei.inPrecipitationCsv = workspace + "precipitation_gf.csv";

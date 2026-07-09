@@ -2,7 +2,7 @@ package org.hortonmachine.hmachine.geoframe;
 
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.io.database.importer.GeoframeRawDataImporter;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.HydroMeteoStationSchema.StationType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 
