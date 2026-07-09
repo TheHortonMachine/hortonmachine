@@ -233,13 +233,11 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 
 		// This 2 operations allow to define if we are working with daily or hourly time
 		// step
-		// if we are working with Daily time step, every time it adds to the start date
-		// a day
-		// otherwise it adds an hour, "step" increments at the end of the process
-		// the actual date is needed to compute the actual sunrise and sunset
+		// We change because in the original we compute several step, now one step at
+		// time, so we pass a spartameter the current date, no need to add the number of
+		// step
 		DateTime currentDateTime = formatter.parseDateTime(tCurrentDateString);
-		DateTime date = (doHourly == false) ? currentDateTime.plusDays(1)
-				: currentDateTime.plusMinutes(30);
+		DateTime date = (doHourly == false) ? currentDateTime : currentDateTime.plusMinutes(30);
 
 		// from pixel coordinates (in coverage image) to geographic coordinates (in
 		// coverage CRS)
