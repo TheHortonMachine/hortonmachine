@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -96,7 +96,7 @@ public abstract class ErmBase extends HMModel {
 			String toTS) {
 		GeoframeEnvDatabaseIterator r = new GeoframeEnvDatabaseIterator();
 		r.db = db;
-		r.pMaxBasinId = maxBasinId;
+		r.pMaxId = maxBasinId;
 		r.pParameterId = parameterId;
 		r.tStart = fromTS;
 		r.tEnd = toTS;

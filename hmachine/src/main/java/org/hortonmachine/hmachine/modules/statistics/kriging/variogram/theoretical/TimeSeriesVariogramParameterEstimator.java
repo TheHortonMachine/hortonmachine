@@ -50,11 +50,11 @@ public class TimeSeriesVariogramParameterEstimator {
 
 	@Description("Specified cutoff")
 	@In
-	public double cutoffInput;
+	public double cutoffInput = 0;
 
 	@Description("Number of bins to consider in the anlysis")
 	@In
-	public int cutoffDivide;
+	public int cutoffDivide = 0;
 	@Description("Distances input path")
 	@In
 	public String inHValuesPath;
@@ -135,6 +135,9 @@ public class TimeSeriesVariogramParameterEstimator {
 						doIncludeZero);
 				vpcalCulator.setGlobalVp(vpGlobal);
 				vpcalCulator.setGlobalDeTrendedVp(vpGlobalDetrended);
+				vpcalCulator.setCutOffdivide(cutoffDivide);
+				vpcalCulator.setCutOffInput(cutoffInput);
+				vpcalCulator.setType(pSemivariogramType);
 
 				HashMap<Integer, double[]> out = vpcalCulator.execute().toHashMap();
 

@@ -11,6 +11,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
@@ -66,7 +67,7 @@ public class StationsSelection {
 	public String fStationsid = null;
 
 	/** The pm. */
-	public IHMProgressMonitor pm = new LogProgressMonitor();
+	public IHMProgressMonitor pm = new DummyProgressMonitor();;
 
 	/** The x station initial set. */
 	public double[] xStationInitialSet;

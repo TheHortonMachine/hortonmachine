@@ -91,12 +91,12 @@ public class VariogramParametersCalculator {
 			 * OR (detrend enabled AND global detrended valid) -> return local anyway (!)
 			 *
 			 */
-			if (variogramOk || (!globalVP.isValid()) || (doDetrend && !globalDeTrendedVP.isValid())) {
+			if (variogramOk || (globalVP == null || !globalVP.isValid()) || (doDetrend && !globalDeTrendedVP.isValid())) {
 				VariogramParameters myVariogramParam = new VariogramParameters.Builder(
-						semivariogramFitter.outSemivariogramType, semivariogramFitter.nugget,
-						semivariogramFitter.range, semivariogramFitter.sill).setLocal(true)
-						.setTrend(rEvaluator.isPValueOk).setTrendIntercept(rEvaluator.trendIntercept)
-						.setTrendSlope(rEvaluator.trendCoefficient).build();
+						semivariogramFitter.outSemivariogramType, semivariogramFitter.nugget, semivariogramFitter.range,
+						semivariogramFitter.sill).setLocal(true).setTrend(rEvaluator.isPValueOk)
+						.setTrendIntercept(rEvaluator.trendIntercept).setTrendSlope(rEvaluator.trendCoefficient)
+						.build();
 
 				return myVariogramParam;
 			} else if (doDetrend && globalDeTrendedVP.isValid()) {
@@ -137,16 +137,33 @@ public class VariogramParametersCalculator {
 	}
 
 	public void setGlobalDeTrendedVp(VariogramParameters vpGlobalDetrended) {
-		// TODO Auto-generated method stub
 		if (vpGlobalDetrended != null) {
 			this.globalDeTrendedVP = vpGlobalDetrended;
 		}
 	}
 
 	public void setGlobalVp(VariogramParameters vpGlobal) {
-		// TODO Auto-generated method stub
 		if (vpGlobal != null) {
 			this.globalVP = vpGlobal;
 		}
 	}
+
+	public void setType(String semivariogramType) {
+		if (semivariogramType != null) {
+			this.semivariogramType = semivariogramType;
+		}
+	}
+
+	public void setCutOffdivide(int cutoffDivide) {
+		if (cutoffDivide > 0) {
+			this.cutoffDivide = cutoffDivide;
+		}
+	}
+
+	public void setCutOffInput(double cutoffInput) {
+		if (cutoffInput > 0) {
+			this.cutoffInput = cutoffInput;
+		}
+	}
+
 }

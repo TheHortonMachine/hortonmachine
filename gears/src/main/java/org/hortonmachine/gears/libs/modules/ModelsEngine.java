@@ -85,7 +85,6 @@ public class ModelsEngine {
 
     private static int[][] dirIn = ModelsSupporter.DIR_WITHFLOW_ENTERING;
 
-    private static GearsMessageHandler msg = GearsMessageHandler.getInstance();
 
     public static PixelInCell DEFAULTPIXELANCHOR = PixelInCell.CELL_CENTER;
 
@@ -235,7 +234,7 @@ public class ModelsEngine {
         List<LineString> newGeometryVectorLine = new ArrayList<LineString>();
         GeometryFactory newfactory = new GeometryFactory();
 
-        pm.beginTask(msg.message("utils.extracting_network_geometries"), nstream.size());
+        pm.beginTask("utils.extracting_network_geometries", nstream.size());
         for( int num = 1; num <= nstream.size(); num++ ) {
             for( int y = 0; y < activerows; y++ ) {
                 for( int x = 0; x < activecols; x++ ) {
@@ -1416,12 +1415,12 @@ public class ModelsEngine {
 
             if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j]) && dEq(hTmp, hStation[j])) {
                 if (!doMean) {
-                    throw new IllegalArgumentException(msg.message("verifyStation.equalsStation1") + xTmp + "/" + yTmp);
+                    throw new IllegalArgumentException("verifyStation.equalsStation1" + xTmp + "/" + yTmp);
                 }
                 return true;
             } else if (dEq(xTmp, xStation[j]) && dEq(yTmp, yStation[j]) && dEq(zTmp, zStation[j])) {
                 if (!doMean) {
-                    throw new IllegalArgumentException(msg.message("verifyStation.equalsStation2") + xTmp + "/" + yTmp);
+                    throw new IllegalArgumentException("verifyStation.equalsStation2" + xTmp + "/" + yTmp);
                 }
                 if (!isNovalue(hStation[j]) && !isNovalue(hTmp)) {
                     hStation[j] = (hStation[j] + hTmp) / 2;
@@ -1505,12 +1504,12 @@ public class ModelsEngine {
         maximum = 0;
 
         if (matrixToSum.length != resultMatrix.length) {
-            pm.errorMessage(msg.message("trentoP.error.matrix")); //$NON-NLS-1$
-            throw new ArithmeticException(msg.message("trentoP.error.matrix")); //$NON-NLS-1$
+            pm.errorMessage("trentoP.error.matrix"); //$NON-NLS-1$
+            throw new ArithmeticException("trentoP.error.matrix"); //$NON-NLS-1$
         }
         if (firstRowIndex < 0 || lastRowIndex < firstRowIndex) {
-            pm.errorMessage(msg.message("trentoP.error.nCol")); //$NON-NLS-1$
-            throw new ArithmeticException(msg.message("trentoP.error.nCol")); //$NON-NLS-1$
+            pm.errorMessage("trentoP.error.nCol"); //$NON-NLS-1$
+            throw new ArithmeticException("trentoP.error.nCol"); //$NON-NLS-1$
         }
         for( int i = 0; i < matrixToSum.length; ++i ) {
             resultMatrix[i][coolIndex] = 0; /* Initializes element */

@@ -28,7 +28,7 @@
 		<revision>0.11.3-SNAPSHOT</revision>
 
 		<maven.compiler.source>17</maven.compiler.source>
-		<gt.version>34.0</gt.version>
+		<gt.version>34.4</gt.version>
 
 		<!-- build configuration -->
 		<java.awt.headless>true</java.awt.headless>
@@ -134,11 +134,18 @@
 				<artifactId>hm-dbs</artifactId>
 				<version>${revision}</version>
 			</dependency>
-			<dependency>
+			<!--<dependency>
 				<groupId>org.hortonmachine</groupId>
 				<artifactId>hm-dbs</artifactId>
 				<version>${revision}</version>
 				<type>test-jar</type>
+			</dependency>-->
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-dbs</artifactId>
+				<type>test-jar</type>
+				<scope>test</scope>
+				<version>${revision}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.hortonmachine</groupId>
@@ -170,7 +177,6 @@
 				<artifactId>hm-apps</artifactId>
 				<version>${revision}</version>
 			</dependency>
-
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>

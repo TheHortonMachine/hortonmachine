@@ -26,6 +26,9 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema.StationDataField;
 import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
@@ -41,7 +44,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A time, basin id and value per timestep iterator, from db.")
+@Description("A time, basin/station id and value per timestep iterator, from db.")
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
 @Keywords("time series, iterator, basin, value, database")
 @Label("Time Basin Value Db Iterator")
@@ -51,63 +54,78 @@ import oms3.annotations.UI;
 @License("General Public License Version 3 (GPLv3)")
 public class GeoframeEnvDatabaseIterator extends HMModel {
 
-    @Description("The db to use.")
-    @In
-    public ADb db = null;
+	@Description("The db to use.")
+	@In
+	public ADb db = null;
 
-    @Description("The parameter id to read to define the measure type to read.")
-    @In
-    public Integer pParameterId = null;
-    
-    @Description("The maximum basin id in play.")
-    @In
-    public Integer pMaxBasinId = null;
+	@Description("The parameter id to read to define the measure type to read.")
+	@In
+	public Integer pParameterId = null;
 
-    @Description("Novalue")
-    @In
-    public String pDataNovalue = "-9999.0";
+	@Description("The maximum id in play.")
+	@In
+	public Integer pMaxId = null;
 
-    @Description("The optional time at which start to read (format: yyyy-MM-dd HH:mm ).")
-    @In
-    public String tStart;
+	@Description("Novalue")
+	@In
+	public String pDataNovalue = "-9999.0";
 
-    @Description("The optional time at which end to read (format: yyyy-MM-dd HH:mm ).")
-    @In
-    public String tEnd;
+	@Description("The optional time at which start to read (format: yyyy-MM-dd HH:mm ).")
+	@In
+	public String tStart;
 
-    @Description("The current time read.")
-    @Out
-    public String tCurrent;
+	@Description("The optional time at which end to read (format: yyyy-MM-dd HH:mm ).")
+	@In
+	public String tEnd;
+
+	@Description("The current time read.")
+	@Out
+	public String tCurrent;
+
+	@Description("Toggle to read raw or interpolated meteo data")
+	@In
+	public boolean doRawData = false;
 
 //    @Description("The previous time read.")
 //    @Out
 //    public String tPrevious;
-    
-    // TODO the timestep to check data consistency
 
-    @Description("The array of values for each basin (basinid is the index).")
-    @Out
-    public double[] outData = null;
+	// TODO the timestep to check data consistency
+
+	@Description("The array of values for each basin (basinid is the index).")
+	@Out
+	public double[] outData = null;
 
 	private PreparedStatement ps;
 
 	private ResultSet rs;
-	
+
 	private boolean initialized = false;
 
 	public long currentT;
-	
+
 	private boolean isClosed = false;
-	
+
 	private boolean doPreCache = false;
 	private double[][] cachedData = null;
+	private long[] cachedTimestamps = null;
+	
+	private String tStsColumnName;
+
+	private String idColumnName;
+
+	private String valueColumnName;
+
+	private String varIdColumnName;
 
 	
+	private String table; 
+
 	/**
 	 * Pre-caches all data in memory.
 	 * 
-	 * In this mode the iterator next method will not work, since 
-	 * data are accessed from multiple threads in parallel using an index.
+	 * In this mode the iterator next method will not work, since data are accessed
+	 * from multiple threads in parallel using an index.
 	 * 
 	 * @throws Exception
 	 */
@@ -115,131 +133,168 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 		doPreCache = true;
 		ensureOpen();
 	}
-	
+
 	public boolean isPreCachingMode() {
 		return doPreCache;
 	}
 
-    private void ensureOpen() throws Exception {
-    	if(rs != null) {
-    		return;
-    	}
-    	checkNull(pParameterId, db, pMaxBasinId);
-    	outData = new double[pMaxBasinId + 1];
-    	
-    	String sql = "SELECT ts, basin_id, value FROM measurement WHERE parameter_id = ?";
-    	
-    	if (tStart != null) {
-    		// add start time condition
-    		long startTs = str2ts(tStart);
-    		sql += " AND ts >= " + startTs;
+	private void ensureOpen() throws Exception {
+		defineTableAndField();
+
+		if (rs != null) {
+			return;
 		}
-    	if (tEnd != null) {
+		checkNull(pParameterId, db, pMaxId);
+		outData = new double[pMaxId + 1];
+
+		String sql = "SELECT %s, %s, %s FROM %s WHERE %s = ?".formatted(tStsColumnName, idColumnName, valueColumnName, table, varIdColumnName);
+
+		if (tStart != null) {
+			// add start time condition
+			long startTs = str2ts(tStart);
+			sql += " AND " + tStsColumnName + " >= " + startTs;
+		}
+		if (tEnd != null) {
 			// add end time condition
 			long endTs = str2ts(tEnd);
-			sql += " AND ts <= " + endTs;
-    	}
-    	sql += " ORDER BY ts, basin_id";
-    	Connection connection = db.getJdbcConnection();
-                
-    	ps = connection.prepareStatement(
-	           sql,
-	           ResultSet.TYPE_FORWARD_ONLY,
-	           ResultSet.CONCUR_READ_ONLY);
-    	ps.setInt(1, pParameterId);
-    	rs = ps.executeQuery();
-    	
-    	if(doPreCache) {
-    		List<double[]> tmpCachedData = new java.util.ArrayList<>();
-    		while(internalNext()) {
+			sql += " AND " + tStsColumnName + "<= " + endTs;
+		}
+		sql += " ORDER BY %s, %s".formatted(tStsColumnName, idColumnName);
+		Connection connection = db.getJdbcConnection();
+
+		ps = connection.prepareStatement(sql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+		ps.setInt(1, pParameterId);
+		rs = ps.executeQuery();
+
+		if (doPreCache) {
+			List<double[]> tmpCachedData = new java.util.ArrayList<>();
+			List<Long> tmpCachedTimestamps = new java.util.ArrayList<>();
+			while (internalNext()) {
 				double[] dataCopy = Arrays.copyOf(outData, outData.length);
 				tmpCachedData.add(dataCopy);
+				tmpCachedTimestamps.add(currentT);
 			}
-    		cachedData = new double[tmpCachedData.size()][];
+			// TODO make this better
+			cachedData = new double[tmpCachedData.size()][];
 			for (int i = 0; i < tmpCachedData.size(); i++) {
 				cachedData[i] = tmpCachedData.get(i);
 			}
-			
+			cachedTimestamps = new long[tmpCachedTimestamps.size()];
+			for (int i = 0; i < tmpCachedTimestamps.size(); i++) {
+				cachedTimestamps[i] = tmpCachedTimestamps.get(i);
+			}
 			// close the result set and statement
 			rs.close();
 			ps.close();
 			rs = null;
 			ps = null;
 		}
-    }
-    
-    public double[] getCached( int index ) throws Exception {
-		if(!doPreCache) {		
+	}
+
+	private void defineTableAndField() {
+		if (doRawData) {
+			table = GeoFrameSimpleTable.STATIONDATA.tableName();
+			tStsColumnName = StationDataField.TS.columnName();
+			idColumnName = StationDataField.STATION_ID.columnName();
+			valueColumnName = StationDataField.VALUE.columnName();
+			varIdColumnName =StationDataField.VAR_ID.columnName();
+		} else {
+			table = GeoFrameSimpleTable.BASINDATA.tableName();
+			tStsColumnName = BasinDataField.TS.columnName();
+			idColumnName = BasinDataField.BASIN_ID.columnName();
+			valueColumnName = BasinDataField.VALUE.columnName();
+			varIdColumnName =BasinDataField.VAR_ID.columnName();
+		}
+
+	}
+
+	public double[] getCached(int index) throws Exception {
+		if (!doPreCache) {
 			throw new Exception("Not in pre-cache mode, cannot get cached data.");
 		}
-		if(index >= cachedData.length) {
+		if (index >= cachedData.length) {
 			return null;
 		}
 		return cachedData[index];
 	}
-    
+	
+	public int getCachedSize() throws Exception {
+		if (!doPreCache) {
+			throw new Exception("Not in pre-cache mode, cannot get cached data.");
+		}
+		return cachedData.length;
+	}
+	
+	public long getCachedTimestamp(int index) throws Exception {
+		if (!doPreCache) {
+			throw new Exception("Not in pre-cache mode, cannot get cached data.");
+		}
+		if (index >= cachedTimestamps.length) {
+			return -1;
+		}
+		return cachedTimestamps[index];
+	}
 
-    @Execute
-    public boolean next() throws Exception {
-    	if(doPreCache) {
+	@Execute
+	public boolean next() throws Exception {
+		if (doPreCache) {
 			throw new Exception("In pre-cache mode, next() method cannot be used, use getCached(i) instead.");
 		}
-    	return internalNext();
-    }
+		return internalNext();
+	}
 
 	private boolean internalNext() throws Exception {
-		if(isClosed) {
-    		return false;
-    	}
-        ensureOpen();
-        // clean the array
-        Arrays.fill(outData, Double.NaN);
-        
-        if (!initialized) {
-            if (!rs.next()) {
-            	isClosed = true;
-                return false;
-            }
-            initialized = true;
-        }
-        
-        boolean hasNext = false;
-        do {
-        	long ts = rs.getLong("ts");
-        	currentT = ts;
-        	tCurrent = ts2str(currentT);
-            int basinId  = rs.getInt("basin_id");
-            double value = rs.getDouble("value");
-            outData[basinId] = value;
-            
-            hasNext = true;
+		if (isClosed) {
+			return false;
+		}
+		ensureOpen();
+		// clean the array
+		Arrays.fill(outData, Double.NaN);
 
-            if (!rs.next()) {
-            	isClosed = true;
-                break;
-            }
+		if (!initialized) {
+			if (!rs.next()) {
+				isClosed = true;
+				return false;
+			}
+			initialized = true;
+		}
 
-            long nextT = rs.getLong("ts");
-            if (nextT != ts) {
-                break;
-            }
-        } while (true);
-        
-        return hasNext;
+		boolean hasNext = false;
+		do {
+			long ts = rs.getLong(tStsColumnName);
+			currentT = ts;
+			tCurrent = ts2str(currentT);
+			int basinId = rs.getInt(idColumnName);
+			double value = rs.getDouble(valueColumnName);
+			outData[basinId] = value;
+
+			hasNext = true;
+
+			if (!rs.next()) {
+				isClosed = true;
+				break;
+			}
+
+			long nextT = rs.getLong(tStsColumnName);
+			if (nextT != ts) {
+				break;
+			}
+		} while (true);
+
+		return hasNext;
 	}
-    
-    public static String ts2str( long millis ) {
-        return new DateTime(millis).toString(HMConstants.utcDateFormatterYYYYMMDDHHMMSS);
-    }
 
-    public static long str2ts( String isoString ) {
-        return HMConstants.utcDateFormatterYYYYMMDDHHMMSS.parseDateTime(isoString).getMillis();
-    }
+	public static String ts2str(long millis) {
+		return new DateTime(millis).toString(HMConstants.utcDateFormatterYYYYMMDDHHMMSS);
+	}
 
+	public static long str2ts(String isoString) {
+		return HMConstants.utcDateFormatterYYYYMMDDHHMMSS.parseDateTime(isoString).getMillis();
+	}
 
-    @Finalize
-    public void close() throws Exception {
-        rs.close();
-        ps.close();
-    }
+	@Finalize
+	public void close() throws Exception {
+		rs.close();
+		ps.close();
+	}
 }

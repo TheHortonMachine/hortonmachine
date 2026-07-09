@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import java.io.File;
 
@@ -61,15 +61,11 @@ public class TestErm extends HMModel {
 //		double northing = 5128704.4571;
 
 		// NOCE
-		String geoframeGpkg = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/inputs/outputs/geoframe_data.gpkg";
-
-		String envDataPath = "/home/hydrologis/storage/lavori_tmp/GEOFRAME/env_data.sqlite";
+		String geoframeGpkg = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/outputs/geoframe_data.gpkg";
 
 		ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb();
 		db.open(geoframeGpkg);
 
-		ADb envDb = EDb.SQLITE.getDb();
-		envDb.open(envDataPath);
 
 		try {
 
@@ -77,7 +73,6 @@ public class TestErm extends HMModel {
 
 			// get the max basin id from the db
 			int maxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
-
 			double[] basinAreas = IWaterBudgetSimulationRunner.getBasinAreas(db, maxBasinId);
 
 			// get the topology from the db
@@ -90,7 +85,7 @@ public class TestErm extends HMModel {
 			String toTS = "2023-10-01 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 365;
-			double[] observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(envDb, fromTS, toTS);
+			double[] observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, fromTS, toTS);
 			boolean doCalibration = false;
 			int psoIterations = 300;
 			boolean writeState = false;
@@ -98,8 +93,8 @@ public class TestErm extends HMModel {
 			CostFunctions costFunction = CostFunctions.KGE;
 
 			var precipReader = new GeoframeEnvDatabaseIterator();
-			precipReader.db = envDb;
-			precipReader.pMaxBasinId = maxBasinId;
+			precipReader.db = db;
+			precipReader.pMaxId = maxBasinId;
 			precipReader.pParameterId = 2; // precip
 			precipReader.tStart = fromTS;
 			precipReader.tEnd = toTS;
@@ -108,9 +103,9 @@ public class TestErm extends HMModel {
 			}
 
 			var tempReader = new GeoframeEnvDatabaseIterator();
-			tempReader.db = envDb;
+			tempReader.db = db;
 			tempReader.pParameterId = 4; // temperature
-			tempReader.pMaxBasinId = maxBasinId;
+			tempReader.pMaxId = maxBasinId;
 			tempReader.tStart = fromTS;
 			tempReader.tEnd = toTS;
 			if (doCalibration) {
@@ -118,9 +113,9 @@ public class TestErm extends HMModel {
 			}
 
 			var etpReader = new GeoframeEnvDatabaseIterator();
-			etpReader.db = envDb;
+			etpReader.db = db;
 			etpReader.pParameterId = 1; // etp
-			etpReader.pMaxBasinId = maxBasinId;
+			etpReader.pMaxId = maxBasinId;
 			etpReader.tStart = fromTS;
 			etpReader.tEnd = toTS;
 			if (doCalibration) {
@@ -156,7 +151,6 @@ public class TestErm extends HMModel {
 
 		} finally {
 			db.close();
-			envDb.close();
 		}
 	}
 

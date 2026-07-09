@@ -1,4 +1,4 @@
-package org.hortonmachine.hmachine.geoframe;
+package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
 import java.io.File;
 
@@ -22,6 +22,8 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller;
 import org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
@@ -30,7 +32,6 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwork;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsGeoframeInputsBuilder;
 import org.hortonmachine.hmachine.modules.network.netnumbering.OmsNetNumbering;
-import org.hortonmachine.hmachine.utils.GeoframeUtils;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
@@ -94,6 +95,14 @@ public class ErmDataPreparator extends HMModel {
 	@Description("If true, existing output files are overwritten.")
 	@In
 	public boolean doOverwrite = false;
+	
+	@Description("Stream Gauge vector layer path.")
+	@In
+	public String inStreamGauge;
+	
+	@Description("Vector layer field for the station ID.")
+	@In
+	public String pStreamGaugeIDField;
 
 	@Execute
 	public void process() throws Exception {
@@ -277,7 +286,7 @@ public class ErmDataPreparator extends HMModel {
 					pm.message("Not overwriting existing basin skyview: " + p.basinSkyview);
 				}
 
-				if (p.shouldRun(p.basinNetnum) || !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_TOPOLOGY_TABLE))) {
+				if (p.shouldRun(p.basinNetnum) || !db.hasTable(SqlName.m(GeoFrameSimpleTable.TOPOLOGY.tableName()))) {
 					pm.message("Running NetNumbering...");
 					OmsNetNumbering nn = new OmsNetNumbering();
 					nn.pm = pm;
@@ -296,8 +305,8 @@ public class ErmDataPreparator extends HMModel {
 					makeQgisStyleForRaster(EColorTables.contrasting.name(), p.basinNetbasinsDesired, 0);
 				}
 
-				if (!db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_BASIN_TABLE))
-						|| !db.hasTable(SqlName.m(GeoframeUtils.GEOFRAME_NETWORK_TABLE))) {
+				if (!db.hasTable(SqlName.m(GeoFrameGeoTable.BASIN.tableName()))
+						|| !db.hasTable(GeoFrameGeoTable.NET.tableName())) {
 					pm.message("Building GeoframeInputs...");
 					OmsGeoframeInputsBuilder b = new OmsGeoframeInputsBuilder();
 					b.pm = pm;
@@ -307,7 +316,10 @@ public class ErmDataPreparator extends HMModel {
 					b.inNet = p.basinNet;
 					b.inSkyview = p.basinSkyview;
 					b.inBasins = p.basinNetbasinsDesired;
+					b.inStreamGauge = inStreamGauge;
+					b.inIDStreamGaugeFieldName = pStreamGaugeIDField;
 					b.inGeoframeDb = db;
+
 					b.process();
 				}
 			}
@@ -327,76 +339,19 @@ public class ErmDataPreparator extends HMModel {
 		FileUtilities.writeFile(qml, FileUtilities.substituteExtention(new File(rasterPath), "qml"));
 	}
 
-	private static final class Paths {
-		final String outputsDir;
-
-		final String dtm;
-		final String pit;
-		final String flow;
-		final String drain;
-		final String tca;
-		final String net;
-		final String basin;
-		final String basinResized;
-		final String basinPit;
-		final String basinDrain;
-		final String basinTca;
-		final String basinNet;
-		final String skyview;
-		final String basinSkyview;
-		final String basinNetnum;
-		final String basinNetbasins;
-		final String basinNetbasinsDesired;
-
-		final boolean overwrite;
-		final String ext = ".tif";
-
-		Paths(String inDtm, boolean overwrite) {
-			this.overwrite = overwrite;
-			dtm = inDtm;
-			if (!new File(dtm).exists()) {
-				throw new IllegalArgumentException("Input DTM not found at: " + dtm);
-			}
-			File folder = new File(dtm).getParentFile();
-			outputsDir = new File(folder, "outputs").getAbsolutePath() + File.separator;
-			if (!new File(outputsDir).exists()) {
-				new File(outputsDir).mkdirs();
-			}
-			pit = outputsDir + "pit" + ext;
-			flow = outputsDir + "flow" + ext;
-			drain = outputsDir + "drain" + ext;
-			tca = outputsDir + "tca" + ext;
-			net = outputsDir + "net" + ext;
-			skyview = outputsDir + "skyview" + ext;
-			basin = outputsDir + "basin" + ext;
-			basinResized = outputsDir + "basin_resized" + ext;
-			basinPit = outputsDir + "basin_pit" + ext;
-			basinDrain = outputsDir + "basin_drain" + ext;
-			basinTca = outputsDir + "basin_tca" + ext;
-			basinNet = outputsDir + "basin_net" + ext;
-			basinSkyview = outputsDir + "basin_skyview" + ext;
-			basinNetnum = outputsDir + "basin_netnum" + ext;
-			basinNetbasins = outputsDir + "basin_netnumbasins" + ext;
-			basinNetbasinsDesired = outputsDir + "basin_netnumbasins_desired" + ext;
-		}
-
-		public String getOutputsDir() {
-			return outputsDir;
-		}
-
-		boolean shouldRun(String path) {
-			return overwrite || !new File(path).exists();
-		}
-	}
-
-
 	public static void main(String[] args) throws Exception {
+		String workspacePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
 		ErmDataPreparator prep = new ErmDataPreparator();
-		prep.inDtm = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/inputs/dtm.tif";
+		prep.inDtm = workspacePath + "dtm.tif";
 		prep.outGeopackageName = "geoframe_data.gpkg";
 		prep.doBasinCutout = true;
+		prep.pDrainThreshold = 2000;
+		prep.pDesiredArea = 1_000_000.0;
+		prep.pDesiredAreaDelta = 20.0;
 		prep.pOutletEasting = 629720;
 		prep.pOutletNorthing = 5127690;
+		prep.pStreamGaugeIDField = "idstazione";
+		prep.inStreamGauge = workspacePath + "idrometri.shp";
 		prep.process();
 	}
 }
