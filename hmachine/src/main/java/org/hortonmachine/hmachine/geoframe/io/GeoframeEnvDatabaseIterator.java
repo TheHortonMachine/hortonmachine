@@ -218,6 +218,13 @@ public class GeoframeEnvDatabaseIterator extends HMModel {
 		return cachedData[index];
 	}
 	
+	public int getCachedSize() throws Exception {
+		if (!doPreCache) {
+			throw new Exception("Not in pre-cache mode, cannot get cached data.");
+		}
+		return cachedData.length;
+	}
+	
 	public long getCachedTimestamp(int index) throws Exception {
 		if (!doPreCache) {
 			throw new Exception("Not in pre-cache mode, cannot get cached data.");

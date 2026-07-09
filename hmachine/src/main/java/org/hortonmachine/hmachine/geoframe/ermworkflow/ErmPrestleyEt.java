@@ -1,19 +1,16 @@
 package org.hortonmachine.hmachine.geoframe.ermworkflow;
 
-import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.HMRaster;
-import org.hortonmachine.gears.modules.r.transformer.OmsRasterResolutionResampler;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
-import org.hortonmachine.hmachine.geoframe.utils.RadiationAtCentroid;
+import org.hortonmachine.hmachine.geoframe.utils.PrestleyETAtCentroid;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -26,25 +23,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-/**
- * Simple launcher to get radiation.
- * 
- * It take all parameter possible as default and in clear square condition. Only
- * temperature are known no humidity and clearness index.
- */
 @Description("Radiation calculator.")
 @Author(name = "Daniele Andreis", contact = "")
-@Keywords("ERM, GeoFrame, Radiation")
+@Keywords("ERM, GeoFrame, ET")
 @Label("GeoFrame")
-@Name("ermRadiation")
+@Name("ermPrestleyEt")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
-public class ErmRadiation extends HMModel {
-	@Description("Input dtm.")
-	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
-	@In
-	public String inDtm;
-
+public class ErmPrestleyEt extends HMModel {
 	@Description("Input geoframe data geopackage.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
@@ -61,77 +47,59 @@ public class ErmRadiation extends HMModel {
 	@Description("If true, existing output files are overwritten.")
 	@In
 	public boolean doOverwrite = false;
-	
-	@Description("Downscale factor for the DTM and skyview rasters. If greater than 1, the rasters will be downscaled by this factor. This helps to speed up the processing and reduce memory usage. Default is 1 (no downscaling).")
-	@In
-	public int downscaleFactor = 1;
-	
+
 	@Execute
 	public void process() throws Exception {
-		Paths p = new Paths(inDtm, doOverwrite);
-
 		try (ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb()) {
 			db.open(inGpkg);
 
 			if (doOverwrite) {
 				db.executeInsertUpdateDeleteSql("DELETE FROM " + GeoFrameSimpleTable.BASINDATA.tableName() + " WHERE " + //
 						BasinDataField.VAR_ID.columnName() + " = "
-						+ VarSchema.EnvironmentalVariableType.RADIATION.getId());
-			}
-			
-			var dtm = getRaster(p.dtm);
-			var skyview = getRaster(p.skyview);
-			if (downscaleFactor > 1) {
-				dtm = downscaleRaster(dtm, downscaleFactor);
-				skyview = downscaleRaster(skyview, downscaleFactor);
+						+ VarSchema.EnvironmentalVariableType.EVAPOTRANSPIRATION.getId());
 			}
 
 			var temperatureReader = new GeoframeEnvDatabaseIterator();
 			temperatureReader.db = db;
-			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId(); // temperature
+			temperatureReader.pParameterId = EnvironmentalVariableType.TEMPERATURE.getId();
 			temperatureReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 			temperatureReader.tStart = pStartTimestamp + ":00";
 			temperatureReader.tEnd = pEndTimestamp + ":00";
 			temperatureReader.doRawData = false;
 			temperatureReader.preCacheData();
 
-			var radiation = new RadiationAtCentroid();
-			radiation.inGeoframeDb = db;
-			radiation.inTemperatureReader = temperatureReader;
-			radiation.dem =  dtm; // TODO Daniele, why where you using the pit here?
-			radiation.inSkyview = skyview;
-			radiation.lwrvModeel = "6";
-			radiation.doHourly = true;
-			radiation.init();
-			radiation.process();
+			var netReader = new GeoframeEnvDatabaseIterator();
+			netReader.db = db;
+			netReader.pParameterId = EnvironmentalVariableType.RADIATION.getId();
+			netReader.pMaxId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
+			netReader.tStart = pStartTimestamp + ":00";
+			netReader.tEnd = pEndTimestamp + ":00";
+			netReader.doRawData = false;
+			netReader.preCacheData();
+
+			var ptEt = new PrestleyETAtCentroid();
+			ptEt.inGeoframeDB = db;
+			ptEt.isHourly = true;
+			ptEt.pAlpha = 1.26;
+			ptEt.inTempReader = temperatureReader;
+			ptEt.inNetReader = netReader;
+			ptEt.pGmorn = 0.35;
+			ptEt.pGnight = 0.75;
+			ptEt.init();
+			ptEt.process();
 
 		}
 	}
 
-	private GridCoverage2D downscaleRaster(GridCoverage2D dtm, int downscaleFactor2) throws Exception {
-		HMRaster r = HMRaster.fromGridCoverage(dtm);
-		double xRes = r.getXRes();
-		double yRes = r.getYRes();
-		double newXRes = xRes * downscaleFactor2;
-		double newYRes = yRes * downscaleFactor2;
-		OmsRasterResolutionResampler resampler = new OmsRasterResolutionResampler();
-		resampler.inGeodata = dtm;
-		resampler.pXres = newXRes;
-		resampler.pYres = newYRes;
-		resampler.process();
-		return resampler.outGeodata;
-	}
-
 	public static void main(String[] args) throws Exception {
+		new ErmPrestleyEt();
 		String workspacePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
-		ErmRadiation er = new ErmRadiation();
-		er.inDtm = workspacePath + "dtm.tif";
-		er.inGpkg = workspacePath + "outputs/geoframe_data.gpkg";
-		er.pStartTimestamp = ErmCommonData.START_TIMESTAMP;
-		er.pEndTimestamp = ErmCommonData.END_TIMESTAMP;
-		er.doOverwrite = true;
-		er.downscaleFactor = 8;
-		er.process();
+		ErmPrestleyEt ept = new ErmPrestleyEt();
+		ept.inGpkg = workspacePath + "outputs/geoframe_data.gpkg";
+		ept.pStartTimestamp = ErmCommonData.START_TIMESTAMP;
+		ept.pEndTimestamp = ErmCommonData.END_TIMESTAMP;
+		ept.doOverwrite = true;
+		ept.process();
 	}
 
 }
