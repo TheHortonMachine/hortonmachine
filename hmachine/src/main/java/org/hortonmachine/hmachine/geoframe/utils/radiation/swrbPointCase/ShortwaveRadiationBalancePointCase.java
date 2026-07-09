@@ -238,8 +238,8 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 		// otherwise it adds an hour, "step" increments at the end of the process
 		// the actual date is needed to compute the actual sunrise and sunset
 		DateTime currentDateTime = formatter.parseDateTime(tCurrentDateString);
-		DateTime date = (doHourly == false) ? currentDateTime.plusDays(step)
-				: currentDateTime.plusHours(step).plusMinutes(30);
+		DateTime date = (doHourly == false) ? currentDateTime.plusDays(1)
+				: currentDateTime.plusMinutes(30);
 
 		// from pixel coordinates (in coverage image) to geographic coordinates (in
 		// coverage CRS)
