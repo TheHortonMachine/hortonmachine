@@ -27,10 +27,20 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 /**
- * Simple launcher to get radiation.
- * 
- * It take all parameter possible as default and in clear square condition. Only
- * temperature are known no humidity and clearness index.
+ * GeoFrame-ERM workflow step that computes net radiation at each basin's
+ * centroid and persists it to the geoframe database.
+ *
+ * <p>
+ * Physically, net radiation is Rn = (1 - albedo)*SW&#8595; + LW&#8595; -
+ * LW&#8593;. The shortwave balance follows Corripio (2002/2003): solar
+ * geometry, clear-sky atmospheric transmittance (Rayleigh scattering, ozone,
+ * water vapor, aerosols) and terrain shading/sky-view-factor derived from the
+ * DTM. The longwave balance uses an empirical clear-sky atmospheric
+ * emissivity model - fixed here to Idso [1981] (model "6") - corrected for
+ * cloud cover and sky obstruction. Only temperature is read from the
+ * database; humidity and the atmospheric clearness index are left at their
+ * clear-sky defaults, since this launcher assumes clear-sky conditions with
+ * only temperature known.
  */
 @Description("Radiation calculator.")
 @Author(name = "Daniele Andreis", contact = "")

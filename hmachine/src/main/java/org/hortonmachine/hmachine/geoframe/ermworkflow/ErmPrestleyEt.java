@@ -23,6 +23,26 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+/**
+ * GeoFrame-ERM workflow step that computes potential evapotranspiration
+ * (ET0) at each basin's centroid using the Priestley-Taylor (1972) method,
+ * and persists it to the geoframe database.
+ *
+ * <p>
+ * Physically it applies the Priestley-Taylor equilibrium evapotranspiration
+ * formula (see
+ * {@link org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylorEtpModel#compute}):
+ *
+ * <pre>ET = alpha * Delta * (Rn - G) / ((gamma + Delta) * lambda)</pre>
+ *
+ * where Delta is the slope of the saturation vapor pressure curve at air
+ * temperature, gamma is the psychrometric constant (derived from atmospheric
+ * pressure, defaulted here since no pressure reader is wired in), lambda is
+ * the latent heat of vaporization, Rn is net radiation, and G is the soil
+ * heat flux, approximated as a simple fraction of Rn via {@link #pGmorn}
+ * (daylight, 6h-18h) or {@link #pGnight} (night). {@link #pAlpha} is the
+ * Priestley-Taylor coefficient (~1.26 for well-watered surfaces).
+ */
 @Description("Radiation calculator.")
 @Author(name = "Daniele Andreis", contact = "")
 @Keywords("ERM, GeoFrame, ET")
