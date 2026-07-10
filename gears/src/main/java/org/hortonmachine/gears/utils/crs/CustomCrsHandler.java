@@ -48,8 +48,8 @@ public class CustomCrsHandler {
 				""";
 
 	static final Map<String, String> addedCrsWkts = new HashMap<>() {
-		{
-			 put("6933", wkt6933);
-		}
+//		{
+//			 put("6933", wkt6933);
+//		}
 	};
 }

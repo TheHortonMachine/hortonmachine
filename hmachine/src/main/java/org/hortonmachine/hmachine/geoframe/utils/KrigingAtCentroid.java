@@ -146,6 +146,7 @@ public class KrigingAtCentroid extends HMModel {
 		if (variableReader.isPreCachingMode()) {
 			double[] variableData = variableReader.getCached(timestepIndex);
 			long timestep = variableReader.getCachedTimestamp(timestepIndex);
+			pm.beginTask("Processing Kriging...", variableReader.getCachedSize());
 			while (variableData != null) {
 				h = TableUtils.getLegacyHMInput(variableData, ids);
 
@@ -153,9 +154,12 @@ public class KrigingAtCentroid extends HMModel {
 				timestepIndex++;
 				variableData = variableReader.getCached(timestepIndex);
 				timestep = variableReader.getCachedTimestamp(timestepIndex);
-
+				
+				pm.worked(1);
 			}
+			pm.done();
 		} else {
+			pm.beginTask("Processing Kriging...", -1);
 			while (variableReader.next()) {
 
 				double[] variableData = variableReader.outData;
@@ -163,6 +167,7 @@ public class KrigingAtCentroid extends HMModel {
 
 				processTimestep(variableData, stations, inStations, h, variableReader.currentT);
 			}
+			pm.done();
 		}
 
 	}

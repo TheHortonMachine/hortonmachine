@@ -85,8 +85,14 @@ public class ErmCalibration extends ErmBase {
 
 	public static void main(String[] args) throws Exception {
 		ErmCalibration cal = new ErmCalibration();
-		cal.inGeopackagePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/inputs/outputs/geoframe_data.gpkg";
-		cal.inEnvDataPath = "/home/hydrologis/storage/lavori_tmp/GEOFRAME/env_data.sqlite";
+		cal.inGeopackagePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
+    	cal.inFromTimestamp = ErmCommonData.START_TIMESTAMP + ":00";
+    	cal.inToTimestamp = ErmCommonData.END_TIMESTAMP + ":00";
+    	cal.pTimeStepMinutes = 60;
+    	cal.pSpinUpDays = 365;
+    	cal.pPsoIterations = 300;
+    	cal.pParticlesNum = 20;
+    	cal.doWriteState = false;
 		cal.process();
 	}
 }

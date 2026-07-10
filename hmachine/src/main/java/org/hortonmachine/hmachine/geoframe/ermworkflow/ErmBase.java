@@ -7,6 +7,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.TopologyUtilities;
 import org.hortonmachine.hmachine.geoframe.utils.WaterSimulationRunner;
@@ -18,15 +19,10 @@ import oms3.annotations.Unit;
 
 public abstract class ErmBase extends HMModel {
 
-	@Description("GeoPackage database path (produced by ErmDataPreparator).")
+	@Description("Geoframe database path (containing all data).")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGeopackagePath;
-
-	@Description("Environmental data SQLite database path (precipitation, temperature, ETP, observed discharge).")
-	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
-	@In
-	public String inEnvDataPath;
 
 	@Description("Simulation start timestamp [format: yyyy-MM-dd HH:mm:ss].")
 	@In
@@ -51,7 +47,6 @@ public abstract class ErmBase extends HMModel {
 	public boolean doWriteState = false;
 
 	protected ASpatialDb db;
-	protected ADb envDb;
 
 	protected int maxBasinId;
 	protected double[] basinAreas;
@@ -69,17 +64,17 @@ public abstract class ErmBase extends HMModel {
 		db = EDb.GEOPACKAGE.getSpatialDb();
 		db.open(inGeopackagePath);
 
-		envDb = EDb.SQLITE.getDb();
-		envDb.open(inEnvDataPath);
-
 		maxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 		basinAreas = IWaterBudgetSimulationRunner.getBasinAreas(db, maxBasinId);
 		rootNode = TopologyUtilities.getRootNodeFromDb(db);
-		observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(envDb, inFromTimestamp, inToTimestamp);
+		observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, inFromTimestamp, inToTimestamp);
 
-		precipReader = makeReader(envDb, maxBasinId, 2, inFromTimestamp, inToTimestamp);
-		tempReader = makeReader(envDb, maxBasinId, 4, inFromTimestamp, inToTimestamp);
-		etpReader = makeReader(envDb, maxBasinId, 1, inFromTimestamp, inToTimestamp);
+		var type = EnvironmentalVariableType.PRECIPITATION.getId();
+		precipReader = makeReader(db, maxBasinId, type, inFromTimestamp, inToTimestamp);
+		type = EnvironmentalVariableType.TEMPERATURE.getId();
+		tempReader = makeReader(db, maxBasinId, type, inFromTimestamp, inToTimestamp);
+		type = EnvironmentalVariableType.EVAPOTRANSPIRATION.getId();
+		etpReader = makeReader(db, maxBasinId, type, inFromTimestamp, inToTimestamp);
 
 		runner = new WaterSimulationRunner();
 		spinUpTimesteps = (24 * 60 / pTimeStepMinutes) * pSpinUpDays;
@@ -88,12 +83,10 @@ public abstract class ErmBase extends HMModel {
 	protected void teardown() throws Exception {
 		if (db != null)
 			db.close();
-		if (envDb != null)
-			envDb.close();
 	}
 
 	private static GeoframeEnvDatabaseIterator makeReader(ADb db, int maxBasinId, int parameterId, String fromTS,
-			String toTS) {
+			String toTS) throws Exception {
 		GeoframeEnvDatabaseIterator r = new GeoframeEnvDatabaseIterator();
 		r.db = db;
 		r.pMaxId = maxBasinId;

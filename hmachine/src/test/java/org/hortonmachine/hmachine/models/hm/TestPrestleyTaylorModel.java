@@ -21,7 +21,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
     public void testFaoEtpDaily() throws Exception {
 
         String startDate = "2005-05-02 00:00";
-        String endDate = "2005-05-02 000:00";
+        String endDate = "2005-05-02 00:00";
         int timeStepMinutes = 60;
         String fId = "ID";
 
@@ -45,7 +45,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
             HashMap<Integer, double[]> id2ValueMap = tempReader.outData;
             PTEtp.inTemp = id2ValueMap;
 
-            PTEtp.tCurrent = tempReader.tCurrent;
+            PTEtp.tCurrent = tempReader.tCurrent + ":00";
 
             pressReader.nextRecord();
             id2ValueMap = pressReader.outData;
@@ -89,7 +89,7 @@ public class TestPrestleyTaylorModel extends HMTestCase {
             HashMap<Integer, double[]> id2ValueMap = tempReader.outData;
             PTEtp.inTemp = id2ValueMap;
 
-            PTEtp.tCurrent = tempReader.tCurrent;
+            PTEtp.tCurrent = tempReader.tCurrent + ":00";
 
             pressReader.nextRecord();
             id2ValueMap = pressReader.outData;
