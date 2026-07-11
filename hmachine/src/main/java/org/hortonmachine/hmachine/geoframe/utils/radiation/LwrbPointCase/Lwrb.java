@@ -123,9 +123,6 @@ public class Lwrb extends HMModel {
 	@In
 	public double bCloud;
 
-	@Description("It is needed as index of the time step")
-	int step;
-
 	@Description("The shape file with the station measuremnts")
 	@In
 	public SimpleFeatureCollection inStationsFC;
@@ -165,7 +162,7 @@ public class Lwrb extends HMModel {
 	@Execute
 	public void process() throws Exception {
 
-		if (step == 0) {
+		if (skyviewfactorWR == null) {
 			RenderedImage inSkyviewRenderedImage = inSkyviewGC.getRenderedImage();
 			skyviewfactorWR = CoverageUtilities.replaceNovalue(inSkyviewRenderedImage, -9999.0);
 			inSkyviewRenderedImage = null;
@@ -173,36 +170,41 @@ public class Lwrb extends HMModel {
 			// starting from the shp file containing the stations, get the coordinate
 			// of each station
 			stationCoordinates = getCoordinate(inStationsFC, fStationsID);
+
+			// computing the reference system of the input DEM
+			CoordinateReferenceSystem sourceCRS = inSkyviewGC.getCoordinateReferenceSystem2D();
+			// from pixel coordinates (in coverage image) to geographic coordinates (in
+			// coverage CRS)
+			MathTransform transf = inSkyviewGC.getGridGeometry().getCRSToGrid2D();
+
+			// trasform the list of idStation into an array
+			idStations = stationCoordinates.keySet().toArray();
+
+			// create the set of the coordinate of the station, so we can
+			// iterate over the set
+			Iterator<Integer> idIterator = stationCoordinates.keySet().iterator();
+
+			// iterate over the list of the stations and detect their position in the map -
+			// station positions don't change across timesteps, so this only needs doing once
+			for (int i = 0; i < idStations.length; i++) {
+
+				// compute the coordinate of the station from the linked hashMap
+				Coordinate coordinate = (Coordinate) stationCoordinates.get(idIterator.next());
+
+				// define the position, according to the CRS, of the station in the map
+				org.geotools.api.geometry.Position point = new Position2D(sourceCRS, coordinate.x, coordinate.y);
+
+				// trasform the position in two the indices of row and column
+				org.geotools.api.geometry.Position gridPoint = transf.transform(point, null);
+
+				// add the indices to a list
+				columnStation.add((int) gridPoint.getCoordinate()[0]);
+				rowStation.add((int) gridPoint.getCoordinate()[1]);
+			}
 		}
 
-		// computing the reference system of the input DEM
-		CoordinateReferenceSystem sourceCRS = inSkyviewGC.getCoordinateReferenceSystem2D();
-		// from pixel coordinates (in coverage image) to geographic coordinates (in
-		// coverage CRS)
-		MathTransform transf = inSkyviewGC.getGridGeometry().getCRSToGrid2D();
-
-		// create the set of the coordinate of the station, so we can
-		// iterate over the set
-		Iterator<Integer> idIterator = stationCoordinates.keySet().iterator();
-
-		// trasform the list of idStation into an array
-		idStations = stationCoordinates.keySet().toArray();
-
-		// iterate over the list of the stations and detect their position in the map
+		// iterate over the list of the stations
 		for (int i = 0; i < idStations.length; i++) {
-
-			// compute the coordinate of the station from the linked hashMap
-			Coordinate coordinate = (Coordinate) stationCoordinates.get(idIterator.next());
-
-			// define the position, according to the CRS, of the station in the map
-			org.geotools.api.geometry.Position point = new Position2D(sourceCRS, coordinate.x, coordinate.y);
-
-			// trasform the position in two the indices of row and column
-			org.geotools.api.geometry.Position gridPoint = transf.transform(point, null);
-
-			// add the indices to a list
-			columnStation.add((int) gridPoint.getCoordinate()[0]);
-			rowStation.add((int) gridPoint.getCoordinate()[1]);
 
 			double airTemperature = inAirTemperatureValuesHM.get(idStations[i])[0];
 
@@ -239,7 +241,6 @@ public class Lwrb extends HMModel {
 			/** Store results in Hashmaps */
 			storeResult((Integer) idStations[i], downwellingALLSKY, upwelling);
 		}
-		step++;
 	}
 
 	/**

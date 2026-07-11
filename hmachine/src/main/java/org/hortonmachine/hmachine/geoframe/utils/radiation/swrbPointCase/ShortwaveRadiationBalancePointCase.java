@@ -51,8 +51,6 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
@@ -121,9 +119,6 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 			+ " Hourly--> true or Daily-->false")
 	@In
 	public boolean doHourly;
-
-	@Description("It is needed to iterate on the date")
-	int step;
 
 	@Description("The first day of the simulation.")
 	@In
@@ -236,17 +231,11 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 		// We change because in the original we compute several step, now one step at
 		// time, so we pass a spartameter the current date, no need to add the number of
 		// step
+
 		DateTime currentDateTime = formatter.parseDateTime(tCurrentDateString);
 		DateTime date = (doHourly == false) ? currentDateTime : currentDateTime.plusMinutes(30);
 
-		// from pixel coordinates (in coverage image) to geographic coordinates (in
-		// coverage CRS)
-		MathTransform transf = inDem.getGridGeometry().getCRSToGrid2D();
-
-		// computing the reference system of the input DEM
-		CoordinateReferenceSystem sourceCRS = inDem.getCoordinateReferenceSystem2D();
-
-		if (step == 0) {
+		if (demWR == null) {
 			// transform the GrifCoverage2D maps into writable rasters
 			demWR = mapsTransform(inDem);
 			skyviewfactorWR = mapsTransform(inSkyview);
@@ -262,36 +251,47 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 
 			// compute the vector normal to a grid cell surface.
 			normalWR = normalVector(demWR, dx);
+
+			// from pixel coordinates (in coverage image) to geographic coordinates (in
+			// coverage CRS)
+			MathTransform transf = inDem.getGridGeometry().getCRSToGrid2D();
+
+			// computing the reference system of the input DEM
+			CoordinateReferenceSystem sourceCRS = inDem.getCoordinateReferenceSystem2D();
+
+			// trasform the list of idStation into an array
+			idStations = stationCoordinates.keySet().toArray();
+
+			// create the set of the coordinate of the station, so we can
+			// iterate over the set
+			Iterator<Integer> idIterator = stationCoordinates.keySet().iterator();
+
+			// iterate over the list of the stations to detect their position in the
+			// map and their latitude - station positions don't change across
+			// timesteps, so this only needs doing once
+			for (int i = 0; i < idStations.length; i++) {
+
+				// compute the coordinate of the station from the linked hashMap
+				Coordinate coordinate = (Coordinate) stationCoordinates.get(idIterator.next());
+
+				// define the position, according to the CRS, of the station in the map
+				org.geotools.api.geometry.Position point = new Position2D(sourceCRS, coordinate.x, coordinate.y);
+
+				// trasform the position in two the indices of row and column
+				org.geotools.api.geometry.Position gridPoint = transf.transform(point, null);
+
+				// add the indices to a list
+				columnStation.add((int) gridPoint.getCoordinate()[0]);
+				rowStation.add((int) gridPoint.getCoordinate()[1]);
+
+				// reproject the map in WGS84 and compute the latitude
+				Point[] idPoint = getPoint(coordinate, sourceCRS, targetCRS);
+				latitudeStation.add(Math.toRadians(idPoint[0].getY()));
+			}
 		}
 
-		// create the set of the coordinate of the station, so we can
-		// iterate over the set
-		Iterator<Integer> idIterator = stationCoordinates.keySet().iterator();
-
-		// trasform the list of idStation into an array
-		idStations = stationCoordinates.keySet().toArray();
-
-		// iterate over the list of the stations to detect their position in the
-		// map and their latitude
 		// iterate over the list of the stations
 		for (int i = 0; i < idStations.length; i++) {
-
-			// compute the coordinate of the station from the linked hashMap
-			Coordinate coordinate = (Coordinate) stationCoordinates.get(idIterator.next());
-
-			// define the position, according to the CRS, of the station in the map
-			org.geotools.api.geometry.Position point = new Position2D(sourceCRS, coordinate.x, coordinate.y);
-
-			// trasform the position in two the indices of row and column
-			org.geotools.api.geometry.Position gridPoint = transf.transform(point, null);
-
-			// add the indices to a list
-			columnStation.add((int) gridPoint.getCoordinate()[0]);
-			rowStation.add((int) gridPoint.getCoordinate()[1]);
-
-			// reproject the map in WGS84 and compute the latitude
-			Point[] idPoint = getPoint(coordinate, sourceCRS, targetCRS);
-			latitudeStation.add(Math.toRadians(idPoint[0].getY()));
 
 			// read the input data for the given station
 			double temperature = defaultTemp;
@@ -339,9 +339,6 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 			storeResult_series((Integer) idStations[i], direct, diffuse, topATM, total);
 
 		}
-
-		// upgrade the step for the date
-		step++;
 	}
 
 	/**

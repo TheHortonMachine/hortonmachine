@@ -25,7 +25,6 @@ import java.util.Set;
 
 import org.geotools.api.data.DataSourceException;
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -52,17 +51,15 @@ import oms3.annotations.Unit;
 @Description("Populate the db with hydrometeo data at centroid")
 @Author(name = "Daniele Andreis")
 @Keywords("time series, iterator, basin, value, database")
-@Name("VariableEvaluatorAtCentroid")
+@Name("PrestleyETAtCentroid")
 @Status(40)
 @UI(HMConstants.HIDE_UI_HINT)
 @License("General Public License Version 3 (GPLv3)")
 public class PrestleyETAtCentroid extends HMModel {
 
-	// TODO it's betetr the string (to use also in OMS console or the db object)
-	@Description("Input database path")
-	@UI(HMConstants.FILEIN_UI_HINT_DBF)
+	@Description("Input geoframe database.")
 	@In
-	public String inGeoframeDBPath = null;
+	public ASpatialDb inGeoframeDB = null;
 
 	@Description("reader")
 	@In
@@ -91,27 +88,15 @@ public class PrestleyETAtCentroid extends HMModel {
 	@Description(OMSPRESTEYTAYLORETPMODEL_pGnight_DESCRIPTION)
 	@In
 	public double pGnight = 0;
-	private ASpatialDb inGeoframeDb = null;
 
 	private int timestepIndex = 0;
 
 	private TopologyNode rootNode;
 
 	@Initialize
-	public void init() {
-
-		if (inGeoframeDBPath == null) {
-			throw new IllegalArgumentException();
-		}
-
-		// make sure the output table exists
-		try {
-			inGeoframeDb = EDb.GEOPACKAGE.getSpatialDb();
-			inGeoframeDb.open(inGeoframeDBPath);
-
-			check();
-		} catch (Exception e) {
-		}
+	public void init() throws Exception {
+		checkNull(inGeoframeDB);
+		check();
 	}
 
 	@Execute
@@ -119,7 +104,7 @@ public class PrestleyETAtCentroid extends HMModel {
 		// TODO for now I not implements the radiation part we have to choose te model.
 		// I have use for ET0 a modle from hortonmachin (but other model are similar)
 		// for radiation seesms me thatr models are not the same.
-		rootNode = TopologyUtilities.getRootNodeFromDb(inGeoframeDb);
+		rootNode = TopologyUtilities.getRootNodeFromDb(inGeoframeDB);
 
 		if (inNetReader.isPreCachingMode()) {
 			double[] inNetData = inNetReader.getCached(timestepIndex);
@@ -173,7 +158,7 @@ public class PrestleyETAtCentroid extends HMModel {
 		Set<TopologyNode> nodes = new HashSet<>();
 		TopologyNode.collectAllUpstreamRecursive(rootNode, nodes);
 		String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
-		inGeoframeDb.execOnConnection(conn -> {
+		inGeoframeDB.execOnConnection(conn -> {
 			boolean autoCommit = conn.getAutoCommit();
 			conn.setAutoCommit(false);
 			try (IHMPreparedStatement pStmt = conn.prepareStatement(insertSql)) {
@@ -184,12 +169,6 @@ public class PrestleyETAtCentroid extends HMModel {
 					pStmt.setInt(2, node.basinId);
 					pStmt.setInt(3, EnvironmentalVariableType.EVAPOTRANSPIRATION.getId());
 					pStmt.setDouble(4, et0);
-					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-							.withZone(ZoneId.of("Europe/Rome"));
-					Instant instant = Instant.ofEpochMilli(t);
-					String data = formatter.format(instant);
-					String quickToString = UtcTimeUtilities.quickToString(t);
-					System.out.println("date" + data + "/" + quickToString + " basin " + node.basinId + "value " + et0);
 					pStmt.addBatch();
 				}
 				pStmt.executeBatch();
@@ -219,12 +198,12 @@ public class PrestleyETAtCentroid extends HMModel {
 		if (inNetReader == null || inTempReader == null) {
 			throw new DataSourceException("no data reader for netradiation or temperature, check files name");
 		}
-		if (!inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
+		if (!inGeoframeDB.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
 			String sql = GeoFrameSimpleTable.BASINDATA.getSchema().createTableSql();
-			inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+			inGeoframeDB.executeInsertUpdateDeleteSql(sql);
 		}
-		if (!inGeoframeDb.hasTable(GeoFrameGeoTable.BASIN.tableName())) {
-			throw new DataSourceException("no suitable tables are present in db check");
+		if (!inGeoframeDB.hasTable(GeoFrameGeoTable.BASIN.tableName())) {
+			throw new DataSourceException("The basin table is missing in the database, please check the input database");
 		}
 	}
 
