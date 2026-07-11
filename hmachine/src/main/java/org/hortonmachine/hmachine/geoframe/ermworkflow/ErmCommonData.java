@@ -7,8 +7,8 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
  */
 public class ErmCommonData {
 	
-	public static String START_TIMESTAMP = "2020-01-01 01:00";
-	public static String END_TIMESTAMP = "2022-12-31 01:00";
+	public static String START_TIMESTAMP = "2015-10-01 01:00";
+	public static String END_TIMESTAMP = "2023-10-01 01:00";
 	public static TimeResolution TIME_RESOLUTION = TimeResolution.HOURLY;
 
 }

@@ -61,13 +61,10 @@ public class TestErm extends HMModel {
 //		double northing = 5128704.4571;
 
 		// NOCE
-		String geoframeGpkg = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/outputs/geoframe_data.gpkg";
+		String geoframeGpkg = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
 
-		ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb();
+		try(ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb()){
 		db.open(geoframeGpkg);
-
-
-		try {
 
 			// TODO here a potential evapotrans comes in
 
@@ -81,8 +78,10 @@ public class TestErm extends HMModel {
 			//////////////////////////////////////////////////
 			/// PARAMETERS
 			//////////////////////////////////////////////////
-			String fromTS = "2015-10-01 01:00:00";
-			String toTS = "2023-10-01 01:00:00";
+//			public static String START_TIMESTAMP = "2018-01-01 01:00";
+//			public static String END_TIMESTAMP = "2022-12-31 01:00";
+			String fromTS = "2018-10-01 01:00:00";
+			String toTS = "2022-12-31 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 365;
 			double[] observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, fromTS, toTS);
@@ -126,7 +125,10 @@ public class TestErm extends HMModel {
 			int spinUpTimesteps = (24 * 60 / timeStepMinutes) * spinUpDays;
 			if (!doCalibration) {
 
-				double[] params = {0.940739667840607, 0.96075954632785, -0.681919048298992, 1.3971214752557832, 0.33951109114109224, 0.09437578309755729, 0.3755301937475191, 0.6209768892258773, 166.8213039282626, 0.12887303016873772, 0.8868181607935712, 1.8827257470886904, 48.43029773696331, 1.0623972142583038, 0.9188401606071446, 745.4366397791149, 0.9812359783377442, 0.9798892148598694};
+				double[] params = {
+//						0.940739667840607, 0.96075954632785, -0.681919048298992, 1.3971214752557832, 0.33951109114109224, 0.09437578309755729, 0.3755301937475191, 0.6209768892258773, 166.8213039282626, 0.12887303016873772, 0.8868181607935712, 1.8827257470886904, 48.43029773696331, 1.0623972142583038, 0.9188401606071446, 745.4366397791149, 0.9812359783377442, 0.9798892148598694
+						0.8000000002105654, 0.8792250568698996, 0.05108695411643222, 0.11239951741563044, 9.877935737098644E-4, 0.1515957937664112, 0.2588546932492243, 0.6021034732391685, 88.53249714981247, 0.7689827947151374, 0.8750362719004473, 1.4969090358990143, 26.00755896651049, 1.9027073830044883, 0.9506803591951801, 149.6608142417257, 0.7089454206868994, 0.9653872588350276
+						};
 
 				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,
 						precipReader, tempReader, etpReader, runner, spinUpTimesteps, params, writeState);
@@ -149,8 +151,6 @@ public class TestErm extends HMModel {
 //						precipReader, tempReader, etpReader, runner, spinUpTimesteps, bestParams, writeState);
 			}
 
-		} finally {
-			db.close();
 		}
 	}
 
