@@ -54,14 +54,13 @@ public class ErmSimulation extends ErmBase {
 
     public static void main( String[] args ) throws Exception {
         ErmSimulation sim = new ErmSimulation();
-        sim.inGeopackagePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/inputs/outputs/geoframe_data.gpkg";
-        sim.inEnvDataPath    = "/home/hydrologis/storage/lavori_tmp/GEOFRAME/env_data.sqlite";
-    	sim.inFromTimestamp = "2015-10-01 01:00:00";
-    	sim.inToTimestamp = "2023-10-01 01:00:00";
+        sim.inGeopackagePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
+        sim.inFromTimestamp = ErmCommonData.START_TIMESTAMP + ":00";
+    	sim.inToTimestamp = ErmCommonData.END_TIMESTAMP + ":00";
     	sim.pTimeStepMinutes = 60;
     	sim.pSpinUpDays = 365;
         sim.inParams = new double[]{
-        		1.3723579249362787, 0.8030688513294623, 0.9521310621737642, 0.4472304203349618, 0.005941986165493968, 0.37020481034749925, 0.25309350711307343, 0.6797503705004188, 42.46662129728443, 1.1101833084335944, 0.8510346882618802, 0.9182092091642994, 5.141170995342713, 0.5892644215798772, 0.912501889777516, 100.58266069359193, 0.5874411503382478, 0.9799374057256469
+        		0.8001552325208339, 0.8000203098902741, -0.37755493535913126, 1.0370361098360203, 0.8391222084840597, 0.0010104465752101264, 0.1097830872727477, 0.5200281370200475, 134.70877964120544, 0.16210769418821144, 0.9976025775217975, 0.5000029390004014, 96.7303127539663, 3.82908126772242, 0.9951928673980068, 901.4679378204077, 1.7230120259344979, 0.9980412458562401
             };
         
         sim.process();

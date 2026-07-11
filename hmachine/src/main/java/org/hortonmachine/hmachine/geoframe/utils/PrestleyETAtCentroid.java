@@ -115,6 +115,7 @@ public class PrestleyETAtCentroid extends HMModel {
 			}
 			// double[] pressureData = pressureReader.getCached(timestepIndex);
 			long timestep = inTempReader.getCachedTimestamp(timestepIndex);
+			pm.beginTask("Processing ET...", inTempReader.getCachedSize());
 			while (inNetData != null && tempData != null) {
 
 				processTimestep(inNetData, tempData, pressureData, timestep);
@@ -128,11 +129,12 @@ public class PrestleyETAtCentroid extends HMModel {
 					pressureData = null;
 				}
 				timestep = inTempReader.getCachedTimestamp(timestepIndex);
-
+				pm.worked(1);
 			}
+			pm.done();
 		} else {
+			pm.beginTask("Processing ET...", -1);
 			while (inNetReader.next() && inTempReader.next()) {
-
 				double[] inNetData = inNetReader.outData;
 				double[] tempData = inTempReader.outData;
 				// double[] pressureData = pressureReader.getCached(timestepIndex);
@@ -140,9 +142,10 @@ public class PrestleyETAtCentroid extends HMModel {
 				if (inPressurReader != null && inPressurReader.next()) {
 					pressureData = inTempReader.outData;
 				}
-
 				processTimestep(inNetData, tempData, pressureData, inTempReader.currentT);
+				pm.worked(1);
 			}
+			pm.done();
 		}
 
 	}

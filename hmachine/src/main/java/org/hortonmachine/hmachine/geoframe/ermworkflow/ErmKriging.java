@@ -57,7 +57,7 @@ public class ErmKriging extends HMModel {
 					GeoFrameGeoTable.HYDRO_METEO_STATION.tableName() + " WHERE " + //
 					Station.TYPE.columnName() + " = '" + StationSchema.StationType.METEO + "'").intValue();
 
-			pm.beginTask("Processing temperature data...", 1);
+			pm.message("Processing temperature data...");
 			int type = 4;
 			int typeId = VarSchema.EnvironmentalVariableType.TEMPERATURE.getId();
 			if (doDeleteExistingData && db.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
@@ -66,9 +66,8 @@ public class ErmKriging extends HMModel {
 								BasinDataField.VAR_ID.columnName() + " = " + typeId);
 			}
 			processKriging(db, maxId, type, typeId);
-			pm.done();
 
-			pm.beginTask("Processing precipitation data...", 1);
+			pm.message("Processing precipitation data...");
 			type = 2; // TODO is this the same as below?
 			typeId = VarSchema.EnvironmentalVariableType.PRECIPITATION.getId();
 			if (doDeleteExistingData && db.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
@@ -77,7 +76,6 @@ public class ErmKriging extends HMModel {
 								BasinDataField.VAR_ID.columnName() + " = " + typeId);
 			}
 			processKriging(db, maxId, type, typeId);
-			pm.done();
 
 		}
 	}
@@ -91,6 +89,7 @@ public class ErmKriging extends HMModel {
 		valueReader.doRawData = true;
 		valueReader.pMaxId = maxId;
 		valueReader.preCacheData();
+		
 
 		var krigingInterpolator = new KrigingAtCentroid();
 		krigingInterpolator.inGeoframeDBPath = inGpkg;
