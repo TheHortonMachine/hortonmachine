@@ -135,7 +135,7 @@ public class ErmStationDataImporter extends HMModel {
 		ei.inPrecipitationCsv = workspace + "precipitation_gf.csv";
 		ei.inStreamGauges = workspace + "idrometri.shp";
 		ei.pStreamGaugesIdField = "idstazione";
-		ei.inStreamGaugesCsv = workspace + "Q_vermiglio.csv";
+		ei.inStreamGaugesCsv = workspace + "Q_vermiglio_2000-2024.csv";
 		ei.process();
 	}
 
