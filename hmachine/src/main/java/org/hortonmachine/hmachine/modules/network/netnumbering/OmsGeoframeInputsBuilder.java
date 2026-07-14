@@ -20,6 +20,8 @@ package org.hortonmachine.hmachine.modules.network.netnumbering;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,13 +67,18 @@ import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAt
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
+import org.locationtech.jts.operation.overlay.snap.GeometrySnapper;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -316,8 +323,19 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				maxBasinNum = Math.max(maxBasinNum, basinNum);
 
 				List<Geometry> polygons = entry.getValue();
-				Geometry basin = CascadedPolygonUnion.union(polygons);
-
+				
+				// TODO check
+				// Geometry basin = CascadedPolygonUnion.union(polygons);
+				
+				// this has been done for an example that was not joining the polygons 
+				PrecisionModel pm2 = new PrecisionModel(1e7);
+				GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(pm2);
+				reducer.setPointwise(true); // avoids introducing new topology issues
+				List<Geometry> reduced = polygons.stream()
+				    .map(reducer::reduce)
+				    .collect(Collectors.toList());
+				Geometry basin = CascadedPolygonUnion.union(reduced);
+				
 				// extract largest basin
 				double maxArea = Double.NEGATIVE_INFINITY;
 				Geometry maxPolygon = basin;
