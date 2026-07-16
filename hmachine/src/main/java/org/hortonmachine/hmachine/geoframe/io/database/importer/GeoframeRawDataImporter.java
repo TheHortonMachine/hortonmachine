@@ -91,6 +91,9 @@ public class GeoframeRawDataImporter extends HMModel {
 	@In
 	public int inVariableType = -1;
 
+	@In
+	public boolean isStreamGauge = false;
+
 	// TODO maybe to infer from data
 	@In
 	public TimeResolution timeResolution = null;
@@ -179,6 +182,13 @@ public class GeoframeRawDataImporter extends HMModel {
 						builder.set(Station.ELEVATION.columnName(), elevation);
 						Integer basinId = this.getIntersectedBAsinId(basinsFC, geom,
 								BasinMultiPolygonField.BASIN_ID.columnName());
+
+						if (basinId != null && isStreamGauge) {
+							String sql = "Update table basin set " + BasinMultiPolygonField.ID.columnName() + "=" + id
+									+ " where " + BasinMultiPolygonField.BASIN_ID.columnName() + " = " + basinId;
+
+							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+						}
 
 						builder.set(Station.BASIN_ID.columnName(), basinId); // basin_id
 						builder.set(Station.TYPE.columnName(), stationType.name()); // type
