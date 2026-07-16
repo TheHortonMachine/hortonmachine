@@ -31,6 +31,7 @@ import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
@@ -184,9 +185,14 @@ public class GeoframeRawDataImporter extends HMModel {
 								BasinMultiPolygonField.BASIN_ID.columnName());
 
 						if (basinId != null && isStreamGauge) {
-							String sql = "Update table basin set " + BasinMultiPolygonField.ID.columnName() + "=" + id
-									+ " where " + BasinMultiPolygonField.BASIN_ID.columnName() + " = " + basinId;
-
+							String sql = String.format(
+								    "UPDATE %s SET %s = %d WHERE %s = %d",
+								    GeoFrameGeoTable.BASIN.tableName(),
+								    BasinMultiPolygonField.ID.columnName(),
+								    id,
+								    BasinMultiPolygonField.BASIN_ID.columnName(),
+								    basinId
+								);
 							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 						}
 
