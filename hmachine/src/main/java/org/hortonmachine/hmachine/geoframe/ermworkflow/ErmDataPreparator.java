@@ -65,10 +65,6 @@ public class ErmDataPreparator extends HMModel {
 	@In
 	public String outGeopackageName = "geoframe_data.gpkg";
 
-	@Description("Execute also basin cutout (needs the outlet coordinate to be defined.")
-	@In
-	public boolean doBasinCutout = false;
-
 	@Description("Drainage area threshold for network extraction.")
 	@Unit("cells")
 	@In
@@ -86,11 +82,11 @@ public class ErmDataPreparator extends HMModel {
 
 	@Description("Outlet point easting coordinate.")
 	@In
-	public double pOutletEasting;
+	public Double pOutletEasting;
 
 	@Description("Outlet point northing coordinate.")
 	@In
-	public double pOutletNorthing;
+	public Double pOutletNorthing;
 
 	@Description("If true, existing output files are overwritten.")
 	@In
@@ -106,9 +102,6 @@ public class ErmDataPreparator extends HMModel {
 
 	@Execute
 	public void process() throws Exception {
-		if (doBasinCutout && (pOutletEasting == 0 || pOutletNorthing == 0)) {
-			throw new IllegalArgumentException("Outlet coordinates must be defined for basin cutout.");
-		}
 
 		Paths p = new Paths(inDtm, doOverwrite);
 		new File(p.outputsDir).mkdirs();
@@ -188,7 +181,7 @@ public class ErmDataPreparator extends HMModel {
 				pm.message("Not overwriting existing skyview: " + p.skyview);
 			}
 
-			if (doBasinCutout) {
+			if (pOutletEasting != null && pOutletNorthing != null) {
 				if (p.shouldRun(p.basin)) {
 					pm.message("Running ExtractBasin...");
 					OmsExtractBasin eb = new OmsExtractBasin();
@@ -344,12 +337,11 @@ public class ErmDataPreparator extends HMModel {
 		ErmDataPreparator prep = new ErmDataPreparator();
 		prep.inDtm = workspacePath + "dtm.tif";
 		prep.outGeopackageName = "geoframe_data.gpkg";
-		prep.doBasinCutout = true;
 		prep.pDrainThreshold = 2000;
 		prep.pDesiredArea = 1_000_000.0;
 		prep.pDesiredAreaDelta = 20.0;
-		prep.pOutletEasting = 629720;
-		prep.pOutletNorthing = 5127690;
+		prep.pOutletEasting = 629720.0;
+		prep.pOutletNorthing = 5127690.0;
 		prep.pStreamGaugeIDField = "idstazione";
 		prep.inStreamGauge = workspacePath + "idrometri.shp";
 		prep.process();
