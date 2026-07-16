@@ -19,6 +19,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -33,6 +34,7 @@ import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
@@ -178,7 +180,8 @@ public class GeoframeRawDataImporter extends HMModel {
 						builder.set(Station.GEOM.columnName(), geom);
 						builder.set(Station.ID.columnName(), id);
 						builder.set(Station.ELEVATION.columnName(), elevation);
-						Integer basinId = this.getIntersectedBAsinId(basinsFC, geom, inIdField);
+						Integer basinId = this.getIntersectedBAsinId(basinsFC, geom,
+								BasinMultiPolygonField.BASIN_ID.columnName());
 
 						builder.set(Station.BASIN_ID.columnName(), basinId); // basin_id
 						builder.set(Station.TYPE.columnName(), stationType.name()); // type
@@ -257,24 +260,23 @@ public class GeoframeRawDataImporter extends HMModel {
 		}
 	}
 
-	// TODO check on CRS???
+	// TODO check on CRS??? first attempt with filter but doesn't work
 	private Integer getIntersectedBAsinId(SimpleFeatureCollection basinsFC, Geometry station, String idFiledName) {
-
 		if (basinsFC != null && station != null && idFiledName != null) {
-			var filter = HMFilter.intersects(basinsFC, station);
-
-			try (SimpleFeatureIterator it = basinsFC.subCollection(filter).features()) {
+			try (SimpleFeatureIterator it = basinsFC.features()) {
 				while (it.hasNext()) {
-					SimpleFeature basinFeature = it.next();
-					Geometry basinGeom = (Geometry) basinFeature.getDefaultGeometry();
+					SimpleFeature basin = it.next();
+					Geometry basinGeom = (Geometry) basin.getDefaultGeometry();
+					if (basinGeom == null) {
+						continue;
+					}
+					boolean covers = basinGeom.covers(station);
+					Object idValue = basin.getAttribute(idFiledName);
 
-					if (basinGeom != null && basinGeom.covers(station)) {
-						Object idValue = basinFeature.getAttribute(idFiledName);
-
+					if (covers) {
 						if (idValue == null) {
 							return null;
 						}
-
 						if (idValue instanceof Number number) {
 							return number.intValue();
 						} else {
