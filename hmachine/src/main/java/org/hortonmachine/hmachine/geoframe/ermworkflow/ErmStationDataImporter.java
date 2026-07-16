@@ -93,7 +93,24 @@ public class ErmStationDataImporter extends HMModel {
 		gfImporter.timeResolution = pTimeResolution;
 		gfImporter.doOverWrite = true;
 
+		// import TEMPERATURE
+		if (Files.exists(Path.of(inTemperaturesCsv))) {
+			gfImporter.inMeasurementsPointFilePath = inMeteoStations;
+			gfImporter.inMeasurementDataFilePath = inTemperaturesCsv;
+			gfImporter.stationType = StationType.METEO;
+			gfImporter.inVariableType = EnvironmentalVariableType.TEMPERATURE.getId();
+			gfImporter.process();
+		}
 
+		// import the precipitation
+		gfImporter.doOverWrite = false;
+		if (Files.exists(Path.of(inPrecipitationCsv))) {
+			gfImporter.inMeasurementsPointFilePath = null;
+			gfImporter.inMeasurementDataFilePath = inPrecipitationCsv;
+			gfImporter.stationType = StationType.METEO;
+			gfImporter.inVariableType = EnvironmentalVariableType.PRECIPITATION.getId();
+			gfImporter.process();
+		}
 
 		if (Files.exists(Path.of(inStreamGauges))) {
 			gfImporter.inMeasurementDataFilePath = inStreamGaugesCsv;
@@ -107,11 +124,11 @@ public class ErmStationDataImporter extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String workspace = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs//";
+		String workspace = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
 		ErmStationDataImporter ei = new ErmStationDataImporter();
 		ei.inGpkg = workspace + "outputs/geoframe_data.gpkg";
-		ei.pStartTimestamp = ErmCommonData.START_CALIBRATION_TIMESTAMP;
-		ei.pEndTimestamp = ErmCommonData.END_CALIBRATION_TIMESTAMP;
+		ei.pStartTimestamp = ErmCommonData.START_TIMESTAMP;
+		ei.pEndTimestamp = ErmCommonData.END_TIMESTAMP;
 		ei.pTimeResolution = ErmCommonData.TIME_RESOLUTION;
 		ei.inMeteoStations = workspace + "stations_tot.shp";
 		ei.inTemperaturesCsv = workspace + "temperature_gf_2.csv";
