@@ -149,7 +149,7 @@ public class WaterBudgetParameters {
 		/**
 		 * Exponential of non-linear reservoir model [-]
 		 */
-		public double h = 1.5;
+		public double h = 1.0;
 		/**
 		 * Degree of spatial variability of the soil moisture capacity [-]
 		 */
@@ -185,7 +185,7 @@ public class WaterBudgetParameters {
 		/**
 		 * Exponent of the non-linear reservoir model [-]
 		 */
-		public double d = 2.0;
+		public double d = 1.0;
 
 		public static double[] sRunoffMaxRange() {
 			return new double[] { 5.0, 100.0 };

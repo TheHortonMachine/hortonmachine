@@ -71,17 +71,25 @@ public class RadiationAtCentroid extends HMModel {
 	@Unit("-")
 	@In
 	public double epsilonS = 0.98;
-	@Description("Coefficient to take into account the cloud cover," + "set equal to 0 for clear sky conditions ")
+	
+	@Description("Coefficient to take into account the cloud cover, set equal to 0 for clear sky conditions ")
 	@In
 	public double aCloud = 0;
-	@Description("Exponent  to take into account the cloud cover," + "set equal to 1 for clear sky conditions")
+	
+	@Description("Exponent  to take into account the cloud cover, set equal to 1 for clear sky conditions")
 	@In
 	public double bCloud = 1;
+	
+	@Description("Toggle to compute hourly radiation values, if false daily values are computed")
+	@In
 	public boolean doHourly = true;
+	
 	public double alpha = 0.26;
+	
 	@Description("Ozone layer thickness in cm")
 	@In
 	public double pCmO3 = 0.6;
+	
 	@Description("The soil albedo.")
 	@In
 	public double pAlphagp = 0.9;

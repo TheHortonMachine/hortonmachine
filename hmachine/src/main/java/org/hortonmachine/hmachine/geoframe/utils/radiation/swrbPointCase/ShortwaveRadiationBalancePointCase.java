@@ -115,10 +115,10 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 	@Description("the linked HashMap with the coordinate of the stations")
 	LinkedHashMap<Integer, Coordinate> stationCoordinates;
 
-	@Description("doHourly allows to chose between the hourly time step" + " or the daily time step. It could be: "
+	@Description("doHourly allows to chose between the hourly time step or the daily time step. It could be: "
 			+ " Hourly--> true or Daily-->false")
 	@In
-	public boolean doHourly;
+	public Boolean doHourly;
 
 	@Description("The first day of the simulation.")
 	@In
@@ -227,13 +227,18 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 	public void process() throws Exception {
 
 		// This 2 operations allow to define if we are working with daily or hourly time
-		// step
-		// We change because in the original we compute several step, now one step at
-		// time, so we pass a spartameter the current date, no need to add the number of
-		// step
-
+		// step. The actual date is needed to compute the actual sunrise and sunset
 		DateTime currentDateTime = formatter.parseDateTime(tCurrentDateString);
-		DateTime date = (doHourly == false) ? currentDateTime : currentDateTime.plusMinutes(30);
+		DateTime date = null;
+		if (doHourly == false) {
+			// if we are working with daily time step, a day is added
+			// TODO explain why
+			date = currentDateTime.plusDays(1);
+		} else {
+			// if we are working with hourly time step, we need to 
+			// compute the radiation for the next half hour
+			date = currentDateTime.plusMinutes(30);
+		}
 
 		if (demWR == null) {
 			// transform the GrifCoverage2D maps into writable rasters
@@ -413,7 +418,11 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 	private double getHourAngle(DateTime date, double latitude) {
 		int day = date.getDayOfYear();
 
-		hour = (doHourly == true) ? (double) date.getMillisOfDay() / (1000 * 60 * 60) : 12.5;
+		if (doHourly){
+			hour = (double) date.getMillisOfDay() / (1000 * 60 * 60);
+		} else {
+			hour = 12.5;
+		}
 
 		// (360 / 365.25) * (day - 79.436) is the number of the day
 		double dayangb = Math.toRadians((360 / 365.25) * (day - 79.436));

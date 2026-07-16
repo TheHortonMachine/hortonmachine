@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -28,6 +29,7 @@ import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.utils.filter.HMFilter;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
@@ -148,12 +150,18 @@ public class GeoframeRawDataImporter extends HMModel {
 			}
 
 			if (inMeasurementsPointFilePath != null) {
+				SimpleFeatureCollection basinsFC = null;
+				if (inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
+					basinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
+							GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
+				}
 				SimpleFeatureCollection inMeasurementPoints = getVector(inMeasurementsPointFilePath);
 				ids = new int[inMeasurementPoints.size()];
 				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
 						.getSFBuilder(inMeasurementPoints.getSchema().getCoordinateReferenceSystem());
 				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 				int i = 0;
+
 				try (SimpleFeatureIterator iterator = inMeasurementPoints.features()) {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
@@ -170,7 +178,9 @@ public class GeoframeRawDataImporter extends HMModel {
 						builder.set(Station.GEOM.columnName(), geom);
 						builder.set(Station.ID.columnName(), id);
 						builder.set(Station.ELEVATION.columnName(), elevation);
-						builder.set(Station.BASIN_ID.columnName(), null); // basin_id
+						Integer basinId = this.getIntersectedBAsinId(basinsFC, geom, inIdField);
+
+						builder.set(Station.BASIN_ID.columnName(), basinId); // basin_id
 						builder.set(Station.TYPE.columnName(), stationType.name()); // type
 
 						SimpleFeature newFeature = builder.buildFeature(null);
@@ -245,6 +255,36 @@ public class GeoframeRawDataImporter extends HMModel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	// TODO check on CRS???
+	private Integer getIntersectedBAsinId(SimpleFeatureCollection basinsFC, Geometry station, String idFiledName) {
+
+		if (basinsFC != null && station != null && idFiledName != null) {
+			var filter = HMFilter.intersects(basinsFC, station);
+
+			try (SimpleFeatureIterator it = basinsFC.subCollection(filter).features()) {
+				while (it.hasNext()) {
+					SimpleFeature basinFeature = it.next();
+					Geometry basinGeom = (Geometry) basinFeature.getDefaultGeometry();
+
+					if (basinGeom != null && basinGeom.covers(station)) {
+						Object idValue = basinFeature.getAttribute(idFiledName);
+
+						if (idValue == null) {
+							return null;
+						}
+
+						if (idValue instanceof Number number) {
+							return number.intValue();
+						} else {
+							return Integer.parseInt(idValue.toString());
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 }

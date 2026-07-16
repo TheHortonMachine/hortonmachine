@@ -57,6 +57,8 @@ import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.log.Message;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.database.addons.geoframe.GeoframeChartAction;
+import org.hortonmachine.database.addons.geoframe.GeoframeSchema;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -561,6 +563,11 @@ public class DatabaseViewer extends DatabaseController {
                     }
                 }
             });
+        }
+
+        if (GeoframeSchema.isSimulationDischargeTable(selectedTable.tableName.getName())) {
+            addSeparator(actions);
+            actions.add(new GeoframeChartAction(currentConnectedSqlDatabase, selectedTable.tableName.getName(), this));
         }
 
         return actions;
