@@ -133,14 +133,14 @@ public class ErmRadiation extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		String workspacePath = "/home/andreisd/Documents/project/data_hm/vermiglio_dtm/inputs/";
+		String workspacePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
 		ErmRadiation er = new ErmRadiation();
 		er.inDtm = workspacePath + "dtm.tif";
 		er.inGpkg = workspacePath + "outputs/geoframe_data.gpkg";
 		er.pStartTimestamp = ErmCommonData.START_TIMESTAMP;
 		er.pEndTimestamp = ErmCommonData.END_TIMESTAMP;
 		er.doOverwrite = true;
-		er.downscaleFactor = 1;
+		er.downscaleFactor = 8;
 		er.process();
 	}
 
