@@ -112,7 +112,6 @@ public class ErmPrestleyEt extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new ErmPrestleyEt();
 		String workspacePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
 		ErmPrestleyEt ept = new ErmPrestleyEt();
 		ept.inGpkg = workspacePath + "outputs/geoframe_data.gpkg";
