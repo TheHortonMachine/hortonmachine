@@ -12,6 +12,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.RadiationAtCentroid;
 
@@ -67,6 +68,10 @@ public class ErmRadiation extends HMModel {
 	@Description("Data import end timestamp in format yyyy-MM-dd HH:mm.")
 	@In
 	public String pEndTimestamp;
+	
+	@Description("Time resolution. Defaults to hourly")
+	@In
+	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
 
 	@Description("If true, existing output files are overwritten.")
 	@In
@@ -89,8 +94,8 @@ public class ErmRadiation extends HMModel {
 						+ VarSchema.EnvironmentalVariableType.RADIATION.getId());
 			}
 			
-			var dtm = getRaster(p.dtm);
-			var skyview = getRaster(p.skyview);
+			var dtm = getRaster(p.basinPit);
+			var skyview = getRaster(p.basinSkyview);
 			if (downscaleFactor > 1) {
 				dtm = downscaleRaster(dtm, downscaleFactor);
 				skyview = downscaleRaster(skyview, downscaleFactor);
@@ -111,7 +116,7 @@ public class ErmRadiation extends HMModel {
 			radiation.dem =  dtm; // TODO Daniele, why where you using the pit here?
 			radiation.inSkyview = skyview;
 			radiation.lwrvModeel = "6";
-			radiation.doHourly = true;
+			radiation.doHourly = pTimeResolution == TimeResolution.HOURLY;
 			radiation.init();
 			radiation.process();
 

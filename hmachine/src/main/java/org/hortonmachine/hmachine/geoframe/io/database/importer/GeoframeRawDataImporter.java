@@ -158,8 +158,11 @@ public class GeoframeRawDataImporter extends HMModel {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
 						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
-						Long id = (Long) sourceFeature.getAttribute(inIdField);
-						if (id == null) {
+						Object idObj =  sourceFeature.getAttribute(inIdField);
+						int id;
+						if (idObj instanceof Number num) {
+							id = num.intValue();
+						} else {
 							continue;
 						}
 						Double elevation = null;
@@ -175,7 +178,7 @@ public class GeoframeRawDataImporter extends HMModel {
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
-						ids[i] = id.intValue();
+						ids[i] = id;
 						i++;
 					}
 				}

@@ -99,7 +99,7 @@ public class KrigingAtCentroid extends HMModel {
 
 	public boolean doOverWrite = false;
 
-	public boolean boundToZero = true;
+	public boolean boundToZero = false;
 
 	private ASpatialDb inGeoframeDb = null;
 

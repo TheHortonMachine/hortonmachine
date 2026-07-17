@@ -3,30 +3,30 @@ package org.hortonmachine.hmachine.geoframe.ermworkflow;
 import java.io.File;
 
 public class Paths {
-	final String outputsDir;
+	public final String outputsDir;
 
-	final String dtm;
-	final String pit;
-	final String flow;
-	final String drain;
-	final String tca;
-	final String net;
-	final String basin;
-	final String basinResized;
-	final String basinPit;
-	final String basinDrain;
-	final String basinTca;
-	final String basinNet;
-	final String skyview;
-	final String basinSkyview;
-	final String basinNetnum;
-	final String basinNetbasins;
-	final String basinNetbasinsDesired;
+	public final String dtm;
+	public final String pit;
+	public final String flow;
+	public final String drain;
+	public final String tca;
+	public final String net;
+	public final String basin;
+	public final String basinResized;
+	public final String basinPit;
+	public final String basinDrain;
+	public final String basinTca;
+	public final String basinNet;
+	public final String skyview;
+	public final String basinSkyview;
+	public final String basinNetnum;
+	public final String basinNetbasins;
+	public final String basinNetbasinsDesired;
 
 	final boolean overwrite;
 	final String ext = ".tif";
 
-	Paths(String inDtm, boolean overwrite) {
+	public Paths(String inDtm, boolean overwrite) {
 		this.overwrite = overwrite;
 		dtm = inDtm;
 		if (!new File(dtm).exists()) {
@@ -60,7 +60,7 @@ public class Paths {
 		return outputsDir;
 	}
 
-	boolean shouldRun(String path) {
+	public boolean shouldRun(String path) {
 		return overwrite || !new File(path).exists();
 	}
 }

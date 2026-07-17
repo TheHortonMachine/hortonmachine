@@ -358,7 +358,7 @@ public class RadiationAtCentroid extends HMModel {
 			ThreadLocal<ShortwaveRadiationBalancePointCase> tlSwrb, ThreadLocal<NetRadiationPointCase> tlNrpc)
 			throws Exception {
 		double[] variableData = inTemperatureReader.getCached(idx);
-		long timestep = inTemperatureReader.getCachedTimestamp(idx);
+		long timestamp = inTemperatureReader.getCachedTimestamp(idx);
 		var temperature = TableUtils.getLegacyHMInput(variableData, ids);
 
 		HashMap<Integer, double[]> humidity = inNan;
@@ -382,7 +382,7 @@ public class RadiationAtCentroid extends HMModel {
 		lwrbLocal.inClearnessIndexValuesHM = clearSky;
 		swrbLocal.inHumidityValues = humidity;
 		swrbLocal.inTemperatureValues = temperature;
-		swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(timestep);
+		swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(timestamp);
 
 		lwrbLocal.process();
 		swrbLocal.process();
@@ -392,7 +392,7 @@ public class RadiationAtCentroid extends HMModel {
 		nrpcLocal.inUpwellingValues = lwrbLocal.outHMlongwaveUpwellingHM;
 		nrpcLocal.process();
 
-		return new TimestepResult(timestep, new HashMap<>(nrpcLocal.outHMnetRad));
+		return new TimestepResult(timestamp, new HashMap<>(nrpcLocal.outHMnetRad));
 	}
 
 	/**

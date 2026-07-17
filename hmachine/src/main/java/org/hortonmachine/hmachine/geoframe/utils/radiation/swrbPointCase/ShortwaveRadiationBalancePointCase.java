@@ -230,7 +230,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 		// step. The actual date is needed to compute the actual sunrise and sunset
 		DateTime currentDateTime = formatter.parseDateTime(tCurrentDateString);
 		DateTime date = null;
-		if (doHourly == false) {
+		if (!doHourly) {
 			// if we are working with daily time step, a day is added
 			// TODO explain why
 			date = currentDateTime.plusDays(1);
