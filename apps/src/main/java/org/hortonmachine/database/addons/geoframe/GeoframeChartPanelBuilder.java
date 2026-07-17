@@ -23,6 +23,7 @@ import java.awt.Color;
 
 import javax.swing.JPanel;
 
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.AxisLocation;
@@ -42,15 +43,13 @@ import org.jfree.data.xy.IntervalXYDataset;
  * precipitation and temperature on a dual scale, and a bottom panel with
  * simulated vs observed discharge, sharing a common time axis.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello
  */
 public class GeoframeChartPanelBuilder {
-    // validated categorical hues (see the dataviz palette: blue/red pass CVD
-    // checks together, violet/orange pass CVD checks together)
-    private static final Color PRECIPITATION_COLOR = new Color(0x2a, 0x78, 0xd6);
-    private static final Color TEMPERATURE_COLOR = new Color(0xe3, 0x49, 0x48);
-    private static final Color SIMULATED_DISCHARGE_COLOR = new Color(0x4a, 0x3a, 0xa7);
-    private static final Color OBSERVED_DISCHARGE_COLOR = new Color(0xeb, 0x68, 0x34);
+    private static final Color PRECIPITATION_COLOR = ColorUtilities.fromHex("#0096ffff");
+    private static final Color TEMPERATURE_COLOR = ColorUtilities.fromHex("#ab080cff");
+    private static final Color SIMULATED_DISCHARGE_COLOR = ColorUtilities.fromHex("#009945ff");
+    private static final Color OBSERVED_DISCHARGE_COLOR = ColorUtilities.fromHex("#0006ceff");
 
     private GeoframeChartPanelBuilder() {
     }
