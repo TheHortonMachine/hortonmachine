@@ -184,8 +184,11 @@ public class GeoframeRawDataImporter extends HMModel {
 						builder.set(Station.GEOM.columnName(), geom);
 						builder.set(Station.ID.columnName(), id);
 						builder.set(Station.ELEVATION.columnName(), elevation);
-						Integer basinId = this.getIntersectedBAsinId(basinsFC, geom,
-								BasinMultiPolygonField.BASIN_ID.columnName());
+						Integer basinId = null;
+						if (basinsFC != null) {
+							basinId = this.getIntersectedBasinId(basinsFC, geom,
+									BasinMultiPolygonField.BASIN_ID.columnName());
+						}
 
 						if (basinId != null && isStreamGauge) {
 							String sql = String.format(
@@ -276,8 +279,7 @@ public class GeoframeRawDataImporter extends HMModel {
 		}
 	}
 
-	// TODO check on CRS??? first attempt with filter but doesn't work
-	private Integer getIntersectedBAsinId(SimpleFeatureCollection basinsFC, Geometry station, String idFiledName) {
+	private Integer getIntersectedBasinId(SimpleFeatureCollection basinsFC, Geometry station, String idFiledName) {
 		if (basinsFC != null && station != null && idFiledName != null) {
 			try (SimpleFeatureIterator it = basinsFC.features()) {
 				while (it.hasNext()) {
