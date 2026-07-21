@@ -70,7 +70,7 @@ public class ErmStationDataImporter extends HMModel {
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inStreamGauges;
-	
+
 	@Description("Streamgauges id field in csv files.")
 	@In
 	public String pStreamGaugesIdField = "ID";
@@ -80,7 +80,6 @@ public class ErmStationDataImporter extends HMModel {
 	@In
 	public String inStreamGaugesCsv;
 
-	
 	@Execute
 	public void process() throws Exception {
 		checkNull(pStartTimestamp, pEndTimestamp);
@@ -119,6 +118,7 @@ public class ErmStationDataImporter extends HMModel {
 			gfImporter.inIdField = pStreamGaugesIdField;
 			gfImporter.stationType = StationType.STREAM_GAUGE;
 			gfImporter.inVariableType = EnvironmentalVariableType.DISCHARGE.getId();
+			gfImporter.isStreamGauge = true;
 			gfImporter.process();
 		}
 	}

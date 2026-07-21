@@ -31,6 +31,8 @@ import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
@@ -90,6 +92,9 @@ public class GeoframeRawDataImporter extends HMModel {
 	@In
 	public int inVariableType = -1;
 
+	@In
+	public boolean isStreamGauge = false;
+
 	// TODO maybe to infer from data
 	@In
 	public TimeResolution timeResolution = null;
@@ -148,12 +153,18 @@ public class GeoframeRawDataImporter extends HMModel {
 			}
 
 			if (inMeasurementsPointFilePath != null) {
+				SimpleFeatureCollection basinsFC = null;
+				if (inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
+					basinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
+							GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
+				}
 				SimpleFeatureCollection inMeasurementPoints = getVector(inMeasurementsPointFilePath);
 				ids = new int[inMeasurementPoints.size()];
 				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
 						.getSFBuilder(inMeasurementPoints.getSchema().getCoordinateReferenceSystem());
 				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 				int i = 0;
+
 				try (SimpleFeatureIterator iterator = inMeasurementPoints.features()) {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
@@ -173,7 +184,22 @@ public class GeoframeRawDataImporter extends HMModel {
 						builder.set(Station.GEOM.columnName(), geom);
 						builder.set(Station.ID.columnName(), id);
 						builder.set(Station.ELEVATION.columnName(), elevation);
-						builder.set(Station.BASIN_ID.columnName(), null); // basin_id
+						Integer basinId = this.getIntersectedBAsinId(basinsFC, geom,
+								BasinMultiPolygonField.BASIN_ID.columnName());
+
+						if (basinId != null && isStreamGauge) {
+							String sql = String.format(
+								    "UPDATE %s SET %s = %d WHERE %s = %d",
+								    GeoFrameGeoTable.BASIN.tableName(),
+								    BasinMultiPolygonField.ID.columnName(),
+								    id,
+								    BasinMultiPolygonField.BASIN_ID.columnName(),
+								    basinId
+								);
+							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+						}
+
+						builder.set(Station.BASIN_ID.columnName(), basinId); // basin_id
 						builder.set(Station.TYPE.columnName(), stationType.name()); // type
 
 						SimpleFeature newFeature = builder.buildFeature(null);
@@ -248,6 +274,35 @@ public class GeoframeRawDataImporter extends HMModel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	// TODO check on CRS??? first attempt with filter but doesn't work
+	private Integer getIntersectedBAsinId(SimpleFeatureCollection basinsFC, Geometry station, String idFiledName) {
+		if (basinsFC != null && station != null && idFiledName != null) {
+			try (SimpleFeatureIterator it = basinsFC.features()) {
+				while (it.hasNext()) {
+					SimpleFeature basin = it.next();
+					Geometry basinGeom = (Geometry) basin.getDefaultGeometry();
+					if (basinGeom == null) {
+						continue;
+					}
+					boolean covers = basinGeom.covers(station);
+					Object idValue = basin.getAttribute(idFiledName);
+
+					if (covers) {
+						if (idValue == null) {
+							return null;
+						}
+						if (idValue instanceof Number number) {
+							return number.intValue();
+						} else {
+							return Integer.parseInt(idValue.toString());
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 }
