@@ -24,7 +24,6 @@ public final class BasinPolygonSchema extends GeoAbstractSchema {
 	public enum BasinMultiPolygonField implements TableField {
 
 		GEOM("the_geom", MultiPolygon.class), //
-		BASIN_ID("basinid", Integer.class), //
 		ELEVATION_M("elev_m", Double.class), //
 		AVG_ELEVATION_M("avgelev_m", Double.class), //
 		LENGTH_M("length_m", Double.class), //

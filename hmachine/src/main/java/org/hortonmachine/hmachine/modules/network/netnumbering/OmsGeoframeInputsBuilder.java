@@ -601,13 +601,13 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 			pm.beginTask("Extract vector basins...", basinId2geomMap.size());
 			List<Geometry> _netGeometries = netGeometries;
-			SimpleFeatureCollection breackPoints = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
+			SimpleFeatureCollection breakPoints = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
 
 			basinId2geomMap.entrySet().stream().forEach(entry -> {
 				try {
 					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder, singleNetBuilder,
 							getSFStreamGauge(crs, Point.class), allBasinsFC, centroifdBasinFC, allNetworksFC,
-							streamGaugeFC, breackPoints, csvText, lakesIdList, lakesTypeList, entry);
+							streamGaugeFC, breakPoints, csvText, lakesIdList, lakesTypeList, entry);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -662,7 +662,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			SimpleFeatureBuilder singleNetBuilder, SimpleFeatureBuilder streamGaugeBuilder,
 			DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection centroidBasinsFC,
 			DefaultFeatureCollection allNetworksFC, DefaultFeatureCollection streamGaugeFC,
-			SimpleFeatureCollection breackPointFC, StringBuilder csvText, List<Integer> lakesIdList,
+			SimpleFeatureCollection breakPointFC, StringBuilder csvText, List<Integer> lakesIdList,
 			List<String> lakesTypeList, Entry<Integer, Geometry> entry) throws Exception, ModelsIOException {
 		int basinNum = entry.getKey();
 //        pm.message("Processing basin " + basinNum + "...");
@@ -804,9 +804,9 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				? lakesTypeList.toString()
 				: SubbasinsTypeField.HILLSOLOPE.toString();
 
-		String id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
-		Object[] basinValues = new Object[] { dumpBasin, basinNum, elev, avgElev, 
-				mainNetLength, skyview, featureUserType, id };
+		String id = extractId(streamGaugeBuilder, breakPointFC, basinPolygon, streamGaugeFC, basinNum);
+		Object[] basinValues = new Object[] { dumpBasin, elev, avgElev, 
+				mainNetLength, skyview, featureUserType, basinNum};
 		basinsBuilder.addAll(basinValues);
 		SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
 		allBasinsFC.add(basinFeature);
@@ -859,7 +859,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		csvText.append(areaKm2).append(";");
 		csvText.append(mainNetLength).append(";");
 		csvText.append(featureUserType).append(';');
-		if (breackPointFC != null) {
+		if (breakPointFC != null) {
 			csvText.append(id);
 		}
 		csvText.append(skyview).append("\n");

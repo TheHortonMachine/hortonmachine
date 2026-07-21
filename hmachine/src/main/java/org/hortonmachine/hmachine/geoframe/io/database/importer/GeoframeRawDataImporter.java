@@ -24,6 +24,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -154,9 +155,10 @@ public class GeoframeRawDataImporter extends HMModel {
 
 			if (inMeasurementsPointFilePath != null) {
 				SimpleFeatureCollection basinsFC = null;
-				if (inGeoframeDb.hasTable(GeoFrameSimpleTable.BASINDATA.getSchema().getSQLName())) {
-					basinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb,
-							GeoFrameGeoTable.BASIN.getSchema().getSQLName(), -1, -1, null, null);
+				SqlName basinSqlName = GeoFrameGeoTable.BASIN.getSchema().getSQLName();
+				if (inGeoframeDb.hasTable(basinSqlName)) {
+					basinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb, basinSqlName, -1, -1, null,
+							null);
 				}
 				SimpleFeatureCollection inMeasurementPoints = getVector(inMeasurementsPointFilePath);
 				ids = new int[inMeasurementPoints.size()];
@@ -169,7 +171,7 @@ public class GeoframeRawDataImporter extends HMModel {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
 						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
-						Object idObj =  sourceFeature.getAttribute(inIdField);
+						Object idObj = sourceFeature.getAttribute(inIdField);
 						int id;
 						if (idObj instanceof Number num) {
 							id = num.intValue();
@@ -187,18 +189,13 @@ public class GeoframeRawDataImporter extends HMModel {
 						Integer basinId = null;
 						if (basinsFC != null) {
 							basinId = this.getIntersectedBasinId(basinsFC, geom,
-									BasinMultiPolygonField.BASIN_ID.columnName());
+									BasinMultiPolygonField.ID.columnName());
 						}
 
 						if (basinId != null && isStreamGauge) {
-							String sql = String.format(
-								    "UPDATE %s SET %s = %d WHERE %s = %d",
-								    GeoFrameGeoTable.BASIN.tableName(),
-								    BasinMultiPolygonField.ID.columnName(),
-								    id,
-								    BasinMultiPolygonField.BASIN_ID.columnName(),
-								    basinId
-								);
+							String sql = String.format("UPDATE %s SET %s = %d WHERE %s = %d",
+									GeoFrameGeoTable.BASIN.tableName(), BasinMultiPolygonField.ID.columnName(), id,
+									BasinMultiPolygonField.ID.columnName(), basinId);
 							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 						}
 

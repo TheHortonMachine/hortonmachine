@@ -56,7 +56,7 @@ public class BasinDataSchema extends SimpleAbstractSchema {
 	protected List<ForeignKey> foreignKeys() {
 		return List.of(
 				new ForeignKey(BasinDataField.BASIN_ID, GeoFrameGeoTable.BASIN.name(),
-						BasinMultiPolygonField.BASIN_ID),
+						BasinMultiPolygonField.ID),
 				new ForeignKey(BasinDataField.VAR_ID, GeoFrameSimpleTable.VARIABLE.tableName(), VarSchema.VarField.VAR_ID));
 	}
 }

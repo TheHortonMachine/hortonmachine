@@ -156,7 +156,7 @@ public class RadiationAtCentroid extends HMModel {
 			while (it.hasNext()) {
 				SimpleFeature feature = it.next();
 
-				Integer id = ((Number) feature.getAttribute(BasinMultiPolygonField.BASIN_ID.columnName())).intValue();
+				Integer id = ((Number) feature.getAttribute(BasinMultiPolygonField.ID.columnName())).intValue();
 				ids.add(id);
 			}
 		}
@@ -188,7 +188,7 @@ public class RadiationAtCentroid extends HMModel {
 		l.aCloud = aCloud;
 		l.bCloud = bCloud;
 		l.model = lwrvModeel;
-		l.fStationsID = BasinMultiPolygonField.BASIN_ID.columnName();
+		l.fStationsID = BasinMultiPolygonField.ID.columnName();
 		l.inStationsFC = inBasinsFC;
 		l.inSkyviewGC = inSkyview;
 		return l;
@@ -202,7 +202,7 @@ public class RadiationAtCentroid extends HMModel {
 	private ShortwaveRadiationBalancePointCase createSwrb() {
 		ShortwaveRadiationBalancePointCase s = new ShortwaveRadiationBalancePointCase();
 		s.doHourly = doHourly;
-		s.fStationsid = BasinMultiPolygonField.BASIN_ID.columnName();
+		s.fStationsid = BasinMultiPolygonField.ID.columnName();
 		s.inStationsFC = inBasinsFC;
 		s.inDem = dem;
 		s.inSkyview = inSkyview;
@@ -221,7 +221,7 @@ public class RadiationAtCentroid extends HMModel {
 	@Execute
 	public void process() throws Exception {
 		int[] ids = TableUtils.getIntIdArray(inGeoframeDb, GeoFrameGeoTable.BASIN.tableName(),
-				BasinPolygonSchema.BasinMultiPolygonField.BASIN_ID.columnName(), null);
+				BasinPolygonSchema.BasinMultiPolygonField.ID.columnName(), null);
 		int iteration = 0;
 		if (inTemperatureReader.isPreCachingMode()) {
 			pm.beginTask("Processing radiation data...", inTemperatureReader.getCachedSize());
