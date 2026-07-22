@@ -144,7 +144,7 @@ public class TestErm extends HMModel {
 //				double[] bestParams = 
 						WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode,
 						timeStepMinutes, observedDischarge, costFunction, calibrationThreadCount, precipReader,
-						tempReader, etpReader, runner, spinUpTimesteps, writeState, pm);
+						tempReader, etpReader, runner, spinUpTimesteps, writeState, pm, false);
 
 				
 //				runSimulationOnParams(db, maxBasinId, basinAreas, rootNode, fromTS, timeStepMinutes, observedDischarge,

@@ -40,6 +40,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
@@ -323,19 +324,17 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				maxBasinNum = Math.max(maxBasinNum, basinNum);
 
 				List<Geometry> polygons = entry.getValue();
-				
+
 				// TODO check
 				// Geometry basin = CascadedPolygonUnion.union(polygons);
-				
-				// this has been done for an example that was not joining the polygons 
+
+				// this has been done for an example that was not joining the polygons
 				PrecisionModel pm2 = new PrecisionModel(1e7);
 				GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(pm2);
 				reducer.setPointwise(true); // avoids introducing new topology issues
-				List<Geometry> reduced = polygons.stream()
-				    .map(reducer::reduce)
-				    .collect(Collectors.toList());
+				List<Geometry> reduced = polygons.stream().map(reducer::reduce).collect(Collectors.toList());
 				Geometry basin = CascadedPolygonUnion.union(reduced);
-				
+
 				// extract largest basin
 				double maxArea = Double.NEGATIVE_INFINITY;
 				Geometry maxPolygon = basin;
@@ -502,9 +501,12 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 									var table = SqlName.m("error_basin_" + outBasin.id);
 									SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, fc.getSchema(), table,
 											null, false);
-									
+
 									SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, fc, table, -1, false,
 											pm);
+									if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+										gpDb.updateFeatureTableBounds(table);
+									}
 								} else {
 									File folder = new File(outFolder);
 									File errorFile = new File(folder,
@@ -634,23 +636,34 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				}
 			} else {
 				String basinTable = GeoFrameGeoTable.BASIN.tableName();
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(),
-						SqlName.m(basinTable), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
-						false, pm);
+				SqlName basinTableName = SqlName.m(basinTable);
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(), basinTableName, null,
+						false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, basinTableName, -1, false, pm);
+				if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+					gpDb.updateFeatureTableBounds(basinTableName);
+				}
 
 				String networkTable = GeoFrameGeoTable.NET.tableName();
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
-						SqlName.m(networkTable), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC, SqlName.m(networkTable), -1,
-						false, pm);
+				SqlName networkTableName = SqlName.m(networkTable);
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(), networkTableName,
+						null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC, networkTableName, -1, false,
+						pm);
+				if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+					gpDb.updateFeatureTableBounds(networkTableName);
+				}
 				if (streamGaugeFC != null && streamGaugeFC.size() > 0) {
 					String streamGAuge = GeoFrameGeoTable.HYDRO_METEO_STATION.tableName();
-                     //TODO create unique keys: ID+TYPE
+					// TODO create unique keys: ID+TYPE
+					SqlName streamGaugeTableName = SqlName.m(streamGAuge);
 					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
-							SqlName.m(streamGAuge), null, false);
-					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, SqlName.m(streamGAuge),
-							-1, false, pm);
+							streamGaugeTableName, null, false);
+					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, streamGaugeTableName, -1,
+							false, pm);
+					if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+						gpDb.updateFeatureTableBounds(streamGaugeTableName);
+					}
 				}
 			}
 		}
@@ -805,8 +818,8 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				: SubbasinsTypeField.HILLSOLOPE.toString();
 
 		String id = extractId(streamGaugeBuilder, breakPointFC, basinPolygon, streamGaugeFC, basinNum);
-		Object[] basinValues = new Object[] { dumpBasin, elev, avgElev, 
-				mainNetLength, skyview, featureUserType, basinNum};
+		Object[] basinValues = new Object[] { dumpBasin, elev, avgElev, mainNetLength, skyview, featureUserType,
+				basinNum };
 		basinsBuilder.addAll(basinValues);
 		SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
 		allBasinsFC.add(basinFeature);

@@ -32,8 +32,8 @@ import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.definition.GeoframeGeoTableSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
@@ -59,7 +59,7 @@ import oms3.annotations.UI;
 @License("General Public License Version 3 (GPLv3)")
 public class GeoframeRawDataImporter extends HMModel {
 
-	@Description("A colum with the measurement point id")
+	@Description("The station type to import (e.g. meteo, stream gauge).")
 	@In
 	public StationType stationType = null;
 
@@ -92,9 +92,6 @@ public class GeoframeRawDataImporter extends HMModel {
 
 	@In
 	public int inVariableType = -1;
-
-	@In
-	public boolean isStreamGauge = false;
 
 	// TODO maybe to infer from data
 	@In
@@ -192,10 +189,13 @@ public class GeoframeRawDataImporter extends HMModel {
 									BasinMultiPolygonField.ID.columnName());
 						}
 
-						if (basinId != null && isStreamGauge) {
-							String sql = String.format("UPDATE %s SET %s = %d WHERE %s = %d",
-									GeoFrameGeoTable.BASIN.tableName(), BasinMultiPolygonField.ID.columnName(), id,
-									BasinMultiPolygonField.ID.columnName(), basinId);
+						if (basinId != null && stationType == StationType.STREAM_GAUGE) {
+							String sql = String.format("UPDATE %s SET %s = %d WHERE %s = %d and %s = '%s'",
+									GeoFrameGeoTable.HYDRO_METEO_STATION.tableName(),
+									StationSchema.Station.BASIN_ID.columnName(), basinId,
+									StationSchema.Station.ID.columnName(), id,
+									StationSchema.Station.TYPE.columnName(), stationType.name()
+									);
 							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 						}
 

@@ -118,7 +118,6 @@ public class ErmStationDataImporter extends HMModel {
 			gfImporter.inIdField = pStreamGaugesIdField;
 			gfImporter.stationType = StationType.STREAM_GAUGE;
 			gfImporter.inVariableType = EnvironmentalVariableType.DISCHARGE.getId();
-			gfImporter.isStreamGauge = true;
 			gfImporter.process();
 		}
 	}
