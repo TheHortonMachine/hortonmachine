@@ -143,8 +143,8 @@ public class PSEngine {
 			}
 			if (pm != null) {
 				pm.worked(1);
+				pm.message("PSCalibration iter " + iterationStep + " best cost = " + globalBestCost);
 			}
-			pm.message("PSCalibration iter " + iterationStep + " best cost = " + globalBestCost);
 		}
 		if (printDebug && pm != null) {
 			pm.message(prefix + " FINAL BEST COST = " + globalBestCost);
