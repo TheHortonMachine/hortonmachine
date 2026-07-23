@@ -41,6 +41,10 @@ public class GeoframeSchema {
     public static final String TOPOLOGY_UPSTREAM_BASIN = "upstream_basin_id";
     public static final String TOPOLOGY_DOWNSTREAM_BASIN = "downstream_basin_id";
 
+    public static final String BASIN_TABLE = "basin";
+    public static final String NET_TABLE = "net";
+    public static final String COL_GEOM = "the_geom";
+
     public static final String BASIN_DATA_TABLE = "basin_data";
     public static final String STATION_DATA_TABLE = "station_data";
     public static final String STATION_TABLE = "station";
@@ -51,6 +55,7 @@ public class GeoframeSchema {
     public static final String COL_VAR_ID = "var_id";
     public static final String COL_VALUE = "value";
     public static final String COL_ID = "id";
+    public static final String COL_TYPE = "type";
 
     /** environmental_variables var_id for precipitation. */
     public static final int VAR_PRECIPITATION = 2;
@@ -58,6 +63,11 @@ public class GeoframeSchema {
     public static final int VAR_TEMPERATURE = 4;
     /** environmental_variables var_id for discharge. */
     public static final int VAR_DISCHARGE = 5;
+
+    /** station.type value (see hmachine's StationSchema.StationType) for a discharge gauge. */
+    public static final String STATION_TYPE_STREAM_GAUGE = "STREAM_GAUGE";
+    /** station.type value (see hmachine's StationSchema.StationType) for a meteo station. */
+    public static final String STATION_TYPE_METEO = "METEO";
 
     public static boolean isSimulationDischargeTable( String tableName ) {
         return tableName != null && SIM_DISCHARGE_TABLE_PATTERN.matcher(tableName).matches();

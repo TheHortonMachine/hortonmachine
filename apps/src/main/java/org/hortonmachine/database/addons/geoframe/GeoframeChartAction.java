@@ -17,15 +17,22 @@
  */
 package org.hortonmachine.database.addons.geoframe;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
@@ -52,18 +59,58 @@ public class GeoframeChartAction extends AbstractAction {
 
     @Override
     public void actionPerformed( ActionEvent e ) {
-        SwingWorker<GeoframeChartData, Void> worker = new SwingWorker<>(){
+        JDialog loadingDialog = showLoadingDialog();
+
+        SwingWorker<Object[], Void> worker = new SwingWorker<>(){
             @Override
-            protected GeoframeChartData doInBackground() throws Exception {
-                return GeoframeChartDataLoader.load(db, simDischargeTableName);
+            protected Object[] doInBackground() throws Exception {
+                GeoframeChartData data = GeoframeChartDataLoader.load(db, simDischargeTableName);
+
+                SimpleFeatureCollection basins = null;
+                SimpleFeatureCollection network = null;
+                SimpleFeatureCollection streamGauges = null;
+                SimpleFeatureCollection meteoStations = null;
+                if (db instanceof ASpatialDb) {
+                    ASpatialDb spatialDb = (ASpatialDb) db;
+                    try {
+                        basins = GeoframeChartDataLoader.loadBasinPolygons(spatialDb);
+                    } catch (Exception ex) {
+                        // the basins map is a nice-to-have: degrade to the chart-only dialog
+                        Logger.INSTANCE.insertError("", "Unable to load basin geometries for the basins map", ex);
+                    }
+                    try {
+                        network = GeoframeChartDataLoader.loadNetworkLines(spatialDb);
+                    } catch (Exception ex) {
+                        // the network overlay is a nice-to-have: degrade to basins-only map
+                        Logger.INSTANCE.insertError("", "Unable to load the stream network for the basins map", ex);
+                    }
+                    try {
+                        streamGauges = GeoframeChartDataLoader.loadStreamGaugeStations(spatialDb);
+                    } catch (Exception ex) {
+                        Logger.INSTANCE.insertError("", "Unable to load stream gauge stations for the basins map", ex);
+                    }
+                    try {
+                        meteoStations = GeoframeChartDataLoader.loadMeteoStations(spatialDb);
+                    } catch (Exception ex) {
+                        Logger.INSTANCE.insertError("", "Unable to load meteo stations for the basins map", ex);
+                    }
+                }
+                return new Object[]{data, basins, network, streamGauges, meteoStations};
             }
 
             @Override
             protected void done() {
+                loadingDialog.dispose();
                 try {
-                    GeoframeChartData data = get();
-                    JPanel chartPanel = GeoframeChartPanelBuilder.build(data, simDischargeTableName);
-                    GuiUtilities.openDialogWithPanel(chartPanel, "ERM Simulation Chart", new Dimension(1200, 800), false);
+                    Object[] result = get();
+                    GeoframeChartData data = (GeoframeChartData) result[0];
+                    SimpleFeatureCollection basins = (SimpleFeatureCollection) result[1];
+                    SimpleFeatureCollection network = (SimpleFeatureCollection) result[2];
+                    SimpleFeatureCollection streamGauges = (SimpleFeatureCollection) result[3];
+                    SimpleFeatureCollection meteoStations = (SimpleFeatureCollection) result[4];
+                    JPanel dialogPanel = GeoframeChartDialogBuilder.build(db, simDischargeTableName, data, basins, network,
+                            streamGauges, meteoStations);
+                    GuiUtilities.openDialogWithPanel(dialogPanel, "ERM Simulation Chart", new Dimension(1500, 850), false);
                 } catch (Exception ex) {
                     Logger.INSTANCE.insertError("", "ERROR", ex);
                     GuiUtilities.showErrorMessage(parent, ex.getMessage());
@@ -71,5 +118,29 @@ public class GeoframeChartAction extends AbstractAction {
             }
         };
         worker.execute();
+    }
+
+    /**
+     * A small non-modal "loading" indicator shown while the chart/map data is fetched, since
+     * that happens before the real dialog (which would otherwise host the indicator) exists yet.
+     */
+    private JDialog showLoadingDialog() {
+        Component windowParent = SwingUtilities.getWindowAncestor(parent) != null ? SwingUtilities.getWindowAncestor(parent)
+                : parent;
+        JDialog dialog = new JDialog((java.awt.Frame) (windowParent instanceof java.awt.Frame ? windowParent : null),
+                "Loading...", false);
+        JPanel panel = new JPanel(new BorderLayout(8, 8));
+        panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 16, 12, 16));
+        panel.add(new JLabel("Loading GeoFrame simulation chart..."), BorderLayout.NORTH);
+        JProgressBar progressBar = new JProgressBar();
+        progressBar.setIndeterminate(true);
+        panel.add(progressBar, BorderLayout.CENTER);
+        dialog.setContentPane(panel);
+        dialog.setUndecorated(false);
+        dialog.pack();
+        dialog.setSize(new Dimension(320, dialog.getHeight()));
+        dialog.setLocationRelativeTo(parent);
+        dialog.setVisible(true);
+        return dialog;
     }
 }

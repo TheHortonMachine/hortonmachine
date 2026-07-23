@@ -20,10 +20,13 @@ package org.hortonmachine.database.addons.geoframe;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
+import org.hortonmachine.gears.io.dbs.DbsHelper;
 
 /**
  * Loads the data needed for the GeoFrame water budget chart out of a connected
@@ -47,6 +50,79 @@ public class GeoframeChartDataLoader {
                     + GeoframeSchema.TOPOLOGY_DOWNSTREAM_BASIN + " = 0 (most downstream basin).");
         }
 
+        GeoframeChartData data = loadDischargeAndMeteo(db, simDischargeTableName, basinId, null, null);
+
+        Long minTs = data.simulatedDischargeTimes.length > 0 ? data.simulatedDischargeTimes[0] : null;
+        Long maxTs = data.simulatedDischargeTimes.length > 0
+                ? data.simulatedDischargeTimes[data.simulatedDischargeTimes.length - 1]
+                : null;
+        Series observed = queryObservedDischargeSeries(db, basinId, minTs, maxTs);
+        data.observedDischargeTimes = observed.times;
+        data.observedDischargeValues = observed.values;
+
+        return data;
+    }
+
+    /**
+     * Reloads simulated discharge, precipitation/temperature and observed discharge for a
+     * different basin, clipped to the same time range as the reference load. Observed discharge
+     * is re-queried (not copied from the reference) since it depends on whether THIS basin has
+     * its own stream gauge - see {@link #queryObservedDischargeSeries}.
+     */
+    public static GeoframeChartData loadForBasin( ADb db, String simDischargeTableName, int basinId,
+            GeoframeChartData reference ) throws Exception {
+        Long minTs = reference.simulatedDischargeTimes.length > 0 ? reference.simulatedDischargeTimes[0] : null;
+        Long maxTs = reference.simulatedDischargeTimes.length > 0
+                ? reference.simulatedDischargeTimes[reference.simulatedDischargeTimes.length - 1]
+                : null;
+
+        GeoframeChartData data = loadDischargeAndMeteo(db, simDischargeTableName, basinId, minTs, maxTs);
+        Series observed = queryObservedDischargeSeries(db, basinId, minTs, maxTs);
+        data.observedDischargeTimes = observed.times;
+        data.observedDischargeValues = observed.values;
+        return data;
+    }
+
+    /**
+     * Loads the basin polygons ({@link GeoframeSchema#COL_ID}, {@link GeoframeSchema#COL_GEOM})
+     * as a feature collection, for the basins-selector map.
+     */
+    public static SimpleFeatureCollection loadBasinPolygons( ASpatialDb db ) throws Exception {
+        String sql = "SELECT " + GeoframeSchema.COL_ID + ", " + GeoframeSchema.COL_GEOM + " FROM " + GeoframeSchema.BASIN_TABLE;
+        return DbsHelper.runRawSqlToFeatureCollection("basins", db, sql, null);
+    }
+
+    /**
+     * Loads the stream network lines, drawn on the basins map to make the basin layout easier to
+     * read.
+     */
+    public static SimpleFeatureCollection loadNetworkLines( ASpatialDb db ) throws Exception {
+        String sql = "SELECT " + GeoframeSchema.COL_GEOM + " FROM " + GeoframeSchema.NET_TABLE;
+        return DbsHelper.runRawSqlToFeatureCollection("network", db, sql, null);
+    }
+
+    /**
+     * Loads the stream/discharge gauge station points, drawn on the basins map.
+     */
+    public static SimpleFeatureCollection loadStreamGaugeStations( ASpatialDb db ) throws Exception {
+        return loadStations(db, GeoframeSchema.STATION_TYPE_STREAM_GAUGE, "streamGauges");
+    }
+
+    /**
+     * Loads the meteo station points, drawn on the basins map.
+     */
+    public static SimpleFeatureCollection loadMeteoStations( ASpatialDb db ) throws Exception {
+        return loadStations(db, GeoframeSchema.STATION_TYPE_METEO, "meteoStations");
+    }
+
+    private static SimpleFeatureCollection loadStations( ASpatialDb db, String stationType, String name ) throws Exception {
+        String sql = "SELECT " + GeoframeSchema.COL_ID + ", " + GeoframeSchema.COL_GEOM + " FROM " + GeoframeSchema.STATION_TABLE
+                + " WHERE " + GeoframeSchema.COL_TYPE + " = '" + stationType + "'";
+        return DbsHelper.runRawSqlToFeatureCollection(name, db, sql, null);
+    }
+
+    private static GeoframeChartData loadDischargeAndMeteo( ADb db, String simDischargeTableName, int basinId, Long minTs,
+            Long maxTs ) throws Exception {
         GeoframeChartData data = new GeoframeChartData();
         data.basinId = basinId;
 
@@ -54,20 +130,18 @@ public class GeoframeChartDataLoader {
         data.simulatedDischargeTimes = simulated.times;
         data.simulatedDischargeValues = simulated.values;
 
-        Long minTs = simulated.times.length > 0 ? simulated.times[0] : null;
-        Long maxTs = simulated.times.length > 0 ? simulated.times[simulated.times.length - 1] : null;
+        Long effectiveMinTs = minTs != null ? minTs : (simulated.times.length > 0 ? simulated.times[0] : null);
+        Long effectiveMaxTs = maxTs != null ? maxTs
+                : (simulated.times.length > 0 ? simulated.times[simulated.times.length - 1] : null);
 
-        Series precipitation = queryBasinDataSeries(db, basinId, GeoframeSchema.VAR_PRECIPITATION, minTs, maxTs);
+        Series precipitation = queryBasinDataSeries(db, basinId, GeoframeSchema.VAR_PRECIPITATION, effectiveMinTs,
+                effectiveMaxTs);
         data.precipitationTimes = precipitation.times;
         data.precipitationValues = precipitation.values;
 
-        Series temperature = queryBasinDataSeries(db, basinId, GeoframeSchema.VAR_TEMPERATURE, minTs, maxTs);
+        Series temperature = queryBasinDataSeries(db, basinId, GeoframeSchema.VAR_TEMPERATURE, effectiveMinTs, effectiveMaxTs);
         data.temperatureTimes = temperature.times;
         data.temperatureValues = temperature.values;
-
-        Series observed = queryObservedDischargeSeries(db, basinId, minTs, maxTs);
-        data.observedDischargeTimes = observed.times;
-        data.observedDischargeValues = observed.values;
 
         return data;
     }
@@ -103,35 +177,22 @@ public class GeoframeChartDataLoader {
     }
 
     /**
-     * Observed discharge normally comes from the stream gauge station tied to this basin
-     * (station.basin_id = basinId). Some datasets only carry a single, whole-catchment
-     * discharge station that is not tied to any sub-basin (station.basin_id IS NULL); in
-     * that case fall back to that station's data. Both branches are clipped to
-     * [minTs, maxTs] (the simulated discharge's time range).
+     * Observed discharge is only plotted if the given basin actually has its own stream gauge:
+     * a station row with basin_id = basinId and type = STREAM_GAUGE. If no such station (or no
+     * data for it) exists, an empty series is returned and no observed discharge line is drawn.
      */
     private static Series queryObservedDischargeSeries( ADb db, int basinId, Long minTs, Long maxTs ) throws Exception {
         List<Object> params = new ArrayList<>();
         params.add(basinId);
+        params.add(GeoframeSchema.STATION_TYPE_STREAM_GAUGE);
         params.add(GeoframeSchema.VAR_DISCHARGE);
         String sql = "SELECT sd." + GeoframeSchema.COL_TS + ", sd." + GeoframeSchema.COL_VALUE + " FROM "
                 + GeoframeSchema.STATION_DATA_TABLE + " sd JOIN " + GeoframeSchema.STATION_TABLE + " st ON sd."
                 + GeoframeSchema.COL_STATION_ID + " = st." + GeoframeSchema.COL_ID + " WHERE st." + GeoframeSchema.COL_BASIN_ID
-                + " = ? AND sd." + GeoframeSchema.COL_VAR_ID + " = ? AND sd." + GeoframeSchema.COL_VALUE + " >= 0"
-                + timeBoundClause("sd." + GeoframeSchema.COL_TS, minTs, maxTs, params) + " ORDER BY sd." + GeoframeSchema.COL_TS;
-        Series series = queryTimeSeries(db, sql, params.toArray());
-        if (series.times.length > 0) {
-            return series;
-        }
-
-        List<Object> fallbackParams = new ArrayList<>();
-        fallbackParams.add(GeoframeSchema.VAR_DISCHARGE);
-        String fallbackSql = "SELECT sd." + GeoframeSchema.COL_TS + ", sd." + GeoframeSchema.COL_VALUE + " FROM "
-                + GeoframeSchema.STATION_DATA_TABLE + " sd JOIN " + GeoframeSchema.STATION_TABLE + " st ON sd."
-                + GeoframeSchema.COL_STATION_ID + " = st." + GeoframeSchema.COL_ID + " WHERE st." + GeoframeSchema.COL_BASIN_ID
-                + " IS NULL AND sd." + GeoframeSchema.COL_VAR_ID + " = ? AND sd." + GeoframeSchema.COL_VALUE + " >= 0"
-                + timeBoundClause("sd." + GeoframeSchema.COL_TS, minTs, maxTs, fallbackParams) + " ORDER BY sd."
-                + GeoframeSchema.COL_TS;
-        return queryTimeSeries(db, fallbackSql, fallbackParams.toArray());
+                + " = ? AND st." + GeoframeSchema.COL_TYPE + " = ? AND sd." + GeoframeSchema.COL_VAR_ID + " = ? AND sd."
+                + GeoframeSchema.COL_VALUE + " >= 0" + timeBoundClause("sd." + GeoframeSchema.COL_TS, minTs, maxTs, params)
+                + " ORDER BY sd." + GeoframeSchema.COL_TS;
+        return queryTimeSeries(db, sql, params.toArray());
     }
 
     private static String timeBoundClause( String tsColumn, Long minTs, Long maxTs, List<Object> params ) {
@@ -156,6 +217,8 @@ public class GeoframeChartDataLoader {
                     Object param = params[i];
                     if (param instanceof Long) {
                         ps.setLong(i + 1, (Long) param);
+                    } else if (param instanceof String) {
+                        ps.setString(i + 1, (String) param);
                     } else {
                         ps.setInt(i + 1, ((Number) param).intValue());
                     }

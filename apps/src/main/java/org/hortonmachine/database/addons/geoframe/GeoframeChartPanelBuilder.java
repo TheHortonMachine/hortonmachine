@@ -33,6 +33,7 @@ import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.Range;
 import org.jfree.data.time.FixedMillisecond;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
@@ -51,11 +52,26 @@ public class GeoframeChartPanelBuilder {
     private static final Color SIMULATED_DISCHARGE_COLOR = ColorUtilities.fromHex("#009945ff");
     private static final Color OBSERVED_DISCHARGE_COLOR = ColorUtilities.fromHex("#0006ceff");
 
+    /** Client property key under which the built panel stashes its {@link ChartPanel}. */
+    private static final String CHART_PANEL_PROPERTY = "geoframeChartPanel";
+
     private GeoframeChartPanelBuilder() {
     }
 
     public static JPanel build( GeoframeChartData data, String simTableName ) {
+        return build(data, simTableName, null);
+    }
+
+    /**
+     * @param initialDomainRange when not null, the shared time axis starts zoomed to this range
+     *        instead of auto-fitting the data - used to preserve a zoomed period across a basin
+     *        switch, see {@link #getCurrentDomainRange(JPanel)}.
+     */
+    public static JPanel build( GeoframeChartData data, String simTableName, Range initialDomainRange ) {
         DateAxis sharedTimeAxis = new DateAxis("Time");
+        if (initialDomainRange != null) {
+            sharedTimeAxis.setRange(initialDomainRange);
+        }
 
         CombinedDomainXYPlot combinedPlot = new CombinedDomainXYPlot(sharedTimeAxis);
         combinedPlot.add(buildMeteoPlot(data), 1);
@@ -74,7 +90,29 @@ public class GeoframeChartPanelBuilder {
 
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(chartPanel, BorderLayout.CENTER);
+        panel.putClientProperty(CHART_PANEL_PROPERTY, chartPanel);
         return panel;
+    }
+
+    /**
+     * Reads back the shared time axis' current range (reflecting any zoom the user has applied)
+     * from a panel previously returned by {@link #build(GeoframeChartData, String)}, so it can be
+     * passed as {@code initialDomainRange} when rebuilding the chart for a different basin.
+     */
+    public static Range getCurrentDomainRange( JPanel builtChartPanel ) {
+        if (builtChartPanel == null) {
+            return null;
+        }
+        Object property = builtChartPanel.getClientProperty(CHART_PANEL_PROPERTY);
+        if (!(property instanceof ChartPanel)) {
+            return null;
+        }
+        JFreeChart chart = ((ChartPanel) property).getChart();
+        if (!(chart.getPlot() instanceof CombinedDomainXYPlot)) {
+            return null;
+        }
+        CombinedDomainXYPlot plot = (CombinedDomainXYPlot) chart.getPlot();
+        return plot.getDomainAxis().getRange();
     }
 
     private static XYPlot buildMeteoPlot( GeoframeChartData data ) {
