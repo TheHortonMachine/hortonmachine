@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -150,7 +151,9 @@ public class GeoframeRawDataImporter extends HMModel {
 				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 			}
 
+			HashMap<Integer, Integer> dbId2fileIdsMap = null;
 			if (inMeasurementsPointFilePath != null) {
+				dbId2fileIdsMap = new HashMap<>();
 				SimpleFeatureCollection basinsFC = null;
 				SqlName basinSqlName = GeoFrameGeoTable.BASIN.getSchema().getSQLName();
 				if (inGeoframeDb.hasTable(basinSqlName)) {
@@ -164,6 +167,19 @@ public class GeoframeRawDataImporter extends HMModel {
 				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 				int i = 0;
 
+				SimpleFeatureType tableSchema = builder.getFeatureType();
+				if (!inGeoframeDb.hasTable(stationTable)) {
+					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, tableSchema, stationTable, null, false);
+				}
+
+				/*
+				 * we need to have unique idsfor the stations, which might be an issue between
+				 * different station types. So we check for the max id available in the database
+				 * and add it to the ids of the new stations to be imported. Since the id is
+				 * needed later for the data, we keep track of them in a HashMap. This is a
+				 * temporary solution and should be improved in the future.
+				 */
+				long maxId = inGeoframeDb.getMax(stationTable, Station.ID.columnName()) + 1;
 				try (SimpleFeatureIterator iterator = inMeasurementPoints.features()) {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
@@ -175,13 +191,15 @@ public class GeoframeRawDataImporter extends HMModel {
 						} else {
 							continue;
 						}
+						int newId = (int) (id + maxId);
+						dbId2fileIdsMap.put(newId, id);
 						Double elevation = null;
 						if (inElevationField != null) {
 							elevation = (Double) sourceFeature.getAttribute(inElevationField);
 						}
 						builder.reset();
 						builder.set(Station.GEOM.columnName(), geom);
-						builder.set(Station.ID.columnName(), id);
+						builder.set(Station.ID.columnName(), newId);
 						builder.set(Station.ELEVATION.columnName(), elevation);
 						Integer basinId = null;
 						if (basinsFC != null) {
@@ -193,9 +211,8 @@ public class GeoframeRawDataImporter extends HMModel {
 							String sql = String.format("UPDATE %s SET %s = %d WHERE %s = %d and %s = '%s'",
 									GeoFrameGeoTable.HYDRO_METEO_STATION.tableName(),
 									StationSchema.Station.BASIN_ID.columnName(), basinId,
-									StationSchema.Station.ID.columnName(), id,
-									StationSchema.Station.TYPE.columnName(), stationType.name()
-									);
+									StationSchema.Station.ID.columnName(), newId, StationSchema.Station.TYPE.columnName(),
+									stationType.name());
 							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 						}
 
@@ -204,13 +221,9 @@ public class GeoframeRawDataImporter extends HMModel {
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
-						ids[i] = id;
+						ids[i] = newId;
 						i++;
 					}
-				}
-				if (!inGeoframeDb.hasTable(stationTable)) {
-					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, outFC.getSchema(), stationTable, null,
-							false);
 				}
 
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, outFC, stationTable, -1, false, pm);
@@ -243,6 +256,7 @@ public class GeoframeRawDataImporter extends HMModel {
 
 				String insertSql = GeoFrameSimpleTable.STATIONDATA.getSchema().buildInsertAll();
 				int[] _ids = ids;
+				HashMap<Integer, Integer> _dbId2fileIdsMap = dbId2fileIdsMap;
 				inGeoframeDb.execOnConnection(conn -> {
 					boolean autoCommit = conn.getAutoCommit();
 					conn.setAutoCommit(false);
@@ -251,7 +265,14 @@ public class GeoframeRawDataImporter extends HMModel {
 							reader.nextRecord();
 							HashMap<Integer, double[]> values = reader.outData;
 							for (int id : _ids) {
-								double[] data = values.get(id);
+								int origId = id;
+								if (_dbId2fileIdsMap != null) {
+									Integer fileId = _dbId2fileIdsMap.get(id);
+									if (fileId != null) {
+										origId = fileId;
+									}
+								}
+								double[] data = values.get(origId);
 								if (data != null) {
 									long ts = formatter.parseMillis(reader.tCurrent);
 									pStmt.setLong(1, ts);

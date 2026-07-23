@@ -120,6 +120,8 @@ public class ErmStationDataImporter extends HMModel {
 			gfImporter.inVariableType = EnvironmentalVariableType.DISCHARGE.getId();
 			gfImporter.process();
 		}
+		
+		
 	}
 
 	public static void main(String[] args) throws Exception {
