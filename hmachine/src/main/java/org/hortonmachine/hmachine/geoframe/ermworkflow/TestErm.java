@@ -84,7 +84,7 @@ public class TestErm extends HMModel {
 			String toTS = "2022-12-31 01:00:00";
 			var timeStepMinutes = 60; // time step in minutes
 			int spinUpDays = 365;
-			double[] observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, fromTS, toTS);
+			double[] observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, rootNode, fromTS, toTS);
 			boolean doCalibration = false;
 			int psoIterations = 300;
 			boolean writeState = false;
