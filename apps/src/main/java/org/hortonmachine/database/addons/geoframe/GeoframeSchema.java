@@ -48,6 +48,7 @@ public class GeoframeSchema {
     public static final String BASIN_DATA_TABLE = "basin_data";
     public static final String STATION_DATA_TABLE = "station_data";
     public static final String STATION_TABLE = "station";
+    public static final String ENVIRONMENTAL_VARIABLES_TABLE = "environmental_variables";
 
     public static final String COL_TS = "ts";
     public static final String COL_BASIN_ID = "basin_id";
@@ -56,6 +57,8 @@ public class GeoframeSchema {
     public static final String COL_VALUE = "value";
     public static final String COL_ID = "id";
     public static final String COL_TYPE = "type";
+    public static final String COL_VAR_NAME = "name";
+    public static final String COL_VAR_UNIT = "unit";
 
     /** environmental_variables var_id for precipitation. */
     public static final int VAR_PRECIPITATION = 2;

@@ -57,8 +57,10 @@ import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.log.Message;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.database.addons.geoframe.GeoframeBasinChartAction;
 import org.hortonmachine.database.addons.geoframe.GeoframeChartAction;
 import org.hortonmachine.database.addons.geoframe.GeoframeSchema;
+import org.hortonmachine.database.addons.geoframe.GeoframeStationChartAction;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -568,6 +570,28 @@ public class DatabaseViewer extends DatabaseController {
         if (GeoframeSchema.isSimulationDischargeTable(selectedTable.tableName.getName())) {
             addSeparator(actions);
             actions.add(new GeoframeChartAction(currentConnectedSqlDatabase, selectedTable.tableName.getName(), this));
+        }
+
+        if (GeoframeSchema.STATION_DATA_TABLE.equals(selectedTable.tableName.getName())) {
+            try {
+                if (currentConnectedSqlDatabase.hasTable(GeoframeSchema.STATION_TABLE)) {
+                    addSeparator(actions);
+                    actions.add(new GeoframeStationChartAction(currentConnectedSqlDatabase, this));
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        if (GeoframeSchema.BASIN_DATA_TABLE.equals(selectedTable.tableName.getName())) {
+            try {
+                if (currentConnectedSqlDatabase.hasTable(GeoframeSchema.BASIN_TABLE)) {
+                    addSeparator(actions);
+                    actions.add(new GeoframeBasinChartAction(currentConnectedSqlDatabase, this));
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         return actions;

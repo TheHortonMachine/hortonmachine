@@ -103,7 +103,7 @@ public class GeoframeBasinsMapPanel extends JPanel {
         this.selectedBasinId = initialSelectedBasinId;
 
         HMMapRenderer renderer = new HMMapRenderer();
-        renderer.addOsmBackground();
+        // renderer.addOsmBackground();
         // the basins layer must be added before the others so it ends up first in the feature
         // layer list (see findBasinsLayer()); network and stations are added on top so they stay
         // visible over the (semi-transparent) basin fills
