@@ -67,7 +67,7 @@ public abstract class ErmBase extends HMModel {
 		maxBasinId = IWaterBudgetSimulationRunner.getMaxBasinId(db);
 		basinAreas = IWaterBudgetSimulationRunner.getBasinAreas(db, maxBasinId);
 		rootNode = TopologyUtilities.getRootNodeFromDb(db);
-		observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, inFromTimestamp, inToTimestamp);
+		observedDischarge = IWaterBudgetSimulationRunner.getObservedDischarge(db, rootNode, inFromTimestamp, inToTimestamp);
 
 		var type = EnvironmentalVariableType.PRECIPITATION.getId();
 		precipReader = makeReader(db, maxBasinId, type, inFromTimestamp, inToTimestamp);

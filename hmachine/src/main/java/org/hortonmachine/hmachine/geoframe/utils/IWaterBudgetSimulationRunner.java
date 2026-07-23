@@ -24,7 +24,9 @@ import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema.StationDataField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Geometry;
@@ -76,13 +78,35 @@ public interface IWaterBudgetSimulationRunner {
 			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, String iterationInfo)
 			throws Exception;
 
-	static double[] getObservedDischarge(ADb envDb, String fromTS, String toTS) throws Exception {
+	/**
+	 * Get the observed discharge values for the given node and time interval 
+	 * to be used for the calibration. The passed node has to have a station assigned to it, 
+	 * otherwise an exception is thrown.
+	 * 
+	 * @param envDb
+	 * @param observationsNode the node for which the observed discharge values are requested. It must have a station assigned to it.
+	 * @param fromTS
+	 * @param toTS
+	 * @return an array of observed discharge values for the given node and time interval.
+	 * @throws Exception
+	 */
+	static double[] getObservedDischarge(ADb envDb, TopologyNode observationsNode, String fromTS, String toTS) throws Exception {
 		int id = EnvironmentalVariableType.DISCHARGE.getId();
 		long from = GeoframeEnvDatabaseIterator.str2ts(fromTS);
 		long to = GeoframeEnvDatabaseIterator.str2ts(toTS);
-		String sql = "select ts, value from " + GeoFrameSimpleTable.STATIONDATA.tableName() + " where "
-				+ StationDataField.VAR_ID.columnName() + " = " + id + " and " + "ts >= " + from + " and ts <= " + to
-				+ " order by ts asc";
+		int basinId = observationsNode.basinId;
+		
+		String ts = StationDataSchema.StationDataField.TS.columnName();
+		String sql = "select " + ts + ", " + StationDataSchema.StationDataField.VALUE.columnName() 
+				+ " from " + GeoFrameSimpleTable.STATIONDATA.tableName()
+				+ " sd join " + GeoFrameGeoTable.HYDRO_METEO_STATION.tableName()
+				+ " st on sd." + StationDataSchema.StationDataField.STATION_ID.columnName() 
+				+ "=st." +  StationSchema.Station.ID.columnName()
+				+ " where "
+				+ StationDataField.VAR_ID.columnName() + " = " + id 
+				+ " and st." + StationSchema.Station.BASIN_ID.columnName() + " = " + basinId
+				+ " and sd." + ts + " >= " + from + " and sd." + ts + " <= " + to
+				+ " order by " + ts + " asc";
 		QueryResult qr = envDb.getTableRecordsMapFromRawSql(sql, -1);
 		DynamicDoubleArray dda = new DynamicDoubleArray(10000, 10000);
 		int valueIndex = qr.names.indexOf("value");
