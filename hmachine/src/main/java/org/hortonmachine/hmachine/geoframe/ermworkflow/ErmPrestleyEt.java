@@ -9,6 +9,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.PrestleyETAtCentroid;
 
@@ -64,12 +65,21 @@ public class ErmPrestleyEt extends HMModel {
 	@In
 	public String pEndTimestamp;
 
+	@Description("The expected time resolution of the data. Daily and hourly (default) is supported.")
+	@In
+	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
+
 	@Description("If true, existing output files are overwritten.")
 	@In
 	public boolean doOverwrite = false;
 
 	@Execute
 	public void process() throws Exception {
+		if (pTimeResolution == TimeResolution.MONTHLY || pTimeResolution == TimeResolution.YEARLY) {
+			throw new UnsupportedOperationException(
+					"ErmPrestleyEt only supports HOURLY and DAILY resolutions, got " + pTimeResolution);
+		}
+
 		try (ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb()) {
 			db.open(inGpkg);
 
@@ -99,7 +109,7 @@ public class ErmPrestleyEt extends HMModel {
 
 			var ptEt = new PrestleyETAtCentroid();
 			ptEt.inGeoframeDB = db;
-			ptEt.isHourly = true;
+			ptEt.isHourly = pTimeResolution == TimeResolution.HOURLY;
 			ptEt.pAlpha = 1.26;
 			ptEt.inTempReader = temperatureReader;
 			ptEt.inNetReader = netReader;

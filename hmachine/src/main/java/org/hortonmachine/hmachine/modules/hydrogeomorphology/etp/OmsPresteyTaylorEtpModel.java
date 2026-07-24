@@ -167,7 +167,7 @@ public class OmsPresteyTaylorEtpModel extends HMModel {
 			}
 
 			double etp = getET(pGmorn, pGnight, pAlpha, inputNetRadiation,
-					doHourly ? defaultHourlyNetradiation : defaultHourlyNetradiation, t, defaultTemp, pressure,
+					doHourly ? defaultHourlyNetradiation : defaultDailyNetradiation, t, defaultTemp, pressure,
 					defaultPressure, doHourly, tCurrent);
 			outPTEtp.put(basinId, new double[] { etp });
 		}
