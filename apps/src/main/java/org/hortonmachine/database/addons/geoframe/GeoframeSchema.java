@@ -60,8 +60,12 @@ public class GeoframeSchema {
     public static final String COL_VAR_NAME = "name";
     public static final String COL_VAR_UNIT = "unit";
 
+    /** environmental_variables var_id for evapotranspiration. */
+    public static final int VAR_EVAPOTRANSPIRATION = 1;
     /** environmental_variables var_id for precipitation. */
     public static final int VAR_PRECIPITATION = 2;
+    /** environmental_variables var_id for radiation. */
+    public static final int VAR_RADIATION = 3;
     /** environmental_variables var_id for temperature. */
     public static final int VAR_TEMPERATURE = 4;
     /** environmental_variables var_id for discharge. */

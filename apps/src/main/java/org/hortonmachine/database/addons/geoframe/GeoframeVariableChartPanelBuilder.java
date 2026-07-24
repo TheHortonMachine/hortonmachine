@@ -46,9 +46,12 @@ import org.jfree.data.xy.IntervalXYDataset;
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class GeoframeVariableChartPanelBuilder {
-    private static final Color[] SERIES_COLORS = {ColorUtilities.fromHex("#0096ffff"), ColorUtilities.fromHex("#ab080cff"),
-            ColorUtilities.fromHex("#009945ff"), ColorUtilities.fromHex("#8f00b3ff"), ColorUtilities.fromHex("#ff8c00ff"),
-            ColorUtilities.fromHex("#00b3b3ff")};
+    private static final Color COLOR_TEMPERATURE = ColorUtilities.fromHex("#ab080cff");
+    private static final Color COLOR_PRECIPITATION = ColorUtilities.fromHex("#0096ffff");
+    private static final Color COLOR_EVAPOTRANSPIRATION = ColorUtilities.fromHex("#009945ff");
+    private static final Color COLOR_RADIATION = ColorUtilities.fromHex("#8f00b3ff");
+    /** Colors for any variable other than the four fixed ones above, cycled in order. */
+    private static final Color[] FALLBACK_COLORS = {ColorUtilities.fromHex("#ff8c00ff"), ColorUtilities.fromHex("#00b3b3ff")};
 
     private GeoframeVariableChartPanelBuilder() {
     }
@@ -57,9 +60,22 @@ public class GeoframeVariableChartPanelBuilder {
         DateAxis sharedTimeAxis = new DateAxis("Time");
 
         CombinedDomainXYPlot combinedPlot = new CombinedDomainXYPlot(sharedTimeAxis);
+        int fallbackIndex = 0;
         for( int i = 0; i < data.variableSeries.size(); i++ ) {
             GeoframeVariableChartData.VariableSeries series = data.variableSeries.get(i);
-            Color color = SERIES_COLORS[i % SERIES_COLORS.length];
+            Color color;
+            if (series.varId == GeoframeSchema.VAR_TEMPERATURE) {
+                color = COLOR_TEMPERATURE;
+            } else if (series.varId == GeoframeSchema.VAR_PRECIPITATION) {
+                color = COLOR_PRECIPITATION;
+            } else if (series.varId == GeoframeSchema.VAR_EVAPOTRANSPIRATION) {
+                color = COLOR_EVAPOTRANSPIRATION;
+            } else if (series.varId == GeoframeSchema.VAR_RADIATION) {
+                color = COLOR_RADIATION;
+            } else {
+                color = FALLBACK_COLORS[fallbackIndex % FALLBACK_COLORS.length];
+                fallbackIndex++;
+            }
             combinedPlot.add(buildVariablePlot(series, color), 1);
         }
         combinedPlot.setGap(12);
