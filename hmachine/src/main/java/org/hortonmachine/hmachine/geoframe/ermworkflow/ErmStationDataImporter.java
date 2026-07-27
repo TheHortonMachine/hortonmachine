@@ -43,9 +43,9 @@ public class ErmStationDataImporter extends HMModel {
 	@In
 	public String pEndTimestamp;
 
-	@Description("Data time resolution.")
+	@Description("Data time resolution. currently supported: HOURLY, DAILY.")
 	@In
-	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
+	public String pTimeResolution = "HOURLY";
 
 	@Description("Meteo stations layer.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
@@ -90,7 +90,7 @@ public class ErmStationDataImporter extends HMModel {
 		gfImporter.inEndDate = pEndTimestamp;
 		gfImporter.inElevationField = "z_dem";
 		gfImporter.inIdField = pMeteoIdField;
-		gfImporter.timeResolution = pTimeResolution;
+		gfImporter.timeResolution = TimeResolution.valueOf(pTimeResolution);
 		gfImporter.doOverWrite = true;
 
 		// import TEMPERATURE

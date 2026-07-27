@@ -65,9 +65,9 @@ public class ErmPrestleyEt extends HMModel {
 	@In
 	public String pEndTimestamp;
 
-	@Description("The expected time resolution of the data. Daily and hourly (default) is supported.")
+	@Description("The expected time resolution of the data. DAILY and HOURLY (default) is supported.")
 	@In
-	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
+	public String pTimeResolution = "HOURLY";
 
 	@Description("If true, existing output files are overwritten.")
 	@In
@@ -75,7 +75,9 @@ public class ErmPrestleyEt extends HMModel {
 
 	@Execute
 	public void process() throws Exception {
-		if (pTimeResolution == TimeResolution.MONTHLY || pTimeResolution == TimeResolution.YEARLY) {
+		checkNull(inGpkg, pStartTimestamp, pEndTimestamp, pTimeResolution);
+		var tRes = TimeResolution.valueOf(pTimeResolution);
+		if (tRes == TimeResolution.MONTHLY || tRes == TimeResolution.YEARLY) {
 			throw new UnsupportedOperationException(
 					"ErmPrestleyEt only supports HOURLY and DAILY resolutions, got " + pTimeResolution);
 		}
@@ -109,7 +111,7 @@ public class ErmPrestleyEt extends HMModel {
 
 			var ptEt = new PrestleyETAtCentroid();
 			ptEt.inGeoframeDB = db;
-			ptEt.isHourly = pTimeResolution == TimeResolution.HOURLY;
+			ptEt.isHourly = tRes == TimeResolution.HOURLY;
 			ptEt.pAlpha = 1.26;
 			ptEt.inTempReader = temperatureReader;
 			ptEt.inNetReader = netReader;

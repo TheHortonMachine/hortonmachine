@@ -79,9 +79,9 @@ public class ErmRadiation extends HMModel {
 	@In
 	public String pEndTimestamp;
 	
-	@Description("The expected time resolution of the data. Daily and hourly (default) is supported.")
+	@Description("The expected time resolution of the data. DAILY and HOURLY (default) is supported.")
 	@In
-	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
+	public String pTimeResolution = "HOURLY";
 
 	@Description("Number of sun-position samples used to average net radiation over a day if "
 			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest. "
@@ -99,7 +99,9 @@ public class ErmRadiation extends HMModel {
 	
 	@Execute
 	public void process() throws Exception {
-		if (pTimeResolution == TimeResolution.MONTHLY || pTimeResolution == TimeResolution.YEARLY) {
+		checkNull(pTimeResolution, inDtm, inGpkg, pStartTimestamp, pEndTimestamp);
+		TimeResolution tRes = TimeResolution.valueOf(pTimeResolution);
+		if (tRes == TimeResolution.MONTHLY || tRes == TimeResolution.YEARLY) {
 			throw new UnsupportedOperationException(
 					"ErmRadiation only supports HOURLY and DAILY resolutions, got " + pTimeResolution);
 		}
@@ -137,7 +139,7 @@ public class ErmRadiation extends HMModel {
 			radiation.dem =  dtm; // TODO Daniele, why where you using the pit here?
 			radiation.inSkyview = skyview;
 			radiation.lwrvModeel = "6";
-			radiation.pTimeResolution = pTimeResolution;
+			radiation.pTimeResolution = tRes;
 			radiation.pDailySubSamples = pDailySubSamples;
 			radiation.init();
 			radiation.process();
