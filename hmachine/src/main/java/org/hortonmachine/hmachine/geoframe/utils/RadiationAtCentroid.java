@@ -86,7 +86,8 @@ public class RadiationAtCentroid extends HMModel {
 	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
 
 	@Description("Number of sun-position samples used to average net radiation over a day if "
-			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest.")
+			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest. "
+			+ "In case of 1 it evaluates a single central instant (solar noon).")
 	@In
 	public int pDailySubSamples = 24;
 
@@ -439,6 +440,19 @@ public class RadiationAtCentroid extends HMModel {
 	private HashMap<Integer, double[]> averageDailyNetRadiation(Lwrb lwrbLocal,
 			ShortwaveRadiationBalancePointCase swrbLocal, NetRadiationPointCase nrpcLocal, long dayTimestamp)
 			throws Exception {
+		if (pDailySubSamples == 1) {
+			// Use a single central-instant evaluation (solar noon, doHourly=false)
+			swrbLocal.doHourly = false;
+			swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(dayTimestamp);
+			swrbLocal.process();
+
+			nrpcLocal.inShortwaveValues = swrbLocal.outHMtotal;
+			nrpcLocal.inDownwellingValues = lwrbLocal.outHMlongwaveDownwellingHM;
+			nrpcLocal.inUpwellingValues = lwrbLocal.outHMlongwaveUpwellingHM;
+			nrpcLocal.process();
+			return new HashMap<>(nrpcLocal.outHMnetRad);
+		}
+
 		long dayStartMillis = Math.floorDiv(dayTimestamp, MILLIS_PER_DAY) * MILLIS_PER_DAY;
 		long stepMillis = MILLIS_PER_DAY / pDailySubSamples;
 

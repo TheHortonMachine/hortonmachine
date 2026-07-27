@@ -84,7 +84,8 @@ public class ErmRadiation extends HMModel {
 	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
 
 	@Description("Number of sun-position samples used to average net radiation over a day if "
-			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest.")
+			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest. "
+			+ "In case of 1 it evaluates a single central instant (solar noon).")
 	@In
 	public int pDailySubSamples = 24;
 
