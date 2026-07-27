@@ -136,7 +136,7 @@ public class ErmRadiation extends HMModel {
 			var radiation = new RadiationAtCentroid();
 			radiation.inGeoframeDb = db;
 			radiation.inTemperatureReader = temperatureReader;
-			radiation.dem =  dtm; // TODO Daniele, why where you using the pit here?
+			radiation.dem = dtm;
 			radiation.inSkyview = skyview;
 			radiation.lwrvModeel = "6";
 			radiation.pTimeResolution = tRes;
