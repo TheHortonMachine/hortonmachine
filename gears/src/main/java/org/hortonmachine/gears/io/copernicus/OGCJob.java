@@ -1,4 +1,4 @@
-package org.hortonmachine.gears.io.ogcprocesses;
+package org.hortonmachine.gears.io.copernicus;
 
 import java.util.Map;
 
