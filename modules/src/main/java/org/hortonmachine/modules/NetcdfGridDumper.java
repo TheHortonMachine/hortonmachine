@@ -101,11 +101,16 @@ public class NetcdfGridDumper extends HMModel {
     
     @Description(DESCR_outFolder)
     @UI(HMConstants.FOLDEROUT_UI_HINT)
-    @Out
+    @In
     public String outFolder;
+    
+    @Description("The name of the converted file.")
+    @Out
+    public File convertedFile = null;
 
     @Execute
     public void process() throws Exception {
+    	checkNull(inPath, outFolder);
 
         OmsNetcdf2GridCoverageConverter converter = new OmsNetcdf2GridCoverageConverter();
         converter.inPath = inPath;
@@ -128,10 +133,13 @@ public class NetcdfGridDumper extends HMModel {
             File folderFile = new File(outFolder);
             File inFile = new File(inPath);
             String name = FileUtilities.getNameWithoutExtention(inFile);
-            String safeName = FileUtilities.getSafeFileName(pGridName);
-            name = name + "__" + tsString + "__" + safeName + ".tif";
-            File outFile = new File(folderFile, name);
-            dumpRaster(outRaster, outFile.getAbsolutePath());
+            String safeName = "";
+            if (pGridName != null) {
+            	safeName = "__" +  FileUtilities.getSafeFileName(pGridName);
+            }
+            name = name + "__" + tsString +  safeName + ".tif";
+            convertedFile = new File(folderFile, name);
+            dumpRaster(outRaster, convertedFile.getAbsolutePath());
         }
 
     }
