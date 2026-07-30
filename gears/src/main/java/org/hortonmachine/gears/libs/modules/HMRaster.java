@@ -22,6 +22,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -32,6 +33,7 @@ import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -39,11 +41,16 @@ import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
 /**
  * A generic HM single band raster object.
@@ -633,6 +640,14 @@ public class HMRaster implements AutoCloseable {
         }
     }
     
+    /**
+     * Build a new raster that is a sub raster of the current one, using the given sub region.
+     * 
+     * @param subRegion the subregion to extract. If snapping to the origial raster is needed, 
+     * 		use {@link RegionMap#toSubRegion(Envelope)}.
+     * @return the new generated raster.
+     * @throws IOException
+     */
     public HMRaster toSubRaster(RegionMap subRegion) throws IOException {
         var outHMRaster = new HMRaster.HMRasterWritableBuilder().setName("subraster")
                 .setRegion(subRegion)
@@ -652,6 +667,96 @@ public class HMRaster implements AutoCloseable {
 		}
 		
 		return outHMRaster;
+	}
+    
+    /**
+     * Extract a new raster that is a sub raster of the current one, masked by the
+     * given polygon geometry.
+     * 
+     * @param pm optional Process monitor.
+     * @param polygon the polygon geometry to use for masking. It is assumed to be in the same CRS as the raster.
+     * @return the new generated raster.
+     * @throws IOException
+     */
+	public HMRaster extractOnPolygon(IHMProgressMonitor pm, Geometry polygon) throws IOException {
+		if (pm == null)
+			pm = new DummyProgressMonitor();
+
+		GeometryFactory gf = new GeometryFactory();
+		var subRegion = regionMap.toSubRegion(polygon.getEnvelopeInternal());
+		HMRaster outRaster = new HMRaster.HMRasterWritableBuilder().setName("subraster").setRegion(subRegion)
+				.setCrs(crs).setNoValue(novalue).setInitialValue(novalue).build();
+		PreparedGeometry prepGeom = PreparedGeometryFactory.prepare(polygon);
+        var cols = subRegion.getCols();
+        var rows = subRegion.getRows();
+        for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				if (!isContained(c, r)) {
+					continue;
+				}
+				var worldCoord = outRaster.getWorld(c, r);
+				if (!prepGeom.contains(gf.createPoint(worldCoord))) {
+					continue;
+				}
+				var value = getValue(worldCoord);
+				outRaster.setValue(c, r, value);
+			}
+		}
+		return outRaster;
+	}
+	
+	
+	/**
+	 * Calculates zonal statistics for the given feature collection, using the specified id field name to identify zones.
+	 * 
+	 * @param pm optional Process monitor.
+	 * @param fc the feature collection containing the zones.
+	 * @param idFieldName the name of the field in the feature collection that contains the zone identifiers.
+	 * @return a HashMap where the key is the zone identifier and the value is an array of statistics: [min, max, avg, sum, count].
+	 * @throws Exception
+	 */
+	public HashMap<Integer, double[]> getZonalStats(IHMProgressMonitor pm, SimpleFeatureCollection fc, String idFieldName) throws Exception {
+		if (pm == null)
+			pm = new DummyProgressMonitor();
+		Envelope totalEnv = fc.getBounds();
+		var procRaster = toSubRaster(getRegionMap().toSubRegion(totalEnv));
+		OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
+		rasterizer.inRaster = procRaster.buildCoverage();
+		rasterizer.inVector = fc;
+		rasterizer.fCat = idFieldName;
+		rasterizer.pm = pm;
+		rasterizer.process();
+		HMRaster idsRaster = HMRaster.fromGridCoverage(rasterizer.outRaster);
+		// hashmap containing the id and the stats array: [min, max, avg, sum, count]
+		HashMap<Integer, double[]> statsMap = new HashMap<>();
+		idsRaster.process(pm, "zonal stats", (col, row, idValue, cols, rows) -> {
+			if (idsRaster.isNovalue(idValue)) {
+				return;
+			}
+			double value = procRaster.getValue(col, row);
+			if (procRaster.isNovalue(value)) {
+				return;
+			}
+			double[] statsArray = statsMap.get((int) idValue);
+			if (statsArray == null) {
+				statsArray = new double[] { Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 0, 0, 0 };
+				statsMap.put((int) idValue, statsArray);
+			}
+			statsArray[0] = Math.min(statsArray[0], value); // min
+			statsArray[1] = Math.max(statsArray[1], value); // max
+			statsArray[3] += value; // sum
+			statsArray[4]++; // count
+		});
+		
+		// calculate the average
+		for (double[] statsArray : statsMap.values()) {
+			if (statsArray[4] > 0) {
+				statsArray[2] = statsArray[3] / statsArray[4]; // avg
+			} else {
+				statsArray[2] = Double.NaN; // avg
+			}
+		}
+		return statsMap;
 	}
 
     /**
@@ -839,24 +944,24 @@ public class HMRaster implements AutoCloseable {
 	}
     
     /**
-     * Calculate the minimum and maximum valid values of the raster.
+     * Calculates simple stats for valid values of the raster.
      * 
-     * @return an array containing [min, max], or null if no valid cell was found.
+     * @return an array containing [min, max, avg, sum, count], or null if no valid cell was found.
      */
-    public double[] getMinMax() {
-        return getMinMax(null);
+    public double[] getStatistics() {
+        return getStatistics(null);
     }
 
     /**
-     * Calculates the minimum and maximum valid values of the raster, optionally
+     * Calculates simple stats for valid values of the raster, optionally
      * restricted to a world-region envelope.
      * 
      * <p>The envelope is assumed to be in the same CRS as the raster.</p>
      * 
      * @param envelope optional JTS envelope. If null, the full raster is scanned.
-     * @return an array containing [min, max], or null if no valid cell was found.
+     * @return an array containing [min, max, avg, sum, count], or null if no valid cell was found.
      */
-    public double[] getMinMax( Envelope envelope ) {
+    public double[] getStatistics( Envelope envelope ) {
         int fromRow = startRow;
         int toRow = startRow + rows - 1;
         int fromCol = startCol;
@@ -878,6 +983,8 @@ public class HMRaster implements AutoCloseable {
 
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
+        double sum = 0;
+        int count = 0;
         for (int r = fromRow; r <= toRow; r++) {
             for (int c = fromCol; c <= toCol; c++) {
                 if (envelope != null) {
@@ -894,14 +1001,16 @@ public class HMRaster implements AutoCloseable {
 
                 min = Math.min(min, value);
                 max = Math.max(max, value);
+                sum += value;
+                count++;
             }
         }
         
-        if(min == Double.POSITIVE_INFINITY || max == Double.NEGATIVE_INFINITY) {
+        if(count == 0) {
 			return null;
 		}
 
-        return new double[]{min, max};
+        return new double[]{min, max, sum/count, sum, count};
     }
 
     public void printData() {

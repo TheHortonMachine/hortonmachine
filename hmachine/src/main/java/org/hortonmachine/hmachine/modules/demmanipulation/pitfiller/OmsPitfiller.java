@@ -18,15 +18,8 @@
 package org.hortonmachine.hmachine.modules.demmanipulation.pitfiller;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.DEMMANIPULATION;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
-import java.awt.image.WritableRaster;
-import java.util.HashMap;
 import java.util.stream.IntStream;
-
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -34,8 +27,6 @@ import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.ModelsSupporter;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.time.EggClock;
-import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;

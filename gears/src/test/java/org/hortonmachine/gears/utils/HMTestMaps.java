@@ -170,6 +170,7 @@ public class HMTestMaps {
         b.setName("testlefthalf");
         b.setCRS(crs);
         b.add("the_geom", Polygon.class);
+        b.add("cat", Integer.class);
         type = b.buildFeatureType();
         builder = new SimpleFeatureBuilder(type);
 
@@ -181,7 +182,8 @@ public class HMTestMaps {
                 westNorth //
         });
         Object[] leftPolygon = new Object[]{gf.createPolygon(linearRing, null)};
-        builder.addAll(leftPolygon);
+        Object[] a = new Object[]{leftPolygon, 1};
+        builder.addAll(a);
         SimpleFeature leftPolygonFeature = builder.buildFeature(type.getTypeName() + ".1");
 
         testLeftFC = new DefaultFeatureCollection();

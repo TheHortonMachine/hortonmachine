@@ -1,8 +1,11 @@
 package org.hortonmachine.gears;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.DataUtilities;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
@@ -11,6 +14,7 @@ import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test HMRaster.
@@ -200,5 +204,57 @@ public class TestHMRaster extends HMTestCase {
                 {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
         checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
     }
+    
+	public void testSubraster() throws Exception {
+		double[][] expected = new double[][] { //
+				{ 800, 900, 1000, 1000, 1200 }, //
+				{ 600, NaN, 750, 850, 860 }, //
+				{ 500, 550, 700, 750, 800 }, //
+				{ 400, 410, 650, 700, 750 }, //
+				{ 450, 550, 430, 500, 600 }, //
+				{ 500, 600, 700, 750, 760 }, //
+				{ 600, 700, 750, 800, 780 }, //
+				{ 800, 910, 980, 1001, 1150 } };
+		RegionMap regionMap = HMTestMaps.getEnvelopeparamsLeftHalf();
+		try (HMRaster elev = HMRaster.fromGridCoverage(inElev); HMRaster subRaster = elev.toSubRaster(regionMap)) {
+			checkMatrixEqual(subRaster.buildCoverage().getRenderedImage(), expected, DELTA);
+		}
+
+	}
+
+	public void testPolygonExtract() throws Exception {
+		double[][] expected = new double[][] { //
+				{ 800, 900, 1000, 1000, 1200 }, //
+				{ 600, NaN, 750, 850, 860 }, //
+				{ 500, 550, 700, 750, 800 }, //
+				{ 400, 410, 650, 700, 750 }, //
+				{ 450, 550, 430, 500, 600 }, //
+				{ 500, 600, 700, 750, 760 }, //
+				{ 600, 700, 750, 800, 780 }, //
+				{ 800, 910, 980, 1001, 1150 } };
+		SimpleFeatureCollection fc = HMTestMaps.getTestLeftFC();
+		Geometry polygon = (Geometry) DataUtilities.first(fc).getDefaultGeometry();
+		try (HMRaster elev = HMRaster.fromGridCoverage(inElev);
+				HMRaster subRaster = elev.extractOnPolygon(null, polygon)) {
+			checkMatrixEqual(subRaster.buildCoverage().getRenderedImage(), expected, DELTA);
+		}
+	}
+	
+	public void testZonalStats() throws Exception {
+		SimpleFeatureCollection fc = HMTestMaps.getTestLeftFC();
+		try (HMRaster elev = HMRaster.fromGridCoverage(inElev)){
+				HashMap<Integer, double[]> zonalStats = elev.getZonalStats(null, fc, "cat");
+				double[] stats = zonalStats.get(1);
+				assertNotNull(stats);
+				assertEquals(400, stats[0], DELTA);
+				assertEquals(1200, stats[1], DELTA);
+				assertEquals(730.2820512820513, stats[2], DELTA);
+				assertEquals(28481.0, stats[3], DELTA);
+				assertEquals(39, stats[4], DELTA);
+		}
+	}
+	
+	
+    
 
 }

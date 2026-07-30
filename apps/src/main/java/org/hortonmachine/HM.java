@@ -1330,7 +1330,7 @@ public class HM {
 
     public static void makeSldStyleForRaster( String tableName, String rasterPath, double opacity ) throws Exception {
     	HMRaster raster = HMRaster.fromFile(new File(rasterPath));
-    	double[] minMax = raster.getMinMax();
+    	double[] minMax = raster.getStatistics();
     	if (minMax == null) {
     		return;
     	}
@@ -1345,12 +1345,10 @@ public class HM {
     }
 
     public static void makeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals ) throws Exception {
-        RasterSummary s = new RasterSummary();
-        s.pm = new DummyProgressMonitor();
-        s.inRaster = rasterPath;
-        s.process();
-        double min = s.outMin;
-        double max = s.outMax;
+        HMRaster raster = HMRaster.fromFile(new File(rasterPath));
+		double[] minMax = raster.getStatistics();
+        double min = minMax[0];
+        double max = minMax[1];
 
         String style = RasterStyleUtilities.createQGISRasterStyle(tableName, min, max, null, labelDecimals);
         File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "qml");
