@@ -632,6 +632,27 @@ public class HMRaster implements AutoCloseable {
             iter.done();
         }
     }
+    
+    public HMRaster toSubRaster(RegionMap subRegion) throws IOException {
+        var outHMRaster = new HMRaster.HMRasterWritableBuilder().setName("subraster")
+                .setRegion(subRegion)
+                .setCrs(crs)
+                .setNoValue(novalue).build();
+        var cols = subRegion.getCols();
+        var rows = subRegion.getRows();
+        for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				if (!isContained(c, r)) {
+					continue;
+				}
+				var worldCoord = outHMRaster.getWorld(c, r);
+				var value = getValue(worldCoord);
+				outHMRaster.setValue(c, r, value);
+			}
+		}
+		
+		return outHMRaster;
+	}
 
     /**
      * Writes the values of the coverage into the current raster, summing multiple occurrences.

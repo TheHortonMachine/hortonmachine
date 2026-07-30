@@ -32,6 +32,7 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_P_RES_DES
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_STATUS;
 
+import java.awt.Point;
 import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,10 +57,12 @@ import org.geotools.geometry.Position2D;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
@@ -76,106 +79,122 @@ import org.locationtech.jts.geom.Envelope;
 @License(OMSXYZ2RASTER_LICENSE)
 public class OmsXyz2Raster extends HMModel {
 
-    @Description(OMSXYZ2RASTER_IN_FILE_DESCRIPTION)
-    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
-    @In
-    public String inFile;
+	@Description(OMSXYZ2RASTER_IN_FILE_DESCRIPTION)
+	@UI(HMConstants.FILEIN_UI_HINT_GENERIC)
+	@In
+	public String inFile;
 
-    @Description(OMSXYZ2RASTER_P_RES_DESCRIPTION)
-    @In
-    public Double pRes;
+	@Description(OMSXYZ2RASTER_P_RES_DESCRIPTION)
+	@In
+	public Double pRes;
 
-    @Description(OMSXYZ2RASTER_P_CODE_DESCRIPTION)
-    @UI(HMConstants.CRS_UI_HINT)
-    @In
-    public String pCode;
+	@Description(OMSXYZ2RASTER_P_CODE_DESCRIPTION)
+	@UI(HMConstants.CRS_UI_HINT)
+	@In
+	public String pCode;
 
-    @Description(OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION)
-    @In
-    public String pSeparator;
+	@Description(OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION)
+	@In
+	public String pSeparator;
 
-    @Description(OMSXYZ2RASTER_OUT_RASTER_DESCRIPTION)
-    @Out
-    public GridCoverage2D outRaster;
+	@Description(OMSXYZ2RASTER_OUT_RASTER_DESCRIPTION)
+	@Out
+	public GridCoverage2D outRaster;
 
-    private double res = 0.0;
+	private double res = 0.0;
 
-    @SuppressWarnings("nls")
-    @Execute
-    public void process() throws Exception {
-        checkNull(inFile, pRes, pCode);
+	@SuppressWarnings("nls")
+	@Execute
+	public void process() throws Exception {
+		checkNull(inFile, pRes, pCode);
 
-        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
-        res = pRes;
+		CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs(pCode);
+		res = pRes;
 
-        Envelope env = null;
-        pm.beginTask("Reading triplets file...", IHMProgressMonitor.UNKNOWN);
-        List<String> linesList = FileUtilities.readFileToLinesList(inFile);
-        pm.done();
+		Envelope env = null;
+		pm.beginTask("Reading triplets file...", IHMProgressMonitor.UNKNOWN);
+		List<String> linesList = FileUtilities.readFileToLinesList(inFile);
+		pm.done();
 
-        List<Coordinate> coordList = new ArrayList<Coordinate>();
+		List<Coordinate> coordList = new ArrayList<Coordinate>();
 
-        double n = Double.NEGATIVE_INFINITY;
-        double s = Double.POSITIVE_INFINITY;
-        double e = Double.NEGATIVE_INFINITY;
-        double w = Double.POSITIVE_INFINITY;
-        if (pSeparator == null) {
-            pSeparator = "\\s+";
-        }
-        pm.beginTask("Extracting data...", linesList.size());
-        for( String line : linesList ) {
-            String[] split = line.trim().split(pSeparator);
-            if (split.length != 3) {
-                pm.worked(1);
-                continue;
-            }
-            double x = Double.parseDouble(split[0].trim());
-            if (x > e) {
-                e = x;
-            }
-            if (x < w) {
-                w = x;
-            }
-            double y = Double.parseDouble(split[1].trim());
-            if (y > n) {
-                n = y;
-            }
-            if (y < s) {
-                s = y;
-            }
-            double z = Double.parseDouble(split[2].trim());
-            Coordinate c = new Coordinate(x, y, z);
-            coordList.add(c);
+		double n = Double.NEGATIVE_INFINITY;
+		double s = Double.POSITIVE_INFINITY;
+		double e = Double.NEGATIVE_INFINITY;
+		double w = Double.POSITIVE_INFINITY;
+		if (pSeparator == null) {
+			pSeparator = "\\s+";
+		}
+		pm.beginTask("Extracting data...", linesList.size());
+		for (String line : linesList) {
+			String[] split = line.trim().split(pSeparator);
+			if (split.length != 3) {
+				pm.worked(1);
+				continue;
+			}
+			double x = Double.parseDouble(split[0].trim());
+			if (x > e) {
+				e = x;
+			}
+			if (x < w) {
+				w = x;
+			}
+			double y = Double.parseDouble(split[1].trim());
+			if (y > n) {
+				n = y;
+			}
+			if (y < s) {
+				s = y;
+			}
+			double z = Double.parseDouble(split[2].trim());
+			Coordinate c = new Coordinate(x, y, z);
+			coordList.add(c);
 
-            if (env == null) {
-                env = new Envelope(c);
-            } else {
-                env.expandToInclude(c);
-            }
-            pm.worked(1);
-        }
-        pm.done();
+			if (env == null) {
+				env = new Envelope(c);
+			} else {
+				env.expandToInclude(c);
+			}
+			pm.worked(1);
+		}
+		pm.done();
 
-        int rows = (int) ((n - s) / res);
-        int cols = (int) ((e - w) / res);
-        GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(n, s, e, w, rows, cols, crs);
+		// add also the half resolution to the bounds, so that the raster is centered on
+		// the points
+		env.expandBy(res / 2.0);
+		n = env.getMaxY();
+		s = env.getMinY();
+		e = env.getMaxX();
+		w = env.getMinX();
 
-        WritableRaster writableRaster = CoverageUtilities.createWritableRaster(cols, rows, null, null,
-                HMConstants.doubleNovalue);
+		int rows = (int) ((n - s) / res);
+		int cols = (int) ((e - w) / res);
+		RegionMap regionMap = RegionMap.fromEnvelopeAndGrid(env, cols, rows);
 
-        pm.beginTask("Create raster...", coordList.size());
-        Position2D world = new Position2D();
-        for( Coordinate coordinate : coordList ) {
-            world.setLocation(coordinate.x, coordinate.y);
-            GridCoordinates2D grid = gridGeometry.worldToGrid(world);
-            writableRaster.setSample(grid.x, grid.y, 0, coordinate.z);
-            pm.worked(1);
-        }
-        pm.done();
+		HMRaster outHMRaster = new HMRaster.HMRasterWritableBuilder().setName("convertedxyz").setRegion(regionMap)
+				.setCrs(crs).setNoValue(HMConstants.doubleNovalue).build();
 
-        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
-        outRaster = CoverageUtilities.buildCoverage("fromxyz", writableRaster, regionMap, crs);
+//		GridGeometry2D gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(n, s, e, w, rows, cols, crs);
+//
+//		WritableRaster writableRaster = CoverageUtilities.createWritableRaster(cols, rows, null, null,
+//				HMConstants.doubleNovalue);
 
-    }
+		pm.beginTask("Create raster...", coordList.size());
+//		Position2D world = new Position2D();
+		for (Coordinate coordinate : coordList) {
+//			world.setLocation(coordinate.x, coordinate.y);
+//			GridCoordinates2D grid = gridGeometry.worldToGrid(world);
+//			writableRaster.setSample(grid.x, grid.y, 0, coordinate.z);
+			Point cell = outHMRaster.getCell(coordinate);
+			outHMRaster.setValue(cell.x, cell.y, coordinate.z);
+			pm.worked(1);
+		}
+		pm.done();
+
+//		RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometry);
+//		outRaster = CoverageUtilities.buildCoverage("fromxyz", writableRaster, regionMap, crs);
+		outRaster = outHMRaster.buildCoverage();
+
+	}
 
 }

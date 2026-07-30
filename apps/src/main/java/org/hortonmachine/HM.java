@@ -327,8 +327,12 @@ public class HM {
     public static List<SimpleFeature> readVector( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
-        return FeatureUtilities.featureCollectionToList(OmsVectorReader.readVector(path));
+        return FeatureUtilities.featureCollectionToList(readVectorFc(path));
     }
+
+	public static SimpleFeatureCollection readVectorFc(String path) throws Exception {
+		return OmsVectorReader.readVector(path);
+	}
 
     public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
@@ -353,6 +357,18 @@ public class HM {
         GridCoverage2D geodata = reader.outRaster;
         return geodata;
     }
+    
+    public static HMRaster readHMRaster(String source) throws Exception {
+    	if (source == null || source.trim().length() == 0)
+            return null;
+    	return HMRaster.fromFile(source);
+    }
+    
+    public static void dumpHMRaster( HMRaster raster, String source ) throws Exception {
+		if (raster == null || source == null)
+			return;
+		raster.writeToFile(source);
+	}
 
     public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
         if (raster == null || source == null)
