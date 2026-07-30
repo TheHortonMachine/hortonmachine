@@ -17,10 +17,9 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx256m"
+MEM="-Xmx256m -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-DIR=`dirname "$0"`
 
 if [ -f "$DIR/jre/bin/java" ]; then
   JAVAEXE=$DIR/jre/bin/java
@@ -29,4 +28,4 @@ else
 fi
 
 
-"$JAVAEXE" -splash:$DIR/imgs/splash_settings.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.gui.settings.SettingsController 
+"$JAVAEXE" -splash:"$DIR/imgs/splash_settings.png" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -cp "$DIR/libs/*" org.hortonmachine.gui.settings.SettingsController

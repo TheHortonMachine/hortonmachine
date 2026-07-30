@@ -17,7 +17,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx2g"
+MEM="-Xmx2g -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -28,4 +28,4 @@ else
 fi
 
 
-"$JAVAEXE" $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.nww.SimpleNwwViewer
+"$JAVAEXE" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.hortonmachine.nww.SimpleNwwViewer

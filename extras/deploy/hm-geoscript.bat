@@ -30,7 +30,8 @@ IF [%1]==[] (
 :startit
 
 set MEM=-Xmx2g
+set XSS=-Xss64m
 set PATH=%~dp0\natives\;%PATH%
-%JAVAEXE% %SPLASH% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp "%~dp0\libs\*" org.hortonmachine.geoscript.GeoscriptConsole %1
+%JAVAEXE% %SPLASH% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp "%~dp0\libs\*" org.hortonmachine.geoscript.GeoscriptConsole %1
 
 endlocal

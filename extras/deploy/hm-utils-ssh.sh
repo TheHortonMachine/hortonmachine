@@ -17,7 +17,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx256m"
+MEM="-Xmx256m -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -28,4 +28,4 @@ else
 fi
 
 
-"$JAVAEXE" $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.gui.utils.SshTesterController
+"$JAVAEXE" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -cp "$DIR/libs/*" org.hortonmachine.gui.utils.SshTesterController
