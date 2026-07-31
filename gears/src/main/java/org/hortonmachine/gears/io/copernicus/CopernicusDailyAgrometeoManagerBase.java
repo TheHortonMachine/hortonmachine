@@ -66,11 +66,11 @@ public abstract class CopernicusDailyAgrometeoManagerBase extends HMModel {
     public static final String BASE_URL = "https://cds.climate.copernicus.eu/api/retrieve/v1";
 
     // required synoptic samples the daily statistic is aggregated from, not a resolution choice - always all 5
-    private static final List<String> ALL_TIMES = List.of("06_00", "09_00", "12_00", "15_00", "18_00");
+    public static final List<String> ALL_TIMES = List.of("06_00", "09_00", "12_00", "15_00", "18_00");
 
     // AgERA5's documented native grid spacing - passed to OmsRasterReader when cropping so
     // it performs a plain crop at the source resolution, not a resample to some other grid
-    private static final double NATIVE_RESOLUTION_DEGREES = 0.1;
+    public static final double NATIVE_RESOLUTION_DEGREES = 0.1;
 
     @Description("Copernicus CDS personal API token.")
     @In
@@ -99,6 +99,16 @@ public abstract class CopernicusDailyAgrometeoManagerBase extends HMModel {
     @UI(HMConstants.PROCESS_WEST_UI_HINT)
     @In
     public Double pWest = null;
+    
+    @Description("Region target X resolution, used only to crop the cached global raster on read.")
+    @UI(HMConstants.PROCESS_XRES_UI_HINT)
+    @In
+    public Double pXres = null;
+    
+    @Description("Region target Y resolution, used only to crop the cached global raster on read.")
+    @UI(HMConstants.PROCESS_YRES_UI_HINT)
+    @In
+    public Double pYres = null;
 
     @Description("Dataset version.")
     @In
@@ -210,10 +220,8 @@ public abstract class CopernicusDailyAgrometeoManagerBase extends HMModel {
             reader.pSouth = pSouth;
             reader.pEast = pEast;
             reader.pWest = pWest;
-            // a target resolution is required whenever bounds are set - use the source's
-            // own native resolution so this is a plain crop, not a resample
-            reader.pXres = NATIVE_RESOLUTION_DEGREES;
-            reader.pYres = NATIVE_RESOLUTION_DEGREES;
+            reader.pXres = pXres != null ? pXres : NATIVE_RESOLUTION_DEGREES;
+            reader.pYres = pYres != null ? pYres : NATIVE_RESOLUTION_DEGREES;
         }
         reader.process();
         return reader.outRaster;
