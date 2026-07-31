@@ -1,5 +1,8 @@
 package org.hortonmachine.gears.io.copernicus;
 
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_COPERNICUS_API_TOKEN;
+import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_COPERNICUS_REPO_FOLDER;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,6 +19,7 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.CompressionUtilities;
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import oms3.annotations.Description;
@@ -290,5 +294,40 @@ public abstract class CopernicusDailyAgrometeoManagerBase extends HMModel {
         }
         return new File(new File(dir, pVersion), yyyyMMdd);
     }
+    
+    
+	/**
+	 * Get the Copernicus API token from Horton Machine preferences or environment variables. 
+	 * If not found, throws an exception.
+	 * 
+	 * @return the API token.
+	 */
+	public static String getApiToken() {
+		// first check in preferences
+		String copernicusToken = PreferencesHandler.getPreference(HM_PREF_COPERNICUS_API_TOKEN, "");
+		if (copernicusToken != null && !copernicusToken.isBlank()) {
+			return copernicusToken;
+		}
+		// then check in environment variables
+		copernicusToken = System.getenv(HM_PREF_COPERNICUS_API_TOKEN);
+		if (copernicusToken != null && !copernicusToken.isBlank()) {
+			return copernicusToken;
+		}
+		throw new IllegalArgumentException("No Copernicus API token found. Please set it in Horton Machine preferences or as an environment variable: " + HM_PREF_COPERNICUS_API_TOKEN);
+	}
+	
+	public static String getRepoFolder() {
+		// first check in preferences
+		String repoFolder = PreferencesHandler.getPreference(HM_PREF_COPERNICUS_REPO_FOLDER, "");
+		if (repoFolder != null && !repoFolder.isBlank() && new File(repoFolder).exists()) {
+			return repoFolder;
+		}
+		// then check in environment variables
+		repoFolder = System.getenv("COPERNICUS_REPO_FOLDER");
+		if (repoFolder != null && !repoFolder.isBlank() && new File(repoFolder).exists()) {
+			return repoFolder;
+		}
+		throw new IllegalArgumentException("No Copernicus repository folder found. Please set it in Horton Machine preferences or as an environment variable: COPERNICUS_REPO_FOLDER");
+	}
 
 }

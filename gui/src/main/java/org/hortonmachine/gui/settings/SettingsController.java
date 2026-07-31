@@ -44,12 +44,16 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 		String proxyUser = PreferencesHandler.getPreference(HM_PREF_PROXYUSER, "");
 		String proxyPwd = PreferencesHandler.getPreference(HM_PREF_PROXYPWD, "");
 		String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, ""+HM_DEF_UISCALE);
-
+		String copernicusToken = PreferencesHandler.getPreference(HM_PREF_COPERNICUS_API_TOKEN, "");
+		String copernicusFolder = PreferencesHandler.getPreference(HM_PREF_COPERNICUS_REPO_FOLDER, "");
+		
 		_proxyCheckbox.setSelected(Boolean.parseBoolean(proxyCheck));
 		_proxyHostField.setText(proxyHost);
 		_proxyPortField.setText(proxyPort);
 		_proxyUserField.setText(proxyUser);
 		_proxyPasswordField.setText(proxyPwd);
+		_copernicusApiTokenTextField.setText(copernicusToken);
+		_copernicusRepoTextField.setText(copernicusFolder);
 
 		String shpCharset = PreferencesHandler.getPreference(HM_PREF_SHP_CHARSET, "");
 		_charsetTextField.setText(shpCharset);
@@ -69,6 +73,7 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 		_uiScalingTextField.setText(uiScaleString);
 
 		GuiUtilities.setFolderBrowsingOnWidgets(_preferencesDbPAth, _preferencesDbButton, null);
+		GuiUtilities.setFolderBrowsingOnWidgets(_copernicusRepoTextField, _copernicusRepoBrowseButton, null);
 
 		Preferences preferences = Preferences.userRoot().node(PreferencesDb.PREFS_NODE_NAME);
 		File baseFolder = PreferencesDb.getBaseFolder();
@@ -111,6 +116,11 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 			PreferencesHandler.setPreference(HM_PREF_PROXYUSER, user);
 			PreferencesHandler.setPreference(HM_PREF_PROXYPWD, pwd);
 		}
+		
+		String copernicusToken = _copernicusApiTokenTextField.getText();
+		PreferencesHandler.setPreference(HM_PREF_COPERNICUS_API_TOKEN, copernicusToken);
+		String copernicusFolder = _copernicusRepoTextField.getText();
+		PreferencesHandler.setPreference(HM_PREF_COPERNICUS_REPO_FOLDER, copernicusFolder);
 
 		String folderPath = _preferencesDbPAth.getText();
 		if (new File(folderPath).exists()) {

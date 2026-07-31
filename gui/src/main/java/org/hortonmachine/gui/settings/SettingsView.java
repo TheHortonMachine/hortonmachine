@@ -40,6 +40,11 @@ public class SettingsView extends JPanel
    JPasswordField _sshKeyPassphraseField = new JPasswordField();
    JTextField _spatialiteModPathField = new JTextField();
    JButton _spatialiteModButton = new JButton();
+   JLabel _copernicusApiTokenLabel = new JLabel();
+   JTextField _copernicusApiTokenTextField = new JTextField();
+   JLabel _copernicusApiTokenLabel1 = new JLabel();
+   JButton _copernicusRepoBrowseButton = new JButton();
+   JTextField _copernicusRepoTextField = new JTextField();
 
    /**
     * Default constructor
@@ -140,6 +145,7 @@ public class SettingsView extends JPanel
       _jtabbedpane1.addTab("Preferences",null,createPanel6());
       _jtabbedpane1.addTab("SSH",null,createPanel7());
       _jtabbedpane1.addTab("Native libs",null,createPanel8());
+      _jtabbedpane1.addTab("Copernicus",null,createPanel9());
       jpanel1.add(_jtabbedpane1,cc.xy(2,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3 });
@@ -333,6 +339,36 @@ public class SettingsView extends JPanel
       jpanel1.add(_spatialiteModButton,cc.xy(6,2));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8 },new int[]{ 1,2,3 });
+      return jpanel1;
+   }
+
+   public JPanel createPanel9()
+   {
+      JPanel jpanel1 = new JPanel();
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      CellConstraints cc = new CellConstraints();
+      jpanel1.setLayout(formlayout1);
+
+      _copernicusApiTokenLabel.setName("copernicusApiTokenLabel");
+      _copernicusApiTokenLabel.setText("Copernicus API Token");
+      jpanel1.add(_copernicusApiTokenLabel,cc.xy(2,2));
+
+      _copernicusApiTokenTextField.setName("copernicusApiTokenTextField");
+      jpanel1.add(_copernicusApiTokenTextField,cc.xywh(4,2,3,1));
+
+      _copernicusApiTokenLabel1.setName("copernicusApiTokenLabel");
+      _copernicusApiTokenLabel1.setText("Data download folder");
+      jpanel1.add(_copernicusApiTokenLabel1,cc.xy(2,4));
+
+      _copernicusRepoBrowseButton.setActionCommand("...");
+      _copernicusRepoBrowseButton.setName("copernicusRepoBrowseButton");
+      _copernicusRepoBrowseButton.setText("...");
+      jpanel1.add(_copernicusRepoBrowseButton,cc.xy(6,4));
+
+      _copernicusRepoTextField.setName("copernicusRepoTextField");
+      jpanel1.add(_copernicusRepoTextField,cc.xy(4,4));
+
+      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7 },new int[]{ 1,2,3,4,5 });
       return jpanel1;
    }
 
