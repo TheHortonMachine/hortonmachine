@@ -17,58 +17,53 @@
  */
 package org.hortonmachine.gears.modules.r.scanline;
 
-import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.*;
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeometry2RegionParamsMap;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.gridGeometryFromRegionValues;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_LABEL;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_LICENSE;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_NAME;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_STATUS;
 
-import java.awt.image.WritableRaster;
+import java.awt.Point;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.WritableRandomIter;
-
-import org.geotools.coverage.grid.GridCoordinates2D;
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.coverage.grid.InvalidGridGeometryException;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.FeatureIterator;
-import org.geotools.geometry.Position2D;
-import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
-import org.hortonmachine.gears.utils.geometry.EGeometryType;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.TransformException;
-
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.InvalidGridGeometryException;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.FeatureIterator;
+import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.PrecisionModel;
-import org.locationtech.jts.geom.TopologyException;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
-import org.locationtech.jts.precision.GeometryPrecisionReducer;
-import org.locationtech.jts.precision.SimpleGeometryPrecisionReducer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -93,291 +88,305 @@ import oms3.annotations.UI;
 @License(OMSSCANLINERASTERIZER_LICENSE)
 public class OmsScanLineRasterizer extends HMModel {
 
-    @Description(OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION)
-    @In
-    public SimpleFeatureCollection inVector = null;
+	@Description(OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION)
+	@In
+	public SimpleFeatureCollection inVector = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION)
-    @In
-    public Double pValue = null;
+	@Description(OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION)
+	@In
+	public Double pValue = null;
 
-    @Description(OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION)
-    @In
-    public String fCat = null;
+	@Description(OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION)
+	@In
+	public String fCat = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION)
-    @UI(HMConstants.PROCESS_NORTH_UI_HINT)
-    @In
-    public Double pNorth = null;
+	@Description(OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION)
+	@UI(HMConstants.PROCESS_NORTH_UI_HINT)
+	@In
+	public Double pNorth = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION)
-    @UI(HMConstants.PROCESS_SOUTH_UI_HINT)
-    @In
-    public Double pSouth = null;
+	@Description(OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION)
+	@UI(HMConstants.PROCESS_SOUTH_UI_HINT)
+	@In
+	public Double pSouth = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION)
-    @UI(HMConstants.PROCESS_WEST_UI_HINT)
-    @In
-    public Double pWest = null;
+	@Description(OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION)
+	@UI(HMConstants.PROCESS_WEST_UI_HINT)
+	@In
+	public Double pWest = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION)
-    @UI(HMConstants.PROCESS_EAST_UI_HINT)
-    @In
-    public Double pEast = null;
+	@Description(OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION)
+	@UI(HMConstants.PROCESS_EAST_UI_HINT)
+	@In
+	public Double pEast = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION)
-    @UI(HMConstants.PROCESS_ROWS_UI_HINT)
-    @In
-    public Integer pRows = null;
+	@Description(OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION)
+	@UI(HMConstants.PROCESS_ROWS_UI_HINT)
+	@In
+	public Integer pRows = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION)
-    @UI(HMConstants.PROCESS_COLS_UI_HINT)
-    @In
-    public Integer pCols = null;
+	@Description(OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION)
+	@UI(HMConstants.PROCESS_COLS_UI_HINT)
+	@In
+	public Integer pCols = null;
 
-    @Description(OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION)
-    @In
-    public Boolean pUsePointInPolygon = false;
+	@Description(OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION)
+	@In
+	public Boolean pUsePointInPolygon = false;
 
-    @Description(OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION)
-    @In
-    public GridCoverage2D inRaster;
+	@Description(OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION)
+	@In
+	public GridCoverage2D inRaster;
 
-    @Description(OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION)
-    @Out
-    public GridCoverage2D outRaster;
+	@Description(OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION)
+	@Out
+	public GridCoverage2D outRaster;
 
-    // PARAMS DESCR START
-    public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
-    public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
-    public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
-    public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
-    public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";
-    public static final int OMSSCANLINERASTERIZER_STATUS = 40;
-    public static final String OMSSCANLINERASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSSCANLINERASTERIZER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSSCANLINERASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION = "The vector to rasterize.";
-    public static final String OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION = "The value to use as raster value if no field is given.";
-    public static final String OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION = "The field to use to retrieve the category value for the raster.";
-    public static final String OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION = "The west bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION = "The east bound of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION = "The rows of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION = "The cols of the region to consider";
-    public static final String OMSSCANLINERASTERIZER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 4)";
+	// PARAMS DESCR START
+	public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
+	public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
+	public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
+	public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
+	public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";
+	public static final int OMSSCANLINERASTERIZER_STATUS = 40;
+	public static final String OMSSCANLINERASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
+	public static final String OMSSCANLINERASTERIZER_AUTHORNAMES = "Andrea Antonello";
+	public static final String OMSSCANLINERASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
+	public static final String OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION = "The vector to rasterize.";
+	public static final String OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION = "The value to use as raster value if no field is given.";
+	public static final String OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION = "The field to use to retrieve the category value for the raster.";
+	public static final String OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
+	public static final String OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
+	public static final String OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION = "The west bound of the region to consider";
+	public static final String OMSSCANLINERASTERIZER_P_EAST_DESCRIPTION = "The east bound of the region to consider";
+	public static final String OMSSCANLINERASTERIZER_P_ROWS_DESCRIPTION = "The rows of the region to consider";
+	public static final String OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION = "The cols of the region to consider";
+	public static final String OMSSCANLINERASTERIZER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 4)";
 
-    public static final String OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION = "Use point in polygon (needs an input raster). In case scanline doesn't work.";
-    public static final String OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION = "An optional raster to take the values and region from.";
-    public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
-    // PARAMS DESCR END
+	public static final String OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION = "Use point in polygon (needs an input raster). In case scanline doesn't work.";
+	public static final String OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION = "An optional raster to take the values and region from.";
+	public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
+	// PARAMS DESCR END
 
-    private WritableRaster outWR;
+//    private WritableRaster outWR;
+//    private int height;
+//    private int width;
+//    private RegionMap paramsMap;
+//    private double xRes;
 
-    private int height;
+	private GeometryFactory gf = GeometryUtilities.gf();
+	private HMRaster inRasterHMR = null;
 
-    private int width;
+	@Execute
+	public void process() throws Exception {
+		checkNull(inVector);
+		if (pValue == null && fCat == null) {
+			throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this, pm);
+		}
+		if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
+			if (inRaster == null) {
+				throw new ModelsIllegalargumentException(
+						"It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
+						this, pm);
+			}
+		}
 
-    private GeometryFactory gf = GeometryUtilities.gf();
+		SimpleFeatureType schema = inVector.getSchema();
+		CoordinateReferenceSystem vectorCrs = schema.getCoordinateReferenceSystem();
 
-    private RegionMap paramsMap;
+		RegionMap regionMap;
+		if (inRaster != null) {
+			inRasterHMR = HMRaster.fromGridCoverage(inRaster);
+			regionMap = inRasterHMR.getRegionMap();
+			pNorth = regionMap.getNorth();
+			pSouth = regionMap.getSouth();
+			pWest = regionMap.getWest();
+			pEast = regionMap.getEast();
+			pRows = regionMap.getRows();
+			pCols = regionMap.getCols();
+			CoordinateReferenceSystem rasterCrs = inRasterHMR.getCrs();
+			if (!HMCrsRegistry.crsEquals(rasterCrs, vectorCrs)) {
+				throw new ModelsIllegalargumentException("The CRS of the input raster and the vector are not the same.",
+						this, pm);
+			}
+		} else {
+			regionMap = RegionMap.fromBoundsAndGrid(pWest, pEast, pSouth, pNorth, pCols, pRows);
+		}
 
-    private double xRes;
+//        GridGeometry2D pGrid;
+//        if (inRaster != null) {
+//            pGrid = inRaster.getGridGeometry();
+//        } else {
+//            pGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
+//        }
+//        if (outWR == null) {
+//            paramsMap = gridGeometry2RegionParamsMap(pGrid);
+//            height = paramsMap.getRows();
+//            width = paramsMap.getCols();
+//            xRes = paramsMap.getXres();
+//
+//            outWR = CoverageUtilities.createWritableRaster(width, height, null, null, doubleNovalue);
+//        }
+		try (var outRasterHMR = new HMRaster.HMRasterWritableBuilder().setName("rasterized").setRegion(regionMap)
+				.setCrs(vectorCrs).setNoValue(doubleNovalue).build()) {
 
-    private RandomIter inIter;
+			GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
+			if (EGeometryType.isPoint(geometryDescriptor)) {
+				throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
+			} else if (EGeometryType.isLine(geometryDescriptor)) {
+				throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
+			} else if (EGeometryType.isPolygon(geometryDescriptor)) {
 
-    @Execute
-    public void process() throws Exception {
-        checkNull(inVector);
-        if (pValue == null && fCat == null) {
-            throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this, pm);
-        }
-        if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
-            if (inRaster == null) {
-                throw new ModelsIllegalargumentException(
-                        "It is necessary to supply all the information about the processing region. Did you set the boundaries and rows/cols?",
-                        this, pm);
-            }
-        }
+				if (pUsePointInPolygon) {
+					if (inRaster == null) {
+						throw new ModelsIllegalargumentException(
+								"The point in polygon mode needs an input raster to work on.", this);
+					}
+					pm.beginTask("Prepare input data...", IHMProgressMonitor.UNKNOWN);
+					List<Geometry> allGeoms = FeatureUtilities.featureCollectionToGeometriesList(inVector, false, null);
+					Geometry allGeomsUnion = CascadedPolygonUnion.union(allGeoms);
+					PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(allGeomsUnion);
+					pm.done();
 
-        if (inRaster != null) {
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-            pNorth = regionMap.getNorth();
-            pSouth = regionMap.getSouth();
-            pWest = regionMap.getWest();
-            pEast = regionMap.getEast();
-            pRows = regionMap.getRows();
-            pCols = regionMap.getCols();
+					double value = pValue;
+					pm.beginTask("Rasterizing...", pRows);
+					for (int row = 0; row < pRows; row++) {
+						for (int col = 0; col < pCols; col++) {
+							Coordinate coord = outRasterHMR.getWorld(col, row);
+							if (preparedGeometry.intersects(gf.createPoint(coord))) {
+								outRasterHMR.setValue(col, row, value);
+							}
+						}
+						pm.worked(1);
+					}
+					pm.done();
+				} else {
+					rasterizepolygon(outRasterHMR);
+				}
+			} else {
+				throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.",
+						this.getClass().getSimpleName(), pm);
+			}
 
-            inIter = CoverageUtilities.getRandomIterator(inRaster);
-        }
+			outRaster = outRasterHMR.buildCoverage();
+//			outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap,
+//					inVector.getSchema().getCoordinateReferenceSystem());
+		}
 
-        SimpleFeatureType schema = inVector.getSchema();
-        CoordinateReferenceSystem crs = schema.getCoordinateReferenceSystem();
-        GridGeometry2D pGrid;
-        if (inRaster != null) {
-            pGrid = inRaster.getGridGeometry();
-        } else {
-            pGrid = gridGeometryFromRegionValues(pNorth, pSouth, pEast, pWest, pCols, pRows, crs);
-        }
-        if (outWR == null) {
-            paramsMap = gridGeometry2RegionParamsMap(pGrid);
-            height = paramsMap.getRows();
-            width = paramsMap.getCols();
-            xRes = paramsMap.getXres();
+	}
 
-            outWR = CoverageUtilities.createWritableRaster(width, height, null, null, doubleNovalue);
-        }
+	private void rasterizepolygon(final HMRaster outRasterHMR) throws InvalidGridGeometryException, TransformException {
 
-        GeometryDescriptor geometryDescriptor = schema.getGeometryDescriptor();
-        if (EGeometryType.isPoint(geometryDescriptor)) {
-            throw new ModelsRuntimeException("Not implemented yet for points", this.getClass().getSimpleName());
-        } else if (EGeometryType.isLine(geometryDescriptor)) {
-            throw new ModelsRuntimeException("Not implemented yet for lines", this.getClass().getSimpleName());
-        } else if (EGeometryType.isPolygon(geometryDescriptor)) {
+		int size = inVector.size();
+		pm.beginTask("Rasterizing features...", size);
+		FeatureIterator<SimpleFeature> featureIterator = inVector.features();
 
-            if (pUsePointInPolygon) {
-                if (inRaster == null) {
-                    throw new ModelsIllegalargumentException("The point in polygon mode needs an input raster to work on.", this);
-                }
-                pm.beginTask("Prepare input data...", IHMProgressMonitor.UNKNOWN);
-                List<Geometry> allGeoms = FeatureUtilities.featureCollectionToGeometriesList(inVector, false, null);
-                Geometry allGeomsUnion = CascadedPolygonUnion.union(allGeoms);
-                PreparedGeometry preparedGeometry = PreparedGeometryFactory.prepare(allGeomsUnion);
-                pm.done();
+		ExecutorService fixedThreadPool = Executors.newFixedThreadPool(getDefaultThreadsNum());
+		double xRes = outRasterHMR.getXRes();
+		int rows = outRasterHMR.getRows();
+		int cols = outRasterHMR.getCols();
+		while (featureIterator.hasNext()) {
+			final SimpleFeature feature = featureIterator.next();
 
-                double value = pValue;
-                pm.beginTask("Rasterizing...", height);
-                WritableRandomIter wIter = CoverageUtilities.getWritableRandomIterator(outWR);
-                for( int row = 0; row < height; row++ ) {
-                    for( int col = 0; col < width; col++ ) {
-                        Coordinate coord = CoverageUtilities.coordinateFromColRow(col, row, pGrid);
-                        if (preparedGeometry.intersects(gf.createPoint(coord))) {
-                            wIter.setSample(col, col, 0, value);
-                        }
-                    }
-                    pm.worked(1);
-                }
-                pm.done();
-                wIter.done();
-            } else {
-                rasterizepolygon(pGrid);
-            }
-        } else {
-            throw new ModelsIllegalargumentException("Couldn't recognize the geometry type of the file.",
-                    this.getClass().getSimpleName(), pm);
-        }
+			// extract the value to put into the raster.
+			double tmpValue = -1.0;
+			if (pValue == null) {
+				tmpValue = ((Number) feature.getAttribute(fCat)).doubleValue();
+			} else {
+				tmpValue = pValue;
+			}
+			final double value = tmpValue;
+			final double delta = xRes / 4.0;
 
-        outRaster = CoverageUtilities.buildCoverage("rasterized", outWR, paramsMap,
-                inVector.getSchema().getCoordinateReferenceSystem());
+			Runnable runner = new Runnable() {
+				public void run() {
+					try {
+						Geometry geometry = (Geometry) feature.getDefaultGeometry();
+						int numGeometries = geometry.getNumGeometries();
+						for (int i = 0; i < numGeometries; i++) {
+							final Geometry geometryN = geometry.getGeometryN(i);
+							// PreparedGeometry preparedGeometryN =
+							// PreparedGeometryFactory.prepare(geometryN);
+							for (int r = 0; r < rows; r++) {
+								// do scan line to fill the polygon
+								Coordinate west = outRasterHMR.getWorld(0, r);
+								Coordinate east = outRasterHMR.getWorld(cols - 1, r);
+//								double[] westPos = outRasterHMR.gridToWorld(new GridCoordinates2D(0, r))
+//										.getCoordinate();
+//								double[] eastPos = outRasterHMR.gridToWorld(new GridCoordinates2D(width - 1, r))
+//										.getCoordinate();
+//								Coordinate west = new Coordinate(westPos[0], westPos[1]);
+//								Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
+								LineString line = gf.createLineString(new Coordinate[] { west, east });
+								if (geometryN.intersects(line)) {
+									Geometry internalLines = geometryN.intersection(line);
+									int lineNums = internalLines.getNumGeometries();
+									for (int l = 0; l < lineNums; l++) {
+										Coordinate[] coords = internalLines.getGeometryN(l).getCoordinates();
+										if (coords.length == 2) {
+											for (int j = 0; j < coords.length; j = j + 2) {
+												Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
+												Coordinate endC = new Coordinate(coords[j + 1].x - delta,
+														coords[j + 1].y);
 
-    }
-    private void rasterizepolygon( final GridGeometry2D gridGeometry ) throws InvalidGridGeometryException, TransformException {
+												Point startPoint;
+												Point endPoint;
+												if (startC.x < endC.x) {
+													startPoint = outRasterHMR.getCell(startC);//   new Position2D(startC.x, startC.x);
+													endPoint = outRasterHMR.getCell(endC); // new Position2D(endC.x, endC.x);
+												} else {
+													startPoint = outRasterHMR.getCell(endC);
+													endPoint = outRasterHMR.getCell(startC);
+												}
+//												GridCoordinates2D startGridCoord = outRasterHMR.worldToGrid(startDP);
+//												GridCoordinates2D endGridCoord = outRasterHMR.worldToGrid(endDP);
 
-        int size = inVector.size();
-        pm.beginTask("Rasterizing features...", size);
-        FeatureIterator<SimpleFeature> featureIterator = inVector.features();
+												/*
+												 * the part in between has to be filled
+												 */
+												for (int k = startPoint.x; k <= endPoint.x; k++) {
+													if (inRasterHMR != null && fCat == null) {
+														double v = inRasterHMR.getValue(k, r);
+														outRasterHMR.setValue(k, r, v);
+													} else {
+														outRasterHMR.setValue(k, r, value);
+													}
+												}
+											}
+										} else {
+											if (coords.length == 1) {
+												pm.errorMessage(MessageFormat.format("Found a cusp in: {0}/{1}",
+														coords[0].x, coords[0].y));
+											} else {
+												throw new ModelsIOException(MessageFormat.format(
+														"Found intersection with more than 2 points in: {0}/{1}",
+														coords[0].x, coords[0].y), this);
+											}
+										}
+									}
 
-        ExecutorService fixedThreadPool = Executors.newFixedThreadPool(getDefaultThreadsNum());
+								}
+							}
+						}
 
-        while( featureIterator.hasNext() ) {
-            final SimpleFeature feature = featureIterator.next();
+						pm.worked(1);
+					} catch (Exception e) {
+						pm.errorMessage(e.getLocalizedMessage());
+						e.printStackTrace();
+					}
+				}
+			};
+			fixedThreadPool.execute(runner);
+		}
 
-            // extract the value to put into the raster.
-            double tmpValue = -1.0;
-            if (pValue == null) {
-                tmpValue = ((Number) feature.getAttribute(fCat)).doubleValue();
-            } else {
-                tmpValue = pValue;
-            }
-            final double value = tmpValue;
-            final double delta = xRes / 4.0;
-
-            Runnable runner = new Runnable(){
-                public void run() {
-                    try {
-                        Geometry geometry = (Geometry) feature.getDefaultGeometry();
-                        int numGeometries = geometry.getNumGeometries();
-                        for( int i = 0; i < numGeometries; i++ ) {
-                            final Geometry geometryN = geometry.getGeometryN(i);
-                            // PreparedGeometry preparedGeometryN =
-                            // PreparedGeometryFactory.prepare(geometryN);
-                            for( int r = 0; r < height; r++ ) {
-                                // do scan line to fill the polygon
-                                double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
-                                double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(width - 1, r)).getCoordinate();
-                                Coordinate west = new Coordinate(westPos[0], westPos[1]);
-                                Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
-                                LineString line = gf.createLineString(new Coordinate[]{west, east});
-                                if (geometryN.intersects(line)) {
-                                    Geometry internalLines = geometryN.intersection(line);
-                                    int lineNums = internalLines.getNumGeometries();
-                                    for( int l = 0; l < lineNums; l++ ) {
-                                        Coordinate[] coords = internalLines.getGeometryN(l).getCoordinates();
-                                        if (coords.length == 2) {
-                                            for( int j = 0; j < coords.length; j = j + 2 ) {
-                                                Coordinate startC = new Coordinate(coords[j].x + delta, coords[j].y);
-                                                Coordinate endC = new Coordinate(coords[j + 1].x - delta, coords[j + 1].y);
-
-                                                Position2D startDP;
-                                                Position2D endDP;
-                                                if (startC.x < endC.x) {
-                                                    startDP = new Position2D(startC.x, startC.x);
-                                                    endDP = new Position2D(endC.x, endC.x);
-                                                } else {
-                                                    startDP = new Position2D(endC.x, endC.x);
-                                                    endDP = new Position2D(startC.x, startC.x);
-                                                }
-                                                GridCoordinates2D startGridCoord = gridGeometry.worldToGrid(startDP);
-                                                GridCoordinates2D endGridCoord = gridGeometry.worldToGrid(endDP);
-
-                                                /*
-                                                 * the part in between has to be filled
-                                                 */
-                                                for( int k = startGridCoord.x; k <= endGridCoord.x; k++ ) {
-                                                    if (inIter != null && fCat == null) {
-                                                        double v = inIter.getSampleDouble(k, r, 0);
-                                                        outWR.setSample(k, r, 0, v);
-                                                    } else {
-                                                        outWR.setSample(k, r, 0, value);
-                                                    }
-                                                }
-                                            }
-                                        } else {
-                                            if (coords.length == 1) {
-                                                pm.errorMessage(MessageFormat.format("Found a cusp in: {0}/{1}", coords[0].x,
-                                                        coords[0].y));
-                                            } else {
-                                                throw new ModelsIOException(MessageFormat.format(
-                                                        "Found intersection with more than 2 points in: {0}/{1}", coords[0].x,
-                                                        coords[0].y), this);
-                                            }
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-
-                        pm.worked(1);
-                    } catch (Exception e) {
-                        pm.errorMessage(e.getLocalizedMessage());
-                        e.printStackTrace();
-                    }
-                }
-            };
-            fixedThreadPool.execute(runner);
-        }
-
-        try {
-            fixedThreadPool.shutdown();
-            fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
-            fixedThreadPool.shutdownNow();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        pm.done();
-        featureIterator.close();
-    }
+		try {
+			fixedThreadPool.shutdown();
+			fixedThreadPool.awaitTermination(30, TimeUnit.DAYS);
+			fixedThreadPool.shutdownNow();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		pm.done();
+		featureIterator.close();
+	}
 }
