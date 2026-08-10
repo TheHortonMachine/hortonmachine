@@ -9,6 +9,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.PrestleyETAtCentroid;
 
@@ -64,12 +65,23 @@ public class ErmPrestleyEt extends HMModel {
 	@In
 	public String pEndTimestamp;
 
+	@Description("The expected time resolution of the data. DAILY and HOURLY (default) is supported.")
+	@In
+	public String pTimeResolution = "HOURLY";
+
 	@Description("If true, existing output files are overwritten.")
 	@In
 	public boolean doOverwrite = false;
 
 	@Execute
 	public void process() throws Exception {
+		checkNull(inGpkg, pStartTimestamp, pEndTimestamp, pTimeResolution);
+		var tRes = TimeResolution.valueOf(pTimeResolution);
+		if (tRes == TimeResolution.MONTHLY || tRes == TimeResolution.YEARLY) {
+			throw new UnsupportedOperationException(
+					"ErmPrestleyEt only supports HOURLY and DAILY resolutions, got " + pTimeResolution);
+		}
+
 		try (ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb()) {
 			db.open(inGpkg);
 
@@ -99,7 +111,7 @@ public class ErmPrestleyEt extends HMModel {
 
 			var ptEt = new PrestleyETAtCentroid();
 			ptEt.inGeoframeDB = db;
-			ptEt.isHourly = true;
+			ptEt.isHourly = tRes == TimeResolution.HOURLY;
 			ptEt.pAlpha = 1.26;
 			ptEt.inTempReader = temperatureReader;
 			ptEt.inNetReader = netReader;
@@ -112,7 +124,6 @@ public class ErmPrestleyEt extends HMModel {
 	}
 
 	public static void main(String[] args) throws Exception {
-		new ErmPrestleyEt();
 		String workspacePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/";
 		ErmPrestleyEt ept = new ErmPrestleyEt();
 		ept.inGpkg = workspacePath + "outputs/geoframe_data.gpkg";

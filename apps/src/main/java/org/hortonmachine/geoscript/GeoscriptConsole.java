@@ -29,7 +29,7 @@ public class GeoscriptConsole {
 
     public static void main( String[] args ) {
         try {
-            if (args.length == 1) {
+            if (args.length == 1 && !args[0].trim().isEmpty()) {
                 GroovyShell shell = new GroovyShell();
                 shell.run(new File(args[0]), Collections.emptyList());
             } else {

@@ -20,6 +20,8 @@ package org.hortonmachine.hmachine.modules.network.netnumbering;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +40,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
@@ -65,13 +68,18 @@ import org.hortonmachine.hmachine.modules.network.networkattributes.OmsNetworkAt
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.geom.prep.PreparedGeometry;
 import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
+import org.locationtech.jts.operation.overlay.snap.GeometrySnapper;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
+import org.locationtech.jts.operation.union.UnaryUnionOp;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -316,7 +324,16 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				maxBasinNum = Math.max(maxBasinNum, basinNum);
 
 				List<Geometry> polygons = entry.getValue();
-				Geometry basin = CascadedPolygonUnion.union(polygons);
+
+				// TODO check
+				// Geometry basin = CascadedPolygonUnion.union(polygons);
+
+				// this has been done for an example that was not joining the polygons
+				PrecisionModel pm2 = new PrecisionModel(1e7);
+				GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(pm2);
+				reducer.setPointwise(true); // avoids introducing new topology issues
+				List<Geometry> reduced = polygons.stream().map(reducer::reduce).collect(Collectors.toList());
+				Geometry basin = CascadedPolygonUnion.union(reduced);
 
 				// extract largest basin
 				double maxArea = Double.NEGATIVE_INFINITY;
@@ -484,9 +501,12 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 									var table = SqlName.m("error_basin_" + outBasin.id);
 									SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, fc.getSchema(), table,
 											null, false);
-									
+
 									SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, fc, table, -1, false,
 											pm);
+									if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+										gpDb.updateFeatureTableBounds(table);
+									}
 								} else {
 									File folder = new File(outFolder);
 									File errorFile = new File(folder,
@@ -583,13 +603,13 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 
 			pm.beginTask("Extract vector basins...", basinId2geomMap.size());
 			List<Geometry> _netGeometries = netGeometries;
-			SimpleFeatureCollection breackPoints = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
+			SimpleFeatureCollection breakPoints = (inStreamGauge != null) ? getVector(inStreamGauge) : null;
 
 			basinId2geomMap.entrySet().stream().forEach(entry -> {
 				try {
 					extractBasin(subBasins, pit, sky, drain, net, crs, _netGeometries, basinsBuilder, singleNetBuilder,
 							getSFStreamGauge(crs, Point.class), allBasinsFC, centroifdBasinFC, allNetworksFC,
-							streamGaugeFC, breackPoints, csvText, lakesIdList, lakesTypeList, entry);
+							streamGaugeFC, breakPoints, csvText, lakesIdList, lakesTypeList, entry);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -616,23 +636,34 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				}
 			} else {
 				String basinTable = GeoFrameGeoTable.BASIN.tableName();
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(),
-						SqlName.m(basinTable), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, SqlName.m(basinTable), -1,
-						false, pm);
+				SqlName basinTableName = SqlName.m(basinTable);
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allBasinsFC.getSchema(), basinTableName, null,
+						false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allBasinsFC, basinTableName, -1, false, pm);
+				if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+					gpDb.updateFeatureTableBounds(basinTableName);
+				}
 
 				String networkTable = GeoFrameGeoTable.NET.tableName();
-				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(),
-						SqlName.m(networkTable), null, false);
-				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC, SqlName.m(networkTable), -1,
-						false, pm);
+				SqlName networkTableName = SqlName.m(networkTable);
+				SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, allNetworksFC.getSchema(), networkTableName,
+						null, false);
+				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, allNetworksFC, networkTableName, -1, false,
+						pm);
+				if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+					gpDb.updateFeatureTableBounds(networkTableName);
+				}
 				if (streamGaugeFC != null && streamGaugeFC.size() > 0) {
 					String streamGAuge = GeoFrameGeoTable.HYDRO_METEO_STATION.tableName();
-                     //TODO create unique keys: ID+TYPE
+					// TODO create unique keys: ID+TYPE
+					SqlName streamGaugeTableName = SqlName.m(streamGAuge);
 					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, streamGaugeFC.getSchema(),
-							SqlName.m(streamGAuge), null, false);
-					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, SqlName.m(streamGAuge),
-							-1, false, pm);
+							streamGaugeTableName, null, false);
+					SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, streamGaugeFC, streamGaugeTableName, -1,
+							false, pm);
+					if (inGeoframeDb instanceof GeopackageCommonDb gpDb) {
+						gpDb.updateFeatureTableBounds(streamGaugeTableName);
+					}
 				}
 			}
 		}
@@ -644,7 +675,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 			SimpleFeatureBuilder singleNetBuilder, SimpleFeatureBuilder streamGaugeBuilder,
 			DefaultFeatureCollection allBasinsFC, DefaultFeatureCollection centroidBasinsFC,
 			DefaultFeatureCollection allNetworksFC, DefaultFeatureCollection streamGaugeFC,
-			SimpleFeatureCollection breackPointFC, StringBuilder csvText, List<Integer> lakesIdList,
+			SimpleFeatureCollection breakPointFC, StringBuilder csvText, List<Integer> lakesIdList,
 			List<String> lakesTypeList, Entry<Integer, Geometry> entry) throws Exception, ModelsIOException {
 		int basinNum = entry.getKey();
 //        pm.message("Processing basin " + basinNum + "...");
@@ -786,9 +817,9 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 				? lakesTypeList.toString()
 				: SubbasinsTypeField.HILLSOLOPE.toString();
 
-		String id = extractId(streamGaugeBuilder, breackPointFC, basinPolygon, streamGaugeFC, basinNum);
-		Object[] basinValues = new Object[] { dumpBasin, basinNum, elev, avgElev, 
-				mainNetLength, skyview, featureUserType, id };
+		String id = extractId(streamGaugeBuilder, breakPointFC, basinPolygon, streamGaugeFC, basinNum);
+		Object[] basinValues = new Object[] { dumpBasin, elev, avgElev, mainNetLength, skyview, featureUserType,
+				basinNum };
 		basinsBuilder.addAll(basinValues);
 		SimpleFeature basinFeature = basinsBuilder.buildFeature(null);
 		allBasinsFC.add(basinFeature);
@@ -841,7 +872,7 @@ public class OmsGeoframeInputsBuilder extends HMModel {
 		csvText.append(areaKm2).append(";");
 		csvText.append(mainNetLength).append(";");
 		csvText.append(featureUserType).append(';');
-		if (breackPointFC != null) {
+		if (breakPointFC != null) {
 			csvText.append(id);
 		}
 		csvText.append(skyview).append("\n");

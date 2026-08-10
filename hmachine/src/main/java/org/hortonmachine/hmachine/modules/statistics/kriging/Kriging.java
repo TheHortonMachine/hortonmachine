@@ -30,6 +30,7 @@ import java.util.Set;
 import org.apache.commons.math3.util.Pair;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
@@ -55,6 +56,7 @@ import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 /**
  * Abstract class implementing the core Ordinary Kriging algorithm.
@@ -79,16 +81,17 @@ import oms3.annotations.Status;
  * NullPointerException.
  * </p>
  */
-@Description("Ordinary kriging algorithm.")
-@Documentation("Kriging.html")
-@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello, Marialaura Bancheri & Francesco Serafin")
-@Keywords("Kriging, Hydrology")
-@Label("")
-@Name("kriging")
-@Status()
-@License("General Public License Version 3 (GPLv3)")
-@SuppressWarnings("nls")
-public abstract class Kriging extends HMModel {
+//@Description("Ordinary kriging algorithm.")
+//@Documentation("Kriging.html")
+//@Author(name = "Giuseppe Formetta, Daniele Andreis, Silvia Franceschi, Andrea Antonello, Marialaura Bancheri & Francesco Serafin")
+//@Keywords("Kriging, Hydrology")
+//@Label("")
+//@Name("kriging")
+//@UI(HMConstants.HIDE_UI_HINT)
+//@Status()
+//@License("General Public License Version 3 (GPLv3)")
+//@SuppressWarnings("nls")
+public abstract class Kriging  {
 
 	@Description("The .shp of the measurement point, containing the position of the stations.")
 	@In

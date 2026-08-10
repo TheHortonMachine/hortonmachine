@@ -3,6 +3,7 @@ package org.hortonmachine.hmachine.geoframe.ermworkflow;
 import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.PSConfig;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetCalibration;
+import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetCalibrationResult;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -54,7 +55,8 @@ public class ErmCalibration extends ErmBase {
 	@Description("Cost function used to evaluate parameter fitness.")
 	@In
 	public CostFunctions pCostFunction = CostFunctions.KGE;
-
+	
+	public boolean printDebugInfo = true; 
 
 	@Execute
 	public void process() throws Exception {
@@ -72,12 +74,14 @@ public class ErmCalibration extends ErmBase {
 			psConfig.w0 = pW0;
 			psConfig.decay = pDecay;
 
-			double[] psoCalibration = WaterBudgetCalibration.psoCalibration(psConfig, maxBasinId, basinAreas, rootNode,
-					pTimeStepMinutes, observedDischarge, pCostFunction, pCalibrationThreadCount, precipReader,
-					tempReader, etpReader, runner, spinUpTimesteps, doWriteState, pm);
+			WaterBudgetCalibrationResult psoCalibrationResult = WaterBudgetCalibration.psoCalibration(psConfig,
+					maxBasinId, basinAreas, rootNode, pTimeStepMinutes, observedDischarge, pCostFunction,
+					pCalibrationThreadCount, precipReader, tempReader, etpReader, runner, spinUpTimesteps, doWriteState,
+					pm, printDebugInfo);
 
-			pm.message(
-					"PSO calibration completed.\nBest parameters found: " + java.util.Arrays.toString(psoCalibration));
+			pm.message("PSO calibration completed.");
+			pm.message("Best parameters found: " + java.util.Arrays.toString(psoCalibrationResult.parameters));
+			pm.message("Cost: " + (-psoCalibrationResult.cost));
 		} finally {
 			teardown();
 		}
@@ -86,13 +90,13 @@ public class ErmCalibration extends ErmBase {
 	public static void main(String[] args) throws Exception {
 		ErmCalibration cal = new ErmCalibration();
 		cal.inGeopackagePath = "/home/hydrologis/development/hm_models_testdata/geoframe/newage/noce/workspace/outputs/geoframe_data.gpkg";
-    	cal.inFromTimestamp = ErmCommonData.START_TIMESTAMP + ":00";
-    	cal.inToTimestamp = ErmCommonData.END_TIMESTAMP + ":00";
-    	cal.pTimeStepMinutes = 60;
-    	cal.pSpinUpDays = 365;
-    	cal.pPsoIterations = 300;
-    	cal.pParticlesNum = 20;
-    	cal.doWriteState = false;
+		cal.inFromTimestamp = ErmCommonData.START_TIMESTAMP + ":00";
+		cal.inToTimestamp = ErmCommonData.END_TIMESTAMP + ":00";
+		cal.pTimeStepMinutes = 60;
+		cal.pSpinUpDays = 365;
+		cal.pPsoIterations = 300;
+		cal.pParticlesNum = 20;
+		cal.doWriteState = false;
 		cal.process();
 	}
 }

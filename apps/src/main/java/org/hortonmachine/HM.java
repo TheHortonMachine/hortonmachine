@@ -327,8 +327,12 @@ public class HM {
     public static List<SimpleFeature> readVector( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
-        return FeatureUtilities.featureCollectionToList(OmsVectorReader.readVector(path));
+        return FeatureUtilities.featureCollectionToList(readVectorFc(path));
     }
+
+	public static SimpleFeatureCollection readVectorFc(String path) throws Exception {
+		return OmsVectorReader.readVector(path);
+	}
 
     public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
@@ -353,6 +357,18 @@ public class HM {
         GridCoverage2D geodata = reader.outRaster;
         return geodata;
     }
+    
+    public static HMRaster readHMRaster(String source) throws Exception {
+    	if (source == null || source.trim().length() == 0)
+            return null;
+    	return HMRaster.fromFile(source);
+    }
+    
+    public static void dumpHMRaster( HMRaster raster, String source ) throws Exception {
+		if (raster == null || source == null)
+			return;
+		raster.writeToFile(source);
+	}
 
     public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
         if (raster == null || source == null)
@@ -1314,7 +1330,7 @@ public class HM {
 
     public static void makeSldStyleForRaster( String tableName, String rasterPath, double opacity ) throws Exception {
     	HMRaster raster = HMRaster.fromFile(new File(rasterPath));
-    	double[] minMax = raster.getMinMax();
+    	double[] minMax = raster.getStatistics();
     	if (minMax == null) {
     		return;
     	}
@@ -1329,12 +1345,10 @@ public class HM {
     }
 
     public static void makeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals ) throws Exception {
-        RasterSummary s = new RasterSummary();
-        s.pm = new DummyProgressMonitor();
-        s.inRaster = rasterPath;
-        s.process();
-        double min = s.outMin;
-        double max = s.outMax;
+        HMRaster raster = HMRaster.fromFile(new File(rasterPath));
+		double[] minMax = raster.getStatistics();
+        double min = minMax[0];
+        double max = minMax[1];
 
         String style = RasterStyleUtilities.createQGISRasterStyle(tableName, min, max, null, labelDecimals);
         File styleFile = FileUtilities.substituteExtention(new File(rasterPath), "qml");

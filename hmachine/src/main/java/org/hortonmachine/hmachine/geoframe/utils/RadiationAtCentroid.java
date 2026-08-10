@@ -27,6 +27,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.hortonmachine.hmachine.geoframe.utils.radiation.NetRadiationPointCase;
 import org.hortonmachine.hmachine.geoframe.utils.radiation.LwrbPointCase.Lwrb;
 import org.hortonmachine.hmachine.geoframe.utils.radiation.swrbPointCase.ShortwaveRadiationBalancePointCase;
@@ -71,17 +72,31 @@ public class RadiationAtCentroid extends HMModel {
 	@Unit("-")
 	@In
 	public double epsilonS = 0.98;
-	@Description("Coefficient to take into account the cloud cover," + "set equal to 0 for clear sky conditions ")
+	
+	@Description("Coefficient to take into account the cloud cover, set equal to 0 for clear sky conditions ")
 	@In
 	public double aCloud = 0;
-	@Description("Exponent  to take into account the cloud cover," + "set equal to 1 for clear sky conditions")
+	
+	@Description("Exponent  to take into account the cloud cover, set equal to 1 for clear sky conditions")
 	@In
 	public double bCloud = 1;
-	public boolean doHourly = true;
+	
+	@Description("The expected time resolution of the data. Daily and hourly (default) is supported.")
+	@In
+	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
+
+	@Description("Number of sun-position samples used to average net radiation over a day if "
+			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest. "
+			+ "In case of 1 it evaluates a single central instant (solar noon).")
+	@In
+	public int pDailySubSamples = 24;
+
 	public double alpha = 0.26;
+	
 	@Description("Ozone layer thickness in cm")
 	@In
 	public double pCmO3 = 0.6;
+	
 	@Description("The soil albedo.")
 	@In
 	public double pAlphagp = 0.9;
@@ -121,10 +136,20 @@ public class RadiationAtCentroid extends HMModel {
 	private HashMap<Integer, double[]> inNan;
 	private SimpleFeatureCollection inBasinsFC;
 
+	private static final long MILLIS_PER_HOUR = 3_600_000L;
+	private static final long MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
+
 	@Initialize
 	public void init() throws Exception {
 		if (lwrvModeel == null || lwrvModeel.isEmpty()) {
 			throw new IllegalArgumentException();
+		}
+		if (pTimeResolution == TimeResolution.MONTHLY || pTimeResolution == TimeResolution.YEARLY) {
+			throw new UnsupportedOperationException(
+					"ErmRadiation only supports HOURLY and DAILY resolutions, got " + pTimeResolution);
+		}
+		if (pDailySubSamples < 1) {
+			throw new IllegalArgumentException("pDailySubSamples must be >= 1, got " + pDailySubSamples);
 		}
 		checkNull(inGeoframeDb);
 
@@ -148,7 +173,7 @@ public class RadiationAtCentroid extends HMModel {
 			while (it.hasNext()) {
 				SimpleFeature feature = it.next();
 
-				Integer id = ((Number) feature.getAttribute(BasinMultiPolygonField.BASIN_ID.columnName())).intValue();
+				Integer id = ((Number) feature.getAttribute(BasinMultiPolygonField.ID.columnName())).intValue();
 				ids.add(id);
 			}
 		}
@@ -180,7 +205,7 @@ public class RadiationAtCentroid extends HMModel {
 		l.aCloud = aCloud;
 		l.bCloud = bCloud;
 		l.model = lwrvModeel;
-		l.fStationsID = BasinMultiPolygonField.BASIN_ID.columnName();
+		l.fStationsID = BasinMultiPolygonField.ID.columnName();
 		l.inStationsFC = inBasinsFC;
 		l.inSkyviewGC = inSkyview;
 		return l;
@@ -193,8 +218,8 @@ public class RadiationAtCentroid extends HMModel {
 	 */
 	private ShortwaveRadiationBalancePointCase createSwrb() {
 		ShortwaveRadiationBalancePointCase s = new ShortwaveRadiationBalancePointCase();
-		s.doHourly = doHourly;
-		s.fStationsid = BasinMultiPolygonField.BASIN_ID.columnName();
+		s.doHourly = pTimeResolution == TimeResolution.HOURLY;
+		s.fStationsid = BasinMultiPolygonField.ID.columnName();
 		s.inStationsFC = inBasinsFC;
 		s.inDem = dem;
 		s.inSkyview = inSkyview;
@@ -213,7 +238,7 @@ public class RadiationAtCentroid extends HMModel {
 	@Execute
 	public void process() throws Exception {
 		int[] ids = TableUtils.getIntIdArray(inGeoframeDb, GeoFrameGeoTable.BASIN.tableName(),
-				BasinPolygonSchema.BasinMultiPolygonField.BASIN_ID.columnName(), null);
+				BasinPolygonSchema.BasinMultiPolygonField.ID.columnName(), null);
 		int iteration = 0;
 		if (inTemperatureReader.isPreCachingMode()) {
 			pm.beginTask("Processing radiation data...", inTemperatureReader.getCachedSize());
@@ -281,23 +306,8 @@ public class RadiationAtCentroid extends HMModel {
 
 	private void processTimestep(HashMap<Integer, double[]> temperature, HashMap<Integer, double[]> humidity,
 			HashMap<Integer, double[]> clearSky, long t) throws Exception {
-		lwrb.inAirTemperatureValuesHM = temperature;
-		lwrb.inSoilTempratureValuesHM = temperature;
-		lwrb.inHumidityValuesHM = humidity;
-		lwrb.inClearnessIndexValuesHM = clearSky;
-		swrb.inHumidityValues = humidity;
-		swrb.inTemperatureValues = temperature;
-		swrb.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(t);
-		
-		lwrb.process();
-		swrb.process();
-		
-		nrpc.inShortwaveValues = swrb.outHMtotal;
-		nrpc.inDownwellingValues = lwrb.outHMlongwaveDownwellingHM;
-		nrpc.inUpwellingValues = lwrb.outHMlongwaveUpwellingHM;
-		nrpc.process();
-		
-		HashMap<Integer, double[]> out = nrpc.outHMnetRad;
+		HashMap<Integer, double[]> out = computeNetRadiation(lwrb, swrb, nrpc, temperature, humidity, clearSky, t);
+
 		String insertSql = GeoFrameSimpleTable.BASINDATA.getSchema().buildInsertAll();
 		inGeoframeDb.execOnConnection(conn -> {
 			boolean autoCommit = conn.getAutoCommit();
@@ -342,15 +352,13 @@ public class RadiationAtCentroid extends HMModel {
 	 * <p>
 	 * The result map is copied out of {@code nrpc.outHMnetRad} because that
 	 * field is reused and overwritten in place on every {@code process()}
-	 * call on the same instance - if a thread goes on to compute another
-	 * timestep before this result is consumed, an uncopied reference would
-	 * end up pointing at that later timestep's data instead.
+	 * call on the same instance.
 	 */
 	private TimestepResult computeTimestepParallel(int idx, int[] ids, ThreadLocal<Lwrb> tlLwrb,
 			ThreadLocal<ShortwaveRadiationBalancePointCase> tlSwrb, ThreadLocal<NetRadiationPointCase> tlNrpc)
 			throws Exception {
 		double[] variableData = inTemperatureReader.getCached(idx);
-		long timestep = inTemperatureReader.getCachedTimestamp(idx);
+		long timestamp = inTemperatureReader.getCachedTimestamp(idx);
 		var temperature = TableUtils.getLegacyHMInput(variableData, ids);
 
 		HashMap<Integer, double[]> humidity = inNan;
@@ -368,23 +376,108 @@ public class RadiationAtCentroid extends HMModel {
 		ShortwaveRadiationBalancePointCase swrbLocal = tlSwrb.get();
 		NetRadiationPointCase nrpcLocal = tlNrpc.get();
 
+		HashMap<Integer, double[]> out = computeNetRadiation(lwrbLocal, swrbLocal, nrpcLocal, temperature, humidity,
+				clearSky, timestamp);
+		return new TimestepResult(timestamp, out);
+	}
+
+	/**
+	 * Computes net radiation (W/m2) for one timestep, dispatching to
+	 * either a single hourly sample or a daily average of 24 hourly samples
+	 * depending on the time resolution.
+	 *
+	 * <p>
+	 * The returned map is always a fresh copy, independent of
+	 * {@code nrpc.outHMnetRad}, which is reused and overwritten in place on
+	 * every {@code process()} call - without a copy, a thread going on to
+	 * compute another timestep before this result is consumed would leave the
+	 * caller holding a reference to that later timestep's data instead.
+	 */
+	private HashMap<Integer, double[]> computeNetRadiation(Lwrb lwrbLocal, ShortwaveRadiationBalancePointCase swrbLocal,
+			NetRadiationPointCase nrpcLocal, HashMap<Integer, double[]> temperature, HashMap<Integer, double[]> humidity,
+			HashMap<Integer, double[]> clearSky, long t) throws Exception {
 		lwrbLocal.inAirTemperatureValuesHM = temperature;
 		lwrbLocal.inSoilTempratureValuesHM = temperature;
 		lwrbLocal.inHumidityValuesHM = humidity;
 		lwrbLocal.inClearnessIndexValuesHM = clearSky;
+		// Longwave depends only on temperature/humidity/clearness - not on time of day -
+		// so one process() call covers the whole timestep, hourly or daily alike.
+		lwrbLocal.process();
+
 		swrbLocal.inHumidityValues = humidity;
 		swrbLocal.inTemperatureValues = temperature;
-		swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(timestep);
 
-		lwrbLocal.process();
-		swrbLocal.process();
+		if (pTimeResolution == TimeResolution.HOURLY) {
+			swrbLocal.doHourly = true;
+			swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(t);
+			swrbLocal.process();
 
-		nrpcLocal.inShortwaveValues = swrbLocal.outHMtotal;
-		nrpcLocal.inDownwellingValues = lwrbLocal.outHMlongwaveDownwellingHM;
-		nrpcLocal.inUpwellingValues = lwrbLocal.outHMlongwaveUpwellingHM;
-		nrpcLocal.process();
+			nrpcLocal.inShortwaveValues = swrbLocal.outHMtotal;
+			nrpcLocal.inDownwellingValues = lwrbLocal.outHMlongwaveDownwellingHM;
+			nrpcLocal.inUpwellingValues = lwrbLocal.outHMlongwaveUpwellingHM;
+			nrpcLocal.process();
+			return new HashMap<>(nrpcLocal.outHMnetRad);
+		} else {
+			return averageDailyNetRadiation(lwrbLocal, swrbLocal, nrpcLocal, t);
+		}
+	}
 
-		return new TimestepResult(timestep, new HashMap<>(nrpcLocal.outHMnetRad));
+	/**
+	 * Averages net radiation over a full day into a daily-mean flux.
+	 *
+	 * <p>
+	 * {@link ShortwaveRadiationBalancePointCase} only ever evaluates the sun's
+	 * position (and the DEM-derived shading/skyview weighting that goes with
+	 * it) at one instant, and that DEM-wide shadow recomputation is what
+	 * dominates runtime. With daily-resolution input there is a single
+	 * temperature/humidity/clearness reading for the whole day, so this
+	 * processes that same daily reading at {@link #pDailySubSamples} sun
+	 * positions evenly spaced across the day and averages the results. At the
+	 * default of 24 this means running hourly resolution for the day and
+	 * averaging the 24 outputs; lower values are cheaper but coarser
+	 * approximations, useful for quick test runs.
+	 */
+	private HashMap<Integer, double[]> averageDailyNetRadiation(Lwrb lwrbLocal,
+			ShortwaveRadiationBalancePointCase swrbLocal, NetRadiationPointCase nrpcLocal, long dayTimestamp)
+			throws Exception {
+		if (pDailySubSamples == 1) {
+			// Use a single central-instant evaluation (solar noon, doHourly=false)
+			swrbLocal.doHourly = false;
+			swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(dayTimestamp);
+			swrbLocal.process();
+
+			nrpcLocal.inShortwaveValues = swrbLocal.outHMtotal;
+			nrpcLocal.inDownwellingValues = lwrbLocal.outHMlongwaveDownwellingHM;
+			nrpcLocal.inUpwellingValues = lwrbLocal.outHMlongwaveUpwellingHM;
+			nrpcLocal.process();
+			return new HashMap<>(nrpcLocal.outHMnetRad);
+		}
+
+		long dayStartMillis = Math.floorDiv(dayTimestamp, MILLIS_PER_DAY) * MILLIS_PER_DAY;
+		long stepMillis = MILLIS_PER_DAY / pDailySubSamples;
+
+		HashMap<Integer, Double> sumWattsPerM2 = new HashMap<>();
+		swrbLocal.doHourly = true; // sample the actual sun position each time, rather than one fixed instant
+		for (int sample = 0; sample < pDailySubSamples; sample++) {
+			long sampleMillis = dayStartMillis + sample * stepMillis;
+			swrbLocal.tCurrentDateString = GeoframeEnvDatabaseIterator.ts2str(sampleMillis);
+			swrbLocal.process();
+
+			nrpcLocal.inShortwaveValues = swrbLocal.outHMtotal;
+			nrpcLocal.inDownwellingValues = lwrbLocal.outHMlongwaveDownwellingHM;
+			nrpcLocal.inUpwellingValues = lwrbLocal.outHMlongwaveUpwellingHM;
+			nrpcLocal.process();
+
+			for (Map.Entry<Integer, double[]> entry : nrpcLocal.outHMnetRad.entrySet()) {
+				sumWattsPerM2.merge(entry.getKey(), entry.getValue()[0], Double::sum);
+			}
+		}
+
+		HashMap<Integer, double[]> dailyMean = new HashMap<>();
+		for (Map.Entry<Integer, Double> entry : sumWattsPerM2.entrySet()) {
+			dailyMean.put(entry.getKey(), new double[] { entry.getValue() / pDailySubSamples });
+		}
+		return dailyMean;
 	}
 
 	/**

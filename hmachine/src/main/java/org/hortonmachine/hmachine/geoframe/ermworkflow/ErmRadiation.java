@@ -12,6 +12,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTabl
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinDataSchema.BasinDataField;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.RadiationAtCentroid;
 
@@ -41,6 +42,16 @@ import oms3.annotations.UI;
  * database; humidity and the atmospheric clearness index are left at their
  * clear-sky defaults, since this launcher assumes clear-sky conditions with
  * only temperature known.
+ *
+ * <p>
+ * Note that the output is always a flux, in W/m2: 
+ * <ul>
+ * <li>for {@link TimeResolution#HOURLY} it is the instantaneous net
+ * radiation for that hour</li>
+ * <li>for {@link TimeResolution#DAILY} - the
+ * avg of 24 hourly samples taken at that day's actual sun positions
+ * </li>
+ * </ul>
  */
 @Description("Radiation calculator.")
 @Author(name = "Daniele Andreis", contact = "")
@@ -67,6 +78,16 @@ public class ErmRadiation extends HMModel {
 	@Description("Data import end timestamp in format yyyy-MM-dd HH:mm.")
 	@In
 	public String pEndTimestamp;
+	
+	@Description("The expected time resolution of the data. DAILY and HOURLY (default) is supported.")
+	@In
+	public String pTimeResolution = "HOURLY";
+
+	@Description("Number of sun-position samples used to average net radiation over a day if "
+			+ "pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest. "
+			+ "In case of 1 it evaluates a single central instant (solar noon).")
+	@In
+	public int pDailySubSamples = 24;
 
 	@Description("If true, existing output files are overwritten.")
 	@In
@@ -78,6 +99,13 @@ public class ErmRadiation extends HMModel {
 	
 	@Execute
 	public void process() throws Exception {
+		checkNull(pTimeResolution, inDtm, inGpkg, pStartTimestamp, pEndTimestamp);
+		TimeResolution tRes = TimeResolution.valueOf(pTimeResolution);
+		if (tRes == TimeResolution.MONTHLY || tRes == TimeResolution.YEARLY) {
+			throw new UnsupportedOperationException(
+					"ErmRadiation only supports HOURLY and DAILY resolutions, got " + pTimeResolution);
+		}
+
 		Paths p = new Paths(inDtm, doOverwrite);
 
 		try (ASpatialDb db = EDb.GEOPACKAGE.getSpatialDb()) {
@@ -89,8 +117,8 @@ public class ErmRadiation extends HMModel {
 						+ VarSchema.EnvironmentalVariableType.RADIATION.getId());
 			}
 			
-			var dtm = getRaster(p.dtm);
-			var skyview = getRaster(p.skyview);
+			var dtm = getRaster(p.basinPit);
+			var skyview = getRaster(p.basinSkyview);
 			if (downscaleFactor > 1) {
 				dtm = downscaleRaster(dtm, downscaleFactor);
 				skyview = downscaleRaster(skyview, downscaleFactor);
@@ -108,10 +136,11 @@ public class ErmRadiation extends HMModel {
 			var radiation = new RadiationAtCentroid();
 			radiation.inGeoframeDb = db;
 			radiation.inTemperatureReader = temperatureReader;
-			radiation.dem =  dtm; // TODO Daniele, why where you using the pit here?
+			radiation.dem = dtm;
 			radiation.inSkyview = skyview;
 			radiation.lwrvModeel = "6";
-			radiation.doHourly = true;
+			radiation.pTimeResolution = tRes;
+			radiation.pDailySubSamples = pDailySubSamples;
 			radiation.init();
 			radiation.process();
 

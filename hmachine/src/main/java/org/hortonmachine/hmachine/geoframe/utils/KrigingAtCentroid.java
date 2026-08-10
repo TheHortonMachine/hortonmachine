@@ -185,7 +185,7 @@ public class KrigingAtCentroid extends HMModel {
 		kriging.fStationsid = Station.ID.columnName();
 		kriging.fStationsZ = Station.ELEVATION.columnName();
 		kriging.inInterpolate = inBasinsFC;
-		kriging.fInterpolateid = BasinMultiPolygonField.BASIN_ID.columnName();
+		kriging.fInterpolateid = BasinMultiPolygonField.ID.columnName();
 		kriging.fPointZ = BasinMultiPolygonField.AVG_ELEVATION_M.columnName();
 
 		kriging.inNumCloserStations = 8;

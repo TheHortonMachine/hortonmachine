@@ -256,12 +256,11 @@ public class TestCrs {
     @Test
     public void testRegistry_esri102700() {
         HMCrsRegistry.INSTANCE.init();
-        CoordinateReferenceSystem crs;
+        CoordinateReferenceSystem crs = null;
         try {
             crs = HMCrsRegistry.INSTANCE.getCrs("ESRI:102700");
         } catch (FactoryException e) {
             assumeNoException("ESRI CRS factory not available on this classpath", e);
-            return;
         }
         assertNotNull(crs);
     }
@@ -272,12 +271,11 @@ public class TestCrs {
         CoordinateReferenceSystem epsgCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:102700");
         assertNotNull("EPSG:102700 should decode to a non-null CRS", epsgCrs);
 
-        CoordinateReferenceSystem esriCrs;
+        CoordinateReferenceSystem esriCrs = null;
         try {
             esriCrs = HMCrsRegistry.INSTANCE.getCrs("ESRI:102700");
         } catch (FactoryException e) {
             assumeNoException("ESRI CRS factory not available on this classpath", e);
-            return;
         }
         assertNotNull("ESRI:102700 should decode to a non-null CRS", esriCrs);
 

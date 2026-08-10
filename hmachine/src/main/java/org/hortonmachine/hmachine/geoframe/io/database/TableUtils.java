@@ -6,9 +6,6 @@ import java.util.List;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
-import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.TimeResolution;
@@ -26,27 +23,17 @@ public class TableUtils {
 
 		String mmFlux = "mm/";
 		String temperatureUnit = "°C";
-		String radiationUnit = null;
+		
+		// Radiation is always a flux and in W/m² and is always related to the size of the timestep.
+		String radiationUnit = "W/m²";
 		String dischargeUnit = "m³/s";
 
 		if (resolution != null) {
 			switch (resolution) {
-			case HOURLY -> {
-				mmFlux = mmFlux + "h";
-				radiationUnit = "W/m²";
-			}
-			case DAILY -> {
-				mmFlux = mmFlux + "day";
-				radiationUnit = "MJ/m²/day";
-			}
-			case MONTHLY -> {
-				mmFlux = mmFlux + "month";
-				radiationUnit = "MJ/m²/month";
-			}
-			case YEARLY -> {
-				mmFlux = mmFlux + "year";
-				radiationUnit = "MJ/m²/year";
-			}
+			case HOURLY -> mmFlux = mmFlux + "h";
+			case DAILY -> mmFlux = mmFlux + "day";
+			case MONTHLY -> mmFlux = mmFlux + "month";
+			case YEARLY -> mmFlux = mmFlux + "year";
 			}
 		} else {
 			mmFlux = null;

@@ -23,71 +23,90 @@ import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.io.GeoframeEnvDatabaseIterator;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationDataSchema.StationDataField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariableType;
 import org.jfree.chart.ChartPanel;
 import org.locationtech.jts.geom.Geometry;
 
 /**
- * An interface representing a complete execution of the
- * Geoframe Water Budget simulation.
+ * An interface representing a complete execution of the Geoframe Water Budget
+ * simulation.
  */
 public interface IWaterBudgetSimulationRunner {
 
 	/**
 	 * Configure the runner with the necessary parameters.
 	 * 
-	 * @param timeStepMinutes the minutes corresponding to the time step used.
-	 * @param maxBasinId the maximum basin id (to size output and state arrays).
-	 * @param rootNode the root of the topological basin network.
-	 * @param basinAreas array of basin areas indexed by basin id.
-	 * @param doParallel whether to run the simulation in parallel mode over the basins.
+	 * @param timeStepMinutes        the minutes corresponding to the time step
+	 *                               used.
+	 * @param maxBasinId             the maximum basin id (to size output and state
+	 *                               arrays).
+	 * @param rootNode               the root of the topological basin network.
+	 * @param basinAreas             array of basin areas indexed by basin id.
+	 * @param doParallel             whether to run the simulation in parallel mode
+	 *                               over the basins.
 	 * @param doTopologicallyOrdered whether to process nodes in topological order.
-	 * @param writeState whether to write the model state to the output database.
-	 * @param outputDb output database for writing simulation results (may be null).
-	 * @param pm progress monitor for messages and progress tracking.
+	 * @param writeState             whether to write the model state to the output
+	 *                               database.
+	 * @param outputDb               output database for writing simulation results
+	 *                               (may be null).
+	 * @param pm                     progress monitor for messages and progress
+	 *                               tracking.
 	 */
-	void configure(
-	    int timeStepMinutes,
-	    int maxBasinId,
-	    TopologyNode rootNode,
-	    double[] basinAreas,
-	    boolean doParallel,
-	    boolean doTopologicallyOrdered,
-	    boolean writeState, 
-	    ADb outputDb,
-	    IHMProgressMonitor pm
-		);
-	
-    /**
-     * Executes a water budget simulation for the given time interval and model parameters.
-     *
-     * @param wbParams all paramters required by the water budget model.
-     * @param lai Leaf Area Index used by the canopy model.
-     * @param precipReader Iterator providing precipitation input data.
-     * @param tempReader Iterator providing temperature input data.
-     * @param etpReader Iterator providing evapotranspiration input data.
-     * @param iterationInfo String containing information about the current iteration (for logging purposes).
-     * @return Array containing the simulated discharge values at the root node over time.
-     * @throws Exception
-     */
-    double[] run(
-        WaterBudgetParameters wbParams,
-        double lai,
-        GeoframeEnvDatabaseIterator precipReader,
-        GeoframeEnvDatabaseIterator tempReader,
-        GeoframeEnvDatabaseIterator etpReader,
-        String iterationInfo
-    ) throws Exception;
-    
-    static double[] getObservedDischarge(ADb envDb, String fromTS, String toTS) throws Exception {
-    	int id = EnvironmentalVariableType.DISCHARGE.getId();
+	void configure(int timeStepMinutes, int maxBasinId, TopologyNode rootNode, double[] basinAreas, boolean doParallel,
+			boolean doTopologicallyOrdered, boolean writeState, ADb outputDb, IHMProgressMonitor pm);
+
+	/**
+	 * Executes a water budget simulation for the given time interval and model
+	 * parameters.
+	 *
+	 * @param wbParams      all paramters required by the water budget model.
+	 * @param lai           Leaf Area Index used by the canopy model.
+	 * @param precipReader  Iterator providing precipitation input data.
+	 * @param tempReader    Iterator providing temperature input data.
+	 * @param etpReader     Iterator providing evapotranspiration input data.
+	 * @param iterationInfo String containing information about the current
+	 *                      iteration (for logging purposes).
+	 * @return Array containing the simulated discharge values at the root node over
+	 *         time.
+	 * @throws Exception
+	 */
+	double[] run(WaterBudgetParameters wbParams, double lai, GeoframeEnvDatabaseIterator precipReader,
+			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, String iterationInfo)
+			throws Exception;
+
+	/**
+	 * Get the observed discharge values for the given node and time interval 
+	 * to be used for the calibration. The passed node has to have a station assigned to it, 
+	 * otherwise an exception is thrown.
+	 * 
+	 * @param envDb
+	 * @param observationsNode the node for which the observed discharge values are requested. It must have a station assigned to it.
+	 * @param fromTS
+	 * @param toTS
+	 * @return an array of observed discharge values for the given node and time interval.
+	 * @throws Exception
+	 */
+	static double[] getObservedDischarge(ADb envDb, TopologyNode observationsNode, String fromTS, String toTS) throws Exception {
+		int id = EnvironmentalVariableType.DISCHARGE.getId();
 		long from = GeoframeEnvDatabaseIterator.str2ts(fromTS);
 		long to = GeoframeEnvDatabaseIterator.str2ts(toTS);
-		String sql = "select ts, value from " + GeoFrameSimpleTable.STATIONDATA.tableName() + " where "
-				+ StationDataField.VAR_ID.columnName() + " = " + id + " and "
-				+ "ts >= " + from + " and ts <= " + to
-				+ " order by ts asc";
+		int basinId = observationsNode.basinId;
+		
+		String ts = StationDataSchema.StationDataField.TS.columnName();
+		String sql = "select " + ts + ", " + StationDataSchema.StationDataField.VALUE.columnName() 
+				+ " from " + GeoFrameSimpleTable.STATIONDATA.tableName()
+				+ " sd join " + GeoFrameGeoTable.HYDRO_METEO_STATION.tableName()
+				+ " st on sd." + StationDataSchema.StationDataField.STATION_ID.columnName() 
+				+ "=st." +  StationSchema.Station.ID.columnName()
+				+ " where "
+				+ StationDataField.VAR_ID.columnName() + " = " + id 
+				+ " and st." + StationSchema.Station.BASIN_ID.columnName() + " = " + basinId
+				+ " and sd." + ts + " >= " + from + " and sd." + ts + " <= " + to
+				+ " order by " + ts + " asc";
 		QueryResult qr = envDb.getTableRecordsMapFromRawSql(sql, -1);
 		DynamicDoubleArray dda = new DynamicDoubleArray(10000, 10000);
 		int valueIndex = qr.names.indexOf("value");
@@ -97,11 +116,12 @@ public interface IWaterBudgetSimulationRunner {
 		}
 		return dda.getTrimmedInternalArray();
 	}
-    
+
 	static double[] getBasinAreas(ASpatialDb db, int maxBasinId) throws Exception {
 		QueryResult queryResult = db.getTableRecordsMapIn(GeoFrameGeoTable.BASIN.tableName(), null, -1, -1, null);
 		double[] basinAreas = new double[maxBasinId + 1];
-		int idIndex = queryResult.names.indexOf("basinid");
+		String basinIdField = BasinPolygonSchema.BasinMultiPolygonField.ID.columnName();
+		int idIndex = queryResult.names.indexOf(basinIdField);
 		for (int i = 0; i < queryResult.data.size(); i++) {
 			Object[] row = queryResult.data.get(i);
 			int basinId = ((Number) row[idIndex]).intValue();
@@ -111,9 +131,11 @@ public interface IWaterBudgetSimulationRunner {
 		}
 		return basinAreas;
 	}
-	
+
 	static int getMaxBasinId(ADb db) throws Exception {
-		int maxBasinId = db.getLong("select max(basinid) from " + GeoFrameGeoTable.BASIN.tableName()).intValue();
+		String basinIdField = BasinPolygonSchema.BasinMultiPolygonField.ID.columnName();
+		int maxBasinId = db.getLong("select max(" + basinIdField + ") from " + GeoFrameGeoTable.BASIN.tableName())
+				.intValue();
 		return maxBasinId;
 	}
 
@@ -140,7 +162,7 @@ public interface IWaterBudgetSimulationRunner {
 		DynamicDoubleArray obsValues = new DynamicDoubleArray(observedDischarge.length, simQ.length);
 		DynamicDoubleArray simTimes1 = new DynamicDoubleArray(simQ.length, simQ.length);
 		DynamicDoubleArray simTimes2 = new DynamicDoubleArray(simQ.length, simQ.length);
-		
+
 		int startIndex = 0;
 		if (spinupTimesteps != null && spinupTimesteps > 0) {
 			startIndex = spinupTimesteps;
@@ -156,7 +178,7 @@ public interface IWaterBudgetSimulationRunner {
 				simTimes2.addValue(startTS + i * timeStepMinutes * 60 * 1000L);
 			}
 		}
-		
+
 		double[] simValuesArr = simValues.getTrimmedInternalArray();
 		long[] simTimesArr1 = simTimes1.getTrimmedInternalArrayLong();
 

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -24,6 +25,7 @@ import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.timedependent.OmsTimeSeriesIteratorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -31,6 +33,8 @@ import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.TableUtils;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameGeoTable;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.GeoFrameSimpleTable;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.BasinPolygonSchema.BasinMultiPolygonField;
+import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.Station;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.StationSchema.StationType;
 import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.VarSchema.EnvironmentalVariable;
@@ -56,7 +60,7 @@ import oms3.annotations.UI;
 @License("General Public License Version 3 (GPLv3)")
 public class GeoframeRawDataImporter extends HMModel {
 
-	@Description("A colum with the measurement point id")
+	@Description("The station type to import (e.g. meteo, stream gauge).")
 	@In
 	public StationType stationType = null;
 
@@ -147,41 +151,79 @@ public class GeoframeRawDataImporter extends HMModel {
 				inGeoframeDb.executeInsertUpdateDeleteSql(sql);
 			}
 
+			HashMap<Integer, Integer> dbId2fileIdsMap = null;
 			if (inMeasurementsPointFilePath != null) {
+				dbId2fileIdsMap = new HashMap<>();
+				SimpleFeatureCollection basinsFC = null;
+				SqlName basinSqlName = GeoFrameGeoTable.BASIN.getSchema().getSQLName();
+				if (inGeoframeDb.hasTable(basinSqlName)) {
+					basinsFC = SpatialDbsImportUtils.tableToFeatureFCollection(inGeoframeDb, basinSqlName, -1, -1, null,
+							null);
+				}
 				SimpleFeatureCollection inMeasurementPoints = getVector(inMeasurementsPointFilePath);
 				ids = new int[inMeasurementPoints.size()];
 				var builder = GeoFrameGeoTable.HYDRO_METEO_STATION.getSchema()
 						.getSFBuilder(inMeasurementPoints.getSchema().getCoordinateReferenceSystem());
 				DefaultFeatureCollection outFC = new DefaultFeatureCollection();
 				int i = 0;
+
+				SimpleFeatureType tableSchema = builder.getFeatureType();
+				if (!inGeoframeDb.hasTable(stationTable)) {
+					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, tableSchema, stationTable, null, false);
+				}
+
+				/*
+				 * we need to have unique idsfor the stations, which might be an issue between
+				 * different station types. So we check for the max id available in the database
+				 * and add it to the ids of the new stations to be imported. Since the id is
+				 * needed later for the data, we keep track of them in a HashMap. This is a
+				 * temporary solution and should be improved in the future.
+				 */
+				long maxId = inGeoframeDb.getMax(stationTable, Station.ID.columnName()) + 1;
 				try (SimpleFeatureIterator iterator = inMeasurementPoints.features()) {
 					while (iterator.hasNext()) {
 						SimpleFeature sourceFeature = iterator.next();
 						Geometry geom = (Geometry) sourceFeature.getDefaultGeometry();
-						Long id = (Long) sourceFeature.getAttribute(inIdField);
-						if (id == null) {
+						Object idObj = sourceFeature.getAttribute(inIdField);
+						int id;
+						if (idObj instanceof Number num) {
+							id = num.intValue();
+						} else {
 							continue;
 						}
+						int newId = (int) (id + maxId);
+						dbId2fileIdsMap.put(newId, id);
 						Double elevation = null;
 						if (inElevationField != null) {
 							elevation = (Double) sourceFeature.getAttribute(inElevationField);
 						}
 						builder.reset();
 						builder.set(Station.GEOM.columnName(), geom);
-						builder.set(Station.ID.columnName(), id);
+						builder.set(Station.ID.columnName(), newId);
 						builder.set(Station.ELEVATION.columnName(), elevation);
-						builder.set(Station.BASIN_ID.columnName(), null); // basin_id
+						Integer basinId = null;
+						if (basinsFC != null) {
+							basinId = this.getIntersectedBasinId(basinsFC, geom,
+									BasinMultiPolygonField.ID.columnName());
+						}
+
+						if (basinId != null && stationType == StationType.STREAM_GAUGE) {
+							String sql = String.format("UPDATE %s SET %s = %d WHERE %s = %d and %s = '%s'",
+									GeoFrameGeoTable.HYDRO_METEO_STATION.tableName(),
+									StationSchema.Station.BASIN_ID.columnName(), basinId,
+									StationSchema.Station.ID.columnName(), newId, StationSchema.Station.TYPE.columnName(),
+									stationType.name());
+							inGeoframeDb.executeInsertUpdateDeleteSql(sql);
+						}
+
+						builder.set(Station.BASIN_ID.columnName(), basinId); // basin_id
 						builder.set(Station.TYPE.columnName(), stationType.name()); // type
 
 						SimpleFeature newFeature = builder.buildFeature(null);
 						outFC.add(newFeature);
-						ids[i] = id.intValue();
+						ids[i] = newId;
 						i++;
 					}
-				}
-				if (!inGeoframeDb.hasTable(stationTable)) {
-					SpatialDbsImportUtils.createTableFromSchema(inGeoframeDb, outFC.getSchema(), stationTable, null,
-							false);
 				}
 
 				SpatialDbsImportUtils.importFeatureCollection(inGeoframeDb, outFC, stationTable, -1, false, pm);
@@ -214,6 +256,7 @@ public class GeoframeRawDataImporter extends HMModel {
 
 				String insertSql = GeoFrameSimpleTable.STATIONDATA.getSchema().buildInsertAll();
 				int[] _ids = ids;
+				HashMap<Integer, Integer> _dbId2fileIdsMap = dbId2fileIdsMap;
 				inGeoframeDb.execOnConnection(conn -> {
 					boolean autoCommit = conn.getAutoCommit();
 					conn.setAutoCommit(false);
@@ -222,7 +265,14 @@ public class GeoframeRawDataImporter extends HMModel {
 							reader.nextRecord();
 							HashMap<Integer, double[]> values = reader.outData;
 							for (int id : _ids) {
-								double[] data = values.get(id);
+								int origId = id;
+								if (_dbId2fileIdsMap != null) {
+									Integer fileId = _dbId2fileIdsMap.get(id);
+									if (fileId != null) {
+										origId = fileId;
+									}
+								}
+								double[] data = values.get(origId);
 								if (data != null) {
 									long ts = formatter.parseMillis(reader.tCurrent);
 									pStmt.setLong(1, ts);
@@ -245,6 +295,34 @@ public class GeoframeRawDataImporter extends HMModel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private Integer getIntersectedBasinId(SimpleFeatureCollection basinsFC, Geometry station, String idFiledName) {
+		if (basinsFC != null && station != null && idFiledName != null) {
+			try (SimpleFeatureIterator it = basinsFC.features()) {
+				while (it.hasNext()) {
+					SimpleFeature basin = it.next();
+					Geometry basinGeom = (Geometry) basin.getDefaultGeometry();
+					if (basinGeom == null) {
+						continue;
+					}
+					boolean covers = basinGeom.covers(station);
+					Object idValue = basin.getAttribute(idFiledName);
+
+					if (covers) {
+						if (idValue == null) {
+							return null;
+						}
+						if (idValue instanceof Number number) {
+							return number.intValue();
+						} else {
+							return Integer.parseInt(idValue.toString());
+						}
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 }

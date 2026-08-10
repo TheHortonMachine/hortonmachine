@@ -90,7 +90,7 @@ public class TestOptimizations {
 
 		double[][] ranges = { { 0, 20 }, { -Math.PI, Math.PI }, { -10, 20 } };
 
-		PSEngine engine = new PSEngine(30, 800, 2.0, 2.0, 0.9, 0.4, func, 4, "TEST");
+		PSEngine engine = new PSEngine(30, 800, 2.0, 2.0, 0.9, 0.4, func, 4, "TEST", null);
 
 		engine.initializeRanges(ranges);
 		engine.run();

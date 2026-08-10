@@ -468,6 +468,10 @@ class Console implements CaretListener, HyperlinkListener, ComponentListener, Fo
 
         // create the view
         swing.build(ConsoleView)
+
+        // this fixes the need for setting it twice
+        splitPane.orientation = orientationVertical ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT
+        inputEditor.enableHighLighter(smartHighlighter ? SmartDocumentFilter : GroovyFilter)
 		
 		// add hortonmachine menu
 		addHmMenu()

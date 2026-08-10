@@ -3,8 +3,8 @@ package org.hortonmachine.hmachine.geoframe.utils;
 import java.util.Arrays;
 
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.hmachine.geoframe.core.TopologyNode;
 import org.hortonmachine.hmachine.geoframe.core.WaterBudgetSimulation;
@@ -44,7 +44,7 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 		TopologyNode localRootNode = rootNode.clone();
 		
 		if (pm == null) {
-			pm = new LogProgressMonitor();
+			pm = new DummyProgressMonitor();
 		}
 		long t1 = 0;
 		if (iterationInfo != null) {
@@ -100,7 +100,7 @@ public class WaterSimulationRunner implements IWaterBudgetSimulationRunner {
 
 		if (iterationInfo != null) {
 			long t2 = System.currentTimeMillis();
-			System.out.println("End " + iterationInfo + " (" + (t2 - t1) / 1000.0 + " seconds)");
+			pm.message("End " + iterationInfo + " (" + (t2 - t1) / 1000.0 + " seconds)");
 		}
 		return sim;
 	}

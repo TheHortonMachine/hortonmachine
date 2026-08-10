@@ -24,6 +24,7 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 )
 
 set MEM="-Xmx2g"
-"%JAVAEXE%" -splash:%~dp0\imgs\splash_geopaparazziviewer.png %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=.\natives\ -cp ".\libs\*" org.hortonmachine.geopaparazzi.GeopaparazziViewer
+set XSS="-Xss64m"
+"%JAVAEXE%" -splash:"%~dp0\imgs\splash_geopaparazziviewer.png" %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=.\natives\ -cp ".\libs\*" org.hortonmachine.geopaparazzi.GeopaparazziViewer
 
 endlocal

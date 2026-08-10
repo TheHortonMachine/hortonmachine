@@ -43,9 +43,9 @@ public class ErmStationDataImporter extends HMModel {
 	@In
 	public String pEndTimestamp;
 
-	@Description("Data time resolution.")
+	@Description("Data time resolution. currently supported: HOURLY, DAILY.")
 	@In
-	public TimeResolution pTimeResolution = TimeResolution.HOURLY;
+	public String pTimeResolution = "HOURLY";
 
 	@Description("Meteo stations layer.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
@@ -70,7 +70,7 @@ public class ErmStationDataImporter extends HMModel {
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inStreamGauges;
-	
+
 	@Description("Streamgauges id field in csv files.")
 	@In
 	public String pStreamGaugesIdField = "ID";
@@ -80,7 +80,6 @@ public class ErmStationDataImporter extends HMModel {
 	@In
 	public String inStreamGaugesCsv;
 
-	
 	@Execute
 	public void process() throws Exception {
 		checkNull(pStartTimestamp, pEndTimestamp);
@@ -91,7 +90,7 @@ public class ErmStationDataImporter extends HMModel {
 		gfImporter.inEndDate = pEndTimestamp;
 		gfImporter.inElevationField = "z_dem";
 		gfImporter.inIdField = pMeteoIdField;
-		gfImporter.timeResolution = pTimeResolution;
+		gfImporter.timeResolution = TimeResolution.valueOf(pTimeResolution);
 		gfImporter.doOverWrite = true;
 
 		// import TEMPERATURE
@@ -121,6 +120,8 @@ public class ErmStationDataImporter extends HMModel {
 			gfImporter.inVariableType = EnvironmentalVariableType.DISCHARGE.getId();
 			gfImporter.process();
 		}
+		
+		
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -135,7 +136,7 @@ public class ErmStationDataImporter extends HMModel {
 		ei.inPrecipitationCsv = workspace + "precipitation_gf.csv";
 		ei.inStreamGauges = workspace + "idrometri.shp";
 		ei.pStreamGaugesIdField = "idstazione";
-		ei.inStreamGaugesCsv = workspace + "Q_vermiglio.csv";
+		ei.inStreamGaugesCsv = workspace + "Q_vermiglio_2000-2024.csv";
 		ei.process();
 	}
 

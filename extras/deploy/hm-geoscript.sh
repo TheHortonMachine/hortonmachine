@@ -17,14 +17,14 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx4g"
+MEM="-Xmx4g -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 SPLASH=""
 if [ -z "$1" ]
-then 
-    SPLASH=-splash:$DIR/imgs/splash_geoscript.png
+then
+    SPLASH="-splash:$DIR/imgs/splash_geoscript.png"
 fi
 
 if [ -f "$DIR/jre/bin/java" ]; then
@@ -34,4 +34,4 @@ else
 fi
 
 
-"$JAVAEXE" $SPLASH $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole $1
+"$JAVAEXE" ${SPLASH:+"$SPLASH"} $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole "$1"

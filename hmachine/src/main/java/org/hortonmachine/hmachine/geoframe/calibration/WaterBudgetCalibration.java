@@ -1,7 +1,5 @@
 package org.hortonmachine.hmachine.geoframe.calibration;
 
-import java.util.Arrays;
-
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.gears.utils.optimizers.particleswarm.IPSFunction;
@@ -100,11 +98,11 @@ public class WaterBudgetCalibration {
 //		System.out.println("Best KGE = " + bestKGE);
 //	}
 
-	public static double[] psoCalibration(PSConfig psConfig, int maxBasinId, double[] basinAreas, TopologyNode rootNode, int timeStepMinutes,
+	public static WaterBudgetCalibrationResult psoCalibration(PSConfig psConfig, int maxBasinId, double[] basinAreas, TopologyNode rootNode, int timeStepMinutes,
 			double[] observedDischarge, CostFunctions costFunction, int calibrationThreadCount,
 			GeoframeEnvDatabaseIterator precipReader, GeoframeEnvDatabaseIterator tempReader,
 			GeoframeEnvDatabaseIterator etpReader, IWaterBudgetSimulationRunner runner, int spinUpTimesteps, boolean writeState,
-			IHMProgressMonitor pm)
+			IHMProgressMonitor pm, boolean printDebugInfo)
 			throws Exception {
 
 		double[][] ranges = new double[][] { WaterBudgetParameters.RainSnowSeparation.alphaRRange(),
@@ -128,10 +126,11 @@ public class WaterBudgetCalibration {
 
 		IPSFunction wbFunction = new WaterBudgetCalibrationPsoFunction(timeStepMinutes, observedDischarge, maxBasinId,
 				basinAreas, rootNode, precipReader, tempReader, etpReader, spinUpTimesteps, costFunction, false,
-				true, writeState, pm);
+				true, writeState, pm, printDebugInfo);
 
 		PSEngine engine = new PSEngine(psConfig.particlesNum, psConfig.maxIterations, psConfig.c1, psConfig.c2, psConfig.w0, psConfig.decay, wbFunction,
-				calibrationThreadCount, "PSO-Waterbudget");
+				calibrationThreadCount, "PSO-Waterbudget", pm);
+		engine.setPrintDebug(printDebugInfo);
 		engine.initializeRanges(ranges);
 
 		// 4. Run the swarm
@@ -140,12 +139,11 @@ public class WaterBudgetCalibration {
 		// 5. Extract results
 		double[] best = engine.getSolution();
 		double cost = engine.getSolutionFittingValue();
-
-		pm.message("PSO calibration completed.");
-		pm.message("Best cost = " + cost);
-		pm.message("Best params = " + Arrays.toString(best));
 		
-		return best;
+		var result = new WaterBudgetCalibrationResult();
+		result.parameters = best;
+		result.cost = cost;
+		return result;
 	}
 
 }

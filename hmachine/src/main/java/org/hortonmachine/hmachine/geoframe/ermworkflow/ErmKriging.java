@@ -65,7 +65,7 @@ public class ErmKriging extends HMModel {
 						"DELETE FROM " + GeoFrameSimpleTable.BASINDATA.tableName() + " WHERE " + //
 								BasinDataField.VAR_ID.columnName() + " = " + typeId);
 			}
-			processKriging(db, maxId, type, typeId);
+			processKriging(db, maxId, type, typeId, false);
 
 			pm.message("Processing precipitation data...");
 			type = 2; // TODO is this the same as below?
@@ -75,12 +75,12 @@ public class ErmKriging extends HMModel {
 						"DELETE FROM " + GeoFrameSimpleTable.BASINDATA.tableName() + " WHERE " + //
 								BasinDataField.VAR_ID.columnName() + " = " + typeId);
 			}
-			processKriging(db, maxId, type, typeId);
+			processKriging(db, maxId, type, typeId, true);
 
 		}
 	}
 
-	private void processKriging(ASpatialDb db, int maxId, int type, int typeId) throws Exception {
+	private void processKriging(ASpatialDb db, int maxId, int type, int typeId, boolean boundToZero) throws Exception {
 		var valueReader = new GeoframeEnvDatabaseIterator();
 		valueReader.db = db;
 		valueReader.pParameterId = type; // temperature
@@ -96,6 +96,7 @@ public class ErmKriging extends HMModel {
 		krigingInterpolator.inVariableType = typeId;
 		krigingInterpolator.variableReader = valueReader;
 		krigingInterpolator.cutoffDivide = 10;
+		krigingInterpolator.boundToZero = boundToZero;
 		krigingInterpolator.init();
 		krigingInterpolator.process();
 	}

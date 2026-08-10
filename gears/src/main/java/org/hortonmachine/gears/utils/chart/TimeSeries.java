@@ -24,6 +24,8 @@ import java.util.List;
 import org.hortonmachine.gears.utils.colors.ColorBrewer;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.time.Day;
@@ -121,6 +123,11 @@ public class TimeSeries implements IChart {
         }
 
         XYPlot plot = (XYPlot) chart.getPlot();
+
+        ValueAxis rangeAxis = plot.getRangeAxis();
+        if (rangeAxis instanceof NumberAxis) {
+            ((NumberAxis) rangeAxis).setAutoRangeIncludesZero(false);
+        }
 
         if (colors == null) {
             colors = ColorBrewer.getPairedColors(seriesNames.size());

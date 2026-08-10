@@ -34,6 +34,9 @@ public class PreferencesHandler {
     public static final String HM_PREF_UISCALE = "hm_pref_uiscale";
     public static final double HM_DEF_UISCALE = 1.0;
     
+    public static final String HM_PREF_COPERNICUS_API_TOKEN = "hm_pref_copernicus_api_token";
+    public static final String HM_PREF_COPERNICUS_REPO_FOLDER= "hm_pref_copernicus_repo_folder";
+    
     public static final String HM_PREF_SHP_CHARSET = "hm_pref_shp_charset";
 
     public static final String PREFS_NODE_NAME = "/org/hortonmachine/gui";

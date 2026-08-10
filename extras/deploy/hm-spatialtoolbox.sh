@@ -17,7 +17,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx1g"
+MEM="-Xmx1g -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -28,4 +28,4 @@ else
 fi
 
 
-"$JAVAEXE" -splash:$DIR/imgs/splash_spatialtoolbox.png $MEM -Djava.util.logging.config.file=$DIR/quiet-logging.properties -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController $DIR/libs
+"$JAVAEXE" -splash:"$DIR/imgs/splash_spatialtoolbox.png" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController "$DIR/libs"

@@ -17,7 +17,7 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx4g"
+MEM="-Xmx4g -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -29,4 +29,4 @@ else
 fi
 
 
-"$JAVAEXE" $MEM -Djava.library.path=$DIR/natives/ -cp "$DIR/libs/*" org.h2.tools.Server -tcpShutdown tcp://localhost:$1
+"$JAVAEXE" $MEM -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.h2.tools.Server -tcpShutdown "tcp://localhost:$1"

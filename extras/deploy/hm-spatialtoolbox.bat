@@ -23,7 +23,8 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 )
 
 set MEM="-Xmx1g"
+set XSS="-Xss64m"
 set PATH=%~dp0\natives\;%PATH%
-"%JAVAEXE%" -splash:%~dp0\imgs\splash_spatialtoolbox.png %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path=%~dp0\natives\ -cp ".\libs\*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
+"%JAVAEXE%" -splash:"%~dp0\imgs\splash_spatialtoolbox.png" %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp ".\libs\*" org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController ./libs
 
 endlocal

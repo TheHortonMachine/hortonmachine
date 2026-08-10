@@ -27,21 +27,24 @@ public class WaterBudgetCalibrationPsoFunction implements IPSFunction {
 	private Integer spinupTimesteps;
 	private WaterSimulationRunner runner;
 	private CostFunctions costFunction;
+	private boolean printDebugInfo;
 
 	public WaterBudgetCalibrationPsoFunction(int timeStepMinutes, double[] observedDischarge, int maxBasinId,
 			double[] basinAreas, TopologyNode rootNode, GeoframeEnvDatabaseIterator precipReader,
 			GeoframeEnvDatabaseIterator tempReader, GeoframeEnvDatabaseIterator etpReader, Integer spinupTimesteps,
-			CostFunctions costFunction, boolean doParallel,
-		    boolean doTopologicallyOrdered, boolean writeState, IHMProgressMonitor pm) {
+			CostFunctions costFunction, boolean doParallel, boolean doTopologicallyOrdered, boolean writeState,
+			IHMProgressMonitor pm, boolean printDebugInfo) {
 		this.observedDischarge = observedDischarge;
 		this.precipReader = precipReader;
 		this.tempReader = tempReader;
 		this.etpReader = etpReader;
 		this.spinupTimesteps = spinupTimesteps;
 		this.costFunction = costFunction;
+		this.printDebugInfo = printDebugInfo;
 
 		runner = new WaterSimulationRunner();
-		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, doParallel, writeState, doTopologicallyOrdered, null, pm);
+		runner.configure(timeStepMinutes, maxBasinId, rootNode, basinAreas, doParallel, writeState,
+				doTopologicallyOrdered, null, pm);
 	}
 
 	@Override
@@ -51,7 +54,9 @@ public class WaterBudgetCalibrationPsoFunction implements IPSFunction {
 
 		WaterBudgetParameters wbParams = WaterBudgetParameters.fromParameterArray(params);
 
-		String iterationInfo = String.format("PSO Iteration %d, Particle %d", iterationStep, particleNum);
+		String iterationInfo = null;
+		if (printDebugInfo)
+			iterationInfo = String.format("PSO Iteration %d, Particle %d", iterationStep, particleNum);
 		double[] simQ = runner.run(wbParams, lai, precipReader, tempReader, etpReader, iterationInfo);
 
 		double cost = costFunction.evaluateCost(observedDischarge, simQ, spinupTimesteps, HMConstants.doubleNovalue);

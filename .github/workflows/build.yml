@@ -84,7 +84,7 @@ jobs:
 
           # Build and populate ./extras/export/libs
           mvn -U clean
-          mvn -U install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true
+          mvn -U install -DskipTests=true -Dmaven.javadoc.skip=true
 
           # Fail fast if libs weren't created by the build
           test -d "${TMPLIBS}"

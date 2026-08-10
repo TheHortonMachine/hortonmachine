@@ -23,6 +23,7 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 )
 
 set MEM="-Xmx4g"
-%JAVAEXE% %MEM% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.webmaps.WebMapsController
+set XSS="-Xss64m"
+%JAVAEXE% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.webmaps.WebMapsController
 
 endlocal
