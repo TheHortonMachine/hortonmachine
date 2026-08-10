@@ -74,10 +74,11 @@ public class HMStacItem {
         Object datetimeObject = feature.getAttribute("datetime");
         if (datetimeObject != null) {
             String dateCetStr = datetimeObject.toString();
-            if (dateCetStr != null) {
+            if (!dateCetStr.equals("null")) {
                 stacItem.dateCet = HMStacUtils.dateFormatter.parse(dateCetStr);
             }
         }
+
         Object start = feature.getAttribute("start_datetime");
         if (start != null) {
             stacItem.start = HMStacUtils.dateFormatter.parse(start.toString());
