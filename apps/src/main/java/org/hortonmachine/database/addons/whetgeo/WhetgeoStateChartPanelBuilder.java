@@ -23,8 +23,10 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +45,8 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.StandardXYToolTipGenerator;
+import org.jfree.chart.labels.XYZToolTipGenerator;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
 import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
@@ -53,6 +57,8 @@ import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYZDataset;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
@@ -102,12 +108,29 @@ public class WhetgeoStateChartPanelBuilder {
     private static final Color TOP_BC_COLOR = ColorUtilities.fromHex("#0096ffff");
     private static final Color BOTTOM_BC_COLOR = ColorUtilities.fromHex("#8a5a00ff");
 
-    // one distinct sequential ramp per depth series index, so each heatmap and its
-    // (positionally unaligned) legend are still visually matched by color alone
-    private static final Color[][] HEATMAP_RAMPS = { //
-            {ColorUtilities.fromHex("#eaf2fbff"), ColorUtilities.fromHex("#3a7ecfff")}, // light blue - water content
-            {ColorUtilities.fromHex("#eaf2fbff"), ColorUtilities.fromHex("#08306bff")}, // dark blue - water suction
-    };
+    // one distinct sequential ramp per depth series, so each heatmap and its
+    // (positionally unaligned) legend are still visually matched by color alone.
+    // Keyed by DepthSeries.name (see WhetgeoStateChartDataLoader) rather than list
+    // position: every optional column is independently present or absent per run
+    // (see Whetgeo1DOutputsHandler), so a series' index in the list shifts from run
+    // to run and can't be used to pick a stable color - e.g. a Richards output with
+    // no temperature column would otherwise put theta at index 0 and get painted
+    // with the ramp meant for temperature.
+    private static final Map<String, Color[]> HEATMAP_RAMPS = new HashMap<>();
+    private static final Color[] FALLBACK_RAMP = //
+            {ColorUtilities.fromHex("#f0f0f0ff"), ColorUtilities.fromHex("#525252ff")}; // gray - unrecognized series
+    static {
+        HEATMAP_RAMPS.put("Temperature",
+                new Color[]{ColorUtilities.fromHex("#fee8c8ff"), ColorUtilities.fromHex("#b35806ff")}); // orange
+        HEATMAP_RAMPS.put("Water content",
+                new Color[]{ColorUtilities.fromHex("#eaf2fbff"), ColorUtilities.fromHex("#3a7ecfff")}); // light blue
+        HEATMAP_RAMPS.put("Water suction",
+                new Color[]{ColorUtilities.fromHex("#eaf2fbff"), ColorUtilities.fromHex("#08306bff")}); // dark blue
+        HEATMAP_RAMPS.put("Internal energy",
+                new Color[]{ColorUtilities.fromHex("#f0e6f7ff"), ColorUtilities.fromHex("#54278fff")}); // purple
+        HEATMAP_RAMPS.put("Ice content",
+                new Color[]{ColorUtilities.fromHex("#e0f3f0ff"), ColorUtilities.fromHex("#00695cff")}); // teal
+    }
 
     /** Reserved range-axis width, in Java2D units, identical for every sub-plot - see class javadoc. */
     private static final double RANGE_AXIS_FIXED_DIMENSION = 55;
@@ -148,7 +171,7 @@ public class WhetgeoStateChartPanelBuilder {
         List<PaintScaleLegend> legends = new ArrayList<>();
         for( int i = 0; i < data.depthSeries.size(); i++ ) {
             DepthSeries series = data.depthSeries.get(i);
-            Color[] ramp = HEATMAP_RAMPS[i % HEATMAP_RAMPS.length];
+            Color[] ramp = HEATMAP_RAMPS.getOrDefault(series.name, FALLBACK_RAMP);
             double[] bounds = valueBounds(series.values);
             PaintScale scale = new TwoColorPaintScale(bounds[0], bounds[1], ramp[0], ramp[1]);
 
@@ -191,6 +214,7 @@ public class WhetgeoStateChartPanelBuilder {
                 chart.addSubtitle(legend);
             }
             ChartPanel chartPanel = new ChartPanel(chart, true);
+            chartPanel.setDisplayToolTips(true);
             // re-render at actual size on every resize instead of scaling the buffer
             chartPanel.setMaximumDrawWidth(Integer.MAX_VALUE);
             chartPanel.setMaximumDrawHeight(Integer.MAX_VALUE);
@@ -213,6 +237,8 @@ public class WhetgeoStateChartPanelBuilder {
         renderer.setUseYInterval(false);
         renderer.setDrawBarOutline(false);
         renderer.setMargin(0.1);
+        renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator("{1}:  {2}",
+                new SimpleDateFormat("dd-MMM HH:mm"), new DecimalFormat("0.###")));
 
         XYPlot plot = new XYPlot();
         plot.setDataset(0, toBarDataset(axisLabel, times, values));
@@ -237,6 +263,7 @@ public class WhetgeoStateChartPanelBuilder {
         renderer.setBlockWidth(blockWidth);
         renderer.setBlockHeight(blockHeight);
         renderer.setPaintScale(scale);
+        renderer.setBaseToolTipGenerator(new DepthHeatmapToolTipGenerator(series.axisLabel));
 
         NumberAxis depthAxis = new NumberAxis("Depth [m]");
         depthAxis.setAutoRangeIncludesZero(false);
@@ -447,6 +474,46 @@ public class WhetgeoStateChartPanelBuilder {
         DefaultIntervalXYDataset dataset = new DefaultIntervalXYDataset();
         dataset.addSeries(name, new double[][]{xValues, xStart, xEnd, yValues, yValues, yValues});
         return dataset;
+    }
+
+    /** Hover tooltip for a heatmap cell: time, depth and the cell's value, labeled with the
+     *  series' own axis label (e.g. "Water content - theta [-]") so the number is never shown
+     *  unitless. Implements both {@link #generateToolTip(XYDataset, int, int)} (the interface
+     *  method the renderer's generic tooltip path is statically bound to call) and {@link
+     *  #generateToolTip(XYZDataset, int, int)} (in case the z-aware overload is used instead) by
+     *  routing both through the same z-extracting logic, so the tooltip is correct regardless of
+     *  which one JFreeChart actually invokes. */
+    private static class DepthHeatmapToolTipGenerator implements XYZToolTipGenerator {
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM HH:mm");
+        private final DecimalFormat valueFormat = new DecimalFormat("0.###");
+        private final String axisLabel;
+
+        DepthHeatmapToolTipGenerator( String axisLabel ) {
+            this.axisLabel = axisLabel;
+        }
+
+        @Override
+        public String generateToolTip( XYZDataset dataset, int series, int item ) {
+            return buildTip(dataset, series, item);
+        }
+
+        @Override
+        public String generateToolTip( XYDataset dataset, int series, int item ) {
+            return buildTip(dataset, series, item);
+        }
+
+        private String buildTip( XYDataset dataset, int series, int item ) {
+            double x = dataset.getXValue(series, item);
+            double y = dataset.getYValue(series, item);
+            StringBuilder tip = new StringBuilder();
+            tip.append(dateFormat.format(new Date((long) x)));
+            tip.append("  |  depth ").append(valueFormat.format(y)).append(" m");
+            if (dataset instanceof XYZDataset) {
+                double z = ((XYZDataset) dataset).getZValue(series, item);
+                tip.append("  |  ").append(axisLabel).append(" = ").append(valueFormat.format(z));
+            }
+            return tip.toString();
+        }
     }
 
     /** Continuous linear interpolation between two colors - a proper sequential ramp,

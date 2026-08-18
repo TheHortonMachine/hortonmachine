@@ -43,10 +43,16 @@ import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputsHandler;
  */
 public class WhetgeoStateChartDataLoader {
 
-    // optional output_state column -> [display name, axis label]; theta is
-    // handled separately since it's the one mandatory depth series.
+    // optional output_state column -> [display name, axis label]. Every depth
+    // series is independently optional now (see Whetgeo1DOutputsHandler): a
+    // Richards run with no thermal model never writes temperature, a plain
+    // HeatDiffusionSolver1D run never writes theta, etc.
     private static final Map<String, String[]> OPTIONAL_DEPTH_COLUMNS = new LinkedHashMap<>();
     static {
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_TEMPERATURE,
+                new String[]{"Temperature", "Temperature [K]"});
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_THETA,
+                new String[]{"Water content", "Water content - theta [-]"});
         OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_WATER_SUCTION,
                 new String[]{"Water suction", "Water suction - psi [m]"});
         OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_INTERNAL_ENERGY,
@@ -84,8 +90,6 @@ public class WhetgeoStateChartDataLoader {
             data.bottomBCValues = bottomBC.values;
         }
 
-        data.depthSeries
-                .add(loadDepthSeries(db, Whetgeo1DOutputsHandler.COL_THETA, "Water content", "Water content - theta [-]"));
         for( Map.Entry<String, String[]> entry : OPTIONAL_DEPTH_COLUMNS.entrySet() ) {
             String column = entry.getKey();
             if (hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_STATE, column)) {

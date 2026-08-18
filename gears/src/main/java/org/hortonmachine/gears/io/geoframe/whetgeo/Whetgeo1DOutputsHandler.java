@@ -27,15 +27,19 @@ import org.hortonmachine.dbs.utils.SqlName;
  * </ul>
  *
  * <p>
- * {@link #temperature} and {@link #theta} are always required (every solver
- * — heat or Richards — produces a temperature and a water/energy content).
- * Every other output field, including {@link #heatFlux} and {@link #error},
- * is independently optional: leaving it null before the first
- * {@link #write()} omits its column(s) entirely; setting it adds the
- * column(s) to the relevant table. This lets each solver opt into exactly
- * the columns it produces, without a fixed enumeration of "modes" — e.g. a
- * Richards-only run has no heat flux or energy error, but does have
- * {@link #waterSuction} and {@link #errorVolume}. The surface-energy-balance
+ * Every per-step output field is independently optional: leaving it null
+ * before the first {@link #write()} omits its column(s) entirely; setting it
+ * adds the column(s) to the relevant table. This lets each solver opt into
+ * exactly the columns it actually computes, without a fixed enumeration of
+ * "modes" — e.g. a Richards-only run has no heat flux or energy error, but
+ * does have {@link #waterSuction} and {@link #errorVolume}; a plain
+ * {@code HeatDiffusionSolver1D} run driven by the {@code SoilInternalEnergy}
+ * equation state never computes a liquid water content at all, so it should
+ * leave {@link #theta} null rather than write a column of meaningless
+ * constant zeros; conversely a Richards run with {@code
+ * typeUHCTemperatureModel = "notemperature"} never actually solves {@link
+ * #temperature} (it would just be the same IC array written back unchanged
+ * every step), so it should leave that null too. The surface-energy-balance
  * scalars ({@link #airT}
  * and its 7 companions) are written as one bundle, keyed on {@link #airT}
  * being non-null, since they only ever come from the same physical
@@ -151,13 +155,13 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public String topBCType;
 	public String bottomBCType;
 
-	// mandatory per-step outputs — every solver produces these
+	// mandatory per-step output — the row key every solver always has
 	public long timestamp;
-	public double[] temperature;
-	public double[] theta;
 
 	// optional per-step outputs. Each is independently activated by being
 	// non-null before the first write() — leave null to omit its column(s).
+	public double[] temperature;
+	public double[] theta;
 	public double[] internalEnergy;
 	public double[] iceContent;
 	public double[] waterSuction;
@@ -197,6 +201,8 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private int KMAX;
 	private int DUALKMAX;
 
+	private boolean withTemperature;
+	private boolean withTheta;
 	private boolean withInternalEnergy;
 	private boolean withIceContent;
 	private boolean withWaterSuction;
@@ -213,9 +219,9 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private String SQL_INSERT_SCALARS;
 
 	private final List<long[]> tsBuf = new ArrayList<>();
-	private final List<double[]> temperatureBuf = new ArrayList<>();
-	private final List<double[]> thetaBuf = new ArrayList<>();
 
+	private List<double[]> temperatureBuf;
+	private List<double[]> thetaBuf;
 	private List<double[]> internalEnergyBuf;
 	private List<double[]> iceContentBuf;
 	private List<double[]> waterSuctionBuf;
@@ -255,9 +261,13 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		lastWrittenTimestamp = timestamp;
 
 		tsBuf.add(new long[] { timestamp });
-		temperatureBuf.add(temperature.clone());
-		thetaBuf.add(theta.clone());
 
+		if (withTemperature) {
+			temperatureBuf.add(temperature.clone());
+		}
+		if (withTheta) {
+			thetaBuf.add(theta.clone());
+		}
 		if (withInternalEnergy) {
 			internalEnergyBuf.add(internalEnergy.clone());
 		}
@@ -319,6 +329,8 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		// Each optional output field independently activates its own column(s)
 		// when set (non-null) before the first write(). Add new flags here when
 		// further solver output types are introduced — no fixed "mode" enum needed.
+		withTemperature = (temperature != null);
+		withTheta = (theta != null);
 		withInternalEnergy = (internalEnergy != null);
 		withIceContent = (iceContent != null);
 		withWaterSuction = (waterSuction != null);
@@ -331,6 +343,10 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		withSurfaceEnergyBalance = (airT != null);
 		// ----------------------------------------------------------------------
 
+		if (withTemperature)
+			temperatureBuf = new ArrayList<>();
+		if (withTheta)
+			thetaBuf = new ArrayList<>();
 		if (withInternalEnergy)
 			internalEnergyBuf = new ArrayList<>();
 		if (withIceContent)
@@ -469,8 +485,12 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			});
 		}
 
-		// output_state: timestamp, eta, temperature, theta + active optional columns
-		List<String> stateCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ETA, COL_TEMPERATURE, COL_THETA));
+		// output_state: timestamp, eta + active optional columns
+		List<String> stateCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ETA));
+		if (withTemperature)
+			stateCols.add(COL_TEMPERATURE);
+		if (withTheta)
+			stateCols.add(COL_THETA);
 		if (withInternalEnergy)
 			stateCols.add(COL_INTERNAL_ENERGY);
 		if (withIceContent)
@@ -567,8 +587,8 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			try (IHMPreparedStatement ps = conn.prepareStatement(SQL_INSERT_STATE)) {
 				for (int r = 0; r < n; r++) {
 					long ts = tsBuf.get(r)[0];
-					double[] T = temperatureBuf.get(r);
-					double[] th = thetaBuf.get(r);
+					double[] T = withTemperature ? temperatureBuf.get(r) : null;
+					double[] th = withTheta ? thetaBuf.get(r) : null;
 					double[] ie = withInternalEnergy ? internalEnergyBuf.get(r) : null;
 					double[] ic = withIceContent ? iceContentBuf.get(r) : null;
 					double[] ws = withWaterSuction ? waterSuctionBuf.get(r) : null;
@@ -576,8 +596,10 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 						int pos = 1;
 						ps.setLong(pos++, ts);
 						ps.setDouble(pos++, eta[k]);
-						ps.setDouble(pos++, T[k]);
-						ps.setDouble(pos++, th[k]);
+						if (T != null)
+							ps.setDouble(pos++, T[k]);
+						if (th != null)
+							ps.setDouble(pos++, th[k]);
 						if (ie != null)
 							ps.setDouble(pos++, ie[k]);
 						if (ic != null)
@@ -640,8 +662,10 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		});
 
 		tsBuf.clear();
-		temperatureBuf.clear();
-		thetaBuf.clear();
+		if (withTemperature)
+			temperatureBuf.clear();
+		if (withTheta)
+			thetaBuf.clear();
 		if (withInternalEnergy)
 			internalEnergyBuf.clear();
 		if (withIceContent)

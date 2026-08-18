@@ -24,9 +24,10 @@ import java.util.List;
  * Holds the data needed to render the WHETGEO 1D state (Hovmoller-style) chart:
  * the static grid depth coordinates, the top/bottom boundary condition forcing
  * timeseries (if the output was written with them), and one depth/time/value
- * series per state variable actually present in the output (theta is always
- * present; water_suction/internal_energy/ice_content only if that column
- * exists — see {@link WhetgeoStateChartDataLoader}).
+ * series per state variable actually present in the output — every one
+ * (temperature, theta, water_suction, internal_energy, ice_content) is only
+ * included if that column exists, since each is independently optional on
+ * the writer side (see {@link WhetgeoStateChartDataLoader}).
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
