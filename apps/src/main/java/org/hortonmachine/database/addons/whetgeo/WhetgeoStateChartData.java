@@ -32,14 +32,25 @@ import java.util.List;
  */
 public class WhetgeoStateChartData {
     public double[] gridEta = new double[0];
+    /** Per-cell parameter-set label, same order as {@link #gridEta}; empty if the output
+     *  wasn't written with {@code parameter_id} (see {@code Whetgeo1DOutputsHandler}). */
+    public int[] gridParameterID = new int[0];
 
     public long[] topBCTimes = new long[0];
     public double[] topBCValues = new double[0];
+    /** e.g. "TOP_COUPLED"; null if the output wasn't written with one
+     *  (see {@code Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA}). */
+    public String topBCType;
 
     public long[] bottomBCTimes = new long[0];
     public double[] bottomBCValues = new double[0];
+    public String bottomBCType;
 
     public List<DepthSeries> depthSeries = new ArrayList<>();
+
+    /** SWRC parameter snapshot per parameter set id, if the output was written with one
+     *  (see {@code Whetgeo1DOutputsHandler.TABLE_OUTPUT_SWRC_PARAMETERS}); empty otherwise. */
+    public List<SwrcParams> swrcParameters = new ArrayList<>();
 
     /**
      * One state variable's full (timestamp, eta) -&gt; value grid, flattened into
@@ -55,6 +66,25 @@ public class WhetgeoStateChartData {
         public DepthSeries( String name, String axisLabel ) {
             this.name = name;
             this.axisLabel = axisLabel;
+        }
+    }
+
+    /** One row of {@code output_swrc_parameters}: the soil properties for one parameter set. */
+    public static class SwrcParams {
+        public final int id;
+        public final double thetaS;
+        public final double thetaR;
+        public final double ks;
+        public final double n;
+        public final double alpha;
+
+        public SwrcParams( int id, double thetaS, double thetaR, double ks, double n, double alpha ) {
+            this.id = id;
+            this.thetaS = thetaS;
+            this.thetaR = thetaR;
+            this.ks = ks;
+            this.n = n;
+            this.alpha = alpha;
         }
     }
 }

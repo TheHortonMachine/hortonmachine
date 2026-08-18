@@ -17,27 +17,34 @@
  */
 package org.hortonmachine.database.addons.whetgeo;
 
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
 import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.DepthSeries;
+import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.SwrcParams;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.plot.CombinedDomainXYPlot;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
@@ -46,8 +53,10 @@ import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.IntervalXYDataset;
+import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
+import org.jfree.ui.TextAnchor;
 
 /**
  * Builds the WHETGEO 1D state (Hovmoller-style) chart: an optional top/bottom
@@ -115,22 +124,26 @@ public class WhetgeoStateChartPanelBuilder {
         combinedPlot.setGap(12);
         boolean hasChartRow = false;
 
+        String topLabel = bcLabel("Top Boundary Condition", data.topBCType);
         double[] topDistinct = distinctSorted(data.topBCTimes.length > 0 ? data.topBCValues : new double[0]);
         if (data.topBCTimes.length > 0 && topDistinct.length > 1) {
-            combinedPlot.add(buildBCPlot("Top Boundary Condition", data.topBCTimes, data.topBCValues, TOP_BC_COLOR), 1);
+            combinedPlot.add(buildBCPlot(topLabel, data.topBCTimes, data.topBCValues, TOP_BC_COLOR), 1);
             hasChartRow = true;
         } else if (topDistinct.length == 1) {
-            addConstantValueRow(constantRows, "Top Boundary Condition", topDistinct[0]);
+            addConstantValueRow(constantRows, topLabel, topDistinct[0]);
         }
 
+        String bottomLabel = bcLabel("Bottom Boundary Condition", data.bottomBCType);
         double[] bottomDistinct = distinctSorted(data.bottomBCTimes.length > 0 ? data.bottomBCValues : new double[0]);
         if (data.bottomBCTimes.length > 0 && bottomDistinct.length > 1) {
-            combinedPlot.add(buildBCPlot("Bottom Boundary Condition", data.bottomBCTimes, data.bottomBCValues,
-                    BOTTOM_BC_COLOR), 1);
+            combinedPlot.add(buildBCPlot(bottomLabel, data.bottomBCTimes, data.bottomBCValues, BOTTOM_BC_COLOR), 1);
             hasChartRow = true;
         } else if (bottomDistinct.length == 1) {
-            addConstantValueRow(constantRows, "Bottom Boundary Condition", bottomDistinct[0]);
+            addConstantValueRow(constantRows, bottomLabel, bottomDistinct[0]);
         }
+
+        List<LayerBoundary> layerBoundaries = computeLayerBoundaries(data);
+        List<XYPlot> heatmapPlots = new ArrayList<>();
 
         List<PaintScaleLegend> legends = new ArrayList<>();
         for( int i = 0; i < data.depthSeries.size(); i++ ) {
@@ -139,14 +152,38 @@ public class WhetgeoStateChartPanelBuilder {
             double[] bounds = valueBounds(series.values);
             PaintScale scale = new TwoColorPaintScale(bounds[0], bounds[1], ramp[0], ramp[1]);
 
-            combinedPlot.add(buildHeatmapPlot(series, scale), 2);
+            XYPlot heatmapPlot = buildHeatmapPlot(series, scale, layerBoundaries);
+            heatmapPlots.add(heatmapPlot);
+            combinedPlot.add(heatmapPlot, 2);
             hasChartRow = true;
             legends.add(buildLegend(series, scale, bounds));
         }
 
-        JPanel panel = new JPanel(new BorderLayout());
+        JPanel topArea = new JPanel();
+        topArea.setLayout(new BoxLayout(topArea, BoxLayout.Y_AXIS));
+        if (!layerBoundaries.isEmpty()) {
+            JCheckBox showAnnotationsCheck = new JCheckBox("Show layer annotations", true);
+            showAnnotationsCheck.setAlignmentX(JCheckBox.LEFT_ALIGNMENT);
+            showAnnotationsCheck.addActionListener(e -> {
+                boolean show = showAnnotationsCheck.isSelected();
+                for( XYPlot plot : heatmapPlots ) {
+                    plot.clearRangeMarkers();
+                    if (show) {
+                        addLayerBoundaryMarkers(plot, layerBoundaries);
+                    }
+                }
+            });
+            JPanel checkRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+            checkRow.add(showAnnotationsCheck);
+            topArea.add(checkRow);
+        }
         if (constantRows.getComponentCount() > 0) {
-            panel.add(constantRows, BorderLayout.NORTH);
+            topArea.add(constantRows);
+        }
+
+        JPanel panel = new JPanel(new BorderLayout());
+        if (topArea.getComponentCount() > 0) {
+            panel.add(topArea, BorderLayout.NORTH);
         }
         if (hasChartRow) {
             JFreeChart chart = new JFreeChart(title, JFreeChart.DEFAULT_TITLE_FONT, combinedPlot, false);
@@ -185,7 +222,7 @@ public class WhetgeoStateChartPanelBuilder {
         return plot;
     }
 
-    private static XYPlot buildHeatmapPlot( DepthSeries series, PaintScale scale ) {
+    private static XYPlot buildHeatmapPlot( DepthSeries series, PaintScale scale, List<LayerBoundary> layerBoundaries ) {
         double[] xValues = series.times.length > 0 ? toDoubleArray(series.times) : new double[0];
         double[] yValues = series.eta;
         double[] zValues = series.values;
@@ -210,7 +247,82 @@ public class WhetgeoStateChartPanelBuilder {
         plot.setRenderer(0, renderer);
         plot.setRangeAxis(0, depthAxis);
         plot.mapDatasetToRangeAxis(0, 0);
+
+        addLayerBoundaryMarkers(plot, layerBoundaries);
+
         return plot;
+    }
+
+    /** Draws one dashed, labeled {@link ValueMarker} per layer boundary onto {@code plot} -
+     *  factored out so the "Show layer annotations" checkbox can call it again after {@code
+     *  plot.clearRangeMarkers()} without rebuilding the whole chart. */
+    private static void addLayerBoundaryMarkers( XYPlot plot, List<LayerBoundary> layerBoundaries ) {
+        for( LayerBoundary boundary : layerBoundaries ) {
+            ValueMarker marker = new ValueMarker(boundary.topEta);
+            marker.setPaint(Color.DARK_GRAY);
+            marker.setStroke(
+                    new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 1f, new float[]{4f, 4f}, 0f));
+            marker.setLabel(boundary.label);
+            marker.setLabelFont(marker.getLabelFont().deriveFont(Font.PLAIN, 9f));
+            marker.setLabelPaint(Color.DARK_GRAY);
+            marker.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+            marker.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
+            marker.setLabelOffset(new RectangleInsets(2, 4, 2, 4));
+            plot.addRangeMarker(marker);
+        }
+    }
+
+    /**
+     * One value per internal transition between parameter sets in {@link
+     * WhetgeoStateChartData#gridEta}, each labeled with the SWRC parameters of the
+     * layer above that boundary - empty if the output wasn't written with {@code
+     * parameter_id}/{@code output_swrc_parameters} (see {@code
+     * Whetgeo1DOutputsHandler}), so older outputs just render without annotations.
+     *
+     * <p>
+     * {@code gridEta} holds cell *centers*, not layer edges, so the boundary itself
+     * is the midpoint between the last cell of the lower layer and the first cell
+     * of the layer above it - not either cell's own eta - otherwise the drawn line
+     * lands half a cell-thickness away from the real boundary (e.g. -1.01 instead
+     * of the true -1.00 for two 0.02 m-thick layers).
+     */
+    private static List<LayerBoundary> computeLayerBoundaries( WhetgeoStateChartData data ) {
+        List<LayerBoundary> boundaries = new ArrayList<>();
+        if (data.gridParameterID.length != data.gridEta.length || data.swrcParameters.isEmpty()) {
+            return boundaries;
+        }
+        Map<Integer, SwrcParams> byId = new HashMap<>();
+        for( SwrcParams p : data.swrcParameters ) {
+            byId.put(p.id, p);
+        }
+
+        // gridEta is ascending; a boundary exists wherever parameterID changes
+        // between two consecutive cells
+        for( int i = 1; i < data.gridEta.length; i++ ) {
+            int lowerID = data.gridParameterID[i - 1];
+            int upperID = data.gridParameterID[i];
+            if (lowerID == upperID) {
+                continue;
+            }
+            SwrcParams p = byId.get(upperID);
+            if (p == null) {
+                continue;
+            }
+            double boundaryEta = (data.gridEta[i - 1] + data.gridEta[i]) / 2.0;
+            String label = String.format("θS=%.3f  θR=%.3f  Ks=%.2e", p.thetaS, p.thetaR, p.ks);
+            boundaries.add(new LayerBoundary(boundaryEta, label));
+        }
+        return boundaries;
+    }
+
+    private static class LayerBoundary {
+        final double topEta;
+        final String label;
+
+        LayerBoundary( double topEta, String label ) {
+            this.topEta = topEta;
+            this.label = label;
+        }
     }
 
     /**
@@ -255,6 +367,14 @@ public class WhetgeoStateChartPanelBuilder {
             return String.valueOf((long) value);
         }
         return String.valueOf(value);
+    }
+
+    /** Appends the BC type (e.g. "TOP_COUPLED") to the label if the output was written with
+     *  one (see {@code Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA}); a plain fallback
+     *  label otherwise, so a value alone doesn't have to stand in for what kind of condition
+     *  produced it. */
+    private static String bcLabel( String base, String bcType ) {
+        return bcType == null ? base : base + " (" + bcType + ")";
     }
 
     private static double[] valueBounds( double[] values ) {

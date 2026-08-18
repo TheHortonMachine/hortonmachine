@@ -55,6 +55,26 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public static final String TABLE_OUTPUT_STATE = PREFIX + "_output_state";
 	public static final String TABLE_OUTPUT_FLUX = PREFIX + "_output_flux";
 	public static final String TABLE_OUTPUT_SCALARS = PREFIX + "_output_scalars";
+	/**
+	 * Optional table: a snapshot of the per-parameter-set SWRC values actually used
+	 * for this run, one row per {@link #parameterID} value (1-indexed, matching
+	 * {@code Whetgeo1DInputsHandler}'s convention). Written once, alongside {@link
+	 * #TABLE_OUTPUT_GRID}, so the output file is self-contained even though the
+	 * parameters themselves were originally read from a separate input gpkg -
+	 * without this, nothing connected to just the output file (e.g. a chart
+	 * annotation) could know which soil properties produced it.
+	 */
+	public static final String TABLE_OUTPUT_SWRC_PARAMETERS = PREFIX + "_output_swrc_parameters";
+	/**
+	 * Optional table, one row, written once: the boundary condition *types* used
+	 * for this run (e.g. {@code TOP_COUPLED}, {@code BOTTOM_FREE_DRAINAGE}). Only
+	 * the numeric {@link #COL_TOP_BC}/{@link #COL_BOTTOM_BC} values are stored per
+	 * timestep in {@link #TABLE_OUTPUT_SCALARS} - without this table nothing
+	 * connected to just the output file could tell a fixed head apart from a flux
+	 * or a coupled forcing, since a value alone doesn't say what kind of condition
+	 * produced it.
+	 */
+	public static final String TABLE_OUTPUT_METADATA = PREFIX + "_output_metadata";
 
 	public static final String COL_ID = "id";
 	public static final String COL_TIMESTAMP = Whetgeo1DInputsHandler.COL_TEMPERATURE_TIMESTAMP;
@@ -63,6 +83,14 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public static final String COL_CONTROL_VOLUME = "control_volume";
 	public static final String COL_PSI = "psi";
 	public static final String COL_TEMPERATURE_IC = "temperature_ic";
+	public static final String COL_PARAMETER_ID = "parameter_id";
+	public static final String COL_THETA_S = "theta_s";
+	public static final String COL_THETA_R = "theta_r";
+	public static final String COL_KS = "ks";
+	public static final String COL_N = "n";
+	public static final String COL_ALPHA = "alpha";
+	public static final String COL_TOP_BC_TYPE = "top_bc_type";
+	public static final String COL_BOTTOM_BC_TYPE = "bottom_bc_type";
 	public static final String COL_TEMPERATURE = "temperature";
 	public static final String COL_THETA = "theta";
 	public static final String COL_INTERNAL_ENERGY = "internal_energy";
@@ -89,6 +117,39 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public double[] controlVolume;
 	public double[] psi;
 	public double[] temperatureIC;
+
+	/**
+	 * Per-cell parameter-set label (1-indexed, matching {@code
+	 * Whetgeo1DInputsHandler.parameterID}). Optional: leave null to omit the
+	 * {@link #COL_PARAMETER_ID} column. Needed to know which {@link
+	 * #TABLE_OUTPUT_SWRC_PARAMETERS} row applies to which cell/depth range.
+	 */
+	public int[] parameterID;
+
+	/**
+	 * SWRC parameter snapshot, one array per property, 1-indexed by parameterID
+	 * (index 0 unused) - the same arrays {@code Whetgeo1DInputsHandler} exposes
+	 * after reading the input gpkg. All five are optional together: set every one
+	 * of them (non-null) to write {@link #TABLE_OUTPUT_SWRC_PARAMETERS}, or leave
+	 * all null to omit it entirely.
+	 */
+	public double[] swrcThetaS;
+	public double[] swrcThetaR;
+	public double[] swrcKs;
+	public double[] swrcN;
+	public double[] swrcAlpha;
+
+	/**
+	 * Boundary condition type labels for this run (e.g. {@code
+	 * RichardsBoundaryConditionType.TOP_COUPLED.name()}) - a plain String rather
+	 * than referencing the solver's own enum type, since this class has no
+	 * dependency on (and shouldn't gain one on) any specific solver's boundary
+	 * condition types. Independently optional: set either one (non-null) to write
+	 * {@link #TABLE_OUTPUT_METADATA} with that value; the other column is left
+	 * null if not set.
+	 */
+	public String topBCType;
+	public String bottomBCType;
 
 	// mandatory per-step outputs — every solver produces these
 	public long timestamp;
@@ -291,37 +352,115 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		if (withSurfaceEnergyBalance)
 			energyBalanceBuf = new ArrayList<>();
 
+		boolean withParameterID = (parameterID != null);
+		boolean withSwrcSnapshot = (swrcThetaS != null && swrcThetaR != null && swrcKs != null && swrcN != null
+				&& swrcAlpha != null);
+		boolean withBCTypes = (topBCType != null || bottomBCType != null);
+
 		SqlName gridTable = SqlName.m(TABLE_OUTPUT_GRID);
 		SqlName stateTable = SqlName.m(TABLE_OUTPUT_STATE);
 		SqlName fluxTable = SqlName.m(TABLE_OUTPUT_FLUX);
 		SqlName scalarsTable = SqlName.m(TABLE_OUTPUT_SCALARS);
+		SqlName swrcTable = SqlName.m(TABLE_OUTPUT_SWRC_PARAMETERS);
+		SqlName metadataTable = SqlName.m(TABLE_OUTPUT_METADATA);
 
 		if (dropAndRecreate) {
-			for (String t : List.of(TABLE_OUTPUT_GRID, TABLE_OUTPUT_STATE, TABLE_OUTPUT_FLUX, TABLE_OUTPUT_SCALARS)) {
+			for (String t : List.of(TABLE_OUTPUT_GRID, TABLE_OUTPUT_STATE, TABLE_OUTPUT_FLUX, TABLE_OUTPUT_SCALARS,
+					TABLE_OUTPUT_SWRC_PARAMETERS, TABLE_OUTPUT_METADATA)) {
 				db.executeInsertUpdateDeleteSql("DROP TABLE IF EXISTS \"" + t + "\"");
 			}
 		}
 
-		if (!db.hasTable(gridTable)) {
-			db.createTable(gridTable, COL_ETA + " REAL PRIMARY KEY", COL_CONTROL_VOLUME + " REAL", COL_PSI + " REAL",
-					COL_TEMPERATURE_IC + " REAL");
+		// output_grid: eta, control_volume, psi, temperature_ic + parameter_id if present
+		List<String> gridCols = new ArrayList<>(
+				List.of(COL_ETA, COL_CONTROL_VOLUME, COL_PSI, COL_TEMPERATURE_IC));
+		if (withParameterID)
+			gridCols.add(COL_PARAMETER_ID);
 
+		if (!db.hasTable(gridTable)) {
+			List<String> gridFieldDefs = new ArrayList<>();
+			for (String c : gridCols) {
+				gridFieldDefs.add(c + (c.equals(COL_ETA) ? " REAL PRIMARY KEY"
+						: c.equals(COL_PARAMETER_ID) ? " INTEGER" : " REAL"));
+			}
+			db.createTable(gridTable, gridFieldDefs.toArray(new String[0]));
+
+			String gridColsCsv = String.join(", ", gridCols);
 			String sqlGrid = String.format("""
-					INSERT INTO %s (%s, %s, %s, %s)
-					VALUES (?, ?, ?, ?)
-					""", TABLE_OUTPUT_GRID, COL_ETA, COL_CONTROL_VOLUME, COL_PSI, COL_TEMPERATURE_IC);
+					INSERT INTO %s (%s)
+					VALUES (%s)
+					""", TABLE_OUTPUT_GRID, gridColsCsv, placeholders(gridCols.size()));
 
 			db.execOnConnection(conn -> {
 				boolean autoCommit = conn.getAutoCommit();
 				conn.setAutoCommit(false);
 				try (IHMPreparedStatement ps = conn.prepareStatement(sqlGrid)) {
 					for (int k = 0; k < KMAX; k++) {
-						ps.setDouble(1, eta[k]);
-						ps.setDouble(2, controlVolume[k]);
-						ps.setDouble(3, psi[k]);
-						ps.setDouble(4, temperatureIC[k]);
+						int pos = 1;
+						ps.setDouble(pos++, eta[k]);
+						ps.setDouble(pos++, controlVolume[k]);
+						ps.setDouble(pos++, psi[k]);
+						ps.setDouble(pos++, temperatureIC[k]);
+						if (withParameterID)
+							ps.setInt(pos++, parameterID[k]);
 						ps.addBatch();
 					}
+					ps.executeBatch();
+					conn.commit();
+					conn.setAutoCommit(autoCommit);
+				}
+				return null;
+			});
+		}
+
+		// output_swrc_parameters: one row per parameter set actually used (index 0 is
+		// the unused dummy in Whetgeo1DInputsHandler's 1-indexed convention)
+		if (withSwrcSnapshot && !db.hasTable(swrcTable)) {
+			db.createTable(swrcTable, COL_ID + " INTEGER PRIMARY KEY", COL_THETA_S + " REAL", COL_THETA_R + " REAL",
+					COL_KS + " REAL", COL_N + " REAL", COL_ALPHA + " REAL");
+
+			String sqlSwrc = String.format("""
+					INSERT INTO %s (%s, %s, %s, %s, %s, %s)
+					VALUES (?, ?, ?, ?, ?, ?)
+					""", TABLE_OUTPUT_SWRC_PARAMETERS, COL_ID, COL_THETA_S, COL_THETA_R, COL_KS, COL_N, COL_ALPHA);
+
+			db.execOnConnection(conn -> {
+				boolean autoCommit = conn.getAutoCommit();
+				conn.setAutoCommit(false);
+				try (IHMPreparedStatement ps = conn.prepareStatement(sqlSwrc)) {
+					for (int id = 1; id < swrcThetaS.length; id++) {
+						ps.setInt(1, id);
+						ps.setDouble(2, swrcThetaS[id]);
+						ps.setDouble(3, swrcThetaR[id]);
+						ps.setDouble(4, swrcKs[id]);
+						ps.setDouble(5, swrcN[id]);
+						ps.setDouble(6, swrcAlpha[id]);
+						ps.addBatch();
+					}
+					ps.executeBatch();
+					conn.commit();
+					conn.setAutoCommit(autoCommit);
+				}
+				return null;
+			});
+		}
+
+		// output_metadata: one row, the BC type labels (whichever were set)
+		if (withBCTypes && !db.hasTable(metadataTable)) {
+			db.createTable(metadataTable, COL_TOP_BC_TYPE + " TEXT", COL_BOTTOM_BC_TYPE + " TEXT");
+
+			String sqlMetadata = String.format("""
+					INSERT INTO %s (%s, %s)
+					VALUES (?, ?)
+					""", TABLE_OUTPUT_METADATA, COL_TOP_BC_TYPE, COL_BOTTOM_BC_TYPE);
+
+			db.execOnConnection(conn -> {
+				boolean autoCommit = conn.getAutoCommit();
+				conn.setAutoCommit(false);
+				try (IHMPreparedStatement ps = conn.prepareStatement(sqlMetadata)) {
+					ps.setString(1, topBCType);
+					ps.setString(2, bottomBCType);
+					ps.addBatch();
 					ps.executeBatch();
 					conn.commit();
 					conn.setAutoCommit(autoCommit);

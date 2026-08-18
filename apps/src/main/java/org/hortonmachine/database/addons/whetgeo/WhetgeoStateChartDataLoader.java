@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.DepthSeries;
+import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.SwrcParams;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -60,7 +61,17 @@ public class WhetgeoStateChartDataLoader {
     public static WhetgeoStateChartData load( ADb db ) throws Exception {
         WhetgeoStateChartData data = new WhetgeoStateChartData();
 
-        data.gridEta = loadGridEta(db);
+        boolean withParameterID = hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_GRID,
+                Whetgeo1DOutputsHandler.COL_PARAMETER_ID);
+        loadGrid(db, data, withParameterID);
+
+        if (withParameterID && db.hasTable(Whetgeo1DOutputsHandler.TABLE_OUTPUT_SWRC_PARAMETERS)) {
+            data.swrcParameters = loadSwrcParameters(db);
+        }
+
+        if (db.hasTable(Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA)) {
+            loadBCTypes(db, data);
+        }
 
         if (hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_SCALARS, Whetgeo1DOutputsHandler.COL_TOP_BC)) {
             ScalarSeries topBC = loadScalarSeries(db, Whetgeo1DOutputsHandler.COL_TOP_BC);
@@ -85,19 +96,60 @@ public class WhetgeoStateChartDataLoader {
         return data;
     }
 
-    private static double[] loadGridEta( ADb db ) throws Exception {
-        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_ETA + " FROM " + Whetgeo1DOutputsHandler.TABLE_OUTPUT_GRID
-                + " ORDER BY " + Whetgeo1DOutputsHandler.COL_ETA;
+    private static void loadGrid( ADb db, WhetgeoStateChartData data, boolean withParameterID ) throws Exception {
+        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_ETA + (withParameterID
+                ? ", " + Whetgeo1DOutputsHandler.COL_PARAMETER_ID
+                : "") + " FROM " + Whetgeo1DOutputsHandler.TABLE_OUTPUT_GRID + " ORDER BY "
+                + Whetgeo1DOutputsHandler.COL_ETA;
         List<Double> eta = new ArrayList<>();
+        List<Integer> parameterID = new ArrayList<>();
         db.<Void>execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     eta.add(rs.getDouble(1));
+                    if (withParameterID) {
+                        parameterID.add(rs.getInt(2));
+                    }
                 }
             }
             return null;
         });
-        return eta.stream().mapToDouble(Double::doubleValue).toArray();
+        data.gridEta = eta.stream().mapToDouble(Double::doubleValue).toArray();
+        if (withParameterID) {
+            data.gridParameterID = parameterID.stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
+
+    private static List<SwrcParams> loadSwrcParameters( ADb db ) throws Exception {
+        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_ID + ", " + Whetgeo1DOutputsHandler.COL_THETA_S + ", "
+                + Whetgeo1DOutputsHandler.COL_THETA_R + ", " + Whetgeo1DOutputsHandler.COL_KS + ", "
+                + Whetgeo1DOutputsHandler.COL_N + ", " + Whetgeo1DOutputsHandler.COL_ALPHA + " FROM "
+                + Whetgeo1DOutputsHandler.TABLE_OUTPUT_SWRC_PARAMETERS + " ORDER BY " + Whetgeo1DOutputsHandler.COL_ID;
+        List<SwrcParams> params = new ArrayList<>();
+        db.<Void>execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                while( rs.next() ) {
+                    params.add(new SwrcParams(rs.getInt(1), rs.getDouble(2), rs.getDouble(3), rs.getDouble(4),
+                            rs.getDouble(5), rs.getDouble(6)));
+                }
+            }
+            return null;
+        });
+        return params;
+    }
+
+    private static void loadBCTypes( ADb db, WhetgeoStateChartData data ) throws Exception {
+        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_TOP_BC_TYPE + ", "
+                + Whetgeo1DOutputsHandler.COL_BOTTOM_BC_TYPE + " FROM " + Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA;
+        db.<Void>execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                if (rs.next()) {
+                    data.topBCType = rs.getString(1);
+                    data.bottomBCType = rs.getString(2);
+                }
+            }
+            return null;
+        });
     }
 
     private static ScalarSeries loadScalarSeries( ADb db, String column ) throws Exception {
