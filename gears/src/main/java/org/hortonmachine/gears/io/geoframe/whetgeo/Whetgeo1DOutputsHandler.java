@@ -27,12 +27,16 @@ import org.hortonmachine.dbs.utils.SqlName;
  * </ul>
  *
  * <p>
- * {@link #temperature}, {@link #theta}, {@link #heatFlux} and {@link #error}
- * are always required. Every other output field is independently optional:
- * leaving it null before the first {@link #write()} omits its column(s)
- * entirely; setting it adds the column(s) to the relevant table. This lets
- * each solver opt into exactly the columns it produces, without a fixed
- * enumeration of "modes". The surface-energy-balance scalars ({@link #airT}
+ * {@link #temperature} and {@link #theta} are always required (every solver
+ * — heat or Richards — produces a temperature and a water/energy content).
+ * Every other output field, including {@link #heatFlux} and {@link #error},
+ * is independently optional: leaving it null before the first
+ * {@link #write()} omits its column(s) entirely; setting it adds the
+ * column(s) to the relevant table. This lets each solver opt into exactly
+ * the columns it produces, without a fixed enumeration of "modes" — e.g. a
+ * Richards-only run has no heat flux or energy error, but does have
+ * {@link #waterSuction} and {@link #errorVolume}. The surface-energy-balance
+ * scalars ({@link #airT}
  * and its 7 companions) are written as one bundle, keyed on {@link #airT}
  * being non-null, since they only ever come from the same physical
  * sub-model.
@@ -85,15 +89,15 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	public long timestamp;
 	public double[] temperature;
 	public double[] theta;
-	public double[] heatFlux;
-	public double error;
 
 	// optional per-step outputs. Each is independently activated by being
 	// non-null before the first write() — leave null to omit its column(s).
 	public double[] internalEnergy;
 	public double[] iceContent;
 	public double[] waterSuction;
+	public double[] heatFlux;
 	public double[] darcyVelocity;
+	public Double error;
 	public Double topBC;
 	public Double bottomBC;
 	public Double errorVolume;
@@ -130,7 +134,9 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private boolean withInternalEnergy;
 	private boolean withIceContent;
 	private boolean withWaterSuction;
+	private boolean withHeatFlux;
 	private boolean withDarcyVelocity;
+	private boolean withError;
 	private boolean withTopBC;
 	private boolean withBottomBC;
 	private boolean withErrorVolume;
@@ -143,13 +149,13 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 	private final List<long[]> tsBuf = new ArrayList<>();
 	private final List<double[]> temperatureBuf = new ArrayList<>();
 	private final List<double[]> thetaBuf = new ArrayList<>();
-	private final List<double[]> heatFluxBuf = new ArrayList<>();
-	private final List<Double> errorBuf = new ArrayList<>();
 
 	private List<double[]> internalEnergyBuf;
 	private List<double[]> iceContentBuf;
 	private List<double[]> waterSuctionBuf;
+	private List<double[]> heatFluxBuf;
 	private List<double[]> darcyVelocityBuf;
+	private List<Double> errorBuf;
 	private List<Double> topBCBuf;
 	private List<Double> bottomBCBuf;
 	private List<Double> errorVolumeBuf;
@@ -185,8 +191,6 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		tsBuf.add(new long[] { timestamp });
 		temperatureBuf.add(temperature.clone());
 		thetaBuf.add(theta.clone());
-		heatFluxBuf.add(heatFlux.clone());
-		errorBuf.add(error);
 
 		if (withInternalEnergy) {
 			internalEnergyBuf.add(internalEnergy.clone());
@@ -197,8 +201,14 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		if (withWaterSuction) {
 			waterSuctionBuf.add(waterSuction.clone());
 		}
+		if (withHeatFlux) {
+			heatFluxBuf.add(heatFlux.clone());
+		}
 		if (withDarcyVelocity) {
 			darcyVelocityBuf.add(darcyVelocity.clone());
+		}
+		if (withError) {
+			errorBuf.add(error);
 		}
 		if (withTopBC) {
 			topBCBuf.add(topBC);
@@ -246,7 +256,9 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		withInternalEnergy = (internalEnergy != null);
 		withIceContent = (iceContent != null);
 		withWaterSuction = (waterSuction != null);
+		withHeatFlux = (heatFlux != null);
 		withDarcyVelocity = (darcyVelocity != null);
+		withError = (error != null);
 		withTopBC = (topBC != null);
 		withBottomBC = (bottomBC != null);
 		withErrorVolume = (errorVolume != null);
@@ -259,8 +271,12 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			iceContentBuf = new ArrayList<>();
 		if (withWaterSuction)
 			waterSuctionBuf = new ArrayList<>();
+		if (withHeatFlux)
+			heatFluxBuf = new ArrayList<>();
 		if (withDarcyVelocity)
 			darcyVelocityBuf = new ArrayList<>();
+		if (withError)
+			errorBuf = new ArrayList<>();
 		if (withTopBC)
 			topBCBuf = new ArrayList<>();
 		if (withBottomBC)
@@ -329,8 +345,10 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			db.createIndex(stateTable, COL_ETA, false);
 		}
 
-		// output_flux: timestamp, eta_dual, heat_flux + active optional columns
-		List<String> fluxCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ETA_DUAL, COL_HEAT_FLUX));
+		// output_flux: timestamp, eta_dual + active optional columns
+		List<String> fluxCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ETA_DUAL));
+		if (withHeatFlux)
+			fluxCols.add(COL_HEAT_FLUX);
 		if (withDarcyVelocity)
 			fluxCols.add(COL_DARCY_VELOCITY);
 
@@ -345,8 +363,10 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			db.createIndex(fluxTable, COL_ETA_DUAL, false);
 		}
 
-		// output_scalars: timestamp, error + active optional columns
-		List<String> scalarCols = new ArrayList<>(List.of(COL_TIMESTAMP, COL_ERROR));
+		// output_scalars: timestamp + active optional columns
+		List<String> scalarCols = new ArrayList<>(List.of(COL_TIMESTAMP));
+		if (withError)
+			scalarCols.add(COL_ERROR);
 		if (withTopBC)
 			scalarCols.add(COL_TOP_BC);
 		if (withBottomBC)
@@ -430,13 +450,14 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 			try (IHMPreparedStatement ps = conn.prepareStatement(SQL_INSERT_FLUX)) {
 				for (int r = 0; r < n; r++) {
 					long ts = tsBuf.get(r)[0];
-					double[] hf = heatFluxBuf.get(r);
+					double[] hf = withHeatFlux ? heatFluxBuf.get(r) : null;
 					double[] dv = withDarcyVelocity ? darcyVelocityBuf.get(r) : null;
 					for (int k = 0; k < DUALKMAX; k++) {
 						int pos = 1;
 						ps.setLong(pos++, ts);
 						ps.setDouble(pos++, etaDual[k]);
-						ps.setDouble(pos++, hf[k]);
+						if (hf != null)
+							ps.setDouble(pos++, hf[k]);
 						if (dv != null)
 							ps.setDouble(pos++, dv[k]);
 						ps.addBatch();
@@ -450,7 +471,8 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 				for (int r = 0; r < n; r++) {
 					int pos = 1;
 					ps.setLong(pos++, tsBuf.get(r)[0]);
-					ps.setDouble(pos++, errorBuf.get(r));
+					if (withError)
+						ps.setDouble(pos++, errorBuf.get(r));
 					if (withTopBC)
 						ps.setDouble(pos++, topBCBuf.get(r));
 					if (withBottomBC)
@@ -476,16 +498,18 @@ public class Whetgeo1DOutputsHandler implements AutoCloseable {
 		tsBuf.clear();
 		temperatureBuf.clear();
 		thetaBuf.clear();
-		heatFluxBuf.clear();
-		errorBuf.clear();
 		if (withInternalEnergy)
 			internalEnergyBuf.clear();
 		if (withIceContent)
 			iceContentBuf.clear();
 		if (withWaterSuction)
 			waterSuctionBuf.clear();
+		if (withHeatFlux)
+			heatFluxBuf.clear();
 		if (withDarcyVelocity)
 			darcyVelocityBuf.clear();
+		if (withError)
+			errorBuf.clear();
 		if (withTopBC)
 			topBCBuf.clear();
 		if (withBottomBC)

@@ -65,6 +65,23 @@ public class Whetgeo1DInputsHandler {
 	public static final String COL_GRID_EQUATION_STATE_ID = "equationStateID";
 	public static final String COL_GRID_PARAMETER_ID = "parameterID";
 
+	/**
+	 * Optional table: zero or more extra control-volumes appended on top of the
+	 * grid built from {@link #TABLE_GRID}, whose storage capacity ({@code
+	 * controlVolume}) is not a real spatial thickness (e.g. a surface ponding
+	 * reservoir coupled to the Richards column below it, driven by a {@code
+	 * TOP_COUPLED} boundary condition). Each row becomes one more zero-thickness
+	 * cell stacked exactly on top of whatever {@link #TABLE_GRID} produced, in
+	 * ascending {@code stackOrder} (lowest first, i.e. closest to the real
+	 * grid). Absent from grids that don't need this.
+	 */
+	public static final String TABLE_PSEUDO_CELL = "pseudo_cell";
+	public static final String COL_PSEUDO_CELL_STACK_ORDER = "stackOrder";
+	public static final String COL_PSEUDO_CELL_EQUATION_STATE_ID = "equationStateID";
+	public static final String COL_PSEUDO_CELL_PARAMETER_ID = "parameterID";
+	public static final String COL_PSEUDO_CELL_CONTROL_VOLUME = "controlVolume";
+	public static final String COL_PSEUDO_CELL_NOTE = "note";
+
 	// swrc_parameters columns
 	public static final String COL_SWRC_ID = "id";
 	public static final String COL_SWRC_SP_DENSITY = "spDensity";
@@ -271,6 +288,78 @@ public class Whetgeo1DInputsHandler {
 		reverseDoubles(etaDual);
 		reverseDoubles(zDual);
 		reverseDoubles(spaceDelta);
+
+		appendPseudoCells(zBottom);
+	}
+
+	/**
+	 * Appends zero-thickness pseudo control-volumes on top of the grid built
+	 * from {@link #TABLE_GRID}, one per row of the optional {@link
+	 * #TABLE_PSEUDO_CELL} table (in ascending {@code stackOrder}), each stacked
+	 * exactly at the current top boundary (which doesn't move, since these
+	 * cells have no physical thickness). No-op if that table doesn't exist.
+	 */
+	private void appendPseudoCells(double zBottom) throws Exception {
+		SqlName pseudoTable = SqlName.m(TABLE_PSEUDO_CELL);
+		if (!db.hasTable(pseudoTable)) {
+			return;
+		}
+
+		String sql = String.format("""
+				SELECT %s, %s, %s FROM %s ORDER BY %s ASC
+				""", COL_PSEUDO_CELL_EQUATION_STATE_ID, COL_PSEUDO_CELL_PARAMETER_ID, COL_PSEUDO_CELL_CONTROL_VOLUME,
+				pseudoTable.fixedDoubleName, COL_PSEUDO_CELL_STACK_ORDER);
+
+		final List<int[]> pseudoIds = new ArrayList<>(); // [equationStateID, parameterID]
+		final List<Double> pseudoControlVolumes = new ArrayList<>();
+		db.execOnResultSet(sql, rs -> {
+			while (rs.next()) {
+				pseudoIds.add(new int[] { rs.getInt(1), rs.getInt(2) });
+				pseudoControlVolumes.add(rs.getDouble(3));
+			}
+			return null;
+		});
+
+		int numPseudo = pseudoIds.size();
+		if (numPseudo == 0) {
+			return;
+		}
+
+		int oldKMAX = KMAX;
+		int newKMAX = oldKMAX + numPseudo;
+
+		double[] newEta = Arrays.copyOf(eta, newKMAX);
+		double[] newZ = Arrays.copyOf(z, newKMAX);
+		double[] newControlVolume = Arrays.copyOf(controlVolume, newKMAX);
+		int[] newEquationStateID = Arrays.copyOf(equationStateID, newKMAX);
+		int[] newParameterID = Arrays.copyOf(parameterID, newKMAX);
+		double[] newEtaDual = Arrays.copyOf(etaDual, newKMAX + 1);
+		double[] newZDual = Arrays.copyOf(zDual, newKMAX + 1);
+		double[] newSpaceDelta = Arrays.copyOf(spaceDelta, newKMAX + 1);
+
+		double topEta = newEtaDual[oldKMAX]; // current top boundary; stays fixed (zero thickness)
+		for (int p = 0; p < numPseudo; p++) {
+			int idx = oldKMAX + p;
+			newEta[idx] = topEta;
+			newZ[idx] = topEta - zBottom;
+			newControlVolume[idx] = pseudoControlVolumes.get(p);
+			newEquationStateID[idx] = pseudoIds.get(p)[0];
+			newParameterID[idx] = pseudoIds.get(p)[1];
+			newEtaDual[idx + 1] = topEta; // unchanged: zero thickness
+			newZDual[idx + 1] = topEta - zBottom;
+			newSpaceDelta[idx] = newEta[idx] - newEta[idx - 1];
+		}
+		newSpaceDelta[newKMAX] = newEta[newKMAX - 1] - newEtaDual[newKMAX];
+
+		KMAX = newKMAX;
+		eta = newEta;
+		z = newZ;
+		controlVolume = newControlVolume;
+		equationStateID = newEquationStateID;
+		parameterID = newParameterID;
+		etaDual = newEtaDual;
+		zDual = newZDual;
+		spaceDelta = newSpaceDelta;
 	}
 
 	private static void reverseDoubles(double[] arr) {
@@ -522,6 +611,11 @@ public class Whetgeo1DInputsHandler {
 		else
 			System.out.println("WARNING: " + csv.getName() + " not found, skipping.");
 
+		csv = new File(csvFolderPath, TABLE_PSEUDO_CELL + ".csv");
+		if (csv.exists())
+			populatePseudoCell(csv, db);
+		// optional table: no warning if absent
+
 		csv = new File(csvFolderPath, TABLE_SWRC_PARAMETERS + ".csv");
 		if (csv.exists())
 			populateSwrcParameters(csv, db);
@@ -654,6 +748,54 @@ public class Whetgeo1DInputsHandler {
 					pStmt.setInt(3, parseIntOrNaN(parts[2]));
 					pStmt.setInt(4, parseIntOrNaN(parts[3]));
 					pStmt.setInt(5, parseIntOrNaN(parts[4]));
+					pStmt.addBatch();
+				}
+				pStmt.executeBatch();
+				conn.commit();
+				conn.setAutoCommit(autoCommit);
+			}
+			return null;
+		});
+	}
+
+	/**
+	 * Populate the optional {@link #TABLE_PSEUDO_CELL} table from a CSV with
+	 * header {@code stackOrder,equationStateID,parameterID,controlVolume,note}.
+	 * Each row becomes one more zero-thickness cell appended on top of the
+	 * grid, in ascending {@code stackOrder} (see {@link
+	 * #appendPseudoCells(double)}). {@code stackOrder} is the table's primary
+	 * key, so it also rejects accidental duplicate/ambiguous ordering.
+	 */
+	private static void populatePseudoCell(File csv, ADb db) throws Exception {
+		SqlName tableName = SqlName.m(TABLE_PSEUDO_CELL);
+		if (!db.hasTable(tableName)) {
+			db.createTable(tableName, COL_PSEUDO_CELL_STACK_ORDER + " INTEGER PRIMARY KEY",
+					COL_PSEUDO_CELL_EQUATION_STATE_ID + " INTEGER", COL_PSEUDO_CELL_PARAMETER_ID + " INTEGER",
+					COL_PSEUDO_CELL_CONTROL_VOLUME + " REAL", COL_PSEUDO_CELL_NOTE + " TEXT");
+		}
+		if (db.getCount(tableName) > 0)
+			return;
+
+		List<String> lines = Files.readAllLines(csv.toPath());
+		String sql = String.format("""
+				INSERT INTO %s (%s, %s, %s, %s, %s)
+				VALUES (?,?,?,?,?)
+				""", tableName.fixedDoubleName, COL_PSEUDO_CELL_STACK_ORDER, COL_PSEUDO_CELL_EQUATION_STATE_ID,
+				COL_PSEUDO_CELL_PARAMETER_ID, COL_PSEUDO_CELL_CONTROL_VOLUME, COL_PSEUDO_CELL_NOTE);
+		db.execOnConnection(conn -> {
+			boolean autoCommit = conn.getAutoCommit();
+			conn.setAutoCommit(false);
+			try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+				for (int i = 1; i < lines.size(); i++) {
+					String line = lines.get(i).trim();
+					if (line.isEmpty())
+						continue;
+					String[] parts = line.split(",", -1);
+					pStmt.setInt(1, parseIntOrNaN(parts[0]));
+					pStmt.setInt(2, parseIntOrNaN(parts[1]));
+					pStmt.setInt(3, parseIntOrNaN(parts[2]));
+					pStmt.setDouble(4, parseDoubleOrNaN(parts[3]));
+					pStmt.setString(5, parts.length > 4 ? parts[4].trim() : "");
 					pStmt.addBatch();
 				}
 				pStmt.executeBatch();
