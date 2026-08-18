@@ -170,9 +170,9 @@ public class ErmCopernicusImporter extends HMModel {
 	public static void main(String[] args) throws Exception {
 		ErmCopernicusImporter ek = new ErmCopernicusImporter();
 		ek.inGpkg = "/home/hydrologis/storage/lavori_tmp/JAPAN/TOKYO/ERM_SIMULATION/outputs_akikawa/geoframe_data_akikawa.gpkg";
-		ek.pStartTimestamp = "2018-01-01";
-		ek.pEndTimestamp = "2018-03-01";
-		ek.doDeleteExistingData = true;
+		ek.pStartTimestamp = "2018-03-02";
+		ek.pEndTimestamp = "2019-03-01";
+		ek.doDeleteExistingData = false;
 		ek.inDtm = "/home/hydrologis/storage/lavori_tmp/JAPAN/TOKYO/ERM_SIMULATION/dem_akigawa.tif";
 		ek.process();
 	}
