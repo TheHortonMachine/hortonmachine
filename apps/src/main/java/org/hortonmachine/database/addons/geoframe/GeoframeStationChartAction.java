@@ -20,7 +20,10 @@ package org.hortonmachine.database.addons.geoframe;
 import java.awt.Component;
 import java.util.List;
 
+import javax.swing.Action;
+
 import org.hortonmachine.dbs.compat.ADb;
+import org.hortonmachine.dbs.compat.objects.TableLevel;
 
 /**
  * Action that loads the {@code station_data} of the first available station
@@ -35,6 +38,24 @@ public class GeoframeStationChartAction extends AbstractGeoframeVariableChartAct
 
     public GeoframeStationChartAction( ADb db, Component parent ) {
         super("Open Station Data Chart", db, parent);
+    }
+
+    /**
+     * Recognizes whether {@code selectedTable} is the GeoFrame station data table and, if so,
+     * appends a separator and a {@link GeoframeStationChartAction} to {@code actions}.
+     */
+    public static void addIfApplicable( ADb db, TableLevel selectedTable, List<Action> actions, Component parent ) {
+        if (!GeoframeSchema.STATION_DATA_TABLE.equals(selectedTable.tableName.getName())) {
+            return;
+        }
+        try {
+            if (db.hasTable(GeoframeSchema.STATION_TABLE)) {
+                actions.add(null); // separator
+                actions.add(new GeoframeStationChartAction(db, parent));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     @Override

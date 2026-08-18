@@ -32,7 +32,6 @@ public class Whetgeo1DInputsHandler {
 	 */
 	public static final double NODATA = -9999.0;
 
-	public static final String PREFIX = "geoframe_whetgeo1d";
 	public static final String TABLE_DICTIONARY = "swrc_parameter_types";
 	public static final String TABLE_IC = "initial_condition";
 	public static final String TABLE_GRID = "grid_geometry";

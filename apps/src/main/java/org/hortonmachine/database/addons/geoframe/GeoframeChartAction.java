@@ -21,8 +21,10 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,6 +35,7 @@ import javax.swing.SwingWorker;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
@@ -55,6 +58,18 @@ public class GeoframeChartAction extends AbstractAction {
         this.db = db;
         this.simDischargeTableName = simDischargeTableName;
         this.parent = parent;
+    }
+
+    /**
+     * Recognizes whether {@code selectedTable} is a per-run simulation discharge table and, if
+     * so, appends a separator and a {@link GeoframeChartAction} to {@code actions}.
+     */
+    public static void addIfApplicable( ADb db, TableLevel selectedTable, List<Action> actions, Component parent ) {
+        if (!GeoframeSchema.isSimulationDischargeTable(selectedTable.tableName.getName())) {
+            return;
+        }
+        actions.add(null); // separator
+        actions.add(new GeoframeChartAction(db, selectedTable.tableName.getName(), parent));
     }
 
     @Override

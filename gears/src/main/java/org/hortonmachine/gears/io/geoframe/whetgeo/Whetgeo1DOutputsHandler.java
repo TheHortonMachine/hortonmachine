@@ -46,10 +46,15 @@ import org.hortonmachine.dbs.utils.SqlName;
  */
 public class Whetgeo1DOutputsHandler implements AutoCloseable {
 
-	public static final String TABLE_OUTPUT_GRID = "output_grid";
-	public static final String TABLE_OUTPUT_STATE = "output_state";
-	public static final String TABLE_OUTPUT_FLUX = "output_flux";
-	public static final String TABLE_OUTPUT_SCALARS = "output_scalars";
+	public static final String PREFIX = "geoframe_whetgeo1d";
+
+	// prefixed so a DB viewer (or anything else browsing an arbitrary geopackage)
+	// can recognize these as whetgeo1d output tables, e.g. via a name pattern,
+	// the same way GeoframeSchema does for basin/station simulation tables.
+	public static final String TABLE_OUTPUT_GRID = PREFIX + "_output_grid";
+	public static final String TABLE_OUTPUT_STATE = PREFIX + "_output_state";
+	public static final String TABLE_OUTPUT_FLUX = PREFIX + "_output_flux";
+	public static final String TABLE_OUTPUT_SCALARS = PREFIX + "_output_scalars";
 
 	public static final String COL_ID = "id";
 	public static final String COL_TIMESTAMP = Whetgeo1DInputsHandler.COL_TEMPERATURE_TIMESTAMP;
