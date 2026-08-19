@@ -170,31 +170,6 @@ public class HMSTACClient extends STACClient {
 		}
 	}
 
-
-//	private HTTPResponse getWithRetry(HTTPClient http, URL url) throws IOException {
-//		int maxRetries = 5;
-//		long backoffMillis = 1000;
-//
-//		for (int attempt = 0; attempt <= maxRetries; attempt++) {
-//			try {
-//				return http.get(url);
-//			} catch (IOException e) {
-//				boolean isRateLimited = e.getMessage() != null && e.getMessage().contains("429");
-//				if (!isRateLimited || attempt == maxRetries) {
-//					throw e;
-//				}
-//				try {
-//					Thread.sleep(backoffMillis);
-//				} catch (InterruptedException ie) {
-//					Thread.currentThread().interrupt();
-//					throw new IOException("Interrupted while backing off after 429", ie);
-//				}
-//				backoffMillis *= 2; // Exponential Backoff
-//			}
-//		}
-//		throw new IOException("Unreachable");
-//	}
-
 	private boolean isDataJSONLink(Link l) {
 		return "data".equals(l.getRel()) && (isBlank(l.getType()) || JSON_MIME.equals(l.getType()));
 	}
