@@ -112,7 +112,7 @@ public class WhetgeoStateChartPanelBuilder {
     // (positionally unaligned) legend are still visually matched by color alone.
     // Keyed by DepthSeries.name (see WhetgeoStateChartDataLoader) rather than list
     // position: every optional column is independently present or absent per run
-    // (see Whetgeo1DOutputsHandler), so a series' index in the list shifts from run
+    // (see WHETGEO-1D own output handler), so a series' index in the list shifts from run
     // to run and can't be used to pick a stable color - e.g. a Richards output with
     // no temperature column would otherwise put theta at index 0 and get painted
     // with the ramp meant for temperature.
@@ -303,8 +303,8 @@ public class WhetgeoStateChartPanelBuilder {
      * One value per internal transition between parameter sets in {@link
      * WhetgeoStateChartData#gridEta}, each labeled with the SWRC parameters of the
      * layer above that boundary - empty if the output wasn't written with {@code
-     * parameter_id}/{@code output_swrc_parameters} (see {@code
-     * Whetgeo1DOutputsHandler}), so older outputs just render without annotations.
+     * parameter_id}/{@code output_swrc_parameters} (see WHETGEO-1D's own output
+     * handler), so older outputs just render without annotations.
      *
      * <p>
      * {@code gridEta} holds cell *centers*, not layer edges, so the boundary itself
@@ -397,7 +397,7 @@ public class WhetgeoStateChartPanelBuilder {
     }
 
     /** Appends the BC type (e.g. "TOP_COUPLED") to the label if the output was written with
-     *  one (see {@code Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA}); a plain fallback
+     *  one (see {@code Whetgeo1DOutputSchema.TABLE_OUTPUT_METADATA}); a plain fallback
      *  label otherwise, so a value alone doesn't have to stand in for what kind of condition
      *  produced it. */
     private static String bcLabel( String base, String bcType ) {

@@ -34,13 +34,13 @@ import java.util.List;
 public class WhetgeoStateChartData {
     public double[] gridEta = new double[0];
     /** Per-cell parameter-set label, same order as {@link #gridEta}; empty if the output
-     *  wasn't written with {@code parameter_id} (see {@code Whetgeo1DOutputsHandler}). */
+     *  wasn't written with {@code parameter_id} (see WHETGEO-1D's own output handler). */
     public int[] gridParameterID = new int[0];
 
     public long[] topBCTimes = new long[0];
     public double[] topBCValues = new double[0];
     /** e.g. "TOP_COUPLED"; null if the output wasn't written with one
-     *  (see {@code Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA}). */
+     *  (see {@code Whetgeo1DOutputSchema.TABLE_OUTPUT_METADATA}). */
     public String topBCType;
 
     public long[] bottomBCTimes = new long[0];
@@ -50,7 +50,7 @@ public class WhetgeoStateChartData {
     public List<DepthSeries> depthSeries = new ArrayList<>();
 
     /** SWRC parameter snapshot per parameter set id, if the output was written with one
-     *  (see {@code Whetgeo1DOutputsHandler.TABLE_OUTPUT_SWRC_PARAMETERS}); empty otherwise. */
+     *  (see {@code Whetgeo1DOutputSchema.TABLE_OUTPUT_SWRC_PARAMETERS}); empty otherwise. */
     public List<SwrcParams> swrcParameters = new ArrayList<>();
 
     /**

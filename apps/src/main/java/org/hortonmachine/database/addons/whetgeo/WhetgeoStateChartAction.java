@@ -35,7 +35,7 @@ import javax.swing.SwingWorker;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputsHandler;
+import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
 /**
@@ -66,11 +66,11 @@ public class WhetgeoStateChartAction extends AbstractAction {
      * inline at every call site.
      */
     public static void addIfApplicable( ADb db, TableLevel selectedTable, List<Action> actions, Component parent ) {
-        if (!Whetgeo1DOutputsHandler.TABLE_OUTPUT_STATE.equals(selectedTable.tableName.getName())) {
+        if (!Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE.equals(selectedTable.tableName.getName())) {
             return;
         }
         try {
-            if (db.hasTable(Whetgeo1DOutputsHandler.TABLE_OUTPUT_GRID)) {
+            if (db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID)) {
                 actions.add(null); // separator, same convention as DatabaseViewer.addSeparator(actions)
                 actions.add(new WhetgeoStateChartAction(db, parent));
             }

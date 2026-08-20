@@ -27,7 +27,7 @@ import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.SwrcParam
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
-import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputsHandler;
+import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
 
 /**
  * Loads the data needed for the WHETGEO 1D state chart out of a connected
@@ -36,7 +36,7 @@ import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputsHandler;
  * present), and one depth/time/value series per state variable actually
  * present in {@code output_state} — discovered dynamically via
  * {@code PRAGMA table_info}, the same optional-column convention already used
- * by {@link Whetgeo1DOutputsHandler} itself, since not every solver run
+ * by WHETGEO-1D's own output handler itself, since not every solver run
  * writes the same optional columns.
  *
  * @author Andrea Antonello (www.hydrologis.com)
@@ -44,20 +44,20 @@ import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputsHandler;
 public class WhetgeoStateChartDataLoader {
 
     // optional output_state column -> [display name, axis label]. Every depth
-    // series is independently optional now (see Whetgeo1DOutputsHandler): a
-    // Richards run with no thermal model never writes temperature, a plain
+    // series is independently optional now (see WHETGEO-1D's own output
+    // handler): a Richards run with no thermal model never writes temperature, a plain
     // HeatDiffusionSolver1D run never writes theta, etc.
     private static final Map<String, String[]> OPTIONAL_DEPTH_COLUMNS = new LinkedHashMap<>();
     static {
-        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_TEMPERATURE,
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputSchema.COL_TEMPERATURE,
                 new String[]{"Temperature", "Temperature [K]"});
-        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_THETA,
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputSchema.COL_THETA,
                 new String[]{"Water content", "Water content - theta [-]"});
-        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_WATER_SUCTION,
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputSchema.COL_WATER_SUCTION,
                 new String[]{"Water suction", "Water suction - psi [m]"});
-        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_INTERNAL_ENERGY,
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputSchema.COL_INTERNAL_ENERGY,
                 new String[]{"Internal energy", "internal energy"});
-        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputsHandler.COL_ICE_CONTENT,
+        OPTIONAL_DEPTH_COLUMNS.put(Whetgeo1DOutputSchema.COL_ICE_CONTENT,
                 new String[]{"Ice content", "ice content [-]"});
     }
 
@@ -67,32 +67,32 @@ public class WhetgeoStateChartDataLoader {
     public static WhetgeoStateChartData load( ADb db ) throws Exception {
         WhetgeoStateChartData data = new WhetgeoStateChartData();
 
-        boolean withParameterID = hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_GRID,
-                Whetgeo1DOutputsHandler.COL_PARAMETER_ID);
+        boolean withParameterID = hasColumn(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID,
+                Whetgeo1DOutputSchema.COL_PARAMETER_ID);
         loadGrid(db, data, withParameterID);
 
-        if (withParameterID && db.hasTable(Whetgeo1DOutputsHandler.TABLE_OUTPUT_SWRC_PARAMETERS)) {
+        if (withParameterID && db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_SWRC_PARAMETERS)) {
             data.swrcParameters = loadSwrcParameters(db);
         }
 
-        if (db.hasTable(Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA)) {
+        if (db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_METADATA)) {
             loadBCTypes(db, data);
         }
 
-        if (hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_SCALARS, Whetgeo1DOutputsHandler.COL_TOP_BC)) {
-            ScalarSeries topBC = loadScalarSeries(db, Whetgeo1DOutputsHandler.COL_TOP_BC);
+        if (hasColumn(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_SCALARS, Whetgeo1DOutputSchema.COL_TOP_BC)) {
+            ScalarSeries topBC = loadScalarSeries(db, Whetgeo1DOutputSchema.COL_TOP_BC);
             data.topBCTimes = topBC.times;
             data.topBCValues = topBC.values;
         }
-        if (hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_SCALARS, Whetgeo1DOutputsHandler.COL_BOTTOM_BC)) {
-            ScalarSeries bottomBC = loadScalarSeries(db, Whetgeo1DOutputsHandler.COL_BOTTOM_BC);
+        if (hasColumn(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_SCALARS, Whetgeo1DOutputSchema.COL_BOTTOM_BC)) {
+            ScalarSeries bottomBC = loadScalarSeries(db, Whetgeo1DOutputSchema.COL_BOTTOM_BC);
             data.bottomBCTimes = bottomBC.times;
             data.bottomBCValues = bottomBC.values;
         }
 
         for( Map.Entry<String, String[]> entry : OPTIONAL_DEPTH_COLUMNS.entrySet() ) {
             String column = entry.getKey();
-            if (hasColumn(db, Whetgeo1DOutputsHandler.TABLE_OUTPUT_STATE, column)) {
+            if (hasColumn(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE, column)) {
                 data.depthSeries.add(loadDepthSeries(db, column, entry.getValue()[0], entry.getValue()[1]));
             }
         }
@@ -101,10 +101,10 @@ public class WhetgeoStateChartDataLoader {
     }
 
     private static void loadGrid( ADb db, WhetgeoStateChartData data, boolean withParameterID ) throws Exception {
-        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_ETA + (withParameterID
-                ? ", " + Whetgeo1DOutputsHandler.COL_PARAMETER_ID
-                : "") + " FROM " + Whetgeo1DOutputsHandler.TABLE_OUTPUT_GRID + " ORDER BY "
-                + Whetgeo1DOutputsHandler.COL_ETA;
+        String sql = "SELECT " + Whetgeo1DOutputSchema.COL_ETA + (withParameterID
+                ? ", " + Whetgeo1DOutputSchema.COL_PARAMETER_ID
+                : "") + " FROM " + Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID + " ORDER BY "
+                + Whetgeo1DOutputSchema.COL_ETA;
         List<Double> eta = new ArrayList<>();
         List<Integer> parameterID = new ArrayList<>();
         db.<Void>execOnConnection(connection -> {
@@ -125,10 +125,10 @@ public class WhetgeoStateChartDataLoader {
     }
 
     private static List<SwrcParams> loadSwrcParameters( ADb db ) throws Exception {
-        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_ID + ", " + Whetgeo1DOutputsHandler.COL_THETA_S + ", "
-                + Whetgeo1DOutputsHandler.COL_THETA_R + ", " + Whetgeo1DOutputsHandler.COL_KS + ", "
-                + Whetgeo1DOutputsHandler.COL_N + ", " + Whetgeo1DOutputsHandler.COL_ALPHA + " FROM "
-                + Whetgeo1DOutputsHandler.TABLE_OUTPUT_SWRC_PARAMETERS + " ORDER BY " + Whetgeo1DOutputsHandler.COL_ID;
+        String sql = "SELECT " + Whetgeo1DOutputSchema.COL_ID + ", " + Whetgeo1DOutputSchema.COL_THETA_S + ", "
+                + Whetgeo1DOutputSchema.COL_THETA_R + ", " + Whetgeo1DOutputSchema.COL_KS + ", "
+                + Whetgeo1DOutputSchema.COL_N + ", " + Whetgeo1DOutputSchema.COL_ALPHA + " FROM "
+                + Whetgeo1DOutputSchema.TABLE_OUTPUT_SWRC_PARAMETERS + " ORDER BY " + Whetgeo1DOutputSchema.COL_ID;
         List<SwrcParams> params = new ArrayList<>();
         db.<Void>execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -143,8 +143,8 @@ public class WhetgeoStateChartDataLoader {
     }
 
     private static void loadBCTypes( ADb db, WhetgeoStateChartData data ) throws Exception {
-        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_TOP_BC_TYPE + ", "
-                + Whetgeo1DOutputsHandler.COL_BOTTOM_BC_TYPE + " FROM " + Whetgeo1DOutputsHandler.TABLE_OUTPUT_METADATA;
+        String sql = "SELECT " + Whetgeo1DOutputSchema.COL_TOP_BC_TYPE + ", "
+                + Whetgeo1DOutputSchema.COL_BOTTOM_BC_TYPE + " FROM " + Whetgeo1DOutputSchema.TABLE_OUTPUT_METADATA;
         db.<Void>execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
@@ -157,8 +157,8 @@ public class WhetgeoStateChartDataLoader {
     }
 
     private static ScalarSeries loadScalarSeries( ADb db, String column ) throws Exception {
-        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_TIMESTAMP + ", " + column + " FROM "
-                + Whetgeo1DOutputsHandler.TABLE_OUTPUT_SCALARS + " ORDER BY " + Whetgeo1DOutputsHandler.COL_TIMESTAMP;
+        String sql = "SELECT " + Whetgeo1DOutputSchema.COL_TIMESTAMP + ", " + column + " FROM "
+                + Whetgeo1DOutputSchema.TABLE_OUTPUT_SCALARS + " ORDER BY " + Whetgeo1DOutputSchema.COL_TIMESTAMP;
         List<Long> times = new ArrayList<>();
         List<Double> values = new ArrayList<>();
         db.<Void>execOnConnection(connection -> {
@@ -183,9 +183,9 @@ public class WhetgeoStateChartDataLoader {
 
     private static DepthSeries loadDepthSeries( ADb db, String column, String name, String axisLabel ) throws Exception {
         DepthSeries series = new DepthSeries(name, axisLabel);
-        String sql = "SELECT " + Whetgeo1DOutputsHandler.COL_TIMESTAMP + ", " + Whetgeo1DOutputsHandler.COL_ETA + ", "
-                + column + " FROM " + Whetgeo1DOutputsHandler.TABLE_OUTPUT_STATE + " ORDER BY "
-                + Whetgeo1DOutputsHandler.COL_TIMESTAMP + ", " + Whetgeo1DOutputsHandler.COL_ETA;
+        String sql = "SELECT " + Whetgeo1DOutputSchema.COL_TIMESTAMP + ", " + Whetgeo1DOutputSchema.COL_ETA + ", "
+                + column + " FROM " + Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE + " ORDER BY "
+                + Whetgeo1DOutputSchema.COL_TIMESTAMP + ", " + Whetgeo1DOutputSchema.COL_ETA;
         List<Long> times = new ArrayList<>();
         List<Double> etas = new ArrayList<>();
         List<Double> values = new ArrayList<>();
