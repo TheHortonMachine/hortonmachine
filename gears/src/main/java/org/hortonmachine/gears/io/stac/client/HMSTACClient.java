@@ -159,6 +159,17 @@ public class HMSTACClient extends STACClient {
 		return all;
 	}
 
+	public Collection getCollectionByURL(String collectionURL) throws IOException {
+
+		HTTPClient http = getHttp();
+		HTTPResponse response = http.get(new URL(collectionURL));
+		checkJSONResponse(response);
+
+		try (InputStream is = response.getResponseStream()) {
+			return OBJECT_MAPPER.readValue(is, Collection.class);
+		}
+	}
+
 	private boolean isDataJSONLink(Link l) {
 		return "data".equals(l.getRel()) && (isBlank(l.getType()) || JSON_MIME.equals(l.getType()));
 	}

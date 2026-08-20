@@ -90,6 +90,11 @@ public class HMStacManager implements AutoCloseable {
         return null;
     }
 
+    public HMStacCollection getCollectionByURL(String collectionUrl) throws Exception {
+        checkOpen();
+        return new HMStacCollection(stacClient, stacClient.getCollectionByURL(collectionUrl), pm);
+    }
+
     public void close() throws Exception {
         if (stacClient != null)
             stacClient.close();
