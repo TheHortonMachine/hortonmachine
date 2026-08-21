@@ -463,6 +463,15 @@ public class CoverageUtilities {
         return outCoverage;
     }
 
+
+    //     private static double clampLatitude( double lat ) {
+    //     return Math.max(-90.0, Math.min(90.0, lat));
+    // }
+
+    // private static double clampLongitude( double lon ) {
+    //     return Math.max(-180.0, Math.min(180.0, lon));
+    // }
+
     /**
      * Get the parameters of the region covered by the {@link GridCoverage2D coverage}. 
      * 
@@ -496,14 +505,19 @@ public class CoverageUtilities {
         CoordinateReferenceSystem crs = gridCoverage.getCoordinateReferenceSystem();
         // check if crs is geographic
         if (crs != null && crs instanceof GeographicCRS) {
-            // convert to metric
+            // convert to metric, making sure the coordinates are clamped to the valid range for lat/lon
+            double westClamped = Math.max(-180.0, Math.min(180.0, westSouth[0]));
+            double southClamped = Math.max(-90.0, Math.min(90.0, westSouth[1]));
+            double eastClamped = Math.max(-180.0, Math.min(180.0, eastNorth[0]));
+            double northClamped = Math.max(-90.0, Math.min(90.0, eastNorth[1]));
+
             GeodeticCalculator gc = new GeodeticCalculator(crs);
-            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
-            gc.setDestinationGeographicPoint(eastNorth[0],westSouth[1]);
+            gc.setStartingGeographicPoint(westClamped, southClamped);
+            gc.setDestinationGeographicPoint(eastClamped, southClamped);
             double xExtend = gc.getOrthodromicDistance();
             envelopeParams.xresMetric = xExtend / width;
-            gc.setStartingGeographicPoint(westSouth[0], westSouth[1]);
-            gc.setDestinationGeographicPoint(westSouth[0],eastNorth[1]);
+            gc.setStartingGeographicPoint(westClamped, southClamped);
+            gc.setDestinationGeographicPoint(westClamped, northClamped);
             double yExtend = gc.getOrthodromicDistance();
             envelopeParams.yresMetric = yExtend / height;
         }
