@@ -1,32 +1,18 @@
-package org.hortonmachine.gears.io.geopackage;
+package org.hortonmachine.dbs.utils;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
-import org.hortonmachine.dbs.utils.SqlName;
 
 /**
- * Buffered cursor over a GeoPackage (or any {@link ADb}-backed) two-column
- * table shaped as {@code <timestampCol> INTEGER PRIMARY KEY, <valueCol> REAL}:
- * reads {@code bufferSize} rows at a time into flat {@code long[]}/
- * {@code double[]} buffers - no boxing, no per-row object allocation.
- *
- * <p>
- * Both columns are named explicitly rather than inferred from
- * {@code SELECT *} - a caller that doesn't know the value column name up
- * front (e.g. imported from a CSV header) should discover it via
- * {@code PRAGMA table_info(<table>)} and pass the result in, rather than
- * relying on column order.
- *
- * <p>
- * Generic - not tied to any one GEOframe component's schema. Originally
- * written for WHETGEO-1D's input handler, also used by GEOET's
- * {@code GeoetInputsHandler}; reach for it whenever a component reads one
- * driving timeseries out of a GeoPackage table with this shape.
+ * Buffered cursor over any {@link ADb}-backed table with a timestamp column
+ * (epoch millis) and a value column (REAL): reads {@code bufferSize} rows at
+ * a time into flat {@code long[]}/{@code double[]} buffers - no boxing, no
+ * per-row object allocation.
  *
  * <pre>{@code
- * try (GeopackageTimeseriesIterator it = new GeopackageTimeseriesIterator(db, "timeseries_airT", "timestamp",
+ * try (DbTimeseriesIterator it = new DbTimeseriesIterator(db, "timeseries_airT", "timestamp",
  * 		"value_1", 1000)) {
  * 	while (it.next()) {
  * 		long ts = it.timestamp();
@@ -35,7 +21,7 @@ import org.hortonmachine.dbs.utils.SqlName;
  * }
  * }</pre>
  */
-public class GeopackageTimeseriesIterator implements AutoCloseable {
+public class DbTimeseriesIterator implements AutoCloseable {
 
 	private final IHMConnection conn;
 	private final IHMStatement stmt;
@@ -47,7 +33,7 @@ public class GeopackageTimeseriesIterator implements AutoCloseable {
 	private int bufferFill = 0;
 	private int bufferPos = -1;
 
-	public GeopackageTimeseriesIterator(ADb db, String tableNameStr, String timestampCol, String valueCol,
+	public DbTimeseriesIterator(ADb db, String tableNameStr, String timestampCol, String valueCol,
 			int bufferSize) throws Exception {
 		this(db, tableNameStr, timestampCol, valueCol, null, null, bufferSize);
 	}
@@ -58,7 +44,7 @@ public class GeopackageTimeseriesIterator implements AutoCloseable {
 	 * @param endMillis   epoch-millis upper bound (inclusive), or null for no upper
 	 *                    limit
 	 */
-	public GeopackageTimeseriesIterator(ADb db, String tableNameStr, String timestampCol, String valueCol,
+	public DbTimeseriesIterator(ADb db, String tableNameStr, String timestampCol, String valueCol,
 			Long startMillis, Long endMillis, int bufferSize) throws Exception {
 		SqlName tableName = SqlName.m(tableNameStr);
 		StringBuilder sql = new StringBuilder("SELECT ").append(timestampCol).append(", ").append(valueCol)
@@ -111,8 +97,7 @@ public class GeopackageTimeseriesIterator implements AutoCloseable {
 	/**
 	 * Returns the value of the current row wrapped in a fresh single-element
 	 * array. Convenience for callers that feed a {@code HashMap<Integer,
-	 * double[]>}-typed OMS field (the convention every solver in this codebase
-	 * uses), so they don't need to box it themselves.
+	 * double[]>}-typed OMS field.
 	 */
 	public double[] values() {
 		return new double[] { valBuffer[bufferPos] };
