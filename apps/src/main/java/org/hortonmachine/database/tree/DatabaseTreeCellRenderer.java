@@ -17,10 +17,14 @@
  */
 package org.hortonmachine.database.tree;
 
+import java.util.List;
+
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
+import org.hortonmachine.database.spi.IDbViewerActionProvider;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
@@ -43,6 +47,7 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
     private static final long serialVersionUID = 1L;
 
     private ADb db;
+    private Icon dbProviderIcon;
 
     private ImageIcon h2gisIcon = ImageCache.getInstance().getImage(ImageCache.H2GIS32);
     private ImageIcon gpkgIcon = ImageCache.getInstance().getImage(ImageCache.GPKG32);
@@ -64,7 +69,30 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
     private ImageIcon tableColumnFkIcon = ImageCache.getInstance().getImage(ImageCache.TABLE_COLUMN_FK);
 
     public DatabaseTreeCellRenderer( ADb db ) {
+        this(db, null);
+    }
+
+    /**
+     * @param db the connected database, used to pick the default type icon
+     *          (geopackage, postgis, spatialite, ...) for the top-level
+     *          database node.
+     * @param activeProviders the {@link IDbViewerActionProvider}s recognized
+     *          for {@code db} (see {@code DatabaseController#refreshActiveActionProviders()}),
+     *          or {@code null}. The first non-null {@link IDbViewerActionProvider#getIcon()}
+     *          found among them overrides the default database-type icon on
+     *          the top-level database node.
+     */
+    public DatabaseTreeCellRenderer( ADb db, List<IDbViewerActionProvider> activeProviders ) {
         this.db = db;
+        if (activeProviders != null) {
+            for( IDbViewerActionProvider provider : activeProviders ) {
+                Icon icon = provider.getIcon();
+                if (icon != null) {
+                    dbProviderIcon = icon;
+                    break;
+                }
+            }
+        }
     }
 
 
@@ -75,7 +103,9 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
         super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 
         if (value instanceof DbLevel) {
-            if (db != null) {
+            if (dbProviderIcon != null) {
+                setIcon(dbProviderIcon);
+            } else if (db != null) {
                 switch( db.getType() ) {
                 case H2GIS:
                 case H2:

@@ -42,6 +42,7 @@ import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 
 /**
  * Table-level action: picks a CSV file, lets the user review/correct its
@@ -71,7 +72,7 @@ public class ImportCsvIntoTableAction extends AbstractAction {
 
     public ImportCsvIntoTableAction( String actionLabel, ADb db, TableLevel table, GuiBridgeHandler guiBridge,
             IHMProgressMonitor pm, Component parent, Runnable onImportComplete ) {
-        super(actionLabel);
+        super(actionLabel, ImageCache.get(ImageCache.IMPORT));
         this.db = db;
         this.table = table;
         this.guiBridge = guiBridge;

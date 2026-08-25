@@ -84,6 +84,7 @@ import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.style.MainController;
 import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Envelope;
@@ -111,7 +112,7 @@ public class SqlTemplatesAndActions {
     private static final Logger logger = Logger.INSTANCE;
 
     public Action getSelectOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Select on column"){
+        return new AbstractAction("Select on column", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
@@ -123,7 +124,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSelectOrderedAscOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Select ordered ASC on column"){
+        return new AbstractAction("Select ordered ASC on column", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
@@ -135,7 +136,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSelectOrderedDescOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Select ordered DESC on column"){
+        return new AbstractAction("Select ordered DESC on column", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
@@ -147,7 +148,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSelectGroupCountOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Select and group-count on column"){
+        return new AbstractAction("Select and group-count on column", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String columnName = column.columnName;
@@ -159,7 +160,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getUpdateOnColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Update on column"){
+        return new AbstractAction("Update on column", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName.getFullName();
@@ -173,7 +174,7 @@ public class SqlTemplatesAndActions {
     public Action getAddGeometryAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasAddGeometryColumn()) {
             String title = "Add geometry column";
-            return new AbstractAction(title){
+            return new AbstractAction(title, ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
 
@@ -198,7 +199,7 @@ public class SqlTemplatesAndActions {
     public Action getRecoverGeometryAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasRecoverGeometryColumn()) {
             String title = "Recover geometry column";
-            return new AbstractAction(title){
+            return new AbstractAction(title, ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String[] labels = {"Table name", "Column name", "SRID", "Geometry type", "Dimension"};
@@ -221,7 +222,7 @@ public class SqlTemplatesAndActions {
 
     public Action getDiscardGeometryColumnAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasAddGeometryColumn()) {
-            return new AbstractAction("Discard geometry column"){
+            return new AbstractAction("Discard geometry column", ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName.getFullName();
@@ -240,7 +241,7 @@ public class SqlTemplatesAndActions {
         if (!sqlTemplates.hasCreateSpatialIndex()) {
             return null;
         }
-        return new AbstractAction("Create spatial index"){
+        return new AbstractAction("Create spatial index", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName.getFullName();
@@ -254,7 +255,7 @@ public class SqlTemplatesAndActions {
 
     public Action getCheckSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasRecoverSpatialIndex()) {
-            return new AbstractAction("Check spatial index"){
+            return new AbstractAction("Check spatial index", ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName.getFullName();
@@ -271,7 +272,7 @@ public class SqlTemplatesAndActions {
 
     public Action getRecoverSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasRecoverSpatialIndex()) {
-            return new AbstractAction("Recover spatial index"){
+            return new AbstractAction("Recover spatial index", ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName.getFullName();
@@ -287,7 +288,7 @@ public class SqlTemplatesAndActions {
 
     public Action getDisableSpatialIndexAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasRecoverSpatialIndex()) {
-            return new AbstractAction("Disable spatial index"){
+            return new AbstractAction("Disable spatial index", ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String tableName = column.parent.tableName.getFullName();
@@ -303,7 +304,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getShowSpatialMetadataAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Show spatial metadata"){
+        return new AbstractAction("Show spatial metadata", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String tableName = column.parent.tableName.getFullName();
@@ -315,7 +316,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCombinedSelectAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Create combined select statement"){
+        return new AbstractAction("Create combined select statement", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 String[] tableColsFromFK = column.tableColsFromFK();
@@ -331,7 +332,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewOtherTableAction( ColumnLevel column, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Quick view other table"){
+        return new AbstractAction("Quick view other table", ImageCache.get(ImageCache.ZOOM)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -354,7 +355,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getRefreshDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        return new AbstractAction("Refresh"){
+        return new AbstractAction("Refresh", ImageCache.get(ImageCache.REFRESH)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 final LogConsoleController logConsole = new LogConsoleController(databaseViewer.pm);
@@ -379,7 +380,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getReconnectDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
-        return new AbstractAction("Reconnect"){
+        return new AbstractAction("Reconnect", ImageCache.get(ImageCache.CONNECT)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 if (databaseViewer.currentConnectedSqlDatabase == null) {
@@ -395,7 +396,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCopyDatabasePathAction( DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Copy path"){
+        return new AbstractAction("Copy path", ImageCache.get(ImageCache.COPY)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 if (spatialiteViewer.currentConnectedSqlDatabase != null) {
@@ -407,7 +408,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCreateTableFromShapefileSchemaAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Create table from vector file"){
+        return new AbstractAction("Create table from vector file", ImageCache.get(ImageCache.IMPORT)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 if (!(spatialiteViewer.currentConnectedSqlDatabase instanceof ASpatialDb)) {
@@ -503,7 +504,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getSelectAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Select statement"){
+        return new AbstractAction("Select statement", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -517,7 +518,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getInsertAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Insert statement"){
+        return new AbstractAction("Insert statement", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -538,7 +539,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getDropAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Drop table statement"){
+        return new AbstractAction("Drop table statement", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -561,7 +562,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getCountRowsAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Count table records"){
+        return new AbstractAction("Count table records", ImageCache.get(ImageCache.INFOTOOL_ON)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -580,7 +581,7 @@ public class SqlTemplatesAndActions {
 
     public Action getImportShapefileDataAction( GuiBridgeHandler guiBridge, TableLevel table, DatabaseViewer spatialiteViewer,
             boolean useFromTextForGeom ) {
-        return new AbstractAction("Import data from vector file"){
+        return new AbstractAction("Import data from vector file", ImageCache.get(ImageCache.IMPORT)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 File[] openFiles = guiBridge.showOpenFileDialog("Open Vector File", PreferencesHandler.getLastFile(),
@@ -624,7 +625,7 @@ public class SqlTemplatesAndActions {
     public Action getReprojectTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
         if (!sqlTemplates.hasReprojectTable())
             return null;
-        return new AbstractAction("Reproject table"){
+        return new AbstractAction("Reproject table", ImageCache.get(ImageCache.TEMPLATE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -654,7 +655,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Quick View Table in 3D"){
+        return new AbstractAction("Quick View Table in 3D", ImageCache.get(ImageCache.GLOBE)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -674,7 +675,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getQuickViewTableGeometriesAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Quick View Table Geometries"){
+        return new AbstractAction("Quick View Table Geometries", ImageCache.get(ImageCache.VECTOR)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -697,7 +698,7 @@ public class SqlTemplatesAndActions {
         if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
-            return new AbstractAction("Open in SLD editor"){
+            return new AbstractAction("Open in SLD editor", ImageCache.get(ImageCache.PALETTE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     try {
@@ -724,7 +725,7 @@ public class SqlTemplatesAndActions {
         if (spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
                 || spatialiteViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
-            return new AbstractAction("Open in FORMS editor"){
+            return new AbstractAction("Open in FORMS editor", ImageCache.get(ImageCache.FOLDER_OPEN)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     try {
@@ -747,7 +748,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getGenerateInsertExportAction( TableLevel table, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Generate insert sql statements"){
+        return new AbstractAction("Generate insert sql statements", ImageCache.get(ImageCache.EXPORT)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 try {
@@ -824,7 +825,7 @@ public class SqlTemplatesAndActions {
 
     public Action getUpdateLayerStats( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
         if (sqlTemplates.hasRecoverGeometryColumn()) {
-            return new AbstractAction("Update Layer Statistics"){
+            return new AbstractAction("Update Layer Statistics", ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     String query = "SELECT UpdateLayerStatistics();";
@@ -837,7 +838,7 @@ public class SqlTemplatesAndActions {
     }
 
     public Action getImportSqlFileAction( GuiBridgeHandler guiBridge, DatabaseViewer spatialiteViewer ) {
-        return new AbstractAction("Import sql file"){
+        return new AbstractAction("Import sql file", ImageCache.get(ImageCache.IMPORT)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 File[] openFiles = guiBridge.showOpenFileDialog("Open sql file", PreferencesHandler.getLastFile(), null);
@@ -902,7 +903,7 @@ public class SqlTemplatesAndActions {
     // }
 
     public Action getSaveConnectionAction( DatabaseViewer databaseViewer ) {
-        return new AbstractAction("Save Connection"){
+        return new AbstractAction("Save Connection", ImageCache.get(ImageCache.SAVE)){
             @SuppressWarnings("unchecked")
             @Override
             public void actionPerformed( ActionEvent e ) {
@@ -950,7 +951,7 @@ public class SqlTemplatesAndActions {
 
     public Action getImportRaster2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
-            return new AbstractAction("Import raster to tileset"){
+            return new AbstractAction("Import raster to tileset", ImageCache.get(ImageCache.IMPORT)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     doTiles(guiBridge, databaseViewer, true);
@@ -962,7 +963,7 @@ public class SqlTemplatesAndActions {
     }
     public Action getImportVector2TilesTableAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.GEOPACKAGE) {
-            return new AbstractAction("Import vector to tileset"){
+            return new AbstractAction("Import vector to tileset", ImageCache.get(ImageCache.IMPORT)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     doTiles(guiBridge, databaseViewer, false);
@@ -1132,7 +1133,7 @@ public class SqlTemplatesAndActions {
     public Action getSwitchDatabaseAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS
                 || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES) {
-            return new AbstractAction("Switch database"){
+            return new AbstractAction("Switch database", ImageCache.get(ImageCache.CONNECT)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     ADb db = databaseViewer.currentConnectedSqlDatabase;
@@ -1217,7 +1218,7 @@ public class SqlTemplatesAndActions {
     public Action getViewActiveSessionsAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
                 || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
-            return new AbstractAction("List active connections"){
+            return new AbstractAction("List active connections", ImageCache.get(ImageCache.LIST)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
 
@@ -1236,7 +1237,7 @@ public class SqlTemplatesAndActions {
     public Action getCleanIdleSessionsAction( GuiBridgeHandler guiBridge, DatabaseViewer databaseViewer ) {
         if (databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGRES
                 || databaseViewer.currentConnectedSqlDatabase.getType() == EDb.POSTGIS) {
-            return new AbstractAction("Clean up idle connections"){
+            return new AbstractAction("Clean up idle connections", ImageCache.get(ImageCache.TEMPLATE)){
                 @Override
                 public void actionPerformed( ActionEvent e ) {
 

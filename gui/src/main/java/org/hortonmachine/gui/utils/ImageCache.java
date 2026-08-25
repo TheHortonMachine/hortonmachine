@@ -80,10 +80,16 @@ public class ImageCache {
     public static final String LOG = "log.gif";
 
     public static final String INFO = "information.png";
+    public static final String INFO16 = "information16.png";
     public static final String PHOTO = "photo.png";
     public static final String NOTE = "note.gif";
 
     public static final String EXPORT = "export_wiz.gif";
+    public static final String IMPORT = "import_wiz.gif";
+
+    public static final String ZOOM = "zoom.gif";
+    public static final String LIST = "list.gif";
+    public static final String FOLDER_OPEN = "folder_open.gif";
 
     public static final String INFOTOOL_ON = "info_on.gif";
     public static final String INFOTOOL_OFF = "info_off.png";
@@ -112,6 +118,7 @@ public class ImageCache {
     public static final String GPKG32 = "gpkg32.png";
     public static final String POSTGIS32 = "postgis32.png";
     public static final String MONGO32 = "mongo32.png";
+    public static final String GEOFRAME32 = "geoframe32.png";
 
     public static final String SETTINGS = "settings.gif";
 

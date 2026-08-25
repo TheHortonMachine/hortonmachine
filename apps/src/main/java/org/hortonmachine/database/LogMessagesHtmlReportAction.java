@@ -36,6 +36,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.simplereport.HtmlReport;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.joda.time.DateTime;
 
 /**
@@ -56,7 +57,7 @@ public class LogMessagesHtmlReportAction extends AbstractAction {
     private final boolean isSmash;
 
     public LogMessagesHtmlReportAction( ADb db, boolean isSmash ) {
-        super("Show HTML report");
+        super("Show HTML report", ImageCache.get(ImageCache.BROWSER));
         this.db = db;
         this.isSmash = isSmash;
     }

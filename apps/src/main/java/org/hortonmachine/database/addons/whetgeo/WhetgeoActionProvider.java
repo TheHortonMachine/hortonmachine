@@ -22,11 +22,13 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
+import javax.swing.Icon;
 
 import org.hortonmachine.database.spi.IDbViewerActionProvider;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
+import org.hortonmachine.gui.utils.ImageCache;
 
 /**
  * Contributes the WHETGEO-1D state chart action to the database viewer's
@@ -54,5 +56,10 @@ public class WhetgeoActionProvider implements IDbViewerActionProvider {
             return Collections.emptyList();
         }
         return Collections.singletonList(new WhetgeoStateChartAction(db, parent));
+    }
+
+    @Override
+    public Icon getIcon() {
+        return ImageCache.get(ImageCache.GEOFRAME32);
     }
 }

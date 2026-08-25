@@ -23,7 +23,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.swing.Action;
-
+import javax.swing.Icon;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.database.spi.IDbViewerActionProvider;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
@@ -67,5 +68,10 @@ public class ErmActionProvider implements IDbViewerActionProvider {
             ex.printStackTrace();
         }
         return new ArrayList<>();
+    }
+
+    @Override
+    public Icon getIcon() {
+        return ImageCache.get(ImageCache.GEOFRAME32);
     }
 }

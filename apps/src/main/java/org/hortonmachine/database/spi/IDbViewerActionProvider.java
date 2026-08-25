@@ -71,9 +71,13 @@ public interface IDbViewerActionProvider {
      * @return an icon representing this provider (e.g. a small WHETGEO or
      *          GeoFrame badge), or {@code null} for none. Actions returned by
      *          this provider that don't set their own {@code Action.SMALL_ICON}
-     *          get this icon applied to them automatically; it may also be
-     *          used elsewhere to mark a database/table recognized by this
-     *          provider.
+     *          get this icon applied to them automatically. It is also used as
+     *          the top-level database node icon in the database tree, in place
+     *          of the usual per-database-type icon (geopackage, postgis,
+     *          spatialite, ...), for any connection this provider recognizes
+     *          (see {@link #supportsDatabase(ADb)}); when several active
+     *          providers return a non-null icon for the same connection, the
+     *          first one found wins.
      */
     default Icon getIcon() {
         return null;

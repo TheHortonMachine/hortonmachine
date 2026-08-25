@@ -2077,8 +2077,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     private void setRightTreeRenderer() {
         if (currentConnectedSqlDatabase != null) {
-            databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedSqlDatabase);
-        } 
+            databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedSqlDatabase, activeActionProviders);
+        }
         databaseTreeView._databaseTree.setCellRenderer(databaseTreeCellRenderer);
     }
 
