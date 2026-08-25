@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,7 +73,7 @@ import org.locationtech.jts.geom.Point;
  * rendered synchronously (see {@link SynchronousRenderingExecutor}) so the pane never shows a
  * cleared/blank frame while GeoTools' normal asynchronous renderer catches up.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ErmBasinsMapPanel extends JPanel {
     private static final long serialVersionUID = 1L;

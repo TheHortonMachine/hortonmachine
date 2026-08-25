@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ import org.joda.time.DateTime;
  * and the legacy "debug" ("smash"/GPLog) table, which has a different column layout and encodes
  * the message type as a text label rather than {@link LogDb}'s numeric code.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LogMessagesHtmlReportAction extends AbstractAction {
     private static final long serialVersionUID = 1L;

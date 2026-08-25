@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ import org.hortonmachine.gears.io.dbs.DbsHelper;
  * range rules: precipitation, temperature and observed discharge are all clipped
  * to the [first, last] timestamp of the simulated series.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ErmChartDataLoader {
     private ErmChartDataLoader() {

@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ import org.jfree.data.Range;
  * switch which basin the chart is showing, both sides resizable via a shared split pane. A thin
  * progress bar at the top of the dialog shows while a basin switch is being loaded.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ErmChartDialogBuilder {
     private ErmChartDialogBuilder() {

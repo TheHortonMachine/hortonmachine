@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ import org.jfree.ui.TextAnchor;
  * with a flat line and a single-tick axis - not useful, and harder to read
  * than text.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class WhetgeoStateChartPanelBuilder {
     private static final Color TOP_BC_COLOR = ColorUtilities.fromHex("#0096ffff");

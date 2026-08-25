@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
  * the first entity's data off the EDT, then open {@link ErmVariableChartDialogBuilder}'s
  * dialog letting the user switch between entities.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 abstract class AbstractErmVariableChartAction extends AbstractAction {
     private static final long serialVersionUID = 1L;

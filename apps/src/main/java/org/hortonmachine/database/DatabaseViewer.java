@@ -49,6 +49,9 @@ import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.dbs.utils.TimeseriesTableUtils;
+import org.hortonmachine.database.csv.ImportCsvAsNewTableAction;
+import org.hortonmachine.database.csv.ImportCsvIntoTableAction;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.PreferencesHandler;
@@ -361,8 +364,18 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getImportRaster2TilesTableAction(guiBridge, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getImportVector2TilesTableAction(guiBridge, this));
         }
+        addSeparator(actions);
+        actions.add(new ImportCsvAsNewTableAction(currentConnectedSqlDatabase, guiBridge, pm, this, this::refreshDatabaseTreeQuietly));
         appendSpiActions(actions, getSpiDatabaseActions(dbLevel));
         return actions;
+    }
+
+    private void refreshDatabaseTreeQuietly() {
+        try {
+            refreshDatabaseTree();
+        } catch (Exception ex) {
+            GuiUtilities.handleError(this, ex);
+        }
     }
 
     private void addSeparator( List<Action> actions ) {
@@ -402,6 +415,14 @@ public class DatabaseViewer extends DatabaseController {
         if (selectedTable.tableName.equals(LogDb.TABLE_MESSAGES) || isSmash) {
             actions.add(new LogMessagesHtmlReportAction(currentConnectedSqlDatabase, isSmash));
         }
+
+        addSeparator(actions);
+        if (TimeseriesTableUtils.isTimeseriesTable(selectedTable)) {
+            actions.add(new ImportCsvIntoTableAction("Import timeseries from CSV", currentConnectedSqlDatabase, selectedTable,
+                    guiBridge, pm, this, this::refreshDatabaseTreeQuietly));
+        }
+        actions.add(new ImportCsvIntoTableAction("Import CSV into table", currentConnectedSqlDatabase, selectedTable, guiBridge,
+                pm, this, this::refreshDatabaseTreeQuietly));
 
         appendSpiActions(actions, getSpiTableActions(selectedTable));
 

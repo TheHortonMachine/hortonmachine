@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
  * {@link ErmSchema#ENVIRONMENTAL_VARIABLES_TABLE} when available. Rows whose value is the
  * novalue marker ({@link HMConstants#doubleNovalue}, -9999.0) are excluded.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 final class ErmVariableSeriesLoader {
     private ErmVariableSeriesLoader() {

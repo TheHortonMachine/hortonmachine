@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
  * data split by environmental variable (var_id), with name/unit looked up
  * from {@link ErmSchema#ENVIRONMENTAL_VARIABLES_TABLE} when available.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ErmStationChartDataLoader {
     private ErmStationChartDataLoader() {

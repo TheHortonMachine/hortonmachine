@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com
+ * (C) Andrea Antonello - https://g-ant.eu
  *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,7 +40,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
  * and opens them as a Hovmoller-style chart: one gpkg = one run = one grid,
  * so unlike the GeoFrame basin/station addon there is no entity to pick.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class WhetgeoStateChartAction extends AbstractAction {
     private static final long serialVersionUID = 1L;

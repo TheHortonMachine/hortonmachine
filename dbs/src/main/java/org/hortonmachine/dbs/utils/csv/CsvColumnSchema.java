@@ -15,25 +15,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.erm;
+package org.hortonmachine.dbs.utils.csv;
 
 /**
- * A selectable entity (a station or a basin) shown in the variable chart's picker combo box,
- * carrying its numeric id and a display label.
+ * One column of a CSV file's guessed (and possibly user-edited) schema: its
+ * header name, its {@link CsvColumnType}, and, only meaningful for
+ * {@link CsvColumnType#DATE}, the pattern used to parse it (a
+ * {@link java.text.SimpleDateFormat} pattern, e.g. {@code "yyyy-MM-dd
+ * HH:mm:ss"}).
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class ErmEntityItem {
-    public final int id;
-    public final String label;
+public class CsvColumnSchema {
+    public final String name;
+    public CsvColumnType type;
+    public String datePattern;
 
-    public ErmEntityItem( int id, String label ) {
-        this.id = id;
-        this.label = label;
+    public CsvColumnSchema( String name, CsvColumnType type ) {
+        this(name, type, null);
     }
 
-    @Override
-    public String toString() {
-        return label;
+    public CsvColumnSchema( String name, CsvColumnType type, String datePattern ) {
+        this.name = name;
+        this.type = type;
+        this.datePattern = datePattern;
     }
 }
