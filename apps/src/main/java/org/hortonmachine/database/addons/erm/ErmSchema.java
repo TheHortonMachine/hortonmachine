@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.util.regex.Pattern;
 
@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeSchema {
-    private GeoframeSchema() {
+public class ErmSchema {
+    private ErmSchema() {
     }
 
     /**

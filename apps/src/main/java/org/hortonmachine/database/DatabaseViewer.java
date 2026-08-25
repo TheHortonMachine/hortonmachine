@@ -57,10 +57,6 @@ import org.hortonmachine.dbs.log.LogDb;
 import org.hortonmachine.dbs.log.Message;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.SqlName;
-import org.hortonmachine.database.addons.geoframe.GeoframeBasinChartAction;
-import org.hortonmachine.database.addons.geoframe.GeoframeChartAction;
-import org.hortonmachine.database.addons.geoframe.GeoframeStationChartAction;
-import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartAction;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -294,7 +290,18 @@ public class DatabaseViewer extends DatabaseController {
         List<Action> actions = new ArrayList<>();
         addIfNotNull(actions, sqlTemplatesAndActions.getUpdateValueAction(guiBridge, this));
 
+        appendSpiActions(actions, getSpiLeafActions(selectedLeaf));
         return actions;
+    }
+
+    private void appendSpiActions( List<Action> actions, List<Action> spiActions ) {
+        if (spiActions.isEmpty()) {
+            return;
+        }
+        if (!actions.isEmpty()) {
+            addSeparator(actions);
+        }
+        actions.addAll(spiActions);
     }
 
     protected List<Action> makeColumnActions( final ColumnLevel selectedColumn ) {
@@ -333,6 +340,7 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getQuickViewOtherTableAction(selectedColumn, this));
         }
 
+        appendSpiActions(actions, getSpiColumnActions(selectedColumn));
         return actions;
     }
 
@@ -365,6 +373,7 @@ public class DatabaseViewer extends DatabaseController {
             addIfNotNull(actions, sqlTemplatesAndActions.getImportRaster2TilesTableAction(guiBridge, this));
             addIfNotNull(actions, sqlTemplatesAndActions.getImportVector2TilesTableAction(guiBridge, this));
         }
+        appendSpiActions(actions, getSpiDatabaseActions(dbLevel));
         return actions;
     }
 
@@ -567,10 +576,7 @@ public class DatabaseViewer extends DatabaseController {
             });
         }
 
-        GeoframeChartAction.addIfApplicable(currentConnectedSqlDatabase, selectedTable, actions, this);
-        GeoframeStationChartAction.addIfApplicable(currentConnectedSqlDatabase, selectedTable, actions, this);
-        GeoframeBasinChartAction.addIfApplicable(currentConnectedSqlDatabase, selectedTable, actions, this);
-        WhetgeoStateChartAction.addIfApplicable(currentConnectedSqlDatabase, selectedTable, actions, this);
+        appendSpiActions(actions, getSpiTableActions(selectedTable));
 
         return actions;
     }

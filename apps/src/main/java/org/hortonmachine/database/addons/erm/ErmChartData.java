@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 /**
  * Holds the time series data needed to render the GeoFrame water budget chart:
@@ -24,7 +24,7 @@ package org.hortonmachine.database.addons.geoframe;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeChartData {
+public class ErmChartData {
     public int basinId;
 
     public long[] precipitationTimes = new long[0];

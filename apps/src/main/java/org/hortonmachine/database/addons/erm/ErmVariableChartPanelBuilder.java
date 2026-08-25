@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -45,7 +45,7 @@ import org.jfree.data.xy.IntervalXYDataset;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeVariableChartPanelBuilder {
+public class ErmVariableChartPanelBuilder {
     private static final Color COLOR_TEMPERATURE = ColorUtilities.fromHex("#ab080cff");
     private static final Color COLOR_PRECIPITATION = ColorUtilities.fromHex("#0096ffff");
     private static final Color COLOR_EVAPOTRANSPIRATION = ColorUtilities.fromHex("#009945ff");
@@ -53,24 +53,24 @@ public class GeoframeVariableChartPanelBuilder {
     /** Colors for any variable other than the four fixed ones above, cycled in order. */
     private static final Color[] FALLBACK_COLORS = {ColorUtilities.fromHex("#ff8c00ff"), ColorUtilities.fromHex("#00b3b3ff")};
 
-    private GeoframeVariableChartPanelBuilder() {
+    private ErmVariableChartPanelBuilder() {
     }
 
-    public static JPanel build( GeoframeVariableChartData data ) {
+    public static JPanel build( ErmVariableChartData data ) {
         DateAxis sharedTimeAxis = new DateAxis("Time");
 
         CombinedDomainXYPlot combinedPlot = new CombinedDomainXYPlot(sharedTimeAxis);
         int fallbackIndex = 0;
         for( int i = 0; i < data.variableSeries.size(); i++ ) {
-            GeoframeVariableChartData.VariableSeries series = data.variableSeries.get(i);
+            ErmVariableChartData.VariableSeries series = data.variableSeries.get(i);
             Color color;
-            if (series.varId == GeoframeSchema.VAR_TEMPERATURE) {
+            if (series.varId == ErmSchema.VAR_TEMPERATURE) {
                 color = COLOR_TEMPERATURE;
-            } else if (series.varId == GeoframeSchema.VAR_PRECIPITATION) {
+            } else if (series.varId == ErmSchema.VAR_PRECIPITATION) {
                 color = COLOR_PRECIPITATION;
-            } else if (series.varId == GeoframeSchema.VAR_EVAPOTRANSPIRATION) {
+            } else if (series.varId == ErmSchema.VAR_EVAPOTRANSPIRATION) {
                 color = COLOR_EVAPOTRANSPIRATION;
-            } else if (series.varId == GeoframeSchema.VAR_RADIATION) {
+            } else if (series.varId == ErmSchema.VAR_RADIATION) {
                 color = COLOR_RADIATION;
             } else {
                 color = FALLBACK_COLORS[fallbackIndex % FALLBACK_COLORS.length];
@@ -94,12 +94,12 @@ public class GeoframeVariableChartPanelBuilder {
         return panel;
     }
 
-    private static XYPlot buildVariablePlot( GeoframeVariableChartData.VariableSeries series, Color color ) {
+    private static XYPlot buildVariablePlot( ErmVariableChartData.VariableSeries series, Color color ) {
         String label = series.name;
         String axisLabel = series.unit != null && !series.unit.isEmpty() ? label + " (" + series.unit + ")" : label;
 
         NumberAxis axis = new NumberAxis(axisLabel);
-        boolean isPrecipitation = series.varId == GeoframeSchema.VAR_PRECIPITATION;
+        boolean isPrecipitation = series.varId == ErmSchema.VAR_PRECIPITATION;
         axis.setAutoRangeIncludesZero(isPrecipitation);
         axis.setLabelPaint(color);
         axis.setTickLabelPaint(color);

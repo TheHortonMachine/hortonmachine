@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -32,25 +32,25 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
  * entity's (station or basin) rows out of a "*_data" table shaped like {@code station_data}/
  * {@code basin_data} (a timestamp, an entity foreign key, a var_id and a value column), split by
  * environmental variable, with name/unit looked up from
- * {@link GeoframeSchema#ENVIRONMENTAL_VARIABLES_TABLE} when available. Rows whose value is the
+ * {@link ErmSchema#ENVIRONMENTAL_VARIABLES_TABLE} when available. Rows whose value is the
  * novalue marker ({@link HMConstants#doubleNovalue}, -9999.0) are excluded.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-final class GeoframeVariableSeriesLoader {
-    private GeoframeVariableSeriesLoader() {
+final class ErmVariableSeriesLoader {
+    private ErmVariableSeriesLoader() {
     }
 
-    static GeoframeVariableChartData load( ADb db, String dataTable, String entityIdColumn, int entityId, String title )
+    static ErmVariableChartData load( ADb db, String dataTable, String entityIdColumn, int entityId, String title )
             throws Exception {
-        String sql = "SELECT d." + GeoframeSchema.COL_VAR_ID + ", ev." + GeoframeSchema.COL_VAR_NAME + ", ev."
-                + GeoframeSchema.COL_VAR_UNIT + ", d." + GeoframeSchema.COL_TS + ", d." + GeoframeSchema.COL_VALUE + " FROM "
-                + dataTable + " d LEFT JOIN " + GeoframeSchema.ENVIRONMENTAL_VARIABLES_TABLE + " ev ON d."
-                + GeoframeSchema.COL_VAR_ID + " = ev." + GeoframeSchema.COL_VAR_ID + " WHERE d." + entityIdColumn
-                + " = ? AND d." + GeoframeSchema.COL_VALUE + " <> " + HMConstants.doubleNovalue + " ORDER BY d."
-                + GeoframeSchema.COL_VAR_ID + ", d." + GeoframeSchema.COL_TS;
+        String sql = "SELECT d." + ErmSchema.COL_VAR_ID + ", ev." + ErmSchema.COL_VAR_NAME + ", ev."
+                + ErmSchema.COL_VAR_UNIT + ", d." + ErmSchema.COL_TS + ", d." + ErmSchema.COL_VALUE + " FROM "
+                + dataTable + " d LEFT JOIN " + ErmSchema.ENVIRONMENTAL_VARIABLES_TABLE + " ev ON d."
+                + ErmSchema.COL_VAR_ID + " = ev." + ErmSchema.COL_VAR_ID + " WHERE d." + entityIdColumn
+                + " = ? AND d." + ErmSchema.COL_VALUE + " <> " + HMConstants.doubleNovalue + " ORDER BY d."
+                + ErmSchema.COL_VAR_ID + ", d." + ErmSchema.COL_TS;
 
-        Map<Integer, GeoframeVariableChartData.VariableSeries> seriesByVar = new LinkedHashMap<>();
+        Map<Integer, ErmVariableChartData.VariableSeries> seriesByVar = new LinkedHashMap<>();
         Map<Integer, List<Long>> timesByVar = new LinkedHashMap<>();
         Map<Integer, List<Double>> valuesByVar = new LinkedHashMap<>();
 
@@ -65,9 +65,9 @@ final class GeoframeVariableSeriesLoader {
                         long ts = rs.getLong(4);
                         double value = rs.getDouble(5);
 
-                        GeoframeVariableChartData.VariableSeries series = seriesByVar.get(varId);
+                        ErmVariableChartData.VariableSeries series = seriesByVar.get(varId);
                         if (series == null) {
-                            series = new GeoframeVariableChartData.VariableSeries();
+                            series = new ErmVariableChartData.VariableSeries();
                             series.varId = varId;
                             series.name = name != null ? name : ("Variable " + varId);
                             series.unit = unit;
@@ -83,11 +83,11 @@ final class GeoframeVariableSeriesLoader {
             return null;
         });
 
-        GeoframeVariableChartData data = new GeoframeVariableChartData();
+        ErmVariableChartData data = new ErmVariableChartData();
         data.entityId = entityId;
         data.title = title;
         for( Integer varId : seriesByVar.keySet() ) {
-            GeoframeVariableChartData.VariableSeries series = seriesByVar.get(varId);
+            ErmVariableChartData.VariableSeries series = seriesByVar.get(varId);
             List<Long> times = timesByVar.get(varId);
             List<Double> values = valuesByVar.get(varId);
             series.times = times.stream().mapToLong(Long::longValue).toArray();

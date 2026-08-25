@@ -21,10 +21,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -33,9 +31,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 
 import org.hortonmachine.dbs.compat.ADb;
-import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
 /**
@@ -56,27 +52,6 @@ public class WhetgeoStateChartAction extends AbstractAction {
         super("Open WHETGEO 1D State Chart");
         this.db = db;
         this.parent = parent;
-    }
-
-    /**
-     * Recognizes whether {@code selectedTable} is a WHETGEO 1D state output table and, if so,
-     * appends a separator and a {@link WhetgeoStateChartAction} to {@code actions} - the single
-     * call site a table-action provider (e.g. {@code DatabaseViewer.makeTableAction}) needs,
-     * keeping the recognition logic colocated with the action itself rather than duplicated
-     * inline at every call site.
-     */
-    public static void addIfApplicable( ADb db, TableLevel selectedTable, List<Action> actions, Component parent ) {
-        if (!Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE.equals(selectedTable.tableName.getName())) {
-            return;
-        }
-        try {
-            if (db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID)) {
-                actions.add(null); // separator, same convention as DatabaseViewer.addSeparator(actions)
-                actions.add(new WhetgeoStateChartAction(db, parent));
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
     @Override

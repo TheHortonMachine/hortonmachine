@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,30 +27,30 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 /**
  * Loads the data needed for the GeoFrame station data chart out of a connected
  * {@link ADb}: the list of stations that actually have rows in
- * {@link GeoframeSchema#STATION_DATA_TABLE}, and, for a given station, its
+ * {@link ErmSchema#STATION_DATA_TABLE}, and, for a given station, its
  * data split by environmental variable (var_id), with name/unit looked up
- * from {@link GeoframeSchema#ENVIRONMENTAL_VARIABLES_TABLE} when available.
+ * from {@link ErmSchema#ENVIRONMENTAL_VARIABLES_TABLE} when available.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeStationChartDataLoader {
-    private GeoframeStationChartDataLoader() {
+public class ErmStationChartDataLoader {
+    private ErmStationChartDataLoader() {
     }
 
     /** Stations (id + type) known to have at least one row in station_data. */
-    public static List<GeoframeEntityItem> loadStationsWithData( ADb db ) throws Exception {
-        String sql = "SELECT DISTINCT st." + GeoframeSchema.COL_ID + ", st." + GeoframeSchema.COL_TYPE + " FROM "
-                + GeoframeSchema.STATION_TABLE + " st JOIN " + GeoframeSchema.STATION_DATA_TABLE + " sd ON sd."
-                + GeoframeSchema.COL_STATION_ID + " = st." + GeoframeSchema.COL_ID + " ORDER BY st." + GeoframeSchema.COL_ID;
+    public static List<ErmEntityItem> loadStationsWithData( ADb db ) throws Exception {
+        String sql = "SELECT DISTINCT st." + ErmSchema.COL_ID + ", st." + ErmSchema.COL_TYPE + " FROM "
+                + ErmSchema.STATION_TABLE + " st JOIN " + ErmSchema.STATION_DATA_TABLE + " sd ON sd."
+                + ErmSchema.COL_STATION_ID + " = st." + ErmSchema.COL_ID + " ORDER BY st." + ErmSchema.COL_ID;
 
-        List<GeoframeEntityItem> items = new ArrayList<>();
+        List<ErmEntityItem> items = new ArrayList<>();
         db.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
                     int id = rs.getInt(1);
                     String type = rs.getString(2);
                     String label = "Station " + id + (type != null ? " (" + type + ")" : "");
-                    items.add(new GeoframeEntityItem(id, label));
+                    items.add(new ErmEntityItem(id, label));
                 }
             }
             return null;
@@ -58,8 +58,8 @@ public class GeoframeStationChartDataLoader {
         return items;
     }
 
-    public static GeoframeVariableChartData load( ADb db, int stationId ) throws Exception {
-        return GeoframeVariableSeriesLoader.load(db, GeoframeSchema.STATION_DATA_TABLE, GeoframeSchema.COL_STATION_ID,
+    public static ErmVariableChartData load( ADb db, int stationId ) throws Exception {
+        return ErmVariableSeriesLoader.load(db, ErmSchema.STATION_DATA_TABLE, ErmSchema.COL_STATION_ID,
                 stationId, "Station " + stationId);
     }
 }

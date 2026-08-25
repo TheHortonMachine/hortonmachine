@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -37,28 +37,28 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 
 /**
  * Shared behaviour behind the station data and basin data chart actions: load the entity list and
- * the first entity's data off the EDT, then open {@link GeoframeVariableChartDialogBuilder}'s
+ * the first entity's data off the EDT, then open {@link ErmVariableChartDialogBuilder}'s
  * dialog letting the user switch between entities.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-abstract class AbstractGeoframeVariableChartAction extends AbstractAction {
+abstract class AbstractErmVariableChartAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
     protected final ADb db;
     private final Component parent;
 
-    protected AbstractGeoframeVariableChartAction( String name, ADb db, Component parent ) {
+    protected AbstractErmVariableChartAction( String name, ADb db, Component parent ) {
         super(name);
         this.db = db;
         this.parent = parent;
     }
 
     /** Entities (stations or basins) that actually have rows in the data table. */
-    protected abstract List<GeoframeEntityItem> loadEntities() throws Exception;
+    protected abstract List<ErmEntityItem> loadEntities() throws Exception;
 
     /** Loads the chart data for a single entity id. */
-    protected abstract GeoframeVariableChartData loadData( int entityId ) throws Exception;
+    protected abstract ErmVariableChartData loadData( int entityId ) throws Exception;
 
     /** Label used in the dialog's entity picker, eg. "Station" or "Basin". */
     protected abstract String entityLabel();
@@ -79,11 +79,11 @@ abstract class AbstractGeoframeVariableChartAction extends AbstractAction {
         SwingWorker<Object[], Void> worker = new SwingWorker<>(){
             @Override
             protected Object[] doInBackground() throws Exception {
-                List<GeoframeEntityItem> entities = loadEntities();
+                List<ErmEntityItem> entities = loadEntities();
                 if (entities.isEmpty()) {
                     throw new IllegalStateException(noDataMessage());
                 }
-                GeoframeVariableChartData data = loadData(entities.get(0).id);
+                ErmVariableChartData data = loadData(entities.get(0).id);
                 return new Object[]{entities, data};
             }
 
@@ -93,10 +93,10 @@ abstract class AbstractGeoframeVariableChartAction extends AbstractAction {
                 try {
                     Object[] result = get();
                     @SuppressWarnings("unchecked")
-                    List<GeoframeEntityItem> entities = (List<GeoframeEntityItem>) result[0];
-                    GeoframeVariableChartData data = (GeoframeVariableChartData) result[1];
-                    JPanel dialogPanel = GeoframeVariableChartDialogBuilder.build(entityLabel(), entities, data,
-                            AbstractGeoframeVariableChartAction.this::loadData);
+                    List<ErmEntityItem> entities = (List<ErmEntityItem>) result[0];
+                    ErmVariableChartData data = (ErmVariableChartData) result[1];
+                    JPanel dialogPanel = ErmVariableChartDialogBuilder.build(entityLabel(), entities, data,
+                            AbstractErmVariableChartAction.this::loadData);
                     GuiUtilities.openDialogWithPanel(dialogPanel, dialogTitle(), new Dimension(1100, 800), false);
                 } catch (Exception ex) {
                     Logger.INSTANCE.insertError("", "ERROR", ex);

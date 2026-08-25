@@ -15,25 +15,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * A selectable entity (a station or a basin) shown in the variable chart's picker combo box,
- * carrying its numeric id and a display label.
+ * Holds the time series data of a single entity's (station or basin) data rows, split by
+ * environmental variable (var_id), for the variable chart shared by the station data and basin
+ * data chart actions.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeEntityItem {
-    public final int id;
-    public final String label;
+public class ErmVariableChartData {
+    public int entityId;
+    /** Chart title, eg. "Station 3" or "Basin 5". */
+    public String title;
 
-    public GeoframeEntityItem( int id, String label ) {
-        this.id = id;
-        this.label = label;
-    }
+    public List<VariableSeries> variableSeries = new ArrayList<>();
 
-    @Override
-    public String toString() {
-        return label;
+    /** One time series per environmental variable (var_id) found for the entity. */
+    public static class VariableSeries {
+        public int varId;
+        public String name;
+        public String unit;
+        public long[] times = new long[0];
+        public double[] values = new double[0];
     }
 }

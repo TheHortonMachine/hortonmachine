@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,18 +39,18 @@ import org.hortonmachine.gears.io.dbs.DbsHelper;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeChartDataLoader {
-    private GeoframeChartDataLoader() {
+public class ErmChartDataLoader {
+    private ErmChartDataLoader() {
     }
 
-    public static GeoframeChartData load( ADb db, String simDischargeTableName ) throws Exception {
+    public static ErmChartData load( ADb db, String simDischargeTableName ) throws Exception {
         Integer basinId = findMostDownstreamBasinId(db);
         if (basinId == null) {
-            throw new IllegalStateException("No basin found in the '" + GeoframeSchema.TOPOLOGY_TABLE + "' table with "
-                    + GeoframeSchema.TOPOLOGY_DOWNSTREAM_BASIN + " = 0 (most downstream basin).");
+            throw new IllegalStateException("No basin found in the '" + ErmSchema.TOPOLOGY_TABLE + "' table with "
+                    + ErmSchema.TOPOLOGY_DOWNSTREAM_BASIN + " = 0 (most downstream basin).");
         }
 
-        GeoframeChartData data = loadDischargeAndMeteo(db, simDischargeTableName, basinId, null, null);
+        ErmChartData data = loadDischargeAndMeteo(db, simDischargeTableName, basinId, null, null);
 
         Long minTs = data.simulatedDischargeTimes.length > 0 ? data.simulatedDischargeTimes[0] : null;
         Long maxTs = data.simulatedDischargeTimes.length > 0
@@ -69,14 +69,14 @@ public class GeoframeChartDataLoader {
      * is re-queried (not copied from the reference) since it depends on whether THIS basin has
      * its own stream gauge - see {@link #queryObservedDischargeSeries}.
      */
-    public static GeoframeChartData loadForBasin( ADb db, String simDischargeTableName, int basinId,
-            GeoframeChartData reference ) throws Exception {
+    public static ErmChartData loadForBasin( ADb db, String simDischargeTableName, int basinId,
+            ErmChartData reference ) throws Exception {
         Long minTs = reference.simulatedDischargeTimes.length > 0 ? reference.simulatedDischargeTimes[0] : null;
         Long maxTs = reference.simulatedDischargeTimes.length > 0
                 ? reference.simulatedDischargeTimes[reference.simulatedDischargeTimes.length - 1]
                 : null;
 
-        GeoframeChartData data = loadDischargeAndMeteo(db, simDischargeTableName, basinId, minTs, maxTs);
+        ErmChartData data = loadDischargeAndMeteo(db, simDischargeTableName, basinId, minTs, maxTs);
         Series observed = queryObservedDischargeSeries(db, basinId, minTs, maxTs);
         data.observedDischargeTimes = observed.times;
         data.observedDischargeValues = observed.values;
@@ -84,11 +84,11 @@ public class GeoframeChartDataLoader {
     }
 
     /**
-     * Loads the basin polygons ({@link GeoframeSchema#COL_ID}, {@link GeoframeSchema#COL_GEOM})
+     * Loads the basin polygons ({@link ErmSchema#COL_ID}, {@link ErmSchema#COL_GEOM})
      * as a feature collection, for the basins-selector map.
      */
     public static SimpleFeatureCollection loadBasinPolygons( ASpatialDb db ) throws Exception {
-        String sql = "SELECT " + GeoframeSchema.COL_ID + ", " + GeoframeSchema.COL_GEOM + " FROM " + GeoframeSchema.BASIN_TABLE;
+        String sql = "SELECT " + ErmSchema.COL_ID + ", " + ErmSchema.COL_GEOM + " FROM " + ErmSchema.BASIN_TABLE;
         return DbsHelper.runRawSqlToFeatureCollection("basins", db, sql, null);
     }
 
@@ -97,7 +97,7 @@ public class GeoframeChartDataLoader {
      * read.
      */
     public static SimpleFeatureCollection loadNetworkLines( ASpatialDb db ) throws Exception {
-        String sql = "SELECT " + GeoframeSchema.COL_GEOM + " FROM " + GeoframeSchema.NET_TABLE;
+        String sql = "SELECT " + ErmSchema.COL_GEOM + " FROM " + ErmSchema.NET_TABLE;
         return DbsHelper.runRawSqlToFeatureCollection("network", db, sql, null);
     }
 
@@ -105,25 +105,25 @@ public class GeoframeChartDataLoader {
      * Loads the stream/discharge gauge station points, drawn on the basins map.
      */
     public static SimpleFeatureCollection loadStreamGaugeStations( ASpatialDb db ) throws Exception {
-        return loadStations(db, GeoframeSchema.STATION_TYPE_STREAM_GAUGE, "streamGauges");
+        return loadStations(db, ErmSchema.STATION_TYPE_STREAM_GAUGE, "streamGauges");
     }
 
     /**
      * Loads the meteo station points, drawn on the basins map.
      */
     public static SimpleFeatureCollection loadMeteoStations( ASpatialDb db ) throws Exception {
-        return loadStations(db, GeoframeSchema.STATION_TYPE_METEO, "meteoStations");
+        return loadStations(db, ErmSchema.STATION_TYPE_METEO, "meteoStations");
     }
 
     private static SimpleFeatureCollection loadStations( ASpatialDb db, String stationType, String name ) throws Exception {
-        String sql = "SELECT " + GeoframeSchema.COL_ID + ", " + GeoframeSchema.COL_GEOM + " FROM " + GeoframeSchema.STATION_TABLE
-                + " WHERE " + GeoframeSchema.COL_TYPE + " = '" + stationType + "'";
+        String sql = "SELECT " + ErmSchema.COL_ID + ", " + ErmSchema.COL_GEOM + " FROM " + ErmSchema.STATION_TABLE
+                + " WHERE " + ErmSchema.COL_TYPE + " = '" + stationType + "'";
         return DbsHelper.runRawSqlToFeatureCollection(name, db, sql, null);
     }
 
-    private static GeoframeChartData loadDischargeAndMeteo( ADb db, String simDischargeTableName, int basinId, Long minTs,
+    private static ErmChartData loadDischargeAndMeteo( ADb db, String simDischargeTableName, int basinId, Long minTs,
             Long maxTs ) throws Exception {
-        GeoframeChartData data = new GeoframeChartData();
+        ErmChartData data = new ErmChartData();
         data.basinId = basinId;
 
         Series simulated = querySimulatedDischargeSeries(db, simDischargeTableName, basinId);
@@ -134,12 +134,12 @@ public class GeoframeChartDataLoader {
         Long effectiveMaxTs = maxTs != null ? maxTs
                 : (simulated.times.length > 0 ? simulated.times[simulated.times.length - 1] : null);
 
-        Series precipitation = queryBasinDataSeries(db, basinId, GeoframeSchema.VAR_PRECIPITATION, effectiveMinTs,
+        Series precipitation = queryBasinDataSeries(db, basinId, ErmSchema.VAR_PRECIPITATION, effectiveMinTs,
                 effectiveMaxTs);
         data.precipitationTimes = precipitation.times;
         data.precipitationValues = precipitation.values;
 
-        Series temperature = queryBasinDataSeries(db, basinId, GeoframeSchema.VAR_TEMPERATURE, effectiveMinTs, effectiveMaxTs);
+        Series temperature = queryBasinDataSeries(db, basinId, ErmSchema.VAR_TEMPERATURE, effectiveMinTs, effectiveMaxTs);
         data.temperatureTimes = temperature.times;
         data.temperatureValues = temperature.values;
 
@@ -147,8 +147,8 @@ public class GeoframeChartDataLoader {
     }
 
     private static Integer findMostDownstreamBasinId( ADb db ) throws Exception {
-        String sql = "SELECT " + GeoframeSchema.TOPOLOGY_UPSTREAM_BASIN + " FROM " + GeoframeSchema.TOPOLOGY_TABLE + " WHERE "
-                + GeoframeSchema.TOPOLOGY_DOWNSTREAM_BASIN + " = 0";
+        String sql = "SELECT " + ErmSchema.TOPOLOGY_UPSTREAM_BASIN + " FROM " + ErmSchema.TOPOLOGY_TABLE + " WHERE "
+                + ErmSchema.TOPOLOGY_DOWNSTREAM_BASIN + " = 0";
         return db.execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 if (rs.next()) {
@@ -163,16 +163,16 @@ public class GeoframeChartDataLoader {
         List<Object> params = new ArrayList<>();
         params.add(basinId);
         params.add(varId);
-        String sql = "SELECT " + GeoframeSchema.COL_TS + ", " + GeoframeSchema.COL_VALUE + " FROM "
-                + GeoframeSchema.BASIN_DATA_TABLE + " WHERE " + GeoframeSchema.COL_BASIN_ID + " = ? AND "
-                + GeoframeSchema.COL_VAR_ID + " = ?" + timeBoundClause(GeoframeSchema.COL_TS, minTs, maxTs, params)
-                + " ORDER BY " + GeoframeSchema.COL_TS;
+        String sql = "SELECT " + ErmSchema.COL_TS + ", " + ErmSchema.COL_VALUE + " FROM "
+                + ErmSchema.BASIN_DATA_TABLE + " WHERE " + ErmSchema.COL_BASIN_ID + " = ? AND "
+                + ErmSchema.COL_VAR_ID + " = ?" + timeBoundClause(ErmSchema.COL_TS, minTs, maxTs, params)
+                + " ORDER BY " + ErmSchema.COL_TS;
         return queryTimeSeries(db, sql, params.toArray());
     }
 
     private static Series querySimulatedDischargeSeries( ADb db, String simTableName, int basinId ) throws Exception {
-        String sql = "SELECT " + GeoframeSchema.COL_TS + ", " + GeoframeSchema.COL_VALUE + " FROM " + simTableName
-                + " WHERE " + GeoframeSchema.COL_BASIN_ID + " = ? ORDER BY " + GeoframeSchema.COL_TS;
+        String sql = "SELECT " + ErmSchema.COL_TS + ", " + ErmSchema.COL_VALUE + " FROM " + simTableName
+                + " WHERE " + ErmSchema.COL_BASIN_ID + " = ? ORDER BY " + ErmSchema.COL_TS;
         return queryTimeSeries(db, sql, basinId);
     }
 
@@ -184,14 +184,14 @@ public class GeoframeChartDataLoader {
     private static Series queryObservedDischargeSeries( ADb db, int basinId, Long minTs, Long maxTs ) throws Exception {
         List<Object> params = new ArrayList<>();
         params.add(basinId);
-        params.add(GeoframeSchema.STATION_TYPE_STREAM_GAUGE);
-        params.add(GeoframeSchema.VAR_DISCHARGE);
-        String sql = "SELECT sd." + GeoframeSchema.COL_TS + ", sd." + GeoframeSchema.COL_VALUE + " FROM "
-                + GeoframeSchema.STATION_DATA_TABLE + " sd JOIN " + GeoframeSchema.STATION_TABLE + " st ON sd."
-                + GeoframeSchema.COL_STATION_ID + " = st." + GeoframeSchema.COL_ID + " WHERE st." + GeoframeSchema.COL_BASIN_ID
-                + " = ? AND st." + GeoframeSchema.COL_TYPE + " = ? AND sd." + GeoframeSchema.COL_VAR_ID + " = ? AND sd."
-                + GeoframeSchema.COL_VALUE + " >= 0" + timeBoundClause("sd." + GeoframeSchema.COL_TS, minTs, maxTs, params)
-                + " ORDER BY sd." + GeoframeSchema.COL_TS;
+        params.add(ErmSchema.STATION_TYPE_STREAM_GAUGE);
+        params.add(ErmSchema.VAR_DISCHARGE);
+        String sql = "SELECT sd." + ErmSchema.COL_TS + ", sd." + ErmSchema.COL_VALUE + " FROM "
+                + ErmSchema.STATION_DATA_TABLE + " sd JOIN " + ErmSchema.STATION_TABLE + " st ON sd."
+                + ErmSchema.COL_STATION_ID + " = st." + ErmSchema.COL_ID + " WHERE st." + ErmSchema.COL_BASIN_ID
+                + " = ? AND st." + ErmSchema.COL_TYPE + " = ? AND sd." + ErmSchema.COL_VAR_ID + " = ? AND sd."
+                + ErmSchema.COL_VALUE + " >= 0" + timeBoundClause("sd." + ErmSchema.COL_TS, minTs, maxTs, params)
+                + " ORDER BY sd." + ErmSchema.COL_TS;
         return queryTimeSeries(db, sql, params.toArray());
     }
 

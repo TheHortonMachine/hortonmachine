@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
@@ -50,6 +51,7 @@ import java.util.stream.Collectors;
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -92,6 +94,7 @@ import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcBlob;
 import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.HM;
+import org.hortonmachine.database.spi.IDbViewerActionProvider;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
 import org.hortonmachine.database.tree.DatabaseTreeModel;
 import org.hortonmachine.dbs.compat.ADb;
@@ -196,6 +199,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private List<String> oldSqlCommands = new ArrayList<String>();
     protected SqlTemplatesAndActions sqlTemplatesAndActions;
     private HMMapframe mapFrame;
+
+    /**
+     * The {@link IDbViewerActionProvider}s (built-in or contributed by downstream projects
+     * through SPI) that recognized {@link #currentConnectedSqlDatabase} when it was opened, see
+     * {@link #refreshActiveActionProviders()}.
+     */
+    private final List<IDbViewerActionProvider> activeActionProviders = new ArrayList<>();
 
     private DatabaseTreeCellRenderer databaseTreeCellRenderer;
     private SwingWorker<Void, DatabaseLoadEvent> databaseLevelLoader;
@@ -2044,6 +2054,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     ((ASpatialDb) currentConnectedSqlDatabase).initSpatialMetadata(null);
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
+                refreshActiveActionProviders();
 
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, false);
             } catch (Exception e) {
@@ -2282,6 +2293,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     hadError = true;
                 }
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
+                refreshActiveActionProviders();
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
                 ConnectionData recentCd = new ConnectionData();
                 recentCd.dbType = dbType != null ? dbType.getCode() : -1;
@@ -2356,6 +2368,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedSqlDatabase.setCredentials(user, _pwd);
                 currentConnectedSqlDatabase.open(_urlString);
                 sqlTemplatesAndActions = new SqlTemplatesAndActions(currentConnectedSqlDatabase.getType());
+                refreshActiveActionProviders();
 
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, true);
                 ConnectionData recentCd = new ConnectionData();
@@ -2456,7 +2469,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         if (currentConnectedSqlDatabase != null) {
             currentConnectedSqlDatabase.close();
             currentConnectedSqlDatabase = null;
-        } 
+        }
+        activeActionProviders.clear();
         dataTableView._recordCountTextfield.setText("");
 
         if (manually)
@@ -2678,6 +2692,69 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     protected abstract List<Action> makeDatabaseAction( final DbLevel dbLevel );
 
     protected abstract List<Action> makeTableAction( final TableLevel selectedTable );
+
+    /**
+     * Recomputes {@link #activeActionProviders} for {@link #currentConnectedSqlDatabase}, by
+     * asking every {@link IDbViewerActionProvider} on the classpath (built-in ones and any
+     * contributed by downstream projects through {@link ServiceLoader}) whether it recognizes
+     * this connection - once per connection, so per-click context menu building only has to
+     * consult providers that already matched instead of re-probing the schema on every popup.
+     */
+    protected void refreshActiveActionProviders() {
+        activeActionProviders.clear();
+        if (currentConnectedSqlDatabase == null) {
+            return;
+        }
+        for( IDbViewerActionProvider provider : ServiceLoader.load(IDbViewerActionProvider.class) ) {
+            try {
+                if (provider.supportsDatabase(currentConnectedSqlDatabase)) {
+                    activeActionProviders.add(provider);
+                }
+            } catch (Exception ex) {
+                Logger.INSTANCE.insertError("",
+                        "Error checking db-viewer action provider: " + provider.getClass().getName(), ex);
+            }
+        }
+    }
+
+    protected List<Action> getSpiDatabaseActions( DbLevel dbLevel ) {
+        return collectSpiActions(provider -> provider.getDatabaseActions(currentConnectedSqlDatabase, dbLevel, this));
+    }
+
+    protected List<Action> getSpiTableActions( TableLevel tableLevel ) {
+        return collectSpiActions(provider -> provider.getTableActions(currentConnectedSqlDatabase, tableLevel, this));
+    }
+
+    protected List<Action> getSpiColumnActions( ColumnLevel columnLevel ) {
+        return collectSpiActions(provider -> provider.getColumnActions(currentConnectedSqlDatabase, columnLevel, this));
+    }
+
+    protected List<Action> getSpiLeafActions( LeafLevel leafLevel ) {
+        return collectSpiActions(provider -> provider.getLeafActions(currentConnectedSqlDatabase, leafLevel, this));
+    }
+
+    private List<Action> collectSpiActions( Function<IDbViewerActionProvider, List<Action>> actionsExtractor ) {
+        List<Action> collected = new ArrayList<>();
+        for( IDbViewerActionProvider provider : activeActionProviders ) {
+            List<Action> providerActions = actionsExtractor.apply(provider);
+            if (providerActions == null || providerActions.isEmpty()) {
+                continue;
+            }
+            Icon icon = provider.getIcon();
+            if (icon != null) {
+                for( Action action : providerActions ) {
+                    if (action != null && action.getValue(Action.SMALL_ICON) == null) {
+                        action.putValue(Action.SMALL_ICON, icon);
+                    }
+                }
+            }
+            if (!collected.isEmpty() && collected.get(collected.size() - 1) != null) {
+                collected.add(null); // separator between different providers' actions
+            }
+            collected.addAll(providerActions);
+        }
+        return collected;
+    }
 
     protected void refreshDatabaseTree() throws Exception {
         if (currentConnectedSqlDatabase != null) {

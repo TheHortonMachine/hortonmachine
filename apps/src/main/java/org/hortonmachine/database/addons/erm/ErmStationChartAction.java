@@ -15,15 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.Component;
 import java.util.List;
 
-import javax.swing.Action;
-
 import org.hortonmachine.dbs.compat.ADb;
-import org.hortonmachine.dbs.compat.objects.TableLevel;
 
 /**
  * Action that loads the {@code station_data} of the first available station
@@ -33,39 +30,21 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeStationChartAction extends AbstractGeoframeVariableChartAction {
+public class ErmStationChartAction extends AbstractErmVariableChartAction {
     private static final long serialVersionUID = 1L;
 
-    public GeoframeStationChartAction( ADb db, Component parent ) {
+    public ErmStationChartAction( ADb db, Component parent ) {
         super("Open Station Data Chart", db, parent);
     }
 
-    /**
-     * Recognizes whether {@code selectedTable} is the GeoFrame station data table and, if so,
-     * appends a separator and a {@link GeoframeStationChartAction} to {@code actions}.
-     */
-    public static void addIfApplicable( ADb db, TableLevel selectedTable, List<Action> actions, Component parent ) {
-        if (!GeoframeSchema.STATION_DATA_TABLE.equals(selectedTable.tableName.getName())) {
-            return;
-        }
-        try {
-            if (db.hasTable(GeoframeSchema.STATION_TABLE)) {
-                actions.add(null); // separator
-                actions.add(new GeoframeStationChartAction(db, parent));
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+    @Override
+    protected List<ErmEntityItem> loadEntities() throws Exception {
+        return ErmStationChartDataLoader.loadStationsWithData(db);
     }
 
     @Override
-    protected List<GeoframeEntityItem> loadEntities() throws Exception {
-        return GeoframeStationChartDataLoader.loadStationsWithData(db);
-    }
-
-    @Override
-    protected GeoframeVariableChartData loadData( int entityId ) throws Exception {
-        return GeoframeStationChartDataLoader.load(db, entityId);
+    protected ErmVariableChartData loadData( int entityId ) throws Exception {
+        return ErmStationChartDataLoader.load(db, entityId);
     }
 
     @Override
@@ -85,6 +64,6 @@ public class GeoframeStationChartAction extends AbstractGeoframeVariableChartAct
 
     @Override
     protected String noDataMessage() {
-        return "No station has data in the '" + GeoframeSchema.STATION_DATA_TABLE + "' table.";
+        return "No station has data in the '" + ErmSchema.STATION_DATA_TABLE + "' table.";
     }
 }

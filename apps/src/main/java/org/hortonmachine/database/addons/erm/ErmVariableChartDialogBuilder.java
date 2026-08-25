@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -38,27 +38,27 @@ import org.hortonmachine.dbs.log.Logger;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeVariableChartDialogBuilder {
-    private GeoframeVariableChartDialogBuilder() {
+public class ErmVariableChartDialogBuilder {
+    private ErmVariableChartDialogBuilder() {
     }
 
     /** Loads the chart data for a single entity (station or basin) id, off the EDT. */
     @FunctionalInterface
     public interface EntityDataLoader {
-        GeoframeVariableChartData load( int entityId ) throws Exception;
+        ErmVariableChartData load( int entityId ) throws Exception;
     }
 
-    public static JPanel build( String entityLabel, List<GeoframeEntityItem> entities, GeoframeVariableChartData initialData,
+    public static JPanel build( String entityLabel, List<ErmEntityItem> entities, ErmVariableChartData initialData,
             EntityDataLoader loader ) {
         // CardLayout lets an entity switch atomically swap the visible chart panel (show()) instead
         // of removeAll()+add(), which can otherwise expose an empty container for a frame
         CardLayout cardLayout = new CardLayout();
         JPanel chartHolder = new JPanel(cardLayout);
-        JPanel initialChartPanel = GeoframeVariableChartPanelBuilder.build(initialData);
+        JPanel initialChartPanel = ErmVariableChartPanelBuilder.build(initialData);
         chartHolder.add(initialChartPanel, "chart-0");
 
-        JComboBox<GeoframeEntityItem> entityCombo = new JComboBox<>(entities.toArray(new GeoframeEntityItem[0]));
-        for( GeoframeEntityItem item : entities ) {
+        JComboBox<ErmEntityItem> entityCombo = new JComboBox<>(entities.toArray(new ErmEntityItem[0]));
+        for( ErmEntityItem item : entities ) {
             if (item.id == initialData.entityId) {
                 entityCombo.setSelectedItem(item);
                 break;
@@ -77,7 +77,7 @@ public class GeoframeVariableChartDialogBuilder {
         int[] cardCounter = {1};
 
         entityCombo.addActionListener(e -> {
-            GeoframeEntityItem selected = (GeoframeEntityItem) entityCombo.getSelectedItem();
+            ErmEntityItem selected = (ErmEntityItem) entityCombo.getSelectedItem();
             if (selected == null) {
                 return;
             }
@@ -102,17 +102,17 @@ public class GeoframeVariableChartDialogBuilder {
             JPanel[] currentChartPanelHolder, int[] cardCounter, int entityId, JProgressBar progressBar ) {
         progressBar.setVisible(true);
 
-        SwingWorker<GeoframeVariableChartData, Void> worker = new SwingWorker<>(){
+        SwingWorker<ErmVariableChartData, Void> worker = new SwingWorker<>(){
             @Override
-            protected GeoframeVariableChartData doInBackground() throws Exception {
+            protected ErmVariableChartData doInBackground() throws Exception {
                 return loader.load(entityId);
             }
 
             @Override
             protected void done() {
                 try {
-                    GeoframeVariableChartData data = get();
-                    JPanel newChartPanel = GeoframeVariableChartPanelBuilder.build(data);
+                    ErmVariableChartData data = get();
+                    JPanel newChartPanel = ErmVariableChartPanelBuilder.build(data);
                     String newCardName = "chart-" + cardCounter[0]++;
                     chartHolder.add(newChartPanel, newCardName);
                     cardLayout.show(chartHolder, newCardName);

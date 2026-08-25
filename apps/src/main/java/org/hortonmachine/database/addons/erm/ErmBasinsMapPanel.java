@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BorderLayout;
 import java.awt.Graphics2D;
@@ -75,7 +75,7 @@ import org.locationtech.jts.geom.Point;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeBasinsMapPanel extends JPanel {
+public class ErmBasinsMapPanel extends JPanel {
     private static final long serialVersionUID = 1L;
 
     /**
@@ -92,7 +92,7 @@ public class GeoframeBasinsMapPanel extends JPanel {
     private final FeatureLayer basinsLayer;
     private int selectedBasinId;
 
-    public GeoframeBasinsMapPanel( SimpleFeatureCollection basins, SimpleFeatureCollection network,
+    public ErmBasinsMapPanel( SimpleFeatureCollection basins, SimpleFeatureCollection network,
             SimpleFeatureCollection streamGauges, SimpleFeatureCollection meteoStations, int initialSelectedBasinId,
             IntConsumer onBasinSelected ) {
         super(new BorderLayout());
@@ -293,7 +293,7 @@ public class GeoframeBasinsMapPanel extends JPanel {
 
         @Override
         public long submit( MapContent mapContent, List<RenderingOperands> operands, RenderingExecutorListener listener ) {
-            throw new UnsupportedOperationException("Not used by GeoframeBasinsMapPanel");
+            throw new UnsupportedOperationException("Not used by ErmBasinsMapPanel");
         }
 
         @Override

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -46,19 +46,19 @@ import org.jfree.data.xy.IntervalXYDataset;
  *
  * @author Andrea Antonello
  */
-public class GeoframeChartPanelBuilder {
+public class ErmChartPanelBuilder {
     private static final Color PRECIPITATION_COLOR = ColorUtilities.fromHex("#0096ffff");
     private static final Color TEMPERATURE_COLOR = ColorUtilities.fromHex("#ab080cff");
     private static final Color SIMULATED_DISCHARGE_COLOR = ColorUtilities.fromHex("#009945ff");
     private static final Color OBSERVED_DISCHARGE_COLOR = ColorUtilities.fromHex("#0006ceff");
 
     /** Client property key under which the built panel stashes its {@link ChartPanel}. */
-    private static final String CHART_PANEL_PROPERTY = "geoframeChartPanel";
+    private static final String CHART_PANEL_PROPERTY = "ermChartPanel";
 
-    private GeoframeChartPanelBuilder() {
+    private ErmChartPanelBuilder() {
     }
 
-    public static JPanel build( GeoframeChartData data, String simTableName ) {
+    public static JPanel build( ErmChartData data, String simTableName ) {
         return build(data, simTableName, null);
     }
 
@@ -67,7 +67,7 @@ public class GeoframeChartPanelBuilder {
      *        instead of auto-fitting the data - used to preserve a zoomed period across a basin
      *        switch, see {@link #getCurrentDomainRange(JPanel)}.
      */
-    public static JPanel build( GeoframeChartData data, String simTableName, Range initialDomainRange ) {
+    public static JPanel build( ErmChartData data, String simTableName, Range initialDomainRange ) {
         DateAxis sharedTimeAxis = new DateAxis("Time");
         if (initialDomainRange != null) {
             sharedTimeAxis.setRange(initialDomainRange);
@@ -96,7 +96,7 @@ public class GeoframeChartPanelBuilder {
 
     /**
      * Reads back the shared time axis' current range (reflecting any zoom the user has applied)
-     * from a panel previously returned by {@link #build(GeoframeChartData, String)}, so it can be
+     * from a panel previously returned by {@link #build(ErmChartData, String)}, so it can be
      * passed as {@code initialDomainRange} when rebuilding the chart for a different basin.
      */
     public static Range getCurrentDomainRange( JPanel builtChartPanel ) {
@@ -115,7 +115,7 @@ public class GeoframeChartPanelBuilder {
         return plot.getDomainAxis().getRange();
     }
 
-    private static XYPlot buildMeteoPlot( GeoframeChartData data ) {
+    private static XYPlot buildMeteoPlot( ErmChartData data ) {
         NumberAxis precipitationAxis = new NumberAxis("Precipitation (mm)");
         precipitationAxis.setAutoRangeIncludesZero(true);
         precipitationAxis.setLabelPaint(PRECIPITATION_COLOR);
@@ -141,7 +141,7 @@ public class GeoframeChartPanelBuilder {
         return plot;
     }
 
-    private static XYPlot buildDischargePlot( GeoframeChartData data ) {
+    private static XYPlot buildDischargePlot( ErmChartData data ) {
         NumberAxis dischargeAxis = new NumberAxis("Discharge (m³/s)");
         dischargeAxis.setAutoRangeIncludesZero(true);
 

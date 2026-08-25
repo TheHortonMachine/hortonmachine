@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -38,18 +38,18 @@ import org.jfree.data.Range;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeChartDialogBuilder {
-    private GeoframeChartDialogBuilder() {
+public class ErmChartDialogBuilder {
+    private ErmChartDialogBuilder() {
     }
 
-    public static JPanel build( ADb db, String simDischargeTableName, GeoframeChartData initialData,
+    public static JPanel build( ADb db, String simDischargeTableName, ErmChartData initialData,
             SimpleFeatureCollection basins, SimpleFeatureCollection network, SimpleFeatureCollection streamGauges,
             SimpleFeatureCollection meteoStations ) {
         // CardLayout lets a basin switch atomically swap the visible chart panel (show()) instead
         // of removeAll()+add(), which can otherwise expose an empty container for a frame
         CardLayout cardLayout = new CardLayout();
         JPanel chartHolder = new JPanel(cardLayout);
-        JPanel initialChartPanel = GeoframeChartPanelBuilder.build(initialData, simDischargeTableName);
+        JPanel initialChartPanel = ErmChartPanelBuilder.build(initialData, simDischargeTableName);
         chartHolder.add(initialChartPanel, "chart-0");
 
         if (basins == null) {
@@ -69,8 +69,8 @@ public class GeoframeChartDialogBuilder {
 
         // the map panel needs to reference itself (to update the highlight) from within the
         // selection callback it is constructed with, hence the one-element holder trick
-        GeoframeBasinsMapPanel[] mapPanelHolder = new GeoframeBasinsMapPanel[1];
-        GeoframeBasinsMapPanel mapPanel = new GeoframeBasinsMapPanel(basins, network, streamGauges, meteoStations,
+        ErmBasinsMapPanel[] mapPanelHolder = new ErmBasinsMapPanel[1];
+        ErmBasinsMapPanel mapPanel = new ErmBasinsMapPanel(basins, network, streamGauges, meteoStations,
                 initialData.basinId, basinId -> {
                     mapPanelHolder[0].setSelectedBasin(basinId);
                     onBasinSelected(db, simDischargeTableName, initialData, chartHolder, cardLayout, currentChartPanelHolder,
@@ -90,23 +90,23 @@ public class GeoframeChartDialogBuilder {
         return panel;
     }
 
-    private static void onBasinSelected( ADb db, String simDischargeTableName, GeoframeChartData referenceData,
+    private static void onBasinSelected( ADb db, String simDischargeTableName, ErmChartData referenceData,
             JPanel chartHolder, CardLayout cardLayout, JPanel[] currentChartPanelHolder, int[] cardCounter, int basinId,
             JProgressBar progressBar ) {
-        Range currentDomainRange = GeoframeChartPanelBuilder.getCurrentDomainRange(currentChartPanelHolder[0]);
+        Range currentDomainRange = ErmChartPanelBuilder.getCurrentDomainRange(currentChartPanelHolder[0]);
         progressBar.setVisible(true);
 
-        SwingWorker<GeoframeChartData, Void> worker = new SwingWorker<>(){
+        SwingWorker<ErmChartData, Void> worker = new SwingWorker<>(){
             @Override
-            protected GeoframeChartData doInBackground() throws Exception {
-                return GeoframeChartDataLoader.loadForBasin(db, simDischargeTableName, basinId, referenceData);
+            protected ErmChartData doInBackground() throws Exception {
+                return ErmChartDataLoader.loadForBasin(db, simDischargeTableName, basinId, referenceData);
             }
 
             @Override
             protected void done() {
                 try {
-                    GeoframeChartData data = get();
-                    JPanel newChartPanel = GeoframeChartPanelBuilder.build(data, simDischargeTableName, currentDomainRange);
+                    ErmChartData data = get();
+                    JPanel newChartPanel = ErmChartPanelBuilder.build(data, simDischargeTableName, currentDomainRange);
                     String newCardName = "chart-" + cardCounter[0]++;
                     chartHolder.add(newChartPanel, newCardName);
                     cardLayout.show(chartHolder, newCardName);

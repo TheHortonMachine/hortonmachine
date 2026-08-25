@@ -15,16 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.geoframe;
+package org.hortonmachine.database.addons.erm;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.util.List;
 
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -35,7 +33,6 @@ import javax.swing.SwingWorker;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
-import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
@@ -46,30 +43,18 @@ import org.hortonmachine.gui.utils.GuiUtilities;
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class GeoframeChartAction extends AbstractAction {
+public class ErmChartAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
     private final ADb db;
     private final String simDischargeTableName;
     private final Component parent;
 
-    public GeoframeChartAction( ADb db, String simDischargeTableName, Component parent ) {
+    public ErmChartAction( ADb db, String simDischargeTableName, Component parent ) {
         super("Open ERM Simulation Chart");
         this.db = db;
         this.simDischargeTableName = simDischargeTableName;
         this.parent = parent;
-    }
-
-    /**
-     * Recognizes whether {@code selectedTable} is a per-run simulation discharge table and, if
-     * so, appends a separator and a {@link GeoframeChartAction} to {@code actions}.
-     */
-    public static void addIfApplicable( ADb db, TableLevel selectedTable, List<Action> actions, Component parent ) {
-        if (!GeoframeSchema.isSimulationDischargeTable(selectedTable.tableName.getName())) {
-            return;
-        }
-        actions.add(null); // separator
-        actions.add(new GeoframeChartAction(db, selectedTable.tableName.getName(), parent));
     }
 
     @Override
@@ -79,7 +64,7 @@ public class GeoframeChartAction extends AbstractAction {
         SwingWorker<Object[], Void> worker = new SwingWorker<>(){
             @Override
             protected Object[] doInBackground() throws Exception {
-                GeoframeChartData data = GeoframeChartDataLoader.load(db, simDischargeTableName);
+                ErmChartData data = ErmChartDataLoader.load(db, simDischargeTableName);
 
                 SimpleFeatureCollection basins = null;
                 SimpleFeatureCollection network = null;
@@ -88,24 +73,24 @@ public class GeoframeChartAction extends AbstractAction {
                 if (db instanceof ASpatialDb) {
                     ASpatialDb spatialDb = (ASpatialDb) db;
                     try {
-                        basins = GeoframeChartDataLoader.loadBasinPolygons(spatialDb);
+                        basins = ErmChartDataLoader.loadBasinPolygons(spatialDb);
                     } catch (Exception ex) {
                         // the basins map is a nice-to-have: degrade to the chart-only dialog
                         Logger.INSTANCE.insertError("", "Unable to load basin geometries for the basins map", ex);
                     }
                     try {
-                        network = GeoframeChartDataLoader.loadNetworkLines(spatialDb);
+                        network = ErmChartDataLoader.loadNetworkLines(spatialDb);
                     } catch (Exception ex) {
                         // the network overlay is a nice-to-have: degrade to basins-only map
                         Logger.INSTANCE.insertError("", "Unable to load the stream network for the basins map", ex);
                     }
                     try {
-                        streamGauges = GeoframeChartDataLoader.loadStreamGaugeStations(spatialDb);
+                        streamGauges = ErmChartDataLoader.loadStreamGaugeStations(spatialDb);
                     } catch (Exception ex) {
                         Logger.INSTANCE.insertError("", "Unable to load stream gauge stations for the basins map", ex);
                     }
                     try {
-                        meteoStations = GeoframeChartDataLoader.loadMeteoStations(spatialDb);
+                        meteoStations = ErmChartDataLoader.loadMeteoStations(spatialDb);
                     } catch (Exception ex) {
                         Logger.INSTANCE.insertError("", "Unable to load meteo stations for the basins map", ex);
                     }
@@ -118,12 +103,12 @@ public class GeoframeChartAction extends AbstractAction {
                 loadingDialog.dispose();
                 try {
                     Object[] result = get();
-                    GeoframeChartData data = (GeoframeChartData) result[0];
+                    ErmChartData data = (ErmChartData) result[0];
                     SimpleFeatureCollection basins = (SimpleFeatureCollection) result[1];
                     SimpleFeatureCollection network = (SimpleFeatureCollection) result[2];
                     SimpleFeatureCollection streamGauges = (SimpleFeatureCollection) result[3];
                     SimpleFeatureCollection meteoStations = (SimpleFeatureCollection) result[4];
-                    JPanel dialogPanel = GeoframeChartDialogBuilder.build(db, simDischargeTableName, data, basins, network,
+                    JPanel dialogPanel = ErmChartDialogBuilder.build(db, simDischargeTableName, data, basins, network,
                             streamGauges, meteoStations);
                     GuiUtilities.openDialogWithPanel(dialogPanel, "ERM Simulation Chart", new Dimension(1500, 850), false);
                 } catch (Exception ex) {
