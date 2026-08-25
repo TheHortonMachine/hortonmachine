@@ -434,14 +434,16 @@
 			<name>GeoSolutions repository used for imageio-ext, jai-ext</name>
 			<url>https://maven.geo-solutions.it/</url>
 		</repository>
-
 		<repository>
+			<id>central-portal-snapshots</id>
+			<name>Central Portal Snapshots</name>
+			<url>https://central.sonatype.com/repository/maven-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
-			<id>sonatype-nexus-snapshots</id>
-			<name>jgrasstools snapshots</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
 		</repository>
 		<repository>
 			<id>jitpack.io</id>
