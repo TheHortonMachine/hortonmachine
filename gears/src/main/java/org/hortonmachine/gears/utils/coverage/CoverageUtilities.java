@@ -35,6 +35,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.image.WritableRenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -48,13 +49,25 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.eclipse.imagen.PlanarImage;
 import org.eclipse.imagen.ROI;
 import org.eclipse.imagen.ROIShape;
 import org.eclipse.imagen.RasterFactory;
+import org.eclipse.imagen.TiledImage;
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.eclipse.imagen.media.range.NoDataContainer;
+import org.geotools.api.coverage.grid.GridCoverageReader;
+import org.geotools.api.geometry.Bounds;
+import org.geotools.api.geometry.Position;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.GeographicCRS;
+import org.geotools.api.referencing.datum.PixelInCell;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.GridSampleDimension;
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -65,7 +78,6 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridCoverage2DReader;
-import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.GeneralPosition;
@@ -78,7 +90,6 @@ import org.geotools.referencing.GeodeticCalculator;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.referencing.operation.matrix.XAffineTransform;
 import org.geotools.referencing.operation.transform.AffineTransform2D;
-import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIOException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
@@ -86,7 +97,6 @@ import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.features.FastLiteShape;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -102,16 +112,6 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 import org.locationtech.jts.linearref.LengthIndexedLine;
 import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
-import org.geotools.api.coverage.grid.GridCoverageReader;
-import org.geotools.api.geometry.Bounds;
-import org.geotools.api.geometry.Position;
-import org.geotools.api.parameter.GeneralParameterValue;
-import org.geotools.api.parameter.ParameterValue;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.crs.GeographicCRS;
-import org.geotools.api.referencing.datum.PixelInCell;
-import org.geotools.api.referencing.operation.MathTransform;
-import org.geotools.api.referencing.operation.TransformException;
 
 
 /**
@@ -153,6 +153,24 @@ public class CoverageUtilities {
     }
 
     /**
+     * Creates a read-only {@link RandomIter} over a {@link RenderedImage}.
+     *
+     * <p>Use this (rather than casting a {@link WritableRandomIter}) for reads on a writable,
+     * tiled image: {@link org.eclipse.imagen.media.iterator.WritableRandomIterFallback} shares its
+     * internal "current tile" state between its inherited read path and its write path, so reading
+     * and writing through the very same iterator instance can desynchronize the per-tile writer-lock
+     * bookkeeping of a real {@link org.eclipse.imagen.TiledImage}. A separate, independent iterator instance for reads avoids
+     * that entirely.
+     *
+     * @param image the image on which to wrap a {@link RandomIter}.
+     * @return the iterator.
+     */
+    public static RandomIter getRandomIterator( RenderedImage image ) {
+        RandomIter iter = RandomIterFactory.create(image, null);
+        return iter;
+    }
+
+    /**
      * Creates a {@link WritableRandomIter}.
      * 
      * <p>It is important to use this method since it supports also 
@@ -184,6 +202,17 @@ public class CoverageUtilities {
      */
     public static WritableRandomIter getWritableRandomIterator( WritableRaster raster ) {
         WritableRandomIter iter = RandomIterFactory.createWritable(raster, null);
+        return iter;
+    }
+
+    /**
+     * Creates a {@link WritableRandomIter} over a {@link WritableRenderedImage}.
+     *
+     * @param image the image on which to wrap a {@link WritableRandomIter}.
+     * @return the iterator.
+     */
+    public static WritableRandomIter getWritableRandomIterator( WritableRenderedImage image ) {
+        WritableRandomIter iter = RandomIterFactory.createWritable(image, null);
         return iter;
     }
 
@@ -295,6 +324,112 @@ public class CoverageUtilities {
 
         }
         return raster;
+    }
+
+    /**
+     * Default tile size for writing tiled rasters. See{@link #createWritableImage(int, int, Class, Object)}.
+     */
+    private static final int DEFAULT_WRITABLE_IMAGE_TILE_SIZE = 1024;
+
+    /**
+     * Creates a tiled {@link WritableRenderedImage writable rendered image}.
+     *
+     * <p>Unlike {@link #createWritableRaster(int, int, Class, SampleModel, Object)}, this backs the
+     * image with many small tiles (each with its own, small {@link SampleModel}) instead of a single
+     * monolithic raster. This allows creating images whose total width * height would otherwise
+     * exceed the maximum size a single {@link SampleModel} can address (an <code>int</code>-indexed
+     * {@link DataBuffer}).
+     *
+     * @param width width of the image to create.
+     * @param height height of the image to create.
+     * @param dataClass data type for the image. If <code>null</code>, defaults to double.
+     * @param value value to which to set the image to. If null, defaults to 0.
+     * @return a {@link WritableRenderedImage writable rendered image}.
+     */
+    public static WritableRenderedImage createWritableImage( int width, int height, Class< ? > dataClass, Object value ) {
+        int dataType = DataBuffer.TYPE_DOUBLE;
+        if (dataClass != null) {
+            if (dataClass.isAssignableFrom(Integer.class)) {
+                dataType = DataBuffer.TYPE_INT;
+            } else if (dataClass.isAssignableFrom(Float.class)) {
+                dataType = DataBuffer.TYPE_FLOAT;
+            } else if (dataClass.isAssignableFrom(Byte.class)) {
+                dataType = DataBuffer.TYPE_BYTE;
+            } else if (dataClass.isAssignableFrom(Short.class)) {
+                dataType = DataBuffer.TYPE_SHORT;
+            }
+        }
+
+        int tileWidth = Math.min(width, DEFAULT_WRITABLE_IMAGE_TILE_SIZE);
+        int tileHeight = Math.min(height, DEFAULT_WRITABLE_IMAGE_TILE_SIZE);
+        SampleModel tileSampleModel = new ComponentSampleModel(dataType, tileWidth, tileHeight, 1, tileWidth, new int[]{0});
+        ColorModel colorModel = PlanarImage.createColorModel(tileSampleModel);
+        TiledImage image = new TiledImage(0, 0, width, height, 0, 0, tileSampleModel, colorModel);
+        if (value != null) {
+            fillWritableRenderedImage(image, ((Number) value).doubleValue());
+        }
+        return image;
+    }
+
+    /**
+     * Fills every pixel of a {@link WritableRenderedImage} (band 0) with the given value, tile by tile.
+     *
+     * <p>This is used instead of a per-pixel <code>setPixel</code> loop because that would be far too
+     * slow across images with billions of pixels.
+     *
+     * @param image the image to fill.
+     * @param value the value to fill the image with.
+     */
+    public static void fillWritableRenderedImage( WritableRenderedImage image, double value ) {
+        int minTileX = image.getMinTileX();
+        int maxTileX = minTileX + image.getNumXTiles() - 1;
+        int minTileY = image.getMinTileY();
+        int maxTileY = minTileY + image.getNumYTiles() - 1;
+        int dataType = image.getSampleModel().getDataType();
+        for( int tx = minTileX; tx <= maxTileX; tx++ ) {
+            for( int ty = minTileY; ty <= maxTileY; ty++ ) {
+                WritableRaster tile = image.getWritableTile(tx, ty);
+                try {
+                    DataBuffer dataBuffer = tile.getDataBuffer();
+                    for( int bank = 0; bank < dataBuffer.getNumBanks(); bank++ ) {
+                        int size = dataBuffer.getSize();
+                        switch( dataType ) {
+                        case DataBuffer.TYPE_BYTE:
+                            byte byteValue = (byte) value;
+                            for( int i = 0; i < size; i++ ) {
+                                dataBuffer.setElem(bank, i, byteValue);
+                            }
+                            break;
+                        case DataBuffer.TYPE_SHORT:
+                        case DataBuffer.TYPE_USHORT:
+                            short shortValue = (short) value;
+                            for( int i = 0; i < size; i++ ) {
+                                dataBuffer.setElem(bank, i, shortValue);
+                            }
+                            break;
+                        case DataBuffer.TYPE_INT:
+                            int intValue = (int) value;
+                            for( int i = 0; i < size; i++ ) {
+                                dataBuffer.setElem(bank, i, intValue);
+                            }
+                            break;
+                        case DataBuffer.TYPE_FLOAT:
+                            for( int i = 0; i < size; i++ ) {
+                                dataBuffer.setElemFloat(bank, i, (float) value);
+                            }
+                            break;
+                        default:
+                            for( int i = 0; i < size; i++ ) {
+                                dataBuffer.setElemDouble(bank, i, value);
+                            }
+                            break;
+                        }
+                    }
+                } finally {
+                    image.releaseWritableTile(tx, ty);
+                }
+            }
+        }
     }
 
     /**
@@ -1059,8 +1194,8 @@ public class CoverageUtilities {
         double north = envelopeParams.north;
         ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north, crs);
 
-        final GridSampleDimension[] bands = RenderedSampleDimension.create(name, renderedImage.getData(), null, null, null, null,
-                null);
+        Raster sampleTile = renderedImage.getTile(renderedImage.getMinTileX(), renderedImage.getMinTileY());
+        final GridSampleDimension[] bands = RenderedSampleDimension.create(name, sampleTile, null, null, null, null, null);
 
         GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
 

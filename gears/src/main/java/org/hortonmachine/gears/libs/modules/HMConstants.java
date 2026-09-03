@@ -80,6 +80,15 @@ public class HMConstants {
         }
         return nv;
     }
+    
+	public static byte getByteNovalue(GridCoverage2D gc) {
+		Double nvObj = CoverageUtilities.getNovalue(gc);
+		byte nv = HMConstants.byteNovalue;
+		if (nvObj != null) {
+			nv = nvObj.byteValue();
+		}
+		return nv;
+	}
 
     /**
      * Check if a value is novalue, the standard HM way.
@@ -147,6 +156,11 @@ public class HMConstants {
      * The default short novalue. 
      */
     public static final short shortNovalue = -9999;
+    
+	/**
+	 * The default byte novalue.
+	 */
+	public static byte byteNovalue = -99;
 
     /**
      * Checker for default int novalue.
@@ -223,6 +237,8 @@ public class HMConstants {
      * Average monthly range temperature.
      */
     public static int DTMONTH = 5;
+
+	
 
     /**
      * Earth rotation [rad/h].

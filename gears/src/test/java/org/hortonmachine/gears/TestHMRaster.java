@@ -216,7 +216,7 @@ public class TestHMRaster extends HMTestCase {
 				{ 600, 700, 750, 800, 780 }, //
 				{ 800, 910, 980, 1001, 1150 } };
 		RegionMap regionMap = HMTestMaps.getEnvelopeparamsLeftHalf();
-		try (HMRaster elev = HMRaster.fromGridCoverage(inElev); HMRaster subRaster = elev.toSubRaster(regionMap)) {
+		try (HMRaster elev = HMRaster.fromGridCoverage(inElev); HMRaster subRaster = elev.toSubRaster(null, regionMap)) {
 			checkMatrixEqual(subRaster.buildCoverage().getRenderedImage(), expected, DELTA);
 		}
 

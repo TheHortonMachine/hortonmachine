@@ -32,16 +32,17 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.GEOTIF;
 import static org.hortonmachine.gears.libs.modules.HMConstants.GEOTIFF;
 import static org.hortonmachine.gears.libs.modules.HMConstants.GRASS;
 
+import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.io.File;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
-import org.geotools.coverage.grid.io.imageio.GeoToolsWriteParams;
 import org.geotools.gce.arcgrid.ArcGridFormat;
 import org.geotools.gce.arcgrid.ArcGridWriteParams;
 import org.geotools.gce.arcgrid.ArcGridWriter;
 import org.geotools.gce.geotiff.GeoTiffFormat;
-import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.gce.grassraster.GrassCoverageWriter;
@@ -140,11 +141,33 @@ public class OmsRasterWriter extends HMModel {
         gtw.dispose();
     }
 
+    /**
+     * The ~4GB hard limit before switching to BigTIFF.
+     */
+    private static final long BIGTIFF_THRESHOLD_BYTES = 4_000_000_000L;
+
+    /**
+     * Internal tile size for written GeoTIFFs. 
+     */
+    private static final int TIFF_TILE_SIZE = 512;
+
     private void writeGeotiff( File mapFile ) throws Exception {
         final GeoTiffFormat format = new GeoTiffFormat();
         final GeoTiffWriteParams wp = new GeoTiffWriteParams();
-        wp.setCompressionMode(GeoTiffWriteParams.MODE_DEFAULT);
-        wp.setTilingMode(GeoToolsWriteParams.MODE_DEFAULT);
+
+        RenderedImage renderedImage = inRaster.getRenderedImage();
+        int tileWidth = Math.min(TIFF_TILE_SIZE, renderedImage.getWidth());
+        int tileHeight = Math.min(TIFF_TILE_SIZE, renderedImage.getHeight());
+        wp.setTilingMode(GeoTiffWriteParams.MODE_EXPLICIT);
+        wp.setTiling(tileWidth, tileHeight);
+
+        // explicit set lossless compression
+        wp.setCompressionMode(GeoTiffWriteParams.MODE_EXPLICIT);
+        wp.setCompressionType("Deflate");
+
+        if (estimateUncompressedSize(inRaster) > BIGTIFF_THRESHOLD_BYTES) {
+            wp.setForceToBigTIFF(true);
+        }
         final ParameterValueGroup paramWrite = format.getWriteParameters();
         paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString()).setValue(wp);
         GeoTiffWriter gtw = new GeoTiffWriter(mapFile, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));// (GeoTiffWriter) format.getWriter(mapFile);
@@ -160,6 +183,16 @@ public class OmsRasterWriter extends HMModel {
         writer.write(inRaster, readParams);
         writer.dispose();
 
+    }
+
+    /**
+     * Estimates the uncompressed on-disk size to check for BigTIFF need.
+     */
+    private static long estimateUncompressedSize( GridCoverage2D coverage ) {
+        RenderedImage renderedImage = coverage.getRenderedImage();
+        SampleModel sampleModel = renderedImage.getSampleModel();
+        long bytesPerSample = DataBuffer.getDataTypeSize(sampleModel.getDataType()) / 8L;
+        return (long) renderedImage.getWidth() * renderedImage.getHeight() * sampleModel.getNumBands() * bytesPerSample;
     }
 
     public static void writeRaster( String path, HMRaster raster) throws Exception {
