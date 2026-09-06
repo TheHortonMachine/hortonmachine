@@ -15,37 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.whetgeo;
+package org.hortonmachine.database.addons.geospace;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.DepthSeries;
-import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.SwrcParams;
+import org.hortonmachine.database.addons.geospace.GeospaceStateChartData.DepthSeries;
+import org.hortonmachine.database.addons.geospace.GeospaceStateChartData.SwrcParams;
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
 
 /**
- * Loads the data needed for the WHETGEO 1D state chart out of a connected
- * {@link ADb}: the grid's eta coordinates ({@code output_grid}), the top
- * boundary condition forcing timeseries ({@code output_scalars.top_bc}, if
- * present), and one depth/time/value series per state variable actually
- * present in {@code output_state} — discovered dynamically via
- * {@code PRAGMA table_info}, the same optional-column convention already used
- * by WHETGEO-1D's own output handler itself, since not every solver run
- * writes the same optional columns.
+ * Loads the data needed for the GEOSPACE state chart out of a connected
+ * {@link ADb}.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class WhetgeoStateChartDataLoader {
+public class GeospaceStateChartDataLoader {
 
     // optional output_state column -> [display name, axis label]. Every depth
-    // series is independently optional now (see WHETGEO-1D's own output
-    // handler): a Richards run with no thermal model never writes temperature, a plain
+    // series is independently optional: a Richards run with no thermal model never writes temperature, a plain
     // HeatDiffusionSolver1D run never writes theta, etc.
     private static final Map<String, String[]> OPTIONAL_DEPTH_COLUMNS = new LinkedHashMap<>();
     static {
@@ -61,11 +54,27 @@ public class WhetgeoStateChartDataLoader {
                 new String[]{"Ice content", "ice content [-]"});
     }
 
-    private WhetgeoStateChartDataLoader() {
+    // BrokerGEO's and GEOET's own output tables are optional additions to a WHETGEO-1D output
+    // gpkg, written only when this run went through the full GEOSPACE-1D coupled stack (see
+    // BrokerGEO's BrokerGeoOutputsHandler / GEOET's GeoetOutputsHandler, in their own repos -
+    // inlined here rather than taken as a compile dependency, since this loader only ever needs
+    // their table/column *names*, not their writer logic, and apps has no reason to depend on
+    // either project's runtime). stressedETs is BrokerGEO's own output (its
+    // ETsBrokerOneFluxSolverMain computes it) even though GEOSPACE-1D's coupled test is what
+    // drives it step by step - GEOSPACE-1D itself is a pure orchestrator with no output schema
+    // of its own.
+    private static final String TABLE_BROKERGEO_UPTAKE = "geoframe_brokergeo_output_uptake";
+    private static final String COL_STRESSED_ETS = "stressed_ets";
+    private static final String TABLE_GEOET_RESULTS = "geoframe_geoet_output_results";
+    private static final String COL_EVAPO_TRANSPIRATION = "evapo_transpiration";
+    private static final String COL_EVAPORATION = "evaporation";
+    private static final String COL_TRANSPIRATION = "transpiration";
+
+    private GeospaceStateChartDataLoader() {
     }
 
-    public static WhetgeoStateChartData load( ADb db ) throws Exception {
-        WhetgeoStateChartData data = new WhetgeoStateChartData();
+    public static GeospaceStateChartData load( ADb db ) throws Exception {
+        GeospaceStateChartData data = new GeospaceStateChartData();
 
         boolean withParameterID = hasColumn(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID,
                 Whetgeo1DOutputSchema.COL_PARAMETER_ID);
@@ -93,14 +102,30 @@ public class WhetgeoStateChartDataLoader {
         for( Map.Entry<String, String[]> entry : OPTIONAL_DEPTH_COLUMNS.entrySet() ) {
             String column = entry.getKey();
             if (hasColumn(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE, column)) {
-                data.depthSeries.add(loadDepthSeries(db, column, entry.getValue()[0], entry.getValue()[1]));
+                data.depthSeries.add(loadDepthSeries(db, Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE,
+                        Whetgeo1DOutputSchema.COL_TIMESTAMP, Whetgeo1DOutputSchema.COL_ETA, column, entry.getValue()[0],
+                        entry.getValue()[1]));
             }
+        }
+
+        // BrokerGEO's own optional addition: root water uptake is a depth/time series just like
+        // theta or water suction above, so it's rendered the same way - just appended to the same
+        // list rather than kept in a dedicated field.
+        if (db.hasTable(TABLE_BROKERGEO_UPTAKE)) {
+            data.depthSeries.add(loadDepthSeries(db, TABLE_BROKERGEO_UPTAKE, Whetgeo1DOutputSchema.COL_TIMESTAMP,
+                    Whetgeo1DOutputSchema.COL_ETA, COL_STRESSED_ETS, "Root water uptake",
+                    "Root water uptake - stressedETs [mm]"));
+        }
+
+        // GEOET's own optional addition: one scalar-per-timestep ET series (not depth-resolved).
+        if (db.hasTable(TABLE_GEOET_RESULTS)) {
+            data.etSeries = loadEtSeries(db);
         }
 
         return data;
     }
 
-    private static void loadGrid( ADb db, WhetgeoStateChartData data, boolean withParameterID ) throws Exception {
+    private static void loadGrid( ADb db, GeospaceStateChartData data, boolean withParameterID ) throws Exception {
         String sql = "SELECT " + Whetgeo1DOutputSchema.COL_ETA + (withParameterID
                 ? ", " + Whetgeo1DOutputSchema.COL_PARAMETER_ID
                 : "") + " FROM " + Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID + " ORDER BY "
@@ -142,7 +167,7 @@ public class WhetgeoStateChartDataLoader {
         return params;
     }
 
-    private static void loadBCTypes( ADb db, WhetgeoStateChartData data ) throws Exception {
+    private static void loadBCTypes( ADb db, GeospaceStateChartData data ) throws Exception {
         String sql = "SELECT " + Whetgeo1DOutputSchema.COL_TOP_BC_TYPE + ", "
                 + Whetgeo1DOutputSchema.COL_BOTTOM_BC_TYPE + " FROM " + Whetgeo1DOutputSchema.TABLE_OUTPUT_METADATA;
         db.<Void>execOnConnection(connection -> {
@@ -154,6 +179,60 @@ public class WhetgeoStateChartDataLoader {
             }
             return null;
         });
+    }
+
+    /**
+     * Loads {@code geoframe_geoet_output_results}: the combined {@code evapo_transpiration} column
+     * always exists when the table does (every ET model writes it - see GEOET's own
+     * {@code GeoetOutputsHandler}), while {@code evaporation}/{@code transpiration} are only
+     * present for models that split the total, checked independently via {@code hasColumn} the
+     * same way every other optional column in this loader is.
+     */
+    private static GeospaceStateChartData.EtSeries loadEtSeries( ADb db ) throws Exception {
+        GeospaceStateChartData.EtSeries series = new GeospaceStateChartData.EtSeries();
+        boolean withEvaporation = hasColumn(db, TABLE_GEOET_RESULTS, COL_EVAPORATION);
+        boolean withTranspiration = hasColumn(db, TABLE_GEOET_RESULTS, COL_TRANSPIRATION);
+
+        StringBuilder sql = new StringBuilder(
+                "SELECT " + Whetgeo1DOutputSchema.COL_TIMESTAMP + ", " + COL_EVAPO_TRANSPIRATION);
+        if (withEvaporation) {
+            sql.append(", ").append(COL_EVAPORATION);
+        }
+        if (withTranspiration) {
+            sql.append(", ").append(COL_TRANSPIRATION);
+        }
+        sql.append(" FROM ").append(TABLE_GEOET_RESULTS).append(" ORDER BY ")
+                .append(Whetgeo1DOutputSchema.COL_TIMESTAMP);
+
+        List<Long> times = new ArrayList<>();
+        List<Double> et = new ArrayList<>();
+        List<Double> evaporation = new ArrayList<>();
+        List<Double> transpiration = new ArrayList<>();
+        db.<Void>execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql.toString())) {
+                while( rs.next() ) {
+                    int col = 1;
+                    times.add(rs.getLong(col++));
+                    et.add(rs.getDouble(col++));
+                    if (withEvaporation) {
+                        evaporation.add(rs.getDouble(col++));
+                    }
+                    if (withTranspiration) {
+                        transpiration.add(rs.getDouble(col++));
+                    }
+                }
+            }
+            return null;
+        });
+        series.times = times.stream().mapToLong(Long::longValue).toArray();
+        series.evapoTranspiration = et.stream().mapToDouble(Double::doubleValue).toArray();
+        if (withEvaporation) {
+            series.evaporation = evaporation.stream().mapToDouble(Double::doubleValue).toArray();
+        }
+        if (withTranspiration) {
+            series.transpiration = transpiration.stream().mapToDouble(Double::doubleValue).toArray();
+        }
+        return series;
     }
 
     private static ScalarSeries loadScalarSeries( ADb db, String column ) throws Exception {
@@ -181,11 +260,11 @@ public class WhetgeoStateChartDataLoader {
         double[] values = new double[0];
     }
 
-    private static DepthSeries loadDepthSeries( ADb db, String column, String name, String axisLabel ) throws Exception {
+    private static DepthSeries loadDepthSeries( ADb db, String table, String timestampColumn, String etaColumn,
+            String valueColumn, String name, String axisLabel ) throws Exception {
         DepthSeries series = new DepthSeries(name, axisLabel);
-        String sql = "SELECT " + Whetgeo1DOutputSchema.COL_TIMESTAMP + ", " + Whetgeo1DOutputSchema.COL_ETA + ", "
-                + column + " FROM " + Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE + " ORDER BY "
-                + Whetgeo1DOutputSchema.COL_TIMESTAMP + ", " + Whetgeo1DOutputSchema.COL_ETA;
+        String sql = "SELECT " + timestampColumn + ", " + etaColumn + ", " + valueColumn + " FROM " + table
+                + " ORDER BY " + timestampColumn + ", " + etaColumn;
         List<Long> times = new ArrayList<>();
         List<Double> etas = new ArrayList<>();
         List<Double> values = new ArrayList<>();

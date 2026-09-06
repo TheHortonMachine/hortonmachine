@@ -116,7 +116,6 @@ public class ReadNetCDFRichardsOutput1D {
 				}
 		}
 
-		System.out.println("*** SUCCESS reading " + richardsOutputFilename);
 
 	}
 

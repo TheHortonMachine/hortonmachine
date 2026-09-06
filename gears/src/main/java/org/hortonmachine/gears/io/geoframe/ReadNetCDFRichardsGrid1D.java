@@ -333,7 +333,6 @@ public class ReadNetCDFRichardsGrid1D {
 					}
 			}
 
-			System.out.println("\n\n\t*** SUCCESS reading " + richardsGridFilename);
 
 		}
 		step++;

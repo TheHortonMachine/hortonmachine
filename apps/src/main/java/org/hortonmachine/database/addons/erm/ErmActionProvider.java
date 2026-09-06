@@ -33,9 +33,7 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
  * Contributes the GeoFrame ERM (water budget) simulation chart actions
  * (per-run discharge, station data, basin data) to the database viewer's
  * table context menu, for databases recognized as GeoFrame ERM simulation
- * databases (see {@link ErmSchema}). The WHETGEO-1D state chart action is a
- * separate concern, see
- * {@code org.hortonmachine.database.addons.whetgeo.WhetgeoActionProvider}.
+ * databases (see {@link ErmSchema}).
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */

@@ -21,7 +21,7 @@ package org.hortonmachine.gears.io.geoframe.whetgeo;
  * Table and column name constants for a WHETGEO-1D output GeoPackage, shared
  * between the WHETGEO-1D project's own {@code Whetgeo1DOutputsHandler} (which
  * writes these tables) and this library's DB Viewer chart addon (which reads
- * them, via {@code org.hortonmachine.database.addons.whetgeo}) - the actual
+ * them, via {@code org.hortonmachine.database.addons.geospace}) - the actual
  * read/write logic lives in WHETGEO-1D's own repo, not here; this class is
  * only the naming convention both sides need to agree on.
  *

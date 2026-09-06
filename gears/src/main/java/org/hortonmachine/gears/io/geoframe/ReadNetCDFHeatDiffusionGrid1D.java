@@ -354,7 +354,6 @@ public class ReadNetCDFHeatDiffusionGrid1D {
 					}
 			}
 
-			System.out.println("*** SUCCESS reading file " + gridFilename);
 
 		}
 		step++;

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.whetgeo;
+package org.hortonmachine.database.addons.geospace;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -35,21 +35,19 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
 /**
- * Action that loads a WHETGEO 1D run's state output (theta, and whichever
- * optional depth series are present) plus its top boundary condition forcing,
- * and opens them as a Hovmoller-style chart: one gpkg = one run = one grid,
- * so unlike the GeoFrame basin/station addon there is no entity to pick.
- *
+ * Action that loads a GEOSPACE run's state output (theta, and whichever
+ * optional depth series are present).
+ * 
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class WhetgeoStateChartAction extends AbstractAction {
+public class GeospaceStateChartAction extends AbstractAction {
     private static final long serialVersionUID = 1L;
 
     private final ADb db;
     private final Component parent;
 
-    public WhetgeoStateChartAction( ADb db, Component parent ) {
-        super("Open WHETGEO 1D State Chart");
+    public GeospaceStateChartAction( ADb db, Component parent ) {
+        super("Open GEOSPACE 1D State Chart");
         this.db = db;
         this.parent = parent;
     }
@@ -58,19 +56,19 @@ public class WhetgeoStateChartAction extends AbstractAction {
     public void actionPerformed( ActionEvent e ) {
         JDialog loadingDialog = showLoadingDialog();
 
-        SwingWorker<WhetgeoStateChartData, Void> worker = new SwingWorker<>(){
+        SwingWorker<GeospaceStateChartData, Void> worker = new SwingWorker<>(){
             @Override
-            protected WhetgeoStateChartData doInBackground() throws Exception {
-                return WhetgeoStateChartDataLoader.load(db);
+            protected GeospaceStateChartData doInBackground() throws Exception {
+                return GeospaceStateChartDataLoader.load(db);
             }
 
             @Override
             protected void done() {
                 loadingDialog.dispose();
                 try {
-                    WhetgeoStateChartData data = get();
-                    JPanel dialogPanel = WhetgeoStateChartPanelBuilder.build(data, "");
-                    GuiUtilities.openDialogWithPanel(dialogPanel, "WHETGEO 1D State", new Dimension(1100, 800), false);
+                    GeospaceStateChartData data = get();
+                    JPanel dialogPanel = GeospaceStateChartPanelBuilder.build(data, "");
+                    GuiUtilities.openDialogWithPanel(dialogPanel, "GEOSPACE 1D State", new Dimension(1100, 800), false);
                 } catch (Exception ex) {
                     Logger.INSTANCE.insertError("", "ERROR", ex);
                     GuiUtilities.showErrorMessage(parent, ex.getMessage());
@@ -91,7 +89,7 @@ public class WhetgeoStateChartAction extends AbstractAction {
                 "Loading...", false);
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 16, 12, 16));
-        panel.add(new JLabel("Loading WHETGEO 1D state chart..."), BorderLayout.NORTH);
+        panel.add(new JLabel("Loading GEOSPACE 1D state chart..."), BorderLayout.NORTH);
         JProgressBar progressBar = new JProgressBar();
         progressBar.setIndeterminate(true);
         panel.add(progressBar, BorderLayout.CENTER);

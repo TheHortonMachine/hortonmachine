@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.whetgeo;
+package org.hortonmachine.database.addons.geospace;
 
 import java.awt.Component;
 import java.util.Collections;
@@ -31,15 +31,13 @@ import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**
- * Contributes the WHETGEO-1D state chart action to the database viewer's
- * table context menu, for databases recognized as WHETGEO-1D output
- * GeoPackages (see {@link Whetgeo1DOutputSchema}). The GeoFrame ERM
- * simulation chart actions are a separate concern, see
- * {@code org.hortonmachine.database.addons.erm.ErmActionProvider}.
+ * Contributes the GEOSPACE 1D state chart action to the database viewer's
+ * table context menu, for databases recognized as GEOSPACE output
+ * GeoPackages.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class WhetgeoActionProvider implements IDbViewerActionProvider {
+public class GeospaceActionProvider implements IDbViewerActionProvider {
 
     @Override
     public boolean supportsDatabase( ADb db ) {
@@ -55,7 +53,7 @@ public class WhetgeoActionProvider implements IDbViewerActionProvider {
         if (!Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE.equals(tableLevel.tableName.getName())) {
             return Collections.emptyList();
         }
-        return Collections.singletonList(new WhetgeoStateChartAction(db, parent));
+        return Collections.singletonList(new GeospaceStateChartAction(db, parent));
     }
 
     @Override

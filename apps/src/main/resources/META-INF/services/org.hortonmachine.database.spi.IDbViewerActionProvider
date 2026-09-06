@@ -1,2 +1,2 @@
 org.hortonmachine.database.addons.erm.ErmActionProvider
-org.hortonmachine.database.addons.whetgeo.WhetgeoActionProvider
+org.hortonmachine.database.addons.geospace.GeospaceActionProvider

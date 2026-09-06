@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.database.addons.whetgeo;
+package org.hortonmachine.database.addons.geospace;
 
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -38,8 +38,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.DepthSeries;
-import org.hortonmachine.database.addons.whetgeo.WhetgeoStateChartData.SwrcParams;
+import org.hortonmachine.database.addons.geospace.GeospaceStateChartData.DepthSeries;
+import org.hortonmachine.database.addons.geospace.GeospaceStateChartData.SwrcParams;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -53,11 +53,14 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.PaintScale;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.PaintScaleLegend;
 import org.jfree.data.xy.DefaultIntervalXYDataset;
 import org.jfree.data.xy.DefaultXYZDataset;
 import org.jfree.data.xy.IntervalXYDataset;
 import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.jfree.data.xy.XYZDataset;
 import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.RectangleEdge;
@@ -69,53 +72,12 @@ import org.jfree.ui.TextAnchor;
  * boundary condition forcing panel, and one depth-vs-time heatmap panel per
  * state variable present in the data.
  *
- * <p>
- * All time-varying rows share one {@link CombinedDomainXYPlot} (single time
- * axis) with each heatmap's {@link PaintScaleLegend} added as a chart
- * subtitle. Two per-row layout variants (separate charts with a fixed-width
- * legend column; a hand-drawn legend component) were tried and reverted:
- * both either failed to reliably render the legend text or failed to
- * actually honor an explicit preferred width, which in turn desynced the
- * rows' plot columns and broke the shared time axis - this combined-plot
- * version is the one that has actually rendered correctly. Its one real
- * limitation - the legends stack together at the top-right instead of lining
- * up with their own row - is addressed by giving each heatmap a visually
- * distinct color ramp (light blue for water content, dark blue for water
- * suction), so which legend belongs to which panel is unambiguous by color
- * even without positional alignment.
- *
- * <p>
- * Every range (Y) axis in the combined plot - the forcing axis and every
- * heatmap's depth axis - is given the same {@link
- * org.jfree.chart.axis.Axis#setFixedDimension(double)} and the same tick
- * number format, so they all reserve identical space regardless of their
- * own tick label content; without that, a row needing wider tick labels
- * (e.g. "-3.00") than another (e.g. "4") ends up with its plot area
- * starting at a different pixel column, breaking the shared time axis
- * alignment on the left side the same way an unequal legend width broke it
- * on the right.
- *
- * <p>
- * A boundary condition series that never changes (typically the bottom BC
- * under free drainage, which the solver ignores) is rendered as a plain
- * "label = value" text row above the chart instead of a whole bar-chart row
- * with a flat line and a single-tick axis - not useful, and harder to read
- * than text.
- *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class WhetgeoStateChartPanelBuilder {
+public class GeospaceStateChartPanelBuilder {
     private static final Color TOP_BC_COLOR = ColorUtilities.fromHex("#0096ffff");
     private static final Color BOTTOM_BC_COLOR = ColorUtilities.fromHex("#8a5a00ff");
 
-    // one distinct sequential ramp per depth series, so each heatmap and its
-    // (positionally unaligned) legend are still visually matched by color alone.
-    // Keyed by DepthSeries.name (see WhetgeoStateChartDataLoader) rather than list
-    // position: every optional column is independently present or absent per run
-    // (see WHETGEO-1D own output handler), so a series' index in the list shifts from run
-    // to run and can't be used to pick a stable color - e.g. a Richards output with
-    // no temperature column would otherwise put theta at index 0 and get painted
-    // with the ramp meant for temperature.
     private static final Map<String, Color[]> HEATMAP_RAMPS = new HashMap<>();
     private static final Color[] FALLBACK_RAMP = //
             {ColorUtilities.fromHex("#f0f0f0ff"), ColorUtilities.fromHex("#525252ff")}; // gray - unrecognized series
@@ -130,15 +92,20 @@ public class WhetgeoStateChartPanelBuilder {
                 new Color[]{ColorUtilities.fromHex("#f0e6f7ff"), ColorUtilities.fromHex("#54278fff")}); // purple
         HEATMAP_RAMPS.put("Ice content",
                 new Color[]{ColorUtilities.fromHex("#e0f3f0ff"), ColorUtilities.fromHex("#00695cff")}); // teal
+        HEATMAP_RAMPS.put("Root water uptake",
+                new Color[]{ColorUtilities.fromHex("#edf7e9ff"), ColorUtilities.fromHex("#2e7d32ff")}); // green
     }
 
-    /** Reserved range-axis width, in Java2D units, identical for every sub-plot - see class javadoc. */
+    private static final Color ET_COLOR = ColorUtilities.fromHex("#6a3d9aff");
+    private static final Color EVAPORATION_COLOR = ColorUtilities.fromHex("#1f9e89ff");
+    private static final Color TRANSPIRATION_COLOR = ColorUtilities.fromHex("#33a02cff");
+
     private static final double RANGE_AXIS_FIXED_DIMENSION = 55;
 
-    private WhetgeoStateChartPanelBuilder() {
+    private GeospaceStateChartPanelBuilder() {
     }
 
-    public static JPanel build( WhetgeoStateChartData data, String title ) {
+    public static JPanel build( GeospaceStateChartData data, String title ) {
         JPanel constantRows = new JPanel();
         constantRows.setLayout(new BoxLayout(constantRows, BoxLayout.Y_AXIS));
 
@@ -147,7 +114,7 @@ public class WhetgeoStateChartPanelBuilder {
         combinedPlot.setGap(12);
         boolean hasChartRow = false;
 
-        String topLabel = bcLabel("Top Boundary Condition", data.topBCType);
+        String topLabel = "Top BC";
         double[] topDistinct = distinctSorted(data.topBCTimes.length > 0 ? data.topBCValues : new double[0]);
         if (data.topBCTimes.length > 0 && topDistinct.length > 1) {
             combinedPlot.add(buildBCPlot(topLabel, data.topBCTimes, data.topBCValues, TOP_BC_COLOR), 1);
@@ -156,13 +123,28 @@ public class WhetgeoStateChartPanelBuilder {
             addConstantValueRow(constantRows, topLabel, topDistinct[0]);
         }
 
-        String bottomLabel = bcLabel("Bottom Boundary Condition", data.bottomBCType);
+        String bottomLabel = "Bottom BC";
         double[] bottomDistinct = distinctSorted(data.bottomBCTimes.length > 0 ? data.bottomBCValues : new double[0]);
         if (data.bottomBCTimes.length > 0 && bottomDistinct.length > 1) {
             combinedPlot.add(buildBCPlot(bottomLabel, data.bottomBCTimes, data.bottomBCValues, BOTTOM_BC_COLOR), 1);
             hasChartRow = true;
         } else if (bottomDistinct.length == 1) {
             addConstantValueRow(constantRows, bottomLabel, bottomDistinct[0]);
+        }
+
+        // GEOET's own optional addition: split evaporation/transpiration when the model produced
+        // them (see GeospaceStateChartData.EtSeries), otherwise fall back to the combined total.
+        if (data.etSeries != null) {
+            GeospaceStateChartData.EtSeries et = data.etSeries;
+            if (et.evaporation.length > 0 && et.transpiration.length > 0) {
+                hasChartRow |= addLineForcingRow(combinedPlot, constantRows, "Evaporation [mm]", et.times, et.evaporation,
+                        EVAPORATION_COLOR);
+                hasChartRow |= addLineForcingRow(combinedPlot, constantRows, "Transpiration [mm]", et.times,
+                        et.transpiration, TRANSPIRATION_COLOR);
+            } else {
+                hasChartRow |= addLineForcingRow(combinedPlot, constantRows, "Evapotransp [mm]", et.times,
+                        et.evapoTranspiration, ET_COLOR);
+            }
         }
 
         List<LayerBoundary> layerBoundaries = computeLayerBoundaries(data);
@@ -223,6 +205,44 @@ public class WhetgeoStateChartPanelBuilder {
             panel.add(chartPanel, BorderLayout.CENTER);
         }
         return panel;
+    }
+
+    private static boolean addLineForcingRow( CombinedDomainXYPlot combinedPlot, JPanel constantRows, String label,
+            long[] times, double[] values, Color color ) {
+        double[] distinct = distinctSorted(times.length > 0 ? values : new double[0]);
+        if (times.length > 0 && distinct.length > 1) {
+            combinedPlot.add(buildLinePlot(label, times, values, color), 1);
+            return true;
+        } else if (distinct.length == 1) {
+            addConstantValueRow(constantRows, label, distinct[0]);
+        }
+        return false;
+    }
+
+    private static XYPlot buildLinePlot( String axisLabel, long[] times, double[] values, Color color ) {
+        NumberAxis lineAxis = new NumberAxis(axisLabel);
+        lineAxis.setAutoRangeIncludesZero(true);
+        lineAxis.setLabelPaint(color);
+        lineAxis.setTickLabelPaint(color);
+        applyUniformAxisSizing(lineAxis);
+
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer(true, false);
+        renderer.setSeriesPaint(0, color);
+        renderer.setSeriesStroke(0, new BasicStroke(1.5f));
+        renderer.setBaseToolTipGenerator(new StandardXYToolTipGenerator("{1}:  {2}",
+                new SimpleDateFormat("dd-MMM HH:mm"), new DecimalFormat("0.###")));
+
+        XYSeries series = new XYSeries(axisLabel);
+        for( int i = 0; i < times.length; i++ ) {
+            series.add((double) times[i], values[i]);
+        }
+
+        XYPlot plot = new XYPlot();
+        plot.setDataset(0, new XYSeriesCollection(series));
+        plot.setRenderer(0, renderer);
+        plot.setRangeAxis(0, lineAxis);
+        plot.mapDatasetToRangeAxis(0, 0);
+        return plot;
     }
 
     private static XYPlot buildBCPlot( String axisLabel, long[] times, double[] values, Color color ) {
@@ -299,21 +319,7 @@ public class WhetgeoStateChartPanelBuilder {
         }
     }
 
-    /**
-     * One value per internal transition between parameter sets in {@link
-     * WhetgeoStateChartData#gridEta}, each labeled with the SWRC parameters of the
-     * layer above that boundary - empty if the output wasn't written with {@code
-     * parameter_id}/{@code output_swrc_parameters} (see WHETGEO-1D's own output
-     * handler), so older outputs just render without annotations.
-     *
-     * <p>
-     * {@code gridEta} holds cell *centers*, not layer edges, so the boundary itself
-     * is the midpoint between the last cell of the lower layer and the first cell
-     * of the layer above it - not either cell's own eta - otherwise the drawn line
-     * lands half a cell-thickness away from the real boundary (e.g. -1.01 instead
-     * of the true -1.00 for two 0.02 m-thick layers).
-     */
-    private static List<LayerBoundary> computeLayerBoundaries( WhetgeoStateChartData data ) {
+    private static List<LayerBoundary> computeLayerBoundaries( GeospaceStateChartData data ) {
         List<LayerBoundary> boundaries = new ArrayList<>();
         if (data.gridParameterID.length != data.gridEta.length || data.swrcParameters.isEmpty()) {
             return boundaries;
@@ -396,14 +402,6 @@ public class WhetgeoStateChartPanelBuilder {
         return String.valueOf(value);
     }
 
-    /** Appends the BC type (e.g. "TOP_COUPLED") to the label if the output was written with
-     *  one (see {@code Whetgeo1DOutputSchema.TABLE_OUTPUT_METADATA}); a plain fallback
-     *  label otherwise, so a value alone doesn't have to stand in for what kind of condition
-     *  produced it. */
-    private static String bcLabel( String base, String bcType ) {
-        return bcType == null ? base : base + " (" + bcType + ")";
-    }
-
     private static double[] valueBounds( double[] values ) {
         double lowerBound = Arrays.stream(values).min().orElse(0);
         double upperBound = Arrays.stream(values).max().orElse(1);
@@ -446,11 +444,6 @@ public class WhetgeoStateChartPanelBuilder {
         return gaps.length % 2 == 0 ? (gaps[mid - 1] + gaps[mid]) / 2.0 : gaps[mid];
     }
 
-    /**
-     * Builds a bar-friendly interval dataset: each bar spans from the midpoint with the
-     * previous sample to the midpoint with the next one, so the bar width follows the
-     * actual (possibly variable) sampling interval instead of an assumed fixed period.
-     */
     private static IntervalXYDataset toBarDataset( String name, long[] times, double[] values ) {
         int n = times.length;
         double[] xValues = new double[n];
@@ -476,13 +469,10 @@ public class WhetgeoStateChartPanelBuilder {
         return dataset;
     }
 
-    /** Hover tooltip for a heatmap cell: time, depth and the cell's value, labeled with the
-     *  series' own axis label (e.g. "Water content - theta [-]") so the number is never shown
-     *  unitless. Implements both {@link #generateToolTip(XYDataset, int, int)} (the interface
-     *  method the renderer's generic tooltip path is statically bound to call) and {@link
-     *  #generateToolTip(XYZDataset, int, int)} (in case the z-aware overload is used instead) by
-     *  routing both through the same z-extracting logic, so the tooltip is correct regardless of
-     *  which one JFreeChart actually invokes. */
+    /**
+     * Hover tooltip for a heatmap cell: shows the time, depth, and value of the cell, with the time formatted
+     * as a date and the value formatted to 3 decimal places. 
+     */
     private static class DepthHeatmapToolTipGenerator implements XYZToolTipGenerator {
         private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MMM HH:mm");
         private final DecimalFormat valueFormat = new DecimalFormat("0.###");
