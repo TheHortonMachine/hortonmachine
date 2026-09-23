@@ -18,7 +18,10 @@ package org.hortonmachine.gears.libs.modules;
  */
 
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
 import java.io.File;
 import java.io.IOException;
@@ -203,7 +206,7 @@ public class HMRaster implements AutoCloseable {
 	 */
     public static HMRaster fromGridCoverageWritable( String name, GridCoverage2D coverage ) {
     	return new HMRaster.HMRasterWritableBuilder().
-        		setName("pitfiller").setTemplate(coverage).setCopyValues(true).build();
+        		setName(name != null ? name : coverage.getName().toString()).setTemplate(coverage).setCopyValues(true).build();
 	}
     
     /**
@@ -439,8 +442,29 @@ public class HMRaster implements AutoCloseable {
     }
 
     /**
-     * Get the value in a given world coordinate. 
-     * 
+     * Get the values of a block of cells.
+     *
+     * <p>Does not use the shared iterator, so it can be called concurrently from multiple threads.
+     *
+     * @param col the first col of the block.
+     * @param row the first row of the block.
+     * @param width the number of cols of the block.
+     * @param height the number of rows of the block.
+     * @param buffer an optional array of at least width*height to fill. If null, a new one is created.
+     * @return the values of the block in row-major order.
+     */
+    public double[] getValues( int col, int row, int width, int height, double[] buffer ) {
+        if (buffer == null) {
+            buffer = new double[width * height];
+        }
+        RenderedImage image = originalCoverage != null ? originalCoverage.getRenderedImage() : writableImage;
+        Raster data = image.getData(new Rectangle(col, row, width, height));
+        return data.getSamples(col, row, width, height, 0, buffer);
+    }
+
+    /**
+     * Get the value in a given world coordinate.
+     *
      * @param coordinate the world coordinate, assumed to be in the reference system of the raster.
      * @return the value.
      */
