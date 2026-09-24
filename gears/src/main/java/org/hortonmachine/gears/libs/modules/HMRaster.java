@@ -17,6 +17,8 @@ package org.hortonmachine.gears.libs.modules;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import org.hortonmachine.gears.libs.modules.hmraster.HMRasterFileWindowed;
+import org.hortonmachine.gears.libs.modules.hmraster.HMRasterTile;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
