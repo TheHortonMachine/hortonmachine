@@ -25,10 +25,13 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.libs.modules.HMConstants.shortNovalue;
 
 import java.awt.Point;
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
@@ -364,6 +367,11 @@ public class CoverageUtilities {
         int tileHeight = Math.min(height, DEFAULT_WRITABLE_IMAGE_TILE_SIZE);
         SampleModel tileSampleModel = new ComponentSampleModel(dataType, tileWidth, tileHeight, 1, tileWidth, new int[]{0});
         ColorModel colorModel = PlanarImage.createColorModel(tileSampleModel);
+        if (colorModel == null) {
+            // no default for some data types (e.g. signed short), without one the image can't be written
+            colorModel = new ComponentColorModel(ColorSpace.getInstance(ColorSpace.CS_GRAY), false, false, Transparency.OPAQUE,
+                    dataType);
+        }
         TiledImage image = new TiledImage(0, 0, width, height, 0, 0, tileSampleModel, colorModel);
         if (value != null) {
             fillWritableRenderedImage(image, ((Number) value).doubleValue());

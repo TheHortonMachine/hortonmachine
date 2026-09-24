@@ -164,6 +164,8 @@ public class OmsRasterWriter extends HMModel {
         // explicit set lossless compression
         wp.setCompressionMode(GeoTiffWriteParams.MODE_EXPLICIT);
         wp.setCompressionType("Deflate");
+        // deflate level 3 (1 + 8 * quality) instead of the default 9: lossless and ~30 times faster
+        wp.setCompressionQuality(0.25f);
 
         if (estimateUncompressedSize(inRaster) > BIGTIFF_THRESHOLD_BYTES) {
             wp.setForceToBigTIFF(true);

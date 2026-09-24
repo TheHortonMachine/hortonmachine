@@ -62,6 +62,12 @@
 			</exclusions>
 		</dependency>
 		<dependency>
+			<!-- needed by scannotation (its own old javassist is excluded above) -->
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.29.2-GA</version>
+		</dependency>
+		<dependency>
 			<groupId>com.github.mreutegg</groupId>
 			<artifactId>laszip4j</artifactId>
 			<version>0.21</version>

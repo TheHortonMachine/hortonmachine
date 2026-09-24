@@ -28,6 +28,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 import org.eclipse.imagen.iterator.RandomIter;
@@ -145,6 +149,10 @@ public class HMRaster implements AutoCloseable {
         void processRow( int row, int cols, int rows ) throws Exception;
     }
 
+    public static interface RasterTileProcessor {
+        void processTile( HMRasterTile tile ) throws Exception;
+    }
+
     /**
      * Build a raster backing a geotools gridCoverage.
      * 
@@ -154,23 +162,47 @@ public class HMRaster implements AutoCloseable {
      */
     public static HMRaster fromGridCoverage( String name, GridCoverage2D coverage ) {
         HMRaster hmRaster = new HMRaster();
-        hmRaster.originalCoverage = coverage;
-        hmRaster.name = name != null ? name : coverage.getName().toString();
-        hmRaster.regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
-        hmRaster.crs = coverage.getCoordinateReferenceSystem();
-        hmRaster.gridGeometry = coverage.getGridGeometry();
-        hmRaster.startRow = hmRaster.regionMap.startRow;
-        hmRaster.startCol = hmRaster.regionMap.startCol;
-        hmRaster.rows = hmRaster.regionMap.getRows();
-        hmRaster.cols = hmRaster.regionMap.getCols();
-        hmRaster.xRes = hmRaster.regionMap.getXres();
-        hmRaster.yRes = hmRaster.regionMap.getYres();
-        hmRaster.novalue = HMConstants.getNovalue(coverage);
-        hmRaster.intNovalue = (int) HMConstants.getNovalue(coverage);
-        hmRaster.shortNovalue = (short) HMConstants.getNovalue(coverage);
-        hmRaster.byteNovalue = (byte) HMConstants.getNovalue(coverage);
-        hmRaster.iter = CoverageUtilities.getRandomIterator(coverage);
+        hmRaster.initFromCoverage(name, coverage);
         return hmRaster;
+    }
+
+    /**
+     * Initialize the raster as a read only view on a coverage.
+     * 
+     * @param name an optional name to give to the raster. If null, the name of the coverage is used.
+     * @param coverage the coverage to use.
+     */
+    protected void initFromCoverage( String name, GridCoverage2D coverage ) {
+        originalCoverage = coverage;
+        this.name = name != null ? name : coverage.getName().toString();
+        regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(coverage);
+        crs = coverage.getCoordinateReferenceSystem();
+        gridGeometry = coverage.getGridGeometry();
+        startRow = regionMap.startRow;
+        startCol = regionMap.startCol;
+        rows = regionMap.getRows();
+        cols = regionMap.getCols();
+        xRes = regionMap.getXres();
+        yRes = regionMap.getYres();
+        novalue = HMConstants.getNovalue(coverage);
+        intNovalue = (int) HMConstants.getNovalue(coverage);
+        shortNovalue = (short) HMConstants.getNovalue(coverage);
+        byteNovalue = (byte) HMConstants.getNovalue(coverage);
+        iter = CoverageUtilities.getRandomIterator(coverage);
+    }
+
+    /**
+     * Build a read only raster on a GeoTIFF file too large to be loaded in memory.
+     * 
+     * <p>Nothing is read at creation. Blocks read with {@link #getValues(int, int, int, int, double[])} 
+     * are decoded directly from the file, in parallel when called from several threads.</p>
+     * 
+     * @param path the path to the GeoTIFF file.
+     * @return the file backed raster.
+     * @throws Exception
+     */
+    public static HMRaster fromFileWindowed( String path ) throws Exception {
+        return new HMRasterFileWindowed(path);
     }
 
     /**
@@ -280,40 +312,48 @@ public class HMRaster implements AutoCloseable {
     
 	/**
 	 * Get the region map of the actual data contained in this raster, i.e. the bounding box of the valid values.
-	 * 
-	 * @return the region map of the actual data contained in this raster.
+	 *
+	 * @return the region map of the actual data contained in this raster, snapped on its grid,
+	 * 		or <code>null</code> if there are no valid values.
 	 */
 	public RegionMap getDataRegionMap() {
 		// loop over the region map and find the actual data region
-		int minRow = Integer.MAX_VALUE;
-		int maxRow = -Integer.MAX_VALUE;
-		int minCol = Integer.MAX_VALUE;
-		int maxCol = -Integer.MAX_VALUE;
-		boolean found = false;
-		for (int r = startRow; r < rows + startRow; r++) {
-			for (int c = startCol; c < cols + startCol; c++) {
-				double v = getValue(c, r);
-				if (!isNovalue(v)) { 
-					if (!found) { 
-						minRow = maxRow = r;
-						minCol = maxCol = c;
-						found = true;
-					} else {
-						if (r < minRow)
-							minRow = r;
-						if (r > maxRow)
-							maxRow = r;
-						if (c < minCol)
-							minCol = c;
-						if (c > maxCol)
-							maxCol = c;
+		// [minCol, maxCol, minRow, maxRow]
+		int[] bounds = {Integer.MAX_VALUE, -Integer.MAX_VALUE, Integer.MAX_VALUE, -Integer.MAX_VALUE};
+		try {
+			visitStrips(startCol, startCol + cols - 1, startRow, startRow + rows - 1, (fromRow, height, values) -> {
+				for (int r = 0; r < height; r++) {
+					for (int c = 0; c < cols; c++) {
+						if (!isNovalue(values[r * cols + c])) {
+							int col = startCol + c;
+							int row = fromRow + r;
+							bounds[0] = Math.min(bounds[0], col);
+							bounds[1] = Math.max(bounds[1], col);
+							bounds[2] = Math.min(bounds[2], row);
+							bounds[3] = Math.max(bounds[3], row);
+						}
 					}
 				}
-			}
+				return true;
+			});
+		} catch (Exception e) {
+			throw new ModelsRuntimeException("Error reading the raster: " + e.getMessage(), this);
 		}
-		Coordinate ll = getWorld(minCol, minRow);
-		Coordinate ur = getWorld(maxCol, maxRow);
-		return regionMap.toSubRegion(ur.y, ll.y, ll.x, ur.x);
+		int minCol = bounds[0];
+		int maxCol = bounds[1];
+		int minRow = bounds[2];
+		int maxRow = bounds[3];
+		if (maxCol < minCol) {
+			// no valid value at all
+			return null;
+		}
+		Coordinate ul = getWorld(minCol, minRow); // centre of the upper-left valid cell
+		Coordinate lr = getWorld(maxCol, maxRow); // centre of the lower-right valid cell
+		double west = ul.x - xRes / 2;
+		double east = lr.x + xRes / 2;
+		double north = ul.y + yRes / 2;
+		double south = lr.y - yRes / 2;
+		return RegionMap.fromBoundsAndGrid(west, east, south, north, maxCol - minCol + 1, maxRow - minRow + 1);
 	}
 
     public GridGeometry2D getGridGeometry() {
@@ -378,6 +418,16 @@ public class HMRaster implements AutoCloseable {
      */
     public CoordinateReferenceSystem getCrs() {
         return crs;
+    }
+
+    /**
+     * @return the image backing this raster.
+     */
+    public RenderedImage getRenderedImage() {
+        if (originalCoverage != null) {
+            return originalCoverage.getRenderedImage();
+        }
+        return writableImage;
     }
 
     /**
@@ -460,6 +510,97 @@ public class HMRaster implements AutoCloseable {
         RenderedImage image = originalCoverage != null ? originalCoverage.getRenderedImage() : writableImage;
         Raster data = image.getData(new Rectangle(col, row, width, height));
         return data.getSamples(col, row, width, height, 0, buffer);
+    }
+
+    /**
+     * Maximum number of cells read at once by the strip reads.
+     */
+    private static final long STRIP_MAX_CELLS = 16_000_000L;
+
+    /**
+     * Visitor of the strips of a raster, see {@link HMRaster#visitStrips(int, int, int, int, StripVisitor)}.
+     */
+    @FunctionalInterface
+    interface StripVisitor {
+        /**
+         * @param fromRow the first row of the strip.
+         * @param height the number of rows of the strip.
+         * @param values the values of the strip in row-major order, as wide as the visited columns range.
+         * @return <code>false</code> to stop the visit.
+         */
+        boolean visit( int fromRow, int height, double[] values ) throws Exception;
+    }
+
+    /**
+     * Read a range of cells by horizontal strips, from top to bottom.
+     *
+     * <p>This is the way to scan large rasters: the strips are aligned to the tiles of the image,
+     * so each tile is decoded about once. Reading cell by cell instead decodes a tile again for
+     * each of its rows, as soon as a row of tiles does not fit the tile cache.</p>
+     *
+     * @param fromCol the first col.
+     * @param toCol the last col (inclusive).
+     * @param fromRow the first row.
+     * @param toRow the last row (inclusive).
+     * @param visitor the visitor of the strips.
+     */
+    void visitStrips( int fromCol, int toCol, int fromRow, int toRow, StripVisitor visitor ) throws Exception {
+        if (fromCol > toCol || fromRow > toRow) {
+            return;
+        }
+        RenderedImage image = getRenderedImage();
+        int tileHeight = image != null ? image.getTileHeight() : 1;
+        int yOffset = image != null ? image.getTileGridYOffset() : 0;
+        int width = toCol - fromCol + 1;
+        int maxRows = (int) Math.max(1, Math.min(tileHeight, STRIP_MAX_CELLS / width));
+        double[] buffer = null;
+        for( int row = fromRow; row <= toRow; ) {
+            int toTileEnd = tileHeight - Math.floorMod(row - yOffset, tileHeight);
+            int height = Math.min(Math.min(toTileEnd, maxRows), toRow - row + 1);
+            if (buffer == null || buffer.length < width * height) {
+                buffer = new double[width * height];
+            }
+            if (!visitor.visit(row, height, getValues(fromCol, row, width, height, buffer))) {
+                return;
+            }
+            row += height;
+        }
+    }
+
+    /**
+     * A cache of the strip of rows last read, for cell reads that proceed roughly row by row,
+     * as for example the resampling of another grid.
+     */
+    private class StripCache {
+        private int fromRow = -1;
+        private int height = 0;
+        private double[] values;
+
+        double getValue( int col, int row ) {
+            if (!isContained(col, row)) {
+                return novalue;
+            }
+            if (row < fromRow || row >= fromRow + height) {
+                RenderedImage image = getRenderedImage();
+                int tileHeight = image != null ? image.getTileHeight() : 1;
+                int yOffset = image != null ? image.getTileGridYOffset() : 0;
+                int maxRows = (int) Math.max(1, Math.min(tileHeight, STRIP_MAX_CELLS / cols));
+                // the part of the row of tiles containing the row, starting at the row if it doesn't all fit
+                int tileStart = row - Math.floorMod(row - yOffset, tileHeight);
+                fromRow = Math.max(startRow, maxRows == tileHeight ? tileStart : row);
+                height = Math.min(maxRows, startRow + rows - fromRow);
+                if (values == null || values.length < cols * height) {
+                    values = new double[cols * height];
+                }
+                values = getValues(startCol, fromRow, cols, height, values);
+            }
+            return values[(row - fromRow) * cols + col - startCol];
+        }
+
+        double getValue( Coordinate coordinate ) {
+            int[] colRow = CoverageUtilities.colRowFromCoordinate(coordinate, gridGeometry, null);
+            return getValue(colRow[0], colRow[1]);
+        }
     }
 
     /**
@@ -614,14 +755,23 @@ public class HMRaster implements AutoCloseable {
         if (pm == null)
             pm = new DummyProgressMonitor();
         pm.beginTask(processName, rows);
-        for( int row = startRow; row < rows + startRow; row++ ) {
-            for( int col = startCol; col < cols + startCol; col++ ) {
-                if (pm.isCanceled()) {
-                    return;
+        IHMProgressMonitor _pm = pm;
+        // read by strips, the processor still gets the cells one by one in row-major order
+        visitStrips(startCol, startCol + cols - 1, startRow, startRow + rows - 1, ( fromRow, height, values ) -> {
+            for( int r = 0; r < height; r++ ) {
+                int row = fromRow + r;
+                for( int c = 0; c < cols; c++ ) {
+                    if (_pm.isCanceled()) {
+                        return false;
+                    }
+                    processor.processCell(startCol + c, row, values[r * cols + c], cols, rows);
                 }
-                processor.processCell(col, row, getValue(col, row), cols, rows);
+                _pm.worked(1);
             }
-            pm.worked(1);
+            return true;
+        });
+        if (pm.isCanceled()) {
+            return;
         }
         pm.done();
     }
@@ -667,6 +817,85 @@ public class HMRaster implements AutoCloseable {
             }
         });
         pm.done();
+    }
+
+    /**
+     * Split the raster in tiles.
+     * 
+     * @param tileSize the size of the side of the tiles.
+     * @return the tiles in row-major order.
+     */
+    public List<HMRasterTile> getTiles( int tileSize ) {
+        return HMRasterTile.createGrid(cols, rows, tileSize);
+    }
+
+    /**
+     * Process the raster tile by tile, in parallel.
+     * 
+     * @param pm optional progress monitor.
+     * @param processName optional process name.
+     * @param tileSize the size of the side of the tiles.
+     * @param threads the number of threads to use.
+     * @param processor the processor of a single tile.
+     * @throws Exception the first exception thrown by the processor.
+     * @see #processTiles(IHMProgressMonitor, String, List, int, RasterTileProcessor)
+     */
+    public void processTiles( IHMProgressMonitor pm, String processName, int tileSize, int threads,
+            RasterTileProcessor processor ) throws Exception {
+        processTiles(pm, processName, getTiles(tileSize), threads, processor);
+    }
+
+    /**
+     * Process a list of tiles in parallel.
+     * 
+     * <p>Unlike {@link #processByRow(IHMProgressMonitor, String, RasterRowProcessor, boolean)}, 
+     * the first exception of the processor stops the processing and is thrown back.</p>
+     * 
+     * <p>The processor is called concurrently, so it has to be thread safe. Reads through 
+     * {@link #getValues(int, int, int, int, double[])} are, cell by cell access is not.</p>
+     * 
+     * @param pm optional progress monitor.
+     * @param processName optional process name.
+     * @param tiles the tiles to process.
+     * @param threads the number of threads to use.
+     * @param processor the processor of a single tile.
+     * @throws Exception the first exception thrown by the processor.
+     */
+    public static void processTiles( IHMProgressMonitor pm, String processName, List<HMRasterTile> tiles, int threads,
+            RasterTileProcessor processor ) throws Exception {
+        if (processName == null)
+            processName = "Processing tiles...";
+        if (pm == null)
+            pm = new DummyProgressMonitor();
+        IHMProgressMonitor _pm = pm;
+        _pm.beginTask(processName, tiles.size());
+        ExecutorService executor = Executors.newFixedThreadPool(Math.max(1, threads));
+        try {
+            List<Future< ? >> futures = new ArrayList<>(tiles.size());
+            for( HMRasterTile tile : tiles ) {
+                futures.add(executor.submit(() -> {
+                    if (!_pm.isCanceled()) {
+                        processor.processTile(tile);
+                        _pm.worked(1);
+                    }
+                    return null;
+                }));
+            }
+            for( Future< ? > future : futures ) {
+                try {
+                    future.get();
+                } catch (ExecutionException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof Exception) {
+                        throw (Exception) cause;
+                    }
+                    throw e;
+                }
+            }
+        } finally {
+            executor.shutdownNow();
+            _pm.done();
+        }
     }
 
     /**
@@ -746,21 +975,45 @@ public class HMRaster implements AutoCloseable {
 		}
 
 		pm.beginTask("Extracting raster on region", rows);
-		for (int r = 0; r < rows; r++) {
-			for (int c = 0; c < cols; c++) {
-				if (!isContained(c, r)) {
-					continue;
-				}
-				double value;
-				if (useOffset) {
-					value = getValue(c + colOffset, r + rowOffset);
-				} else {
-					var worldCoord = outHMRaster.getWorld(c, r);
-					value = getValue(worldCoord);
-				}
-				outHMRaster.setValue(c, r, value);
+		if (useOffset) {
+			// read the overlapping source window by strips, cells outside it stay novalue
+			int _colOffset = colOffset;
+			int _rowOffset = rowOffset;
+			IHMProgressMonitor _pm = pm;
+			int fromCol = Math.max(startCol, colOffset);
+			int toCol = Math.min(startCol + this.cols - 1, colOffset + cols - 1);
+			int width = toCol - fromCol + 1;
+			try {
+				visitStrips(fromCol, toCol, Math.max(startRow, rowOffset), Math.min(startRow + this.rows - 1, rowOffset + rows - 1),
+						(fromRow, height, values) -> {
+							for (int r = 0; r < height; r++) {
+								int outRow = fromRow + r - _rowOffset;
+								for (int c = 0; c < width; c++) {
+									int outCol = fromCol + c - _colOffset;
+									if (isContained(outCol, outRow)) {
+										outHMRaster.setValue(outCol, outRow, values[r * width + c]);
+									}
+								}
+							}
+							_pm.worked(height);
+							return true;
+						});
+			} catch (IOException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new IOException(e);
 			}
-			pm.worked(1);
+		} else {
+			StripCache cache = new StripCache();
+			for (int r = 0; r < rows; r++) {
+				for (int c = 0; c < cols; c++) {
+					if (!isContained(c, r)) {
+						continue;
+					}
+					outHMRaster.setValue(c, r, cache.getValue(outHMRaster.getWorld(c, r)));
+				}
+				pm.worked(1);
+			}
 		}
 		pm.done();
 
@@ -825,29 +1078,54 @@ public class HMRaster implements AutoCloseable {
 		double subYres = subRegion.getYres();
 
 		pm.beginTask("Extracting raster on polygon", rows);
-		for (int r = 0; r < rows; r++) {
-			for (int c = 0; c < cols; c++) {
-				if (!isContained(c, r)) {
-					continue;
-				}
-				double value;
-				if (useOffset) {
-					Coordinate worldCoord = new Coordinate(subWest + (c + 0.5) * subXres,
-							subNorth - (r + 0.5) * subYres);
-					if (!prepGeom.contains(gf.createPoint(worldCoord))) {
+		if (useOffset) {
+			// read the overlapping source window by strips, cells outside it or the polygon stay novalue
+			int _colOffset = colOffset;
+			int _rowOffset = rowOffset;
+			IHMProgressMonitor _pm = pm;
+			int fromCol = Math.max(startCol, colOffset);
+			int toCol = Math.min(startCol + this.cols - 1, colOffset + cols - 1);
+			int width = toCol - fromCol + 1;
+			try {
+				visitStrips(fromCol, toCol, Math.max(startRow, rowOffset), Math.min(startRow + this.rows - 1, rowOffset + rows - 1),
+						(fromRow, height, values) -> {
+							for (int r = 0; r < height; r++) {
+								int outRow = fromRow + r - _rowOffset;
+								for (int c = 0; c < width; c++) {
+									int outCol = fromCol + c - _colOffset;
+									if (!isContained(outCol, outRow)) {
+										continue;
+									}
+									Coordinate worldCoord = new Coordinate(subWest + (outCol + 0.5) * subXres,
+											subNorth - (outRow + 0.5) * subYres);
+									if (prepGeom.contains(gf.createPoint(worldCoord))) {
+										outRaster.setValue(outCol, outRow, values[r * width + c]);
+									}
+								}
+							}
+							_pm.worked(height);
+							return true;
+						});
+			} catch (IOException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new IOException(e);
+			}
+		} else {
+			StripCache cache = new StripCache();
+			for (int r = 0; r < rows; r++) {
+				for (int c = 0; c < cols; c++) {
+					if (!isContained(c, r)) {
 						continue;
 					}
-					value = getValue(c + colOffset, r + rowOffset);
-				} else {
 					var worldCoord = outRaster.getWorld(c, r);
 					if (!prepGeom.contains(gf.createPoint(worldCoord))) {
 						continue;
 					}
-					value = getValue(worldCoord);
+					outRaster.setValue(c, r, cache.getValue(worldCoord));
 				}
-				outRaster.setValue(c, r, value);
+				pm.worked(1);
 			}
-			pm.worked(1);
 		}
 		pm.done();
 		return outRaster;
@@ -964,13 +1242,15 @@ public class HMRaster implements AutoCloseable {
 
 
         pm.beginTask("Patch raster...", toRow - fromRow); //$NON-NLS-1$
+        // the other raster is read row after row, through a strip cache to not decode its tiles again and again
+        StripCache otherCache = otherRaster.new StripCache();
         // fill the points of the current raster picking form the
         // other raster via nearest neighbor interpolation
         for( int r = fromRow; r <= toRow; r++ ) {
             for( int c = fromCol; c <= toCol; c++ ) {
                 if (isContained(c, r)) {
                     Coordinate coordinate = getWorld(c, r);
-                    double otherRasterValue = otherRaster.getValue(coordinate);
+                    double otherRasterValue = otherCache.getValue(coordinate);
                     if (!otherRaster.isNovalue(otherRasterValue)) {
                         double thisRasterValue = getValue(c, r);
 
@@ -1132,33 +1412,56 @@ public class HMRaster implements AutoCloseable {
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         double sum = 0;
-        int count = 0;
-        for (int r = fromRow; r <= toRow; r++) {
-            for (int c = fromCol; c <= toCol; c++) {
-                if (envelope != null) {
-                    Coordinate world = getWorld(c, r);
-                    if (!envelope.contains(world.x, world.y)) {
-                        continue;
+        long count = 0;
+
+        /*
+         * read by blocks aligned to the image tiles: cell by cell reads decode a tile
+         * again for each of its rows as soon as a row of tiles doesn't fit the tile cache
+         */
+        RenderedImage image = getRenderedImage();
+        int tileWidth = image != null ? image.getTileWidth() : cols;
+        int tileHeight = image != null ? image.getTileHeight() : rows;
+        int xOffset = image != null ? image.getTileGridXOffset() : 0;
+        int yOffset = image != null ? image.getTileGridYOffset() : 0;
+        // at most ~16M cells per block, whole tiles
+        int blockTiles = Math.max(1, (int) (16_000_000L / ((long) tileWidth * tileHeight)));
+        double[] buffer = null;
+        for( int r0 = fromRow; r0 <= toRow; ) {
+            int h = Math.min(tileHeight - Math.floorMod(r0 - yOffset, tileHeight), toRow - r0 + 1);
+            for( int c0 = fromCol; c0 <= toCol; ) {
+                int w = Math.min(blockTiles * tileWidth - Math.floorMod(c0 - xOffset, tileWidth), toCol - c0 + 1);
+                if (buffer == null || buffer.length < w * h) {
+                    buffer = new double[w * h];
+                }
+                double[] values = getValues(c0, r0, w, h, buffer);
+                for( int r = 0; r < h; r++ ) {
+                    for( int c = 0; c < w; c++ ) {
+                        double value = values[r * w + c];
+                        if (isNovalue(value)) {
+                            continue;
+                        }
+                        if (envelope != null) {
+                            Coordinate world = getWorld(c0 + c, r0 + r);
+                            if (!envelope.contains(world.x, world.y)) {
+                                continue;
+                            }
+                        }
+                        min = Math.min(min, value);
+                        max = Math.max(max, value);
+                        sum += value;
+                        count++;
                     }
                 }
-
-                double value = getValue(c, r);
-                if (isNovalue(value)) {
-                    continue;
-                }
-
-                min = Math.min(min, value);
-                max = Math.max(max, value);
-                sum += value;
-                count++;
+                c0 += w;
             }
+            r0 += h;
         }
-        
-        if(count == 0) {
-			return null;
-		}
 
-        return new double[]{min, max, sum/count, sum, count};
+        if (count == 0) {
+            return null;
+        }
+
+        return new double[]{min, max, sum / count, sum, count};
     }
 
     public void printData() {
@@ -1355,47 +1658,35 @@ public class HMRaster implements AutoCloseable {
 //                    }
 //                }
                 if (copyValues) {
-//                    RandomIter inIter = CoverageUtilities.getRandomIterator(template);
-                    if (doInteger) {
-                        for( int r = 0; r < hmRaster.rows; r++ ) {
-                            for( int c = 0; c < hmRaster.cols; c++ ) {
-                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
-                            		hmRaster.writerIter.setSample(c, r, 0, template.intNovalue);
-                            	} else {
-                            		hmRaster.writerIter.setSample(c, r, 0, template.getValue(c, r));
-                            	}
+                    // read the template by strips: cell by cell reads of a large file decode its tiles again and again
+                    int _cols = hmRaster.cols;
+                    int _rows = hmRaster.rows;
+                    try {
+                        template.visitStrips(0, _cols - 1, 0, _rows - 1, ( fromRow, height, values ) -> {
+                            for( int rr = 0; rr < height; rr++ ) {
+                                int r = fromRow + rr;
+                                for( int c = 0; c < _cols; c++ ) {
+                                    boolean isBorder = doNullBorder && (c == 0 || r == 0 || c == _cols - 1 || r == _rows - 1);
+                                    double value = values[rr * _cols + c];
+                                    if (doInteger) {
+                                        if (isBorder) {
+                                            hmRaster.writerIter.setSample(c, r, 0, template.intNovalue);
+                                        } else {
+                                            hmRaster.writerIter.setSample(c, r, 0, value);
+                                        }
+                                    } else if (doShort) {
+                                        hmRaster.writerIter.setSample(c, r, 0, isBorder ? template.shortNovalue : (short) value);
+                                    } else if (doByte) {
+                                        hmRaster.writerIter.setSample(c, r, 0, isBorder ? (byte) template.novalue : (byte) value);
+                                    } else {
+                                        hmRaster.writerIter.setSample(c, r, 0, isBorder ? template.novalue : value);
+                                    }
+                                }
                             }
-                        }
-                    } else if (doShort) {
-                        for( int r = 0; r < hmRaster.rows; r++ ) {
-                            for( int c = 0; c < hmRaster.cols; c++ ) {
-                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
-                            		hmRaster.writerIter.setSample(c, r, 0, template.shortNovalue);
-                            	} else {
-                            		hmRaster.writerIter.setSample(c, r, 0, (short) template.getValue(c, r));
-                            	}
-                            }
-                        }
-                    } else if (doByte) {
-                        for( int r = 0; r < hmRaster.rows; r++ ) {
-                            for( int c = 0; c < hmRaster.cols; c++ ) {
-                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
-                            		hmRaster.writerIter.setSample(c, r, 0, (byte) template.novalue);
-                            	} else {
-                            		hmRaster.writerIter.setSample(c, r, 0, (byte) template.getValue(c, r));
-                            	}
-                            }
-                        }
-                    } else {
-                        for( int r = 0; r < hmRaster.rows; r++ ) {
-                            for( int c = 0; c < hmRaster.cols; c++ ) {
-                            	if(doNullBorder && (c == 0 || r == 0 || c == hmRaster.cols -1 || r == hmRaster.rows -1)){
-                            		hmRaster.writerIter.setSample(c, r, 0, template.novalue);
-                            	} else {
-                            		hmRaster.writerIter.setSample(c, r, 0, template.getValue(c, r));
-                            	}
-                            }
-                        }
+                            return true;
+                        });
+                    } catch (Exception e) {
+                        throw new ModelsRuntimeException("Error copying the template values: " + e.getMessage(), this);
                     }
                 }
                 return hmRaster;
