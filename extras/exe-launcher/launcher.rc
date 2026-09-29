@@ -1,0 +1,32 @@
+// Resources of the HortonMachine windows launcher.
+// APP_NAME is defined by build-exe.sh through app.h.
+#include <winver.h>
+#include "app.h"
+
+1 ICON "hm.ico"
+
+1 VERSIONINFO
+FILEVERSION     1,0,0,0
+PRODUCTVERSION  1,0,0,0
+FILEOS          VOS_NT_WINDOWS32
+FILETYPE        VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName",      "HortonMachine"
+            VALUE "FileDescription",  "HortonMachine " APP_NAME
+            VALUE "FileVersion",      "1.0.0.0"
+            VALUE "InternalName",     APP_NAME
+            VALUE "LegalCopyright",   "Andrea Antonello - https://g-ant.eu, GPL v3"
+            VALUE "OriginalFilename", APP_NAME ".exe"
+            VALUE "ProductName",      "HortonMachine " APP_NAME
+            VALUE "ProductVersion",   "1.0.0.0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
