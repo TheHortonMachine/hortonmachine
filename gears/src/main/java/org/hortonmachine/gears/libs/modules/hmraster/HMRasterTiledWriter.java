@@ -41,6 +41,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicIntegerArray;
 
 import org.eclipse.imagen.ImageLayout;
 import org.eclipse.imagen.PlanarImage;
@@ -193,6 +194,12 @@ public class HMRasterTiledWriter {
             names.append(names.length() > 0 ? ", " : "").append(new File(output.path).getName());
         }
         _pm.beginTask("Writing " + names + "...", tiles.size());
+        // exact statistics of each output, every tile counted once even if it is computed again
+        HMRasterStatistics[] statistics = new HMRasterStatistics[outputsCount];
+        for( int o = 0; o < outputsCount; o++ ) {
+            statistics[o] = new HMRasterStatistics();
+        }
+        AtomicIntegerArray counted = new AtomicIntegerArray(tiles.size());
         try {
             SharedTiles shared = new SharedTiles(tiles, outputsCount, computeExecutor, 2 * computeThreads, tile -> {
                 if (_pm.isCanceled()) {
@@ -200,11 +207,17 @@ public class HMRasterTiledWriter {
                 }
                 double[][] values = computer.computeTile(tile);
                 Raster[] rasters = new Raster[outputsCount];
+                boolean countTile = counted.compareAndSet(tile.getIndex(), 0, 1);
                 for( int o = 0; o < outputsCount; o++ ) {
-                    rasters[o] = toRaster(tile, tileSize, sampleModels[o], outputs.get(o).novalue,
-                            values == null ? null : values[o]);
+                    double[] outputValues = values == null ? null : values[o];
+                    rasters[o] = toRaster(tile, tileSize, sampleModels[o], outputs.get(o).novalue, outputValues);
+                    if (countTile && outputValues != null) {
+                        statistics[o].merge(tileStatistics(tile, outputValues, outputs.get(o).novalue));
+                    }
                 }
-                _pm.worked(1);
+                if (countTile) {
+                    _pm.worked(1);
+                }
                 return rasters;
             });
 
@@ -238,6 +251,13 @@ public class HMRasterTiledWriter {
                 }
             }
             success = !_pm.isCanceled();
+            if (success) {
+                // GDAL and QGIS read the exact statistics from the sidecar, instead of estimating them
+                long totalCells = (long) cols * rows;
+                for( int o = 0; o < outputsCount; o++ ) {
+                    statistics[o].writeAuxXml(new File(outputs.get(o).path), totalCells);
+                }
+            }
         } finally {
             computeExecutor.shutdownNow();
             writersExecutor.shutdownNow();
@@ -251,6 +271,18 @@ public class HMRasterTiledWriter {
                 }
             }
         }
+    }
+
+    private static HMRasterStatistics tileStatistics( HMRasterTile tile, double[] values, double novalue ) {
+        HMRasterStatistics statistics = new HMRasterStatistics();
+        int count = tile.getWidth() * tile.getHeight();
+        for( int i = 0; i < count; i++ ) {
+            double value = values[i];
+            if (!Double.isNaN(value) && value != novalue) {
+                statistics.add(value);
+            }
+        }
+        return statistics;
     }
 
     private static Raster toRaster( HMRasterTile tile, int tileSize, SampleModel sampleModel, double novalue, double[] values ) {

@@ -89,7 +89,7 @@ import oms3.annotations.UI;
  * 
  * <p>Developed by Andrea Antonello with the assistance of an AI coding agent;
  * design, review and validation by the author. Verified against a sequential Priority-Flood,
- * OmsPitfiller, OmsFloDirection, OmsTca and OmsExtractNetwork.</p>
+ * a steepest descent flow reference, OmsTca and OmsExtractNetwork.</p>
  */
 @Description(OmsPitfillerBarnes.OMSPITFILLERBARNES_DESCRIPTION)
 @Author(name = OmsPitfillerBarnes.OMSPITFILLERBARNES_AUTHORNAMES, contact = OmsPitfillerBarnes.OMSPITFILLERBARNES_AUTHORCONTACTS)

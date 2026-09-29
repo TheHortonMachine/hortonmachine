@@ -1,6 +1,7 @@
 org.hortonmachine.gears.io.adige.AdigeBoundaryConditionReader
 org.hortonmachine.gears.io.adige.AdigeBoundaryConditionWriter
 org.hortonmachine.gears.io.adige.VegetationLibraryReader
+org.hortonmachine.gears.io.cog.OmsRasterToCog
 org.hortonmachine.gears.io.converters.IdValuesArray2IdValuesConverter
 org.hortonmachine.gears.io.csv.OmsCsvMatrixReader
 org.hortonmachine.gears.io.dbf.OmsDbfTableReader
@@ -147,6 +148,7 @@ org.hortonmachine.hmachine.modules.basin.topindex.OmsTopIndex
 org.hortonmachine.hmachine.modules.demmanipulation.markoutlets.OmsMarkoutlets
 org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsDePitter
 org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller
+org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfillerBarnes
 org.hortonmachine.hmachine.modules.demmanipulation.splitsubbasin.OmsSplitSubbasins
 org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsExtractBasin
 org.hortonmachine.hmachine.modules.demmanipulation.wateroutlet.OmsWateroutlet
@@ -369,6 +371,7 @@ org.hortonmachine.modules.NetcdfInfo
 org.hortonmachine.modules.NetworkAttributesBuilder
 org.hortonmachine.modules.Peakflow
 org.hortonmachine.modules.Pitfiller
+org.hortonmachine.modules.PitfillerBarnes
 org.hortonmachine.modules.PointsRasterizer
 org.hortonmachine.modules.PointsVectorizer
 org.hortonmachine.modules.PotentialEvapotranspiredWaterVolume
@@ -392,6 +395,7 @@ org.hortonmachine.modules.RasterResizer
 org.hortonmachine.modules.RasterResolutionResampler
 org.hortonmachine.modules.RasterSubsampler
 org.hortonmachine.modules.RasterSummary
+org.hortonmachine.modules.RasterToCog
 org.hortonmachine.modules.RasterTransformer
 org.hortonmachine.modules.RasterTransitionClasses
 org.hortonmachine.modules.RasterValueRounder
