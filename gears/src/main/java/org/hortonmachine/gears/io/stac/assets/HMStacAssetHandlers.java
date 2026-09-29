@@ -9,6 +9,7 @@ import org.hortonmachine.gears.io.stac.assets.handlers.GeojsonHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeopackageVectorHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.ShapefileHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler;
 
 public final class HMStacAssetHandlers {
 
@@ -21,6 +22,7 @@ public final class HMStacAssetHandlers {
         HANDLERS.add(GeojsonHandler.class);
         HANDLERS.add(ShapefileHandler.class);
         HANDLERS.add(CsvfileHandler.class);
+        HANDLERS.add(StyleFileHandler.class);
     }
 
     private HMStacAssetHandlers() {}

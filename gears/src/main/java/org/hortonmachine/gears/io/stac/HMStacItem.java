@@ -177,7 +177,36 @@ public class HMStacItem {
         return epsg;
     }
 
+    /**
+     * @return the original feature as read from the stac service (geometry in WGS84).
+     */
+    public SimpleFeature getFeature() {
+        return feature;
+    }
+
+    /**
+     * @return the list of assets that can be handled by an available asset handler.
+     */
     public List<HMStacAsset> getAssets() {
+        List<HMStacAsset> assetsList = new ArrayList<>();
+        for( HMStacAsset hmAsset : getAllAssets() ) {
+            if (hmAsset.isValid()) {
+                assetsList.add(hmAsset);
+            } else {
+                String errorMessageTmp = "Asset " + hmAsset.getId() + " is not valid: " + hmAsset.getNonValidReason();
+                if (errorMessage == null || !errorMessage.equals(errorMessageTmp)) {
+                    errorMessage = errorMessageTmp;
+                    System.err.println(errorMessage);
+                }
+            }
+        }
+        return assetsList;
+    }
+
+    /**
+     * @return the list of all assets, also those not supported by any handler (see {@link HMStacAsset#isValid()}).
+     */
+    public List<HMStacAsset> getAllAssets() {
         List<HMStacAsset> assetsList = new ArrayList<>();
         Map<Object, Object> userData = feature.getUserData();
         if (userData != null) {
@@ -186,20 +215,11 @@ public class HMStacItem {
                 ObjectNode assets = (ObjectNode) top.get("assets");
 
                 if (assets != null) {
-                    Iterator<String> assetIds= assets.fieldNames();
-                    while ( assetIds.hasNext() ) {
+                    Iterator<String> assetIds = assets.fieldNames();
+                    while( assetIds.hasNext() ) {
                         String assetId = assetIds.next();
                         JsonNode assetNode = assets.get(assetId);
-                        HMStacAsset hmAsset = new HMStacAsset(assetId, assetNode);
-                        if (hmAsset.isValid()) {
-                            assetsList.add(hmAsset);
-                        } else {
-                        	String errorMessageTmp = "Asset " + assetId + " is not valid: " + hmAsset.getNonValidReason();
-                        	if (errorMessage == null || !errorMessage.equals(errorMessageTmp)) {
-								errorMessage = errorMessageTmp;
-								System.err.println(errorMessage);
-							}
-						}
+                        assetsList.add(new HMStacAsset(assetId, assetNode));
                     }
                 }
             }

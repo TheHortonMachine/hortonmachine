@@ -10,6 +10,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.geojson.PagingFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.filter.text.cql2.CQL;
@@ -57,6 +58,7 @@ public class HMStacCollection {
     private SearchQuery search;
     private IHMProgressMonitor pm;
 	private Map<String, Object> otherFields;
+    private Integer lastMatchedCount;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
@@ -172,12 +174,54 @@ public class HMStacCollection {
         return this;
     }
 
+    /**
+     * Remove all the filters set so far, so that a new query can be built.
+     *
+     * @return the current collection.
+     */
+    public HMStacCollection clearFilters() {
+        search = null;
+        return this;
+    }
+
+    /**
+     * @return the number of items the server declared as matched by the last search
+     *          (<code>numberMatched</code>) or null if the server didn't report it.
+     */
+    public Integer getLastMatchedCount() {
+        return lastMatchedCount;
+    }
+
+    /**
+     * Search the items using the filters set so far, following all the result pages.
+     *
+     * @return the list of items found.
+     * @throws Exception
+     */
     public List<HMStacItem> searchItems() throws Exception {
+        return searchItems(-1);
+    }
+
+    /**
+     * Search the items using the filters set so far.
+     *
+     * <p>Result pages are fetched lazily, so paging stops as soon as maxItems
+     * is reached or the progress monitor is canceled.</p>
+     *
+     * @param maxItems the maximum number of items to fetch. If <= 0, all items are fetched.
+     * @return the list of items found.
+     * @throws Exception
+     */
+    public List<HMStacItem> searchItems( int maxItems ) throws Exception {
         if (search == null)
             search = new SearchQuery();
         search.setCollections(Arrays.asList(getId()));
 
         SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
+        lastMatchedCount = null;
+        if (fc instanceof PagingFeatureCollection pfc) {
+            lastMatchedCount = pfc.getMatched();
+        }
 
         // check if there is some crs info in the metadata, might be useful later
         String metadataEpsg = null;
@@ -205,7 +249,8 @@ public class HMStacCollection {
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
         try {
-            while( iterator.hasNext() ) {
+            // check the limits before hasNext, which would trigger the download of the next page
+            while( !pm.isCanceled() && (maxItems <= 0 || stacItems.size() < maxItems) && iterator.hasNext() ) {
                 SimpleFeature f = iterator.next();
                 HMStacItem item;
                 if(metadataEpsg != null) {

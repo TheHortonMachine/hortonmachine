@@ -9,9 +9,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.geotools.api.feature.simple.SimpleFeatureType;
@@ -29,6 +32,7 @@ import org.geotools.stac.client.SearchQuery;
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -48,8 +52,14 @@ public class HMSTACClient extends STACClient {
 		OBJECT_MAPPER.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
 	}
 
+	/** Maximum depth of nested catalogs followed through child links. */
+	private static final int MAX_CHILD_DEPTH = 5;
+
+	private final URL landingPageURL;
+
 	public HMSTACClient(URL landingPageURL, HTTPClient http) throws IOException {
 		super(landingPageURL, http);
+		this.landingPageURL = landingPageURL;
 	}
 
 	/**
@@ -114,18 +124,82 @@ public class HMSTACClient extends STACClient {
 		}
 	}
 
+	/**
+	 * Get the collections of the catalog.
+	 *
+	 * <p>Same discovery logic as base class: look for rel=data, fallback to rel=children.
+	 * If that doesn't find any collection, the rel=child links of the catalog are followed,
+	 * as done for static catalogs: children can be collections or nested catalogs.</p>
+	 */
 	@Override
 	public List<Collection> getCollections() throws IOException {
-		// Same discovery logic as base class: look for rel=data, fallback to
-		// rel=children
-		Optional<Link> maybeData = getLandingPage().getLinks().stream().filter(this::isDataJSONLink).findFirst();
+		List<Link> links = getLandingPage().getLinks();
+		List<Collection> collections = getCollectionsFromDataLinks(links, landingPageURL);
+		if (collections.isEmpty()) {
+			Set<String> visited = new HashSet<>();
+			visited.add(landingPageURL.toString());
+			collections = new ArrayList<>();
+			collectFromChildLinks(links, landingPageURL, 0, visited, collections);
+		}
+		return collections;
+	}
+
+	private List<Collection> getCollectionsFromDataLinks(List<Link> links, URL baseUrl) throws IOException {
+		Optional<Link> maybeData = links.stream().filter(this::isDataJSONLink).findFirst();
 		if (maybeData.isEmpty()) {
-			maybeData = getLandingPage().getLinks().stream().filter(this::isChildrenJSONLink).findFirst();
+			maybeData = links.stream().filter(this::isChildrenJSONLink).findFirst();
 		}
 		if (maybeData.isEmpty())
 			return Collections.emptyList();
 
-		URL pageUrl = new URL(maybeData.get().getHref());
+		return readCollectionPages(resolve(baseUrl, maybeData.get().getHref()));
+	}
+
+	/**
+	 * Follow the child links, adding the collections found and recursing into the catalogs.
+	 */
+	private void collectFromChildLinks(List<Link> links, URL baseUrl, int depth, Set<String> visited,
+			List<Collection> collections) throws IOException {
+		if (links == null || depth > MAX_CHILD_DEPTH)
+			return;
+		for (Link link : links) {
+			if (!isChildJSONLink(link))
+				continue;
+			URL childUrl = resolve(baseUrl, link.getHref());
+			if (childUrl == null || !visited.add(childUrl.toString()))
+				continue;
+
+			// no mime check here, static catalogs are often served with generic mime types
+			JsonNode node;
+			try (InputStream is = getHttp().get(childUrl).getResponseStream()) {
+				node = OBJECT_MAPPER.readTree(is);
+			}
+			if (node == null || !node.isObject())
+				continue;
+			String type = node.hasNonNull("type") ? node.get("type").asText() : "";
+			if ("collection".equalsIgnoreCase(type)) {
+				Collection collection = OBJECT_MAPPER.treeToValue(node, Collection.class);
+				boolean isNew = collections.stream().noneMatch(c -> c.getId().equals(collection.getId()));
+				if (isNew)
+					collections.add(collection);
+			} else if ("catalog".equalsIgnoreCase(type)) {
+				List<Link> catalogLinks = node.has("links")
+						? Arrays.asList(OBJECT_MAPPER.treeToValue(node.get("links"), Link[].class))
+						: Collections.emptyList();
+				List<Collection> dataCollections = getCollectionsFromDataLinks(catalogLinks, childUrl);
+				if (!dataCollections.isEmpty()) {
+					for (Collection collection : dataCollections) {
+						if (collections.stream().noneMatch(c -> c.getId().equals(collection.getId())))
+							collections.add(collection);
+					}
+				} else {
+					collectFromChildLinks(catalogLinks, childUrl, depth + 1, visited, collections);
+				}
+			}
+		}
+	}
+
+	private List<Collection> readCollectionPages(URL pageUrl) throws IOException {
 		HTTPClient http = getHttp();
 
 		List<Collection> all = new ArrayList<>();
@@ -176,6 +250,23 @@ public class HMSTACClient extends STACClient {
 
 	private boolean isChildrenJSONLink(Link l) {
 		return "children".equals(l.getRel()) && (isBlank(l.getType()) || JSON_MIME.equals(l.getType()));
+	}
+
+	private boolean isChildJSONLink(Link l) {
+		return "child".equals(l.getRel()) && (isBlank(l.getType()) || l.getType().startsWith(JSON_MIME));
+	}
+
+	/**
+	 * Resolve a possibly relative href (common in static catalogs) against the document it comes from.
+	 */
+	private static URL resolve(URL base, String href) throws IOException {
+		if (isBlank(href))
+			return null;
+		try {
+			return new URL(base, href);
+		} catch (MalformedURLException e) {
+			throw new IOException("Invalid link in STAC document " + base + ": " + href, e);
+		}
 	}
 
 	private static boolean isBlank(String s) {
