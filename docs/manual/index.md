@@ -51,4 +51,5 @@ apps/spatialtoolbox
 apps/geoscript
 apps/dbviewer
 apps/stacbrowser
+apps/sld
 ```

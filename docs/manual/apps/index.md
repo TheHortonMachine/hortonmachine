@@ -8,7 +8,7 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [Geoscript Console](geoscript.md) | `hm-geoscript` | A scripting console with the HortonMachine on the classpath |
 | [Database Viewer](dbviewer.md) | `hm-dbviewer` | Explore spatial databases (GeoPackage, SpatiaLite, H2GIS, PostGIS) |
 | [STAC Browser](stacbrowser.md) | `hm-stacbrowser` | Browse STAC catalogs, search items and download or clip their assets |
-| Style Editor | `hm-sld` | Create and edit SLD styles |
+| [Style Editor](sld.md) | `hm-sld` | Create and edit SLD styles |
 | WMS to GeoTIFF | `hm-wms2geotiff` | Save web map services as GeoTIFF images |
 | Geopaparazzi Viewer | `hm-geopaparazzi_viewer` | View the data of Geopaparazzi survey projects |
 | Form Builder | `hm-gforms` | Create the forms used by Geopaparazzi and SMASH |
