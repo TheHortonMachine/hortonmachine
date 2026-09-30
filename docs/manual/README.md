@@ -19,8 +19,9 @@ This creates a local virtualenv (`.venv/`, git-ignored) on first run, installs `
 | `apps/index.md` | the list of applications |
 | `apps/<app>.md` | one chapter per application |
 | `images/apps/<app>/` | the screenshots of each application |
+| `modules/index.md` | the modules section (to be written) |
 
-The spatial toolbox modules are planned as a separate `modules/` section.
+The modules are documented in the `modules/` section, with their screenshots in `images/modules/`.
 
 ## Conventions
 
