@@ -15,6 +15,8 @@ import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import org.hortonmachine.gears.io.stac.HMStacAsset;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
+import org.hortonmachine.gears.io.stac.auth.HMStacResponse;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
 public interface IHMStacAssetHandler {
@@ -47,11 +49,39 @@ public interface IHMStacAssetHandler {
 
 	String getAssetUrl();
 
+	/**
+	 * @return the asset handled or null if not available.
+	 */
+	default HMStacAsset getAsset() {
+		return null;
+	}
+
 	default void downloadAsset(String destinationPath, IHMProgressMonitor monitor) throws Exception {
 		Path targetFile = Paths.get(destinationPath);
 		String href = getAssetUrl();
 		if (href == null || href.trim().isEmpty()) {
 			throw new IllegalArgumentException("Asset href is null or empty");
+		}
+
+		// protected assets are read through the access context of the asset
+		HMStacAsset asset = getAsset();
+		HMStacAccess access = asset != null ? asset.getAccess() : null;
+		if (access != null && access.isAuthenticated(href)) {
+			if (monitor != null) {
+				monitor.beginTask("Downloading asset: " + href, IHMProgressMonitor.UNKNOWN);
+			}
+			if (targetFile.getParent() != null)
+				Files.createDirectories(targetFile.getParent());
+			try (HMStacResponse response = access.get(href);
+					InputStream is = new BufferedInputStream(response.getInputStream());
+					OutputStream os = new BufferedOutputStream(Files.newOutputStream(targetFile))) {
+				copyWithProgress(is, os, response.getContentLength(), monitor);
+			} finally {
+				if (monitor != null) {
+					monitor.done();
+				}
+			}
+			return;
 		}
 
 		// Handle file:// or plain path
@@ -85,32 +115,39 @@ public interface IHMStacAssetHandler {
 
 		try (InputStream is = new BufferedInputStream(connection.getInputStream());
 				OutputStream os = new BufferedOutputStream(Files.newOutputStream(targetFile))) {
-
-			byte[] buffer = new byte[128 * 1024]; // 128 KB buffer
-			long totalRead = 0;
-			int read;
-			int lastPercent = -1;
-
-			while ((read = is.read(buffer)) != -1) {
-				os.write(buffer, 0, read);
-				totalRead += read;
-
-				if (monitor != null) {
-					if (contentLength > 0) {
-						int percent = (int) (100L * totalRead / contentLength);
-				        if (percent != lastPercent && percent % 10 == 0) {
-				            monitor.message("Downloaded: " + percent + "%...");
-				            lastPercent = percent;
-				        }
-					}
-					if (monitor.isCanceled()) {
-						throw new IOException("Download canceled by user");
-					}
-				}
-			}
+			copyWithProgress(is, os, contentLength, monitor);
 		} finally {
 			if (monitor != null) {
 				monitor.done();
+			}
+		}
+	}
+
+	/**
+	 * Copy a stream, reporting the progress and stopping if the monitor is canceled.
+	 */
+	private static void copyWithProgress(InputStream is, OutputStream os, long contentLength, IHMProgressMonitor monitor)
+			throws IOException {
+		byte[] buffer = new byte[128 * 1024]; // 128 KB buffer
+		long totalRead = 0;
+		int read;
+		int lastPercent = -1;
+
+		while ((read = is.read(buffer)) != -1) {
+			os.write(buffer, 0, read);
+			totalRead += read;
+
+			if (monitor != null) {
+				if (contentLength > 0) {
+					int percent = (int) (100L * totalRead / contentLength);
+			        if (percent != lastPercent && percent % 10 == 0) {
+			            monitor.message("Downloaded: " + percent + "%...");
+			            lastPercent = percent;
+			        }
+				}
+				if (monitor.isCanceled()) {
+					throw new IOException("Download canceled by user");
+				}
 			}
 		}
 	}

@@ -5,12 +5,15 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.geotools.http.HTTPClient;
 import org.geotools.http.commons.MultithreadedHttpClient;
 import org.geotools.stac.client.Collection;
 import org.geotools.stac.client.FeaturesConformance;
 import org.geotools.stac.client.STACConformance;
 import org.geotools.stac.client.STACLandingPage;
 import org.hortonmachine.gears.io.stac.client.HMSTACClient;
+import org.hortonmachine.gears.io.stac.client.HMStacAuthHttpClient;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
 /**
@@ -24,10 +27,30 @@ public class HMStacManager implements AutoCloseable {
     private String catalogUrl;
     private HMSTACClient stacClient;
     private IHMProgressMonitor pm;
+    private HMStacAccess access;
 
     public HMStacManager( String catalogUrl, IHMProgressMonitor pm ) {
         this.catalogUrl = catalogUrl;
         this.pm = pm;
+    }
+
+    /**
+     * Set the access context, for example to use authentication on protected catalogs. 
+     * Has to be called before {@link #open()}.
+     * 
+     * @param access the access context.
+     * @return the current manager.
+     */
+    public HMStacManager setAccess( HMStacAccess access ) {
+        this.access = access;
+        return this;
+    }
+
+    /**
+     * @return the access context or null.
+     */
+    public HMStacAccess getAccess() {
+        return access;
     }
 
     /**
@@ -36,7 +59,24 @@ public class HMStacManager implements AutoCloseable {
      * @throws Exception
      */
     public void open() throws Exception {
-        stacClient = new HMSTACClient(new URL(catalogUrl), new MultithreadedHttpClient());
+        HTTPClient http = new MultithreadedHttpClient();
+        String url = catalogUrl;
+        if (access != null) {
+            // e.g. s3://bucket/catalog.json to its https address
+            url = access.toHttpUrl(catalogUrl);
+            http = new HMStacAuthHttpClient(http, access);
+        }
+        stacClient = new HMSTACClient(new URL(url), http);
+    }
+
+    /**
+     * @return <code>true</code> if the catalog supports item search. If not (e.g. static catalogs), 
+     *          searches are done following the catalog links and filtering the items locally.
+     * @throws Exception
+     */
+    public boolean isItemSearchAvailable() throws Exception {
+        checkOpen();
+        return stacClient.supportsItemSearch();
     }
 
     public String getConformanceSummary() throws Exception {
@@ -72,7 +112,7 @@ public class HMStacManager implements AutoCloseable {
         List<HMStacCollection> hmCollections = new ArrayList<>();
         List<Collection> collections = stacClient.getCollections();
         for( Collection c : collections ) {
-            HMStacCollection hmCollection = new HMStacCollection(stacClient, c, pm);
+            HMStacCollection hmCollection = new HMStacCollection(stacClient, c, pm, access);
             hmCollections.add(hmCollection);
         }
         return hmCollections;
@@ -83,7 +123,7 @@ public class HMStacManager implements AutoCloseable {
         List<Collection> collections = stacClient.getCollections();
         for( Collection c : collections ) {
             if (c.getId().equals(id)) {
-                HMStacCollection hmCollection = new HMStacCollection(stacClient, c, pm);
+                HMStacCollection hmCollection = new HMStacCollection(stacClient, c, pm, access);
                 return hmCollection;
             }
         }
@@ -92,7 +132,8 @@ public class HMStacManager implements AutoCloseable {
 
     public HMStacCollection getCollectionByURL(String collectionUrl) throws Exception {
         checkOpen();
-        return new HMStacCollection(stacClient, stacClient.getCollectionByURL(collectionUrl), pm);
+        return new HMStacCollection(stacClient,
+                stacClient.getCollectionByURL(access != null ? access.toHttpUrl(collectionUrl) : collectionUrl), pm, access);
     }
 
     public void close() throws Exception {

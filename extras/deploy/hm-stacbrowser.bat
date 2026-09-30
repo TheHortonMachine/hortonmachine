@@ -25,6 +25,6 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 set MEM="-Xmx4g"
 set XSS="-Xss64m"
 set PATH=%~dp0\natives\;%PATH%
-"%JAVAEXE%" -splash:"%~dp0\imgs\splash_stacbrowser.png" %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp ".\libs\*" org.hortonmachine.stac.StacBrowser %1
+"%JAVAEXE%" -splash:"%~dp0\imgs\splash_stacbrowser.png" %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp ".\libs\*" org.hortonmachine.stac.StacBrowser %*
 
 endlocal

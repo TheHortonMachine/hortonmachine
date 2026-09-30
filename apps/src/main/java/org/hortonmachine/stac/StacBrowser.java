@@ -69,6 +69,8 @@ import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
 import javax.imageio.ImageIO;
+
+import com.formdev.flatlaf.util.SystemFileChooser;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
@@ -117,6 +119,10 @@ import org.hortonmachine.gears.io.stac.HMStacManager;
 import org.hortonmachine.gears.io.stac.PlanetaryComputerMicrosoft;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler;
+import org.hortonmachine.gears.io.stac.auth.HMS3Authentication;
+import org.hortonmachine.gears.io.stac.auth.HMS3Location;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
+import org.hortonmachine.gears.io.stac.auth.HMStacResponse;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
@@ -145,6 +151,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @SuppressWarnings("serial")
 public class StacBrowser extends JPanel implements IOnCloseListener {
     private static final String PREF_CATALOGS = "STAC_BROWSER_CATALOGS";
+    private static final String PREF_AWS_PROFILE = "STAC_BROWSER_AWS_PROFILE";
+    private static final String PREF_AWS_REGION = "STAC_BROWSER_AWS_REGION";
     private static final String[] PRESET_CATALOGS = {//
             "https://earth-search.aws.element84.com/v1", //
             "https://planetarycomputer.microsoft.com/api/stac/v1", //
@@ -153,6 +161,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     };
     private static final int MAX_ACCESS_CHECKS = 50;
     private static final long MAX_EXPORT_CELLS = 100_000_000L;
+    private static final String NO_ITEM_SELECTED = "Select an item to see its thumbnail.";
     private static final String UNSUPPORTED = "✗ unsupported";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
@@ -167,6 +176,9 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         Object platform;
         List<HMStacAsset> assets;
         int supportedCount;
+        /** Version and status from the STAC Version extension, null if the item doesn't use it. */
+        String version;
+        String versionStatus;
     }
 
     /** An asset key found in the search results, aggregated over the items. */
@@ -210,6 +222,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     // connection
     private JComboBox<String> catalogCombo;
     private JButton connectButton;
+    private JPanel awsPanel;
+    private JComboBox<String> awsProfileCombo;
+    private JTextField awsRegionField;
+    /** The access context of the current catalog, null for public ones. */
+    private HMStacAccess access;
 
     // collections
     private JTextField collectionsFilterField;
@@ -289,10 +306,43 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         });
         panel.add(catalogCombo, BorderLayout.CENTER);
 
+        // credentials, used only for catalogs on S3 (s3://bucket/... or the https addresses of a bucket)
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        List<String> profiles = new ArrayList<>();
+        profiles.add("");
+        profiles.addAll(HMS3Authentication.listProfiles());
+        awsProfileCombo = new JComboBox<>(profiles.toArray(new String[0]));
+        awsProfileCombo.setEditable(true);
+        awsProfileCombo.setSelectedItem(PreferencesHandler.getPreference(PREF_AWS_PROFILE, ""));
+        awsProfileCombo.setToolTipText("Profile of ~/.aws/credentials, used for catalogs on S3 (empty = default profile)");
+        awsRegionField = new JTextField(PreferencesHandler.getPreference(PREF_AWS_REGION, ""), 9);
+        awsRegionField.setToolTipText("AWS region, needed for s3:// addresses if not in the profile config (e.g. us-west-2)");
+        awsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        awsPanel.add(new JLabel("AWS profile:"));
+        awsPanel.add(awsProfileCombo);
+        awsPanel.add(new JLabel("Region:"));
+        awsPanel.add(awsRegionField);
+        right.add(awsPanel);
         connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> connect());
-        panel.add(connectButton, BorderLayout.EAST);
+        right.add(connectButton);
+        panel.add(right, BorderLayout.EAST);
+
+        // the credentials are shown only for catalogs on S3
+        catalogCombo.addActionListener(e -> updateAwsPanel());
+        if (catalogCombo.getEditor().getEditorComponent() instanceof JTextField editorField)
+            onTextChange(editorField, this::updateAwsPanel);
+        updateAwsPanel();
         return panel;
+    }
+
+    private void updateAwsPanel() {
+        Object item = catalogCombo.getEditor().getItem();
+        boolean isS3 = item != null && HMS3Location.parse(item.toString().trim()) != null;
+        if (awsPanel.isVisible() != isS3) {
+            awsPanel.setVisible(isS3);
+            awsPanel.getParent().revalidate();
+        }
     }
 
     private JComponent createCollectionsPanel() {
@@ -486,6 +536,8 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         itemsModel = new StacTableModel<ItemRow>()//
                 .col("Id", String.class, r -> r.item.getId())//
                 .col("Datetime (UTC)", String.class, r -> r.datetime)//
+                .col("Version", String.class, r -> r.version)//
+                .col("Status", String.class, r -> r.versionStatus)//
                 .col("EPSG", Integer.class, r -> r.epsg)//
                 .col("Cloud %", Double.class, r -> r.cloudCover instanceof Number n ? Math.round(n.doubleValue() * 10) / 10.0 : null)//
                 .col("Platform", String.class, r -> r.platform == null ? "" : String.valueOf(r.platform))//
@@ -657,12 +709,42 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             GuiUtilities.showWarningMessage(this, "Please insert the url of a STAC catalog.");
             return;
         }
+        // catalogs on S3 are read with the credentials of the chosen profile, limited to the catalog bucket
+        HMStacAccess newAccess = null;
+        String authInfo = "none";
+        HMS3Location s3Location = HMS3Location.parse(url);
+        if (s3Location != null) {
+            String profile = String.valueOf(awsProfileCombo.getEditor().getItem()).trim();
+            String region = awsRegionField.getText().trim();
+            try {
+                HMS3Authentication authentication = HMS3Authentication.fromProfile(profile.isEmpty() ? null : profile)
+                        .forBuckets(s3Location.getBucket());
+                if (!region.isEmpty())
+                    authentication.setRegion(region);
+                if (authentication.getRegion() == null && s3Location.getRegion() == null) {
+                    GuiUtilities.showWarningMessage(this, "Please insert the AWS region of the bucket (e.g. us-west-2).");
+                    return;
+                }
+                newAccess = new HMStacAccess(authentication);
+                String usedRegion = s3Location.getRegion() != null ? s3Location.getRegion() : authentication.getRegion();
+                authInfo = "AWS S3, profile " + (profile.isEmpty() ? "default" : profile) + ", region " + usedRegion + ", bucket "
+                        + s3Location.getBucket();
+                PreferencesHandler.setPreference(PREF_AWS_PROFILE, profile);
+                PreferencesHandler.setPreference(PREF_AWS_REGION, region);
+            } catch (Exception e) {
+                GuiUtilities.showWarningMessage(this, "Unable to use the AWS credentials: " + e.getMessage());
+                return;
+            }
+        }
+        HMStacAccess fAccess = newAccess;
+        String fAuthInfo = authInfo;
         HMStacManager oldManager = manager;
         runTask("Connecting to " + url, () -> {
             if (oldManager != null)
                 oldManager.close();
             long t0 = System.currentTimeMillis();
             HMStacManager newManager = new HMStacManager(url, monitor);
+            newManager.setAccess(fAccess);
             newManager.open();
             String conformance;
             try {
@@ -675,14 +757,19 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             collections.sort(Comparator.comparing(HMStacCollection::getId, String.CASE_INSENSITIVE_ORDER));
             long t2 = System.currentTimeMillis();
             log("Landing page read in " + (t1 - t0) + " ms, " + collections.size() + " collections listed in " + (t2 - t1) + " ms.");
-            return new Object[]{newManager, conformance, collections, t1 - t0, t2 - t1};
+            boolean searchAvailable = newManager.isItemSearchAvailable();
+            if (!searchAvailable)
+                log("WARNING: the catalog doesn't support item search, items will be collected following the catalog links.");
+            return new Object[]{newManager, conformance, collections, t1 - t0, t2 - t1, searchAvailable};
         }, result -> {
             manager = (HMStacManager) result[0];
+            access = fAccess;
             @SuppressWarnings("unchecked")
             List<HMStacCollection> collections = (List<HMStacCollection>) result[2];
             allCollections = collections;
             addCatalogToHistory(url);
-            showServiceInfo(url, (String) result[1], collections.size(), (Long) result[3], (Long) result[4]);
+            showServiceInfo(url, (String) result[1], collections.size(), (Long) result[3], (Long) result[4], fAuthInfo,
+                    (Boolean) result[5]);
             clearResults();
             currentCollection = null;
             filterCollections();
@@ -811,6 +898,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         row.platform = attribute(feature, "platform");
         row.assets = item.getAllAssets();
         row.supportedCount = (int) row.assets.stream().filter(HMStacAsset::isValid).count();
+        if (item.hasVersionInfo()) {
+            // STAC Version extension: deprecated items are superseded by a newer version
+            row.version = item.getVersion();
+            row.versionStatus = item.isDeprecated() ? "superseded" : "current";
+        }
         return row;
     }
 
@@ -820,6 +912,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         mapPanel.setFootprints(rows.stream().map(r -> r.footprint).collect(Collectors.toList()));
         itemAssetsModel.setRows(null);
         StacMetadataTree.setContent(itemTree, null);
+        thumbnailPanel.setMessage(NO_ITEM_SELECTED);
 
         Map<String, AssetKeyRow> keys = new LinkedHashMap<>();
         for( ItemRow row : rows ) {
@@ -855,12 +948,16 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         mapPanel.setFootprints(null);
         searchInfoLabel.setText(" ");
         downloadSummaryLabel.setText(" ");
+        thumbnailPanel.setMessage(NO_ITEM_SELECTED);
     }
 
     private void selectItem() {
         ItemRow row = getSelectedItemRow();
         if (row == null) {
             mapPanel.setSelectedFootprint(-1);
+            itemAssetsModel.setRows(null);
+            StacMetadataTree.setContent(itemTree, null);
+            thumbnailPanel.setMessage(NO_ITEM_SELECTED);
             return;
         }
         mapPanel.setSelectedFootprint(itemsModel.indexOf(row));
@@ -918,10 +1015,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             return;
         }
         thumbnailPanel.setMessage("Loading thumbnail " + thumbnail.getId() + "...");
+        HMStacAccess itemAccess = access;
         thumbnailLoader.submit(() -> {
             String message;
             try {
-                BufferedImage image = loadImage(href);
+                BufferedImage image = loadImage(href, itemAccess);
                 if (image != null) {
                     thumbnailCache.put(href, image);
                     SwingUtilities.invokeLater(() -> {
@@ -944,9 +1042,14 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         });
     }
 
-    private static BufferedImage loadImage( String href ) throws Exception {
+    private static BufferedImage loadImage( String href, HMStacAccess access ) throws Exception {
         if (href == null)
             throw new IllegalArgumentException("no href");
+        if (access != null && access.isAuthenticated(href)) {
+            try (HMStacResponse response = access.get(href)) {
+                return ImageIO.read(response.getInputStream());
+            }
+        }
         if (!href.startsWith("http://") && !href.startsWith("https://"))
             throw new IllegalArgumentException("not an http url: " + href);
         if (PlanetaryComputerMicrosoft.isAzureBlob(href))
@@ -964,7 +1067,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     /** Shows an image scaled to fit, or a message. */
     private static class ThumbnailPanel extends JPanel {
         private BufferedImage image;
-        private String text = "Select an item to see its thumbnail.";
+        private String text = NO_ITEM_SELECTED;
 
         void setImage( BufferedImage image, String title ) {
             this.image = image;
@@ -1074,7 +1177,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         for( DownloadRow row : rows ) {
             if (monitor.isCanceled())
                 break;
-            String[] result = checkUrl(client, row.href);
+            String[] result = checkUrl(client, row.href, access);
             row.access = result[0];
             row.size = result[1];
             row.bytes = Long.parseLong(result[2]);
@@ -1107,9 +1210,18 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
      *
      * @return the status and the size.
      */
-    private static String[] checkUrl( HttpClient client, String href ) {
+    private static String[] checkUrl( HttpClient client, String href, HMStacAccess access ) {
         if (href == null)
             return new String[]{"no href", "", "-1"};
+        if (access != null && access.isAuthenticated(href)) {
+            // protected: open the object with the credentials, the stream is closed right away
+            try (HMStacResponse response = access.get(href)) {
+                long size = response.getContentLength();
+                return new String[]{"200 ok (authenticated)", size >= 0 ? humanSize(size) : "?", String.valueOf(size)};
+            } catch (IOException e) {
+                return new String[]{"denied/failed: " + e.getMessage(), "", "-1"};
+            }
+        }
         if (!href.startsWith("http://") && !href.startsWith("https://")) {
             int colon = href.indexOf(':');
             return new String[]{"not http" + (colon > 0 ? " (" + href.substring(0, colon) + ")" : ""), "", "-1"};
@@ -1158,12 +1270,22 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         return rows;
     }
 
+    /**
+     * Ask for a folder with the operating system dialog (falls back to the swing one where not available).
+     */
     private File askOutputFolder( String title ) {
-        File[] folders = GuiUtilities.showOpenFolderDialog(this, title, false, PreferencesHandler.getLastFile());
-        if (folders == null || folders.length == 0)
+        SystemFileChooser chooser = new SystemFileChooser();
+        chooser.setDialogTitle(title);
+        chooser.setFileSelectionMode(SystemFileChooser.DIRECTORIES_ONLY);
+        chooser.setApproveButtonText("Select folder");
+        File lastFile = PreferencesHandler.getLastFile();
+        if (lastFile != null)
+            chooser.setCurrentDirectory(lastFile.isDirectory() ? lastFile : lastFile.getParentFile());
+        if (chooser.showOpenDialog(this) != SystemFileChooser.APPROVE_OPTION || chooser.getSelectedFile() == null)
             return null;
-        PreferencesHandler.setLastPath(folders[0].getAbsolutePath());
-        return folders[0];
+        File folder = chooser.getSelectedFile();
+        PreferencesHandler.setLastPath(folder.getAbsolutePath());
+        return folder;
     }
 
     /**
@@ -1211,7 +1333,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                         // the HM way, to see how the handlers behave
                         row.asset.getHandler().downloadAsset(outFile.getAbsolutePath(), monitor);
                     } else {
-                        downloadPlain(client, row.href, outFile);
+                        downloadPlain(client, row.href, outFile, access);
                     }
                     row.access = "saved" + saveStyles(row, outFile, styleKeys);
                     row.size = humanSize(outFile.length());
@@ -1567,9 +1689,15 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         return name.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
-    private static void downloadPlain( HttpClient client, String href, File outFile ) throws Exception {
+    private static void downloadPlain( HttpClient client, String href, File outFile, HMStacAccess access ) throws Exception {
         if (href == null)
             throw new IllegalArgumentException("the asset has no href");
+        if (access != null && access.isAuthenticated(href)) {
+            try (HMStacResponse response = access.get(href)) {
+                Files.copy(response.getInputStream(), outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
+            return;
+        }
         if (href.startsWith("http://") || href.startsWith("https://")) {
             HttpResponse<Path> response = client.send(HttpRequest.newBuilder(URI.create(href)).timeout(Duration.ofMinutes(10)).GET().build(),
                     HttpResponse.BodyHandlers.ofFile(outFile.toPath()));
@@ -1640,13 +1768,17 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
 
     // ==================== info panes ====================
 
-    private void showServiceInfo( String url, String conformance, int collectionsCount, long landingMillis, long collectionsMillis ) {
+    private void showServiceInfo( String url, String conformance, int collectionsCount, long landingMillis, long collectionsMillis,
+            String authInfo, boolean searchAvailable ) {
         StringBuilder sb = new StringBuilder("<html><body style='font-family:sans-serif; padding:6px'>");
         sb.append("<h2>").append(escape(url)).append("</h2>");
         sb.append("<table cellpadding='3'>");
         row(sb, "Collections", String.valueOf(collectionsCount));
         row(sb, "Landing page read in", landingMillis + " ms");
         row(sb, "Collections listed in", collectionsMillis + " ms");
+        row(sb, "Authentication", escape(authInfo));
+        row(sb, "Item search", searchAvailable ? "<font color='#1a8a3a'>yes</font>"
+                : "<font color='#c0392b'>no</font> (static catalog: items are collected following the links and filtered locally)");
         sb.append("</table><h3>Conformance</h3><table cellpadding='3'>");
         for( String line : conformance.split("\n") ) {
             int colon = line.lastIndexOf(':');
@@ -2111,8 +2243,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         JFrame frame = gBridge.showWindow(browser, "HortonMachine STAC Browser - " + org.hortonmachine.Version.getVersion());
         GuiUtilities.setDefaultFrameIcon(frame);
         GuiUtilities.addClosingListener(frame, browser);
-        if (args.length > 0) {
+        // optional arguments: catalog url [aws profile [aws region]]
+        if (args.length > 0 && !args[0].isBlank()) {
             browser.catalogCombo.setSelectedItem(args[0]);
+            if (args.length > 1)
+                browser.awsProfileCombo.setSelectedItem(args[1]);
+            if (args.length > 2)
+                browser.awsRegionField.setText(args[2]);
             browser.connect();
         }
     }

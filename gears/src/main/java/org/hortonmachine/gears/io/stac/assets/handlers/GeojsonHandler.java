@@ -42,6 +42,11 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 	}
 
 	@Override
+	public HMStacAsset getAsset() {
+		return asset;
+	}
+
+	@Override
 	public String getAssetUrl() {
 		return assetUrl;
 	}

@@ -20,6 +20,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.io.stac.PlanetaryComputerMicrosoft;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -95,6 +96,11 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	}
 	
 	@Override
+	public HMStacAsset getAsset() {
+		return asset;
+	}
+
+	@Override
 	public String getAssetUrl() {
 		return assetUrl;
 	}
@@ -163,7 +169,11 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			cogUri.setPassword(password);
 		}
 		GeoTiffReader reader;
-		if (assetUrl.startsWith("s3://")) { // TODO manage multiple S3 servers
+		HMStacAccess access = asset.getAccess();
+		if (client == null && access != null && access.isAuthenticated(assetUrl)) {
+			// protected asset: read through the access context (whole object, no range requests yet)
+			reader = new GeoTiffReader(access.get(assetUrl).getInputStream());
+		} else if (assetUrl.startsWith("s3://")) { // TODO manage multiple S3 servers
 			InputStream inputProvider = readS3Raster(cogUri, client);
 			reader = new GeoTiffReader(inputProvider);
 		} else {

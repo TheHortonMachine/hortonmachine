@@ -2,6 +2,7 @@ package org.hortonmachine.gears.io.stac;
 
 import org.hortonmachine.gears.io.stac.assets.HMStacAssetHandlers;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.locationtech.jts.geom.Envelope;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -24,9 +25,20 @@ public class HMStacAsset {
 	
 	private Integer epsg;
 	private Envelope envelope;
+	private HMStacAccess access;
 
 	public HMStacAsset(String id, JsonNode assetNode) {
+		this(id, assetNode, null);
+	}
+
+	/**
+	 * @param id the asset id.
+	 * @param assetNode the asset json.
+	 * @param access the access context used to read the asset (e.g. with authentication), can be null.
+	 */
+	public HMStacAsset(String id, JsonNode assetNode, HMStacAccess access) {
 		this.id = id;
+		this.access = access;
 		this.assetNode = assetNode;
 		if (assetNode.has("title")) {
 			title = assetNode.get("title").textValue();
@@ -67,6 +79,13 @@ public class HMStacAsset {
 			isValid = false;
 			nonValidReason = "no handler found for type: " + type;
 		}
+	}
+
+	/**
+	 * @return the access context used to read the asset or null.
+	 */
+	public HMStacAccess getAccess() {
+		return access;
 	}
 
 	public JsonNode getAssetNode() {

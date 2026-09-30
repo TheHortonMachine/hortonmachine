@@ -27,4 +27,4 @@ else
 fi
 
 
-"$JAVAEXE" -splash:"$DIR/imgs/splash_stacbrowser.png" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.hortonmachine.stac.StacBrowser "$1"
+"$JAVAEXE" -splash:"$DIR/imgs/splash_stacbrowser.png" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.hortonmachine.stac.StacBrowser "$@"

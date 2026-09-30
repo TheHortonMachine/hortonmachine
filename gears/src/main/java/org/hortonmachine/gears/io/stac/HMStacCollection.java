@@ -25,6 +25,8 @@ import org.geotools.stac.client.CollectionExtent.TemporalExtents;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.SearchQuery;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
+import org.hortonmachine.gears.io.stac.client.HMSTACClient;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
@@ -59,6 +61,12 @@ public class HMStacCollection {
     private IHMProgressMonitor pm;
 	private Map<String, Object> otherFields;
     private Integer lastMatchedCount;
+    private HMStacAccess access;
+
+    HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm, HMStacAccess access ) {
+        this(stacClient, collection, pm);
+        this.access = access;
+    }
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm ) {
         this.stacClient = stacClient;
@@ -217,10 +225,19 @@ public class HMStacCollection {
             search = new SearchQuery();
         search.setCollections(Arrays.asList(getId()));
 
-        SimpleFeatureCollection fc = stacClient.search(search, STACClient.SearchMode.GET);
         lastMatchedCount = null;
-        if (fc instanceof PagingFeatureCollection pfc) {
-            lastMatchedCount = pfc.getMatched();
+        List<SimpleFeature> staticItems = null;
+        SimpleFeatureCollection fc = null;
+        if (stacClient instanceof HMSTACClient hmClient && !hmClient.supportsItemSearch()) {
+            // e.g. static catalogs: the items are collected following the links and filtered locally
+            pm.message("WARNING: the catalog doesn't support item search, the items of " + getId()
+                    + " are collected following the catalog links and filtered locally. This can be slow on large catalogs.");
+            staticItems = hmClient.searchStatic(collection, search, maxItems, pm);
+        } else {
+            fc = stacClient.search(search, STACClient.SearchMode.GET);
+            if (fc instanceof PagingFeatureCollection pfc) {
+                lastMatchedCount = pfc.getMatched();
+            }
         }
 
         // check if there is some crs info in the metadata, might be useful later
@@ -245,19 +262,22 @@ public class HMStacCollection {
 			}
 		}        
         
-        SimpleFeatureIterator iterator = fc.features();
+        SimpleFeatureIterator iterator = fc != null ? fc.features() : null;
+        Iterator<SimpleFeature> staticIterator = staticItems != null ? staticItems.iterator() : null;
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
         try {
             // check the limits before hasNext, which would trigger the download of the next page
-            while( !pm.isCanceled() && (maxItems <= 0 || stacItems.size() < maxItems) && iterator.hasNext() ) {
-                SimpleFeature f = iterator.next();
+            while( !pm.isCanceled() && (maxItems <= 0 || stacItems.size() < maxItems)
+                    && (iterator != null ? iterator.hasNext() : staticIterator.hasNext()) ) {
+                SimpleFeature f = iterator != null ? iterator.next() : staticIterator.next();
                 HMStacItem item;
                 if(metadataEpsg != null) {
                 	item = HMStacItem.fromSimpleFeature(f, metadataEpsg);
                 } else {
                 	item = HMStacItem.fromSimpleFeature(f);
                 }
+                item.setAccess(access);
                 if (item.getId() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {
@@ -266,7 +286,8 @@ public class HMStacCollection {
                 pm.worked(1);
             }
         } finally {
-            iterator.close();
+            if (iterator != null)
+                iterator.close();
         }
         pm.message("Done.");
         return stacItems;

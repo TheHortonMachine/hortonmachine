@@ -16,6 +16,7 @@ import org.geotools.data.geojson.GeoJSONReader;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.locationtech.jts.geom.Geometry;
 
@@ -38,6 +39,7 @@ public class HMStacItem {
     private Date end;
     private Date creationDateCet;
     private String errorMessage;
+    private HMStacAccess access;
 
     private HMStacItem() {
     }
@@ -178,10 +180,75 @@ public class HMStacItem {
     }
 
     /**
+     * @param access the access context used to read the assets, null if not needed.
+     */
+    public void setAccess( HMStacAccess access ) {
+        this.access = access;
+    }
+
+    /**
+     * @return the access context used to read the assets or null.
+     */
+    public HMStacAccess getAccess() {
+        return access;
+    }
+
+    /**
      * @return the original feature as read from the stac service (geometry in WGS84).
      */
     public SimpleFeature getFeature() {
         return feature;
+    }
+
+    /**
+     * @return the version of the item (<code>version</code> of the STAC Version extension) or null.
+     */
+    public String getVersion() {
+        Object version = getAttributeIfExists("version");
+        return version != null ? version.toString() : null;
+    }
+
+    /**
+     * @return <code>true</code> if the item is marked as deprecated (<code>deprecated</code> of the
+     *          STAC Version extension), i.e. superseded by a newer version.
+     */
+    public boolean isDeprecated() {
+        Object deprecated = getAttributeIfExists("deprecated");
+        return deprecated != null && Boolean.parseBoolean(deprecated.toString());
+    }
+
+    /**
+     * @return <code>true</code> if the item has version information (STAC Version extension fields or links).
+     */
+    public boolean hasVersionInfo() {
+        return getAttributeIfExists("version") != null || getAttributeIfExists("deprecated") != null
+                || getLinkHref("latest-version") != null || getLinkHref("predecessor-version") != null
+                || getLinkHref("successor-version") != null;
+    }
+
+    /**
+     * Get the href of the first link with the given relation type, as it is in the item
+     * (it can be relative to the item document).
+     *
+     * @param rel the relation type, e.g. <code>latest-version</code>.
+     * @return the href or null if there is no such link.
+     */
+    public String getLinkHref( String rel ) {
+        Map<Object, Object> userData = feature.getUserData();
+        if (userData == null)
+            return null;
+        Map<String, JsonNode> top = (Map<String, JsonNode>) userData.get(GeoJSONReader.TOP_LEVEL_ATTRIBUTES);
+        if (top == null || top.get("links") == null)
+            return null;
+        for( JsonNode link : top.get("links") ) {
+            if (rel.equals(link.path("rel").asText()))
+                return link.path("href").asText(null);
+        }
+        return null;
+    }
+
+    private Object getAttributeIfExists( String name ) {
+        return feature.getFeatureType().getDescriptor(name) != null ? feature.getAttribute(name) : null;
     }
 
     /**
@@ -219,7 +286,7 @@ public class HMStacItem {
                     while( assetIds.hasNext() ) {
                         String assetId = assetIds.next();
                         JsonNode assetNode = assets.get(assetId);
-                        assetsList.add(new HMStacAsset(assetId, assetNode));
+                        assetsList.add(new HMStacAsset(assetId, assetNode, access));
                     }
                 }
             }
