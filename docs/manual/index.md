@@ -58,4 +58,5 @@ apps/gforms
 apps/lasviewer
 apps/mapcalc
 apps/nwwviewer
+apps/quickfolder
 ```

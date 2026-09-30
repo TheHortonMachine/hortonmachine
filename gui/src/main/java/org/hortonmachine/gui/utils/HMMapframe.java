@@ -142,7 +142,6 @@ public class HMMapframe extends JMapFrame {
 
     public static HMMapframe openFiles( File[] files ) {
         String title = "HM Viewer ";
-        HMMapframe mapFrame = getBaseFrame(title, false);
 
         List<File> rasterFiles = new ArrayList<>();
         List<File> vectorFiles = new ArrayList<>();
@@ -156,11 +155,14 @@ public class HMMapframe extends JMapFrame {
             }
         }
 
+        // the layers are read and added before the frame is shown: adding layers one by one to a showing map pane
+        // can deadlock with its resize and repaint tasks
+        List<Layer> initialLayers = new ArrayList<>();
+        initialLayers.addAll(readRasterLayers(rasterFiles));
+        initialLayers.addAll(readVectorLayers(vectorFiles));
+        HMMapframe mapFrame = getBaseFrame(title, false, initialLayers);
+
         SwingUtilities.invokeLater(() -> {
-
-            loadRasters(mapFrame, rasterFiles);
-            loadVectors(mapFrame, vectorFiles);
-
             final DefaultComboBoxModel<String> layersComboModel = new DefaultComboBoxModel<String>();
             layersComboModel.addElement("");
             HashMap<String, GridCoverageLayer> name2Layermap = new HashMap<>();
@@ -193,6 +195,13 @@ public class HMMapframe extends JMapFrame {
     }
 
     private static void loadVectors( HMMapframe mapFrame, List<File> vectorFiles ) {
+        for( Layer layer : readVectorLayers(vectorFiles) ) {
+            mapFrame.addLayer(layer);
+        }
+    }
+
+    private static List<Layer> readVectorLayers( List<File> vectorFiles ) {
+        List<Layer> layers = new ArrayList<>();
         if (!vectorFiles.isEmpty()) {
             for( File vectorFile : vectorFiles ) {
                 try {
@@ -204,16 +213,23 @@ public class HMMapframe extends JMapFrame {
                     } else {
                         style = SLD.createSimpleStyle(fc.getSchema());
                     }
-                    FeatureLayer layer = new FeatureLayer(fc, style, vectorFile.getName());
-                    mapFrame.addLayer(layer);
+                    layers.add(new FeatureLayer(fc, style, vectorFile.getName()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+        return layers;
     }
 
     private static void loadRasters( HMMapframe mapFrame, List<File> rasterFiles ) {
+        for( Layer layer : readRasterLayers(rasterFiles) ) {
+            mapFrame.addLayer(layer);
+        }
+    }
+
+    private static List<Layer> readRasterLayers( List<File> rasterFiles ) {
+        List<Layer> layers = new ArrayList<>();
         if (!rasterFiles.isEmpty()) {
             for( File rasterFile : rasterFiles ) {
                 try {
@@ -225,13 +241,13 @@ public class HMMapframe extends JMapFrame {
                     } else {
                         style = SldUtilities.getStyleFromRasterFile(rasterFile);
                     }
-                    GridCoverageLayer layer = new GridCoverageLayer(raster, style, rasterFile.getName());
-                    mapFrame.addLayer(layer);
+                    layers.add(new GridCoverageLayer(raster, style, rasterFile.getName()));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         }
+        return layers;
     }
 
     private static void getFiles( File[] inputFiles, List<File> rasterFiles, List<File> vectorFiles ) {
@@ -301,6 +317,13 @@ public class HMMapframe extends JMapFrame {
     }
 
     private static HMMapframe getBaseFrame( String title, boolean exitOnClose ) {
+        return getBaseFrame(title, exitOnClose, null);
+    }
+
+    /**
+     * @param initialLayers optional layers to add before the frame is shown.
+     */
+    private static HMMapframe getBaseFrame( String title, boolean exitOnClose, List<Layer> initialLayers ) {
         ImageIcon icon = new ImageIcon(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
         HMMapframe mapFrame = new HMMapframe(title);
         mapFrame.setIconImage(icon.getImage());
@@ -314,6 +337,11 @@ public class HMMapframe extends JMapFrame {
             mapFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
         mapFrame.setSize(1200, 900);
+        if (initialLayers != null) {
+            for( Layer layer : initialLayers ) {
+                mapFrame.addLayer(layer);
+            }
+        }
         mapFrame.setVisible(true);
 
         JToolBar toolBar = mapFrame.getToolBar();

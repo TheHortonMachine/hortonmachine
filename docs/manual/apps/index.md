@@ -15,7 +15,7 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [LAS Viewer](lasviewer.md) | `hm-lasviewer` | Inspect lidar LAS files |
 | [Map Calculator](mapcalc.md) | `hm-mapcalc` | Raster map algebra |
 | [Simple NWW Viewer](nwwviewer.md) | `hm-simplenww-viewer` | A 3D globe viewer based on NASA WorldWind |
-| Quick Folder | `hm-quickfolder` | Quickly view the spatial files of a folder on a map |
+| [Quick Folder](quickfolder.md) | `hm-quickfolder` | Quickly view the spatial files of a folder on a map |
 | Settings | `hm-settings` | Shared settings of the applications |
 
 The applications without a link do not have a chapter yet.
