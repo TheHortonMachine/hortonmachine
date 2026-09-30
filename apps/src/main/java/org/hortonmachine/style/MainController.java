@@ -604,16 +604,21 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
             }
         }
 
-        removeCurrentLayer();
-
-        if (currentFeatureCollection != null) {
-            currentLayer = new FeatureLayer(currentFeatureCollection, style);
-        } else if (currentRaster != null) {
-            currentLayer = new GridCoverageLayer(currentRaster, style);
+        if (currentLayer instanceof StyleLayer) {
+            // restyle in place: removing the layer from the map disposes it, and a
+            // GridCoverageLayer disposes its coverage, which is still needed
+            ((StyleLayer) currentLayer).setStyle(style);
         } else {
-            return;
+            removeCurrentLayer();
+            if (currentFeatureCollection != null) {
+                currentLayer = new FeatureLayer(currentFeatureCollection, style);
+            } else if (currentRaster != null) {
+                currentLayer = new GridCoverageLayer(currentRaster, style);
+            } else {
+                return;
+            }
+            mapContent.addLayer(currentLayer);
         }
-        mapContent.addLayer(currentLayer);
 
         if (displayArea != null && !displayArea.isEmpty()) {
             mapPane.setDisplayArea(displayArea);

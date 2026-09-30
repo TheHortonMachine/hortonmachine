@@ -52,4 +52,7 @@ apps/geoscript
 apps/dbviewer
 apps/stacbrowser
 apps/sld
+apps/wms2geotiff
+apps/geopaparazzi
+apps/gforms
 ```

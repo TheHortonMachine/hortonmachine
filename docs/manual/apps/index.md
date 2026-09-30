@@ -9,9 +9,9 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [Database Viewer](dbviewer.md) | `hm-dbviewer` | Explore spatial databases (GeoPackage, SpatiaLite, H2GIS, PostGIS) |
 | [STAC Browser](stacbrowser.md) | `hm-stacbrowser` | Browse STAC catalogs, search items and download or clip their assets |
 | [Style Editor](sld.md) | `hm-sld` | Create and edit SLD styles |
-| WMS to GeoTIFF | `hm-wms2geotiff` | Save web map services as GeoTIFF images |
-| Geopaparazzi Viewer | `hm-geopaparazzi_viewer` | View the data of Geopaparazzi survey projects |
-| Form Builder | `hm-gforms` | Create the forms used by Geopaparazzi and SMASH |
+| [WMS to GeoTIFF](wms2geotiff.md) | `hm-wms2geotiff` | Save web map services as GeoTIFF images |
+| [Geopaparazzi Viewer](geopaparazzi.md) | `hm-geopaparazzi_viewer` | View the data of Geopaparazzi survey projects |
+| [Form Builder](gforms.md) | `hm-gforms` | Create the forms used by Geopaparazzi and SMASH |
 | LAS Viewer | `hm-lasviewer` | Inspect lidar LAS files |
 | Map Calculator | `hm-mapcalc` | Raster map algebra |
 | Simple NWW Viewer | `hm-simplenww-viewer` | A 3D globe viewer based on NASA WorldWind |

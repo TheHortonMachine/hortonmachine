@@ -2244,13 +2244,16 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         GuiUtilities.setDefaultFrameIcon(frame);
         GuiUtilities.addClosingListener(frame, browser);
         // optional arguments: catalog url [aws profile [aws region]]
+        // applied on the EDT, since the frame is already showing
         if (args.length > 0 && !args[0].isBlank()) {
-            browser.catalogCombo.setSelectedItem(args[0]);
-            if (args.length > 1)
-                browser.awsProfileCombo.setSelectedItem(args[1]);
-            if (args.length > 2)
-                browser.awsRegionField.setText(args[2]);
-            browser.connect();
+            SwingUtilities.invokeLater(() -> {
+                browser.catalogCombo.setSelectedItem(args[0]);
+                if (args.length > 1)
+                    browser.awsProfileCombo.setSelectedItem(args[1]);
+                if (args.length > 2)
+                    browser.awsRegionField.setText(args[2]);
+                browser.connect();
+            });
         }
     }
 }
