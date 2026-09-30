@@ -11,9 +11,11 @@ Its main areas are:
 
 ## A bit of history
 
-Development started in 2002 at the Department of Civil and Environmental Engineering of the University of Trento, with the first HortonMachine tools written for GRASS. In 2003 the JGrass project was born, a collaboration between Icens Kingston and the University of Trento, and from 2005 HydroloGIS took over development and coordination.
+Development started in 2002 at the Department of Civil and Environmental Engineering of the University of Trento, with the first HortonMachine tools written for GRASS. In 2003 the JGrass project was born, a collaboration between Icens Kingston and the University of Trento, started by our late friend [John Preston](https://www.researchgate.net/profile/J-Preston) of Kingston, Jamaica, together with professor Riccardo Rigon and Andrea Antonello. The joke at the time was that the J in JGrass didn't stand for Java, but for Jamaican. From 2005 HydroloGIS took over development and coordination.
 
-Over the years the tools moved through several desktop GIS platforms: uDig from 2007, gvSIG from 2015, while OpenMI and then OMS became the modelling frameworks behind the modules. Along the way came the support for PostGIS, NetCDF and time series, the network tools Epanet and TrentoP, and in 2014 the LESTO lidar tools, developed with the Free University of Bozen-Bolzano. Since 2017 the HortonMachine is also used as the geospatial and hydro-geomorphological engine of k.LAB.
+Over the years the tools moved through several desktop GIS platforms: uDig from 2007, gvSIG from 2015, while OpenMI and then OMS became the modelling frameworks behind the modules. Along the way came the support for PostGIS, NetCDF and time series, the network tools Epanet and TrentoP, and in 2014 the LESTO lidar tools, developed with the Free University of Bozen-Bolzano and started together with the late [Giustino Tonon](https://www.researchgate.net/profile/Giustino-Tonon), a kind and generous mentor.
+
+Since 2017 the HortonMachine runs under the hood of [k.LAB](https://aries.integratedmodelling.org/), the semantic modelling platform of the ARIES project (ARtificial Intelligence for Environment & Sustainability), where it powers the geospatial and hydro-geomorphological computations. Through k.LAB it ends under the hood of **ARIES for SEEA**, the United Nations initiative that supports countries in compiling natural capital accounts under the System of Environmental-Economic Accounting.
 
 ## Using the HortonMachine
 
