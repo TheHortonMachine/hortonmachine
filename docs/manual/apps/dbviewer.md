@@ -225,7 +225,7 @@ Double-click on a cell to change its value in the database. This works on the re
 
 ## PostGIS databases
 
-PostGIS databases are opened with **remote**, through a `jdbc:postgresql://host:5432/dbname` address. Everything described above works on them too, and the database node of the tree has a few more actions for the server:
+PostGIS databases are opened with **remote**, through a `jdbc:postgresql://host:5432/dbname` address. A database that the server doesn't expose to the internet can be reached through an SSH tunnel, opened with [SSH Utils](sshutils.md). Everything described above works on them too, and the database node of the tree has a few more actions for the server:
 
 Switch database
 : lists the databases of the server and connects to the chosen one with the same user, in the same window or, with **Open in new window**, in a new one.

@@ -59,4 +59,6 @@ apps/lasviewer
 apps/mapcalc
 apps/nwwviewer
 apps/quickfolder
+apps/sshutils
+apps/settings
 ```

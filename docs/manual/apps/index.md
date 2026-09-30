@@ -16,6 +16,5 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [Map Calculator](mapcalc.md) | `hm-mapcalc` | Raster map algebra |
 | [Simple NWW Viewer](nwwviewer.md) | `hm-simplenww-viewer` | A 3D globe viewer based on NASA WorldWind |
 | [Quick Folder](quickfolder.md) | `hm-quickfolder` | Quickly view the spatial files of a folder on a map |
-| Settings | `hm-settings` | Shared settings of the applications |
-
-The applications without a link do not have a chapter yet.
+| [SSH Utils](sshutils.md) | `hm-utils-ssh` | Run commands on servers and open SSH tunnels, for example to remote databases |
+| [Settings](settings.md) | `hm-settings` | Shared settings of the applications |
