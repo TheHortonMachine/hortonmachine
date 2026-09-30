@@ -55,4 +55,7 @@ apps/sld
 apps/wms2geotiff
 apps/geopaparazzi
 apps/gforms
+apps/lasviewer
+apps/mapcalc
+apps/nwwviewer
 ```

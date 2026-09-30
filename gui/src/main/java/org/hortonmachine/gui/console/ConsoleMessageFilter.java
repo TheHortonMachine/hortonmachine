@@ -35,6 +35,7 @@ public class ConsoleMessageFilter {
         containsStrings = new ArrayList<String>();
         containsStrings.add("Kakadu");
         containsStrings.add("no gdaljni in java.library.path");
+        containsStrings.add("no gdalalljni in java.library.path");
         containsStrings.add("Error while parsing JAI registry");
         containsStrings.add("Call MapContent dispose() to prevent memory leaks");
         containsStrings.add("org.geotools.map.MapContent finalize");

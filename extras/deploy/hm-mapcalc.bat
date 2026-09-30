@@ -24,6 +24,6 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 
 set MEM="-Xmx1g"
 set XSS="-Xss64m"
-%JAVAEXE% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.mapcalc.MapcalcController
+%JAVAEXE% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.mapcalc.MapcalcController ./libs
 
 endlocal

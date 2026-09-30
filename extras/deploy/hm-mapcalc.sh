@@ -28,4 +28,4 @@ else
 fi
 
 
-"$JAVAEXE" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.hortonmachine.mapcalc.MapcalcController
+"$JAVAEXE" $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -Djava.library.path="$DIR/natives/" -cp "$DIR/libs/*" org.hortonmachine.mapcalc.MapcalcController "$DIR/libs"

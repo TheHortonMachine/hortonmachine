@@ -98,7 +98,7 @@ The module runs in a separate Java process, so the Spatial Toolbox stays usable,
 :width: 70%
 :align: center
 
-The end of the log of the Pitfiller run.
+The log of the Pitfiller run.
 :::
 
 The log window has three buttons:
@@ -113,10 +113,6 @@ Stop
 : stops the running module.
 
 The start and end times of the run are shown at the beginning and at the end of the log.
-
-:::{note}
-At the beginning of a run the log may show an `UnsatisfiedLinkError` about `gdalalljni`, in red. It only says that the native GDAL libraries are not available, and can be ignored by the modules that don't use GDAL.
-:::
 
 ## Execution options
 

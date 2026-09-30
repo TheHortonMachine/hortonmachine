@@ -12,9 +12,9 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [WMS to GeoTIFF](wms2geotiff.md) | `hm-wms2geotiff` | Save web map services as GeoTIFF images |
 | [Geopaparazzi Viewer](geopaparazzi.md) | `hm-geopaparazzi_viewer` | View the data of Geopaparazzi survey projects |
 | [Form Builder](gforms.md) | `hm-gforms` | Create the forms used by Geopaparazzi and SMASH |
-| LAS Viewer | `hm-lasviewer` | Inspect lidar LAS files |
-| Map Calculator | `hm-mapcalc` | Raster map algebra |
-| Simple NWW Viewer | `hm-simplenww-viewer` | A 3D globe viewer based on NASA WorldWind |
+| [LAS Viewer](lasviewer.md) | `hm-lasviewer` | Inspect lidar LAS files |
+| [Map Calculator](mapcalc.md) | `hm-mapcalc` | Raster map algebra |
+| [Simple NWW Viewer](nwwviewer.md) | `hm-simplenww-viewer` | A 3D globe viewer based on NASA WorldWind |
 | Quick Folder | `hm-quickfolder` | Quickly view the spatial files of a folder on a map |
 | Settings | `hm-settings` | Shared settings of the applications |
 
