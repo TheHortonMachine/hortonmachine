@@ -50,6 +50,7 @@ import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -74,6 +75,7 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
     private static final int TILESIZE = 256;
 
     private Coordinate centerCoordinate;
+    private Envelope boundsLL;
 
     public ImageMosaicNwwLayer( File imageMosaicShpFile, Integer tileSize, GeneralParameterValue[] gp,
             boolean removeSameColorImages ) throws Exception {
@@ -92,6 +94,7 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
         double centerY = s + (n - s) / 2.0;
 
         centerCoordinate = new Coordinate(centerX, centerY);
+        boundsLL = new Envelope(w, e, s, n);
 
         this.setUseTransparentTextures(true);
 
@@ -231,6 +234,11 @@ public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements
     @Override
     public Coordinate getCenter() {
         return centerCoordinate;
+    }
+
+    @Override
+    public Envelope getBounds() {
+        return boundsLL;
     }
 
 }

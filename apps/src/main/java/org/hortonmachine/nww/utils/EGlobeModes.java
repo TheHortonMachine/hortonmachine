@@ -18,7 +18,7 @@
 package org.hortonmachine.nww.utils;
 
 public enum EGlobeModes {
-    Earth("Earth"), FlatEarth("Flat Earth (lat/long)"), FlatEarthMercator("Flat Earth (Mercator)");
+    Earth("Earth"), EarthTerrain("Earth with 3D terrain"), FlatEarth("Flat Earth (lat/long)"), FlatEarthMercator("Flat Earth (Mercator)");
 
     private String description;
 
@@ -40,7 +40,7 @@ public enum EGlobeModes {
     }
 
     public static String[] getModesDescriptions() {
-        return new String[] { Earth.description, FlatEarthMercator.description, FlatEarth.description };
+        return new String[] { Earth.description, EarthTerrain.description, FlatEarthMercator.description, FlatEarth.description };
     }
 
 }

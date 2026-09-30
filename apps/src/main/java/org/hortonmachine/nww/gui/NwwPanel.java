@@ -31,6 +31,7 @@ import javax.swing.border.Border;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.nww.elevation.CopernicusElevationModel;
 import org.hortonmachine.nww.layers.defaults.raster.OSMMapnikLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 
@@ -53,6 +54,7 @@ import gov.nasa.worldwind.globes.projections.ProjectionMercator;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 import gov.nasa.worldwind.terrain.ZeroElevationModel;
+import gov.nasa.worldwind.globes.ElevationModel;
 import gov.nasa.worldwind.view.orbit.OrbitView;
 import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
 
@@ -64,6 +66,7 @@ import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
 @SuppressWarnings("serial")
 public class NwwPanel extends JPanel {
     private static final Logger logger = Logger.INSTANCE;
+    private static ElevationModel terrainElevationModel;
 
     private WorldWindow wwd;
     protected StatusBar statusBar;
@@ -119,6 +122,9 @@ public class NwwPanel extends JPanel {
 
         logger.insertDebug("NwwPanel", "Create Model");
         Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
+        // the default elevations of World Wind came from NASA servers that are no longer available,
+        // the 3D terrain is enabled on request through setSphereGlobe(true)
+        model.getGlobe().setElevationModel(new ZeroElevationModel());
         wwd.setModel(model);
         long t3 = System.currentTimeMillis();
         logger.insertDebug("NwwPanel", "Create Model - DONE " + (t3 - t2) / 1000);
@@ -309,13 +315,34 @@ public class NwwPanel extends JPanel {
     }
 
     /**
-     * Set the globe as sphere.
+     * Set the globe as sphere, without terrain.
      */
     public void setSphereGlobe() {
+        setSphereGlobe(false);
+    }
+
+    /**
+     * Set the globe as sphere.
+     * 
+     * @param withTerrain if <code>true</code>, the 3D terrain of the Copernicus DEM is used, which downloads the
+     *            elevation data of the areas viewed.
+     */
+    public void setSphereGlobe( boolean withTerrain ) {
         Earth globe = new Earth();
+        globe.setElevationModel(withTerrain ? getTerrainElevationModel() : new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         wwd.redraw();
+    }
+
+    /**
+     * @return the elevation model used for the 3D terrain, shared by all the globes to share its caches.
+     */
+    public static synchronized ElevationModel getTerrainElevationModel() {
+        if (terrainElevationModel == null) {
+            terrainElevationModel = new CopernicusElevationModel();
+        }
+        return terrainElevationModel;
     }
 
     /**

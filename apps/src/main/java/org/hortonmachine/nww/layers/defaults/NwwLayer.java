@@ -18,6 +18,7 @@
 package org.hortonmachine.nww.layers.defaults;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 /**
  * Common interface for layers.
@@ -33,6 +34,15 @@ public interface NwwLayer {
      * @return the center coordinate.
      */
     public Coordinate getCenter();
+
+    /**
+     * Get the bounds of the layer in lat/long.
+     * 
+     * @return the bounds or <code>null</code>, if not available.
+     */
+    public default Envelope getBounds() {
+        return null;
+    }
     
     public default void freeResources(){
         

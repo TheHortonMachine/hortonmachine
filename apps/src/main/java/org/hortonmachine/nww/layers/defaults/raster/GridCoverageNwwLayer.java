@@ -50,6 +50,7 @@ import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.avlist.AVList;
@@ -74,6 +75,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     private static final int TILESIZE = 256;
 
     private Coordinate centerCoordinate;
+    private Envelope boundsLL;
 
     public GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent ) throws Exception {
         super(makeLevels(gridCoverageFile, getRenderer(gridCoverageFile), tileSize, colorToMakeTransparent));
@@ -91,6 +93,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         double centerY = s + (n - s) / 2.0;
         
         centerCoordinate = new Coordinate(centerX, centerY);
+        boundsLL = new Envelope(w, e, s, n);
 
         this.setUseTransparentTextures(true);
 
@@ -208,6 +211,11 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     @Override
     public Coordinate getCenter() {
         return centerCoordinate;
+    }
+
+    @Override
+    public Envelope getBounds() {
+        return boundsLL;
     }
 
 }

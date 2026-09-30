@@ -32,6 +32,7 @@ import org.hortonmachine.nww.shapes.InfoPoint;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Point;
 
@@ -167,6 +168,11 @@ public class SpatialitePointsLayer extends MarkerLayer implements NwwVectorLayer
     @Override
     public Coordinate getCenter() {
         return tableBounds.centre();
+    }
+
+    @Override
+    public Envelope getBounds() {
+        return tableBounds;
     }
 
     @Override

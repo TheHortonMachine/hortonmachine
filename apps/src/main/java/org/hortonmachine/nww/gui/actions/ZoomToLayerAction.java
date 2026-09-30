@@ -26,6 +26,9 @@ import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+
+import gov.nasa.worldwind.geom.Sector;
 
 /**
  * Zoom to layer action.
@@ -46,7 +49,13 @@ public class ZoomToLayerAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent actionEvent) {
-        Coordinate center = layer.getCenter();
-        wwdPanel.goTo(center.x, center.y, null, null, true);
+        // zoom to the whole layer if its bounds are known, else just move to its center
+        Envelope bounds = layer.getBounds();
+        if (bounds != null && !bounds.isNull()) {
+            wwdPanel.goTo(Sector.fromDegrees(bounds.getMinY(), bounds.getMaxY(), bounds.getMinX(), bounds.getMaxX()), true);
+        } else {
+            Coordinate center = layer.getCenter();
+            wwdPanel.goTo(center.x, center.y, null, null, true);
+        }
     }
 }

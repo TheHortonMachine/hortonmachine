@@ -17,9 +17,14 @@
  */
 package org.hortonmachine.nww.gui;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.Point;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -28,9 +33,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.filechooser.FileFilter;
 
 import org.geotools.api.data.SimpleFeatureSource;
@@ -115,6 +123,7 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 public class ToolsPanelController extends ToolsPanelView {
 
     private static final long serialVersionUID = 1L;
+    private static final String PREF_GLOBE_MODE = "NWW_GLOBE_MODE";
 
     private GenericSelectListener genericSelectListener;
 
@@ -128,6 +137,7 @@ public class ToolsPanelController extends ToolsPanelView {
     public ToolsPanelController( final NwwPanel wwjPanel, LayerEventsListener layerEventsListener ) {
         this.wwjPanel = wwjPanel;
         this.layerEventsListener = layerEventsListener;
+        compactLayout();
 
         String[] supportedExtensions = NwwUtilities.SUPPORTED_EXTENSIONS;
         StringBuilder sb = new StringBuilder();
@@ -299,6 +309,7 @@ public class ToolsPanelController extends ToolsPanelView {
         _globeModeCombo.addActionListener(e -> {
             String selected = _globeModeCombo.getSelectedItem().toString();
             EGlobeModes modeFromDescription = EGlobeModes.getModeFromDescription(selected);
+            PreferencesHandler.setPreference(PREF_GLOBE_MODE, modeFromDescription.name());
             switch( modeFromDescription ) {
             case FlatEarth:
                 wwjPanel.setFlatGlobe(false);
@@ -306,12 +317,22 @@ public class ToolsPanelController extends ToolsPanelView {
             case FlatEarthMercator:
                 wwjPanel.setFlatGlobe(true);
                 break;
+            case EarthTerrain:
+                wwjPanel.setSphereGlobe(true);
+                break;
             case Earth:
             default:
-                wwjPanel.setSphereGlobe();
+                wwjPanel.setSphereGlobe(false);
                 break;
             }
         });
+        // restore the mode of the last session
+        String lastMode = PreferencesHandler.getPreference(PREF_GLOBE_MODE, EGlobeModes.Earth.name());
+        for( EGlobeModes mode : EGlobeModes.values() ) {
+            if (mode.name().equals(lastMode) && mode != EGlobeModes.Earth) {
+                _globeModeCombo.setSelectedItem(mode.getDescription());
+            }
+        }
 
         _infoEditingButton.addActionListener(e -> {
             if (_infoEditingButton.isSelected()) {
@@ -737,6 +758,57 @@ public class ToolsPanelController extends ToolsPanelView {
                 System.err.println("?????");
             }
         }
+    }
+
+
+    /**
+     * Arrange the tools in a single narrow column, to leave the space to the map.
+     */
+    private void compactLayout() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Tools"));
+        GridBagConstraints c = new GridBagConstraints();
+        c.gridx = 0;
+        c.gridy = 0;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.WEST;
+        c.insets = new Insets(2, 4, 2, 4);
+
+        for( Object[] labelAndButton : new Object[][]{{_loadFileLabel, _loadFileButton}, {_loadGpsLabel, _loadGpsButton},
+                {_openCacheLabel, _openCacheButton}} ) {
+            JPanel row = new JPanel(new BorderLayout(4, 0));
+            row.add((JComponent) labelAndButton[0], BorderLayout.CENTER);
+            row.add((JComponent) labelAndButton[1], BorderLayout.EAST);
+            panel.add(row, c);
+            c.gridy++;
+        }
+
+        c.insets = new Insets(8, 4, 0, 4);
+        panel.add(_globeModeLabel, c);
+        c.gridy++;
+        c.insets = new Insets(2, 4, 2, 4);
+        panel.add(_globeModeCombo, c);
+        c.gridy++;
+
+        c.insets = new Insets(6, 4, 0, 4);
+        for( JComponent check : new JComponent[]{_useRasterizedCheckbox, _whiteBackgroundCheckbox, _opaqueBackgroundCheckbox} ) {
+            panel.add(check, c);
+            c.gridy++;
+            c.insets = new Insets(0, 4, 0, 4);
+        }
+
+        JPanel buttons = new JPanel(new GridLayout(0, 2, 4, 4));
+        for( JComponent button : new JComponent[]{_infoEditingButton, _selectByBoxButton, _zoomByBoxButton,
+                _addAnnotationButton, _pasteWkt} ) {
+            buttons.add(button);
+        }
+        c.insets = new Insets(8, 4, 4, 4);
+        panel.add(buttons, c);
+
+        removeAll();
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.NORTH);
     }
 
 }

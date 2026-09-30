@@ -37,6 +37,7 @@ import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.hortonmachine.style.SimpleStyleUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
@@ -296,6 +297,11 @@ public class ShapefilesFolderLayer extends RenderableLayer implements NwwLayer {
             return bounds.centre();
         else
             return new Coordinate(0, 0);
+    }
+
+    @Override
+    public Envelope getBounds() {
+        return bounds;
     }
 
 }

@@ -289,4 +289,9 @@ public class GeopackageVectorLayer extends RenderableLayer implements NwwLayer {
             return new Coordinate(0, 0);
     }
 
+    @Override
+    public Envelope getBounds() {
+        return bounds;
+    }
+
 }

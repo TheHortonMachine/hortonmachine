@@ -33,6 +33,7 @@ import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
@@ -243,6 +244,16 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
             e.printStackTrace();
         }
         return new Coordinate(0, 0);
+    }
+
+    @Override
+    public Envelope getBounds() {
+        try {
+            return getfeatureCollection().getBounds();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

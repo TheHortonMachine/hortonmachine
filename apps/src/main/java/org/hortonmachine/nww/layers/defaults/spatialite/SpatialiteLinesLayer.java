@@ -32,6 +32,7 @@ import org.hortonmachine.nww.shapes.InfoLine;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
@@ -237,6 +238,11 @@ public class SpatialiteLinesLayer extends RenderableLayer implements NwwVectorLa
     @Override
     public Coordinate getCenter() {
         return tableBounds.centre();
+    }
+
+    @Override
+    public Envelope getBounds() {
+        return tableBounds;
     }
 
     @Override
