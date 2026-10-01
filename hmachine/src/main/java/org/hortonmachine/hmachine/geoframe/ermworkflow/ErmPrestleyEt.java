@@ -44,7 +44,7 @@ import oms3.annotations.UI;
  * (daylight, 6h-18h) or {@link #pGnight} (night). {@link #pAlpha} is the
  * Priestley-Taylor coefficient (~1.26 for well-watered surfaces).
  */
-@Description("Radiation calculator.")
+@Description("Fifth step of the ERM/GeoFrame water budget workflow: computes the potential evapotranspiration at the centroids of the sub-basins with the Priestley-Taylor (1972) method, from the net radiation and the interpolated temperatures.")
 @Author(name = "Daniele Andreis", contact = "")
 @Keywords("ERM, GeoFrame, ET")
 @Label("GeoFrame")
@@ -52,24 +52,24 @@ import oms3.annotations.UI;
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
 public class ErmPrestleyEt extends HMModel {
-	@Description("Input geoframe data geopackage.")
+	@Description("The GeoFrame database, with the interpolated temperatures and the net radiation.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGpkg;
 
-	@Description("Data import start timestamp in format yyyy-MM-dd HH:mm.")
+	@Description("Start of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pStartTimestamp;
 
-	@Description("Data import end timestamp in format yyyy-MM-dd HH:mm.")
+	@Description("End of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pEndTimestamp;
 
-	@Description("The expected time resolution of the data. DAILY and HOURLY (default) is supported.")
+	@Description("Time resolution of the computation: HOURLY or DAILY.")
 	@In
 	public String pTimeResolution = "HOURLY";
 
-	@Description("If true, existing output files are overwritten.")
+	@Description("If true, the evapotranspiration values already computed are deleted first.")
 	@In
 	public boolean doOverwrite = false;
 

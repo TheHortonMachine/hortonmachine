@@ -44,6 +44,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSSLOPE_DESCRIPTION)
 @Author(name = OMSSLOPE_AUTHORNAMES, contact = OMSSLOPE_AUTHORCONTACTS)
@@ -54,6 +55,7 @@ import oms3.annotations.UI;
 @License(OMSSLOPE_LICENSE)
 public class Slope extends HMModel {
     @Description(OMSSLOPE_inPit_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
@@ -68,6 +70,7 @@ public class Slope extends HMModel {
     public boolean doHandleNegativeSlope;
 
     @Description(OMSSLOPE_outSlope_DESCRIPTION)
+    @Unit("m/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outSlope = null;

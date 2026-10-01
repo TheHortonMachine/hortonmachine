@@ -35,6 +35,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
+import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -48,6 +49,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OmsDrainDir.OMSDRAINDIR_DESCRIPTION)
+@Bibliography(OmsDrainDir.OMSDRAINDIR_BIBLIOGRAPHY)
 @Documentation(OmsDrainDir.OMSDRAINDIR_DOCUMENTATION)
 @Author(name = OmsDrainDir.OMSDRAINDIR_AUTHORNAMES, contact = OmsDrainDir.OMSDRAINDIR_AUTHORCONTACTS)
 @Keywords(OmsDrainDir.OMSDRAINDIR_KEYWORDS)
@@ -85,9 +87,10 @@ public class OmsDrainDir extends HMModel {
     @Out
     public GridCoverage2D outTca = null;
 
-    public static final String OMSDRAINDIR_DESCRIPTION = "It calculates the drainage directions minimizing the deviation from the real flow";
+    public static final String OMSDRAINDIR_BIBLIOGRAPHY = "Orlandini, S., Moretti, G., Franchini, M., Aldighieri, B., Testa, B. (2003). Path-based methods for the determination of nondispersive drainage directions in grid-based digital elevation models. Water Resources Research, 39(6), 1144.";
+    public static final String OMSDRAINDIR_DESCRIPTION = "Corrects the D8 drainage directions so that the flow paths deviate as little as possible from the real direction of steepest descent, with the LAD (least angular deviation) or LTD (least transversal deviation) method, and calculates the total contributing area of each cell.";
     public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
-    public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Pitfiller, OmsFlowDirections";
+    public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Drainage directions, Total contributing area, LAD, LTD";
     public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
     public static final String OMSDRAINDIR_NAME = "draindir";
     public static final int OMSDRAINDIR_STATUS = 40;
@@ -95,12 +98,12 @@ public class OmsDrainDir extends HMModel {
     public static final String OMSDRAINDIR_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo";
     public static final String OMSDRAINDIR_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
     public static final String OMSDRAINDIR_inPit_DESCRIPTION = "The depitted elevation model.";
-    public static final String OMSDRAINDIR_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSDRAINDIR_inFlow_DESCRIPTION = "The map of the D8 drainage directions.";
     public static final String OMSDRAINDIR_inFlownet_DESCRIPTION = "The map of flowdirections on the network pixels (considered only in case of LTD method). Remember that in the case of fixed flow calculation the tca has to be recalculated afterwards; the tca output in this case is not corrected.";
-    public static final String OMSDRAINDIR_pLambda_DESCRIPTION = "The direction correction factor.";
-    public static final String OMSDRAINDIR_doLad_DESCRIPTION = "Switch for the mode to use: true = LAD (default), false = LTD)).";
-    public static final String OMSDRAINDIR_outFlow_DESCRIPTION = "The map of drainage directions.";
-    public static final String OMSDRAINDIR_outTca_DESCRIPTION = "The map of total contributing areas.";
+    public static final String OMSDRAINDIR_pLambda_DESCRIPTION = "The weight of the deviations accumulated along the upstream path, between 0 and 1: 0 considers only the local deviation, as the D8 method, 1 the deviation of the whole path.";
+    public static final String OMSDRAINDIR_doLad_DESCRIPTION = "If true the LAD method (least angular deviation) is used, else the LTD method (least transversal deviation).";
+    public static final String OMSDRAINDIR_outFlow_DESCRIPTION = "The map of the corrected drainage directions.";
+    public static final String OMSDRAINDIR_outTca_DESCRIPTION = "The map of the total contributing areas, as number of cells.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

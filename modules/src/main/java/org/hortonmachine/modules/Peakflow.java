@@ -46,6 +46,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.OmsPeakflo
 import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -58,6 +59,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSPEAKFLOW_DESCRIPTION)
+@Bibliography({OmsPeakflow.BIBLIOGRAPHY_RIGON_2011, OmsPeakflow.BIBLIOGRAPHY_RODRIGUEZ_ITURBE_1979})
 @Author(name = OMSPEAKFLOW_AUTHORNAMES, contact = OMSPEAKFLOW_AUTHORCONTACTS)
 @Keywords(OMSPEAKFLOW_KEYWORDS)
 @Label(OMSPEAKFLOW_LABEL)
@@ -67,7 +69,7 @@ import oms3.annotations.Unit;
 public class Peakflow extends HMModel {
 
     @Description(OMSPEAKFLOW_pA_DESCRIPTION)
-    @Unit("mm/h^m")
+    @Unit("mm/h^n")
     @In
     public double pA = -1f;
 
@@ -81,12 +83,12 @@ public class Peakflow extends HMModel {
     public double pCelerity = -1f;
 
     @Description(OMSPEAKFLOW_pDiffusionSup_DESCRIPTION)
-    @Unit("m2/s")
+    @Unit("m²/s")
     @In
     public double pDiffusionSup = -9999.0;
 
     @Description(OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION)
-    @Unit("m2/s")
+    @Unit("m²/s")
     @In
     public double pDiffusionSubSup = -9999.0;
 
@@ -120,12 +122,14 @@ public class Peakflow extends HMModel {
     @In
     public String inRescaledsub = null;
 
-    @Description("The oms csv of rainfall data per timestep.")
+    @Description(OMSPEAKFLOW_inRainfall_DESCRIPTION)
+    @Unit("mm/h")
     @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inRainfall;
 
-    @Description("The oms csv of peakflow output per timestep.")
+    @Description(OMSPEAKFLOW_outDischarge_DESCRIPTION)
+    @Unit("m³/s")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outDischarge;

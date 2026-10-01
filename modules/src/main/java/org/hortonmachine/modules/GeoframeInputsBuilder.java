@@ -33,9 +33,9 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Module to prepare input data for the Geoframe modelling environment.")
+@Description("Prepares the inputs of the GeoFrame modelling environment: the geometries, the topology and the attributes of the sub-basins and of the network, computed from the rasters of the basin.")
 @Author(name = "Antonello Andrea, Silvia Franceschi", contact = "http://www.hydrologis.com")
-@Keywords("geoframe")
+@Keywords("GeoFrame, Sub-basins, Network, Topology")
 @Label(HMConstants.HYDROGEOMORPHOLOGY)
 @Name("_GeoframeInputsBuilder")
 @Status(40)
@@ -47,7 +47,7 @@ public class GeoframeInputsBuilder extends HMModel {
     @In
     public String inPitfiller = null;
 
-    @Description("Input flowdirections raster map.")
+    @Description("Input drainage directions raster map.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDrain = null;

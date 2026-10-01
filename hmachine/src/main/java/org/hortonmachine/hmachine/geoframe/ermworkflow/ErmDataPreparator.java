@@ -47,7 +47,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-@Description("Prepares raster and topological data for the ERM/GeoFrame water budget model pipeline.")
+@Description("First step of the ERM/GeoFrame water budget workflow: from the DTM it derives the drainage directions, the river network and the basin of the outlet, splits the basin into sub-basins (the hydrological response units) and stores them, with their topology and the stream gauges, in the GeoFrame database.")
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
 @Keywords("ERM, GeoFrame, DEM, basin, network, data preparation")
 @Label("GeoFrame")
@@ -56,47 +56,47 @@ import oms3.annotations.Unit;
 @License("General Public License Version 3 (GPLv3)")
 public class ErmDataPreparator extends HMModel {
 
-	@Description("Input dtm.")
+	@Description("The digital elevation model of the area. All the outputs are written to an outputs folder next to it.")
 	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
 	@In
 	public String inDtm;
 
-	@Description("GeoPackage output name.")
+	@Description("File name of the GeoFrame database (a GeoPackage) created in the outputs folder.")
 	@In
 	public String outGeopackageName = "geoframe_data.gpkg";
 
-	@Description("Drainage area threshold for network extraction.")
+	@Description("Minimum contributing area for a cell to be part of the river network: lower values give a denser network.")
 	@Unit("cells")
 	@In
 	public int pDrainThreshold = 2000;
 
-	@Description("Target sub-basin area.")
+	@Description("Target area of the sub-basins (hydrological response units).")
 	@Unit("m²")
 	@In
 	public double pDesiredArea = 1_000_000.0;
 
-	@Description("Acceptable deviation from the target area.")
+	@Description("Allowed deviation of the sub-basin areas from the target area.")
 	@Unit("%")
 	@In
 	public double pDesiredAreaDelta = 20.0;
 
-	@Description("Outlet point easting coordinate.")
+	@Description("Easting of the basin outlet, in the projection of the DTM. Without the outlet, only the rasters of the whole DTM are computed.")
 	@In
 	public Double pOutletEasting;
 
-	@Description("Outlet point northing coordinate.")
+	@Description("Northing of the basin outlet, in the projection of the DTM.")
 	@In
 	public Double pOutletNorthing;
 
-	@Description("If true, existing output files are overwritten.")
+	@Description("If true, the rasters already present in the outputs folder are computed again, else they are reused.")
 	@In
 	public boolean doOverwrite = false;
 	
-	@Description("Stream Gauge vector layer path.")
+	@Description("The stream gauges (point vector layer), placed on the network as observation points of the discharge.")
 	@In
 	public String inStreamGauge;
 	
-	@Description("Vector layer field for the station ID.")
+	@Description("Field of the stream gauges layer holding the station id.")
 	@In
 	public String pStreamGaugeIDField;
 

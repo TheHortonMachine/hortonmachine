@@ -56,6 +56,7 @@ import org.hortonmachine.hmachine.modules.statistics.cb.OmsCb;
 import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -68,6 +69,7 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 @Description(OMSPEAKFLOW_DESCRIPTION)
+@Bibliography({OmsPeakflow.BIBLIOGRAPHY_RIGON_2011, OmsPeakflow.BIBLIOGRAPHY_RODRIGUEZ_ITURBE_1979})
 @Author(name = OMSPEAKFLOW_AUTHORNAMES, contact = OMSPEAKFLOW_AUTHORCONTACTS)
 @Keywords(OMSPEAKFLOW_KEYWORDS)
 @Label(OMSPEAKFLOW_LABEL)
@@ -77,7 +79,7 @@ import oms3.annotations.Unit;
 public class OmsPeakflow extends HMModel {
 
     @Description(OMSPEAKFLOW_pA_DESCRIPTION)
-    @Unit("mm/h^m")
+    @Unit("mm/h^n")
     @In
     public double pA = -1.0;
 
@@ -91,12 +93,12 @@ public class OmsPeakflow extends HMModel {
     public double pCelerity = -1.0;
 
     @Description(OMSPEAKFLOW_pDiffusionSup_DESCRIPTION)
-    @Unit("m2/s")
+    @Unit("m²/s")
     @In
     public double pDiffusionSup = -9999.0;
 
     @Description(OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION)
-    @Unit("m2/s")
+    @Unit("m²/s")
     @In
     public double pDiffusionSubSup = -9999.0;
 
@@ -127,35 +129,39 @@ public class OmsPeakflow extends HMModel {
     public GridCoverage2D inRescaledsub = null;
 
     @Description(OMSPEAKFLOW_inRainfall_DESCRIPTION)
+    @Unit("mm/h")
     @In
     public HashMap<DateTime, double[]> inRainfall;
 
     @Description(OMSPEAKFLOW_outDischarge_DESCRIPTION)
+    @Unit("m³/s")
     @Out
     public HashMap<DateTime, double[]> outDischarge;
 
-    public static final String OMSPEAKFLOW_DESCRIPTION = "The OmsPeakflow semidistributed hydrologic model.";
+    public static final String OMSPEAKFLOW_DESCRIPTION = "Computes the flood hydrograph at the outlet of a basin with the geomorphological instantaneous unit hydrograph (GIUH), built from the width functions of the surface and of the subsurface flow. With the parameters a and n of the rainfall depth-duration-frequency curve, it finds the rainfall duration that gives the largest discharge, and its peak; with a measured rainfall event, it computes the hydrograph of the event. The surface runoff comes from the saturated areas of the basin, defined by the topographic index or by a map.";
+    public static final String BIBLIOGRAPHY_RIGON_2011 = "Rigon, R., D'Odorico, P., Bertoldi, G. (2011). The geomorphic structure of the runoff peak. Hydrology and Earth System Sciences, 15(6), 1853-1863. doi:10.5194/hess-15-1853-2011";
+    public static final String BIBLIOGRAPHY_RODRIGUEZ_ITURBE_1979 = "Rodríguez-Iturbe, I., Valdés, J. B. (1979). The geomorphologic structure of hydrologic response. Water Resources Research, 15(6), 1409-1420.";
     public static final String OMSPEAKFLOW_DOCUMENTATION = "OmsPeakflow.html";
-    public static final String OMSPEAKFLOW_KEYWORDS = "OmsPeakflow, Discharge, Hydrologic, OmsCb, RescaledDistance";
+    public static final String OMSPEAKFLOW_KEYWORDS = "Peakflow, Discharge, Flood, GIUH, Width function, Hydrologic";
     public static final String OMSPEAKFLOW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSPEAKFLOW_NAME = "peakflow";
     public static final int OMSPEAKFLOW_STATUS = 40;
     public static final String OMSPEAKFLOW_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSPEAKFLOW_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon";
     public static final String OMSPEAKFLOW_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSPEAKFLOW_pA_DESCRIPTION = "The a parameter for statistic rain calculations.";
-    public static final String OMSPEAKFLOW_pN_DESCRIPTION = "The n parameter for statistic rain calculations.";
-    public static final String OMSPEAKFLOW_pCelerity_DESCRIPTION = "The channel celerity parameter.";
-    public static final String OMSPEAKFLOW_pDiffusionSup_DESCRIPTION = "The superficial diffusion parameter.";
-    public static final String OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION = "The subsuperficial diffusion parameter.";
-    public static final String OMSPEAKFLOW_pSat_DESCRIPTION = "The saturation percentage.";
-    public static final String OMSPEAKFLOW_pOutputStepArg_DESCRIPTION = "The output timestep for discharge.";
-    public static final String OMSPEAKFLOW_inTopindex_DESCRIPTION = "The map of Topindex.";
-    public static final String OMSPEAKFLOW_inSat_DESCRIPTION = "Optional map of saturation.";
-    public static final String OMSPEAKFLOW_inRescaledsup_DESCRIPTION = "The map of superficial rescaled distance.";
-    public static final String OMSPEAKFLOW_inRescaledsub_DESCRIPTION = "The map of sub-superficial rescaled distance.";
-    public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The sorted hasmap of rainfall data per timestep.";
-    public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The sorted hashmap of peakflow output per timestep.";
+    public static final String OMSPEAKFLOW_pA_DESCRIPTION = "The coefficient a of the rainfall depth-duration-frequency curve h = a·t^n, with the depth h in mm and the duration t in hours, for the chosen return period. With n, it selects the statistical rainfall.";
+    public static final String OMSPEAKFLOW_pN_DESCRIPTION = "The exponent n of the rainfall depth-duration-frequency curve h = a·t^n, between 0 and 1.";
+    public static final String OMSPEAKFLOW_pCelerity_DESCRIPTION = "The mean velocity of the flow in the channels.";
+    public static final String OMSPEAKFLOW_pDiffusionSup_DESCRIPTION = "The hydrodynamic diffusion of the surface flow: below 10 the kinematic unit hydrograph, with no diffusion, is used.";
+    public static final String OMSPEAKFLOW_pDiffusionSubSup_DESCRIPTION = "The hydrodynamic diffusion of the subsurface flow.";
+    public static final String OMSPEAKFLOW_pSat_DESCRIPTION = "The percentage of the basin area that is saturated, used with the topographic index: in floods, usually 40 to 60%, more in small basins.";
+    public static final String OMSPEAKFLOW_pOutputStepArg_DESCRIPTION = "The interval between the discharge values written to the output; the model computes them every second.";
+    public static final String OMSPEAKFLOW_inTopindex_DESCRIPTION = "The map of the topographic index: the cells with the highest values, as many as the saturated percentage, are the saturated areas that give surface runoff.";
+    public static final String OMSPEAKFLOW_inSat_DESCRIPTION = "The map of the saturated areas, used instead of the topographic index: the cells with a value are saturated, the no-data cells are not.";
+    public static final String OMSPEAKFLOW_inRescaledsup_DESCRIPTION = "The map of the rescaled distance from the outlet for the surface flow, with a low ratio between the channel and the hillslope velocities (5 to 20).";
+    public static final String OMSPEAKFLOW_inRescaledsub_DESCRIPTION = "The optional map of the rescaled distance from the outlet for the subsurface flow, with a high ratio between the channel and the hillslope velocities (50 to 200).";
+    public static final String OMSPEAKFLOW_inRainfall_DESCRIPTION = "The measured rainfall intensity, at a constant time step, used when a and n are not given.";
+    public static final String OMSPEAKFLOW_outDischarge_DESCRIPTION = "The discharge at the outlet.";
 
     
 

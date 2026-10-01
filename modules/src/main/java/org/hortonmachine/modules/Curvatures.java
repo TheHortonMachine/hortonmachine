@@ -24,6 +24,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -33,8 +34,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSCURVATURES_DESCRIPTION)
+@Bibliography(OmsCurvatures.BIBLIOGRAPHY_MITASOVA_HOFIERKA_1993)
 @Author(name = OMSCURVATURES_AUTHORNAMES, contact = OMSCURVATURES_AUTHORCONTACTS)
 @Keywords(OMSCURVATURES_KEYWORDS)
 @Label(OMSCURVATURES_LABEL)
@@ -43,22 +46,26 @@ import oms3.annotations.UI;
 @License(OMSCURVATURES_LICENSE)
 public class Curvatures extends HMModel {
     @Description(OMSCURVATURES_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     // output
     @Description(OMSCURVATURES_outProf_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outProf = null;
 
     @Description(OMSCURVATURES_outPlan_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outPlan = null;
 
     @Description(OMSCURVATURES_outTang_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTang = null;

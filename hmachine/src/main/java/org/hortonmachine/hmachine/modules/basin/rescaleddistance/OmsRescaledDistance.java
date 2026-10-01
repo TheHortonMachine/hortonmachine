@@ -48,6 +48,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -57,8 +58,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSRESCALEDDISTANCE_DESCRIPTION)
+@Bibliography({OmsRescaledDistance.BIBLIOGRAPHY_DODORICO_RIGON_2003})
 @Author(name = OMSRESCALEDDISTANCE_AUTHORNAMES, contact = OMSRESCALEDDISTANCE_AUTHORCONTACTS)
 @Keywords(OMSRESCALEDDISTANCE_KEYWORDS)
 @Label(OMSRESCALEDDISTANCE_LABEL)
@@ -84,22 +87,24 @@ public class OmsRescaledDistance extends GridMultiProcessing {
     public double pRatio = 0;
 
     @Description(OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION)
+    @Unit("m")
     @Out
     public GridCoverage2D outRescaled = null;
 
-    public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each pixel from the outlet.";
+    public static final String BIBLIOGRAPHY_DODORICO_RIGON_2003 = "D'Odorico, P., Rigon, R. (2003). Hillslope and channel contributions to the hydrologic response. Water Resources Research, 39(5), 1113. doi:10.1029/2002WR001708";
+    public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each cell from the outlet along the drainage directions: the distance along the hillslopes is multiplied by the ratio between the channel and the hillslope velocities, so that it becomes proportional to the travel time. The outlets are the network cells draining out of the map.";
     public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
-    public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, D2O";
+    public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, Width function, Distance to outlet";
     public static final String OMSRESCALEDDISTANCE_LABEL = BASIN;
     public static final String OMSRESCALEDDISTANCE_NAME = "rescdist";
     public static final int OMSRESCALEDDISTANCE_STATUS = 40;
     public static final String OMSRESCALEDDISTANCE_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRESCALEDDISTANCE_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSRESCALEDDISTANCE_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSRESCALEDDISTANCE_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSRESCALEDDISTANCE_inFlow_DESCRIPTION = "The map of the drainage directions.";
     public static final String OMSRESCALEDDISTANCE_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSRESCALEDDISTANCE_inElev_DESCRIPTION = "The optional map of elevation for 3D.";
-    public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "Ratio between the velocity in the channel and in the hillslope.";
+    public static final String OMSRESCALEDDISTANCE_inElev_DESCRIPTION = "The optional map of the elevation, to measure the distances in 3D.";
+    public static final String OMSRESCALEDDISTANCE_pRatio_DESCRIPTION = "The ratio between the velocity in the channels and on the hillslopes, usually from 5 to 200. With 0, the hillslope paths add nothing to the distance.";
     public static final String OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION = "The map of the rescaled distances.";
 
     private double xRes;

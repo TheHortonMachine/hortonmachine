@@ -37,6 +37,7 @@ import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
+import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
@@ -50,6 +51,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSFLOWDIRECTIONS_DESCRIPTION)
+@Bibliography(OmsFlowDirections.OMSFLOWDIRECTIONS_BIBLIOGRAPHY)
 @Documentation(OMSFLOWDIRECTIONS_DOCUMENTATION)
 @Author(name = OMSFLOWDIRECTIONS_AUTHORNAMES, contact = OMSFLOWDIRECTIONS_AUTHORCONTACTS)
 @Keywords(OMSFLOWDIRECTIONS_KEYWORDS)
@@ -72,17 +74,18 @@ public class OmsFlowDirections extends HMModel {
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
-    public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with the D8 method.";
+    public static final String OMSFLOWDIRECTIONS_BIBLIOGRAPHY = "O'Callaghan, J. F., Mark, D. M. (1984). The extraction of drainage networks from digital elevation data. Computer Vision, Graphics, and Image Processing, 28(3), 323-344.";
+    public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions of a depitted elevation model with the D8 method: each cell drains to the neighbour of steepest descent among its eight neighbours. The directions are coded counterclockwise from 1 (east) to 8 (south-east).";
     public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
-    public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, OmsAspect";
+    public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, Flow directions, D8";
     public static final String OMSFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
     public static final String OMSFLOWDIRECTIONS_NAME = "flow";
     public static final int OMSFLOWDIRECTIONS_STATUS = 40;
     public static final String OMSFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSFLOWDIRECTIONS_AUTHORNAMES = "David Tarboton, Andrea Antonello";
     public static final String OMSFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.neng.usu.edu/cee/faculty/dtarb/tardem.html#programs, http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation map.";
-    public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSFLOWDIRECTIONS_inPit_DESCRIPTION = "The depitted elevation model.";
+    public static final String OMSFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of the drainage directions (D8).";
     public static final String OMSFLOWDIRECTIONS_P_MINELEV_DESCRIPTION = "The min elevation considered. Defaults to 0.";
 
     /**

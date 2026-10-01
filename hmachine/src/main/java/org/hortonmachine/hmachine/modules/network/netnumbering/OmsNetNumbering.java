@@ -139,27 +139,27 @@ public class OmsNetNumbering extends HMModel {
 	 */
 	public ADb inGeoframeDb = null;
 
-	public static final String OMSNETNUMBERING_DESCRIPTION = "Assigns the numbers to the network's links.";
+	public static final String OMSNETNUMBERING_DESCRIPTION = "Numbers the links of the river network and extracts the sub-basin draining into each link. With a desired area, the links are aggregated into sub-basins of about that size, which can be used as hydrological response units.";
 	public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
-	public static final String OMSNETNUMBERING_KEYWORDS = "Network, SplitSubbasins";
+	public static final String OMSNETNUMBERING_KEYWORDS = "Network, Sub-basins, Topology, Hydrological response units";
 	public static final String OMSNETNUMBERING_LABEL = NETWORK;
 	public static final String OMSNETNUMBERING_NAME = "netnum";
 	public static final int OMSNETNUMBERING_STATUS = 40;
 	public static final String OMSNETNUMBERING_LICENSE = "General Public License Version 3 (GPLv3)";
 	public static final String OMSNETNUMBERING_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo";
 	public static final String OMSNETNUMBERING_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-	public static final String OMSNETNUMBERING_inFlow_DESCRIPTION = "The map of flowdirections.";
+	public static final String OMSNETNUMBERING_inFlow_DESCRIPTION = "The map of the drainage directions.";
 	public static final String OMSNETNUMBERING_inTca_DESCRIPTION = "The map of total contributing area.";
 	public static final String OMSNETNUMBERING_inNet_DESCRIPTION = "The map of the network.";
 	public static final String OMSNETNUMBERING_inPoints_DESCRIPTION = "The monitoringpoints vector map.";
 	public static final String OMSNETNUMBERING_fPointId_DESCRIPTION = "The name of the node id field in mode 2.";
-	public static final String OMSNETNUMBERING_outNetnum_DESCRIPTION = "The map of netnumbering";
-	public static final String OMSNETNUMBERING_outBasins_DESCRIPTION = "The map of subbasins";
-	public static final String OMSNETNUMBERING_outDesiredBasins_DESCRIPTION = "The map of desired size subbasins";
+	public static final String OMSNETNUMBERING_outNetnum_DESCRIPTION = "The map of the numbered network links.";
+	public static final String OMSNETNUMBERING_outBasins_DESCRIPTION = "The map of the sub-basins of each link.";
+	public static final String OMSNETNUMBERING_outDesiredBasins_DESCRIPTION = "The map of the sub-basins aggregated to the desired size.";
 	public static final String OMSNETNUMBERING_outMindmap_DESCRIPTION = "Output mindmap (plantuml).";
 	public static final String OMSNETNUMBERING_outMindmapDesired_DESCRIPTION = "Output desired mindmap (plantuml).";
-	public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired basins area size in the projection's unit.";
-	public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed variance for the desired area.";
+	public static final String OMSNETNUMBERING_desiredArea_DESCRIPTION = "The desired area of the sub-basins, in squared map units.";
+	public static final String OMSNETNUMBERING_desiredAreaDelta_DESCRIPTION = "The allowed deviation from the desired area.";
 	public static final String OMSNETNUMBERING_pMaxAllowedConfluences_DESCRIPTION = "The maximum number of channels that can converge into 1 node (-1 = no limit). Works only in desired area mode.";
 	public static final String OMSNETNUMBERING_outGeoframeTopology_DESCRIPTION = "The optional geoframe topology output file.";
 	public static final String OMSNETNUMBERING_outBasinsInfo_DESCRIPTION = "The optional basins info output file.";

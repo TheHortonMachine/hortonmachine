@@ -24,7 +24,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Prepares raster and topological data for the ERM/GeoFrame water budget model pipeline.")
+@Description("Third step of the ERM/GeoFrame water budget workflow: interpolates the temperature and precipitation measured at the meteo stations to the centroids of the sub-basins, with ordinary kriging and a variogram fitted at each time step. Negative interpolated precipitations are set to zero.")
 @Author(name = "Daniele Andreis", contact = "")
 @Keywords("ERM, GeoFrame, Kriging")
 @Label("GeoFrame")
@@ -32,20 +32,20 @@ import oms3.annotations.UI;
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
 public class ErmKriging extends HMModel {
-	@Description("Input geoframe data geopackage.")
+	@Description("The GeoFrame database, with the station data imported.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGpkg;
 
-	@Description("Data import start timestamp.")
+	@Description("Start of the period to interpolate. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pStartTimestamp;
 
-	@Description("Data import end timestamp.")
+	@Description("End of the period to interpolate. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pEndTimestamp;
 
-	@Description("Delete existing data.")
+	@Description("If true, the temperatures and precipitations already interpolated are deleted first.")
 	@In
 	public boolean doDeleteExistingData = false;
 

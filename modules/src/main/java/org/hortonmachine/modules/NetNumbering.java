@@ -88,7 +88,7 @@ public class NetNumbering extends HMModel {
     public String inPoints = null;
 
     @Description(OMSNETNUMBERING_desiredArea_DESCRIPTION)
-    @Unit("m2")
+    @Unit("m²")
     @In
     public Double pDesiredArea = null;
 

@@ -24,6 +24,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.basin.rescaleddistance.OmsRescaledDistance;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -33,8 +34,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSRESCALEDDISTANCE_DESCRIPTION)
+@Bibliography({OmsRescaledDistance.BIBLIOGRAPHY_DODORICO_RIGON_2003})
 @Author(name = OMSRESCALEDDISTANCE_AUTHORNAMES, contact = OMSRESCALEDDISTANCE_AUTHORCONTACTS)
 @Keywords(OMSRESCALEDDISTANCE_KEYWORDS)
 @Label(OMSRESCALEDDISTANCE_LABEL)
@@ -63,6 +66,7 @@ public class RescaledDistance extends HMModel {
     public double pRatio = 0;
 
     @Description(OMSRESCALEDDISTANCE_outRescaled_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outRescaled = null;

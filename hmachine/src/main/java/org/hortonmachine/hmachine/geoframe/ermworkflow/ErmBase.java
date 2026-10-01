@@ -19,25 +19,25 @@ import oms3.annotations.Unit;
 
 public abstract class ErmBase extends HMModel {
 
-	@Description("Geoframe database path (containing all data).")
+	@Description("The GeoFrame database, with all the inputs prepared by the previous steps of the workflow.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGeopackagePath;
 
-	@Description("Simulation start timestamp [format: yyyy-MM-dd HH:mm:ss].")
+	@Description("Start of the simulated period. Format: yyyy-MM-dd HH:mm:ss, in UTC.")
 	@In
 	public String inFromTimestamp;
 
-	@Description("Simulation end timestamp [format: yyyy-MM-dd HH:mm:ss].")
+	@Description("End of the simulated period. Format: yyyy-MM-dd HH:mm:ss, in UTC.")
 	@In
 	public String inToTimestamp;
 
-	@Description("Time step length (defaults to 60).")
+	@Description("Length of the time step: 60 for hourly data, 1440 for daily data.")
 	@Unit("min")
 	@In
 	public int pTimeStepMinutes = 60;
 
-	@Description("Number of spin-up days (defaults to 365).")
+	@Description("Days at the start of the period used only to warm up the model storages, excluded from the evaluation against the observations.")
 	@Unit("days")
 	@In
 	public int pSpinUpDays = 365;

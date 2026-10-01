@@ -34,6 +34,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.basin.topindex.OmsTopIndex;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -43,8 +44,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSTOPINDEX_DESCRIPTION)
+@Bibliography({OmsTopIndex.BIBLIOGRAPHY_BEVEN_KIRKBY_1979})
 @Author(name = OMSTOPINDEX_AUTHORNAMES, contact = OMSTOPINDEX_AUTHORCONTACTS)
 @Keywords(OMSTOPINDEX_KEYWORDS)
 @Label(OMSTOPINDEX_LABEL)
@@ -54,11 +57,13 @@ import oms3.annotations.UI;
 public class TopIndex extends HMModel {
 
     @Description(OMSTOPINDEX_inTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSTOPINDEX_inSlope_DESCRIPTION)
+    @Unit("m/m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSlope = null;

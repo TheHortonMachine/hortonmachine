@@ -5,6 +5,7 @@ import org.hortonmachine.gears.utils.optimizers.CostFunctions;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetParameters;
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 
+import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -15,7 +16,8 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 
-@Description("Runs a single ERM/GeoFrame water budget simulation with a fixed parameter set.")
+@Description("Last step of the ERM/GeoFrame water budget workflow: runs the water budget model with a given set of parameters, usually the ones found by the calibration, and shows the simulated against the observed discharge, with their Kling-Gupta efficiency.")
+@Bibliography({"Gupta, H. V., Kling, H., Yilmaz, K. K., Martinez, G. F. (2009). Decomposition of the mean squared error and NSE performance criteria: implications for improving hydrological modelling. Journal of Hydrology, 377(1-2), 80-91."})
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
 @Keywords("ERM, GeoFrame, simulation, water budget")
 @Label("GeoFrame")
@@ -24,7 +26,7 @@ import oms3.annotations.Status;
 @License("General Public License Version 3 (GPLv3)")
 public class ErmSimulation extends ErmBase {
 
-    @Description("Model parameter array (18 values).")
+    @Description("The 18 model parameters, in the order reported by the calibration.")
     @In
     public double[] inParams;
 

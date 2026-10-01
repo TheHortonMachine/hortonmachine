@@ -1,0 +1,36 @@
+# Modules documented in the manual: one fully qualified class name per line.
+# The reference fragments in generated/ are created from their annotations with
+# org.hortonmachine.docs.ModuleDocsGenerator (see docs/manual/README.md).
+
+# Dem Manipulation, Geomorphology, Basin, Hydro-Geomorphology, Network
+org.hortonmachine.modules.Pitfiller
+org.hortonmachine.modules.FlowDirections
+org.hortonmachine.modules.DrainDir
+org.hortonmachine.modules.ExtractNetwork
+org.hortonmachine.modules.Skyview
+org.hortonmachine.modules.ExtractBasin
+org.hortonmachine.modules.NetNumbering
+org.hortonmachine.modules.GeoframeInputsBuilder
+org.hortonmachine.modules.PresteyTaylorEtpModel
+org.hortonmachine.modules.Peakflow
+org.hortonmachine.modules.Shalstab
+org.hortonmachine.modules.Markoutlets
+org.hortonmachine.modules.Gradient
+org.hortonmachine.modules.Slope
+org.hortonmachine.modules.Curvatures
+org.hortonmachine.modules.Ab
+org.hortonmachine.modules.TopIndex
+org.hortonmachine.modules.RescaledDistance
+
+# Raster processing
+org.hortonmachine.modules.RasterResizer
+org.hortonmachine.modules.CutOut
+
+# GeoFrame › ERM water budget workflow
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmDataPreparator
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmStationDataImporter
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmKriging
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmRadiation
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmPrestleyEt
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmCalibration
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmSimulation

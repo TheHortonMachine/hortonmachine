@@ -37,6 +37,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.geomorphology.draindir.OmsDrainDir;
 
+import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -49,6 +50,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSDRAINDIR_DESCRIPTION)
+@Bibliography(OmsDrainDir.OMSDRAINDIR_BIBLIOGRAPHY)
 @Author(name = OMSDRAINDIR_AUTHORNAMES, contact = OMSDRAINDIR_AUTHORCONTACTS)
 @Keywords(OMSDRAINDIR_KEYWORDS)
 @Label(OMSDRAINDIR_LABEL)

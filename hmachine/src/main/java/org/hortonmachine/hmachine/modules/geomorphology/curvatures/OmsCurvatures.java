@@ -43,6 +43,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
@@ -53,8 +54,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSCURVATURES_DESCRIPTION)
+@Bibliography(OmsCurvatures.BIBLIOGRAPHY_MITASOVA_HOFIERKA_1993)
 @Documentation(OMSCURVATURES_DOCUMENTATION)
 @Author(name = OMSCURVATURES_AUTHORNAMES, contact = OMSCURVATURES_AUTHORCONTACTS)
 @Keywords(OMSCURVATURES_KEYWORDS)
@@ -64,35 +67,40 @@ import oms3.annotations.Status;
 @License(OMSCURVATURES_LICENSE)
 public class OmsCurvatures extends GridMultiProcessing {
     @Description(OMSCURVATURES_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
     // output
     @Description(OMSCURVATURES_outProf_DESCRIPTION)
+    @Unit("1/m")
     @Out
     public GridCoverage2D outProf = null;
 
     @Description(OMSCURVATURES_outPlan_DESCRIPTION)
+    @Unit("1/m")
     @Out
     public GridCoverage2D outPlan = null;
 
     @Description(OMSCURVATURES_outTang_DESCRIPTION)
+    @Unit("1/m")
     @Out
     public GridCoverage2D outTang = null;
 
-    public static final String OMSCURVATURES_DESCRIPTION = "It estimates the longitudinal, normal and planar curvatures.";
+    public static final String BIBLIOGRAPHY_MITASOVA_HOFIERKA_1993 = "Mitasova, H., Hofierka, J. (1993). Interpolation by regularized spline with tension: II. Application to terrain modeling and surface geometry analysis. Mathematical Geology, 25(6), 657-669.";
+    public static final String OMSCURVATURES_DESCRIPTION = "Calculates the profile, planar and tangential curvatures of the terrain, from the 3x3 window around each cell. Positive values are concave forms: convergent for the planar and tangential curvatures, slowing down the flow for the profile curvature. The cells at the border of the map or of the no-data are left as no-data, the flat cells get 0.";
     public static final String OMSCURVATURES_DOCUMENTATION = "OmsCurvatures.html";
-    public static final String OMSCURVATURES_KEYWORDS = "Geomorphology";
+    public static final String OMSCURVATURES_KEYWORDS = "Geomorphology, Curvature, Convergence";
     public static final String OMSCURVATURES_LABEL = GEOMORPHOLOGY;
     public static final String OMSCURVATURES_NAME = "curvatures";
     public static final int OMSCURVATURES_STATUS = 40;
     public static final String OMSCURVATURES_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSCURVATURES_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSCURVATURES_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSCURVATURES_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSCURVATURES_outProf_DESCRIPTION = "The map of profile curvatures.";
-    public static final String OMSCURVATURES_outPlan_DESCRIPTION = "The map of planar curvatures.";
-    public static final String OMSCURVATURES_outTang_DESCRIPTION = "The map of tangential curvatures.";
+    public static final String OMSCURVATURES_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSCURVATURES_outProf_DESCRIPTION = "The map of the profile curvature, along the steepest slope: positive where the slope decreases downhill (concave), negative where it increases (convex).";
+    public static final String OMSCURVATURES_outPlan_DESCRIPTION = "The map of the planar curvature, of the contour lines: positive where the flow converges, as in the valleys, negative where it diverges, as on the ridges.";
+    public static final String OMSCURVATURES_outTang_DESCRIPTION = "The map of the tangential curvature, the planar curvature multiplied by the sine of the slope angle: like the planar one, but smaller on gentle slopes.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

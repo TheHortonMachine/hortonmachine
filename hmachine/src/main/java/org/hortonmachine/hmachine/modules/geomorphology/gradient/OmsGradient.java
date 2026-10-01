@@ -42,6 +42,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
@@ -53,8 +54,10 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OmsGradient.OMSGRADIENT_DESCRIPTION)
+@Bibliography({OmsGradient.BIBLIOGRAPHY_HORN_1981, OmsGradient.BIBLIOGRAPHY_EVANS_1980})
 @Documentation(OmsGradient.OMSGRADIENT_DOCUMENTATION)
 @Author(name = OmsGradient.OMSGRADIENT_AUTHORNAMES, contact = OmsGradient.OMSGRADIENT_AUTHORCONTACTS)
 @Keywords(OmsGradient.OMSGRADIENT_KEYWORDS)
@@ -64,6 +67,7 @@ import oms3.annotations.UI;
 @License(OmsGradient.OMSGRADIENT_LICENSE)
 public class OmsGradient extends GridMultiProcessing {
     @Description(OMSGRADIENT_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -77,22 +81,25 @@ public class OmsGradient extends GridMultiProcessing {
     public boolean doDegrees = false;
 
     @Description(OMSGRADIENT_outSlope_DESCRIPTION)
+    @Unit("m/m or °")
     @Out
     public GridCoverage2D outSlope = null;
 
-    public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient in each point of the map.";
+    public static final String BIBLIOGRAPHY_HORN_1981 = "Horn, B. K. P. (1981). Hill shading and the reflectance map. Proceedings of the IEEE, 69(1), 14-47.";
+    public static final String BIBLIOGRAPHY_EVANS_1980 = "Evans, I. S. (1980). An integrated system of terrain analysis and slope mapping. Zeitschrift für Geomorphologie, Supplementband 36, 274-295.";
+    public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient of the elevation, the steepest slope in each cell, in any direction, from the 3x3 window around the cell.";
     public static final String OMSGRADIENT_DOCUMENTATION = "OmsGradient.html";
-    public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections, OmsSlope, OmsCurvatures";
+    public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, Slope, Gradient";
     public static final String OMSGRADIENT_LABEL = GEOMORPHOLOGY;
     public static final String OMSGRADIENT_NAME = "gradient";
     public static final int OMSGRADIENT_STATUS = 40;
     public static final String OMSGRADIENT_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSGRADIENT_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSGRADIENT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSGRADIENT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSGRADIENT_pMode_DESCRIPTION = "The gradient formula mode.";
-    public static final String OMSGRADIENT_doDegrees_DESCRIPTION = "The output type, if false = tan of the angle (default), if true = degrees";
-    public static final String OMSGRADIENT_outSlope_DESCRIPTION = "The map of gradient.";
+    public static final String OMSGRADIENT_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSGRADIENT_pMode_DESCRIPTION = "The formula of the gradient: finite differences, from the four neighbours, or the methods of Horn and of Evans, from all the eight neighbours and less sensitive to the noise of the elevation.";
+    public static final String OMSGRADIENT_doDegrees_DESCRIPTION = "Write the gradient in degrees; if not set, as the tangent of the slope angle.";
+    public static final String OMSGRADIENT_outSlope_DESCRIPTION = "The map of the gradient.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

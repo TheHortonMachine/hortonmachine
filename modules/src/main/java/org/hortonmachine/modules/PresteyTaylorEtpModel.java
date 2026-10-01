@@ -44,6 +44,7 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -63,6 +64,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPresteyTaylorEtpModel;
 
 @Description(OMSPRESTEYTAYLORETPMODEL_DESCRIPTION)
+@Bibliography({OmsPresteyTaylorEtpModel.BIBLIOGRAPHY_PRIESTLEY_TAYLOR, OmsPresteyTaylorEtpModel.BIBLIOGRAPHY_FAO56})
 @Author(name = OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES, contact = OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS)
 @Keywords(OMSPRESTEYTAYLORETPMODEL_KEYWORDS)
 @Label(OMSPRESTEYTAYLORETPMODEL_LABEL)
@@ -75,17 +77,17 @@ public class PresteyTaylorEtpModel extends HMModel {
     @Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
-    @Unit("Watt m-2 ")
+    @Unit("W/m²")
     public String inNetradiation;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION)
     @In
-    @Unit("Watt m-2")
+    @Unit("W/m²")
     public double defaultDailyNetradiation = 300.0;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION)
     @In
-    @Unit("Watt m-2")
+    @Unit("W/m²")
     public double defaultHourlyNetradiation = 100.0;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION)
@@ -99,12 +101,11 @@ public class PresteyTaylorEtpModel extends HMModel {
     @Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
-    @Unit("C")
+    @Unit("°C")
     public String inTemp;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
     @In
-    @Unit("m")
     public double pAlpha = 0;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)
@@ -117,23 +118,23 @@ public class PresteyTaylorEtpModel extends HMModel {
 
     @Description(OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION)
     @In
-    @Unit("C")
+    @Unit("°C")
     public double defaultTemp = 15.0;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
-    @Unit("KPa")
+    @Unit("kPa")
     public String inPressure;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION)
     @In
-    @Unit("KPa")
+    @Unit("kPa")
     public double defaultPressure = 101.3;
 
     @Description(OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
-    @Unit("mm hour-1")
+    @Unit("mm")
     @In
     public String outPTEtp;
 

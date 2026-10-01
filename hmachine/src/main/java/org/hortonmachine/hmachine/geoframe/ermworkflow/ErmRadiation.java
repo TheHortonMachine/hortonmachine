@@ -16,6 +16,7 @@ import org.hortonmachine.hmachine.geoframe.io.database.tables.implementation.Var
 import org.hortonmachine.hmachine.geoframe.utils.IWaterBudgetSimulationRunner;
 import org.hortonmachine.hmachine.geoframe.utils.RadiationAtCentroid;
 
+import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -53,7 +54,8 @@ import oms3.annotations.UI;
  * </li>
  * </ul>
  */
-@Description("Radiation calculator.")
+@Description("Fourth step of the ERM/GeoFrame water budget workflow: computes the net radiation at the centroids of the sub-basins, from the shortwave radiation (Corripio, 2003), considering terrain shadows and skyview, and the longwave radiation (Idso, 1981), driven by the interpolated temperatures.")
+@Bibliography({"Corripio, J. G. (2003). Vectorial algebra algorithms for calculating terrain parameters from DEMs and solar radiation modelling in mountainous terrain. International Journal of Geographical Information Science, 17(1), 1-23.", "Idso, S. B. (1981). A set of equations for full spectrum and 8- to 14-um and 10.5- to 12.5-um thermal radiation from cloudless skies. Water Resources Research, 17(2), 295-304."})
 @Author(name = "Daniele Andreis", contact = "")
 @Keywords("ERM, GeoFrame, Radiation")
 @Label("GeoFrame")
@@ -61,25 +63,25 @@ import oms3.annotations.UI;
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
 public class ErmRadiation extends HMModel {
-	@Description("Input dtm.")
+	@Description("The digital elevation model used for the data preparation: the basin elevation and skyview rasters are read from its outputs folder.")
 	@UI(HMConstants.FILEIN_UI_HINT_RASTER)
 	@In
 	public String inDtm;
 
-	@Description("Input geoframe data geopackage.")
+	@Description("The GeoFrame database, with the interpolated temperatures.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGpkg;
 
-	@Description("Data import start timestamp in format yyyy-MM-dd HH:mm.")
+	@Description("Start of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pStartTimestamp;
 
-	@Description("Data import end timestamp in format yyyy-MM-dd HH:mm.")
+	@Description("End of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pEndTimestamp;
 	
-	@Description("The expected time resolution of the data. DAILY and HOURLY (default) is supported.")
+	@Description("Time resolution of the computation: HOURLY or DAILY.")
 	@In
 	public String pTimeResolution = "HOURLY";
 
@@ -89,7 +91,7 @@ public class ErmRadiation extends HMModel {
 	@In
 	public int pDailySubSamples = 24;
 
-	@Description("If true, existing output files are overwritten.")
+	@Description("If true, the radiation values already computed are deleted first.")
 	@In
 	public boolean doOverwrite = false;
 	

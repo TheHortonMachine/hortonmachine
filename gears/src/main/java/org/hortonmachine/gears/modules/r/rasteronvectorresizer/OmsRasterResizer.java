@@ -84,7 +84,7 @@ public class OmsRasterResizer extends HMModel {
 	@Out
 	public GridCoverage2D outRaster;
 
-	public static final String OmsRasterResizer_DESCRIPTION = "Module to resize a raster on a raster or vector using the resolution of the original raster. Snapping is applied to the first contained cell, if necessary.";
+	public static final String OmsRasterResizer_DESCRIPTION = "Cuts a raster to the bounds of a polygon vector or of a mask raster, keeping its resolution. The new bounds are snapped to the cells of the original raster.";
 	public static final String OmsRasterResizer_DOCUMENTATION = "";
 	public static final String OmsRasterResizer_KEYWORDS = "Raster, Vector, Resize";
 	public static final String OmsRasterResizer_LABEL = RASTERPROCESSING;

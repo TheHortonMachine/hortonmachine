@@ -46,8 +46,31 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-import oms3.annotations.Unit;
 
+/**
+ * Computes the Priestley-Taylor potential evapotranspiration at the centroids
+ * of the basins, through {@link OmsPresteyTaylorEtpModel#getET}, and writes it
+ * to the GeoFrame database.
+ *
+ * <p>
+ * Known issues, still to be solved:
+ * <ul>
+ * <li>TODO in the non cached mode of {@link #process()}, the pressure is read
+ * from the temperature reader ({@code inTempReader.outData}) instead of the
+ * pressure one ({@code inPressurReader.outData}). No effect in ErmPrestleyEt,
+ * which sets no pressure reader.</li>
+ * <li>TODO {@link #processTimestepForBasin} passes {@code inNetReader.tCurrent}
+ * as the time of the step, but in the cached mode the readers don't advance it:
+ * it stays at the last timestamp read while caching. The day/night choice of
+ * the soil heat flux fraction ({@link #pGmorn} or {@link #pGnight}) is then
+ * the same for all the time steps, which changes the results of hourly runs.
+ * The timestamp of the step ({@code t}) should be used instead.</li>
+ * <li>TODO {@link #processTimestepForBasin} always passes the hourly default
+ * net radiation ({@link OmsPresteyTaylorEtpModel#DEFAULT_HOURLY_NET_RADIATION}),
+ * also with daily time steps, where the daily one should be used. It matters
+ * only where the net radiation is missing.</li>
+ * </ul>
+ */
 @Description("Populate the db with hydrometeo data at centroid")
 @Author(name = "Daniele Andreis")
 @Keywords("time series, iterator, basin, value, database")
@@ -78,7 +101,6 @@ public class PrestleyETAtCentroid extends HMModel {
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
 	@In
-	@Unit("m")
 	public double pAlpha = 0;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)

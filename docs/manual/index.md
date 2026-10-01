@@ -49,20 +49,6 @@ installation
 :caption: Applications
 
 apps/index
-apps/spatialtoolbox
-apps/geoscript
-apps/dbviewer
-apps/stacbrowser
-apps/sld
-apps/wms2geotiff
-apps/geopaparazzi
-apps/gforms
-apps/lasviewer
-apps/mapcalc
-apps/nwwviewer
-apps/quickfolder
-apps/sshutils
-apps/settings
 ```
 
 ```{toctree}

@@ -48,6 +48,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.shalstab.OmsShalstab;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -60,6 +61,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSSHALSTAB_DESCRIPTION)
+@Bibliography({OmsShalstab.BIBLIOGRAPHY_MONTGOMERY_DIETRICH_1994, OmsShalstab.BIBLIOGRAPHY_MONTGOMERY_ET_AL_1998})
 @Author(name = OMSSHALSTAB_AUTHORNAMES, contact = OMSSHALSTAB_AUTHORCONTACTS)
 @Keywords(OMSSHALSTAB_KEYWORDS)
 @Label(OMSSHALSTAB_LABEL)
@@ -69,23 +71,25 @@ import oms3.annotations.Unit;
 public class Shalstab extends HMModel {
 
     @Description(OMSSHALSTAB_inSlope_DESCRIPTION)
+    @Unit("m/m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSlope = null;
 
     @Description(OMSSHALSTAB_inTca_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSSHALSTAB_inTrasmissivity_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @Unit("m^2/day")
+    @Unit("m²/day")
     @In
     public String inTrasmissivity = null;
 
     @Description(OMSSHALSTAB_pTrasmissivity_DESCRIPTION)
-    @Unit("m^2/day")
+    @Unit("m²/day")
     @In
     public double pTrasmissivity = -1.0;
 
@@ -141,6 +145,7 @@ public class Shalstab extends HMModel {
     public double pRho = -1.0;
 
     @Description(OMSSHALSTAB_pRock_DESCRIPTION)
+    @Unit("m/m")
     @In
     public double pRock = -9999.0;
 

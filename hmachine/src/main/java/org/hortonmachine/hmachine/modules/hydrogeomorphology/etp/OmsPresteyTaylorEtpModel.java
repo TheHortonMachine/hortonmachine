@@ -51,6 +51,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -63,7 +64,23 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
+/**
+ * The Priestley-Taylor potential evapotranspiration.
+ *
+ * <p>
+ * Known issues, still to be solved:
+ * <ul>
+ * <li>TODO the default of {@link #pAlpha} is 0, which gives zero
+ * evapotranspiration unless it is set: 1.26, the value of well-watered
+ * surfaces, would be a better default. Changing it changes the behaviour of
+ * existing scripts that rely on the default.</li>
+ * <li>TODO the name of the module is misspelled ("Prestey" instead of
+ * "Priestley"), also in the toolbox wrapper and in the i18n constants.
+ * Renaming it breaks existing scripts.</li>
+ * </ul>
+ */
 @Description(OMSPRESTEYTAYLORETPMODEL_DESCRIPTION)
+@Bibliography({OmsPresteyTaylorEtpModel.BIBLIOGRAPHY_PRIESTLEY_TAYLOR, OmsPresteyTaylorEtpModel.BIBLIOGRAPHY_FAO56})
 @Author(name = OMSPRESTEYTAYLORETPMODEL_AUTHORNAMES, contact = OMSPRESTEYTAYLORETPMODEL_AUTHORCONTACTS)
 @Keywords(OMSPRESTEYTAYLORETPMODEL_KEYWORDS)
 @Label(OMSPRESTEYTAYLORETPMODEL_LABEL)
@@ -72,6 +89,9 @@ import oms3.annotations.Unit;
 @License(OMSPRESTEYTAYLORETPMODEL_LICENSE)
 @UI(OMSPRESTEYTAYLORETPMODEL_UI)
 public class OmsPresteyTaylorEtpModel extends HMModel {
+
+	public static final String BIBLIOGRAPHY_PRIESTLEY_TAYLOR = "Priestley, C. H. B., Taylor, R. J. (1972). On the assessment of surface heat flux and evaporation using large-scale parameters. Monthly Weather Review, 100(2), 81-92.";
+	public static final String BIBLIOGRAPHY_FAO56 = "Allen, R. G., Pereira, L. S., Raes, D., Smith, M. (1998). Crop evapotranspiration: guidelines for computing crop water requirements. FAO Irrigation and Drainage Paper 56. FAO, Rome.";
 
 	public static final double DEFAULT_DAILY_NET_RADIATION = 300.0;
 	public static final double DEFAULT_HOURLY_NET_RADIATION = 100.0;
@@ -83,17 +103,17 @@ public class OmsPresteyTaylorEtpModel extends HMModel {
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_inNetradiation_DESCRIPTION)
 	@In
-	@Unit("Watt m-2 ")
+	@Unit("W/m²")
 	public HashMap<Integer, double[]> inNetradiation;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_pDailyDefaultNetradiation_DESCRIPTION)
 	@In
-	@Unit("Watt m-2")
+	@Unit("W/m²")
 	public double defaultDailyNetradiation = DEFAULT_DAILY_NET_RADIATION;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_pHourlyDefaultNetradiation_DESCRIPTION)
 	@In
-	@Unit("Watt m-2")
+	@Unit("W/m²")
 	public double defaultHourlyNetradiation = DEFAULT_HOURLY_NET_RADIATION;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_doHourly_DESCRIPTION)
@@ -102,12 +122,11 @@ public class OmsPresteyTaylorEtpModel extends HMModel {
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_inTemp_DESCRIPTION)
 	@In
-	@Unit("C")
+	@Unit("°C")
 	public HashMap<Integer, double[]> inTemp;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_pAlpha_DESCRIPTION)
 	@In
-	@Unit("m")
 	public double pAlpha = 0;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_pGmorn_DESCRIPTION)
@@ -120,17 +139,17 @@ public class OmsPresteyTaylorEtpModel extends HMModel {
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_defaultTemp_DESCRIPTION)
 	@In
-	@Unit("C")
+	@Unit("°C")
 	public double defaultTemp = DEFAULT_TEMPERATURE;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_inPressure_DESCRIPTION)
 	@In
-	@Unit("KPa")
+	@Unit("kPa")
 	public HashMap<Integer, double[]> inPressure;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_defaultPressure_DESCRIPTION)
 	@In
-	@Unit("KPa")
+	@Unit("kPa")
 	public double defaultPressure = DEFAULT_PRESSURE;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_time_DESCRIPTION)
@@ -138,7 +157,7 @@ public class OmsPresteyTaylorEtpModel extends HMModel {
 	public String tCurrent;
 
 	@Description(OMSPRESTEYTAYLORETPMODEL_outPTEtp_DESCRIPTION)
-	@Unit("mm hour-1")
+	@Unit("mm")
 	@Out
 	public HashMap<Integer, double[]> outPTEtp;
 

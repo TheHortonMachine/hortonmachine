@@ -42,6 +42,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -51,8 +52,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSTOPINDEX_DESCRIPTION)
+@Bibliography({OmsTopIndex.BIBLIOGRAPHY_BEVEN_KIRKBY_1979})
 @Author(name = OMSTOPINDEX_AUTHORNAMES, contact = OMSTOPINDEX_AUTHORCONTACTS)
 @Keywords(OMSTOPINDEX_KEYWORDS)
 @Label(OMSTOPINDEX_LABEL)
@@ -62,10 +65,12 @@ import oms3.annotations.Status;
 public class OmsTopIndex extends GridMultiProcessing {
 
     @Description(OMSTOPINDEX_inTca_DESCRIPTION)
+    @Unit("cells")
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSTOPINDEX_inSlope_DESCRIPTION)
+    @Unit("m/m")
     @In
     public GridCoverage2D inSlope = null;
 
@@ -73,17 +78,18 @@ public class OmsTopIndex extends GridMultiProcessing {
     @Out
     public GridCoverage2D outTopindex = null;
 
-    public static final String OMSTOPINDEX_DESCRIPTION = "Topographic index calculator.";
+    public static final String BIBLIOGRAPHY_BEVEN_KIRKBY_1979 = "Beven, K. J., Kirkby, M. J. (1979). A physically based, variable contributing area model of basin hydrology. Hydrological Sciences Bulletin, 24(1), 43-69.";
+    public static final String OMSTOPINDEX_DESCRIPTION = "Calculates the topographic index, ln(a/tan β), the natural logarithm of the contributing area over the slope: the higher it is, the more the cell tends to saturate. It depends only on the morphology. It is not defined where the slope is 0, which is left as no-data.";
     public static final String OMSTOPINDEX_DOCUMENTATION = "OmsTopIndex.html";
-    public static final String OMSTOPINDEX_KEYWORDS = "Hydrology";
+    public static final String OMSTOPINDEX_KEYWORDS = "Topographic index, Saturation, Hydrology";
     public static final String OMSTOPINDEX_LABEL = BASIN;
     public static final String OMSTOPINDEX_NAME = "topindex";
     public static final int OMSTOPINDEX_STATUS = 40;
     public static final String OMSTOPINDEX_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSTOPINDEX_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSTOPINDEX_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSTOPINDEX_inTca_DESCRIPTION = "The map of the contributing area.";
-    public static final String OMSTOPINDEX_inSlope_DESCRIPTION = "The map of slope.";
+    public static final String OMSTOPINDEX_inTca_DESCRIPTION = "The map of the total contributing area, in cells.";
+    public static final String OMSTOPINDEX_inSlope_DESCRIPTION = "The map of the slope along the drainage directions, as the tangent of the slope angle.";
     public static final String OMSTOPINDEX_outTopindex_DESCRIPTION = "The map of the topographic index.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();

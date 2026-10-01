@@ -31,6 +31,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSAB_DESCRIPTION)
 @Author(name = OMSAB_AUTHORNAMES, contact = OMSAB_AUTHORCONTACTS)
@@ -41,21 +42,25 @@ import oms3.annotations.UI;
 @License(OMSAB_LICENSE)
 public class Ab extends OmsAb {
     @Description(OMSAB_inTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSAB_inPlan_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPlan = null;
 
     @Description(OMSAB_outAb_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outAb = null;
 
     @Description(OMSAB_outB_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outB = null;

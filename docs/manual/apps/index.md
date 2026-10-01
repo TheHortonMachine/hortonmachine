@@ -18,3 +18,23 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [Quick Folder](quickfolder.md) | `hm-quickfolder` | Quickly view the spatial files of a folder on a map |
 | [SSH Utils](sshutils.md) | `hm-utils-ssh` | Run commands on servers and open SSH tunnels, for example to remote databases |
 | [Settings](settings.md) | `hm-settings` | Shared settings of the applications |
+
+```{toctree}
+:hidden:
+:titlesonly:
+
+spatialtoolbox
+geoscript
+dbviewer
+stacbrowser
+sld
+wms2geotiff
+geopaparazzi
+gforms
+lasviewer
+mapcalc
+nwwviewer
+quickfolder
+sshutils
+settings
+```

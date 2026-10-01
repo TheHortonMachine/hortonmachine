@@ -21,61 +21,61 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Importer of raw meteo and stream gauge data into the GeoFrame database.")
+@Description("Second step of the ERM/GeoFrame water budget workflow: imports the measurements of the meteo stations (temperature and precipitation) and of the stream gauges (discharge) into the GeoFrame database. The data files are CSV time series in the HortonMachine format, with one column per station.")
 @Author(name = "Daniele Andreis", contact = "")
-@Keywords("ERM, GeoFrame, DEM, basin, network, data preparation")
+@Keywords("ERM, GeoFrame, meteo, stations, discharge, import")
 @Label("GeoFrame")
 @Name("ermRawDataImporter")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
 public class ErmStationDataImporter extends HMModel {
 
-	@Description("Input geoframe data geopackage.")
+	@Description("The GeoFrame database created by the data preparation.")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inGpkg;
 
-	@Description("Data import start timestamp.")
+	@Description("Start of the period to import. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pStartTimestamp;
 
-	@Description("Data import end timestamp.")
+	@Description("End of the period to import. Format: yyyy-MM-dd HH:mm, in UTC.")
 	@In
 	public String pEndTimestamp;
 
-	@Description("Data time resolution. currently supported: HOURLY, DAILY.")
+	@Description("Time resolution of the data: HOURLY or DAILY.")
 	@In
 	public String pTimeResolution = "HOURLY";
 
-	@Description("Meteo stations layer.")
+	@Description("The meteo stations (point vector layer).")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inMeteoStations;
 
-	@Description("Station id field in meteo csv files.")
+	@Description("Field of the meteo stations layer holding the station id, matching the ids of the CSV columns.")
 	@In
 	public String pMeteoIdField = "ID";
 
-	@Description("Temperatures csv file.")
+	@Description("CSV time series of the air temperatures of the meteo stations [°C].")
 	@UI(HMConstants.FILEIN_UI_HINT_CSV)
 	@In
 	public String inTemperaturesCsv;
 
-	@Description("Precipitation csv file.")
+	@Description("CSV time series of the precipitations of the meteo stations [mm].")
 	@UI(HMConstants.FILEIN_UI_HINT_CSV)
 	@In
 	public String inPrecipitationCsv;
 
-	@Description("Stream Gauges layer.")
+	@Description("The stream gauges (point vector layer).")
 	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inStreamGauges;
 
-	@Description("Streamgauges id field in csv files.")
+	@Description("Field of the stream gauges layer holding the station id, matching the ids of the CSV columns.")
 	@In
 	public String pStreamGaugesIdField = "ID";
 
-	@Description("Stream Gauges data csv file.")
+	@Description("CSV time series of the discharges of the stream gauges [m³/s].")
 	@UI(HMConstants.FILEIN_UI_HINT_CSV)
 	@In
 	public String inStreamGaugesCsv;

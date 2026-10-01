@@ -62,6 +62,7 @@ import org.hortonmachine.gears.utils.coverage.ConstantRandomIter;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -74,6 +75,7 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 @Description(OMSSHALSTAB_DESCRIPTION)
+@Bibliography({OmsShalstab.BIBLIOGRAPHY_MONTGOMERY_DIETRICH_1994, OmsShalstab.BIBLIOGRAPHY_MONTGOMERY_ET_AL_1998})
 @Author(name = OMSSHALSTAB_AUTHORNAMES, contact = OMSSHALSTAB_AUTHORCONTACTS)
 @Keywords(OMSSHALSTAB_KEYWORDS)
 @Label(OMSSHALSTAB_LABEL)
@@ -83,20 +85,22 @@ import oms3.annotations.Unit;
 public class OmsShalstab extends HMModel {
 
     @Description(OMSSHALSTAB_inSlope_DESCRIPTION)
+    @Unit("m/m")
     @In
     public GridCoverage2D inSlope = null;
 
     @Description(OMSSHALSTAB_inTca_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSSHALSTAB_inTrasmissivity_DESCRIPTION)
-    @Unit("m^2/day")
+    @Unit("m²/day")
     @In
     public GridCoverage2D inTrasmissivity = null;
 
     @Description(OMSSHALSTAB_pTrasmissivity_DESCRIPTION)
-    @Unit("m^2/day")
+    @Unit("m²/day")
     @In
     public double pTrasmissivity = -1.0;
 
@@ -147,6 +151,7 @@ public class OmsShalstab extends HMModel {
     public double pRho = -1.0;
 
     @Description(OMSSHALSTAB_pRock_DESCRIPTION)
+    @Unit("m/m")
     @In
     public double pRock = -9999.0;
 
@@ -157,6 +162,9 @@ public class OmsShalstab extends HMModel {
     @Description(OMSSHALSTAB_outShalstab_DESCRIPTION)
     @Out
     public GridCoverage2D outShalstab = null;
+
+    public static final String BIBLIOGRAPHY_MONTGOMERY_DIETRICH_1994 = "Montgomery, D. R., Dietrich, W. E. (1994). A physically based model for the topographic control on shallow landsliding. Water Resources Research, 30(4), 1153-1171.";
+    public static final String BIBLIOGRAPHY_MONTGOMERY_ET_AL_1998 = "Montgomery, D. R., Sullivan, K., Greenberg, H. M. (1998). Regional test of a model for shallow landsliding. Hydrological Processes, 12(6), 943-955.";
 
     public final double EPS = 0.01;
 

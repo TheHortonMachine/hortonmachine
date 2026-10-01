@@ -5,6 +5,7 @@ import org.hortonmachine.gears.utils.optimizers.particleswarm.PSConfig;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetCalibration;
 import org.hortonmachine.hmachine.geoframe.calibration.WaterBudgetCalibrationResult;
 
+import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
@@ -15,7 +16,8 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 
-@Description("Calibrates ERM/GeoFrame water budget model parameters using Particle Swarm Optimisation.")
+@Description("Sixth step of the ERM/GeoFrame water budget workflow: calibrates the 18 parameters of the water budget model against the observed discharge, with Particle Swarm Optimisation. The best parameters found and their score are reported at the end.")
+@Bibliography({"Kennedy, J., Eberhart, R. (1995). Particle swarm optimization. Proceedings of the IEEE International Conference on Neural Networks, 1942-1948.", "Gupta, H. V., Kling, H., Yilmaz, K. K., Martinez, G. F. (2009). Decomposition of the mean squared error and NSE performance criteria: implications for improving hydrological modelling. Journal of Hydrology, 377(1-2), 80-91."})
 @Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
 @Keywords("ERM, GeoFrame, calibration, PSO, water budget")
 @Label("GeoFrame")
@@ -52,11 +54,13 @@ public class ErmCalibration extends ErmBase {
 	@In
 	public int pCalibrationThreadCount = 20;
 
-	@Description("Cost function used to evaluate parameter fitness.")
+	@Description("Measure of the agreement between simulated and observed discharge: KGE, the Kling-Gupta efficiency (Gupta et al., 2009).")
 	@In
 	public CostFunctions pCostFunction = CostFunctions.KGE;
 	
-	public boolean printDebugInfo = true; 
+	@Description("If true, the progress of the calibration is reported in detail.")
+	@In
+	public boolean printDebugInfo = true;
 
 	@Execute
 	public void process() throws Exception {

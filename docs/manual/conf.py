@@ -26,7 +26,8 @@ source_suffix = {
     ".md": "markdown",
 }
 
-exclude_patterns = ["README.md", "_build", ".venv", "Thumbs.db", ".DS_Store"]
+# The module reference fragments are not pages: they are included in the module pages.
+exclude_patterns = ["README.md", "_build", ".venv", "Thumbs.db", ".DS_Store", "modules/generated/*"]
 
 html_theme = "furo"
 html_title = "HortonMachine Manual"

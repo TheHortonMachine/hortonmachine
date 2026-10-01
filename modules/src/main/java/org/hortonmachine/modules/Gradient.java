@@ -38,6 +38,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.geomorphology.gradient.OmsGradient;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -47,8 +48,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSGRADIENT_DESCRIPTION)
+@Bibliography({OmsGradient.BIBLIOGRAPHY_HORN_1981, OmsGradient.BIBLIOGRAPHY_EVANS_1980})
 @Author(name = OMSGRADIENT_AUTHORNAMES, contact = OMSGRADIENT_AUTHORCONTACTS)
 @Keywords(OMSGRADIENT_KEYWORDS)
 @Label(OMSGRADIENT_LABEL)
@@ -57,6 +60,7 @@ import oms3.annotations.UI;
 @License(OMSGRADIENT_LICENSE)
 public class Gradient extends HMModel {
     @Description(OMSGRADIENT_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -71,6 +75,7 @@ public class Gradient extends HMModel {
     public boolean doDegrees = false;
 
     @Description(OMSGRADIENT_outSlope_DESCRIPTION)
+    @Unit("m/m or °")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outSlope = null;

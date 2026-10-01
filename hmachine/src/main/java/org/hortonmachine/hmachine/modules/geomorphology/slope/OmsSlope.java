@@ -71,6 +71,7 @@ import oms3.annotations.Unit;
 @License(OMSSLOPE_LICENSE)
 public class OmsSlope extends HMModel {
     @Description(OMSSLOPE_inPit_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inPit = null;
 

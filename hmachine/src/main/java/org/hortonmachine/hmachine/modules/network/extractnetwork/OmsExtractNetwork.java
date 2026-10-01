@@ -97,22 +97,22 @@ public class OmsExtractNetwork extends GridMultiProcessing {
     @Out
     public GridCoverage2D outNet = null;
 
-    public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the raster network from an elevation model.";
+    public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the river network as a raster: the cells whose total contributing area exceeds a threshold, optionally combined with the slope or the topographic classes.";
     public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "OmsExtractNetwork.html";
-    public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
+    public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Channels, Total contributing area, Threshold";
     public static final String OMSEXTRACTNETWORK_LABEL = NETWORK;
     public static final String OMSEXTRACTNETWORK_NAME = "extractnet";
     public static final int OMSEXTRACTNETWORK_STATUS = 40;
     public static final String OMSEXTRACTNETWORK_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSEXTRACTNETWORK_AUTHORNAMES = "Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni";
     public static final String OMSEXTRACTNETWORK_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSEXTRACTNETWORK_inTca_DESCRIPTION = "The map of total contributing areas.";
-    public static final String OMSEXTRACTNETWORK_inFlow_DESCRIPTION = "The optional map of flowdirections (needed for case with slope or topographic classes).";
+    public static final String OMSEXTRACTNETWORK_inTca_DESCRIPTION = "The map of the total contributing areas.";
+    public static final String OMSEXTRACTNETWORK_inFlow_DESCRIPTION = "The map of the drainage directions, needed in the modes with slope or topographic classes.";
     public static final String OMSEXTRACTNETWORK_inSlope_DESCRIPTION = "The optional map of slope.";
     public static final String OMSEXTRACTNETWORK_inTc3_DESCRIPTION = "The optional map of aggregated topographic classes.";
-    public static final String OMSEXTRACTNETWORK_pThres_DESCRIPTION = "The threshold on the map.";
-    public static final String OMSEXTRACTNETWORK_pMode_DESCRIPTION = "The thresholding mode (default is on tca).";
-    public static final String OMSEXTRACTNETWORK_pExp_DESCRIPTION = "OmsTca exponent for the mode with slope or topographic classes (default = 0.5).";
+    public static final String OMSEXTRACTNETWORK_pThres_DESCRIPTION = "The threshold for a cell to be part of the network. In the only tca mode it is the minimum total contributing area, in number of cells: lower values give a denser network.";
+    public static final String OMSEXTRACTNETWORK_pMode_DESCRIPTION = "The criterion for the network cells.";
+    public static final String OMSEXTRACTNETWORK_pExp_DESCRIPTION = "Exponent of the total contributing area in the modes with slope or topographic classes.";
     public static final String OMSEXTRACTNETWORK_outNet_DESCRIPTION = "The extracted network raster.";
 
     /*

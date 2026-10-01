@@ -142,24 +142,24 @@ public class OmsExtractBasin extends HMModel {
     @Out
     public SimpleFeatureCollection outVectorBasin = null;
 
-    public static final String OMSEXTRACTBASIN_DESCRIPTION = "Extract a basin from a map of flowdirections.";
+    public static final String OMSEXTRACTBASIN_DESCRIPTION = "Extracts the basin draining to an outlet point, from a map of drainage directions.";
     public static final String OMSEXTRACTBASIN_DOCUMENTATION = "";
-    public static final String OMSEXTRACTBASIN_KEYWORDS = "Dem manipulation, Basin, OmsFlowDirections";
+    public static final String OMSEXTRACTBASIN_KEYWORDS = "Dem manipulation, Basin, Watershed, Outlet";
     public static final String OMSEXTRACTBASIN_LABEL = DEMMANIPULATION;
     public static final String OMSEXTRACTBASIN_NAME = "extractbasin";
     public static final int OMSEXTRACTBASIN_STATUS = 5;
     public static final String OMSEXTRACTBASIN_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSEXTRACTBASIN_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String OMSEXTRACTBASIN_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSEXTRACTBASIN_pNorth_DESCRIPTION = "The northern coordinate of the watershed outlet.";
-    public static final String OMSEXTRACTBASIN_pEast_DESCRIPTION = "The eastern coordinate of the watershed outlet.";
-    public static final String OMSEXTRACTBASIN_inFlow_DESCRIPTION = "The map of flowdirections.";
+    public static final String OMSEXTRACTBASIN_pNorth_DESCRIPTION = "The northing of the basin outlet, in the projection of the map.";
+    public static final String OMSEXTRACTBASIN_pEast_DESCRIPTION = "The easting of the basin outlet, in the projection of the map.";
+    public static final String OMSEXTRACTBASIN_inFlow_DESCRIPTION = "The map of the drainage directions.";
     public static final String OMSEXTRACTBASIN_inNetwork_DESCRIPTION = "A user supplied network map. If available, the outlet point is snapped to it before extracting the basin.";
-    public static final String OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION = "A buffer to consider for network snapping.";
+    public static final String OMSEXTRACTBASIN_pSnapbuffer_DESCRIPTION = "The maximum distance for the snapping of the outlet to the network, in map units.";
     public static final String OMSEXTRACTBASIN_doVector_DESCRIPTION = "Flag to enable vector basin extraction.";
     public static final String OMSEXTRACTBASIN_doSmoothing_DESCRIPTION = "Flag to enable vector basin smoothing.";
     public static final String OMSEXTRACTBASIN_doHighSpeed_DESCRIPTION = "Enable high speed extraction. This requires -xss to be set high (ex -Xss1024g) on the JVM for huge basins.";
-    public static final String OMSEXTRACTBASIN_outArea_DESCRIPTION = "The area of the extracted basin.";
+    public static final String OMSEXTRACTBASIN_outArea_DESCRIPTION = "The area of the extracted basin, in squared map units.";
     public static final String OMSEXTRACTBASIN_outBasin_DESCRIPTION = "The extracted basin mask.";
     public static final String OMSEXTRACTBASIN_outOutlet_DESCRIPTION = "The optional outlet point vector map.";
     public static final String OMSEXTRACTBASIN_outVectorBasin_DESCRIPTION = "The optional extracted basin vector map.";

@@ -52,6 +52,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSAB_DESCRIPTION)
 @Documentation(OMSAB_DOCUMENTATION)
@@ -63,34 +64,38 @@ import oms3.annotations.Status;
 @License(OMSAB_LICENSE)
 public class OmsAb extends GridMultiProcessing {
     @Description(OMSAB_inTca_DESCRIPTION)
+    @Unit("cells")
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSAB_inPlan_DESCRIPTION)
+    @Unit("1/m")
     @In
     public GridCoverage2D inPlan = null;
 
     @Description(OMSAB_outAb_DESCRIPTION)
+    @Unit("m")
     @Out
     public GridCoverage2D outAb = null;
 
     @Description(OMSAB_outB_DESCRIPTION)
+    @Unit("m")
     @Out
     public GridCoverage2D outB = null;
 
-    public static final String OMSAB_DESCRIPTION = "Calculates the draining area per length unit.";
+    public static final String OMSAB_DESCRIPTION = "Calculates the contributing area per unit contour length (a/b) of each cell, the specific contributing area used by the hydrological and slope stability models. The contour length b is estimated from the planar curvature, between 0.1 and 1.9 times the cell size.";
     public static final String OMSAB_DOCUMENTATION = "OmsAb.html";
-    public static final String OMSAB_KEYWORDS = "Geomorphology, OmsTca, OmsCurvatures, OmsDrainDir, OmsFlowDirections";
+    public static final String OMSAB_KEYWORDS = "Geomorphology, Contributing area, Specific contributing area";
     public static final String OMSAB_LABEL = GEOMORPHOLOGY;
     public static final String OMSAB_NAME = "ab";
     public static final int OMSAB_STATUS = 40;
     public static final String OMSAB_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSAB_AUTHORNAMES = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni";
     public static final String OMSAB_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSAB_inTca_DESCRIPTION = "The map of the total contributing area.";
-    public static final String OMSAB_inPlan_DESCRIPTION = "The map of the planar curvatures.";
-    public static final String OMSAB_outAb_DESCRIPTION = "The map of area per length.";
-    public static final String OMSAB_outB_DESCRIPTION = "The map of contour line.";
+    public static final String OMSAB_inTca_DESCRIPTION = "The map of the total contributing area, in cells.";
+    public static final String OMSAB_inPlan_DESCRIPTION = "The map of the planar curvature, as computed by the Curvatures module.";
+    public static final String OMSAB_outAb_DESCRIPTION = "The map of the contributing area per unit contour length.";
+    public static final String OMSAB_outB_DESCRIPTION = "The map of the contour length.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 
