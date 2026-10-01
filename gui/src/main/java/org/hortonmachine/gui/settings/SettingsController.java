@@ -10,6 +10,9 @@ import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_SHP_CHARS
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.util.prefs.Preferences;
@@ -17,6 +20,10 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
@@ -31,10 +38,39 @@ import org.hortonmachine.ssh.SshUtilities;
 
 public class SettingsController extends SettingsView implements IOnCloseListener {
 
+	private JSpinner dbPreviewTimeoutSpinner;
+	private JSpinner dbEditorTimeoutSpinner;
+
 	public SettingsController() {
 		setPreferredSize(new Dimension(900, 400));
 
+		_jtabbedpane1.addTab("Database", null, createDatabasePanel());
+
 		fillFromPreferences();
+	}
+
+	private JPanel createDatabasePanel() {
+		dbPreviewTimeoutSpinner = new JSpinner(new SpinnerNumberModel(HM_DEF_DB_PREVIEW_TIMEOUT, 0, 86400, 10));
+		dbEditorTimeoutSpinner = new JSpinner(new SpinnerNumberModel(HM_DEF_DB_EDITOR_TIMEOUT, 0, 86400, 10));
+
+		JPanel panel = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.insets = new Insets(5, 5, 5, 5);
+		c.anchor = GridBagConstraints.WEST;
+		c.gridy = 0;
+		panel.add(new JLabel("Table preview query timeout [s]"), c);
+		panel.add(dbPreviewTimeoutSpinner, c);
+		c.gridy = 1;
+		panel.add(new JLabel("SQL editor query timeout [s]"), c);
+		panel.add(dbEditorTimeoutSpinner, c);
+		c.gridy = 2;
+		c.gridwidth = 2;
+		c.weightx = 1;
+		c.weighty = 1;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		panel.add(new JLabel("<html>Applies to PostgreSQL/PostGIS connections. 0 means no timeout.<br>"
+				+ "Keep the editor timeout at 0 to be able to run long maintenance commands like VACUUM FULL.</html>"), c);
+		return panel;
 	}
 
 	private void fillFromPreferences() {
@@ -71,6 +107,11 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 		});
 
 		_uiScalingTextField.setText(uiScaleString);
+
+		dbPreviewTimeoutSpinner.setValue(
+				PreferencesHandler.getPreference(HM_PREF_DB_PREVIEW_TIMEOUT, HM_DEF_DB_PREVIEW_TIMEOUT));
+		dbEditorTimeoutSpinner.setValue(
+				PreferencesHandler.getPreference(HM_PREF_DB_EDITOR_TIMEOUT, HM_DEF_DB_EDITOR_TIMEOUT));
 
 		GuiUtilities.setFolderBrowsingOnWidgets(_preferencesDbPAth, _preferencesDbButton, null);
 		GuiUtilities.setFolderBrowsingOnWidgets(_copernicusRepoTextField, _copernicusRepoBrowseButton, null);
@@ -138,6 +179,9 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 			}
 			PreferencesHandler.setPreference(HM_PREF_UISCALE, String.valueOf(uiScale));
 		}
+
+		PreferencesHandler.setPreference(HM_PREF_DB_PREVIEW_TIMEOUT, String.valueOf(dbPreviewTimeoutSpinner.getValue()));
+		PreferencesHandler.setPreference(HM_PREF_DB_EDITOR_TIMEOUT, String.valueOf(dbEditorTimeoutSpinner.getValue()));
 
 		String sshPath = _sshKeyPathField.getText().trim();
 		File sshFile = new File(sshPath);

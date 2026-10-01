@@ -102,6 +102,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.HMQueryContext;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.LeafLevel;
@@ -572,29 +573,40 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                             });
                             SwingWorker<Void, Void> worker = new SwingWorker<>() {
                                 QueryResult queryResult = null;
+                                String errorMessage = null;
 
                                 @Override
                                 protected Void doInBackground() {
+                                    int timeout = isPostgres()
+                                            ? PreferencesHandler.getPreference(PreferencesHandler.HM_PREF_DB_PREVIEW_TIMEOUT,
+                                                    PreferencesHandler.HM_DEF_DB_PREVIEW_TIMEOUT)
+                                            : 0;
+                                    HMQueryContext queryContext = new HMQueryContext(timeout);
                                     try {
-                                        if (currentConnectedSqlDatabase != null) {
-                                            if (currentConnectedSqlDatabase instanceof ASpatialDb) {
-                                                queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
-                                                        currentSelectedTable.tableName.toSqlName(), null, SQL_ONSELECT_LIMIT, -1, null);
-                                            } else {
-                                                queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
-                                                        "select * from " + currentSelectedTable.tableName.fixedDoubleName, SQL_ONSELECT_LIMIT);
+                                        queryContext.run(() -> {
+                                            if (currentConnectedSqlDatabase != null) {
+                                                if (currentConnectedSqlDatabase instanceof ASpatialDb) {
+                                                    queryResult = ((ASpatialDb) currentConnectedSqlDatabase).getTableRecordsMapIn(
+                                                            currentSelectedTable.tableName.toSqlName(), null, SQL_ONSELECT_LIMIT, -1, null);
+                                                } else {
+                                                    queryResult = currentConnectedSqlDatabase.getTableRecordsMapFromRawSql(
+                                                            "select * from " + currentSelectedTable.tableName.fixedDoubleName, SQL_ONSELECT_LIMIT);
+                                                }
                                             }
-                                        } 
+                                            return null;
+                                        });
                                     } catch (Exception e) {
-                                        Logger.INSTANCE.insertError("", "ERROR", e);
+                                        errorMessage = getQueryErrorMessage(e, queryContext);
+                                        Logger.INSTANCE.insertError("", errorMessage, e);
                                     }
                                     return null;
                                 }
-                                
+
                                 @Override
                                 protected void done() {
                                     if (queryResult == null) {
-                                        String[] names = new String[]{"No data loaded..."};
+                                        String[] names = new String[]{
+                                                errorMessage != null ? "No data loaded: " + errorMessage : "No data loaded..."};
                                         Object[][] values = new Object[0][];
                                         currentDataTable.setModel(new DefaultTableModel(values, names));
                                         return;
@@ -646,12 +658,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             Logger.INSTANCE.setOutPrintStream(logConsole.getLogAreaPrintStream());
             Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
+            HMQueryContext queryContext = new HMQueryContext(getEditorQueryTimeout());
+            logConsole.setOnStop(queryContext::cancel);
 
             new Thread(() -> {
                 boolean hadErrors = false;
                 try {
                     logConsole.beginProcess("Run query");
-                    hadErrors = runQuery(sqlText, pm);
+                    hadErrors = queryContext.run(() -> runQuery(sqlText, pm));
                 } catch (Exception ex) {
                     pm.errorMessage(ex.getLocalizedMessage());
                     hadErrors = true;
@@ -704,12 +718,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             Logger.INSTANCE.setErrPrintStream(logConsole.getLogAreaPrintStream());
             JFrame window = guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
             final File f_selectedFile = selectedFile;
+            HMQueryContext queryContext = new HMQueryContext(getEditorQueryTimeout());
+            logConsole.setOnStop(queryContext::cancel);
             new Thread(() -> {
                 boolean hadErrors = false;
                 try {
                     if (f_selectedFile != null) {
                         logConsole.beginProcess("Run query");
-                        hadErrors = runQueryToFile(sqlText, f_selectedFile, pm);
+                        hadErrors = queryContext.run(() -> runQueryToFile(sqlText, f_selectedFile, pm));
                     }
                 } catch (Exception ex) {
                     pm.errorMessage(ex.getLocalizedMessage());
@@ -2724,7 +2740,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 addQueryToHistoryCombo(sqlText);
 
             } catch (Exception e1) {
-                String localizedMessage = e1.getLocalizedMessage();
+                String localizedMessage = getQueryErrorMessage(e1, HMQueryContext.current());
                 hasError = true;
                 pm.errorMessage("An error occurred: " + localizedMessage);
             } finally {
@@ -2740,6 +2756,41 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         }
         return hasError;
+    }
+
+    protected boolean isPostgres() {
+        if (currentConnectedSqlDatabase == null) {
+            return false;
+        }
+        EDb type = currentConnectedSqlDatabase.getType();
+        return type == EDb.POSTGIS || type == EDb.POSTGRES;
+    }
+
+    /**
+     * @return the timeout for the sql editor queries. Applied only to PostgreSQL, 0 means no timeout.
+     */
+    protected int getEditorQueryTimeout() {
+        if (!isPostgres()) {
+            return 0;
+        }
+        return PreferencesHandler.getPreference(PreferencesHandler.HM_PREF_DB_EDITOR_TIMEOUT,
+                PreferencesHandler.HM_DEF_DB_EDITOR_TIMEOUT);
+    }
+
+    /**
+     * Make a readable message out of a query error, telling apart timeouts and user cancels,
+     * which the driver both reports as "canceling statement due to user request".
+     */
+    protected static String getQueryErrorMessage( Exception e, HMQueryContext queryContext ) {
+        if (queryContext != null && HMQueryContext.isQueryCanceledException(e)) {
+            if (queryContext.isCanceled()) {
+                return "The query was canceled by the user.";
+            } else if (queryContext.getTimeoutSeconds() > 0) {
+                return "The query timed out after " + queryContext.getTimeoutSeconds()
+                        + " seconds. The timeout can be changed in the settings (Database tab).";
+            }
+        }
+        return e.getLocalizedMessage();
     }
 
     private String millisToTimeString( long queryTimeMillis ) {
@@ -2781,7 +2832,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedSqlDatabase.runRawSqlToCsv(sqlText, selectedFile, true, ";");
                 addQueryToHistoryCombo(sqlText);
             } catch (Exception e1) {
-                String localizedMessage = e1.getLocalizedMessage();
+                String localizedMessage = getQueryErrorMessage(e1, HMQueryContext.current());
                 hasError = true;
                 pm.errorMessage("An error occurred: " + localizedMessage);
             } finally {

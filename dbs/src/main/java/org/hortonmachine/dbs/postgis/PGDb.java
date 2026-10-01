@@ -17,10 +17,15 @@
  */
 package org.hortonmachine.dbs.postgis;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,12 +36,14 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.ETableType;
+import org.hortonmachine.dbs.compat.HMQueryContext;
 import org.hortonmachine.dbs.compat.IDbVisitor;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.compat.objects.ForeignKey;
 import org.hortonmachine.dbs.compat.objects.Index;
+import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.hm.HMConnection;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -62,6 +69,8 @@ public class PGDb extends ADb {
     private ComboPooledDataSource comboPooledDataSource;
     private ConnectionData connectionData;
 
+    private static String applicationName = "HortonMachine";
+
     static {
         try {
             Class.forName(DRIVER_CLASS);
@@ -73,6 +82,16 @@ public class PGDb extends ADb {
     @Override
     public EDb getType() {
         return EDb.POSTGRES;
+    }
+
+    /**
+     * Set the application name sent to the server for connections opened after this call
+     * (visible as application_name in pg_stat_activity).
+     *
+     * @param name the name or <code>null</code> to not send any.
+     */
+    public static void setApplicationName( String name ) {
+        applicationName = name;
     }
 
     public void setCredentials( String user, String password ) {
@@ -104,6 +123,11 @@ public class PGDb extends ADb {
         boolean dbExists = true;
 
         String jdbcUrl = EDb.POSTGRES.getJdbcPrefix() + dbPath;
+        if (applicationName != null && !dbPath.contains("ApplicationName=")) {
+            // makes the connections identifiable in pg_stat_activity
+            jdbcUrl += (dbPath.contains("?") ? "&" : "?") + "ApplicationName="
+                    + URLEncoder.encode(applicationName, StandardCharsets.UTF_8);
+        }
 
         if (makePooled) {
         	System.setProperty("com.mchange.v2.log.MLog", "com.mchange.v2.log.FallbackMLog");
@@ -151,15 +175,15 @@ public class PGDb extends ADb {
             // This setting specifies whether the pool should continue to attempt to acquire
             // a new connection after a failure.
             comboPooledDataSource.setBreakAfterAcquireFailure(false);
-            // TODO remove after debug
-            // comboPooledDataSource.setUnreturnedConnectionTimeout(180);
-            
+
             comboPooledDataSource.setTestConnectionOnCheckout(false);
             comboPooledDataSource.setIdleConnectionTestPeriod(60);
             comboPooledDataSource.setPreferredTestQuery("SELECT 1");
-            
-            comboPooledDataSource.setUnreturnedConnectionTimeout(180);
-            comboPooledDataSource.setDebugUnreturnedConnectionStackTraces(true);
+
+            // No unreturnedConnectionTimeout: it forcibly reclaims connections that are checked
+            // out for longer than the timeout, which kills legitimately long statements
+            // (big table scans, VACUUM FULL, ...). Query timeouts are handled per statement
+            // through HMQueryContext instead.
 
 
         } else {
@@ -518,6 +542,176 @@ public class PGDb extends ADb {
         });
 
         return dbs;
+    }
+
+    /**
+     * Get size and vacuum/analyze statistics of a table, useful to detect table bloat.
+     *
+     * @param db the postgres/postgis db.
+     * @param table the table.
+     * @return the result, with a single row or no rows if no statistics are available
+     *          (e.g. for views).
+     * @throws Exception
+     */
+    public static QueryResult getTableHealth( ADb db, SqlName table ) throws Exception {
+        String sql = """
+                SELECT pg_size_pretty(pg_total_relation_size(c.oid)) AS total_size,
+                       pg_size_pretty(pg_relation_size(c.oid))       AS heap_size,
+                       pg_relation_size(c.oid)                       AS heap_bytes,
+                       s.n_live_tup, s.n_dead_tup,
+                       s.last_vacuum, s.last_autovacuum, s.last_analyze, s.last_autoanalyze
+                FROM pg_stat_user_tables s
+                JOIN pg_class c ON c.oid = s.relid
+                WHERE s.relid = ?::regclass
+                """;
+        return runQueryToResult(db, sql, table.fixedDoubleName);
+    }
+
+    /**
+     * @return the size in bytes of the table heap (no indexes, no toast).
+     */
+    public static long getTableHeapSize( ADb db, SqlName table ) throws Exception {
+        QueryResult result = runQueryToResult(db, "SELECT pg_relation_size(?::regclass)", table.fixedDoubleName);
+        return ((Number) result.data.get(0)[0]).longValue();
+    }
+
+    /**
+     * @return the server version as number, ex. 160002 for 16.2.
+     */
+    public static int getServerVersionNum( ADb db ) throws Exception {
+        QueryResult result = runQueryToResult(db, "SHOW server_version_num");
+        return Integer.parseInt(result.data.get(0)[0].toString().trim());
+    }
+
+    /**
+     * Run a <code>VACUUM (VERBOSE, ANALYZE)</code>, optionally <code>FULL</code>, on a table.
+     *
+     * <p>The statement runs without query timeout and in autocommit mode, since VACUUM can't run
+     * inside a transaction block. If called inside a {@link HMQueryContext}, it can be canceled
+     * through it.</p>
+     *
+     * <p><b>A FULL vacuum takes an ACCESS EXCLUSIVE lock on the table for the whole run.</b></p>
+     *
+     * @param db the postgres/postgis db.
+     * @param table the table to vacuum.
+     * @param full if <code>true</code>, the table is rewritten (VACUUM FULL).
+     * @return the VERBOSE output of the server.
+     * @throws Exception
+     */
+    public static String vacuumTable( ADb db, SqlName table, boolean full ) throws Exception {
+        String sql = "VACUUM (" + (full ? "FULL, " : "") + "VERBOSE, ANALYZE) " + table.fixedDoubleName;
+        return db.execOnConnection(connection -> {
+            Connection conn = getOriginalConnection(connection);
+            if (!conn.getAutoCommit()) {
+                conn.setAutoCommit(true);
+            }
+            try (Statement stmt = conn.createStatement()) {
+                stmt.setQueryTimeout(0);
+                HMQueryContext.register(stmt, false);
+                stmt.execute(sql);
+
+                StringBuilder sb = new StringBuilder();
+                SQLWarning warning = stmt.getWarnings();
+                while( warning != null ) {
+                    sb.append(warning.getMessage()).append("\n");
+                    warning = warning.getNextWarning();
+                }
+                return sb.toString();
+            }
+        });
+    }
+
+    /**
+     * Get the progress of a running VACUUM FULL (or CLUSTER) on a table. Needs PostgreSQL 12+.
+     *
+     * <p>Has to be called from a different connection than the one running the vacuum.</p>
+     *
+     * @return the array [phase, heap_blks_scanned, heap_blks_total] or <code>null</code>, if
+     *          no operation is running.
+     */
+    public static Object[] getVacuumFullProgress( ADb db, SqlName table ) throws Exception {
+        String sql = "SELECT phase, heap_blks_scanned, heap_blks_total FROM pg_stat_progress_cluster WHERE relid = ?::regclass";
+        QueryResult result = runQueryToResult(db, sql, table.fixedDoubleName);
+        if (result.data.isEmpty()) {
+            return null;
+        }
+        return result.data.get(0);
+    }
+
+    /**
+     * Get the sessions of the current database that are idle in transaction, blocked, blocking
+     * other sessions or holding a snapshot (backend_xmin), which keeps VACUUM from removing
+     * dead rows. The session running the query is excluded.
+     */
+    public static QueryResult getBlockingAndIdleInTransactionSessions( ADb db ) throws Exception {
+        String sql = """
+                SELECT pid, usename, application_name, client_addr::text AS client_addr, state,
+                       xact_start, backend_xmin::text AS backend_xmin,
+                       array_to_string(pg_blocking_pids(pid), ',') AS blocked_by,
+                       wait_event_type, left(query, 120) AS query
+                FROM pg_stat_activity
+                WHERE datname = current_database()
+                  AND pid <> pg_backend_pid()
+                  AND (state LIKE 'idle in transaction%'
+                       OR cardinality(pg_blocking_pids(pid)) > 0
+                       OR pid IN (SELECT unnest(pg_blocking_pids(a.pid)) FROM pg_stat_activity a)
+                       OR backend_xmin IS NOT NULL)
+                ORDER BY xact_start NULLS LAST
+                """;
+        return runQueryToResult(db, sql);
+    }
+
+    /**
+     * Terminate a server session. Needs superuser, pg_signal_backend or being the same user.
+     *
+     * @return <code>true</code> if the signal was sent successfully.
+     */
+    public static boolean terminateBackend( ADb db, int pid ) throws Exception {
+        QueryResult result = runQueryToResult(db, "SELECT pg_terminate_backend(?)", pid);
+        Object value = result.data.get(0)[0];
+        return value instanceof Boolean && (Boolean) value;
+    }
+
+    private static Connection getOriginalConnection( IHMConnection connection ) {
+        if (connection instanceof HMConnection) {
+            return ((HMConnection) connection).getOriginalConnection();
+        }
+        throw new IllegalArgumentException("A jdbc connection is needed.");
+    }
+
+    private static QueryResult runQueryToResult( ADb db, String sql, Object... params ) throws Exception {
+        return db.execOnConnection(connection -> {
+            Connection conn = getOriginalConnection(connection);
+            try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+                HMQueryContext.register(stmt, false);
+                for( int i = 0; i < params.length; i++ ) {
+                    stmt.setObject(i + 1, params[i]);
+                }
+                QueryResult result = new QueryResult();
+                try (ResultSet rs = stmt.executeQuery()) {
+                    ResultSetMetaData metaData = rs.getMetaData();
+                    int columnCount = metaData.getColumnCount();
+                    for( int i = 1; i <= columnCount; i++ ) {
+                        result.names.add(metaData.getColumnLabel(i));
+                        result.types.add(metaData.getColumnTypeName(i));
+                    }
+                    while( rs.next() ) {
+                        Object[] row = new Object[columnCount];
+                        for( int i = 1; i <= columnCount; i++ ) {
+                            Object value = rs.getObject(i);
+                            if (value != null && !(value instanceof Number || value instanceof CharSequence
+                                    || value instanceof Boolean || value instanceof java.util.Date)) {
+                                // driver specific objects (arrays, PGobject, ...)
+                                value = value.toString();
+                            }
+                            row[i - 1] = value;
+                        }
+                        result.data.add(row);
+                    }
+                }
+                return result;
+            }
+        });
     }
 
 }

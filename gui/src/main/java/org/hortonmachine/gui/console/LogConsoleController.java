@@ -22,11 +22,20 @@ public class LogConsoleController extends LogConsoleView {
     private IHMProgressMonitor pm = null;
     private String processName;
     private PrintStream logAreaPrintStream;
+    private Runnable onStop;
 
     public LogConsoleController( final IHMProgressMonitor pm ) {
         if (pm != null)
             this.pm = pm;
         init();
+    }
+
+    /**
+     * Set an additional action to run when the stop button is pressed (besides canceling the
+     * progress monitor), e.g. to cancel a running database statement.
+     */
+    public void setOnStop( Runnable onStop ) {
+        this.onStop = onStop;
     }
 
     private void init() {
@@ -53,6 +62,8 @@ public class LogConsoleController extends LogConsoleView {
             public void actionPerformed( ActionEvent e ) {
                 if (pm != null)
                     pm.setCanceled(true);
+                if (onStop != null)
+                    onStop.run();
                 stopButton.setEnabled(false);
             }
         });

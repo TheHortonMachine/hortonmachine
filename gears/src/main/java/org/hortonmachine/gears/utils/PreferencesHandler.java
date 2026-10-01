@@ -39,6 +39,18 @@ public class PreferencesHandler {
     
     public static final String HM_PREF_SHP_CHARSET = "hm_pref_shp_charset";
 
+    /**
+     * Timeout in seconds for the table preview queries of the database viewer (PostgreSQL only).
+     */
+    public static final String HM_PREF_DB_PREVIEW_TIMEOUT = "hm_pref_db_preview_timeout";
+    public static final int HM_DEF_DB_PREVIEW_TIMEOUT = 60;
+    /**
+     * Timeout in seconds for the queries run from the database viewer sql editor (PostgreSQL
+     * only). 0 means no timeout.
+     */
+    public static final String HM_PREF_DB_EDITOR_TIMEOUT = "hm_pref_db_editor_timeout";
+    public static final int HM_DEF_DB_EDITOR_TIMEOUT = 0;
+
     public static final String PREFS_NODE_NAME = "/org/hortonmachine/gui";
 
     public static final String LAST_PATH = "KEY_LAST_PATH";
@@ -103,6 +115,22 @@ public class PreferencesHandler {
         Preferences preferences = Preferences.userRoot().node(PREFS_NODE_NAME);
         String preference = preferences.get(preferenceKey, defaultValue);
         return preference;
+    }
+
+    /**
+     * Get an integer from preference.
+     *
+     * @param preferenceKey the preference key.
+     * @param defaultValue the default value in case of missing or unparsable value.
+     * @return the int preference asked.
+     */
+    public static int getPreference( String preferenceKey, int defaultValue ) {
+        String value = getPreference(preferenceKey, String.valueOf(defaultValue));
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (Exception e) {
+            return defaultValue;
+        }
     }
 
     public static String[] getPreference( String preferenceKey, String[] defaultValue ) {

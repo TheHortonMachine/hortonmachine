@@ -1,6 +1,6 @@
 # Settings
 
-The Settings application edits the preferences shared by all the HortonMachine applications and modules: network proxy, character encoding, interface scaling, SSH keys, native libraries and credentials for data services.
+The Settings application edits the preferences shared by all the HortonMachine applications and modules: network proxy, character encoding, interface scaling, SSH keys, native libraries, credentials for data services and database query timeouts.
 
 ## Launching
 
@@ -55,3 +55,13 @@ The folder containing the SpatiaLite loadable modules (`mod_spatialite`), needed
 ## Copernicus
 
 The API token and the download folder used by the modules that download data from the Copernicus climate services. These are not needed for the Copernicus DEM used by the 3D terrain of the [Simple NWW Viewer](nwwviewer.md), which is open data.
+
+## Database
+
+The time limits, in seconds, for the queries the [Database Viewer](dbviewer.md) runs on PostGIS databases. A query that runs longer is stopped and the viewer reports that it timed out. `0` means no limit. They don't apply to the other database types.
+
+Table preview query timeout
+: the limit for loading the first records of a table when it is selected in the database tree, 60 seconds by default. It keeps a very slow table from loading forever.
+
+SQL editor query timeout
+: the limit for the queries run from the SQL Editor, `0` (no limit) by default. Keep it at `0` to run long commands, like a `VACUUM FULL` on a large table; a running query can always be stopped with the stop button of its console window.

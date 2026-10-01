@@ -21,7 +21,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Savepoint;
+import java.sql.Statement;
 
+import org.hortonmachine.dbs.compat.HMQueryContext;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -47,13 +49,16 @@ public class HMConnection implements IHMConnection {
     }
 
     public IHMStatement createStatement() throws SQLException {
-        IHMStatement statement = new HMStatement(connection.createStatement());
+        Statement tmp = connection.createStatement();
+        HMQueryContext.register(tmp, true);
+        IHMStatement statement = new HMStatement(tmp);
         return statement;
     }
 
     @Override
     public IHMPreparedStatement prepareStatement( String sql ) throws SQLException {
         PreparedStatement tmp = connection.prepareStatement(sql);
+        HMQueryContext.register(tmp, false);
         IHMPreparedStatement preparedStatement = new HMPreparedStatement(tmp);
         return preparedStatement;
     }
@@ -61,6 +66,7 @@ public class HMConnection implements IHMConnection {
     @Override
     public IHMPreparedStatement prepareStatement( String sql, int returnGeneratedKeys ) throws SQLException {
         PreparedStatement tmp = connection.prepareStatement(sql, returnGeneratedKeys);
+        HMQueryContext.register(tmp, false);
         IHMPreparedStatement preparedStatement = new HMPreparedStatement(tmp);
         return preparedStatement;
     }

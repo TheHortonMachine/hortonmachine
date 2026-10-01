@@ -77,6 +77,13 @@ public abstract class ADb implements AutoCloseable, IVisitableDb {
         this.makePooled = makePooled;
     }
 
+    /**
+     * @return <code>true</code> if the connections are pooled.
+     */
+    public boolean isPooled() {
+        return makePooled;
+    }
+
     public void setMinMaxPoolSize(Integer minSize, Integer maxSize) {
         if(minSize != null) {
             this.minSize = minSize;

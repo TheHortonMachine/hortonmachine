@@ -47,6 +47,7 @@ import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.LogDb;
+import org.hortonmachine.dbs.postgis.PGDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.dbs.utils.TimeseriesTableUtils;
@@ -86,6 +87,8 @@ public class DatabaseViewer extends DatabaseController {
 
     public DatabaseViewer( GuiBridgeHandler guiBridge ) {
         super(guiBridge);
+        // makes the viewer sessions identifiable in pg_stat_activity
+        PGDb.setApplicationName("HortonMachine DbViewer");
     }
 
     protected void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize, JTextPane sqlEditorArea ) {
@@ -349,6 +352,7 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getDropDatabaseAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getViewActiveSessionsAction(guiBridge, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getCleanIdleSessionsAction(guiBridge, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getBlockingSessionsAction(this));
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getCopyDatabasePathAction(this));
         addIfNotNull(actions, sqlTemplatesAndActions.getSaveConnectionAction(this));
@@ -397,6 +401,11 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getDropAction(selectedTable, this));
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getReprojectTableAction(selectedTable, this));
+        addSeparator(actions);
+        addIfNotNull(actions, sqlTemplatesAndActions.getTableHealthAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getVacuumAnalyzeAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getVacuumFullAction(selectedTable, this));
+        addIfNotNull(actions, sqlTemplatesAndActions.getBlockingSessionsAction(this));
         addSeparator(actions);
         if (selectedTable.isGeo) {
             EDb type = currentConnectedSqlDatabase.getType();

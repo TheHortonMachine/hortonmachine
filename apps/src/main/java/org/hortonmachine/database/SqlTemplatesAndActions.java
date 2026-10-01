@@ -18,6 +18,11 @@
 package org.hortonmachine.database;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dialog.ModalityType;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,18 +36,30 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableModel;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
@@ -58,6 +75,7 @@ import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.HMQueryContext;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
@@ -1276,5 +1294,428 @@ public class SqlTemplatesAndActions {
             };
         }
         return null;
+    }
+
+    /**
+     * Heap size above which a table is checked for bloat.
+     */
+    private static final long BLOAT_MIN_HEAP_BYTES = 10L * 1024 * 1024;
+    /**
+     * Heap bytes per live row above which a table is considered bloated. Larger values are
+     * TOASTed, so a heap row rarely exceeds 2kB: more than a whole 8kB page per live row means
+     * the heap is mostly empty space.
+     */
+    private static final long BLOAT_MAX_BYTES_PER_ROW = 8192;
+
+    private static boolean isPostgres( DatabaseViewer databaseViewer ) {
+        EDb type = databaseViewer.currentConnectedSqlDatabase.getType();
+        return type == EDb.POSTGIS || type == EDb.POSTGRES;
+    }
+
+    public Action getTableHealthAction( TableLevel table, DatabaseViewer databaseViewer ) {
+        if (!isPostgres(databaseViewer)) {
+            return null;
+        }
+        return new AbstractAction("Table health / bloat check", ImageCache.get(ImageCache.INFOTOOL_ON)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                ADb db = databaseViewer.currentConnectedSqlDatabase;
+                new SwingWorker<QueryResult, Void>(){
+                    @Override
+                    protected QueryResult doInBackground() throws Exception {
+                        return PGDb.getTableHealth(db, table.tableName);
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            QueryResult result = get();
+                            String tableName = table.tableName.getFullName();
+                            if (result.data.isEmpty()) {
+                                GuiUtilities.showInfoMessage(databaseViewer, "Table health",
+                                        "No statistics available for " + tableName + " (views and foreign tables have none).");
+                                return;
+                            }
+                            Object[] row = result.data.get(0);
+                            Object[][] rows = new Object[result.names.size()][];
+                            for( int i = 0; i < rows.length; i++ ) {
+                                rows[i] = new Object[]{result.names.get(i), row[i]};
+                            }
+                            JTable propertiesTable = new JTable(rows, new String[]{"Property", "Value"});
+                            propertiesTable.setDefaultEditor(Object.class, null);
+                            JScrollPane scrollPane = new JScrollPane(propertiesTable);
+                            scrollPane.setPreferredSize(new Dimension(500, 200));
+
+                            JPanel panel = new JPanel(new BorderLayout(0, 10));
+                            panel.add(scrollPane, BorderLayout.CENTER);
+                            panel.add(new JLabel("<html>" + interpretTableHealth(result) + "</html>"), BorderLayout.SOUTH);
+                            JOptionPane.showMessageDialog(databaseViewer, panel, "Table health: " + tableName,
+                                    JOptionPane.INFORMATION_MESSAGE);
+                        } catch (Exception ex) {
+                            GuiUtilities.handleError(databaseViewer, unwrap(ex));
+                        }
+                    }
+                }.execute();
+            }
+        };
+    }
+
+    private static String interpretTableHealth( QueryResult result ) {
+        Object[] row = result.data.get(0);
+        long heapBytes = toLong(row[result.names.indexOf("heap_bytes")]);
+        long live = toLong(row[result.names.indexOf("n_live_tup")]);
+        long dead = toLong(row[result.names.indexOf("n_dead_tup")]);
+        boolean analyzed = row[result.names.indexOf("last_analyze")] != null
+                || row[result.names.indexOf("last_autoanalyze")] != null;
+
+        StringBuilder sb = new StringBuilder();
+        if (live > 0) {
+            sb.append("Heap size per live row: ").append(formatBytes(heapBytes / live)).append(".");
+        } else {
+            sb.append("No live rows in the statistics.");
+        }
+        if (!analyzed) {
+            sb.append("<br>The table was never analyzed, the row counts may be inaccurate: run VACUUM ANALYZE first.");
+        }
+        if (heapBytes > BLOAT_MIN_HEAP_BYTES && (live == 0 || heapBytes / live > BLOAT_MAX_BYTES_PER_ROW || dead > live)) {
+            sb.append("<br><b>Table appears bloated - consider VACUUM FULL.</b>");
+        } else if (dead > 0 && dead > live / 5) {
+            sb.append("<br>Many dead rows - consider VACUUM ANALYZE.");
+        } else {
+            sb.append("<br>No signs of bloat.");
+        }
+        return sb.toString();
+    }
+
+    public Action getVacuumAnalyzeAction( TableLevel table, DatabaseViewer databaseViewer ) {
+        if (!isPostgres(databaseViewer)) {
+            return null;
+        }
+        return new AbstractAction("VACUUM ANALYZE", ImageCache.get(ImageCache.TEMPLATE)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                runVacuum(table, databaseViewer, false, -1);
+            }
+        };
+    }
+
+    public Action getVacuumFullAction( TableLevel table, DatabaseViewer databaseViewer ) {
+        if (!isPostgres(databaseViewer)) {
+            return null;
+        }
+        return new AbstractAction("VACUUM FULL (rewrite table)", ImageCache.get(ImageCache.TEMPLATE)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                ADb db = databaseViewer.currentConnectedSqlDatabase;
+                // pg_relation_size needs a lock on the table, so keep it off the EDT
+                new SwingWorker<Long, Void>(){
+                    @Override
+                    protected Long doInBackground() throws Exception {
+                        return PGDb.getTableHeapSize(db, table.tableName);
+                    }
+
+                    @Override
+                    protected void done() {
+                        try {
+                            long heapSize = get();
+                            String msg = "<html>VACUUM FULL rewrites the table <b>" + table.tableName.getFullName()
+                                    + "</b>, current heap size: <b>" + formatBytes(heapSize) + "</b>.<br><br>"
+                                    + "It takes an <b>ACCESS EXCLUSIVE lock</b>: all reads and writes on the table<br>"
+                                    + "are blocked while it runs. The duration depends on the on-disk size<br>"
+                                    + "of the table, not on the number of rows. Enough free disk space for<br>"
+                                    + "a new copy of the table and its indexes is needed.<br><br>Continue?</html>";
+                            int answer = JOptionPane.showConfirmDialog(databaseViewer, msg, "VACUUM FULL",
+                                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
+                            if (answer == JOptionPane.OK_OPTION) {
+                                runVacuum(table, databaseViewer, true, heapSize);
+                            }
+                        } catch (Exception ex) {
+                            GuiUtilities.handleError(databaseViewer, unwrap(ex));
+                        }
+                    }
+                }.execute();
+            }
+        };
+    }
+
+    /**
+     * Run a vacuum in background, with a cancelable status dialog and, for VACUUM FULL,
+     * progress reporting.
+     */
+    private void runVacuum( TableLevel table, DatabaseViewer databaseViewer, boolean full, long heapSizeBefore ) {
+        ADb db = databaseViewer.currentConnectedSqlDatabase;
+        SqlName tableName = table.tableName;
+        String title = (full ? "VACUUM FULL " : "VACUUM ANALYZE ") + tableName.getFullname();
+        // no timeout, but cancelable
+        HMQueryContext queryContext = new HMQueryContext(0);
+
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(databaseViewer), title, ModalityType.MODELESS);
+        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+        JLabel statusLabel = new JLabel("Running " + title + "...");
+        JProgressBar progressBar = new JProgressBar(0, 1000);
+        progressBar.setIndeterminate(true);
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> {
+            cancelButton.setEnabled(false);
+            statusLabel.setText("Canceling...");
+            queryContext.cancel();
+        });
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(cancelButton);
+        JPanel panel = new JPanel(new BorderLayout(0, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panel.add(statusLabel, BorderLayout.NORTH);
+        panel.add(progressBar, BorderLayout.CENTER);
+        panel.add(buttonPanel, BorderLayout.SOUTH);
+        dialog.getContentPane().add(panel);
+        dialog.setSize(500, 150);
+        dialog.setLocationRelativeTo(databaseViewer);
+        dialog.setVisible(true);
+
+        SwingWorker<String, Void> worker = new SwingWorker<>(){
+            long heapSizeAfter = -1;
+
+            @Override
+            protected String doInBackground() throws Exception {
+                String output = queryContext.run(() -> PGDb.vacuumTable(db, tableName, full));
+                if (full) {
+                    try {
+                        heapSizeAfter = PGDb.getTableHeapSize(db, tableName);
+                    } catch (Exception e) {
+                        // only informative
+                    }
+                }
+                return output;
+            }
+
+            @Override
+            protected void done() {
+                dialog.dispose();
+                try {
+                    String output = get();
+                    StringBuilder sb = new StringBuilder();
+                    if (full) {
+                        sb.append("Heap size before: ").append(formatBytes(heapSizeBefore)).append("\n");
+                        sb.append("Heap size after:  ").append(heapSizeAfter >= 0 ? formatBytes(heapSizeAfter) : "unknown")
+                                .append("\n\n");
+                    }
+                    sb.append(output.isBlank() ? "No output from the server." : output);
+                    showTextDialog(databaseViewer, title + " - done", sb.toString());
+                } catch (Exception ex) {
+                    Exception cause = unwrap(ex);
+                    if (queryContext.isCanceled() && HMQueryContext.isQueryCanceledException(cause)) {
+                        GuiUtilities.showWarningMessage(databaseViewer, title,
+                                "The vacuum was canceled, the table was left unchanged.");
+                    } else {
+                        GuiUtilities.handleError(databaseViewer, cause);
+                    }
+                }
+            }
+        };
+        worker.execute();
+
+        if (full) {
+            startVacuumFullProgressPolling(db, tableName, worker, statusLabel, progressBar);
+        }
+    }
+
+    /**
+     * Poll pg_stat_progress_cluster from a second pooled connection while the VACUUM FULL runs.
+     */
+    private void startVacuumFullProgressPolling( ADb db, SqlName tableName, SwingWorker<String, Void> worker, JLabel statusLabel,
+            JProgressBar progressBar ) {
+        Thread poller = new Thread(() -> {
+            try {
+                if (!db.isPooled()) {
+                    SwingUtilities.invokeLater(() -> statusLabel.setText("Running... (no progress available without connection pool)"));
+                    return;
+                }
+                if (PGDb.getServerVersionNum(db) < 120000) {
+                    SwingUtilities.invokeLater(() -> statusLabel.setText("Running... (progress reporting needs PostgreSQL 12+)"));
+                    return;
+                }
+                while( !worker.isDone() ) {
+                    Thread.sleep(1500);
+                    if (worker.isDone()) {
+                        break;
+                    }
+                    Object[] progress = PGDb.getVacuumFullProgress(db, tableName);
+                    SwingUtilities.invokeLater(() -> {
+                        if (worker.isDone()) {
+                            return;
+                        }
+                        if (progress == null) {
+                            statusLabel.setText("Waiting to start (possibly waiting for the table lock)...");
+                            return;
+                        }
+                        long scanned = toLong(progress[1]);
+                        long total = toLong(progress[2]);
+                        statusLabel.setText("Phase: " + progress[0] + " (" + scanned + " / " + total + " heap blocks)");
+                        if (total > 0) {
+                            int permill = (int) Math.min(1000, scanned * 1000 / total);
+                            progressBar.setIndeterminate(false);
+                            progressBar.setValue(permill);
+                            progressBar.setStringPainted(true);
+                            progressBar.setString(permill / 10 + "%");
+                        }
+                    });
+                }
+            } catch (InterruptedException e) {
+                // stop polling
+            } catch (Exception e) {
+                SwingUtilities.invokeLater(() -> {
+                    if (!worker.isDone()) {
+                        statusLabel.setText("Running... (progress not available: " + e.getLocalizedMessage() + ")");
+                    }
+                });
+            }
+        }, "VACUUM FULL progress poller");
+        poller.setDaemon(true);
+        poller.start();
+    }
+
+    public Action getBlockingSessionsAction( DatabaseViewer databaseViewer ) {
+        if (!isPostgres(databaseViewer)) {
+            return null;
+        }
+        return new AbstractAction("Show blocking / idle-in-transaction sessions", ImageCache.get(ImageCache.LIST)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                showBlockingSessionsDialog(databaseViewer);
+            }
+        };
+    }
+
+    private void showBlockingSessionsDialog( DatabaseViewer databaseViewer ) {
+        ADb db = databaseViewer.currentConnectedSqlDatabase;
+        JDialog dialog = new JDialog(SwingUtilities.getWindowAncestor(databaseViewer),
+                "Blocking / idle-in-transaction sessions", ModalityType.MODELESS);
+        DefaultTableModel model = new DefaultTableModel(){
+            @Override
+            public boolean isCellEditable( int row, int column ) {
+                return false;
+            }
+        };
+        JTable sessionsTable = new JTable(model);
+        sessionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        JLabel infoLabel = new JLabel(" ");
+
+        Runnable reload = () -> {
+            infoLabel.setText("Loading...");
+            new SwingWorker<QueryResult, Void>(){
+                @Override
+                protected QueryResult doInBackground() throws Exception {
+                    return PGDb.getBlockingAndIdleInTransactionSessions(db);
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        QueryResult result = get();
+                        model.setDataVector(result.data.toArray(new Object[0][]), result.names.toArray());
+                        infoLabel.setText(result.data.size() + " session(s) idle in transaction, blocked, blocking or holding a snapshot.");
+                    } catch (Exception ex) {
+                        infoLabel.setText("Error: " + unwrap(ex).getLocalizedMessage());
+                    }
+                }
+            }.execute();
+        };
+
+        JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(e -> reload.run());
+        JButton terminateButton = new JButton("Terminate selected session");
+        terminateButton.addActionListener(e -> {
+            int row = sessionsTable.getSelectedRow();
+            int pidColumn = model.findColumn("pid");
+            if (row < 0 || pidColumn < 0) {
+                GuiUtilities.showWarningMessage(dialog, "Select a session first.");
+                return;
+            }
+            int pid = ((Number) model.getValueAt(row, pidColumn)).intValue();
+            Object user = model.getValueAt(row, model.findColumn("usename"));
+            Object app = model.getValueAt(row, model.findColumn("application_name"));
+            String msg = "Terminate the session with pid " + pid + " (user: " + user + ", application: " + app + ")?\n"
+                    + "Its open transaction will be rolled back and its client disconnected.";
+            int answer = JOptionPane.showConfirmDialog(dialog, msg, "Terminate session", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.WARNING_MESSAGE);
+            if (answer != JOptionPane.OK_OPTION) {
+                return;
+            }
+            new SwingWorker<Boolean, Void>(){
+                @Override
+                protected Boolean doInBackground() throws Exception {
+                    return PGDb.terminateBackend(db, pid);
+                }
+
+                @Override
+                protected void done() {
+                    try {
+                        if (!get()) {
+                            GuiUtilities.showWarningMessage(dialog, "The session " + pid + " could not be terminated (maybe it already ended).");
+                        }
+                    } catch (Exception ex) {
+                        // usually missing privileges
+                        GuiUtilities.showErrorMessage(dialog, "Terminate session",
+                                "Unable to terminate the session " + pid + ":\n" + unwrap(ex).getLocalizedMessage());
+                    }
+                    reload.run();
+                }
+            }.execute();
+        });
+        JButton closeButton = new JButton("Close");
+        closeButton.addActionListener(e -> dialog.dispose());
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(refreshButton);
+        buttonPanel.add(terminateButton);
+        buttonPanel.add(closeButton);
+        JPanel southPanel = new JPanel(new BorderLayout());
+        southPanel.add(infoLabel, BorderLayout.CENTER);
+        southPanel.add(buttonPanel, BorderLayout.EAST);
+        JPanel panel = new JPanel(new BorderLayout(0, 5));
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        panel.add(new JScrollPane(sessionsTable), BorderLayout.CENTER);
+        panel.add(southPanel, BorderLayout.SOUTH);
+        dialog.getContentPane().add(panel);
+        dialog.setSize(1100, 400);
+        dialog.setLocationRelativeTo(databaseViewer);
+        dialog.setVisible(true);
+
+        reload.run();
+    }
+
+    private static void showTextDialog( Component parent, String title, String text ) {
+        JTextArea textArea = new JTextArea(text);
+        textArea.setEditable(false);
+        textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, textArea.getFont().getSize()));
+        textArea.setCaretPosition(0);
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(800, 400));
+        JOptionPane.showMessageDialog(parent, scrollPane, title, JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private static Exception unwrap( Exception ex ) {
+        if (ex instanceof ExecutionException && ex.getCause() instanceof Exception) {
+            return (Exception) ex.getCause();
+        }
+        return ex;
+    }
+
+    private static long toLong( Object value ) {
+        return value instanceof Number ? ((Number) value).longValue() : 0;
+    }
+
+    private static String formatBytes( long bytes ) {
+        if (bytes < 0) {
+            return "unknown";
+        }
+        String[] units = {"B", "kB", "MB", "GB", "TB"};
+        double value = bytes;
+        int unit = 0;
+        while( value >= 1024 && unit < units.length - 1 ) {
+            value /= 1024;
+            unit++;
+        }
+        return unit == 0 ? bytes + " B" : String.format("%.1f %s", value, units[unit]);
     }
 }

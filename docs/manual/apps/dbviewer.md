@@ -156,6 +156,8 @@ Format dates
 
 Right-click in the SQL Editor to save the current query, load a saved one, or export and import the saved queries.
 
+While a query runs, its progress is shown in a console window: press its stop button to cancel the query. On PostGIS, the time limits for the editor queries and for the table previews are set in the **Database** tab of the [Settings](settings.md#database).
+
 ### SQL history and templates
 
 **sql history** lists the queries run so far; select one to see it in full and press **Use** to bring it back into the editor.
