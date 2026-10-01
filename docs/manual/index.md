@@ -1,4 +1,4 @@
-# The HortonMachine manual
+# The HortonMachine - an open source geospatial library focused on hydro-geomorphological analysis and environmental modelling
 
 The HortonMachine is an open source geospatial library, written in Java, focused on hydro-geomorphological analysis and environmental modelling.
 
