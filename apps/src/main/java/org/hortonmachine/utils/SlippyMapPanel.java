@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.stac;
+package org.hortonmachine.utils;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -65,7 +65,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
 /**
- * A lightweight slippy map (OpenStreetMap tiles in web mercator) to show stac extents and footprints
+ * A lightweight slippy map (OpenStreetMap tiles in web mercator) to show extents, footprints and image overlays
  * and to draw query regions. All geometries are expected in WGS84 lon/lat.
  *
  * <ul>
@@ -78,9 +78,9 @@ import org.locationtech.jts.geom.Polygon;
  * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("serial")
-public class StacMapPanel extends JPanel {
+public class SlippyMapPanel extends JPanel {
     private static final String TILE_URL = "https://tile.openstreetmap.org/%d/%d/%d.png";
-    private static final String USER_AGENT = "HortonMachine-StacBrowser/1.0 (https://github.com/moovida/hortonmachine)";
+    private static final String USER_AGENT = "HortonMachine/1.0 (https://github.com/moovida/hortonmachine)";
     private static final int TILE_SIZE = 256;
     private static final int MIN_ZOOM = 1;
     private static final int MAX_ZOOM = 18;
@@ -104,7 +104,7 @@ public class StacMapPanel extends JPanel {
     private final Set<String> pendingTiles = ConcurrentHashMap.newKeySet();
     private final Set<String> failedTiles = ConcurrentHashMap.newKeySet();
     private final ExecutorService tileLoader = Executors.newFixedThreadPool(4, r -> {
-        Thread t = new Thread(r, "StacMapPanel tile loader");
+        Thread t = new Thread(r, "SlippyMapPanel tile loader");
         t.setDaemon(true);
         return t;
     });
@@ -116,6 +116,11 @@ public class StacMapPanel extends JPanel {
     private List<Geometry> footprints = new ArrayList<>();
     private int selectedFootprint = -1;
 
+    private BufferedImage overlayImage;
+    private Envelope overlayEnvelope;
+    private boolean overlayMercator;
+    private float overlayOpacity = 1f;
+
     private boolean drawMode = false;
     private Point dragStart;
     private Point dragCurrent;
@@ -126,7 +131,7 @@ public class StacMapPanel extends JPanel {
     private Consumer<Integer> footprintSelectionListener;
     private Consumer<String> positionListener;
 
-    public StacMapPanel() {
+    public SlippyMapPanel() {
         setPreferredSize(new Dimension(700, 450));
         setBackground(new Color(170, 211, 223));
 
@@ -254,6 +259,35 @@ public class StacMapPanel extends JPanel {
     }
 
     /**
+     * Set an image to draw over the base map, below the other geometries.
+     *
+     * @param image the image or null to remove it.
+     * @param lonLatEnvelope the area covered by the image, in WGS84 lon/lat.
+     * @param mercator true if the image rows are in web mercator (EPSG:3857), false if they are
+     *          linear in latitude (EPSG:4326), in which case the image is warped to the map.
+     */
+    public void setOverlay( BufferedImage image, Envelope lonLatEnvelope, boolean mercator ) {
+        this.overlayImage = image;
+        this.overlayEnvelope = lonLatEnvelope;
+        this.overlayMercator = mercator;
+        repaint();
+    }
+
+    public void setOverlayOpacity( float opacity ) {
+        this.overlayOpacity = Math.max(0f, Math.min(1f, opacity));
+        repaint();
+    }
+
+    /**
+     * @return the size in screen pixels that an envelope has at the current zoom.
+     */
+    public int[] getPixelSize( Envelope lonLatEnvelope ) {
+        int w = (int) Math.round(sx(lonLatEnvelope.getMaxX()) - sx(lonLatEnvelope.getMinX()));
+        int h = (int) Math.round(sy(lonLatEnvelope.getMinY()) - sy(lonLatEnvelope.getMaxY()));
+        return new int[]{Math.max(1, w), Math.max(1, h)};
+    }
+
+    /**
      * @return the currently visible area in lon/lat.
      */
     public Envelope getViewEnvelope() {
@@ -374,6 +408,7 @@ public class StacMapPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         paintTiles(g2);
+        paintOverlay(g2);
 
         for( Envelope ext : extents ) {
             Shape s = envelopeShape(ext);
@@ -452,6 +487,44 @@ public class StacMapPanel extends JPanel {
                 }
             }
         }
+    }
+
+    private void paintOverlay( Graphics2D g2 ) {
+        if (overlayImage == null || overlayEnvelope == null)
+            return;
+        Graphics2D og = (Graphics2D) g2.create();
+        og.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        og.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, overlayOpacity));
+        int x1 = (int) Math.round(sx(overlayEnvelope.getMinX()));
+        int x2 = (int) Math.round(sx(overlayEnvelope.getMaxX()));
+        int iw = overlayImage.getWidth();
+        int ih = overlayImage.getHeight();
+        if (overlayMercator) {
+            int y1 = (int) Math.round(sy(overlayEnvelope.getMaxY()));
+            int y2 = (int) Math.round(sy(overlayEnvelope.getMinY()));
+            og.drawImage(overlayImage, x1, y1, x2, y2, 0, 0, iw, ih, null);
+        } else {
+            // rows are linear in latitude: draw horizontal strips, each placed at its mercator position.
+            // The strips overlap by a pixel to avoid seams, so they are warped opaque into a buffer
+            // and the buffer is drawn with the opacity (else the overlaps would show as darker lines)
+            BufferedImage warped = new BufferedImage(Math.max(1, getWidth()), Math.max(1, getHeight()), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D wg = warped.createGraphics();
+            wg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            double north = overlayEnvelope.getMaxY();
+            double latPerRow = overlayEnvelope.getHeight() / ih;
+            int strip = Math.max(1, ih / 256);
+            for( int row = 0; row < ih; row += strip ) {
+                int rowEnd = Math.min(ih, row + strip);
+                int y1 = (int) Math.round(sy(north - row * latPerRow));
+                int y2 = (int) Math.round(sy(north - rowEnd * latPerRow));
+                if (y2 < 0 || y1 > getHeight())
+                    continue;
+                wg.drawImage(overlayImage, x1, y1, x2, Math.max(y2, y1) + 1, 0, row, iw, rowEnd, null);
+            }
+            wg.dispose();
+            og.drawImage(warped, 0, 0, null);
+        }
+        og.dispose();
     }
 
     private void paintAttribution( Graphics2D g2 ) {

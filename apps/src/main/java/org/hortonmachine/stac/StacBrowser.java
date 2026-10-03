@@ -134,6 +134,9 @@ import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.utils.MetadataTree;
+import org.hortonmachine.utils.RowTableModel;
+import org.hortonmachine.utils.SlippyMapPanel;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -235,7 +238,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private JLabel collectionsCountLabel;
 
     // map
-    private StacMapPanel mapPanel;
+    private SlippyMapPanel mapPanel;
     private JToggleButton drawBboxButton;
     private JLabel positionLabel;
 
@@ -257,12 +260,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private JEditorPane serviceInfoPane;
     private JEditorPane collectionInfoPane;
     private JTree collectionTree;
-    private StacTableModel<ItemRow> itemsModel;
+    private RowTableModel<ItemRow> itemsModel;
     private JTable itemsTable;
     private JTree itemTree;
-    private StacTableModel<HMStacAsset> itemAssetsModel;
-    private StacTableModel<AssetKeyRow> assetKeysModel;
-    private StacTableModel<DownloadRow> downloadsModel;
+    private RowTableModel<HMStacAsset> itemAssetsModel;
+    private RowTableModel<AssetKeyRow> assetKeysModel;
+    private RowTableModel<DownloadRow> downloadsModel;
     private JTable downloadsTable;
     private JLabel downloadSummaryLabel;
     private JButton checkAccessButton;
@@ -384,7 +387,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
 
     private JComponent createMapPanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        mapPanel = new StacMapPanel();
+        mapPanel = new SlippyMapPanel();
         mapPanel.setBboxListener(env -> {
             drawBboxButton.setSelected(false);
             mapPanel.setDrawMode(false);
@@ -518,7 +521,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
 
         // collection
         collectionInfoPane = htmlPane();
-        collectionTree = StacMetadataTree.createTree();
+        collectionTree = MetadataTree.createTree();
         JPanel treePanel = new JPanel(new BorderLayout());
         JPanel treeTools = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         treeTools.add(new JLabel("Full metadata"));
@@ -533,7 +536,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         tabs.addTab("Collection", collectionSplit);
 
         // items
-        itemsModel = new StacTableModel<ItemRow>()//
+        itemsModel = new RowTableModel<ItemRow>()//
                 .col("Id", String.class, r -> r.item.getId())//
                 .col("Datetime (UTC)", String.class, r -> r.datetime)//
                 .col("Version", String.class, r -> r.version)//
@@ -558,8 +561,8 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     mapPanel.zoomToEnvelope(row.footprint.getEnvelopeInternal());
             }
         });
-        itemTree = StacMetadataTree.createTree();
-        itemAssetsModel = new StacTableModel<HMStacAsset>()//
+        itemTree = MetadataTree.createTree();
+        itemAssetsModel = new RowTableModel<HMStacAsset>()//
                 .col("Key", String.class, a -> a.getId())//
                 .col("Title", String.class, a -> a.getTitle())//
                 .col("Type", String.class, a -> a.getType())//
@@ -576,7 +579,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         tabs.addTab("Items", itemsSplit);
 
         // download preview
-        assetKeysModel = new StacTableModel<AssetKeyRow>()//
+        assetKeysModel = new RowTableModel<AssetKeyRow>()//
                 .col("Use", Boolean.class, r -> r.selected, ( r, v ) -> {
                     r.selected = (Boolean) v;
                     refreshDownloads();
@@ -588,7 +591,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 .col("HM handler", String.class, r -> String.join(", ", r.handlers));
         JTable assetKeysTable = table(assetKeysModel);
         assetKeysTable.getColumnModel().getColumn(0).setMaxWidth(50);
-        downloadsModel = new StacTableModel<DownloadRow>()//
+        downloadsModel = new RowTableModel<DownloadRow>()//
                 .col("Item", String.class, r -> r.itemRow.item.getId())//
                 .col("Datetime (UTC)", String.class, r -> r.itemRow.datetime)//
                 .col("Asset", String.class, r -> r.asset.getId())//
@@ -800,7 +803,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             collectionInfoPane.setText("<html><body>Unable to show collection info: " + escape(e.getMessage()) + "</body></html>");
             logException("Unable to show collection info", e);
         }
-        StacMetadataTree.setContent(collectionTree, collection.getOtherFields());
+        MetadataTree.setContent(collectionTree, collection.getOtherFields());
         Envelope env = getCollectionEnvelope(collection);
         mapPanel.setExtents(env != null ? List.of(env) : null);
         if (env != null)
@@ -911,7 +914,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         itemsModel.setRows(rows);
         mapPanel.setFootprints(rows.stream().map(r -> r.footprint).collect(Collectors.toList()));
         itemAssetsModel.setRows(null);
-        StacMetadataTree.setContent(itemTree, null);
+        MetadataTree.setContent(itemTree, null);
         thumbnailPanel.setMessage(NO_ITEM_SELECTED);
 
         Map<String, AssetKeyRow> keys = new LinkedHashMap<>();
@@ -942,7 +945,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         itemRows = new ArrayList<>();
         itemsModel.setRows(null);
         itemAssetsModel.setRows(null);
-        StacMetadataTree.setContent(itemTree, null);
+        MetadataTree.setContent(itemTree, null);
         assetKeysModel.setRows(null);
         downloadsModel.setRows(null);
         mapPanel.setFootprints(null);
@@ -956,7 +959,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         if (row == null) {
             mapPanel.setSelectedFootprint(-1);
             itemAssetsModel.setRows(null);
-            StacMetadataTree.setContent(itemTree, null);
+            MetadataTree.setContent(itemTree, null);
             thumbnailPanel.setMessage(NO_ITEM_SELECTED);
             return;
         }
@@ -975,7 +978,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         if (top instanceof Map< ? , ? > topMap) {
             topMap.forEach(( k, v ) -> metadata.put(String.valueOf(k), v));
         }
-        StacMetadataTree.setContent(itemTree, metadata);
+        MetadataTree.setContent(itemTree, metadata);
     }
 
     /**
@@ -2103,7 +2106,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         return pane;
     }
 
-    private static JTable table( StacTableModel< ? > model ) {
+    private static JTable table( RowTableModel< ? > model ) {
         JTable table = new JTable(model){
             @Override
             public String getToolTipText( MouseEvent e ) {

@@ -18,7 +18,7 @@ The Settings application, with the proxy tab.
 
 ## Proxy
 
-When the internet is reached through a proxy, check **enable proxy** and insert its **host** and **port**, and its **user** and **password** if it requires authentication. The proxy is applied at startup by the [WMS to GeoTIFF](wms2geotiff.md), [Database Viewer](dbviewer.md), [Geoscript Console](geoscript.md), [Style Editor](sld.md), [Form Builder](gforms.md) and [Quick Folder](quickfolder.md) applications.
+When the internet is reached through a proxy, check **enable proxy** and insert its **host** and **port**, and its **user** and **password** if it requires authentication. The proxy is applied at startup by the [Web Services Browser](webservices.md), [Database Viewer](dbviewer.md), [Geoscript Console](geoscript.md), [Style Editor](sld.md), [Form Builder](gforms.md) and [Quick Folder](quickfolder.md) applications.
 
 ## Internationalization
 

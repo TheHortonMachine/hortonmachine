@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.stac;
+package org.hortonmachine.utils;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -35,11 +35,11 @@ import org.locationtech.jts.geom.Geometry;
 import com.fasterxml.jackson.databind.JsonNode;
 
 /**
- * Builds browsable trees out of stac metadata (maps, lists and jackson json nodes).
+ * Builds browsable trees out of metadata (maps, lists and jackson json nodes).
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class StacMetadataTree {
+public class MetadataTree {
     private static final int MAX_LABEL_LENGTH = 300;
 
     /**

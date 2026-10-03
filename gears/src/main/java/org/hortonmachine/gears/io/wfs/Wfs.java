@@ -28,6 +28,7 @@ import java.util.NoSuchElementException;
 import org.geotools.api.data.DataStore;
 import org.geotools.api.data.DataStoreFinder;
 import org.geotools.api.data.Query;
+import org.geotools.api.data.ResourceInfo;
 import org.geotools.api.data.ServiceInfo;
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.simple.SimpleFeature;
@@ -104,6 +105,7 @@ public class Wfs implements AutoCloseable {
 	private CoordinateReferenceSystem forceCrs;
 	private boolean forceXYSwap = false;
 	private boolean normalizeGeomName = false;
+	private int maxFeatures = -1;
 	private SimpleFeatureType schema;
 
 	public Wfs(String wfsUrl) {
@@ -151,6 +153,39 @@ public class Wfs implements AutoCloseable {
 	 */
 	public void forceCoordinateSwapping() {
 		this.forceXYSwap  = true;
+	}
+
+	/**
+	 * Enables or disables the manual swapping of the coordinates.
+	 *
+	 * @param swap if true, coordinates are swapped.
+	 * @see #forceCoordinateSwapping()
+	 */
+	public void setCoordinateSwapping(boolean swap) {
+		this.forceXYSwap = swap;
+	}
+
+	/**
+	 * Limits the number of features requested by the envelope queries.
+	 *
+	 * @param maxFeatures the maximum number of features, a value <= 0 means no limit.
+	 */
+	public void setMaxFeatures(int maxFeatures) {
+		this.maxFeatures = maxFeatures;
+	}
+
+	/**
+	 * Changes the type name to work on, without reconnecting.
+	 *
+	 * <p>The name has to be one of {@link #getTypeNames()}.</p>
+	 *
+	 * @param typeName the new type name.
+	 */
+	public void setTypeName(String typeName) {
+		this.typeName = typeName;
+		checkTypeName();
+		schema = null;
+		dataSource = null;
 	}
 	
 	/**
@@ -262,7 +297,27 @@ public class Wfs implements AutoCloseable {
 		}
 		return null;
 	}
-	
+
+	/**
+	 * Get the service info (title, description, keywords) of the connected WFS.
+	 *
+	 * @return the info or null if not connected.
+	 */
+	public ServiceInfo getServiceInfo() {
+		return dataStore != null ? dataStore.getInfo() : null;
+	}
+
+	/**
+	 * Get the info (title, description, keywords, bounds) of a type name, as declared by the service.
+	 *
+	 * @param typeName the type name.
+	 * @return the info.
+	 * @throws IOException
+	 */
+	public ResourceInfo getTypeInfo(String typeName) throws IOException {
+		return dataStore.getFeatureSource(typeName).getInfo();
+	}
+
 	/**
 	 * Gets the available type names.
 	 * 
@@ -362,6 +417,9 @@ public class Wfs implements AutoCloseable {
 		} else {
 			// include
 			query.setFilter(Filter.INCLUDE);
+		}
+		if (maxFeatures > 0) {
+			query.setMaxFeatures(maxFeatures);
 		}
 		return getFeatureIterator(query);
 	}

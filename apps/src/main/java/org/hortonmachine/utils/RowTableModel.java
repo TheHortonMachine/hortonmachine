@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.stac;
+package org.hortonmachine.utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import javax.swing.table.AbstractTableModel;
  * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("serial")
-public class StacTableModel<T> extends AbstractTableModel {
+public class RowTableModel<T> extends AbstractTableModel {
     private final List<String> names = new ArrayList<>();
     private final List<Class< ? >> classes = new ArrayList<>();
     private final List<Function<T, Object>> getters = new ArrayList<>();
@@ -40,14 +40,14 @@ public class StacTableModel<T> extends AbstractTableModel {
     /**
      * Add a read only column.
      */
-    public StacTableModel<T> col( String name, Class< ? > type, Function<T, Object> getter ) {
+    public RowTableModel<T> col( String name, Class< ? > type, Function<T, Object> getter ) {
         return col(name, type, getter, null);
     }
 
     /**
      * Add a column, editable if a setter is supplied.
      */
-    public StacTableModel<T> col( String name, Class< ? > type, Function<T, Object> getter, BiConsumer<T, Object> setter ) {
+    public RowTableModel<T> col( String name, Class< ? > type, Function<T, Object> getter, BiConsumer<T, Object> setter ) {
         names.add(name);
         classes.add(type);
         getters.add(getter);

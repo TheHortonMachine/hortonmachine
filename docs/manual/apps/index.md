@@ -9,7 +9,7 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 | [Database Viewer](dbviewer.md) | `hm-dbviewer` | Explore spatial databases (GeoPackage, SpatiaLite, H2GIS, PostGIS) |
 | [STAC Browser](stacbrowser.md) | `hm-stacbrowser` | Browse STAC catalogs, search items and download or clip their assets |
 | [Style Editor](sld.md) | `hm-sld` | Create and edit SLD styles |
-| [WMS to GeoTIFF](wms2geotiff.md) | `hm-wms2geotiff` | Save web map services as GeoTIFF images |
+| [Web Services Browser](webservices.md) | `hm-webservices` | Browse WMS, WCS and WFS services and save maps, coverages and features |
 | [Geopaparazzi Viewer](geopaparazzi.md) | `hm-geopaparazzi_viewer` | View the data of Geopaparazzi survey projects |
 | [Form Builder](gforms.md) | `hm-gforms` | Create the forms used by Geopaparazzi and SMASH |
 | [LAS Viewer](lasviewer.md) | `hm-lasviewer` | Inspect lidar LAS files |
@@ -28,7 +28,7 @@ geoscript
 dbviewer
 stacbrowser
 sld
-wms2geotiff
+webservices
 geopaparazzi
 gforms
 lasviewer
