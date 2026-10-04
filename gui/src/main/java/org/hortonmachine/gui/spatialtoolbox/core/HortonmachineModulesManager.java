@@ -172,39 +172,27 @@ public class HortonmachineModulesManager {
     }
 
     private void addInput( Access access, ModuleDescription module ) throws Exception {
+        addField(access, module, true);
+    }
+
+    private void addOutput( Access access, ModuleDescription module ) throws Exception {
+        addField(access, module, false);
+    }
+
+    private void addField( Access access, ModuleDescription module, boolean isInput ) throws Exception {
         Field field = access.getField();
+        String fieldName = field.getName();
+        if (doIgnore(fieldName)) {
+            return;
+        }
         Description descriptionAnn = field.getAnnotation(Description.class);
         String descriptionStr = "No description available";
         if (descriptionAnn != null) {
             descriptionStr = AnnotationUtilities.getLocalizedDescription(descriptionAnn);
         }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(descriptionStr);
-
-        Unit unitAnn = field.getAnnotation(Unit.class);
-        if (unitAnn != null) {
-            sb.append(" [");
-            sb.append(unitAnn.value());
-            sb.append("]");
-        }
-        Range rangeAnn = field.getAnnotation(Range.class);
-        if (rangeAnn != null) {
-            sb.append(" [");
-            sb.append(rangeAnn.min());
-            sb.append(" ,");
-            sb.append(rangeAnn.max());
-            sb.append("]");
-        }
-        descriptionStr = sb.toString();
-
-        String fieldName = field.getName();
-        if (doIgnore(fieldName)) {
-            return;
-        }
         Class< ? > fieldClass = field.getType();
         Object fieldValue = access.getFieldValue();
-
         String defaultValue = ""; //$NON-NLS-1$
         if (fieldValue != null) {
             defaultValue = fieldValue.toString();
@@ -216,58 +204,47 @@ public class HortonmachineModulesManager {
             uiHint = uiHintAnn.value();
         }
 
-        module.addInput(fieldName, fieldClass.getCanonicalName(), descriptionStr, defaultValue, uiHint);
+        FieldData fieldData;
+        if (isInput) {
+            fieldData = module.addInput(fieldName, fieldClass.getCanonicalName(), descriptionStr, defaultValue, uiHint);
+        } else {
+            fieldData = module.addOutput(fieldName, fieldClass.getCanonicalName(), descriptionStr, defaultValue, uiHint);
+        }
+        Unit unitAnn = field.getAnnotation(Unit.class);
+        if (unitAnn != null && !unitAnn.value().isBlank()) {
+            fieldData.unit = unitAnn.value().trim();
+        }
+        Range rangeAnn = field.getAnnotation(Range.class);
+        if (rangeAnn != null) {
+            fieldData.range = formatRange(rangeAnn);
+        }
+    }
+
+    /**
+     * Format a range, leaving out the bounds that are the annotation defaults.
+     */
+    private static String formatRange( Range range ) {
+        boolean hasMin = range.min() != Double.MIN_VALUE;
+        boolean hasMax = range.max() != Double.MAX_VALUE;
+        if (hasMin && hasMax) {
+            return "[" + formatNumber(range.min()) + ", " + formatNumber(range.max()) + "]";
+        } else if (hasMin) {
+            return "\u2265 " + formatNumber(range.min());
+        } else if (hasMax) {
+            return "\u2264 " + formatNumber(range.max());
+        }
+        return null;
+    }
+
+    private static String formatNumber( double value ) {
+        if (value == Math.rint(value) && Math.abs(value) < 1E15) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
     }
 
     private boolean doIgnore( String fieldName ) {
         return fieldName.equals("doProcess");
-    }
-
-    private void addOutput( Access access, ModuleDescription module ) throws Exception {
-        Field field = access.getField();
-        Description descriptionAnn = field.getAnnotation(Description.class);
-        String descriptionStr = "No description available";
-        if (descriptionAnn != null) {
-            descriptionStr = AnnotationUtilities.getLocalizedDescription(descriptionAnn);
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(descriptionStr);
-
-        Unit unitAnn = field.getAnnotation(Unit.class);
-        if (unitAnn != null) {
-            sb.append(" [");
-            sb.append(unitAnn.value());
-            sb.append("]");
-        }
-        Range rangeAnn = field.getAnnotation(Range.class);
-        if (rangeAnn != null) {
-            sb.append(" [");
-            sb.append(rangeAnn.min());
-            sb.append(" ,");
-            sb.append(rangeAnn.max());
-            sb.append("]");
-        }
-        descriptionStr = sb.toString();
-
-        String fieldName = field.getName();
-        if (doIgnore(fieldName)) {
-            return;
-        }
-        Class< ? > fieldClass = field.getType();
-        Object fieldValue = access.getFieldValue();
-
-        String defaultValue = ""; //$NON-NLS-1$
-        if (fieldValue != null) {
-            defaultValue = fieldValue.toString();
-        }
-
-        UI uiHintAnn = field.getAnnotation(UI.class);
-        String uiHint = null;
-        if (uiHintAnn != null) {
-            uiHint = uiHintAnn.value();
-        }
-
-        module.addOutput(fieldName, fieldClass.getCanonicalName(), descriptionStr, defaultValue, uiHint);
     }
 
 }

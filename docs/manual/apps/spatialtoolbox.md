@@ -23,7 +23,7 @@ The Spatial Toolbox at startup.
 The window has two parts:
 
 - on the left, the **Modules** tree with the available modules grouped by category, and below it the execution options;
-- on the right, the **Parameters** form of the selected module, with the toolbar buttons at the top right.
+- on the right, the **Parameters** of the selected module, with the **Run script** button at the top right. Until a module is selected, this part only invites to select one.
 
 The modules are grouped into categories, such as *HortonMachine* (hydrology and geomorphology), *Lesto* (lidar), *Raster Processing*, *Vector Processing*, *NetCDF* and *GeoFrame*. Categories can contain sub-categories; for example *HortonMachine* groups its modules into *Dem Manipulation*, *Geomorphology*, *Hydro-Geomorphology* and more.
 
@@ -43,7 +43,7 @@ Type in the field above the tree to show only the modules whose name contains th
 
 ## Setting the parameters
 
-Select a module in the tree to show its parameters in the form on the right. Each row shows the description of a parameter on the left and its input field on the right. Hover over a description to see it in full, if it is truncated.
+Select a module in the tree to show it on the right. At the top are its name, its folder in the tree (with *experimental* for the experimental modules) and what it does; hover over the description to read it in full, if it is longer than one sentence.
 
 :::{figure} ../images/apps/spatialtoolbox/gradient.png
 :alt: The parameters of the Gradient module
@@ -52,6 +52,19 @@ Select a module in the tree to show its parameters in the form on the right. Eac
 
 The parameters of the Gradient module: an input raster, a choice of method, an option and the output raster.
 :::
+
+The parameters are grouped in three sections:
+
+Inputs
+: the data the module reads, files and folders.
+
+Parameters
+: the values that tune the module.
+
+Outputs
+: the files and folders the module writes.
+
+Click the title of a section to hide or show it; a module without parameters of a kind has no section for it. Each parameter has its description above its input field, and its unit and range of values, if any, on the right of the field. Hover over a parameter to see its name, the one used in [scripts](#scripts).
 
 The input field depends on the type of the parameter:
 
@@ -62,26 +75,40 @@ Choices
 : a drop-down list with the allowed values, like the formula mode of the Gradient module above.
 
 Options
-: a check box, for parameters that can only be true or false.
+: a check box, for parameters that can only be true or false. Clicking its description also toggles it.
 
 Numbers and text
 : a text field.
 
-The **outputs** of the module are shown with a **bold** description. For a file output, insert the path of the file to create; its extension decides the format, for example `.tif` for a GeoTIFF. Rasters are supported as GeoTIFF (`.tif`, `.tiff`), ESRI ASCII grid (`.asc`) and GeoPackage (`.gpkg`); vectors as shapefiles (`.shp`) and GeoPackage (`.gpkg`).
+For a file output, insert the path of the file to create; its extension decides the format, for example `.tif` for a GeoTIFF. Rasters are supported as GeoTIFF (`.tif`, `.tiff`), ESRI ASCII grid (`.asc`) and GeoPackage (`.gpkg`); vectors as shapefiles (`.shp`) and GeoPackage (`.gpkg`).
+
+When the first input file is set, the empty outputs of the same kind of data, raster or vector, get a suggested name, in the same folder and with the same extension as the input. Names in the form *kind_area*, as `pit_flanginec.tif`, get the kind replaced by the name of the output, for example `slope_flanginec.tif` for the Gradient above; other names get it as prefix. A suggestion never overwrites the input, nor a name typed by the user.
 
 Parameters left empty keep the module's default value.
 
-## Running a module
+## Help of a module
 
-:::{figure} ../images/apps/spatialtoolbox/toolbar.png
-:alt: The toolbar buttons
-:width: 25%
+:::{figure} ../images/apps/spatialtoolbox/help.png
+:alt: The help of the Gradient module
+:width: 80%
 :align: center
 
-From left to right: Start, Run script, Save script.
+The help of the Gradient module.
 :::
 
-Press the **Start** button (the green arrow) to run the selected module with the parameters of the form.
+The **Help** tab, next to **Parameters**, describes the module: its description, folder, status and keywords, the table of its inputs and outputs, with types, units and default values, and its references. For the modules described in the [modules section](../modules/index.md) of this manual, it is the same reference included in their pages, as both are generated from the module itself.
+
+## Running a module
+
+:::{figure} ../images/apps/spatialtoolbox/buttons.png
+:alt: The buttons of the module
+:width: 30%
+:align: center
+
+The buttons below the parameters.
+:::
+
+Press the **Run** button, below the parameters, to run the selected module with the parameters of the form.
 
 :::{figure} ../images/apps/spatialtoolbox/pitfiller.png
 :alt: The Pitfiller module ready to run
@@ -128,20 +155,20 @@ Debug
 
 Behind the scenes, each run is a small [Groovy](https://groovy-lang.org/) script that creates the module, sets its parameters and runs it. The script can be saved and run again later, or edited to process many files in a loop.
 
-**Save script** (the third button) saves the script of the current module and parameters to a file. For the Gradient module of the example above it looks like this:
+**Save as script...**, next to **Run**, saves the script of the current module and parameters to a file. For the Gradient module of the example above it looks like this:
 
 ```groovy
 org.hortonmachine.modules.Gradient _gradient = new org.hortonmachine.modules.Gradient();
 _gradient.inElev = """/data/flanginec/pit_flanginec.tif""";
 _gradient.pMode = """Finite Differences""";
 _gradient.doDegrees = true;
-_gradient.outSlope = """/data/flanginec/gradient_flanginec.tif""";
+_gradient.outSlope = """/data/flanginec/slope_flanginec.tif""";
 _gradient.process();
 ```
 
 The saved script also ends with a few lines that print the outputs of the module.
 
-**Run script** (the second button) asks for a script file and runs it, with its log in a window just like a module run. The heap and debug options apply to scripts too.
+**Run script**, the first button at the top right, asks for a script file and runs it, with its log in a window just like a module run. The heap and debug options apply to scripts too.
 
 
 The saved scripts are plain Geoscript scripts, so they can also be:

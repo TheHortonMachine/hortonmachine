@@ -114,8 +114,9 @@ public class ModuleDescription {
      * @param description a description of the field.
      * @param defaultValue a default value or <code>null</code>.
      * @param uiHint
+     * @return the added field.
      */
-    public void addInput( String fieldName, String type, String description, String defaultValue, String uiHint ) {
+    public FieldData addInput( String fieldName, String type, String description, String defaultValue, String uiHint ) {
         if (fieldName == null) {
             throw new IllegalArgumentException("field name is mandatory");
         }
@@ -139,6 +140,7 @@ public class ModuleDescription {
         } else {
             throw new IllegalArgumentException("Duplicated field: " + fieldName);
         }
+        return fieldData;
     }
 
     /**
@@ -149,8 +151,9 @@ public class ModuleDescription {
      * @param description a description of the field.
      * @param defaultValue a default value or <code>null</code>.
      * @param uiHint
+     * @return the added field.
      */
-    public void addOutput( String fieldName, String type, String description, String defaultValue, String uiHint ) {
+    public FieldData addOutput( String fieldName, String type, String description, String defaultValue, String uiHint ) {
         if (fieldName == null) {
             throw new IllegalArgumentException("field name is mandatory");
         }
@@ -174,6 +177,7 @@ public class ModuleDescription {
         } else {
             throw new IllegalArgumentException("Duplicated field: " + fieldName);
         }
+        return fieldData;
     }
 
     public String getName() {

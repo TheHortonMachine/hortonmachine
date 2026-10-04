@@ -48,11 +48,9 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.EventListenerList;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -84,6 +82,7 @@ import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.hortonmachine.gui.console.ProcessLogConsoleController;
 import org.hortonmachine.gui.spatialtoolbox.core.HortonmachineModulesManager;
 import org.hortonmachine.gui.spatialtoolbox.core.ModuleDescription;
+import org.hortonmachine.gui.spatialtoolbox.core.ModulePanel;
 import org.hortonmachine.gui.spatialtoolbox.core.ParametersPanel;
 import org.hortonmachine.gui.spatialtoolbox.core.SpatialToolboxConstants;
 import org.hortonmachine.gui.spatialtoolbox.core.StageScriptExecutor;
@@ -108,6 +107,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
     private static final long serialVersionUID = 1L;
 
     protected ParametersPanel pPanel;
+
+    protected ModulePanel modulePanel;
 
     protected HashMap<String, String> prefsMap = new HashMap<>();
 
@@ -167,11 +168,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         pPanel = new ParametersPanel(guiBridge);
         addMouseListenerToContext(pPanel);
 
-        pPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        JScrollPane scrollpane = new JScrollPane(pPanel);
-        scrollpane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollpane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        _parametersPanel.add(scrollpane, BorderLayout.CENTER);
+        modulePanel = new ModulePanel(pPanel, e -> runCurrentModule(), startIcon, e -> saveCurrentModuleAsScript(),
+                generateScriptIcon);
+        _parametersPanel.add(modulePanel, BorderLayout.CENTER);
 
         _processingRegionButton.addActionListener(new ActionListener(){
             public void actionPerformed( ActionEvent e ) {
@@ -183,22 +182,9 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         // TODO enable when used
         _processingRegionButton.setVisible(false);
 
-        _startButton.setToolTipText("Start the current module.");
-        _startButton.addActionListener(new ActionListener(){
-            public void actionPerformed( ActionEvent e ) {
-
-                final ProcessLogConsoleController logConsole = new ProcessLogConsoleController();
-                guiBridge.showWindow(logConsole.asJComponent(), "Spatial Toolbox Log");
-
-                try {
-                    runModuleInNewJVM(logConsole);
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
-
-        _startButton.setIcon(startIcon);
+        // the module actions are in the module panel, the toolbar keeps the general ones
+        _startButton.setVisible(false);
+        _generateScriptButton.setVisible(false);
 
         _runScriptButton.setToolTipText("Run a script from file.");
         _runScriptButton.addActionListener(new ActionListener(){
@@ -237,29 +223,6 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
 
         _runScriptButton.setIcon(runScriptIcon);
 
-        _generateScriptButton.setToolTipText("Save the current module as a script to file.");
-        _generateScriptButton.addActionListener(new ActionListener(){
-            public void actionPerformed( ActionEvent e ) {
-                ModuleDescription module = pPanel.getModule();
-                HashMap<String, Object> fieldName2ValueHolderMap = pPanel.getFieldName2ValueHolderMap();
-                List<String> outputFieldNames = pPanel.getOutputFieldNames();
-                final HashMap<String, String> outputStringsMap = new HashMap<>();
-                Class< ? > moduleClass = module.getModuleClass();
-                StringBuilder scriptBuilder = getScript(fieldName2ValueHolderMap, outputFieldNames, outputStringsMap,
-                        moduleClass);
-
-                File[] saveFiles = guiBridge.showSaveFileDialog("Save script", PreferencesHandler.getLastFile(), null);
-                if (saveFiles != null && saveFiles.length > 0) {
-                    try {
-                        PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
-                        FileUtilities.writeFile(scriptBuilder.toString(), saveFiles[0]);
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
-                }
-            }
-        });
-        _generateScriptButton.setIcon(generateScriptIcon);
 
         _viewDataButton.setToolTipText("View all data used by the module in a simple viewer and check the CRS.");
         _viewDataButton.addActionListener(new ActionListener(){
@@ -370,7 +333,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                         if (lastPathComponent instanceof ViewerModule) {
                             ViewerModule module = (ViewerModule) lastPathComponent;
                             ModuleDescription moduleDescription = module.getModuleDescription();
-                            pPanel.setModule(moduleDescription);
+                            modulePanel.setModule(moduleDescription);
 
                             // SwingUtilities.invokeLater(new Runnable(){
                             // public void run() {
@@ -382,7 +345,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                             break;
                         }
                         if (lastPathComponent instanceof ViewerFolder) {
-                            pPanel.setModule(null);
+                            modulePanel.setModule(null);
                             _parametersPanel.validate();
                             _parametersPanel.repaint();
                             break;
@@ -624,6 +587,47 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         removeMouseListenerFromContext(pPanel);
         if (pPanel != null)
             pPanel.freeResources();
+    }
+
+    /**
+     * Run the module of the parameters panel, showing its log.
+     */
+    protected void runCurrentModule() {
+        if (pPanel.getModule() == null) {
+            return;
+        }
+        final ProcessLogConsoleController logConsole = new ProcessLogConsoleController();
+        guiBridge.showWindow(logConsole.asJComponent(), "Spatial Toolbox Log");
+        try {
+            runModuleInNewJVM(logConsole);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+    }
+
+    /**
+     * Save the module of the parameters panel, with its current values, as a script.
+     */
+    protected void saveCurrentModuleAsScript() {
+        ModuleDescription module = pPanel.getModule();
+        if (module == null) {
+            return;
+        }
+        HashMap<String, Object> fieldName2ValueHolderMap = pPanel.getFieldName2ValueHolderMap();
+        List<String> outputFieldNames = pPanel.getOutputFieldNames();
+        final HashMap<String, String> outputStringsMap = new HashMap<>();
+        Class< ? > moduleClass = module.getModuleClass();
+        StringBuilder scriptBuilder = getScript(fieldName2ValueHolderMap, outputFieldNames, outputStringsMap, moduleClass);
+
+        File[] saveFiles = guiBridge.showSaveFileDialog("Save script", PreferencesHandler.getLastFile(), null);
+        if (saveFiles != null && saveFiles.length > 0) {
+            try {
+                PreferencesHandler.setLastPath(saveFiles[0].getAbsolutePath());
+                FileUtilities.writeFile(scriptBuilder.toString(), saveFiles[0]);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
     }
 
     private void runModuleInNewJVM( ProcessLogConsoleController logConsole ) throws Exception {

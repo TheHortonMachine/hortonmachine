@@ -44,6 +44,16 @@ public class FieldData {
     public String fieldDescription;
 
     /**
+     * Unit of the field, if available.
+     */
+    public String unit;
+
+    /**
+     * Range of allowed values of the field (ex. [0, 90]), if available.
+     */
+    public String range;
+
+    /**
      * Guihints if there are some.
      */
     public String guiHints;
@@ -160,6 +170,8 @@ public class FieldData {
         clone.fieldName = fieldName;
         clone.fieldType = fieldType;
         clone.fieldDescription = fieldDescription;
+        clone.unit = unit;
+        clone.range = range;
         clone.guiHints = guiHints;
         clone.fieldValue = fieldValue;
         clone.otherFieldName = otherFieldName;

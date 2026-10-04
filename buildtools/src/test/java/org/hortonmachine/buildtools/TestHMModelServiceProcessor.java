@@ -143,6 +143,16 @@ public class TestHMModelServiceProcessor {
     }
 
     @Test
+    public void testTestSourcesAreNotRegistered() throws Exception {
+        // IDEs run the processor also on the test sources
+        outDir = tmp.resolve("target/test-classes");
+        Files.createDirectories(outDir);
+        compile(writeSources(SOURCES));
+
+        assertFalse(Files.exists(outDir.resolve(HMModelServiceProcessor.SERVICE_FILE)));
+    }
+
+    @Test
     public void testNoServiceFileWithoutModels() throws Exception {
         compile(writeSources(new String[][]{{"test/Plain.java", "package test; public class Plain {}"}}));
 

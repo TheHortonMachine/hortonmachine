@@ -72,6 +72,8 @@ public class HMModelServiceProcessor extends AbstractProcessor {
 
     private final Set<String> modelClasses = new TreeSet<>();
 
+    private Boolean isTestOutput;
+
     @Override
     public SourceVersion getSupportedSourceVersion() {
         return SourceVersion.latestSupported();
@@ -80,8 +82,8 @@ public class HMModelServiceProcessor extends AbstractProcessor {
     @Override
     public boolean process( Set< ? extends TypeElement> annotations, RoundEnvironment roundEnv ) {
         TypeElement hmModelElement = processingEnv.getElementUtils().getTypeElement(HMMODEL_CLASS);
-        if (hmModelElement == null) {
-            // HMModel is not visible, nothing to register
+        if (hmModelElement == null || isTestOutput()) {
+            // HMModel is not visible or test sources, nothing to register
             return false;
         }
         TypeMirror hmModelType = processingEnv.getTypeUtils().erasure(hmModelElement.asType());
@@ -162,6 +164,24 @@ public class HMModelServiceProcessor extends AbstractProcessor {
             }
         }
         return false;
+    }
+
+    /**
+     * IDEs run the processor also on the test sources (Maven is configured not to),
+     * whose modules must not be registered.
+     */
+    private boolean isTestOutput() {
+        if (isTestOutput == null) {
+            isTestOutput = false;
+            try {
+                FileObject file = processingEnv.getFiler().getResource(StandardLocation.CLASS_OUTPUT, "", SERVICE_FILE);
+                String path = file.toUri().getPath();
+                isTestOutput = path != null && path.contains("/test-classes/");
+            } catch (Exception e) {
+                // unknown output, assume main sources
+            }
+        }
+        return isTestOutput;
     }
 
     private Set<String> readExistingServiceFile() {
