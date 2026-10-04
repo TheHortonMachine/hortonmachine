@@ -14,7 +14,17 @@
 	<packaging>jar</packaging>
 	<name>The Horton Machine modules</name>
 
+	<properties>
+		<!-- let the IDE (m2e-apt) run the annotation processors too -->
+		<m2e.apt.activation>jdt_apt</m2e.apt.activation>
+	</properties>
+
 	<dependencies>
+		<dependency>
+			<!-- registers the HMModel modules as SPI services at compile time -->
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-buildtools</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
 			<artifactId>hm-gears</artifactId>
@@ -42,4 +52,26 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<annotationProcessors>
+						<annotationProcessor>org.hortonmachine.buildtools.HMModelServiceProcessor</annotationProcessor>
+					</annotationProcessors>
+				</configuration>
+				<executions>
+					<execution>
+						<!-- test modules must not end up in the services -->
+						<id>default-testCompile</id>
+						<configuration>
+							<proc>none</proc>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

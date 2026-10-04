@@ -52,11 +52,10 @@ import javax.swing.filechooser.FileFilter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModelRegistry;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
-import org.hortonmachine.hmachine.HortonMachine;
 
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
@@ -195,10 +194,7 @@ public class ParametersPanel extends JPanel implements MouseListener {
         try {
             Class< ? > moduleClass = module.getModuleClass();
             String simpleName = "Oms" + moduleClass.getSimpleName();
-            Class< ? > pClass = HortonMachine.getInstance().moduleName2Class.get(simpleName);
-            if (pClass == null) {
-                pClass = JGrassGears.getInstance().moduleName2Class.get(simpleName);
-            }
+            Class< ? > pClass = HMModelRegistry.getModelClass(simpleName);
             if (pClass != null)
                 parentOmsClass = pClass;
         } catch (Exception e) {

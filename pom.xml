@@ -14,6 +14,7 @@
 	<url>http://www.hortonmachine.org</url>
 
 	<modules>
+		<module>buildtools</module>
 		<module>dbs</module>
 		<module>gears</module>
 		<module>hmachine</module>
@@ -129,6 +130,12 @@
 				<version>1.2.0</version>
 			</dependency>
 			<!-- define internal hm same versions -->
+			<dependency>
+				<groupId>org.hortonmachine</groupId>
+				<artifactId>hm-buildtools</artifactId>
+				<version>${revision}</version>
+				<scope>provided</scope>
+			</dependency>
 			<dependency>
 				<groupId>org.hortonmachine</groupId>
 				<artifactId>hm-dbs</artifactId>
@@ -602,6 +609,8 @@
 						<configuration>
 							<outputDirectory>
 								${session.executionRootDirectory}/extras/export/libs</outputDirectory>
+							<!-- compile time only, not needed by the applications -->
+							<excludeArtifactIds>hm-buildtools</excludeArtifactIds>
 						</configuration>
 					</execution>
 				</executions>

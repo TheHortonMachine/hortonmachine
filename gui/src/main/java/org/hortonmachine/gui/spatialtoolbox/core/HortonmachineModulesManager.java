@@ -18,7 +18,6 @@
 package org.hortonmachine.gui.spatialtoolbox.core;
 
 import java.lang.reflect.Field;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,17 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeMap;
 
 import org.hortonmachine.dbs.log.Logger;
-import org.hortonmachine.gears.JGrassGears;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.hmachine.HortonMachine;
-import org.hortonmachine.lesto.Lesto;
-import org.hortonmachine.modules.Modules;
+import org.hortonmachine.gears.libs.modules.HMModelRegistry;
 
 import oms3.Access;
 import oms3.ComponentAccess;
@@ -56,12 +51,7 @@ import oms3.annotations.Unit;
 public class HortonmachineModulesManager {
     private static HortonmachineModulesManager modulesManager;
 
-    private List<String> loadedJarsList = new ArrayList<String>();
-    private List<String> modulesJarsList = new ArrayList<String>();
-
     private TreeMap<String, List<ModuleDescription>> modulesMap = new TreeMap<String, List<ModuleDescription>>();
-
-    private URLClassLoader jarClassloader;
 
     private HortonmachineModulesManager() {
     }
@@ -83,54 +73,14 @@ public class HortonmachineModulesManager {
                 return;
             }
         }
-        LinkedHashMap<String, Class< ? >> moduleNames2Classes = Modules.getInstance().moduleName2Class;
-        // LinkedHashMap<String, List<ClassField>> moduleName2Fields =
-        // Modules.getInstance().moduleName2Fields;
-
-        LinkedHashMap<String, Class< ? >> lestoModuleNames2Class = Lesto.getInstance().moduleName2Class;
-        // LinkedHashMap<String, List<ClassField>> lestoModuleName2Fields =
-        // Lesto.getInstance().moduleName2Fields;
-
-        // also gather horton and gears
-        HortonMachine.getInstance();
-        Map<String, Class< ? >> gearsModuleName2Class = JGrassGears.getInstance().moduleName2Class;
-
-        for( Entry<String, Class< ? >> entry : lestoModuleNames2Class.entrySet() ) {
-            String name = entry.getKey();
+        // all modules registered via SPI, also those of external jars
+        Map<String, Class< ? >> moduleNames2Classes = new LinkedHashMap<>();
+        for( Class< ? extends HMModel> modelClass : HMModelRegistry.getModelClasses() ) {
+            String name = modelClass.getSimpleName();
             if (name.startsWith("Oms")) {
                 continue;
             }
-
-            moduleNames2Classes.put(name, entry.getValue());
-        }
-        for( Entry<String, Class< ? >> entry : gearsModuleName2Class.entrySet() ) {
-            String name = entry.getKey();
-            if (name.startsWith("Oms")) {
-                continue;
-            }
-
-            moduleNames2Classes.put(name, entry.getValue());
-        }
-
-        // pick up any external modules registered via SPI
-        ServiceLoader<HMModel> spiModules = ServiceLoader.load(HMModel.class);
-        for( HMModel spiModule : spiModules ) {
-            Class< ? > clazz = spiModule.getClass();
-            UI uiHints = clazz.getAnnotation(UI.class);
-            if (uiHints != null && uiHints.value().contains(HMConstants.HIDE_UI_HINT)) {
-                continue;
-            }
-            Label label = clazz.getAnnotation(Label.class);
-            if (label != null && label.value().trim().isEmpty()) {
-                continue;
-            }
-            String name = clazz.getSimpleName();
-            if (name.startsWith("Oms")) {
-                continue;
-            }
-            if (!moduleNames2Classes.containsKey(name)) {
-                moduleNames2Classes.put(name, clazz);
-            }
+            moduleNames2Classes.putIfAbsent(name, modelClass);
         }
 
         Collection<Class< ? >> classesList = moduleNames2Classes.values();
