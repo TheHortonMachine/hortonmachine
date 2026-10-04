@@ -18,9 +18,6 @@
 package org.hortonmachine.docs;
 
 import java.io.File;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -28,18 +25,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.cli.ModuleDescriptor;
+import org.hortonmachine.cli.ModuleDescriptor.DataType;
+import org.hortonmachine.cli.ModuleDescriptor.Parameter;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMParameterKind;
 
 import oms3.annotations.Bibliography;
-import oms3.annotations.Description;
-import oms3.annotations.In;
-import oms3.annotations.Keywords;
-import oms3.annotations.Label;
-import oms3.annotations.Out;
-import oms3.annotations.Status;
-import oms3.annotations.UI;
-import oms3.annotations.Unit;
 
 /**
  * Generates the reference part of the manual pages of the modules from their annotations.
@@ -55,18 +47,6 @@ import oms3.annotations.Unit;
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ModuleDocsGenerator {
-    /** Fields of the modules framework, not real parameters. */
-    private static final List<String> SKIPPED_FIELDS = List.of("pm", "doProcess", "doReset");
-
-    private static final Map<Integer, String> STATUS_NAMES = new LinkedHashMap<>();
-    static {
-        STATUS_NAMES.put(Status.EXPERIMENTAL, "Experimental");
-        STATUS_NAMES.put(Status.DRAFT, "Draft");
-        STATUS_NAMES.put(Status.TESTED, "Tested");
-        STATUS_NAMES.put(Status.VALIDATED, "Validated");
-        STATUS_NAMES.put(Status.CERTIFIED, "Certified");
-    }
-
     /**
      * Read the list of module classes.
      */
@@ -216,61 +196,39 @@ public class ModuleDocsGenerator {
     }
 
     private static Content collect( Class< ? > moduleClass ) {
+        ModuleDescriptor module = ModuleDescriptor.of(moduleClass.asSubclass(HMModel.class));
         Content content = new Content();
-
-        Description description = moduleClass.getAnnotation(Description.class);
-        if (description != null) {
-            content.description = clean(description.value());
+        if (!module.getDescription().isEmpty()) {
+            content.description = clean(module.getDescription());
         }
 
         List<String> facts = content.facts;
-        Label label = moduleClass.getAnnotation(Label.class);
-        if (label != null && !label.value().isBlank()) {
-            // all modules are HortonMachine ones, the prefix of the label adds nothing
-            String folder = label.value().replaceFirst("^HortonMachine/", "");
-            facts.add("**Toolbox folder:** " + folder.replace("/", " › "));
+        if (!module.getFolder().isEmpty()) {
+            facts.add("**Toolbox folder:** " + module.getFolder().replace("/", " › "));
         }
-        Status status = moduleClass.getAnnotation(Status.class);
-        if (status != null) {
-            facts.add("**Status:** " + STATUS_NAMES.getOrDefault(status.value(), String.valueOf(status.value())));
+        if (!module.getStatus().isEmpty()) {
+            facts.add("**Status:** " + Character.toUpperCase(module.getStatus().charAt(0)) + module.getStatus().substring(1));
         }
-        Keywords keywords = moduleClass.getAnnotation(Keywords.class);
-        if (keywords != null && !keywords.value().isBlank()) {
-            facts.add("**Keywords:** " + clean(keywords.value()));
+        if (!module.getKeywords().isEmpty()) {
+            facts.add("**Keywords:** " + clean(String.join(", ", module.getKeywords())));
         }
         facts.add("**Class:** `" + moduleClass.getName() + "`");
 
-        Object instance = null;
-        try {
-            instance = moduleClass.getDeclaredConstructor().newInstance();
-        } catch (Exception e) {
-            // without an instance the default values are not available
-        }
-
-        for( Field field : getFields(moduleClass) ) {
-            boolean isIn = field.isAnnotationPresent(In.class);
-            boolean isOut = field.isAnnotationPresent(Out.class);
-            if ((!isIn && !isOut) || SKIPPED_FIELDS.contains(field.getName())) {
-                continue;
+        for( Parameter parameter : module.getParameters() ) {
+            String text = clean(parameter.description);
+            if (!parameter.choices.isEmpty()) {
+                List<String> values = new ArrayList<>();
+                for( String choice : parameter.choices ) {
+                    values.add("`" + choice + "`");
+                }
+                text = text + (text.isEmpty() ? "" : " ") + "Allowed values: " + String.join(", ", values) + ".";
             }
-            UI ui = field.getAnnotation(UI.class);
-            String uiHint = ui != null ? ui.value() : "";
-            if (uiHint.contains(HMConstants.HIDE_UI_HINT)) {
-                continue;
-            }
-            Description fieldDescription = field.getAnnotation(Description.class);
-            Unit unit = field.getAnnotation(Unit.class);
-            String text = fieldDescription != null ? clean(fieldDescription.value()) : "";
-            String choices = comboValues(uiHint);
-            if (choices != null) {
-                text = text + (text.isEmpty() ? "" : " ") + "Allowed values: " + choices + ".";
-            }
-            boolean isOutput = HMParameterKind.of(isIn, isOut, uiHint) == HMParameterKind.OUTPUT;
+            boolean isOutput = parameter.kind == HMParameterKind.OUTPUT;
             String[] row = new String[]{//
-                    "`" + field.getName() + "`", //
-                    typeName(field, uiHint), //
-                    unit != null ? clean(unit.value()) : "", //
-                    isIn && !isOutput ? defaultValue(field, instance) : "", //
+                    "`" + parameter.name + "`", //
+                    typeName(parameter), //
+                    parameter.unit != null ? clean(parameter.unit) : "", //
+                    isOutput ? "" : defaultValue(parameter), //
                     text};
             if (isOutput) {
                 content.outputs.add(row);
@@ -290,104 +248,55 @@ public class ModuleDocsGenerator {
         return content;
     }
 
-    /**
-     * @return the public fields of the class, from the topmost superclass down, each in declaration order.
-     *         A field redeclared in a subclass hides the inherited one, keeping its position: wrappers
-     *         that extend their Oms module redeclare the coverages as file paths.
-     */
-    private static List<Field> getFields( Class< ? > moduleClass ) {
-        List<Class< ? >> hierarchy = new ArrayList<>();
-        for( Class< ? > c = moduleClass; c != null && c != Object.class; c = c.getSuperclass() ) {
-            hierarchy.add(0, c);
+    private static String typeName( Parameter parameter ) {
+        if (parameter.isPath() && parameter.kind == HMParameterKind.OUTPUT) {
+            return parameter.dataType == DataType.FOLDER ? "output folder" : "output file";
         }
-        Map<String, Field> fields = new LinkedHashMap<>();
-        for( Class< ? > c : hierarchy ) {
-            for( Field field : c.getDeclaredFields() ) {
-                if (Modifier.isPublic(field.getModifiers()) && !Modifier.isStatic(field.getModifiers())) {
-                    fields.put(field.getName(), field);
-                }
-            }
-        }
-        return new ArrayList<>(fields.values());
-    }
-
-    private static String typeName( Field field, String uiHint ) {
-        if (uiHint.contains(HMConstants.FILEIN_UI_HINT_RASTER)) {
+        switch( parameter.dataType ) {
+        case RASTER:
             return "raster file";
-        } else if (uiHint.contains(HMConstants.FILEIN_UI_HINT_VECTOR)) {
+        case VECTOR:
             return "vector file";
-        } else if (uiHint.contains(HMConstants.FILEIN_UI_HINT_CSV)) {
+        case CSV:
             return "CSV file";
-        } else if (uiHint.contains(HMConstants.FILEIN_UI_HINT_LAS)) {
+        case LAS:
             return "LAS file";
-        } else if (uiHint.contains(HMConstants.FOLDEROUT_UI_HINT)) {
-            return "output folder";
-        } else if (uiHint.contains(HMConstants.FILEOUT_UI_HINT)) {
-            return "output file";
-        } else if (uiHint.contains(HMConstants.FOLDERIN_UI_HINT)) {
+        case FOLDER:
             return "folder";
-        } else if (uiHint.contains(HMConstants.FILEIN_UI_HINT_GENERIC)) {
+        case FILE:
             return "file";
-        } else if (uiHint.contains(HMConstants.CRS_UI_HINT)) {
+        case CRS:
             return "CRS code";
+        default:
+            break;
         }
-        Class< ? > type = field.getType();
+        Class< ? > type = parameter.field.getType();
         if (type.isArray()) {
             return type.getComponentType().getSimpleName() + "[]";
         }
         if (type.isEnum()) {
-            return "one of: " + enumValues(type);
+            List<String> names = new ArrayList<>();
+            for( Object constant : type.getEnumConstants() ) {
+                names.add("`" + constant + "`");
+            }
+            return "one of: " + String.join(", ", names);
         }
         return type.getSimpleName();
     }
 
-    /**
-     * @return the allowed values of a combo UI hint (combo:value1,value2,...), or null.
-     */
-    private static String comboValues( String uiHint ) {
-        for( String hint : uiHint.split(";") ) {
-            hint = hint.trim();
-            if (hint.startsWith(HMConstants.COMBO_UI_HINT + ":")) {
-                List<String> values = new ArrayList<>();
-                for( String value : hint.substring(HMConstants.COMBO_UI_HINT.length() + 1).split(",") ) {
-                    values.add("`" + value.trim() + "`");
-                }
-                return String.join(", ", values);
-            }
-        }
-        return null;
-    }
-
-    private static String enumValues( Class< ? > enumType ) {
-        List<String> names = new ArrayList<>();
-        for( Object constant : enumType.getEnumConstants() ) {
-            names.add("`" + constant + "`");
-        }
-        return String.join(", ", names);
-    }
-
-    private static String defaultValue( Field field, Object instance ) {
-        if (instance == null) {
+    private static String defaultValue( Parameter parameter ) {
+        Object value = parameter.defaultValue;
+        if (value == null) {
             return "";
         }
-        try {
-            Object value = field.get(instance);
-            if (value == null) {
-                return "";
-            }
-            if (value.getClass().isArray()) {
-                return Array.getLength(value) == 0 ? "" : "array";
-            }
-            if (value instanceof String && ((String) value).isEmpty()) {
-                return "";
-            }
-            if ((field.getType() == double.class || field.getType() == float.class) && ((Number) value).doubleValue() == 0) {
-                return "`0`";
-            }
-            return "`" + value + "`";
-        } catch (Exception e) {
-            return "";
+        if (value.getClass().isArray()) {
+            return "array";
         }
+        Class< ? > type = parameter.field.getType();
+        if ((type == double.class || type == float.class) && ((Number) value).doubleValue() == 0) {
+            return "`0`";
+        }
+        return "`" + value + "`";
     }
 
     /**

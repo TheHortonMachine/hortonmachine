@@ -17,7 +17,8 @@
  # along with this program.  If not, see <http://www.gnu.org/licenses/>.
  #
 
-MEM="-Xmx256m -Xss64m"
+# the maximum memory, 2g by default: set the HM_MEM environment variable to change it, ex. HM_MEM=8g
+MEM="-Xmx${HM_MEM:-2g} -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

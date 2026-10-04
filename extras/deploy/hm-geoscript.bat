@@ -29,7 +29,8 @@ IF [%1]==[] (
 
 :startit
 
-set MEM=-Xmx2g
+:: the maximum memory, 2g by default: set the HM_MEM environment variable to change it, ex. set HM_MEM=8g
+IF "%HM_MEM%"=="" (set MEM=-Xmx2g) ELSE (set MEM=-Xmx%HM_MEM%)
 set XSS=-Xss64m
 set PATH=%~dp0\natives\;%PATH%
 %JAVAEXE% %SPLASH% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp "%~dp0\libs\*" org.hortonmachine.geoscript.GeoscriptConsole %1

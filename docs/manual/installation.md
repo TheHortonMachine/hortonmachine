@@ -43,10 +43,16 @@ Some applications accept arguments on the command line. These are described in e
 
 ## Memory
 
-The maximum memory available to an application is set at the top of its launcher, with the Java `-Xmx` option, for example:
+The applications can use up to 2 GB of memory by default. If an application runs out of memory on large datasets, set the `HM_MEM` environment variable to the maximum memory to use, keeping it below the physical memory of the machine. It applies to all the launchers, so they don't need to be changed.
+
+On Linux and macOS, for a single run:
 
 ```sh
-MEM="-Xmx4g -Xss64m"
+HM_MEM=8g ./hm-dbviewer.sh
 ```
 
-If an application runs out of memory on large datasets, raise the `-Xmx` value (for example to `-Xmx8g`), keeping it below the physical memory of the machine.
+or for all the launchers of the session, with `export HM_MEM=8g`, which can be added to the shell profile (for example `~/.bashrc`) to make it permanent.
+
+On Windows, `set HM_MEM=8g` in a command prompt applies to the launchers started from it. To make it permanent, also for the `.exe` launchers, add `HM_MEM` to the user environment variables in the system settings.
+
+The value is given as a number with the unit, `m` for megabytes or `g` for gigabytes, as in `512m` or `16g`.

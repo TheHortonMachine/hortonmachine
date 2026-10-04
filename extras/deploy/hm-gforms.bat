@@ -22,7 +22,8 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 	set JAVAEXE="java"
 )
 
-set MEM="-Xmx256m"
+:: the maximum memory, 2g by default: set the HM_MEM environment variable to change it, ex. set HM_MEM=8g
+IF "%HM_MEM%"=="" (set MEM=-Xmx2g) ELSE (set MEM=-Xmx%HM_MEM%)
 set XSS="-Xss64m"
 "%JAVAEXE%" -splash:"%~dp0\imgs\splash_gforms.png" %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -cp ".\libs\*" org.hortonmachine.gforms.FormBuilderController %1
 

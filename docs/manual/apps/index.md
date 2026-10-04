@@ -1,11 +1,12 @@
 # The applications
 
-The HortonMachine ships a set of desktop applications, each started by its own launcher (see [Launching an application](../installation.md#launching-an-application)).
+The HortonMachine ships a set of desktop applications and a command line, each started by its own launcher (see [Launching an application](../installation.md#launching-an-application)).
 
 | Application | Launcher | Purpose |
 |---|---|---|
 | [Spatial Toolbox](spatialtoolbox.md) | `hm-spatialtoolbox` | Run the HortonMachine processing modules through a graphical interface |
 | [Geoscript Console](geoscript.md) | `hm-geoscript` | A scripting console with the HortonMachine on the classpath |
+| [Command line](cli.md) | `hm-cli` | List, describe and run the processing modules from a terminal or other programs |
 | [Database Viewer](dbviewer.md) | `hm-dbviewer` | Explore spatial databases (GeoPackage, SpatiaLite, H2GIS, PostGIS) |
 | [STAC Browser](stacbrowser.md) | `hm-stacbrowser` | Browse STAC catalogs, search items and download or clip their assets |
 | [Style Editor](sld.md) | `hm-sld` | Create and edit SLD styles |
@@ -25,6 +26,7 @@ The HortonMachine ships a set of desktop applications, each started by its own l
 
 spatialtoolbox
 geoscript
+cli
 dbviewer
 stacbrowser
 sld
