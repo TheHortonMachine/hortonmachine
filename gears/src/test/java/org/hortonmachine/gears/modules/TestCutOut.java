@@ -79,4 +79,24 @@ public class TestCutOut extends HMTestCase {
         checkMatrixEqual(out.getRenderedImage(), HMTestMaps.cutoutDataMaxMinInverse800_1400, 0);
     }
 
+    public void testCutoutWithThresholdsOnly() throws Exception {
+        OmsCutOut cutout = new OmsCutOut();
+        cutout.pm = pm;
+        cutout.inRaster = inCoverage;
+        cutout.pMax = 1400.0;
+        cutout.pMin = 800.0;
+        cutout.process();
+        GridCoverage2D out = cutout.outRaster;
+
+        double[][] inData = HMTestMaps.mapData;
+        double[][] expected = new double[inData.length][inData[0].length];
+        for( int r = 0; r < inData.length; r++ ) {
+            for( int c = 0; c < inData[0].length; c++ ) {
+                double value = inData[r][c];
+                expected[r][c] = value < 800 || value > 1400 ? Double.NaN : value;
+            }
+        }
+        checkMatrixEqual(out.getRenderedImage(), expected, 0);
+    }
+
 }

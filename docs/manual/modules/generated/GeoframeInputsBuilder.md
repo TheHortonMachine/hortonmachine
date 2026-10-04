@@ -20,5 +20,10 @@ Prepares the inputs of the GeoFrame modelling environment: the geometries, the t
 | `inLakes` | vector file |  |  | Optional input lakes vector map. |
 | `inGeoframeTopology` | file |  |  | The geoframe topology file, mandatory in case of lakes. |
 | `pRatio` | double |  | `50.0` | The ratio between the velocity in the channels and on the hillslopes, usually from 5 to 200. With 0, the hillslope paths add nothing to the distance. |
-| `outFolder` | folder |  |  | Output folder for the geoframe data preparation |
+
+**Outputs**
+
+| Parameter | Type | Unit | Description |
+|---|---|---|---|
+| `outFolder` | output folder |  | Output folder for the geoframe data preparation |
 

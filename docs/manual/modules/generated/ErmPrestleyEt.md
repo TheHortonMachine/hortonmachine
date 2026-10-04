@@ -11,9 +11,9 @@ Fifth step of the ERM/GeoFrame water budget workflow: computes the potential eva
 
 | Parameter | Type | Unit | Default | Description |
 |---|---|---|---|---|
-| `inGpkg` | vector file |  |  | The GeoFrame database, with the interpolated temperatures and the net radiation. |
+| `inGpkg` | GeoPackage file |  |  | The GeoFrame database, with the interpolated temperatures and the net radiation. |
 | `pStartTimestamp` | String |  |  | Start of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC. |
 | `pEndTimestamp` | String |  |  | End of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC. |
-| `pTimeResolution` | String |  | `HOURLY` | Time resolution of the computation: HOURLY or DAILY. |
+| `pTimeResolution` | String |  | `HOURLY` | Time resolution of the computation: HOURLY or DAILY. Allowed values: `HOURLY`, `DAILY`. |
 | `doOverwrite` | boolean |  | `false` | If true, the evapotranspiration values already computed are deleted first. |
 

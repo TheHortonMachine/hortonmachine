@@ -257,6 +257,9 @@ public class HmCli {
             sb.append(" Range: ").append(parameter.min != null ? format(parameter.min) : "").append(" to ")
                     .append(parameter.max != null ? format(parameter.max) : "").append(".");
         }
+        if (parameter.dataType == DataType.NUMBERS) {
+            sb.append(" A list of numbers separated by commas.");
+        }
         if (!parameter.choices.isEmpty()) {
             sb.append(" One of: ").append(String.join(", ", parameter.choices)).append(".");
         }
@@ -308,6 +311,7 @@ public class HmCli {
             if (!parameter.choices.isEmpty()) {
                 p.put("choices", parameter.choices);
             }
+            putIfNotNull(p, "extension", parameter.extension);
             if (parameter.defaultValue instanceof Number || parameter.defaultValue instanceof Boolean) {
                 p.put("default", parameter.defaultValue);
             } else if (parameter.defaultValue != null && !parameter.defaultValue.getClass().isArray()) {
@@ -501,6 +505,15 @@ public class HmCli {
         String trimmed = value.trim();
         if (type == String.class) {
             return value;
+        } else if (type.isEnum()) {
+            for( Object constant : type.getEnumConstants() ) {
+                if (((Enum< ? >) constant).name().equals(trimmed)) {
+                    return constant;
+                }
+            }
+            throw new IllegalArgumentException("'" + value + "' is not one of " + parameter.choices + ".");
+        } else if (parameter.dataType == DataType.NUMBERS) {
+            return toNumbers(type.getComponentType(), trimmed);
         } else if (type == boolean.class || type == Boolean.class) {
             if (trimmed.equalsIgnoreCase("true")) {
                 return true;
@@ -525,6 +538,37 @@ public class HmCli {
             throw new IllegalArgumentException("'" + value + "' is not a valid " + type.getSimpleName() + ".");
         }
         throw new IllegalArgumentException("the type " + type.getSimpleName() + " is not supported.");
+    }
+
+    /**
+     * Convert a list of numbers, separated by commas or spaces and optionally in square brackets 
+     * (as printed by the modules), to an array of the given type.
+     */
+    private static Object toNumbers( Class< ? > componentType, String value ) {
+        String list = value.replaceAll("^\\[|\\]$", "").trim();
+        String[] parts = list.isEmpty() ? new String[0] : list.split("[,\\s]+");
+        Object array = Array.newInstance(componentType, parts.length);
+        for( int i = 0; i < parts.length; i++ ) {
+            String part = parts[i];
+            try {
+                if (componentType == double.class || componentType == Double.class) {
+                    Array.set(array, i, Double.valueOf(part));
+                } else if (componentType == float.class || componentType == Float.class) {
+                    Array.set(array, i, Float.valueOf(part));
+                } else if (componentType == int.class || componentType == Integer.class) {
+                    Array.set(array, i, Integer.valueOf(part));
+                } else if (componentType == long.class || componentType == Long.class) {
+                    Array.set(array, i, Long.valueOf(part));
+                } else if (componentType == short.class || componentType == Short.class) {
+                    Array.set(array, i, Short.valueOf(part));
+                } else {
+                    throw new IllegalArgumentException("lists of " + componentType.getSimpleName() + " are not supported.");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("'" + part + "' is not a valid " + componentType.getSimpleName() + ".");
+            }
+        }
+        return array;
     }
 
     private Class< ? extends HMModel> findModule( String name ) throws UsageException {

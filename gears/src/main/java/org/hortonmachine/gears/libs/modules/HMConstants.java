@@ -367,6 +367,7 @@ public class HMConstants {
     public static final String FILEIN_UI_HINT_DBF = "infile_dbf";
     public static final String FILEIN_UI_HINT_GPAP = "infile_gpap";
     public static final String FILEIN_UI_HINT_JSON = "infile_json";
+    public static final String FILEIN_UI_HINT_GPKG = "infile_gpkg";
 
     public static final String FOLDERIN_UI_HINT = "infolder";
     public static final String FILEOUT_UI_HINT = "outfile";

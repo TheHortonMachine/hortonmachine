@@ -124,7 +124,8 @@ public class OmsCutOut extends HMModel {
             nRows = maskRaster.getRows();
         }
 
-        HMRaster outHMRaster = HMRaster.fromGridCoverageWritable(inMask);
+        // the output has the grid of the mask, if any
+        HMRaster outHMRaster = HMRaster.fromGridCoverageWritable(inMask != null ? inMask : inRaster);
 
         try {
             pm.beginTask("Processing map...", nRows * nCols);

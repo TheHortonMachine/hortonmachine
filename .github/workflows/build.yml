@@ -102,7 +102,7 @@ jobs:
 
           # Copy deploy assets (allow missing patterns)
           shopt -s nullglob
-          cp -rv ${DEPLOY}/*.sh ${DEPLOY}/*.exe ${DEPLOY}/*.bat "${RELEASE_DIR}" || true
+          cp -rv ${DEPLOY}/*.sh ${DEPLOY}/hm-cli ${DEPLOY}/*.exe ${DEPLOY}/*.bat "${RELEASE_DIR}" || true
           cp -rv ${DEPLOY}/imgs ${DEPLOY}/natives ${DEPLOY}/quiet-logging.properties "${RELEASE_DIR}" || true
           shopt -u nullglob
 

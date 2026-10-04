@@ -11,10 +11,10 @@ Second step of the ERM/GeoFrame water budget workflow: imports the measurements 
 
 | Parameter | Type | Unit | Default | Description |
 |---|---|---|---|---|
-| `inGpkg` | vector file |  |  | The GeoFrame database created by the data preparation. |
+| `inGpkg` | GeoPackage file |  |  | The GeoFrame database created by the data preparation. |
 | `pStartTimestamp` | String |  |  | Start of the period to import. Format: yyyy-MM-dd HH:mm, in UTC. |
 | `pEndTimestamp` | String |  |  | End of the period to import. Format: yyyy-MM-dd HH:mm, in UTC. |
-| `pTimeResolution` | String |  | `HOURLY` | Time resolution of the data: HOURLY or DAILY. |
+| `pTimeResolution` | String |  | `HOURLY` | Time resolution of the data: HOURLY or DAILY. Allowed values: `HOURLY`, `DAILY`. |
 | `inMeteoStations` | vector file |  |  | The meteo stations (point vector layer). |
 | `pMeteoIdField` | String |  | `ID` | Field of the meteo stations layer holding the station id, matching the ids of the CSV columns. |
 | `inTemperaturesCsv` | CSV file |  |  | CSV time series of the air temperatures of the meteo stations [°C]. |

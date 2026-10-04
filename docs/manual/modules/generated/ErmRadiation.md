@@ -12,10 +12,10 @@ Fourth step of the ERM/GeoFrame water budget workflow: computes the net radiatio
 | Parameter | Type | Unit | Default | Description |
 |---|---|---|---|---|
 | `inDtm` | raster file |  |  | The digital elevation model used for the data preparation: the basin elevation and skyview rasters are read from its outputs folder. |
-| `inGpkg` | vector file |  |  | The GeoFrame database, with the interpolated temperatures. |
+| `inGpkg` | GeoPackage file |  |  | The GeoFrame database, with the interpolated temperatures. |
 | `pStartTimestamp` | String |  |  | Start of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC. |
 | `pEndTimestamp` | String |  |  | End of the period to compute. Format: yyyy-MM-dd HH:mm, in UTC. |
-| `pTimeResolution` | String |  | `HOURLY` | Time resolution of the computation: HOURLY or DAILY. |
+| `pTimeResolution` | String |  | `HOURLY` | Time resolution of the computation: HOURLY or DAILY. Allowed values: `HOURLY`, `DAILY`. |
 | `pDailySubSamples` | int |  | `24` | Number of sun-position samples used to average net radiation over a day if pTimeResolution is DAILY. 24 (one per hour) is the most accurate but also slowest. In case of 1 it evaluates a single central instant (solar noon). |
 | `doOverwrite` | boolean |  | `false` | If true, the radiation values already computed are deleted first. |
 | `downscaleFactor` | int |  | `1` | Downscale factor for the DTM and skyview rasters. If greater than 1, the rasters will be downscaled by this factor. This helps to speed up the processing and reduce memory usage. Default is 1 (no downscaling). |

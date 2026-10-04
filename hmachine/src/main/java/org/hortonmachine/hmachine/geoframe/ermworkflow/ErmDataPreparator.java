@@ -93,6 +93,7 @@ public class ErmDataPreparator extends HMModel {
 	public boolean doOverwrite = false;
 	
 	@Description("The stream gauges (point vector layer), placed on the network as observation points of the discharge.")
+	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
 	@In
 	public String inStreamGauge;
 	

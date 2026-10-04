@@ -162,4 +162,4 @@ The exit code tells the result:
 
 The types of data are `raster`, `vector`, `las`, `csv`, `file` and `folder` for paths, `crs`, `choice`, `text`, `string`, `number`, `integer` and `boolean` for values. Parameters marked as `computed` are values calculated by the module, printed as `Output:` lines at the end of the run, which can't be set. The `format` number changes only if the structure of the description changes in a way that breaks the programs reading it.
 
-Together with the fixed form of the progress lines and the exit codes, this lets other applications offer the modules in their own interface and run them through `hm-cli run`.
+Together with the fixed form of the progress lines and the exit codes, this lets other applications offer the modules in their own interface and run them through `hm-cli run`, as the [QGIS plugin](qgis.md) does.

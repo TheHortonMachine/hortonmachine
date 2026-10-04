@@ -31,7 +31,7 @@ import oms3.annotations.UI;
 public class ErmStationDataImporter extends HMModel {
 
 	@Description("The GeoFrame database created by the data preparation.")
-	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
+	@UI(HMConstants.FILEIN_UI_HINT_GPKG)
 	@In
 	public String inGpkg;
 
@@ -44,6 +44,7 @@ public class ErmStationDataImporter extends HMModel {
 	public String pEndTimestamp;
 
 	@Description("Time resolution of the data: HOURLY or DAILY.")
+	@UI("combo:HOURLY,DAILY")
 	@In
 	public String pTimeResolution = "HOURLY";
 

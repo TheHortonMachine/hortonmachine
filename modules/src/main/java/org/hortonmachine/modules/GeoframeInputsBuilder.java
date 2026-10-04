@@ -87,7 +87,7 @@ public class GeoframeInputsBuilder extends HMModel {
     public double pRatio = 50;
 
     @Description("Output folder for the geoframe data preparation")
-    @UI(HMConstants.FOLDERIN_UI_HINT)
+    @UI(HMConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder = null;
     

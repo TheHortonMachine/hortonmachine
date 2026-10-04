@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -54,9 +55,12 @@ import oms3.annotations.Unit;
 public class ModuleDescriptor {
 
     /**
-     * The package of the modules that work with files and are exposed to the command line.
+     * The categories of the readers and writers used only inside other modules.
      */
-    public static final String MODULES_PACKAGE = "org.hortonmachine.modules.";
+    public static final Set<String> INTERNAL_CATEGORIES = Set.of(HMConstants.GRIDGEOMETRYREADER, HMConstants.RASTERREADER,
+            HMConstants.RASTERWRITER, HMConstants.FEATUREREADER, HMConstants.FEATUREWRITER, HMConstants.GENERICREADER,
+            HMConstants.GENERICWRITER, HMConstants.HASHMAP_READER, HMConstants.HASHMAP_WRITER, HMConstants.LIST_READER,
+            HMConstants.LIST_WRITER);
 
     /** Fields of the modules framework, not real parameters. */
     private static final List<String> SKIPPED_FIELDS = Arrays.asList("pm", "doProcess", "doReset");
@@ -76,7 +80,8 @@ public class ModuleDescriptor {
     public enum DataType {
         RASTER("raster"), VECTOR("vector"), LAS("las"), CSV("csv"), FILE("file"), FOLDER("folder"), CRS("crs"),
         CHOICE("choice"), TEXT("text"), STRING("string"), NUMBER("number"), INTEGER("integer"), BOOLEAN("boolean"),
-        OTHER("other");
+        /** A list of numbers, for one dimensional arrays. */
+        NUMBERS("numbers"), OTHER("other");
 
         private final String name;
 
@@ -105,11 +110,13 @@ public class ModuleDescriptor {
         public final Object defaultValue;
         /** The allowed values of a choice, else empty. */
         public final List<String> choices;
+        /** The extension of the files, as gpkg or csv, if known, else <code>null</code>. */
+        public final String extension;
         /** If the value is written by the module (<code>@Out</code>) and not set by the user. */
         public final boolean isComputed;
 
         Parameter( Field field, HMParameterKind kind, DataType dataType, String description, String unit, Double min,
-                Double max, Object defaultValue, List<String> choices, boolean isComputed ) {
+                Double max, Object defaultValue, List<String> choices, String extension, boolean isComputed ) {
             this.field = field;
             this.name = field.getName();
             this.kind = kind;
@@ -120,6 +127,7 @@ public class ModuleDescriptor {
             this.max = max;
             this.defaultValue = defaultValue;
             this.choices = choices;
+            this.extension = extension;
             this.isComputed = isComputed;
         }
 
@@ -197,7 +205,8 @@ public class ModuleDescriptor {
                     unit != null && !unit.value().isBlank() ? unit.value().trim() : null, //
                     min, max, //
                     isIn ? defaultValue(field, instance) : null, //
-                    choices(uiHint), //
+                    choices(field, uiHint), //
+                    extension(uiHint), //
                     isOut && !isIn));
         }
     }
@@ -213,28 +222,82 @@ public class ModuleDescriptor {
     }
 
     /**
-     * Get the modules available to the command line: those of the {@link #MODULES_PACKAGE},
-     * which work with files, that are not hidden from the user interfaces.
+     * Check if a module is meant for the users, as in the Spatial Toolbox: not an Oms module 
+     * (which works on data in memory and has a file based counterpart), not hidden and 
+     * not one of the readers and writers used only inside other modules.
+     *
+     * @param moduleClass the class of the module.
+     * @return <code>true</code> if the module is shown to the users.
+     */
+    public static boolean isUserModule( Class< ? extends HMModel> moduleClass ) {
+        if (moduleClass.getSimpleName().startsWith("Oms") || moduleClass.getEnclosingClass() != null) {
+            return false;
+        }
+        UI ui = moduleClass.getAnnotation(UI.class);
+        if (ui != null && ui.value().contains(HMConstants.HIDE_UI_HINT)) {
+            return false;
+        }
+        Label label = moduleClass.getAnnotation(Label.class);
+        if (label != null && (label.value().isBlank() || INTERNAL_CATEGORIES.contains(label.value()))) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * Check if a module is available to the users, in the Spatial Toolbox, the command line and the QGIS plugin:
+     * a {@link #isUserModule(Class) module for the users} whose outputs, if any, can be delivered 
+     * (see {@link #hasDeliverableOutput()}).
+     *
+     * @param moduleClass the class of the module.
+     * @return <code>true</code> if the module is available.
+     */
+    public static boolean isAvailable( Class< ? extends HMModel> moduleClass ) {
+        return isUserModule(moduleClass) && of(moduleClass).hasDeliverableOutput();
+    }
+
+    /**
+     * Get the {@link #isAvailable(Class) available modules}.
+     * 
+     * <p>If modules of different packages have the same name, the first in class name order is used.
      *
      * @return the module classes by name, sorted by name.
      */
     public static Map<String, Class< ? extends HMModel>> getAvailableModules() {
         Map<String, Class< ? extends HMModel>> name2Class = new TreeMap<>();
         for( Class< ? extends HMModel> modelClass : HMModelRegistry.getModelClasses() ) {
-            if (!modelClass.getName().startsWith(MODULES_PACKAGE) || modelClass.getEnclosingClass() != null) {
-                continue;
+            if (!name2Class.containsKey(modelClass.getSimpleName()) && isAvailable(modelClass)) {
+                name2Class.put(modelClass.getSimpleName(), modelClass);
             }
-            UI ui = modelClass.getAnnotation(UI.class);
-            if (ui != null && ui.value().contains(HMConstants.HIDE_UI_HINT)) {
-                continue;
-            }
-            Label label = modelClass.getAnnotation(Label.class);
-            if (label != null && label.value().isBlank()) {
-                continue;
-            }
-            name2Class.put(modelClass.getSimpleName(), modelClass);
         }
         return name2Class;
+    }
+
+    /**
+     * @return <code>false</code> if the module has outputs, but none the command line can deliver, 
+     *         as data in memory. Modules without outputs, that write into an input folder or 
+     *         database or only print, are fine.
+     */
+    public boolean hasDeliverableOutput() {
+        boolean hasOutputs = false;
+        for( Parameter parameter : parameters ) {
+            if (parameter.kind != HMParameterKind.OUTPUT) {
+                continue;
+            }
+            hasOutputs = true;
+            if ((parameter.isPath() && !parameter.isComputed)
+                    || (parameter.isComputed && isPrintable(parameter.field.getType()))) {
+                return true;
+            }
+        }
+        return !hasOutputs;
+    }
+
+    private static boolean isPrintable( Class< ? > type ) {
+        if (type.isArray()) {
+            return isPrintable(type.getComponentType());
+        }
+        return type.isPrimitive() || type == String.class || Number.class.isAssignableFrom(type) || type == Boolean.class;
     }
 
     public Class< ? extends HMModel> getModuleClass() {
@@ -336,7 +399,7 @@ public class ModuleDescriptor {
             return DataType.FILE;
         } else if (uiHint.contains(HMConstants.CRS_UI_HINT)) {
             return DataType.CRS;
-        } else if (choices(uiHint).size() > 0) {
+        } else if (choices(field, uiHint).size() > 0) {
             return DataType.CHOICE;
         } else if (uiHint.contains(HMConstants.MULTILINE_UI_HINT)) {
             return DataType.TEXT;
@@ -351,14 +414,24 @@ public class ModuleDescriptor {
         } else if (type == int.class || type == Integer.class || type == long.class || type == Long.class
                 || type == short.class || type == Short.class) {
             return DataType.INTEGER;
+        } else if (type.isArray() && (type.getComponentType().isPrimitive() || Number.class.isAssignableFrom(type.getComponentType()))
+                && type.getComponentType() != boolean.class && type.getComponentType() != char.class) {
+            return DataType.NUMBERS;
         }
         return DataType.OTHER;
     }
 
     /**
-     * @return the allowed values of a combo UI hint (combo:value1,value2,...).
+     * @return the allowed values of an enum field or of a combo UI hint (combo:value1,value2,...).
      */
-    private static List<String> choices( String uiHint ) {
+    private static List<String> choices( Field field, String uiHint ) {
+        if (field.getType().isEnum()) {
+            List<String> values = new ArrayList<>();
+            for( Object constant : field.getType().getEnumConstants() ) {
+                values.add(((Enum< ? >) constant).name());
+            }
+            return Collections.unmodifiableList(values);
+        }
         for( String hint : uiHint.split(";") ) {
             hint = hint.trim();
             if (hint.startsWith(HMConstants.COMBO_UI_HINT + ":")) {
@@ -370,6 +443,21 @@ public class ModuleDescriptor {
             }
         }
         return Collections.emptyList();
+    }
+
+    /**
+     * @return the extension of the files of a specific file UI hint, as infile_gpkg, or <code>null</code>.
+     */
+    private static String extension( String uiHint ) {
+        String[][] hint2Extension = {{HMConstants.FILEIN_UI_HINT_GPKG, "gpkg"}, {HMConstants.FILEIN_UI_HINT_CSV, "csv"},
+                {HMConstants.FILEIN_UI_HINT_LAS, "las"}, {HMConstants.FILEIN_UI_HINT_JSON, "json"},
+                {HMConstants.FILEIN_UI_HINT_DBF, "dbf"}, {HMConstants.FILEIN_UI_HINT_GPAP, "gpap"}};
+        for( String[] pair : hint2Extension ) {
+            if (uiHint.contains(pair[0])) {
+                return pair[1];
+            }
+        }
+        return null;
     }
 
     private static Object defaultValue( Field field, Object instance ) {

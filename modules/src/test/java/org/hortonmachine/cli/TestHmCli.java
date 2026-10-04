@@ -89,6 +89,15 @@ public class TestHmCli extends HMTestCase {
         assertTrue(out().contains("Gradient"));
         // no Oms modules
         assertFalse(out().contains("OmsPitfiller"));
+        // modules of other packages, as the GeoFrame ones
+        assertTrue(out().contains("ErmDataPreparator"));
+        // no readers and writers used inside other modules
+        assertFalse(out().contains("RasterReader"));
+        assertFalse(out().contains("VectorReader"));
+        assertFalse(out().contains("GridGeometryReader"));
+        assertFalse(out().contains("FileIterator"));
+        // no modules whose outputs stay in memory
+        assertFalse(out().contains("NetRadiationPointCase"));
 
         assertEquals(HmCli.EXIT_OK, cli("list", "pitfill"));
         assertTrue(out().contains("Pitfiller"));
@@ -189,6 +198,62 @@ public class TestHmCli extends HMTestCase {
         // a number that is not a number
         assertEquals(HmCli.EXIT_USAGE, cli("run", "CutOut", "--pMax=abc"));
         assertTrue(err().contains("not a valid"));
+    }
+
+    public void testGeoframeParameters() throws Exception {
+        assertEquals(HmCli.EXIT_OK, cli("describe", "ErmCalibration"));
+        JsonNode parameters = new ObjectMapper().readTree(out()).get("modules").get(0).get("parameters");
+        for( JsonNode parameter : parameters ) {
+            switch( parameter.get("name").asText() ) {
+            case "inGeopackagePath":
+                // the database is a file, not a vector layer
+                assertParameter(parameter, "inGeopackagePath", "input", "file");
+                assertEquals("gpkg", parameter.get("extension").asText());
+                break;
+            case "pCostFunction":
+                // an enum
+                assertParameter(parameter, "pCostFunction", "parameter", "choice");
+                assertEquals("KGE", parameter.get("choices").get(0).asText());
+                assertEquals("KGE", parameter.get("default").asText());
+                break;
+            case "outParams":
+                assertParameter(parameter, "outParams", "output", "numbers");
+                assertTrue(parameter.get("computed").asBoolean());
+                break;
+            default:
+                break;
+            }
+        }
+
+        assertEquals(HmCli.EXIT_OK, cli("describe", "ErmPrestleyEt"));
+        assertTrue(out().contains("\"choices\" : [ \"HOURLY\", \"DAILY\" ]"));
+        assertEquals(HmCli.EXIT_OK, cli("help", "ErmSimulation"));
+        assertTrue(out().contains("--inParams=<numbers>"));
+    }
+
+    public void testEnumAndNumbersValues() throws Exception {
+        ModuleDescriptor simulation = ModuleDescriptor.of(org.hortonmachine.hmachine.geoframe.ermworkflow.ErmSimulation.class);
+        ModuleDescriptor.Parameter inParams = simulation.getParameter("inParams");
+        assertEquals(ModuleDescriptor.DataType.NUMBERS, inParams.dataType);
+
+        // the list printed by the calibration is accepted as it is
+        java.lang.reflect.Method convert = HmCli.class.getDeclaredMethod("convert", ModuleDescriptor.Parameter.class, String.class);
+        convert.setAccessible(true);
+        double[] values = (double[]) convert.invoke(null, inParams, "[0.5, 1.0, 2.5E-4]");
+        assertEquals(3, values.length);
+        assertEquals(2.5E-4, values[2], 0.0);
+        values = (double[]) convert.invoke(null, inParams, "0.5,1 2");
+        assertEquals(3, values.length);
+
+        ModuleDescriptor calibration = ModuleDescriptor.of(org.hortonmachine.hmachine.geoframe.ermworkflow.ErmCalibration.class);
+        Object cost = convert.invoke(null, calibration.getParameter("pCostFunction"), "KGE");
+        assertEquals(org.hortonmachine.gears.utils.optimizers.CostFunctions.KGE, cost);
+
+        // wrong values are usage errors
+        assertEquals(HmCli.EXIT_USAGE, cli("run", "ErmSimulation", "--inParams=1,x"));
+        assertTrue(err().contains("'x' is not a valid double"));
+        assertEquals(HmCli.EXIT_USAGE, cli("run", "ErmCalibration", "--pCostFunction=NSE"));
+        assertTrue(err().contains("must be one of: KGE"));
     }
 
     public void testModuleFailure() throws Exception {

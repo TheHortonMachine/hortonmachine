@@ -20,7 +20,7 @@ import oms3.annotations.Unit;
 public abstract class ErmBase extends HMModel {
 
 	@Description("The GeoFrame database, with all the inputs prepared by the previous steps of the workflow.")
-	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
+	@UI(HMConstants.FILEIN_UI_HINT_GPKG)
 	@In
 	public String inGeopackagePath;
 

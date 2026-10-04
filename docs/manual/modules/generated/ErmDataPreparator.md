@@ -19,6 +19,6 @@ First step of the ERM/GeoFrame water budget workflow: from the DTM it derives th
 | `pOutletEasting` | Double |  |  | Easting of the basin outlet, in the projection of the DTM. Without the outlet, only the rasters of the whole DTM are computed. |
 | `pOutletNorthing` | Double |  |  | Northing of the basin outlet, in the projection of the DTM. |
 | `doOverwrite` | boolean |  | `false` | If true, the rasters already present in the outputs folder are computed again, else they are reused. |
-| `inStreamGauge` | String |  |  | The stream gauges (point vector layer), placed on the network as observation points of the discharge. |
+| `inStreamGauge` | vector file |  |  | The stream gauges (point vector layer), placed on the network as observation points of the discharge. |
 | `pStreamGaugeIDField` | String |  |  | Field of the stream gauges layer holding the station id. |
 

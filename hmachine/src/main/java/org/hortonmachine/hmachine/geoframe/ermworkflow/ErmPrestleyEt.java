@@ -53,7 +53,7 @@ import oms3.annotations.UI;
 @License("General Public License Version 3 (GPLv3)")
 public class ErmPrestleyEt extends HMModel {
 	@Description("The GeoFrame database, with the interpolated temperatures and the net radiation.")
-	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
+	@UI(HMConstants.FILEIN_UI_HINT_GPKG)
 	@In
 	public String inGpkg;
 
@@ -66,6 +66,7 @@ public class ErmPrestleyEt extends HMModel {
 	public String pEndTimestamp;
 
 	@Description("Time resolution of the computation: HOURLY or DAILY.")
+	@UI("combo:HOURLY,DAILY")
 	@In
 	public String pTimeResolution = "HOURLY";
 

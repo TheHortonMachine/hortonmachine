@@ -33,7 +33,7 @@ import oms3.annotations.UI;
 @License("General Public License Version 3 (GPLv3)")
 public class ErmKriging extends HMModel {
 	@Description("The GeoFrame database, with the station data imported.")
-	@UI(HMConstants.FILEIN_UI_HINT_VECTOR)
+	@UI(HMConstants.FILEIN_UI_HINT_GPKG)
 	@In
 	public String inGpkg;
 

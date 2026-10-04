@@ -667,6 +667,19 @@
 
 	<profiles>
 		<profile>
+			<!-- the IDEs based on m2e (Eclipse, VS Code) build into their own folder, so that their
+			automatic builds don't collide with the command line builds in target -->
+			<id>ide</id>
+			<activation>
+				<property>
+					<name>m2e.version</name>
+				</property>
+			</activation>
+			<build>
+				<directory>${project.basedir}/target-ide</directory>
+			</build>
+		</profile>
+		<profile>
 			<id>release</id>
 			<activation>
 				<property>

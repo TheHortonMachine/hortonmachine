@@ -216,7 +216,8 @@ public class ModuleDocsGenerator {
 
         for( Parameter parameter : module.getParameters() ) {
             String text = clean(parameter.description);
-            if (!parameter.choices.isEmpty()) {
+            // the values of enums are already in the type
+            if (!parameter.choices.isEmpty() && !parameter.field.getType().isEnum()) {
                 List<String> values = new ArrayList<>();
                 for( String choice : parameter.choices ) {
                     values.add("`" + choice + "`");
@@ -264,7 +265,7 @@ public class ModuleDocsGenerator {
         case FOLDER:
             return "folder";
         case FILE:
-            return "file";
+            return "gpkg".equals(parameter.extension) ? "GeoPackage file" : "file";
         case CRS:
             return "CRS code";
         default:

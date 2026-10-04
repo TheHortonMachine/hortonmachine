@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.hortonmachine.cli.ModuleDescriptor;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -76,11 +77,10 @@ public class HortonmachineModulesManager {
         // all modules registered via SPI, also those of external jars
         Map<String, Class< ? >> moduleNames2Classes = new LinkedHashMap<>();
         for( Class< ? extends HMModel> modelClass : HMModelRegistry.getModelClasses() ) {
-            String name = modelClass.getSimpleName();
-            if (name.startsWith("Oms")) {
-                continue;
+            // the same modules of the command line and the QGIS plugin
+            if (!moduleNames2Classes.containsKey(modelClass.getSimpleName()) && ModuleDescriptor.isAvailable(modelClass)) {
+                moduleNames2Classes.putIfAbsent(modelClass.getSimpleName(), modelClass);
             }
-            moduleNames2Classes.putIfAbsent(name, modelClass);
         }
 
         Collection<Class< ? >> classesList = moduleNames2Classes.values();
@@ -88,18 +88,7 @@ public class HortonmachineModulesManager {
             try {
                 String simpleName = moduleClass.getSimpleName();
 
-                UI uiHints = moduleClass.getAnnotation(UI.class);
-                if (uiHints != null) {
-                    String uiHintStr = uiHints.value();
-                    if (uiHintStr.contains(HMConstants.HIDE_UI_HINT)) {
-                        continue;
-                    }
-                }
-
                 Label category = moduleClass.getAnnotation(Label.class);
-                if (category != null && category.value().trim().isEmpty()) {
-                    continue;
-                }
                 String categoryStr = HMConstants.OTHER;
                 if (category != null) {
                     categoryStr = category.value();
@@ -142,21 +131,12 @@ public class HortonmachineModulesManager {
                     addOutput(access, module);
                 }
 
-                if (categoryStr.equals(HMConstants.GRIDGEOMETRYREADER) || categoryStr.equals(HMConstants.RASTERREADER)
-                        || categoryStr.equals(HMConstants.RASTERWRITER) || categoryStr.equals(HMConstants.FEATUREREADER)
-                        || categoryStr.equals(HMConstants.FEATUREWRITER) || categoryStr.equals(HMConstants.GENERICREADER)
-                        || categoryStr.equals(HMConstants.GENERICWRITER) || categoryStr.equals(HMConstants.HASHMAP_READER)
-                        || categoryStr.equals(HMConstants.HASHMAP_WRITER) || categoryStr.equals(HMConstants.LIST_READER)
-                        || categoryStr.equals(HMConstants.LIST_WRITER)) {
-                    // ignore for now
-                } else {
-                    List<ModuleDescription> modulesList4Category = modulesMap.get(categoryStr);
-                    if (modulesList4Category == null) {
-                        modulesList4Category = new ArrayList<ModuleDescription>();
-                        modulesMap.put(categoryStr, modulesList4Category);
-                    }
-                    modulesList4Category.add(module);
+                List<ModuleDescription> modulesList4Category = modulesMap.get(categoryStr);
+                if (modulesList4Category == null) {
+                    modulesList4Category = new ArrayList<ModuleDescription>();
+                    modulesMap.put(categoryStr, modulesList4Category);
                 }
+                modulesList4Category.add(module);
 
             } catch (Exception | NoClassDefFoundError e) {
                 if (moduleClass != null)

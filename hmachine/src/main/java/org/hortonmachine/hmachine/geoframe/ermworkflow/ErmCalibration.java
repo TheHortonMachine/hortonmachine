@@ -14,6 +14,7 @@ import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description("Sixth step of the ERM/GeoFrame water budget workflow: calibrates the 18 parameters of the water budget model against the observed discharge, with Particle Swarm Optimisation. The best parameters found and their score are reported at the end.")
@@ -62,6 +63,14 @@ public class ErmCalibration extends ErmBase {
 	@In
 	public boolean printDebugInfo = true;
 
+	@Description("The best parameters found, in the order expected by the simulation.")
+	@Out
+	public double[] outParams;
+
+	@Description("The score of the best parameters, for the chosen measure of agreement.")
+	@Out
+	public double outCost;
+
 	@Execute
 	public void process() throws Exception {
 		setup();
@@ -83,6 +92,8 @@ public class ErmCalibration extends ErmBase {
 					pCalibrationThreadCount, precipReader, tempReader, etpReader, runner, spinUpTimesteps, doWriteState,
 					pm, printDebugInfo);
 
+			outParams = psoCalibrationResult.parameters;
+			outCost = -psoCalibrationResult.cost;
 			pm.message("PSO calibration completed.");
 			pm.message("Best parameters found: " + java.util.Arrays.toString(psoCalibrationResult.parameters));
 			pm.message("Cost: " + (-psoCalibrationResult.cost));

@@ -11,7 +11,7 @@ Third step of the ERM/GeoFrame water budget workflow: interpolates the temperatu
 
 | Parameter | Type | Unit | Default | Description |
 |---|---|---|---|---|
-| `inGpkg` | vector file |  |  | The GeoFrame database, with the station data imported. |
+| `inGpkg` | GeoPackage file |  |  | The GeoFrame database, with the station data imported. |
 | `pStartTimestamp` | String |  |  | Start of the period to interpolate. Format: yyyy-MM-dd HH:mm, in UTC. |
 | `pEndTimestamp` | String |  |  | End of the period to interpolate. Format: yyyy-MM-dd HH:mm, in UTC. |
 | `doDeleteExistingData` | boolean |  | `false` | If true, the temperatures and precipitations already interpolated are deleted first. |

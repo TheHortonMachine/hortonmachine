@@ -11,7 +11,7 @@ Sixth step of the ERM/GeoFrame water budget workflow: calibrates the 18 paramete
 
 | Parameter | Type | Unit | Default | Description |
 |---|---|---|---|---|
-| `inGeopackagePath` | vector file |  |  | The GeoFrame database, with all the inputs prepared by the previous steps of the workflow. |
+| `inGeopackagePath` | GeoPackage file |  |  | The GeoFrame database, with all the inputs prepared by the previous steps of the workflow. |
 | `inFromTimestamp` | String |  |  | Start of the simulated period. Format: yyyy-MM-dd HH:mm:ss, in UTC. |
 | `inToTimestamp` | String |  |  | End of the simulated period. Format: yyyy-MM-dd HH:mm:ss, in UTC. |
 | `pTimeStepMinutes` | int | min | `60` | Length of the time step: 60 for hourly data, 1440 for daily data. |
@@ -26,6 +26,13 @@ Sixth step of the ERM/GeoFrame water budget workflow: calibrates the 18 paramete
 | `pCalibrationThreadCount` | int |  | `20` | Number of parallel threads for calibration. |
 | `pCostFunction` | one of: `KGE` |  | `KGE` | Measure of the agreement between simulated and observed discharge: KGE, the Kling-Gupta efficiency (Gupta et al., 2009). |
 | `printDebugInfo` | boolean |  | `true` | If true, the progress of the calibration is reported in detail. |
+
+**Outputs**
+
+| Parameter | Type | Unit | Description |
+|---|---|---|---|
+| `outParams` | double[] |  | The best parameters found, in the order expected by the simulation. |
+| `outCost` | double |  | The score of the best parameters, for the chosen measure of agreement. |
 
 **References**
 
