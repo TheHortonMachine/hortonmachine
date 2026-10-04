@@ -6,10 +6,10 @@ It offers the same modules of the [Spatial Toolbox](spatialtoolbox.md), with the
 
 ## Launching
 
-Run the `hm-cli` launcher from a terminal, `hm-cli.sh` on Linux and macOS, `hm-cli.bat` on Windows (see [Launching an application](../installation.md#launching-an-application)). It works from any folder, so it can be called with its full path:
+Run the `hm-cli` launcher from a terminal, `hm-cli` on Linux and macOS, `hm-cli.bat` on Windows (see [Launching an application](../installation.md#launching-an-application)). It works from any folder, so it can be called with its full path:
 
 ```sh
-/path/to/hortonmachine/hm-cli.sh list
+/path/to/hortonmachine/hm-cli list
 ```
 
 Run it without arguments to see the commands. In the examples below, `hm-cli` stands for the launcher of your platform.
@@ -17,7 +17,7 @@ Run it without arguments to see the commands. In the examples below, `hm-cli` st
 The modules can use up to 2 GB of memory by default. To process large datasets, raise it with the `HM_MEM` environment variable, as for all the launchers (see [Memory](../installation.md#memory)):
 
 ```sh
-HM_MEM=16g ./hm-cli.sh run Pitfiller ...
+HM_MEM=16g ./hm-cli run Pitfiller ...
 ```
 
 On Windows: `set HM_MEM=16g` before running `hm-cli.bat`.
