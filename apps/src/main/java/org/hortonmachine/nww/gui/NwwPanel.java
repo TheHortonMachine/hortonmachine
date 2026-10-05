@@ -336,6 +336,20 @@ public class NwwPanel extends JPanel {
     }
 
     /**
+     * Set the globe as sphere with a given terrain.
+     *
+     * @param elevationModel the elevation model of the terrain, e.g. one made with
+     *            {@link org.hortonmachine.nww.elevation.CoverageElevationModel}.
+     */
+    public void setSphereGlobe( ElevationModel elevationModel ) {
+        Earth globe = new Earth();
+        globe.setElevationModel(elevationModel);
+        wwd.getModel().setGlobe(globe);
+        wwd.getView().stopMovement();
+        wwd.redraw();
+    }
+
+    /**
      * @return the elevation model used for the 3D terrain, shared by all the globes to share its caches.
      */
     public static synchronized ElevationModel getTerrainElevationModel() {

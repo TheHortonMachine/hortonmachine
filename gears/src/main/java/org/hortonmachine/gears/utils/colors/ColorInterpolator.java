@@ -47,6 +47,20 @@ public class ColorInterpolator {
     }
 
     /**
+     * @return the value of the first color.
+     */
+    public double getMin() {
+        return min;
+    }
+
+    /**
+     * @return the value of the last color.
+     */
+    public double getMax() {
+        return max;
+    }
+
+    /**
      * Get the color of the defined table by its value.
      * 
      * @param value the value.

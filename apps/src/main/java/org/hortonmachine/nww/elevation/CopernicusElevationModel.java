@@ -68,6 +68,8 @@ public class CopernicusElevationModel extends BasicElevationModel {
     private final CopernicusDemSource source;
     private final Set<String> pendingTiles = ConcurrentHashMap.newKeySet();
     private final double coarsestResolution;
+    /** True while serving an unmapped request, see {@link #getExtremeElevations(Sector)}. */
+    private final ThreadLocal<Boolean> unmappedRequest = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     public CopernicusElevationModel() {
         super(makeParams());
@@ -116,11 +118,42 @@ public class CopernicusElevationModel extends BasicElevationModel {
     protected double getElevations( Sector sector, List< ? extends LatLon> latlons, double targetResolution, double[] buffer,
             boolean mapMissingData ) {
         if (targetResolution > coarsestResolution) {
-            // views too wide: keep the terrain flat instead of downloading data for half a continent
+            // views too wide: no data instead of downloading data for half a continent
+            if (!mapMissingData) {
+                // unmapped requests come from compound models: leave the values of the other models
+                return Double.MAX_VALUE;
+            }
             Arrays.fill(buffer, 0, Math.min(buffer.length, latlons.size()), 0.0);
             return targetResolution;
         }
+        if (!mapMissingData) {
+            // the basic model writes its minimum elevation where tiles are not loaded yet, also in
+            // unmapped requests: make it write NaN and put back the values of the other models
+            int count = Math.min(buffer.length, latlons.size());
+            double[] previous = Arrays.copyOf(buffer, count);
+            double resolution;
+            unmappedRequest.set(Boolean.TRUE);
+            try {
+                resolution = super.getElevations(sector, latlons, targetResolution, buffer, false);
+            } finally {
+                unmappedRequest.set(Boolean.FALSE);
+            }
+            for( int i = 0; i < count; i++ ) {
+                if (Double.isNaN(buffer[i])) {
+                    buffer[i] = previous[i];
+                }
+            }
+            return resolution;
+        }
         return super.getElevations(sector, latlons, targetResolution, buffer, mapMissingData);
+    }
+
+    @Override
+    public double[] getExtremeElevations( Sector sector ) {
+        if (unmappedRequest.get()) {
+            return new double[]{Double.NaN, Double.NaN};
+        }
+        return super.getExtremeElevations(sector);
     }
 
     @Override

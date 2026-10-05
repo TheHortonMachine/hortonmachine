@@ -10,4 +10,6 @@ geoframeinputsbuilder
 presteytayloretpmodel
 peakflow
 shalstab
+stoneinputs
+stone
 ```

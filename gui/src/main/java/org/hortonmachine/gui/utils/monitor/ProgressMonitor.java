@@ -54,9 +54,11 @@ public class ProgressMonitor implements IHMProgressMonitor {
 
     @Override
     public void beginTask( String name, int totalWork ) {
-        // this can be seen as a start and setting of totalwork
+        // this can be seen as a (re)start and setting of totalwork, modules can run several tasks
         this.total = totalWork;
-        start(name);
+        this.status = name;
+        current = 0;
+        fireChangeEvent();
     }
 
     public int getMilliSecondsToWait() {
@@ -131,8 +133,10 @@ public class ProgressMonitor implements IHMProgressMonitor {
 
     @Override
     public void errorMessage( String message ) {
-        // TODO Auto-generated method stub
-
+        if (message != null) {
+            this.status = message;
+            fireChangeEvent();
+        }
     }
 
     @Override

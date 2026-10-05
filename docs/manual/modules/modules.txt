@@ -14,6 +14,8 @@ org.hortonmachine.modules.GeoframeInputsBuilder
 org.hortonmachine.modules.PresteyTaylorEtpModel
 org.hortonmachine.modules.Peakflow
 org.hortonmachine.modules.Shalstab
+org.hortonmachine.modules.StoneInputs
+org.hortonmachine.modules.Stone
 org.hortonmachine.modules.Markoutlets
 org.hortonmachine.modules.Gradient
 org.hortonmachine.modules.Slope

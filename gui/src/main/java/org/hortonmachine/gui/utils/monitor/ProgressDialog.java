@@ -85,8 +85,11 @@ public class ProgressDialog extends JDialog implements ChangeListener {
     private void setState() {
         if (monitor.getCurrent() != monitor.getTotal()) {
             statusLabel.setText(monitor.getStatus());
-            if (!monitor.isIndeterminate())
+            if (!monitor.isIndeterminate()) {
+                // a new task can change the total
+                progressBar.setMaximum(monitor.getTotal());
                 progressBar.setValue(monitor.getCurrent());
+            }
         } else {
             monitor.removeChangeListener(this);
             dispose();
