@@ -297,6 +297,11 @@ public class ModuleDocsGenerator {
         if ((type == double.class || type == float.class) && ((Number) value).doubleValue() == 0) {
             return "`0`";
         }
+        // thread defaults come from the machine generating the docs, keep the fragments machine independent
+        if (type == int.class && parameter.name.toLowerCase().contains("threads")
+                && ((Number) value).intValue() == HMModel.getDefaultThreadsNum()) {
+            return "number of processors";
+        }
         return "`" + value + "`";
     }
 

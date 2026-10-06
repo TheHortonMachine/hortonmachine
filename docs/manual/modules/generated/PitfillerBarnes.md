@@ -14,7 +14,7 @@ Fills the depressions of a DEM using the parallel Priority-Flood algorithm by Ba
 | `inElev` | raster file |  |  | The map of digital elevation model (DEM). In large file mode it has to be a GeoTIFF. |
 | `doLargeFile` | boolean |  | `false` | Process file to file, without loading the DEM in memory, for DEMs that do not fit in memory. The outputs are written as tiled GeoTIFFs (default is false). |
 | `pTileSize` | int |  | `1024` | The size in cells of the side of the tiles processed in parallel, in large file mode also the tile size of the output, a multiple of 16 (default is 1024). |
-| `pThreads` | int |  | `22` | The number of threads to use (defaults to the number of available processors). |
+| `pThreads` | int |  | number of processors | The number of threads to use (defaults to the number of available processors). |
 | `pThres` | long |  | `100` | The threshold on the total contributing area, in cells, for the network extraction. |
 
 **Outputs**

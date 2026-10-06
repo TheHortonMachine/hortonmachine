@@ -17,7 +17,7 @@ Interpolates the values of a vector of points onto the grid of a raster, with Th
 | `fCat` | String |  |  | The field of the points with the values to interpolate. |
 | `pMode` | String |  | `TPS` | The interpolation: TPS (Thin Plate Splines), smooth, or IDW (Inverse Distance Weighting), more robust with dense points. Allowed values: `TPS`, `IDW`. |
 | `pBuffer` | double | m | `4.0` | The distance around each cell within which the points are used. |
-| `pMaxThreads` | int |  | `22` | Max threads to use. |
+| `pMaxThreads` | int |  | number of processors | Max threads to use. |
 
 **Outputs**
 
