@@ -43,6 +43,7 @@ import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -52,6 +53,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -78,6 +80,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 @Description(OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION)
+@Bibliography({OmsNetworkAttributesBuilder.BIBLIOGRAPHY_STRAHLER_1957, OmsNetworkAttributesBuilder.BIBLIOGRAPHY_VERDIN_1999})
 @Author(name = OMSNETWORKATTRIBUTESBUILDER_AUTHORNAMES, contact = OMSNETWORKATTRIBUTESBUILDER_AUTHORCONTACTS)
 @Keywords(OMSNETWORKATTRIBUTESBUILDER_KEYWORDS)
 @Label(OMSNETWORKATTRIBUTESBUILDER_LABEL)
@@ -85,6 +88,9 @@ import org.locationtech.jts.geom.Point;
 @Status(OMSNETWORKATTRIBUTESBUILDER_STATUS)
 @License(OMSNETWORKATTRIBUTESBUILDER_LICENSE)
 public class OmsNetworkAttributesBuilder extends HMModel {
+
+    public static final String BIBLIOGRAPHY_STRAHLER_1957 = "Strahler, A. N. (1957). Quantitative analysis of watershed geomorphology. Transactions, American Geophysical Union, 38(6), 913-920.";
+    public static final String BIBLIOGRAPHY_VERDIN_1999 = "Verdin, K. L., Verdin, J. P. (1999). A topological system for delineation and codification of the Earth's river basins. Journal of Hydrology, 218(1-2), 1-12.";
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION)
     @In
@@ -95,10 +101,12 @@ public class OmsNetworkAttributesBuilder extends HMModel {
     public GridCoverage2D inFlow = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION)
+    @Unit("cells")
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSNETWORKATTRIBUTESBUILDER_inDem_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inDem = null;
 

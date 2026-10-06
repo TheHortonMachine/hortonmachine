@@ -27,6 +27,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSMULTITCA_DESCRIPTION)
 @Author(name = OMSMULTITCA_AUTHORNAMES, contact = OMSMULTITCA_AUTHORCONTACTS)
@@ -37,6 +38,7 @@ import oms3.annotations.UI;
 @License(OMSMULTITCA_LICENSE)
 public class MultiTca extends HMModel {
     @Description(OMSMULTITCA_inPit_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
@@ -52,6 +54,7 @@ public class MultiTca extends HMModel {
     public String inCp9 = null;
 
     @Description(OMSMULTITCA_outMultiTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outMultiTca = null;

@@ -51,6 +51,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -69,18 +70,22 @@ import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 public class OmsTc extends HMModel {
 
     @Description(OMSTC_inProf_DESCRIPTION)
+    @Unit("1/m")
     @In
     public GridCoverage2D inProf = null;
 
     @Description(OMSTC_inTan_DESCRIPTION)
+    @Unit("1/m")
     @In
     public GridCoverage2D inTan = null;
 
     @Description(OMSTC_pProfthres_DESCRIPTION)
+    @Unit("1/m")
     @In
     public double pProfthres = 0.0;
 
     @Description(OMSTC_pTanthres_DESCRIPTION)
+    @Unit("1/m")
     @In
     public double pTanthres = 0.0;
 

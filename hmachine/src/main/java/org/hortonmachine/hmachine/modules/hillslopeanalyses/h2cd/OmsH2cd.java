@@ -49,6 +49,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -75,6 +76,7 @@ public class OmsH2cd extends HMModel {
     public GridCoverage2D inNet = null;
 
     @Description(OMSH2CD_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -83,6 +85,7 @@ public class OmsH2cd extends HMModel {
     public int pMode = 0;
 
     @Description(OMSH2CD_outH2cd_DESCRIPTION)
+    @Unit("cells or m")
     @Out
     public GridCoverage2D outH2cd = null;
 

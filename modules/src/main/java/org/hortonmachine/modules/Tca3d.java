@@ -43,6 +43,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSTCA3D_DESCRIPTION)
 @Author(name = OMSTCA3D_AUTHORNAMES, contact = OMSTCA3D_AUTHORCONTACTS)
@@ -53,6 +54,7 @@ import oms3.annotations.UI;
 @License(OMSTCA3D_LICENSE)
 public class Tca3d extends HMModel {
     @Description(OMSTCA3D_inPit_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
@@ -63,6 +65,7 @@ public class Tca3d extends HMModel {
     public String inFlow = null;
 
     @Description(OMSTCA3D_outTca_DESCRIPTION)
+    @Unit("m²")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTca = null;

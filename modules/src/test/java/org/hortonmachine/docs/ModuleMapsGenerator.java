@@ -86,7 +86,8 @@ import groovy.lang.GroovyShell;
  * <p>
  * The scripts are the ones shown in the manual: their line <code>var folder = "..."</code> is
  * replaced by the work folder before running them. The script can be <code>-</code> when the
- * raster was already produced by a previous one.
+ * raster was already produced by a previous one. The raster can be <code>-</code> for a module
+ * without a map, whose script is only run.
  *
  * <p>
  * The raster can be the difference of two rasters, written as <code>a.tif - b.tif</code>, or a
@@ -96,7 +97,8 @@ import groovy.lang.GroovyShell;
  * The options, separated by commas, are:
  * <ul>
  * <li><b>positive</b>: draw only the cells with values above 0;</li>
- * <li><b>classes</b>: the legend shows the classes of the colortable, instead of a color bar;</li>
+ * <li><b>classes</b>: the legend shows the distinct values of the raster, as classes, instead of a
+ * color bar, for maps of integer classes or codes (at most 30);</li>
  * <li><b>nolegend</b>: no legend, for example for a single class;</li>
  * <li><b>clip</b>: the colors span from the 2nd to the 98th percentile of the values, for rasters
  * with a few extreme values; the cells outside get the colors of the ends.</li>
@@ -115,6 +117,8 @@ public class ModuleMapsGenerator {
     private static final int LEGEND_WIDTH = 160;
     private static final double OPACITY = 0.75;
     private static final Font FONT = new Font("SansSerif", Font.PLAIN, 14);
+    /** The maximum number of classes of a legend of classes. */
+    private static final int MAX_CLASSES = 30;
     /** The rings of border cells that are 0 in the hillshade. */
     private static final int BORDER = 2;
 
@@ -182,6 +186,10 @@ public class ModuleMapsGenerator {
         for( MapSpec spec : readSpecs(specFile) ) {
             if (!spec.script().equals("-")) {
                 runScript(new File(specFile.getParentFile(), spec.script()));
+            }
+            if (spec.raster().equals("-")) {
+                // a module without a map to draw, as one with a table output
+                continue;
             }
             File imageFile = new File(imagesFolder, imageName(spec));
             ImageIO.write(drawMap(spec), "png", imageFile);
@@ -258,6 +266,15 @@ public class ModuleMapsGenerator {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, image.getWidth(), image.getHeight());
 
+        // read before rendering: disposing the map content disposes the raster
+        List<Double> classValues = null;
+        if (spec.options().contains("classes")) {
+            classValues = distinctValues(raster, MAX_CLASSES);
+            if (classValues == null) {
+                throw new IllegalArgumentException("Too many values for a legend of classes, use a color bar: " + spec.raster());
+            }
+        }
+
         MapContent content = new MapContent();
         try {
             content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
@@ -273,7 +290,7 @@ public class ModuleMapsGenerator {
 
         List<ColorMapEntry> entries = legendEntries(style, minMax);
         if (spec.options().contains("classes")) {
-            drawClassesLegend(g, entries, spec.classNames(), MAP_WIDTH + 20, 20);
+            drawClassesLegend(g, classValues, style, spec.classNames(), MAP_WIDTH + 20, 20);
         } else if (!spec.options().contains("nolegend")) {
             drawBarLegend(g, entries, MAP_WIDTH + 20, 20, Math.min(mapHeight - 40, 400));
         }
@@ -386,12 +403,13 @@ public class ModuleMapsGenerator {
     private static double[] percentiles( GridCoverage2D raster, double low, double high ) {
         RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
         RandomIter iter = CoverageUtilities.getRandomIterator(raster);
+        Double novalue = CoverageUtilities.getNovalue(raster);
         double[] values = new double[region.getRows() * region.getCols()];
         int count = 0;
         for( int r = 0; r < region.getRows(); r++ ) {
             for( int c = 0; c < region.getCols(); c++ ) {
                 double value = iter.getSampleDouble(c, r, 0);
-                if (!isNovalue(value) && !Double.isNaN(value)) {
+                if (!isNodata(value, novalue)) {
                     values[count++] = value;
                 }
             }
@@ -403,12 +421,13 @@ public class ModuleMapsGenerator {
     private static double[] minMax( GridCoverage2D raster ) {
         RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
         RandomIter iter = CoverageUtilities.getRandomIterator(raster);
+        Double novalue = CoverageUtilities.getNovalue(raster);
         double min = Double.POSITIVE_INFINITY;
         double max = Double.NEGATIVE_INFINITY;
         for( int r = 0; r < region.getRows(); r++ ) {
             for( int c = 0; c < region.getCols(); c++ ) {
                 double value = iter.getSampleDouble(c, r, 0);
-                if (!isNovalue(value) && !Double.isNaN(value)) {
+                if (!isNodata(value, novalue)) {
                     min = Math.min(min, value);
                     max = Math.max(max, value);
                 }
@@ -439,6 +458,73 @@ public class ModuleMapsGenerator {
             last--;
         }
         return new ArrayList<>(all.subList(first, last + 1));
+    }
+
+    /**
+     * @return all the entries of the colormap of the style, the no-data entry excluded.
+     */
+    private static List<ColorMapEntry> colorMapEntries( Style style ) {
+        RasterSymbolizer symbolizer = (RasterSymbolizer) style.featureTypeStyles().get(0).rules().get(0).symbolizers()
+                .get(0);
+        List<ColorMapEntry> entries = new ArrayList<>();
+        for( ColorMapEntry entry : symbolizer.getColorMap().getColorMapEntries() ) {
+            if (quantity(entry) != doubleNovalue) {
+                entries.add(entry);
+            }
+        }
+        return entries;
+    }
+
+    /**
+     * @return the color of a value in a colormap ramp, interpolated between its entries.
+     */
+    private static Color colorAt( List<ColorMapEntry> entries, double value ) {
+        if (value <= quantity(entries.get(0))) {
+            return color(entries.get(0));
+        }
+        for( int i = 1; i < entries.size(); i++ ) {
+            double q1 = quantity(entries.get(i));
+            if (value <= q1) {
+                double q0 = quantity(entries.get(i - 1));
+                Color c0 = color(entries.get(i - 1));
+                Color c1 = color(entries.get(i));
+                double f = q1 == q0 ? 1.0 : (value - q0) / (q1 - q0);
+                return new Color((int) Math.round(c0.getRed() + f * (c1.getRed() - c0.getRed())),
+                        (int) Math.round(c0.getGreen() + f * (c1.getGreen() - c0.getGreen())),
+                        (int) Math.round(c0.getBlue() + f * (c1.getBlue() - c0.getBlue())));
+            }
+        }
+        return color(entries.get(entries.size() - 1));
+    }
+
+    /**
+     * @return the sorted distinct values of the raster, or <code>null</code> if they are more than max.
+     */
+    private static List<Double> distinctValues( GridCoverage2D raster, int max ) {
+        RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
+        RandomIter iter = CoverageUtilities.getRandomIterator(raster);
+        Double novalue = CoverageUtilities.getNovalue(raster);
+        java.util.TreeSet<Double> values = new java.util.TreeSet<>();
+        for( int r = 0; r < region.getRows(); r++ ) {
+            for( int c = 0; c < region.getCols(); c++ ) {
+                double value = iter.getSampleDouble(c, r, 0);
+                if (!isNodata(value, novalue)) {
+                    values.add(value);
+                    if (values.size() > max) {
+                        return null;
+                    }
+                }
+            }
+        }
+        return new ArrayList<>(values);
+    }
+
+    /**
+     * @return <code>true</code> if the value is no-data: the HortonMachine novalue, NaN or the
+     *         novalue of the raster, as the -1 of the maps of the drainage directions.
+     */
+    private static boolean isNodata( double value, Double rasterNovalue ) {
+        return isNovalue(value) || Double.isNaN(value) || (rasterNovalue != null && value == rasterNovalue);
     }
 
     private static double quantity( ColorMapEntry entry ) {
@@ -483,22 +569,21 @@ public class ModuleMapsGenerator {
         }
     }
 
-    private static void drawClassesLegend( Graphics2D g, List<ColorMapEntry> entries, Map<Double, String> classNames, int x,
-            int y ) {
+    /**
+     * A legend of the classes: the distinct values of the raster, each with the color the style
+     * gives it, interpolated along the colortable when the colortable has no fixed values.
+     */
+    private static void drawClassesLegend( Graphics2D g, List<Double> values, Style style, Map<Double, String> classNames,
+            int x, int y ) {
+        List<ColorMapEntry> entries = colorMapEntries(style);
         g.setFont(FONT);
         FontMetrics metrics = g.getFontMetrics();
         int box = 18;
         int rowHeight = 26;
-        List<Double> drawn = new ArrayList<>();
         int row = 0;
-        for( ColorMapEntry entry : entries ) {
-            double value = quantity(entry);
-            if (drawn.contains(value)) {
-                continue;
-            }
-            drawn.add(value);
+        for( double value : values ) {
             int yRow = y + row * rowHeight;
-            g.setColor(color(entry));
+            g.setColor(colorAt(entries, value));
             g.fillRect(x, yRow, box, box);
             g.setColor(Color.DARK_GRAY);
             g.drawRect(x, yRow, box, box);

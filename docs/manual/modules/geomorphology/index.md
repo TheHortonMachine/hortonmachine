@@ -14,4 +14,7 @@ ab
 tca
 aspect
 geomorphon
+leastcostflowdirections
+multitca
+tca3d
 ```

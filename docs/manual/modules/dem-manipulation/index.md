@@ -10,4 +10,5 @@ extractbasin
 markoutlets
 wateroutlet
 pitfillerbarnes
+splitsubbasins
 ```

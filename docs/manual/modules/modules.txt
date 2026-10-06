@@ -2,7 +2,7 @@
 # The reference fragments in generated/ are created from their annotations with
 # org.hortonmachine.docs.ModuleDocsGenerator (see docs/manual/README.md).
 
-# Dem Manipulation, Geomorphology, Basin, Hydro-Geomorphology, Network
+# Dem Manipulation, Geomorphology, Basin, Hillslope, Hydro-Geomorphology, Network, Statistics
 org.hortonmachine.modules.Pitfiller
 org.hortonmachine.modules.FlowDirections
 org.hortonmachine.modules.DrainDir
@@ -36,6 +36,16 @@ org.hortonmachine.modules.Insolation
 org.hortonmachine.modules.DebrisTriggerCnr
 org.hortonmachine.modules.DebrisVandre
 org.hortonmachine.modules.DebrisFlow
+org.hortonmachine.modules.H2cd
+org.hortonmachine.modules.H2cA
+org.hortonmachine.modules.Tc
+org.hortonmachine.modules.LeastCostFlowDirections
+org.hortonmachine.modules.MultiTca
+org.hortonmachine.modules.Tca3d
+org.hortonmachine.modules.NetworkAttributesBuilder
+org.hortonmachine.modules.SplitSubbasins
+org.hortonmachine.modules.SumDownStream
+org.hortonmachine.modules.MeltonNumber
 
 # Raster processing
 org.hortonmachine.modules.RasterResizer

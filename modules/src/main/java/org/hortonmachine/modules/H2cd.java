@@ -45,6 +45,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSH2CD_DESCRIPTION)
 @Author(name = OMSH2CD_AUTHORNAMES, contact = OMSH2CD_AUTHORCONTACTS)
@@ -66,6 +67,7 @@ public class H2cd extends HMModel {
     public String inNet = null;
 
     @Description(OMSH2CD_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -75,6 +77,7 @@ public class H2cd extends HMModel {
     public int pMode = 0;
 
     @Description(OMSH2CD_outH2cd_DESCRIPTION)
+    @Unit("cells or m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outH2cd = null;

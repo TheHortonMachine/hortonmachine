@@ -35,6 +35,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.melton.OmsMeltonNumber;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -44,8 +45,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSMELTONNUMBER_DESCRIPTION)
+@Bibliography({OmsMeltonNumber.BIBLIOGRAPHY_MELTON_1965})
 @Author(name = OMSMELTONNUMBER_AUTHORNAMES, contact = OMSMELTONNUMBER_AUTHORCONTACTS)
 @Keywords(OMSMELTONNUMBER_KEYWORDS)
 @Label(OMSMELTONNUMBER_LABEL)
@@ -55,6 +58,7 @@ import oms3.annotations.UI;
 public class MeltonNumber extends HMModel {
 
     @Description(OMSMELTONNUMBER_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;

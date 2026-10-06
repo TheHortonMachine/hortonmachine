@@ -54,6 +54,7 @@ import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
@@ -64,6 +65,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
@@ -79,6 +81,7 @@ import org.hortonmachine.hmachine.modules.geomorphology.slope.OmsSlope;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION)
+@Bibliography({OmsLeastCostFlowDirections.BIBLIOGRAPHY_METZ_2011})
 @Documentation(OMSLEASTCOSTFLOWDIRECTIONS_DOCUMENTATION)
 @Author(name = OMSLEASTCOSTFLOWDIRECTIONS_AUTHORNAMES, contact = OMSLEASTCOSTFLOWDIRECTIONS_AUTHORCONTACTS)
 @Keywords(OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS)
@@ -87,7 +90,10 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 @Status(OMSLEASTCOSTFLOWDIRECTIONS_STATUS)
 @License(OMSLEASTCOSTFLOWDIRECTIONS_LICENSE)
 public class OmsLeastCostFlowDirections extends HMModel {
+
+    public static final String BIBLIOGRAPHY_METZ_2011 = "Metz, M., Mitasova, H., Harmon, R. S. (2011). Efficient extraction of drainage networks from massive, radar-based elevation models with least cost path search. Hydrology and Earth System Sciences, 15, 667-678.";
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -108,6 +114,7 @@ public class OmsLeastCostFlowDirections extends HMModel {
     public GridCoverage2D outFlow = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION)
+    @Unit("cells")
     @Out
     public GridCoverage2D outTca = null;
 
@@ -116,6 +123,7 @@ public class OmsLeastCostFlowDirections extends HMModel {
     public GridCoverage2D outAspect = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION)
+    @Unit("m/m")
     @Out
     public GridCoverage2D outSlope = null;
 

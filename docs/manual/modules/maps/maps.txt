@@ -8,8 +8,10 @@
 # only in the first one and - in the others.
 # The raster can be the difference of two rasters: a.tif - b.tif, or a vector of lines (.shp),
 # drawn in the strongest color of the colortable.
+# The raster can be - for a module without a map: its script is only run.
 # The colortable is one of the HortonMachine ones (EColorTables), rainbow if it is not.
-# Options: positive (draw only values above 0), classes (legend with the classes, not a bar),
+# Options: positive (draw only values above 0), classes (legend with the distinct values
+# of the raster, at most 30, not a bar: for integer classes and codes),
 # nolegend (no legend, for example for a single class), clip (colors from the 2nd to the
 # 98th percentile, for rasters with a few extreme values)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
@@ -53,3 +55,14 @@ DebrisTriggerCnr | ../examples/hm/debristriggercnr.groovy | triggers.tif        
 DebrisVandre   | ../examples/hm/debrisvandre.groovy   | debris_paths.shp            | reds
 DebrisFlow     | ../examples/hm/debrisflow.groovy     | debris_probability.tif      | rainbow
 DebrisFlow     | -                                    | debris_deposit.tif          | rainbow
+H2cd           | ../examples/hm/h2cd.groovy           | h2cd.tif                    | rainbow
+H2cA           | ../examples/hm/h2ca.groovy           | hand.tif                    | rainbow  | clip
+Tc             | ../examples/hm/tc.groovy             | tc9.tif                     | tc9      | classes | 10=planar-planar;20=planar-convex;30=planar-concave;40=divergent-planar;50=divergent-convex;60=divergent-concave;70=convergent-planar;80=convergent-convex;90=convergent-concave
+Tc             | -                                    | tc3.tif                     | tc3      | classes | 15=concave;25=planar;35=convex
+LeastCostFlowDirections | ../examples/hm/leastcostflowdirections.groovy | tca_leastcost.tif | tca
+MultiTca       | ../examples/hm/multitca.groovy       | multitca.tif                | tca
+Tca3d          | ../examples/hm/tca3d.groovy          | tca3d.tif                   | tca
+NetworkAttributesBuilder | ../examples/hm/networkattributesbuilder.groovy | hack.tif | rainbow | classes
+SplitSubbasins | ../examples/hm/splitsubbasins.groovy | split_subbasins.tif         | contrasting | nolegend
+SumDownStream  | ../examples/hm/sumdownstream.groovy  | unstable_upstream.tif       | logarithmic
+MeltonNumber   | ../examples/hm/meltonnumber.groovy   | -                           | -

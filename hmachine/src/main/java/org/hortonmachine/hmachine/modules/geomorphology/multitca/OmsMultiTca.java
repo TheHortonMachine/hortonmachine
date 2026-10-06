@@ -40,6 +40,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSMULTITCA_DESCRIPTION)
 @Documentation(OMSMULTITCA_DOCUMENTATION)
@@ -51,6 +52,7 @@ import oms3.annotations.Status;
 @License(OMSMULTITCA_LICENSE)
 public class OmsMultiTca extends HMModel {
     @Description(OMSMULTITCA_inPit_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inPit = null;
 
@@ -63,6 +65,7 @@ public class OmsMultiTca extends HMModel {
     public GridCoverage2D inCp9 = null;
 
     @Description(OMSMULTITCA_outMultiTca_DESCRIPTION)
+    @Unit("cells")
     @Out
     public GridCoverage2D outMultiTca = null;
 

@@ -35,6 +35,7 @@ import java.text.MessageFormat;
 import java.util.List;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -44,6 +45,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -62,6 +64,7 @@ import org.geotools.api.feature.type.AttributeType;
 import org.locationtech.jts.geom.Geometry;
 
 @Description(OMSMELTONNUMBER_DESCRIPTION)
+@Bibliography({OmsMeltonNumber.BIBLIOGRAPHY_MELTON_1965})
 @Author(name = OMSMELTONNUMBER_AUTHORNAMES, contact = OMSMELTONNUMBER_AUTHORCONTACTS)
 @Keywords(OMSMELTONNUMBER_KEYWORDS)
 @Label(OMSMELTONNUMBER_LABEL)
@@ -70,7 +73,10 @@ import org.locationtech.jts.geom.Geometry;
 @License(OMSMELTONNUMBER_LICENSE)
 public class OmsMeltonNumber extends HMModel {
 
+    public static final String BIBLIOGRAPHY_MELTON_1965 = "Melton, M. A. (1965). The geomorphic and paleoclimatic significance of alluvial deposits in southern Arizona. The Journal of Geology, 73(1), 1-38.";
+
     @Description(OMSMELTONNUMBER_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 

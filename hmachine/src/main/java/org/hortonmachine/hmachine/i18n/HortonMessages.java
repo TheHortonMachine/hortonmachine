@@ -129,21 +129,21 @@ public class HortonMessages {
     public static final String OMSKRIGING_outGrid_DESCRIPTION = "The interpolated gridded data (for mode 2 and 3.";
     public static final String OMSKRIGING_outData_DESCRIPTION = "The interpolated data (for mode 0 and 1).";
 
-    public static final String OMSTC_DESCRIPTION = "Subdivides the sites of a basin in the 9 topographic classes identified by the longitudinal and transversal curvatures. ";
+    public static final String OMSTC_DESCRIPTION = "Classifies the terrain in topographic classes, from the profile and the tangential curvatures, each concave, planar or convex according to its threshold. The 9 classes combine the two curvatures: 10 planar-planar, 20 planar-convex, 30 planar-concave, 40 divergent-planar, 50 divergent-convex, 60 divergent-concave, 70 convergent-planar, 80 convergent-convex, 90 convergent-concave (tangential first, profile second). The 3 classes group them: 15 concave (30, 70, 90), 25 planar (10), 35 convex (the others).";
     public static final String OMSTC_DOCUMENTATION = "OmsTc.html";
-    public static final String OMSTC_KEYWORDS = "Hillslope, OmsCurvatures";
+    public static final String OMSTC_KEYWORDS = "Hillslope, Curvature, Topographic classes";
     public static final String OMSTC_LABEL = HILLSLOPE;
     public static final String OMSTC_NAME = "tc";
     public static final int OMSTC_STATUS = 40;
     public static final String OMSTC_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSTC_AUTHORNAMES = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSTC_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSTC_inProf_DESCRIPTION = "The longitudinal curvatures raster.";
-    public static final String OMSTC_inTan_DESCRIPTION = "The normal curvatures raster.";
-    public static final String OMSTC_pProfthres_DESCRIPTION = "The threshold value for the longitudinal curvatures.";
-    public static final String OMSTC_pTanthres_DESCRIPTION = "The threshold value for the normal curvaturess.";
-    public static final String OMSTC_outTc9_DESCRIPTION = "The map of 9 topographic classes.";
-    public static final String OMSTC_outTc3_DESCRIPTION = "The map of 3 aggregated fundamental topographic classes.";
+    public static final String OMSTC_inProf_DESCRIPTION = "The map of the profile curvature, as computed by the Curvatures module.";
+    public static final String OMSTC_inTan_DESCRIPTION = "The map of the tangential curvature, as computed by the Curvatures module.";
+    public static final String OMSTC_pProfthres_DESCRIPTION = "The profile curvature under which, in absolute value, the profile is planar.";
+    public static final String OMSTC_pTanthres_DESCRIPTION = "The tangential curvature under which, in absolute value, the contour is planar.";
+    public static final String OMSTC_outTc9_DESCRIPTION = "The map of the 9 topographic classes, codes 10 to 90.";
+    public static final String OMSTC_outTc3_DESCRIPTION = "The map of the 3 topographic classes: 15 concave, 25 planar, 35 convex.";
 
     public static final String OMSSKYVIEW_DESCRIPTION = "Calculates the sky view factor: the fraction of the sky visible from each cell, between 0 and 1, reduced by the surrounding terrain. It is used to compute the diffuse radiation.";
     public static final String OMSSKYVIEW_DOCUMENTATION = "OmsSkyview.html";
@@ -218,35 +218,35 @@ public class HortonMessages {
     public static final String OMSHACKLENGTH_inElevation_DESCRIPTION = "The optional map of the elevation, to measure the lengths in 3D.";
     public static final String OMSHACKLENGTH_outHacklength_DESCRIPTION = "The map of the Hack lengths.";
 
-    public static final String OMSH2CD_DESCRIPTION = "It calculates for each hillslope pixel its distance from the river networks, following the steepest descent.";
+    public static final String OMSH2CD_DESCRIPTION = "Calculates the hillslope to channel distance: the distance of each cell from the network, along the drainage directions, in number of cells or in meters. The network cells get 0, as the cells whose path leaves the map without reaching the network.";
     public static final String OMSH2CD_DOCUMENTATION = "OmsH2cd.html";
-    public static final String OMSH2CD_KEYWORDS = "Hillslope, Outlet, Distance";
+    public static final String OMSH2CD_KEYWORDS = "Hillslope, Network, Distance";
     public static final String OMSH2CD_LABEL = HILLSLOPE;
     public static final String OMSH2CD_NAME = "h2cd";
     public static final int OMSH2CD_STATUS = 40;
     public static final String OMSH2CD_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSH2CD_AUTHORNAMES = "Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSH2CD_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSH2CD_inFlow_DESCRIPTION = "The map of flowdirections";
+    public static final String OMSH2CD_inFlow_DESCRIPTION = "The map of the drainage directions.";
     public static final String OMSH2CD_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSH2CD_inElev_DESCRIPTION = "The optional map of the elevation used for 3d mode in pMode = 1.";
-    public static final String OMSH2CD_pMode_DESCRIPTION = "The processing mode (0 = in number of pixels (default), 1 = in meters).";
-    public static final String OMSH2CD_outH2cd_DESCRIPTION = "The map of hillslope to channels distance.";
+    public static final String OMSH2CD_inElev_DESCRIPTION = "The optional map of the elevation, to measure the distances in 3D, with the meters mode.";
+    public static final String OMSH2CD_pMode_DESCRIPTION = "The unit of the distance: 0 for the number of cells, 1 for meters.";
+    public static final String OMSH2CD_outH2cd_DESCRIPTION = "The map of the hillslope to channel distance.";
 
-    public static final String OMSSPLITSUBBASINS_DESCRIPTION = "A tool for labeling the subbasins of a basin. Given the Hacks number of the channel network, the subbasin up to a selected order are labeled. If Hack order 2 was selected, the subbasins of Hack order 1 and 2 and the network of the same order are extracted.";
+    public static final String OMSSPLITSUBBASINS_DESCRIPTION = "Splits a basin into the subbasins of the streams up to a Hack order: with order 2, the subbasins of the streams of order 1 and 2, and their network, are extracted and numbered.";
     public static final String OMSSPLITSUBBASINS_DOCUMENTATION = "";
-    public static final String OMSSPLITSUBBASINS_KEYWORDS = "Subbasins, Dem, Raster";
+    public static final String OMSSPLITSUBBASINS_KEYWORDS = "Subbasins, Hack order, Network";
     public static final String OMSSPLITSUBBASINS_LABEL = DEMMANIPULATION;
     public static final String OMSSPLITSUBBASINS_NAME = "splitsubbasins";
     public static final int OMSSPLITSUBBASINS_STATUS = 5;
     public static final String OMSSPLITSUBBASINS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSSPLITSUBBASINS_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla";
     public static final String OMSSPLITSUBBASINS_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSSPLITSUBBASINS_inFlow_DESCRIPTION = "The map of flow direction.";
-    public static final String OMSSPLITSUBBASINS_inHack_DESCRIPTION = "The map of hack.";
-    public static final String OMSSPLITSUBBASINS_pHackorder_DESCRIPTION = "The maximum hack order to consider for basin split.";
-    public static final String OMSSPLITSUBBASINS_outNetnum_DESCRIPTION = "The map of numbered network.";
-    public static final String OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION = "The map of subbasins.";
+    public static final String OMSSPLITSUBBASINS_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSSPLITSUBBASINS_inHack_DESCRIPTION = "The map of the Hack orders of the network, as computed by the NetworkAttributesBuilder module.";
+    public static final String OMSSPLITSUBBASINS_pHackorder_DESCRIPTION = "The highest Hack order of the streams whose subbasins are extracted.";
+    public static final String OMSSPLITSUBBASINS_outNetnum_DESCRIPTION = "The map of the numbered network.";
+    public static final String OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION = "The map of the subbasins, with the number of their stream.";
 
     public static final String OMSDEBRISTRIGGERCNR_DESCRIPTION = "Extracts the trigger points of debris flows along the network, with the method of the CNR: a network cell is a trigger if its gradient is steeper than 0.32 x A^-0.2, with A the contributing area in km², below the gradient threshold and with a contributing area below the area threshold. The triggers get the value of their threshold gradient.";
     public static final String OMSDEBRISTRIGGERCNR_DOCUMENTATION = "";
@@ -325,20 +325,20 @@ public class HortonMessages {
     public static final String OMSEPANETPROJECTFILESGENERATOR_inFolder_DESCRIPTION = "The folder into which to create the base files.";
     public static final String OMSEPANETPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
 
-    public static final String OMSSUMDOWNSTREAM_DESCRIPTION = "Sums the values of a map downstream following the flowdirections.";
+    public static final String OMSSUMDOWNSTREAM_DESCRIPTION = "Sums the values of a map downstream, along the drainage directions: each cell gets the sum of the values of the cells upstream of it, itself included. The values outside the thresholds are not summed, and stop the paths.";
     public static final String OMSSUMDOWNSTREAM_DOCUMENTATION = "OmsSumDownStream.html";
-    public static final String OMSSUMDOWNSTREAM_KEYWORDS = "Sumdownstream, Statistic, OmsExtractNetwork";
+    public static final String OMSSUMDOWNSTREAM_KEYWORDS = "Statistics, Downstream, Drainage directions";
     public static final String OMSSUMDOWNSTREAM_LABEL = STATISTICS;
     public static final String OMSSUMDOWNSTREAM_NAME = "sumdownstream";
     public static final int OMSSUMDOWNSTREAM_STATUS = 40;
     public static final String OMSSUMDOWNSTREAM_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSSUMDOWNSTREAM_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSSUMDOWNSTREAM_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSSUMDOWNSTREAM_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSSUMDOWNSTREAM_inToSum_DESCRIPTION = "The map to sum.";
-    public static final String OMSSUMDOWNSTREAM_pUpperThres_DESCRIPTION = "The upper threshold.";
-    public static final String OMSSUMDOWNSTREAM_pLowerThres_DESCRIPTION = "The lower threshold.";
-    public static final String OMSSUMDOWNSTREAM_outSummed_DESCRIPTION = "The map of summed values.";
+    public static final String OMSSUMDOWNSTREAM_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSSUMDOWNSTREAM_inToSum_DESCRIPTION = "The map of the values to sum.";
+    public static final String OMSSUMDOWNSTREAM_pUpperThres_DESCRIPTION = "The value from which the values are not summed.";
+    public static final String OMSSUMDOWNSTREAM_pLowerThres_DESCRIPTION = "The value up to which the values are not summed.";
+    public static final String OMSSUMDOWNSTREAM_outSummed_DESCRIPTION = "The map of the sums of the values upstream.";
 
     public static final String OMSSLOPE_DESCRIPTION = "Calculates the slope of each cell along its drainage direction, as the drop to the downstream cell over their distance. Unlike the gradient, it is the slope the water follows.";
     public static final String OMSSLOPE_DOCUMENTATION = "OmsSlope.html";
@@ -394,32 +394,32 @@ public class HortonMessages {
     public static final String HYMODINPUTS_pQ0_DESCRIPTION = "The first value of measured discharge";
     public static final String HYMODINPUTS_outInputs_DESCRIPTION = "The inputs instance for linking.";
 
-    public static final String OMSH2CA_DESCRIPTION = "Select a hillslope or some of its property from the DEM";
+    public static final String OMSH2CA_DESCRIPTION = "Gives each hillslope cell the value that a map has on the network cell into which the hillslope drains. For example, with the elevation it gives the elevation of the channel each cell drains into, and its difference with the elevation is the height above the nearest drainage.";
     public static final String OMSH2CA_DOCUMENTATION = "OmsH2cA.html";
-    public static final String OMSH2CA_KEYWORDS = "Geomorphology, OmsDrainDir";
+    public static final String OMSH2CA_KEYWORDS = "Hillslope, Network, Attribute";
     public static final String OMSH2CA_LABEL = HILLSLOPE;
     public static final String OMSH2CA_NAME = "OmsH2cA";
     public static final int OMSH2CA_STATUS = 40;
     public static final String OMSH2CA_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSH2CA_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Andreis Daniele,  Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSH2CA_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSH2CA_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSH2CA_inNet_DESCRIPTION = "The map with the net.";
-    public static final String OMSH2CA_inAttribute_DESCRIPTION = "The map of the attribute to estimate.";
-    public static final String OMSH2CA_outAttribute_DESCRIPTION = "The output map of the attribute.";
+    public static final String OMSH2CA_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSH2CA_inNet_DESCRIPTION = "The map of the network.";
+    public static final String OMSH2CA_inAttribute_DESCRIPTION = "The map whose values on the network are given to the hillslopes.";
+    public static final String OMSH2CA_outAttribute_DESCRIPTION = "The map of the values of the network cells into which each cell drains.";
 
-    public static final String OMSTCA3D_DESCRIPTION = "Calculates the contributing areas considering also the elevation (3D), that represent the areas (in number of pixels) afferent to each point.";
+    public static final String OMSTCA3D_DESCRIPTION = "Calculates the total contributing areas as the real, three-dimensional surface of the cells draining into each cell, instead of their number: on steep terrain the surface of a cell is larger than its plan area.";
     public static final String OMSTCA3D_DOCUMENTATION = "OmsTca3d.html";
-    public static final String OMSTCA3D_KEYWORDS = "Geomorphology, OmsDrainDir, OmsTca, OmsAb, Multitca";
+    public static final String OMSTCA3D_KEYWORDS = "Geomorphology, Contributing area, 3D";
     public static final String OMSTCA3D_LABEL = GEOMORPHOLOGY;
     public static final String OMSTCA3D_NAME = "tca3d";
     public static final int OMSTCA3D_STATUS = 40;
     public static final String OMSTCA3D_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSTCA3D_AUTHORNAMES = "Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSTCA3D_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSTCA3D_inPit_DESCRIPTION = "The depitted elevation model.";
-    public static final String OMSTCA3D_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSTCA3D_outTca_DESCRIPTION = "The map of total contributing areas 3d.";
+    public static final String OMSTCA3D_inPit_DESCRIPTION = "The map of the depitted elevation.";
+    public static final String OMSTCA3D_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSTCA3D_outTca_DESCRIPTION = "The map of the three-dimensional total contributing areas.";
 
     public static final String OMSNABLA_DESCRIPTION = "Calculates the nabla in each point of the map.";
     public static final String OMSNABLA_DOCUMENTATION = "";
@@ -448,19 +448,19 @@ public class HortonMessages {
     public static final String OMSINSOLATION_tEndDate_DESCRIPTION = "The last day of the period, as yyyy-MM-dd.";
     public static final String OMSINSOLATION_outIns_DESCRIPTION = "The map of the sum of the direct radiation, every half hour of the period.";
 
-    public static final String OMSMELTONNUMBER_DESCRIPTION = "Melton number calculator";
+    public static final String OMSMELTONNUMBER_DESCRIPTION = "Calculates the Melton number of basins, their relief divided by the square root of their area: (max elevation - min elevation) / sqrt(area). It is used to tell the basins prone to debris flows, with high values, from those prone to floods.";
     public static final String OMSMELTONNUMBER_DOCUMENTATION = "";
-    public static final String OMSMELTONNUMBER_KEYWORDS = "Melton, Raster, Vector";
+    public static final String OMSMELTONNUMBER_KEYWORDS = "Melton number, Basin, Debris flow";
     public static final String OMSMELTONNUMBER_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSMELTONNUMBER_NAME = "meltonnum";
     public static final int OMSMELTONNUMBER_STATUS = 5;
     public static final String OMSMELTONNUMBER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSMELTONNUMBER_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String OMSMELTONNUMBER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSMELTONNUMBER_inElev_DESCRIPTION = "The map of elevation.";
-    public static final String OMSMELTONNUMBER_inFans_DESCRIPTION = "The map of polygons of the fans.";
-    public static final String OMSMELTONNUMBER_fId_DESCRIPTION = "The fields of the polygons containing the id of the polygon.";
-    public static final String OMSMELTONNUMBER_outMelton_DESCRIPTION = "The Melton numbers per id [id, num].";
+    public static final String OMSMELTONNUMBER_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSMELTONNUMBER_inFans_DESCRIPTION = "The vector of the polygons of the basins, usually those feeding the alluvial fans.";
+    public static final String OMSMELTONNUMBER_fId_DESCRIPTION = "The field of the polygons with their id.";
+    public static final String OMSMELTONNUMBER_outMelton_DESCRIPTION = "The Melton numbers, as pairs of id and number.";
 
     public static final String OMSPRESTEYTAYLORETPMODEL_DESCRIPTION = "Calculates the potential evapotranspiration with the Priestley-Taylor method, from time series of net radiation, air temperature and atmospheric pressure, at hourly or daily time steps. Missing values are replaced by the default values.";
     public static final String OMSPRESTEYTAYLORETPMODEL_DOCUMENTATION = "OmsPresteyTaylorEtpModel.html";
@@ -503,23 +503,23 @@ public class HortonMessages {
     public static final String OMSVALIDATEDOUBLESTATION_outStations_DESCRIPTION = "The collection of the measurement point, containing the position of the station without the double point.";
     public static final String OMSVALIDATEDOUBLESTATION_doMean_DESCRIPTION = "Select if do the mean between double value or delete one of these if they are equals.";
 
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions following the least cost method.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions with a least cost search, without filling the depressions: starting from the cells at the border of the map, the outlets, the directions grow upstream, always from the lowest cell reached. The paths cross the depressions instead of filling them, which changes the elevation model less.";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_DOCUMENTATION = "";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS = "Geomorphology, Flowdirections, Least cost";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS = "Geomorphology, Drainage directions, Least cost";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_NAME = "flowlc";
     public static final int OMSLEASTCOSTFLOWDIRECTIONS_STATUS = 5;
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION = "The elevation map.";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_doTca_DESCRIPTION = "Flag to toggle tca calculation.";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_doSlope_DESCRIPTION = "Flag to toggle slope calculation.";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_doAspect_DESCRIPTION = "Flag to toggle aspect calculation.";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION = "The map of tca (optional).";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outAspect_DESCRIPTION = "The map of aspect (optional).";
-    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION = "The map of slope (optional).";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION = "The map of the elevation, not depitted.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_doTca_DESCRIPTION = "Also compute the total contributing areas.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_doSlope_DESCRIPTION = "Also compute the slope along the drainage directions.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_doAspect_DESCRIPTION = "Also compute the aspect.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outFlow_DESCRIPTION = "The map of the drainage directions, with the outlets on the border marked with 10.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION = "The map of the total contributing areas, in cells.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outAspect_DESCRIPTION = "The map of the aspect.";
+    public static final String OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION = "The map of the slope along the drainage directions.";
 
     public static final String OMSFAOETPDAILY_DESCRIPTION = "Calculates evapotranspiration at daily timestep.";
     public static final String OMSFAOETPDAILY_DOCUMENTATION = "";
@@ -545,22 +545,22 @@ public class HortonMessages {
     public static final String OMSFAOETPDAILY_defaultPressure_DESCRIPTION = "The pressure default value in case of missing data.";
     public static final String OMSFAOETPDAILY_outFaoEtp_DESCRIPTION = "The reference evapotranspiration.";
 
-    public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Extracts network attributes and the vector network based on a raster network.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_DESCRIPTION = "Converts a raster network into a vector of its links, with their attributes: the Hack order, the Strahler order and the Pfafstetter code, and with the elevation also the elevation of their start and end. It can also write the map of the Hack orders.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_DOCUMENTATION = "";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, FlowDirectionsTC, GC, OmsDrainDir, OmsGradient, OmsSlope";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_KEYWORDS = "Network, Vector, Hack order, Strahler order, Pfafstetter";
     public static final String OMSNETWORKATTRIBUTESBUILDER_LABEL = NETWORK;
     public static final String OMSNETWORKATTRIBUTESBUILDER_NAME = "extractvectornet";
     public static final int OMSNETWORKATTRIBUTESBUILDER_STATUS = 40;
     public static final String OMSNETWORKATTRIBUTESBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSNETWORKATTRIBUTESBUILDER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSNETWORKATTRIBUTESBUILDER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION = "The network raster map.";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION = "The map of tca.";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_inDem_DESCRIPTION = "The optional map of elevation to add start/end elevation.";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION = "Flag to also create the hack map.";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION = "The vector of the network.";
-    public static final String OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION = "The map of hack numbering.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_inNet_DESCRIPTION = "The map of the network.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_inFlow_DESCRIPTION = "The map of the drainage directions, with the outlets marked with 10.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_inTca_DESCRIPTION = "The map of the total contributing area.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_inDem_DESCRIPTION = "The optional map of the elevation, to add the elevation of the start and end of the links.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_doHack_DESCRIPTION = "Also write the map of the Hack orders.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION = "The vector of the network links, with their attributes.";
+    public static final String OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION = "The map of the Hack orders of the network.";
 
     public static final String OMSMAGNITUDO_DESCRIPTION = "Calculates the magnitude of each cell: the number of sources upstream of it, the sources being the cells into which nothing drains. On the drainage directions of the network alone, the sources are the channel heads and the result is the Shreve magnitude of the network.";
     public static final String OMSMAGNITUDO_DOCUMENTATION = "OmsMagnitudo.html";
@@ -909,19 +909,19 @@ public class HortonMessages {
     public static final String OMSDEBRISFLOW_outMcs_DESCRIPTION = "The map of the probability of each cell to be crossed by the debris flow.";
     public static final String OMSDEBRISFLOW_outDepo_DESCRIPTION = "The map of the deposit thickness.";
 
-    public static final String OMSMULTITCA_DESCRIPTION = "It calculates the contributing areas differently in convex and concave areas";
+    public static final String OMSMULTITCA_DESCRIPTION = "Calculates the total contributing areas with multiple directions on the divergent terrain: on the cells of the classes 10 to 60 of the topographic classes, the area is split among all the lower neighbours, in proportion to the drop; on the convergent cells, classes 70 to 90, it follows the single drainage direction.";
     public static final String OMSMULTITCA_DOCUMENTATION = "OmsMultiTca.html";
-    public static final String OMSMULTITCA_KEYWORDS = "Geomorphology, OmsDrainDir, Pitfiller, OmsAb";
+    public static final String OMSMULTITCA_KEYWORDS = "Geomorphology, Contributing area, Multiple flow directions";
     public static final String OMSMULTITCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSMULTITCA_NAME = "multitca";
     public static final int OMSMULTITCA_STATUS = 5;
     public static final String OMSMULTITCA_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSMULTITCA_AUTHORNAMES = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSMULTITCA_AUTHORCONTACTS = "";
-    public static final String OMSMULTITCA_inPit_DESCRIPTION = "The map of depitted elevation.";
-    public static final String OMSMULTITCA_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSMULTITCA_inCp9_DESCRIPTION = "The map with the Thopological classes cp9.";
-    public static final String OMSMULTITCA_outMultiTca_DESCRIPTION = "The map of total contributing areas.";
+    public static final String OMSMULTITCA_inPit_DESCRIPTION = "The map of the depitted elevation.";
+    public static final String OMSMULTITCA_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSMULTITCA_inCp9_DESCRIPTION = "The map of the 9 topographic classes, as computed by the Tc module.";
+    public static final String OMSMULTITCA_outMultiTca_DESCRIPTION = "The map of the total contributing areas, in cells.";
 
     public static final String OMSCB_DESCRIPTION = "Calculates the histogram of a set of data contained in a matrix with respect to the set of data contained in another matrix.";
     public static final String OMSCB_DOCUMENTATION = "OmsCb.html";

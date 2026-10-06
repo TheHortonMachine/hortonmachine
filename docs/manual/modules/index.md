@@ -18,7 +18,9 @@ geoframe/index
 dem-manipulation/index
 geomorphology/index
 basin/index
+hillslope/index
 network/index
 hydro-geomorphology/index
+statistics/index
 raster-processing/index
 ```

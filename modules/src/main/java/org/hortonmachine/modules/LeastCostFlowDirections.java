@@ -39,6 +39,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsLeastCostFlowDirections;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -48,8 +49,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSLEASTCOSTFLOWDIRECTIONS_DESCRIPTION)
+@Bibliography({OmsLeastCostFlowDirections.BIBLIOGRAPHY_METZ_2011})
 @Author(name = OMSLEASTCOSTFLOWDIRECTIONS_AUTHORNAMES, contact = OMSLEASTCOSTFLOWDIRECTIONS_AUTHORCONTACTS)
 @Keywords(OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS)
 @Label(OMSLEASTCOSTFLOWDIRECTIONS_LABEL)
@@ -58,6 +61,7 @@ import oms3.annotations.UI;
 @License(OMSLEASTCOSTFLOWDIRECTIONS_LICENSE)
 public class LeastCostFlowDirections extends HMModel {
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -80,6 +84,7 @@ public class LeastCostFlowDirections extends HMModel {
     public String outFlow = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTca = null;
@@ -90,6 +95,7 @@ public class LeastCostFlowDirections extends HMModel {
     public String outAspect = null;
 
     @Description(OMSLEASTCOSTFLOWDIRECTIONS_outSlope_DESCRIPTION)
+    @Unit("m/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outSlope = null;

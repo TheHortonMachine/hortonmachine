@@ -61,6 +61,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSTCA3D_DESCRIPTION)
 @Documentation(OMSTCA3D_DOCUMENTATION)
@@ -72,6 +73,7 @@ import oms3.annotations.Status;
 @License(OMSTCA3D_LICENSE)
 public class OmsTca3d extends HMModel {
     @Description(OMSTCA3D_inPit_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inPit = null;
 
@@ -80,6 +82,7 @@ public class OmsTca3d extends HMModel {
     public GridCoverage2D inFlow = null;
 
     @Description(OMSTCA3D_outTca_DESCRIPTION)
+    @Unit("m²")
     @Out
     public GridCoverage2D outTca = null;
 

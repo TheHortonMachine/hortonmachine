@@ -237,7 +237,8 @@ public class DefaultTables {
                 "1005.0 255 255 0\n" + //
                 "1006.0 143 203 44\n" + //
                 "1007.0 50 189 160\n" + //
-                "1008.0 0 0 255\n";
+                "1008.0 0 0 255\n" + //
+                "1009.0 0 0 56\n";
         map.put(EColorTables.geomorphon.name(), geomorphon);
 
         String tc3 = "15 255 255 0\n" + //
@@ -245,7 +246,7 @@ public class DefaultTables {
                 "35 255 0 0\n";
         map.put(EColorTables.tc3.name(), tc3);
 
-        String tc9 = "10:planar-planar 255 255 0\n" + //
+        String tc9 = "10 255 255 0\n" + //
                 "20 0 255 0\n" + //
                 "30 0 255 128\n" + //
                 "40 0 255 255\n" + //

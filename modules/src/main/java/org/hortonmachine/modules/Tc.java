@@ -46,6 +46,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSTC_DESCRIPTION)
 @Author(name = OMSTC_AUTHORNAMES, contact = OMSTC_AUTHORCONTACTS)
@@ -57,20 +58,24 @@ import oms3.annotations.UI;
 public class Tc extends HMModel {
 
     @Description(OMSTC_inProf_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inProf = null;
 
     @Description(OMSTC_inTan_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTan = null;
 
     @Description(OMSTC_pProfthres_DESCRIPTION)
+    @Unit("1/m")
     @In
     public double pProfthres = 0.0;
 
     @Description(OMSTC_pTanthres_DESCRIPTION)
+    @Unit("1/m")
     @In
     public double pTanthres = 0.0;
 
