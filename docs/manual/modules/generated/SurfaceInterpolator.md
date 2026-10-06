@@ -5,6 +5,7 @@ Interpolates the values of a vector of points onto the grid of a raster, with Th
 **Toolbox folder:** Raster Processing<br>
 **Status:** Draft<br>
 **Keywords:** Interpolation, Raster, Points, Spline, IDW<br>
+**Authors:** Jan Jezek, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.SurfaceInterpolator`
 
 **Inputs**

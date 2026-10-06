@@ -17,10 +17,16 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 :language: groovy
 ```
 
-:::{figure} ../../images/modules/NetworkAttributesBuilder_hack.png
-:alt: The Hack orders of the network of the basin of ExtractBasin: 1 is the main stream.
+:::{figure} ../../images/modules/NetworkAttributesBuilder_net_attributes_hack.png
+:alt: The vector of the network of the basin of ExtractBasin, colored by the Hack order of the links: 1 is the main stream.
 
-The Hack orders of the network of the basin of ExtractBasin: 1 is the main stream.
+The vector of the network of the basin of ExtractBasin, colored by the Hack order of the links: 1 is the main stream.
+:::
+
+:::{figure} ../../images/modules/NetworkAttributesBuilder_net_attributes_strahler.png
+:alt: The same network colored by the Strahler order of the links: the order grows by one where two links of the same order meet.
+
+The same network colored by the Strahler order of the links: the order grows by one where two links of the same order meet.
 :::
 
 ## Reference

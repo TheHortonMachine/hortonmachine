@@ -5,6 +5,7 @@ Second step of the ERM/GeoFrame water budget workflow: imports the measurements 
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, meteo, stations, discharge, import<br>
+**Authors:** Daniele Andreis<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmStationDataImporter`
 
 **Inputs**

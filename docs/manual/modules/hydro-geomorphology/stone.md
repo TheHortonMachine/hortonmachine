@@ -57,6 +57,12 @@ The maximum velocity of the boulders in each cell, in m/s.
 The maximum height of the trajectories over the ground in each cell, in m.
 :::
 
+:::{figure} ../../images/modules/Stone_trajectories_maxvel.png
+:alt: A sample of 300 trajectories, colored by the maximum velocity of their boulder, in m/s.
+
+A sample of 300 trajectories, colored by the maximum velocity of their boulder, in m/s.
+:::
+
 ## Reference
 
 ```{include} ../generated/Stone.md

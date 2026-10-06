@@ -5,6 +5,7 @@ Cuts a raster to the bounds of a polygon vector or of a mask raster, keeping its
 **Toolbox folder:** Raster Processing<br>
 **Status:** Experimental<br>
 **Keywords:** Raster, Vector, Resize<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.RasterResizer`
 
 **Inputs**

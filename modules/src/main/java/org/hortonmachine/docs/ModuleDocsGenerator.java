@@ -212,6 +212,9 @@ public class ModuleDocsGenerator {
         if (!module.getKeywords().isEmpty()) {
             facts.add("**Keywords:** " + clean(String.join(", ", module.getKeywords())));
         }
+        if (!module.getAuthors().isEmpty()) {
+            facts.add("**Authors:** " + clean(String.join(", ", module.getAuthors())));
+        }
         facts.add("**Class:** `" + moduleClass.getName() + "`");
 
         for( Parameter parameter : module.getParameters() ) {

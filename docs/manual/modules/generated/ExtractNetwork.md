@@ -5,6 +5,7 @@ Extracts the river network as a raster: the cells whose total contributing area 
 **Toolbox folder:** Network<br>
 **Status:** Certified<br>
 **Keywords:** Network, Channels, Total contributing area, Threshold<br>
+**Authors:** Andrea Antonello, Franceschi Silvia, Erica Ghesla, Andrea Cozzini, Silvano Pisoni<br>
 **Class:** `org.hortonmachine.modules.ExtractNetwork`
 
 **Inputs**

@@ -5,6 +5,7 @@ Calculates the basic statistics of a raster: minimum, maximum, mean, standard de
 **Toolbox folder:** Raster Processing<br>
 **Status:** Certified<br>
 **Keywords:** Statistics, Raster, Histogram<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.RasterSummary`
 
 **Inputs**

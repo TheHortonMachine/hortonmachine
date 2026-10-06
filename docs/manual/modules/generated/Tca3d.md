@@ -5,6 +5,7 @@ Calculates the total contributing areas as the real, three-dimensional surface o
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Contributing area, 3D<br>
+**Authors:** Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Tca3d`
 
 **Inputs**

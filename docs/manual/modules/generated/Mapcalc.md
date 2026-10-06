@@ -5,6 +5,7 @@ Raster map algebra with the Jiffle language: the script computes the value of ea
 **Toolbox folder:** Raster Processing<br>
 **Status:** Certified<br>
 **Keywords:** Map algebra, Raster, Jiffle<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Mapcalc`
 
 **Inputs**

@@ -5,6 +5,7 @@ Fourth step of the ERM/GeoFrame water budget workflow: computes the net radiatio
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, Radiation<br>
+**Authors:** Daniele Andreis<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmRadiation`
 
 **Inputs**

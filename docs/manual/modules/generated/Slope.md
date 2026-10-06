@@ -5,6 +5,7 @@ Calculates the slope of each cell along its drainage direction, as the drop to t
 **Toolbox folder:** Geomorphology<br>
 **Status:** Tested<br>
 **Keywords:** Geomorphology, Slope, Drainage directions<br>
+**Authors:** Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Slope`
 
 **Inputs**

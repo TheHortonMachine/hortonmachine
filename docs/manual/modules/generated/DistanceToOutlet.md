@@ -5,6 +5,7 @@ Calculates the distance of each cell from the outlet, along the drainage directi
 **Toolbox folder:** Network<br>
 **Status:** Certified<br>
 **Keywords:** Network, Distance to outlet, Drainage directions<br>
+**Authors:** Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.DistanceToOutlet`
 
 **Inputs**

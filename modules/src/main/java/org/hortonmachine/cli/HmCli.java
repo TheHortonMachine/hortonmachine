@@ -211,6 +211,10 @@ public class HmCli {
                 + (module.getStatus().equals("experimental") ? " - experimental" : ""));
         out.println();
         printWrapped(module.getDescription(), "");
+        if (!module.getAuthors().isEmpty()) {
+            out.println();
+            printWrapped("Authors: " + String.join(", ", module.getAuthors()), "");
+        }
         out.println();
         out.println("Usage: hm-cli run " + module.getName() + " [--parameter=value ...]");
 
@@ -297,6 +301,7 @@ public class HmCli {
         map.put("description", module.getDescription());
         map.put("status", module.getStatus());
         map.put("keywords", module.getKeywords());
+        map.put("authors", module.getAuthors());
         List<Map<String, Object>> parameters = new ArrayList<>();
         for( Parameter parameter : module.getParameters() ) {
             Map<String, Object> p = new LinkedHashMap<>();

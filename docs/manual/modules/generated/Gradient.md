@@ -5,6 +5,7 @@ Calculates the gradient of the elevation, the steepest slope in each cell, in an
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Slope, Gradient<br>
+**Authors:** Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Gradient`
 
 **Inputs**

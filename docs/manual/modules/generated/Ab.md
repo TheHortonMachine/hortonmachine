@@ -5,6 +5,7 @@ Calculates the contributing area per unit contour length (a/b) of each cell, the
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Contributing area, Specific contributing area<br>
+**Authors:** Andrea Antonello, Erica Ghesla, Rigon Riccardo, Andrea Cozzini, Silvano Pisoni<br>
 **Class:** `org.hortonmachine.modules.Ab`
 
 **Inputs**

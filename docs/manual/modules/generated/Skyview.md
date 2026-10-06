@@ -5,6 +5,7 @@ Calculates the sky view factor: the fraction of the sky visible from each cell, 
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Hydrology, Radiation, Sky view factor<br>
+**Authors:** Daniele Andreis and Riccardo Rigon<br>
 **Class:** `org.hortonmachine.modules.Skyview`
 
 **Inputs**

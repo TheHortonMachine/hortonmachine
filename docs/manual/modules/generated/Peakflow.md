@@ -5,6 +5,7 @@ Computes the flood hydrograph at the outlet of a basin with the geomorphological
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Peakflow, Discharge, Flood, GIUH, Width function, Hydrologic<br>
+**Authors:** Silvia Franceschi, Andrea Antonello, Riccardo Rigon<br>
 **Class:** `org.hortonmachine.modules.Peakflow`
 
 **Inputs**

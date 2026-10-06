@@ -5,6 +5,7 @@ Converts the points of a LAS lidar file into a vector of points, with their elev
 **Toolbox folder:** Vector Processing<br>
 **Status:** Experimental<br>
 **Keywords:** Lidar, LAS, Points, Conversion<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.LasConverter`
 
 **Inputs**

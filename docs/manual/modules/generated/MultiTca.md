@@ -5,6 +5,7 @@ Calculates the total contributing areas with multiple directions on the divergen
 **Toolbox folder:** Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Geomorphology, Contributing area, Multiple flow directions<br>
+**Authors:** Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.MultiTca`
 
 **Inputs**

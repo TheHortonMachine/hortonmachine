@@ -5,6 +5,7 @@ Calculates the profile, planar and tangential curvatures of the terrain, from th
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Curvature, Convergence<br>
+**Authors:** Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Curvatures`
 
 **Inputs**

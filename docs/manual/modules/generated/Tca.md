@@ -5,6 +5,7 @@ Calculates the total contributing area of each cell: the number of cells that dr
 **Toolbox folder:** Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Geomorphology, Contributing area, Drainage directions<br>
+**Authors:** Antonello Andrea<br>
 **Class:** `org.hortonmachine.modules.Tca`
 
 **Inputs**

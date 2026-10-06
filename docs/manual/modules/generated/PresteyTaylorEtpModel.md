@@ -5,6 +5,7 @@ Calculates the potential evapotranspiration with the Priestley-Taylor method, fr
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Evapotranspiration, Priestley-Taylor, Hydrologic<br>
+**Authors:** Giuseppe Formetta, Silvia Franceschi, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.PresteyTaylorEtpModel`
 
 **Inputs**

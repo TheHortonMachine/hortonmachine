@@ -5,6 +5,7 @@ Calculates the viewshed of one or more viewpoints on an elevation model: the cel
 **Toolbox folder:** Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Viewshed, Visibility, Line of sight<br>
+**Authors:** Dr. John Lindsay<br>
 **Class:** `org.hortonmachine.modules.Viewshed`
 
 **Inputs**

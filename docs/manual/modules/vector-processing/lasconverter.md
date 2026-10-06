@@ -10,10 +10,10 @@ The example runs on the sample lidar survey of the manual, `uni_bz_plot777.las` 
 :language: groovy
 ```
 
-:::{figure} ../../images/modules/LasConverter_las_points.png
-:alt: The lidar points of the sample plot, over the hillshade of its elevation model: the scanning lines of the survey cross the plot diagonally.
+:::{figure} ../../images/modules/LasConverter_las_points_elev.png
+:alt: The lidar points of the sample plot, colored by their elevation, over the hillshade of its elevation model: the crowns of the trees stand out over the ground, and the scanning lines of the survey cross the plot diagonally.
 
-The lidar points of the sample plot, over the hillshade of its elevation model: the scanning lines of the survey cross the plot diagonally.
+The lidar points of the sample plot, colored by their elevation, over the hillshade of its elevation model: the crowns of the trees stand out over the ground, and the scanning lines of the survey cross the plot diagonally.
 :::
 
 ## Reference

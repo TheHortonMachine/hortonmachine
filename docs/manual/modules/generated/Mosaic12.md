@@ -5,6 +5,7 @@ Patches up to 12 rasters into one, which covers all of them, with the cell size 
 **Toolbox folder:** Raster Processing<br>
 **Status:** Certified<br>
 **Keywords:** Mosaic, Patch, Raster<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Mosaic12`
 
 **Inputs**

@@ -5,6 +5,7 @@ Calculates the Hack length of each cell: the length of the main stream upstream 
 **Toolbox folder:** Network<br>
 **Status:** Certified<br>
 **Keywords:** Network, Hack length, Main stream, Geomorphology<br>
+**Authors:** Antonello Andrea, Franceschi Silvia, Daniele Andreis, Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.HackLength`
 
 **Inputs**

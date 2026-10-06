@@ -5,6 +5,7 @@ Masks a raster with another raster, or with thresholds on its values: the cells 
 **Toolbox folder:** Raster Processing<br>
 **Status:** Certified<br>
 **Keywords:** Raster, Mask, Threshold<br>
+**Authors:** Silvia Franceschi, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.CutOut`
 
 **Inputs**

@@ -5,6 +5,7 @@ Calculates the hillslope to channel distance: the distance of each cell from the
 **Toolbox folder:** Hillslope<br>
 **Status:** Certified<br>
 **Keywords:** Hillslope, Network, Distance<br>
+**Authors:** Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.H2cd`
 
 **Inputs**

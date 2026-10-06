@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,7 +52,10 @@ import org.geotools.api.style.RasterSymbolizer;
 import org.geotools.api.style.Style;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.map.FeatureLayer;
 import org.geotools.map.GridCoverageLayer;
 import org.geotools.map.MapContent;
@@ -103,6 +107,8 @@ import groovy.lang.GroovyShell;
  * <li><b>nolegend</b>: no legend, for example for a single class;</li>
  * <li><b>base=elevation.tif</b>: the elevation of the hillshade, and with vectors of the extent of
  * the map, instead of the sample elevation;</li>
+ * <li><b>field=name</b>: with vectors, the features get the color of the value of the field, with
+ * a color bar, or with a legend of the classes with the option classes;</li>
  * <li><b>clip</b>: the colors span from the 2nd to the 98th percentile of the values, for rasters
  * with a few extreme values; the cells outside get the colors of the ends.</li>
  * </ul>
@@ -120,6 +126,8 @@ public class ModuleMapsGenerator {
     private static final int LEGEND_WIDTH = 160;
     private static final double OPACITY = 0.75;
     private static final Font FONT = new Font("SansSerif", Font.PLAIN, 14);
+    /** The number of color intervals of the continuous values of a vector field. */
+    private static final int VECTOR_COLOR_STEPS = 32;
     /** The maximum number of classes of a legend of classes. */
     private static final int MAX_CLASSES = 30;
     /** The rings of border cells that are 0 in the hillshade. */
@@ -202,6 +210,11 @@ public class ModuleMapsGenerator {
         for( String raster : spec.raster().split(" - ") ) {
             name.append(separator).append(raster.trim().replaceFirst("\\.[^.]+$", ""));
             separator = "-";
+        }
+        // a vector colored by a field is also named after it
+        String field = optionValue(spec, "field");
+        if (field != null) {
+            name.append("_").append(field);
         }
         return name.append(".png").toString();
     }
@@ -301,7 +314,9 @@ public class ModuleMapsGenerator {
 
     /**
      * Draws a vector over the hillshade, on the extent of the base elevation: points as dots,
-     * lines as lines, polygons as their outline.
+     * lines as lines, polygons as their outline. Without a field, all the features get the
+     * strongest color of the colortable; with the option field=name, each feature gets the color
+     * of its value, with a legend of the classes (option classes) or a color bar.
      */
     private BufferedImage drawVectorMap( MapSpec spec ) throws Exception {
         GridCoverage2D hillshade = readHillshade(baseElevation(spec));
@@ -312,41 +327,115 @@ public class ModuleMapsGenerator {
         String colortable = Arrays.stream(EColorTables.values()).anyMatch(t -> t.name().equals(spec.colortable()))
                 ? spec.colortable()
                 : EColorTables.rainbow.name();
-        Style colorsStyle = RasterStyleUtilities.createStyleForColortable(colortable, 0, 1, 1.0);
-        List<ColorMapEntry> entries = legendEntries(colorsStyle, new double[]{0, 1});
-        Color lineColor = color(entries.get(entries.size() - 1));
-
         SimpleFeatureCollection features = OmsVectorReader.readVector(path(spec.raster()));
         Class< ? > geometryType = features.getSchema().getGeometryDescriptor().getType().getBinding();
-        Style lineStyle;
-        if (org.locationtech.jts.geom.Puntal.class.isAssignableFrom(geometryType)) {
-            lineStyle = SLD.createPointStyle("Circle", lineColor, lineColor, 1f, 3f);
-        } else if (org.locationtech.jts.geom.Polygonal.class.isAssignableFrom(geometryType)) {
-            lineStyle = SLD.createPolygonStyle(lineColor, null, 0f);
+        String field = optionValue(spec, "field");
+
+        // the features grouped by color, each group drawn with its own style
+        Map<Color, DefaultFeatureCollection> groups = new LinkedHashMap<>();
+        Style colorsStyle;
+        List<Double> classValues = null;
+        double[] minMax = null;
+        if (field == null) {
+            colorsStyle = RasterStyleUtilities.createStyleForColortable(colortable, 0, 1, 1.0);
+            List<ColorMapEntry> entries = colorMapEntries(colorsStyle);
+            DefaultFeatureCollection all = new DefaultFeatureCollection();
+            all.addAll(features);
+            groups.put(color(entries.get(entries.size() - 1)), all);
         } else {
-            lineStyle = SLD.createLineStyle(lineColor, 1.5f);
+            java.util.TreeSet<Double> values = new java.util.TreeSet<>();
+            try (SimpleFeatureIterator it = features.features()) {
+                while( it.hasNext() ) {
+                    Object value = it.next().getAttribute(field);
+                    if (value instanceof Number) {
+                        values.add(((Number) value).doubleValue());
+                    }
+                }
+            }
+            minMax = new double[]{values.first(), values.last()};
+            if (minMax[0] == minMax[1]) {
+                minMax[0] = minMax[1] - 1;
+            }
+            colorsStyle = RasterStyleUtilities.createStyleForColortable(colortable, minMax[0], minMax[1], 1.0);
+            List<ColorMapEntry> entries = colorMapEntries(colorsStyle);
+            boolean doClasses = spec.options().contains("classes");
+            if (doClasses) {
+                if (values.size() > MAX_CLASSES) {
+                    throw new IllegalArgumentException("Too many values for a legend of classes, use a color bar: " + field);
+                }
+                classValues = new ArrayList<>(values);
+            }
+            try (SimpleFeatureIterator it = features.features()) {
+                while( it.hasNext() ) {
+                    SimpleFeature feature = it.next();
+                    Object value = feature.getAttribute(field);
+                    if (!(value instanceof Number)) {
+                        continue;
+                    }
+                    double v = ((Number) value).doubleValue();
+                    if (!doClasses) {
+                        // continuous values in 32 intervals, each with the color of its middle
+                        double step = (minMax[1] - minMax[0]) / VECTOR_COLOR_STEPS;
+                        int index = (int) Math.min(VECTOR_COLOR_STEPS - 1, Math.floor((v - minMax[0]) / step));
+                        v = minMax[0] + (index + 0.5) * step;
+                    }
+                    groups.computeIfAbsent(colorAt(entries, v), k -> new DefaultFeatureCollection()).add(feature);
+                }
+            }
         }
 
         ReferencedEnvelope envelope = new ReferencedEnvelope(hillshade.getEnvelope2D());
         int mapHeight = (int) Math.round(MAP_WIDTH * envelope.getHeight() / envelope.getWidth());
-        BufferedImage image = new BufferedImage(MAP_WIDTH + LEGEND_WIDTH, mapHeight, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(MAP_WIDTH + legendWidth(spec), mapHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, image.getWidth(), image.getHeight());
 
         MapContent content = new MapContent();
         try {
             content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
-            content.addLayer(new FeatureLayer(features, lineStyle));
+            for( Map.Entry<Color, DefaultFeatureCollection> group : groups.entrySet() ) {
+                content.addLayer(new FeatureLayer(group.getValue(), vectorStyle(geometryType, group.getKey())));
+            }
             StreamingRenderer renderer = new StreamingRenderer();
             renderer.setMapContent(content);
             renderer.paint(g, new Rectangle(0, 0, MAP_WIDTH, mapHeight), envelope);
         } finally {
             content.dispose();
         }
+        g.setClip(null);
+
+        if (classValues != null) {
+            drawClassesLegend(g, classValues, colorsStyle, spec.classNames(), MAP_WIDTH + 20, 20);
+        } else if (field != null && !spec.options().contains("nolegend")) {
+            drawBarLegend(g, legendEntries(colorsStyle, minMax), MAP_WIDTH + 20, 20, Math.min(mapHeight - 40, 400));
+        }
         g.dispose();
         return image;
+    }
+
+    private static Style vectorStyle( Class< ? > geometryType, Color color ) {
+        if (org.locationtech.jts.geom.Puntal.class.isAssignableFrom(geometryType)) {
+            return SLD.createPointStyle("Circle", color, color, 1f, 3f);
+        } else if (org.locationtech.jts.geom.Polygonal.class.isAssignableFrom(geometryType)) {
+            return SLD.createPolygonStyle(color, null, 0f);
+        } else {
+            return SLD.createLineStyle(color, 1.5f);
+        }
+    }
+
+    /**
+     * @return the value of an option written as name=value, or <code>null</code>.
+     */
+    private static String optionValue( MapSpec spec, String name ) {
+        for( String option : spec.options() ) {
+            if (option.startsWith(name + "=")) {
+                return option.substring(name.length() + 1).trim();
+            }
+        }
+        return null;
     }
 
     /**
@@ -354,12 +443,8 @@ public class ModuleMapsGenerator {
      *         sample elevation.
      */
     private static String baseElevation( MapSpec spec ) {
-        for( String option : spec.options() ) {
-            if (option.startsWith("base=")) {
-                return option.substring("base=".length()).trim();
-            }
-        }
-        return ELEVATION;
+        String base = optionValue(spec, "base");
+        return base != null ? base : ELEVATION;
     }
 
     private GridCoverage2D readRaster( MapSpec spec ) throws Exception {

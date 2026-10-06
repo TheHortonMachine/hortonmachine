@@ -5,6 +5,7 @@ Calculates the drainage directions of a depitted elevation model with the D8 met
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Flow directions, D8<br>
+**Authors:** David Tarboton, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.FlowDirections`
 
 **Inputs**

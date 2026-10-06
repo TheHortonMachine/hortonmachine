@@ -5,6 +5,7 @@ Resamples a raster to a new cell size, on the same extent, with the chosen inter
 **Toolbox folder:** Raster Processing<br>
 **Status:** Experimental<br>
 **Keywords:** Raster, Resampling, Resolution<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.RasterResolutionResampler`
 
 **Inputs**

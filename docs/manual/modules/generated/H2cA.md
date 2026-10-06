@@ -5,6 +5,7 @@ Gives each hillslope cell the value that a map has on the network cell into whic
 **Toolbox folder:** Hillslope<br>
 **Status:** Certified<br>
 **Keywords:** Hillslope, Network, Attribute<br>
+**Authors:** Antonello Andrea, Franceschi Silvia, Andreis Daniele, Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.H2cA`
 
 **Inputs**

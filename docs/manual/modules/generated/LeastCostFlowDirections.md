@@ -5,6 +5,7 @@ Calculates the drainage directions with a least cost search, without filling the
 **Toolbox folder:** Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Geomorphology, Drainage directions, Least cost<br>
+**Authors:** Silvia Franceschi, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.LeastCostFlowDirections`
 
 **Inputs**

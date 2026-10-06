@@ -5,6 +5,7 @@ First step of the ERM/GeoFrame water budget workflow: from the DTM it derives th
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, DEM, basin, network, data preparation<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmDataPreparator`
 
 **Inputs**

@@ -5,6 +5,7 @@ Calculates the topographic index, ln(a/tan β), the natural logarithm of the con
 **Toolbox folder:** Basin<br>
 **Status:** Certified<br>
 **Keywords:** Topographic index, Saturation, Hydrology<br>
+**Authors:** Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.TopIndex`
 
 **Inputs**

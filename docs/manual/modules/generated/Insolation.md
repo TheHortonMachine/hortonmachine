@@ -5,6 +5,7 @@ Calculates the clear-sky direct solar radiation that reaches the terrain over a 
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Radiation, Insolation, Solar, Shadow<br>
+**Authors:** Daniele Andreis and Riccardo Rigon<br>
 **Class:** `org.hortonmachine.modules.Insolation`
 
 **Inputs**

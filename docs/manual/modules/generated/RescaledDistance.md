@@ -5,6 +5,7 @@ Calculates the rescaled distance of each cell from the outlet along the drainage
 **Toolbox folder:** Basin<br>
 **Status:** Certified<br>
 **Keywords:** Basin, Geomorphology, Width function, Distance to outlet<br>
+**Authors:** Antonello Andrea, Franceschi Silvia, Daniele Andreis, Erica Ghesla, Cozzini Andrea, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.RescaledDistance`
 
 **Inputs**

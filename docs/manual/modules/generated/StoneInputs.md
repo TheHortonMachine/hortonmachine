@@ -5,6 +5,7 @@ Prepare the input maps of the STONE rockfall model from as little as a DEM: sour
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Rockfall, Stone, Hazard, Lithology, Sources<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.StoneInputs`
 
 **Inputs**

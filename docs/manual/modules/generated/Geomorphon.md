@@ -5,6 +5,7 @@ Classifies the landforms with the geomorphon method: in each of the 8 directions
 **Toolbox folder:** Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Geomorphology, Geomorphon, Landforms<br>
+**Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.Geomorphon`
 
 **Inputs**

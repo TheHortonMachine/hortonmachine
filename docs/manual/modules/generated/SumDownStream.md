@@ -5,6 +5,7 @@ Sums the values of a map downstream, along the drainage directions: each cell ge
 **Toolbox folder:** Statistics<br>
 **Status:** Certified<br>
 **Keywords:** Statistics, Downstream, Drainage directions<br>
+**Authors:** Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.SumDownStream`
 
 **Inputs**

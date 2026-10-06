@@ -5,6 +5,7 @@ Fills the depressions (pits) of a digital elevation model, raising the cells tha
 **Toolbox folder:** Dem Manipulation<br>
 **Status:** Certified<br>
 **Keywords:** Dem manipulation, Geomorphology, Depressions, Pits<br>
+**Authors:** David Tarboton, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Pitfiller`
 
 **Inputs**

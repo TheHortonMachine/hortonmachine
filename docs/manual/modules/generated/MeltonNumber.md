@@ -5,6 +5,7 @@ Calculates the Melton number of basins, their relief divided by the square root 
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Melton number, Basin, Debris flow<br>
+**Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.MeltonNumber`
 
 **Inputs**

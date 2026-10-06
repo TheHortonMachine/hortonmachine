@@ -5,6 +5,7 @@ Calculates the aspect of the terrain, the direction the slope faces, clockwise f
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Aspect, Exposure<br>
+**Authors:** Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini<br>
 **Class:** `org.hortonmachine.modules.Aspect`
 
 **Inputs**

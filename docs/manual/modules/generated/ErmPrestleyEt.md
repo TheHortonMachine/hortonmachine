@@ -5,6 +5,7 @@ Fifth step of the ERM/GeoFrame water budget workflow: computes the potential eva
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, ET<br>
+**Authors:** Daniele Andreis<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmPrestleyEt`
 
 **Inputs**

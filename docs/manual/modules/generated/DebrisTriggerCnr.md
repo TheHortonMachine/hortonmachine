@@ -5,6 +5,7 @@ Extracts the trigger points of debris flows along the network, with the method o
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Debris flow, Trigger, Network<br>
+**Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.DebrisTriggerCnr`
 
 **Inputs**

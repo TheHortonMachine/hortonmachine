@@ -5,6 +5,7 @@ Extracts the basin of an outlet: the cells that drain into it along the drainage
 **Toolbox folder:** Dem Manipulation<br>
 **Status:** Certified<br>
 **Keywords:** Basin, Outlet, Drainage directions<br>
+**Authors:** Charles Ehlschlaeger, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Wateroutlet`
 
 **Inputs**

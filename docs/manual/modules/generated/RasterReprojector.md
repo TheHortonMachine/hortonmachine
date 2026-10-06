@@ -5,6 +5,7 @@ Reprojects a raster into another coordinate reference system, optionally with a 
 **Toolbox folder:** Raster Processing<br>
 **Status:** Certified<br>
 **Keywords:** Raster, Reprojection, CRS<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.RasterReprojector`
 
 **Inputs**

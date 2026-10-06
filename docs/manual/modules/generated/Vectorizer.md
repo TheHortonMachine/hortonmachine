@@ -5,6 +5,7 @@ Converts a raster into a vector of polygons, one for each area of cells with the
 **Toolbox folder:** Vector Processing<br>
 **Status:** Certified<br>
 **Keywords:** Raster, Vector, Polygons, Conversion<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Vectorizer`
 
 **Inputs**

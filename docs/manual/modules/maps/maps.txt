@@ -14,7 +14,8 @@
 # of the raster, at most 30, not a bar: for integer classes and codes),
 # nolegend (no legend, for example for a single class), clip (colors from the 2nd to the
 # 98th percentile, for rasters with a few extreme values), base=elevation.tif (the elevation of
-# the hillshade, and with vectors of the extent, instead of dtm_flanginec.tif)
+# the hillshade, and with vectors of the extent, instead of dtm_flanginec.tif), field=name (with
+# vectors, the color of the value of the field, with a color bar or, with classes, a class legend)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
 
 Pitfiller      | ../examples/hm/pitfiller.groovy      | pit.tif                     | elev
@@ -40,6 +41,7 @@ StoneInputs    | ../examples/hm/stoneinputs.groovy    | sources.tif             
 Stone          | ../examples/hm/stone.groovy          | counter.tif                 | logarithmic
 Stone          | -                                    | velocity.tif                | rainbow
 Stone          | -                                    | height.tif                  | rainbow
+Stone          | -                                    | trajectories.shp            | rainbow  | field=maxvel
 Tca            | ../examples/hm/tca.groovy            | tca_d8.tif                  | tca
 Wateroutlet    | ../examples/hm/wateroutlet.groovy    | outlet_basin.tif            | blues    | nolegend
 Aspect         | ../examples/hm/aspect.groovy         | aspect.tif                  | aspect
@@ -63,7 +65,8 @@ Tc             | -                                    | tc3.tif                 
 LeastCostFlowDirections | ../examples/hm/leastcostflowdirections.groovy | tca_leastcost.tif | tca
 MultiTca       | ../examples/hm/multitca.groovy       | multitca.tif                | tca
 Tca3d          | ../examples/hm/tca3d.groovy          | tca3d.tif                   | tca
-NetworkAttributesBuilder | ../examples/hm/networkattributesbuilder.groovy | hack.tif | rainbow | classes
+NetworkAttributesBuilder | ../examples/hm/networkattributesbuilder.groovy | net_attributes.shp | rainbow | classes,field=hack
+NetworkAttributesBuilder | -                         | net_attributes.shp          | rainbow  | classes,field=strahler
 SplitSubbasins | ../examples/hm/splitsubbasins.groovy | split_subbasins.tif         | contrasting | nolegend
 SumDownStream  | ../examples/hm/sumdownstream.groovy  | unstable_upstream.tif       | logarithmic
 MeltonNumber   | ../examples/hm/meltonnumber.groovy   | -                           | -
@@ -74,7 +77,7 @@ Vectorizer     | ../examples/hm/vectorizer.groovy     | outlet_basin.shp        
 Mosaic12       | ../examples/hm/mosaic12.groovy       | dtm_mosaic.tif              | elev
 ContourExtractor | ../examples/hm/contourextractor.groovy | contours.shp            | reds
 RasterSummary  | ../examples/hm/rastersummary.groovy  | -                           | -
-LasConverter   | ../examples/hm/lasconverter.groovy   | las_points.shp              | greens   | base=dtm_777.tif
+LasConverter   | ../examples/hm/lasconverter.groovy   | las_points.shp              | elev     | base=dtm_777.tif,field=elev
 SurfaceInterpolator | ../examples/hm/surfaceinterpolator.groovy | dsm_777.tif         | elev     | base=dtm_777.tif
 SurfaceInterpolator | -                               | dsm_777.tif - dtm_777.tif   | rainbow  | positive,base=dtm_777.tif
 Viewshed       | ../examples/hm/viewshed.groovy       | viewshed.tif                | reds     | nolegend

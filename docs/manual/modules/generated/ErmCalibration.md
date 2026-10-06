@@ -5,6 +5,7 @@ Sixth step of the ERM/GeoFrame water budget workflow: calibrates the 18 paramete
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, calibration, PSO, water budget<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmCalibration`
 
 **Inputs**

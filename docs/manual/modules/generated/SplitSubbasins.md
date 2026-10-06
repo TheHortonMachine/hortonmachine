@@ -5,6 +5,7 @@ Splits a basin into the subbasins of the streams up to a Hack order: with order 
 **Toolbox folder:** Dem Manipulation<br>
 **Status:** Experimental<br>
 **Keywords:** Subbasins, Hack order, Network<br>
+**Authors:** Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla<br>
 **Class:** `org.hortonmachine.modules.SplitSubbasins`
 
 **Inputs**

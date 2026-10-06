@@ -5,6 +5,7 @@ Maps the stability of the slopes to shallow landslides with the SHALSTAB model, 
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Shalstab, Landslides, Slope stability, Hydrology, Transmissivity<br>
+**Authors:** Daniele Andreis, Antonello Andrea, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Shalstab`
 
 **Inputs**

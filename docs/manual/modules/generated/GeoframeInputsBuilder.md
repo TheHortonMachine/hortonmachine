@@ -5,6 +5,7 @@ Prepares the inputs of the GeoFrame modelling environment: the geometries, the t
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** GeoFrame, Sub-basins, Network, Topology<br>
+**Authors:** Antonello Andrea, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.GeoframeInputsBuilder`
 
 **Inputs**

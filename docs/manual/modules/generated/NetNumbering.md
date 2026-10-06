@@ -5,6 +5,7 @@ Numbers the links of the river network and extracts the sub-basin draining into 
 **Toolbox folder:** Network<br>
 **Status:** Certified<br>
 **Keywords:** Network, Sub-basins, Topology, Hydrological response units<br>
+**Authors:** Antonello Andrea, Franceschi Silvia, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.NetNumbering`
 
 **Inputs**

@@ -5,6 +5,7 @@ Marks with the conventional value 10 the outlets on the map of the drainage dire
 **Toolbox folder:** Dem Manipulation<br>
 **Status:** Tested<br>
 **Keywords:** Outlets, Drainage directions, Raster<br>
+**Authors:** Antonello Andrea, Franceschi Silvia<br>
 **Class:** `org.hortonmachine.modules.Markoutlets`
 
 **Inputs**

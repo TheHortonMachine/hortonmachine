@@ -5,6 +5,7 @@ Classifies the terrain in topographic classes, from the profile and the tangenti
 **Toolbox folder:** Hillslope<br>
 **Status:** Certified<br>
 **Keywords:** Hillslope, Curvature, Topographic classes<br>
+**Authors:** Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Tc`
 
 **Inputs**

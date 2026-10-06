@@ -5,6 +5,7 @@ The STONE model for the three-dimensional simulation of rockfall trajectories.
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Rockfall, Stone, Hazard, Trajectories<br>
+**Authors:** Fausto Guzzetti, Massimiliano Alvioli, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Stone`
 
 **Inputs**

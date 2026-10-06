@@ -36,6 +36,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMModelRegistry;
 import org.hortonmachine.gears.libs.modules.HMParameterKind;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -154,6 +155,7 @@ public class ModuleDescriptor {
     private final String description;
     private final String status;
     private final List<String> keywords;
+    private final List<String> authors;
     private final List<Parameter> parameters = new ArrayList<>();
 
     private ModuleDescriptor( Class< ? extends HMModel> moduleClass ) {
@@ -175,6 +177,16 @@ public class ModuleDescriptor {
             }
         }
         keywords = Collections.unmodifiableList(keywordsList);
+        Author authorAnn = moduleClass.getAnnotation(Author.class);
+        List<String> authorsList = new ArrayList<>();
+        if (authorAnn != null) {
+            for( String author : authorAnn.name().split(",") ) {
+                if (!author.isBlank()) {
+                    authorsList.add(author.trim());
+                }
+            }
+        }
+        authors = Collections.unmodifiableList(authorsList);
 
         Object instance = null;
         try {
@@ -328,6 +340,13 @@ public class ModuleDescriptor {
 
     public List<String> getKeywords() {
         return keywords;
+    }
+
+    /**
+     * @return the names of the authors, in the order of the annotation.
+     */
+    public List<String> getAuthors() {
+        return authors;
     }
 
     /**

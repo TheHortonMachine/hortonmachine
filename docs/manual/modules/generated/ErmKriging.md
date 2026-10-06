@@ -5,6 +5,7 @@ Third step of the ERM/GeoFrame water budget workflow: interpolates the temperatu
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, Kriging<br>
+**Authors:** Daniele Andreis<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmKriging`
 
 **Inputs**

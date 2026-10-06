@@ -5,6 +5,7 @@ Traces the runout paths of debris flows from their trigger points, along the dra
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Debris flow, Runout, Vandre, Burton and Bathurst<br>
+**Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.DebrisVandre`
 
 **Inputs**

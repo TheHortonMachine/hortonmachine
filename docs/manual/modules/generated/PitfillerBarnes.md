@@ -5,6 +5,7 @@ Fills the depressions of a DEM using the parallel Priority-Flood algorithm by Ba
 **Toolbox folder:** Dem Manipulation<br>
 **Status:** Experimental<br>
 **Keywords:** Dem manipulation, Geomorphology, Pitfiller, Priority-Flood<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.PitfillerBarnes`
 
 **Inputs**

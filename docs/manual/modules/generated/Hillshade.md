@@ -5,6 +5,7 @@ Calculates the hillshade of the terrain, lit by the sun from a given direction a
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Hillshade, Shadow, Radiation, Visualization<br>
+**Authors:** Daniele Andreis and Riccardo Rigon<br>
 **Class:** `org.hortonmachine.modules.Hillshade`
 
 **Inputs**

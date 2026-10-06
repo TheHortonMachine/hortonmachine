@@ -5,6 +5,7 @@ Last step of the ERM/GeoFrame water budget workflow: runs the water budget model
 **Toolbox folder:** GeoFrame<br>
 **Status:** Certified<br>
 **Keywords:** ERM, GeoFrame, simulation, water budget<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.hmachine.geoframe.ermworkflow.ErmSimulation`
 
 **Inputs**

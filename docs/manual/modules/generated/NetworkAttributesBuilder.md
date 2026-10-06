@@ -5,6 +5,7 @@ Converts a raster network into a vector of its links, with their attributes: the
 **Toolbox folder:** Network<br>
 **Status:** Certified<br>
 **Keywords:** Network, Vector, Hack order, Strahler order, Pfafstetter<br>
+**Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.NetworkAttributesBuilder`
 
 **Inputs**

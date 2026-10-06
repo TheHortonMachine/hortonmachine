@@ -5,6 +5,7 @@ Corrects the D8 drainage directions so that the flow paths deviate as little as 
 **Toolbox folder:** Geomorphology<br>
 **Status:** Certified<br>
 **Keywords:** Geomorphology, Drainage directions, Total contributing area, LAD, LTD<br>
+**Authors:** Andrea Antonello, Franceschi Silvia, Erica Ghesla, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.DrainDir`
 
 **Inputs**

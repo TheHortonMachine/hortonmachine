@@ -5,6 +5,7 @@ Estimates the area flooded by a debris flow of a given volume, and its deposit, 
 **Toolbox folder:** Hydro-Geomorphology<br>
 **Status:** Experimental<br>
 **Keywords:** Debris flow, Runout, Deposit, Monte Carlo<br>
+**Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.DebrisFlow`
 
 **Inputs**

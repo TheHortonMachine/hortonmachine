@@ -5,6 +5,7 @@ Calculates the magnitude of each cell: the number of sources upstream of it, the
 **Toolbox folder:** Network<br>
 **Status:** Certified<br>
 **Keywords:** Network, Magnitude, Shreve<br>
+**Authors:** Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.Magnitudo`
 
 **Inputs**
