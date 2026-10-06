@@ -43,6 +43,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSTCA_DESCRIPTION)
 @Author(name = OMSTCA_AUTHORNAMES, contact = OMSTCA_AUTHORCONTACTS)
@@ -58,6 +59,7 @@ public class Tca extends HMModel {
     public String inFlow = null;
 
     @Description(OMSTCA_outTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTca = null;

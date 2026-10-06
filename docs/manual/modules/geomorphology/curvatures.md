@@ -10,5 +10,33 @@ The curvatures are computed from the first and second derivatives of the elevati
 
 The planar curvature is the input of [Ab](ab.md), which estimates from it the contour length of each cell.
 
+## Example
+
+The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
+
+```{literalinclude} ../examples/hm/curvatures.groovy
+:language: groovy
+```
+
+:::{figure} ../../images/modules/Curvatures_plan.png
+:alt: The planar curvature of the sample area: positive, in red, in the channels and the hollows where the flow converges, negative on the ridges. The colors span from the 2nd to the 98th percentile of the values.
+
+The planar curvature of the sample area: positive, in red, in the channels and the hollows where the flow converges, negative on the ridges. The colors span from the 2nd to the 98th percentile of the values.
+:::
+
+:::{figure} ../../images/modules/Curvatures_prof.png
+:alt: The profile curvature of the sample area: positive where the slope decreases downhill, negative where it increases. The colors span from the 2nd to the 98th percentile of the values.
+
+The profile curvature of the sample area: positive where the slope decreases downhill, negative where it increases. The colors span from the 2nd to the 98th percentile of the values.
+:::
+
+:::{figure} ../../images/modules/Curvatures_tang.png
+:alt: The tangential curvature of the sample area: the planar curvature weighted by the sine of the slope angle, with smaller values than the planar one, about half, on these steep slopes. The colors span from the 2nd to the 98th percentile of the values.
+
+The tangential curvature of the sample area: the planar curvature weighted by the sine of the slope angle, with smaller values than the planar one, about half, on these steep slopes. The colors span from the 2nd to the 98th percentile of the values.
+:::
+
+## Reference
+
 ```{include} ../generated/Curvatures.md
 ```

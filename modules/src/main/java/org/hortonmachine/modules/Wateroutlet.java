@@ -46,6 +46,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSWATEROUTLET_DESCRIPTION)
 @Author(name = OMSWATEROUTLET_AUTHORNAMES, contact = OMSWATEROUTLET_AUTHORCONTACTS)
@@ -76,6 +77,7 @@ public class Wateroutlet extends HMModel {
     public String outBasin = null;
 
     @Description(OMSWATEROUTLET_outArea_DESCRIPTION)
+    @Unit("m²")
     @Out
     public double outArea = 0;
 
@@ -89,6 +91,7 @@ public class Wateroutlet extends HMModel {
         omswateroutlet.doProcess = doProcess;
         omswateroutlet.doReset = doReset;
         omswateroutlet.process();
+        outArea = omswateroutlet.outArea;
         dumpRaster(omswateroutlet.outBasin, outBasin);
     }
 }

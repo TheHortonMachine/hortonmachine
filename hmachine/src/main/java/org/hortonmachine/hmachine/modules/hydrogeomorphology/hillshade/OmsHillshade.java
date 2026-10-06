@@ -61,6 +61,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSHILLSHADE_DESCRIPTION)
 @Author(name = OMSHILLSHADE_AUTHORNAMES, contact = OMSHILLSHADE_AUTHORCONTACTS)
@@ -72,6 +73,7 @@ import oms3.annotations.Status;
 public class OmsHillshade extends HMModel {
 
     @Description(OMSHILLSHADE_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -80,10 +82,12 @@ public class OmsHillshade extends HMModel {
     public double pMinDiffuse = 0.0;
 
     @Description(OMSHILLSHADE_pAzimuth_DESCRIPTION)
+    @Unit("°")
     @In
     public double pAzimuth = 360;
 
     @Description(OMSHILLSHADE_pElev_DESCRIPTION)
+    @Unit("°")
     @In
     public double pElev = 90;
 

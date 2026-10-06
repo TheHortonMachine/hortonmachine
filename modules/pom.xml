@@ -36,6 +36,12 @@
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- runs the example scripts of the manual, see ModuleMapsGenerator -->
+		<dependency>
+			<groupId>org.apache.groovy</groupId>
+			<artifactId>groovy</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

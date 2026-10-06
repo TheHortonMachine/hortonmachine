@@ -35,6 +35,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.insolation.OmsInsolation;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -44,8 +45,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSINSOLATION_DESCRIPTION)
+@Bibliography({OmsInsolation.BIBLIOGRAPHY_CORRIPIO_2003})
 @Author(name = OMSINSOLATION_AUTHORNAMES, contact = OMSINSOLATION_AUTHORCONTACTS)
 @Keywords(OMSINSOLATION_KEYWORDS)
 @Label(OMSINSOLATION_LABEL)
@@ -55,6 +58,7 @@ import oms3.annotations.UI;
 public class Insolation extends HMModel {
 
     @Description(OMSINSOLATION_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -68,6 +72,7 @@ public class Insolation extends HMModel {
     public String tEndDate = null;
 
     @Description(OMSINSOLATION_outIns_DESCRIPTION)
+    @Unit("kW/m²")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outIns;

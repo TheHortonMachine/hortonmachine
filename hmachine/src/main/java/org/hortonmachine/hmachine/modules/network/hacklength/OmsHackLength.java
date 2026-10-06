@@ -42,6 +42,7 @@ import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -51,6 +52,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.Direction;
@@ -64,6 +66,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSHACKLENGTH_DESCRIPTION)
+@Bibliography({OmsHackLength.BIBLIOGRAPHY_HACK_1957})
 @Author(name = OMSHACKLENGTH_AUTHORNAMES, contact = OMSHACKLENGTH_AUTHORCONTACTS)
 @Keywords(OMSHACKLENGTH_KEYWORDS)
 @Label(OMSHACKLENGTH_LABEL)
@@ -72,19 +75,24 @@ import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 @License(OMSHACKLENGTH_LICENSE)
 public class OmsHackLength extends HMModel {
 
+    public static final String BIBLIOGRAPHY_HACK_1957 = "Hack, J. T. (1957). Studies of longitudinal stream profiles in Virginia and Maryland. U.S. Geological Survey Professional Paper 294-B, 45-97.";
+
     @Description(OMSHACKLENGTH_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;
 
     @Description(OMSHACKLENGTH_inTca_DESCRIPTION)
+    @Unit("cells")
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSHACKLENGTH_inElevation_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElevation = null;
 
     @Description(OMSHACKLENGTH_outHacklength_DESCRIPTION)
+    @Unit("m")
     @Out
     public GridCoverage2D outHacklength = null;
 

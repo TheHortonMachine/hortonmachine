@@ -71,6 +71,7 @@ import org.hortonmachine.hmachine.modules.geomorphology.gradient.OmsGradient;
 public class OmsDebrisTriggerCnr extends HMModel {
 
     @Description(OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -79,16 +80,17 @@ public class OmsDebrisTriggerCnr extends HMModel {
     public GridCoverage2D inNet = null;
 
     @Description(OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION)
+    @Unit("cells")
     @In
     public GridCoverage2D inTca = null;
 
     @Description(OMSDEBRISTRIGGERCNR_pTcathres_DESCRIPTION)
-    @Unit("km2")
+    @Unit("km²")
     @In
     public double pTcathres = 10;
 
     @Description(OMSDEBRISTRIGGERCNR_pGradthres_DESCRIPTION)
-    @Unit("degree")
+    @Unit("°")
     @In
     public double pGradthres = 38;
 

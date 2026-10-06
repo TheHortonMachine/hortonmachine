@@ -55,6 +55,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OmsAspect.OMSASPECT_DESCRIPTION)
 @Documentation(OmsAspect.OMSASPECT_DOCUMENTATION)
@@ -66,6 +67,7 @@ import oms3.annotations.Status;
 @License(OmsAspect.OMSASPECT_LICENSE)
 public class OmsAspect extends GridNodeMultiProcessing {
     @Description(OMSASPECT_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -78,22 +80,23 @@ public class OmsAspect extends GridNodeMultiProcessing {
     public boolean doRound = false;
 
     @Description(OMSASPECT_outAspect_DESCRIPTION)
+    @Unit("° or rad")
     @Out
     public GridCoverage2D outAspect = null;
 
-    public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect considering zero towards the north and counterclockwise rotation.";
+    public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect of the terrain, the direction the slope faces, clockwise from north: 0 for the slopes facing north, 90 east, 180 south, 270 west. It is computed from the 3x3 window around each cell, and the cells at the border of the map are left as no-data.";
     public static final String OMSASPECT_DOCUMENTATION = "OmsAspect.html";
-    public static final String OMSASPECT_KEYWORDS = "Geomorphology, OmsDrainDir, OmsFlowDirections";
+    public static final String OMSASPECT_KEYWORDS = "Geomorphology, Aspect, Exposure";
     public static final String OMSASPECT_LABEL = GEOMORPHOLOGY;
     public static final String OMSASPECT_NAME = "aspect";
     public static final int OMSASPECT_STATUS = 40;
     public static final String OMSASPECT_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSASPECT_AUTHORNAMES = "Andrea Antonello, Erica Ghesla, Rigon Riccardo, Pisoni Silvano, Andrea Cozzini";
     public static final String OMSASPECT_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
-    public static final String OMSASPECT_inElev_DESCRIPTION = "The map of the digital elevation model (DEM).";
-    public static final String OMSASPECT_doRadiants_DESCRIPTION = "Switch to define whether create the output map in degrees (default) or radiants.";
-    public static final String OMSASPECT_doRound_DESCRIPTION = "Switch to define whether the output map values should be rounded (might make sense in the case of degree maps).";
-    public static final String OMSASPECT_outAspect_DESCRIPTION = "The map of aspect.";
+    public static final String OMSASPECT_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSASPECT_doRadiants_DESCRIPTION = "Write the aspect in radians; if not set, in degrees.";
+    public static final String OMSASPECT_doRound_DESCRIPTION = "Round the aspect to integer values, which makes sense in degrees.";
+    public static final String OMSASPECT_outAspect_DESCRIPTION = "The map of the aspect, clockwise from north.";
 
     private HortonMessageHandler msg = HortonMessageHandler.getInstance();
 

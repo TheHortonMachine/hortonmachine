@@ -22,6 +22,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.hmachine.modules.geomorphology.geomorphon.OmsGeomorphon;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -34,6 +35,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OmsGeomorphon.DESCRIPTION)
+@Bibliography({OmsGeomorphon.BIBLIOGRAPHY_JASIEWICZ_STEPINSKI_2013})
 @Author(name = OmsGeomorphon.AUTHORS, contact = OmsGeomorphon.CONTACT)
 @Keywords(OmsGeomorphon.KEYWORDS)
 @Label(GEOMORPHOLOGY)

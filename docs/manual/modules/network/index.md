@@ -7,4 +7,7 @@ The modules that extract the river network and its topology.
 
 extractnetwork
 netnumbering
+distancetooutlet
+hacklength
+magnitudo
 ```

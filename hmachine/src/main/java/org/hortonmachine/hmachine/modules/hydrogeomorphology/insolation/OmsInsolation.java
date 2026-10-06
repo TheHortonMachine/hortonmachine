@@ -61,6 +61,7 @@ import org.locationtech.jts.geom.Point;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -70,8 +71,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSINSOLATION_DESCRIPTION)
+@Bibliography({OmsInsolation.BIBLIOGRAPHY_CORRIPIO_2003})
 @Author(name = OMSINSOLATION_AUTHORNAMES, contact = OMSINSOLATION_AUTHORCONTACTS)
 @Keywords(OMSINSOLATION_KEYWORDS)
 @Label(OMSINSOLATION_LABEL)
@@ -80,7 +83,10 @@ import oms3.annotations.Status;
 @License(OMSINSOLATION_LICENSE)
 public class OmsInsolation extends HMModel {
 
+    public static final String BIBLIOGRAPHY_CORRIPIO_2003 = "Corripio, J. G. (2003). Vectorial algebra algorithms for calculating terrain parameters from DEMs and solar radiation modelling in mountainous terrain. International Journal of Geographical Information Science, 17(1), 1-23.";
+
     @Description(OMSINSOLATION_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -93,6 +99,7 @@ public class OmsInsolation extends HMModel {
     public String tEndDate = null;
 
     @Description(OMSINSOLATION_outIns_DESCRIPTION)
+    @Unit("kW/m²")
     @Out
     public GridCoverage2D outIns;
 

@@ -60,12 +60,13 @@ import oms3.annotations.Unit;
 @License(OMSDEBRISFLOW_LICENSE)
 public class DebrisFlow extends HMModel {
     @Description(OMSDEBRISFLOW_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
 
     @Description(OMSDEBRISFLOW_pVolume_DESCRIPTION)
-    @Unit("m2")
+    @Unit("m³")
     @In
     public double pVolume = 4000;
 
@@ -99,6 +100,7 @@ public class DebrisFlow extends HMModel {
     public String outMcs = null;
 
     @Description(OMSDEBRISFLOW_outDepo_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outDepo = null;

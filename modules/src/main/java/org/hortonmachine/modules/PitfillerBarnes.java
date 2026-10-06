@@ -34,6 +34,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfillerBarnes;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -45,6 +46,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSPITFILLERBARNES_DESCRIPTION)
+@Bibliography(OmsPitfillerBarnes.BIBLIOGRAPHY_BARNES_2016)
 @Author(name = OMSPITFILLERBARNES_AUTHORNAMES, contact = OMSPITFILLERBARNES_AUTHORCONTACTS)
 @Keywords(OMSPITFILLERBARNES_KEYWORDS)
 @Label(OMSPITFILLERBARNES_LABEL)

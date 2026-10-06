@@ -62,43 +62,43 @@ public class HortonMessages {
     public static final String DUFFYINPUTS_outS2_DESCRIPTION = "The water content in saturated soil for every basin id.";
     public static final String DUFFYINPUTS_outFinalconditions_DESCRIPTION = "The final conditions of the model to persist.";
 
-    public static final String OMSWATEROUTLET_DESCRIPTION = "Extract the watershed for a defined outlet (ported from GRASS r.wateroutlet).";
+    public static final String OMSWATEROUTLET_DESCRIPTION = "Extracts the basin of an outlet: the cells that drain into it along the drainage directions. Ported from the r.water.outlet module of GRASS GIS.";
     public static final String OMSWATEROUTLET_DOCUMENTATION = "OmsWateroutlet.html";
-    public static final String OMSWATEROUTLET_KEYWORDS = "Dem manipulation, Geomorphology, OmsFlowDirections";
+    public static final String OMSWATEROUTLET_KEYWORDS = "Basin, Outlet, Drainage directions";
     public static final String OMSWATEROUTLET_LABEL = DEMMANIPULATION;
     public static final String OMSWATEROUTLET_NAME = "wateroutlet";
     public static final int OMSWATEROUTLET_STATUS = 40;
     public static final String OMSWATEROUTLET_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSWATEROUTLET_AUTHORNAMES = "Charles Ehlschlaeger, Andrea Antonello";
     public static final String OMSWATEROUTLET_AUTHORCONTACTS = "US Army Construction Engineering Research Laboratory, http://www.hydrologis.com";
-    public static final String OMSWATEROUTLET_pNorth_DESCRIPTION = "The northern coordinate of the watershed outlet.";
-    public static final String OMSWATEROUTLET_pEast_DESCRIPTION = "The eastern coordinate of the watershed outlet.";
-    public static final String OMSWATEROUTLET_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSWATEROUTLET_outBasin_DESCRIPTION = "The extracted basin mask.";
-    public static final String OMSWATEROUTLET_outArea_DESCRIPTION = "The area of the extracted basin.";
+    public static final String OMSWATEROUTLET_pNorth_DESCRIPTION = "The northing of the outlet, in the coordinates of the map.";
+    public static final String OMSWATEROUTLET_pEast_DESCRIPTION = "The easting of the outlet, in the coordinates of the map.";
+    public static final String OMSWATEROUTLET_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSWATEROUTLET_outBasin_DESCRIPTION = "The map of the basin: 1 inside, no-data outside.";
+    public static final String OMSWATEROUTLET_outArea_DESCRIPTION = "The area of the basin.";
 
-    public static final String OMSDEBRISVANDRE_DESCRIPTION = "Implementation of the Vandre methodology for Debris handling.";
+    public static final String OMSDEBRISVANDRE_DESCRIPTION = "Traces the runout paths of debris flows from their trigger points, along the drainage directions, with the criteria of Burton and Bathurst: the debris moves on where the slope is at least 10 degrees and stops where it is under 4 degrees. In between, it travels at most the distance of the Vandre equation, 0.4 times the drop of the path above. The modified criteria move on from 8 degrees and have no lower limit.";
     public static final String OMSDEBRISVANDRE_DOCUMENTATION = "";
-    public static final String OMSDEBRISVANDRE_KEYWORDS = "Debris, Raster";
+    public static final String OMSDEBRISVANDRE_KEYWORDS = "Debris flow, Runout, Vandre, Burton and Bathurst";
     public static final String OMSDEBRISVANDRE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSDEBRISVANDRE_NAME = "debrisvandre";
     public static final int OMSDEBRISVANDRE_STATUS = 5;
     public static final String OMSDEBRISVANDRE_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSDEBRISVANDRE_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String OMSDEBRISVANDRE_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSDEBRISVANDRE_inElev_DESCRIPTION = "The map of elevation.";
-    public static final String OMSDEBRISVANDRE_inFlow_DESCRIPTION = "The map of flow directions.";
-    public static final String OMSDEBRISVANDRE_inSlope_DESCRIPTION = "The map of slope.";
-    public static final String OMSDEBRISVANDRE_inTriggers_DESCRIPTION = "The map of debris triggering points.";
-    public static final String OMSDEBRISVANDRE_inSoil_DESCRIPTION = "The optional map of soil height.";
-    public static final String OMSDEBRISVANDRE_inNet_DESCRIPTION = "The optional map of the network (needed if the soil map is supplied).";
-    public static final String OMSDEBRISVANDRE_doWholenet_DESCRIPTION = "The flag that defines (in the case of supplied soil map0 if the cumulated should be propagated down the whole network channel.";
-    public static final String OMSDEBRISVANDRE_pDistance_DESCRIPTION = "The optional maximum distance (used if the soil map is supplied, defaults to 100 meters).";
-    public static final String OMSDEBRISVANDRE_inObstacles_DESCRIPTION = "An optional point map of obstacles on the network, that can stop the debris path.";
-    public static final String OMSDEBRISVANDRE_pMode_DESCRIPTION = "The criteria mode to use (0 = Burton/Bathurst = default, 1 = Tn modified Barton/Bathurst).";
-    public static final String OMSDEBRISVANDRE_outPaths_DESCRIPTION = "The debris paths for every trigger point.";
-    public static final String OMSDEBRISVANDRE_outIndexedTriggers_DESCRIPTION = "The trigger map, linked to the id of its path.";
-    public static final String OMSDEBRISVANDRE_outSoil_DESCRIPTION = "The optional output map of cumulated soil.";
+    public static final String OMSDEBRISVANDRE_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSDEBRISVANDRE_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSDEBRISVANDRE_inSlope_DESCRIPTION = "The map of the slope, in degrees.";
+    public static final String OMSDEBRISVANDRE_inTriggers_DESCRIPTION = "The map of the trigger points: the cells with a value are triggers.";
+    public static final String OMSDEBRISVANDRE_inSoil_DESCRIPTION = "The optional map of the soil depth, to cumulate the mobilized soil along the paths.";
+    public static final String OMSDEBRISVANDRE_inNet_DESCRIPTION = "The optional map of the network, needed with the soil map.";
+    public static final String OMSDEBRISVANDRE_doWholenet_DESCRIPTION = "With the soil map, propagate the cumulated soil down the whole network.";
+    public static final String OMSDEBRISVANDRE_pDistance_DESCRIPTION = "With the soil map, the maximum distance of the paths.";
+    public static final String OMSDEBRISVANDRE_inObstacles_DESCRIPTION = "An optional point map of obstacles on the network that stop the paths.";
+    public static final String OMSDEBRISVANDRE_pMode_DESCRIPTION = "The criteria: 0 for Burton and Bathurst, 1 for the modified Burton and Bathurst.";
+    public static final String OMSDEBRISVANDRE_outPaths_DESCRIPTION = "The vector of the runout paths, one for each trigger point.";
+    public static final String OMSDEBRISVANDRE_outIndexedTriggers_DESCRIPTION = "The vector of the trigger points, with the id of their path.";
+    public static final String OMSDEBRISVANDRE_outSoil_DESCRIPTION = "The optional map of the cumulated soil.";
 
     public static final String OMSKRIGING_DESCRIPTION = "Ordinary kriging algorithm.";
     public static final String OMSKRIGING_DOCUMENTATION = "OmsKriging.html";
@@ -204,19 +204,19 @@ public class HortonMessages {
     public static final String OMSEPANETPARAMETERSTIME_inFile_DESCRIPTION = "Properties file containing the time options.";
     public static final String OMSEPANETPARAMETERSTIME_outProperties_DESCRIPTION = "The Properties needed for epanet.";
 
-    public static final String OMSHACKLENGTH_DESCRIPTION = "Assigned a point in a basin calculates the distance from the watershed measured along the net (until it exists) and then, again from valley upriver, along the maximal slope.";
+    public static final String OMSHACKLENGTH_DESCRIPTION = "Calculates the Hack length of each cell: the length of the main stream upstream of it, from its source, following at each confluence the branch with the largest contributing area. Hack's law relates it to the contributing area.";
     public static final String OMSHACKLENGTH_DOCUMENTATION = "OmsHackLength.html";
-    public static final String OMSHACKLENGTH_KEYWORDS = "Network, HackLength3D, HackStream";
+    public static final String OMSHACKLENGTH_KEYWORDS = "Network, Hack length, Main stream, Geomorphology";
     public static final String OMSHACKLENGTH_LABEL = NETWORK;
     public static final String OMSHACKLENGTH_NAME = "hacklength";
     public static final int OMSHACKLENGTH_STATUS = 40;
     public static final String OMSHACKLENGTH_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSHACKLENGTH_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Daniele Andreis,  Erica Ghesla, Cozzini Andrea,  Pisoni Silvano, Rigon Riccardo";
     public static final String OMSHACKLENGTH_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSHACKLENGTH_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSHACKLENGTH_inTca_DESCRIPTION = "The map of tca.";
-    public static final String OMSHACKLENGTH_inElevation_DESCRIPTION = "The optional map of the elevation to work in 3D mode.";
-    public static final String OMSHACKLENGTH_outHacklength_DESCRIPTION = "The map of hack lengths.";
+    public static final String OMSHACKLENGTH_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSHACKLENGTH_inTca_DESCRIPTION = "The map of the total contributing area, to choose the main branch at the confluences.";
+    public static final String OMSHACKLENGTH_inElevation_DESCRIPTION = "The optional map of the elevation, to measure the lengths in 3D.";
+    public static final String OMSHACKLENGTH_outHacklength_DESCRIPTION = "The map of the Hack lengths.";
 
     public static final String OMSH2CD_DESCRIPTION = "It calculates for each hillslope pixel its distance from the river networks, following the steepest descent.";
     public static final String OMSH2CD_DOCUMENTATION = "OmsH2cd.html";
@@ -248,21 +248,21 @@ public class HortonMessages {
     public static final String OMSSPLITSUBBASINS_outNetnum_DESCRIPTION = "The map of numbered network.";
     public static final String OMSSPLITSUBBASINS_outSubbasins_DESCRIPTION = "The map of subbasins.";
 
-    public static final String OMSDEBRISTRIGGERCNR_DESCRIPTION = "Module for extraction of debris trigger points along the network following the CNR methodology.";
+    public static final String OMSDEBRISTRIGGERCNR_DESCRIPTION = "Extracts the trigger points of debris flows along the network, with the method of the CNR: a network cell is a trigger if its gradient is steeper than 0.32 x A^-0.2, with A the contributing area in km², below the gradient threshold and with a contributing area below the area threshold. The triggers get the value of their threshold gradient.";
     public static final String OMSDEBRISTRIGGERCNR_DOCUMENTATION = "";
-    public static final String OMSDEBRISTRIGGERCNR_KEYWORDS = "Debris, Trigger, Raster";
+    public static final String OMSDEBRISTRIGGERCNR_KEYWORDS = "Debris flow, Trigger, Network";
     public static final String OMSDEBRISTRIGGERCNR_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSDEBRISTRIGGERCNR_NAME = "debristrigger";
     public static final int OMSDEBRISTRIGGERCNR_STATUS = 5;
     public static final String OMSDEBRISTRIGGERCNR_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSDEBRISTRIGGERCNR_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String OMSDEBRISTRIGGERCNR_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION = "The map of elevation.";
+    public static final String OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION = "The map of the elevation.";
     public static final String OMSDEBRISTRIGGERCNR_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION = "The map of tca.";
-    public static final String OMSDEBRISTRIGGERCNR_pTcathres_DESCRIPTION = "The tca threshold to use (default = 10 km2).";
-    public static final String OMSDEBRISTRIGGERCNR_pGradthres_DESCRIPTION = "The gradient threshold to use (default = 38 deg).";
-    public static final String OMSDEBRISTRIGGERCNR_outTriggers_DESCRIPTION = "The trigger map.";
+    public static final String OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION = "The map of the total contributing area, in cells.";
+    public static final String OMSDEBRISTRIGGERCNR_pTcathres_DESCRIPTION = "The contributing area over which there are no more triggers.";
+    public static final String OMSDEBRISTRIGGERCNR_pGradthres_DESCRIPTION = "The gradient over which there are no more triggers: steeper channels are rock.";
+    public static final String OMSDEBRISTRIGGERCNR_outTriggers_DESCRIPTION = "The map of the trigger points, with the value of their threshold gradient.";
 
     
     public static final String OMSNETSHAPE2FLOW_DESCRIPTION = "Transforms the network shape to a flow map.";
@@ -298,9 +298,9 @@ public class HortonMessages {
     public static final String OMSGC_outClasses_DESCRIPTION = "The map with the geomorphological classes";
     public static final String OMSGC_outAggregateClasses_DESCRIPTION = "The map with the geomorphological classes";
 
-    public static final String OMSHILLSHADE_DESCRIPTION = "This class evalutate the hillshade of a DEM.";
+    public static final String OMSHILLSHADE_DESCRIPTION = "Calculates the hillshade of the terrain, lit by the sun from a given direction and elevation, with the shadows cast by the surrounding terrain.";
     public static final String OMSHILLSHADE_DOCUMENTATION = "OmsHillshade.html";
-    public static final String OMSHILLSHADE_KEYWORDS = "Hydrology, Radiation, SkyviewFactor, OmsInsolation";
+    public static final String OMSHILLSHADE_KEYWORDS = "Hillshade, Shadow, Radiation, Visualization";
     public static final String OMSHILLSHADE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSHILLSHADE_NAME = "hillshade";
     public static final int OMSHILLSHADE_STATUS = 40;
@@ -308,10 +308,10 @@ public class HortonMessages {
     public static final String OMSHILLSHADE_AUTHORNAMES = "Daniele Andreis and Riccardo Rigon";
     public static final String OMSHILLSHADE_AUTHORCONTACTS = "http://www.ing.unitn.it/dica/hp/?user=rigon";
     public static final String OMSHILLSHADE_inElev_DESCRIPTION = "The map of the elevation.";
-    public static final String OMSHILLSHADE_pMinDiffuse_DESCRIPTION = "The minimum value of diffuse insolation between 0 to 1 (default is 0).";
-    public static final String OMSHILLSHADE_pAzimuth_DESCRIPTION = "The value of the azimuth (default is 360).";
-    public static final String OMSHILLSHADE_pElev_DESCRIPTION = "The sun elevation (default is 90).";
-    public static final String OMSHILLSHADE_outHill_DESCRIPTION = "The map of hillshade.";
+    public static final String OMSHILLSHADE_pMinDiffuse_DESCRIPTION = "The diffuse light, between 0 and 1, added everywhere, also in the shadows.";
+    public static final String OMSHILLSHADE_pAzimuth_DESCRIPTION = "The azimuth of the sun, clockwise from north: 315 lights the terrain from the northwest, as in the usual hillshades.";
+    public static final String OMSHILLSHADE_pElev_DESCRIPTION = "The elevation of the sun over the horizon: lower values give longer shadows.";
+    public static final String OMSHILLSHADE_outHill_DESCRIPTION = "The map of the hillshade, from 0 for the shadows to about 212 for the slopes facing the sun.";
 
     public static final String OMSEPANETPROJECTFILESGENERATOR_DESCRIPTION = "Generates the base shapefiles for an epanet run.";
     public static final String OMSEPANETPROJECTFILESGENERATOR_DOCUMENTATION = "";
@@ -434,9 +434,9 @@ public class HortonMessages {
     public static final String OMSNABLA_pThres_DESCRIPTION = "An optional threshold on the nabla value.";
     public static final String OMSNABLA_outNabla_DESCRIPTION = "The map of nabla.";
 
-    public static final String OMSINSOLATION_DESCRIPTION = "Calculate the amount of power incident on a surface in a period of time.";
+    public static final String OMSINSOLATION_DESCRIPTION = "Calculates the clear-sky direct solar radiation that reaches the terrain over a period of days, with the slope, the aspect and the shadows cast by the surrounding terrain. The radiation is computed every half hour of each day, through an atmosphere with standard transmittances, and the values in kW/m² are summed: half of the sum is the energy in kWh/m². The diffuse radiation is not considered.";
     public static final String OMSINSOLATION_DOCUMENTATION = "OmsInsolation.html";
-    public static final String OMSINSOLATION_KEYWORDS = "Hydrology, Radiation, SkyviewFactor, OmsHillshade";
+    public static final String OMSINSOLATION_KEYWORDS = "Radiation, Insolation, Solar, Shadow";
     public static final String OMSINSOLATION_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSINSOLATION_NAME = "insolation";
     public static final int OMSINSOLATION_STATUS = 40;
@@ -444,9 +444,9 @@ public class HortonMessages {
     public static final String OMSINSOLATION_AUTHORNAMES = "Daniele Andreis and Riccardo Rigon";
     public static final String OMSINSOLATION_AUTHORCONTACTS = "http://www.ing.unitn.it/dica/hp/?user=rigon";
     public static final String OMSINSOLATION_inElev_DESCRIPTION = "The map of the elevation.";
-    public static final String OMSINSOLATION_tStartDate_DESCRIPTION = "The first day of the simulation.";
-    public static final String OMSINSOLATION_tEndDate_DESCRIPTION = "The last day of the simulation.";
-    public static final String OMSINSOLATION_outIns_DESCRIPTION = "The map of total insolation.";
+    public static final String OMSINSOLATION_tStartDate_DESCRIPTION = "The first day of the period, as yyyy-MM-dd. Only the day of the year is used: the period can't cross the end of a year.";
+    public static final String OMSINSOLATION_tEndDate_DESCRIPTION = "The last day of the period, as yyyy-MM-dd.";
+    public static final String OMSINSOLATION_outIns_DESCRIPTION = "The map of the sum of the direct radiation, every half hour of the period.";
 
     public static final String OMSMELTONNUMBER_DESCRIPTION = "Melton number calculator";
     public static final String OMSMELTONNUMBER_DOCUMENTATION = "";
@@ -562,17 +562,17 @@ public class HortonMessages {
     public static final String OMSNETWORKATTRIBUTESBUILDER_outNet_DESCRIPTION = "The vector of the network.";
     public static final String OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION = "The map of hack numbering.";
 
-    public static final String OMSMAGNITUDO_DESCRIPTION = "It calculates the magnitude of a basin, defined as the number of sources upriver with respect to every point.";
+    public static final String OMSMAGNITUDO_DESCRIPTION = "Calculates the magnitude of each cell: the number of sources upstream of it, the sources being the cells into which nothing drains. On the drainage directions of the network alone, the sources are the channel heads and the result is the Shreve magnitude of the network.";
     public static final String OMSMAGNITUDO_DOCUMENTATION = "OmsMagnitudo.html";
-    public static final String OMSMAGNITUDO_KEYWORDS = "";
+    public static final String OMSMAGNITUDO_KEYWORDS = "Network, Magnitude, Shreve";
     public static final String OMSMAGNITUDO_LABEL = NETWORK;
     public static final String OMSMAGNITUDO_NAME = "magnitudo";
     public static final int OMSMAGNITUDO_STATUS = 40;
     public static final String OMSMAGNITUDO_LICENSE = "GPL3";
     public static final String OMSMAGNITUDO_AUTHORNAMES = "Erica Ghesla - erica.ghesla@ing.unitn.it, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSMAGNITUDO_AUTHORCONTACTS = "";
-    public static final String OMSMAGNITUDO_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSMAGNITUDO_outMag_DESCRIPTION = "The map of magnitudo.";
+    public static final String OMSMAGNITUDO_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSMAGNITUDO_outMag_DESCRIPTION = "The map of the magnitude.";
 
     public static final String OMSJAMI_DESCRIPTION = "Jami - Just another meteo interpolator";
     public static final String OMSJAMI_DOCUMENTATION = "";
@@ -721,18 +721,18 @@ public class HortonMessages {
     public static final String OMSVARIOGRAM_pCutoff_DESCRIPTION = "Spatial separation distance up to which point pairs are included in semivariance estimates; as a default, the length of the diagonal of the box spanning the data is divided by three.";
     public static final String OMSVARIOGRAM_outResult_DESCRIPTION = "The Experimental OmsVariogram.";
 
-    public static final String OMSDISTANCETOOUTLET_DESCRIPTION = "Calculates the projection on the plane of the distance of each pixel from the outlet.";
+    public static final String OMSDISTANCETOOUTLET_DESCRIPTION = "Calculates the distance of each cell from the outlet, along the drainage directions. The outlets must be marked with the value 10 in the drainage directions, for example with MarkOutlets: the paths that leave the map elsewhere get 0.";
     public static final String OMSDISTANCETOOUTLET_DOCUMENTATION = "OmsDistanceToOutlet.html";
-    public static final String OMSDISTANCETOOUTLET_KEYWORDS = "Geomorphology, OmsDrainDir";
+    public static final String OMSDISTANCETOOUTLET_KEYWORDS = "Network, Distance to outlet, Drainage directions";
     public static final String OMSDISTANCETOOUTLET_LABEL = NETWORK;
     public static final String OMSDISTANCETOOUTLET_NAME = "d2o";
     public static final int OMSDISTANCETOOUTLET_STATUS = 40;
     public static final String OMSDISTANCETOOUTLET_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSDISTANCETOOUTLET_AUTHORNAMES = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, PisoniSilvano, Rigon Riccardo";
     public static final String OMSDISTANCETOOUTLET_AUTHORCONTACTS = "";
-    public static final String OMSDISTANCETOOUTLET_inPit_DESCRIPTION = "The map of depitted elevation, if it's null the models work in 2d mode.";
-    public static final String OMSDISTANCETOOUTLET_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSDISTANCETOOUTLET_pMode_DESCRIPTION = "Processing mode, 0= simple mode in meter, 1 = topological distance.";
+    public static final String OMSDISTANCETOOUTLET_inPit_DESCRIPTION = "The optional map of the depitted elevation, to measure the distances in 3D, with the meters mode.";
+    public static final String OMSDISTANCETOOUTLET_inFlow_DESCRIPTION = "The map of the drainage directions, with the outlets marked with 10.";
+    public static final String OMSDISTANCETOOUTLET_pMode_DESCRIPTION = "The unit of the distance: 0 for meters, 1 for the number of cells crossed.";
     public static final String OMSDISTANCETOOUTLET_outDistance_DESCRIPTION = "The map of the distance to the outlet.";
 
     public static final String OMSEPANETFEATURESSYNCHRONIZER_DESCRIPTION = "Synchronizes the features of the different epanet layers.";
@@ -754,19 +754,19 @@ public class HortonMessages {
     public static final String OMSEPANETFEATURESSYNCHRONIZER_inPipes_DESCRIPTION = "The pipes features.";
     public static final String OMSEPANETFEATURESSYNCHRONIZER_outWarning_DESCRIPTION = "Warning messages if something odd happened but is no error.";
 
-    public static final String OMSTCA_DESCRIPTION = "Calculates the contributing areas that represent the areas (in number of pixels) afferent to each point.";
+    public static final String OMSTCA_DESCRIPTION = "Calculates the total contributing area of each cell: the number of cells that drain into it along the drainage directions, itself included.";
     public static final String OMSTCA_DOCUMENTATION = "";
-    public static final String OMSTCA_KEYWORDS = "Geomorphology, OmsDrainDir, Tca3D, OmsAb, Multitca";
+    public static final String OMSTCA_KEYWORDS = "Geomorphology, Contributing area, Drainage directions";
     public static final String OMSTCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSTCA_NAME = "tca";
     public static final int OMSTCA_STATUS = 5;
     public static final String OMSTCA_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSTCA_AUTHORNAMES = "Antonello Andrea";
     public static final String OMSTCA_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSTCA_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSTCA_doLoopCheck_DESCRIPTION = "Do flow loop check.";
-    public static final String OMSTCA_outTca_DESCRIPTION = "The map of total contributing areas.";
-    public static final String OMSTCA_outLoop_DESCRIPTION = "The vector containing loops, if there are any.";
+    public static final String OMSTCA_inFlow_DESCRIPTION = "The map of the drainage directions.";
+    public static final String OMSTCA_doLoopCheck_DESCRIPTION = "Check the drainage directions for loops, paths that come back to a cell they already crossed, which would never end.";
+    public static final String OMSTCA_outTca_DESCRIPTION = "The map of the total contributing areas, in cells.";
+    public static final String OMSTCA_outLoop_DESCRIPTION = "The vector of the loops found in the drainage directions, if any.";
 
     public static final String OMSENERGYBALANCE_DESCRIPTION = "The module for calculating the energybalance";
     public static final String OMSENERGYBALANCE_DOCUMENTATION = "";
@@ -890,24 +890,24 @@ public class HortonMessages {
     public static final String DIAMETERSREADER_fileNovalue_DESCRIPTION = "The file novalue.";
     public static final String DIAMETERSREADER_data_DESCRIPTION = "The read List values arrays.";
 
-    public static final String OMSDEBRISFLOW_DESCRIPTION = "Debris flow area and deposit calculator on fans.";
+    public static final String OMSDEBRISFLOW_DESCRIPTION = "Estimates the area flooded by a debris flow of a given volume, and its deposit, with a Monte Carlo simulation: many random paths start from a point and move downslope, each step to a lower neighbour chosen with a probability proportional to the slope, until the cells crossed cover the area expected for the volume, mobility coefficient x volume^(2/3). The deposit has an average thickness of deposit coefficient x volume^(1/3), distributed with the probability of the cells.";
     public static final String OMSDEBRISFLOW_DOCUMENTATION = "";
-    public static final String OMSDEBRISFLOW_KEYWORDS = "Debris, Raster";
+    public static final String OMSDEBRISFLOW_KEYWORDS = "Debris flow, Runout, Deposit, Monte Carlo";
     public static final String OMSDEBRISFLOW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSDEBRISFLOW_NAME = "debrisflow";
     public static final int OMSDEBRISFLOW_STATUS = 5;
     public static final String OMSDEBRISFLOW_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSDEBRISFLOW_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String OMSDEBRISFLOW_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSDEBRISFLOW_inElev_DESCRIPTION = "The map of elevation.";
-    public static final String OMSDEBRISFLOW_pVolume_DESCRIPTION = "The volume of the event to simulate.";
-    public static final String OMSDEBRISFLOW_pMcoeff_DESCRIPTION = "The mobility coefficient";
-    public static final String OMSDEBRISFLOW_pDcoeff_DESCRIPTION = "The deposit coefficient";
-    public static final String OMSDEBRISFLOW_pEasting_DESCRIPTION = "The start position of the simulation (easting)";
-    public static final String OMSDEBRISFLOW_pNorthing_DESCRIPTION = "The start position of the simulation (northing)";
-    public static final String OMSDEBRISFLOW_pMontecarlo_DESCRIPTION = "The Montecarlo number.";
-    public static final String OMSDEBRISFLOW_outMcs_DESCRIPTION = "The output inundation map.";
-    public static final String OMSDEBRISFLOW_outDepo_DESCRIPTION = "The output deposit map.";
+    public static final String OMSDEBRISFLOW_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSDEBRISFLOW_pVolume_DESCRIPTION = "The volume of the debris flow.";
+    public static final String OMSDEBRISFLOW_pMcoeff_DESCRIPTION = "The mobility coefficient, which gives the flooded area as coefficient x volume^(2/3).";
+    public static final String OMSDEBRISFLOW_pDcoeff_DESCRIPTION = "The deposit coefficient, which gives the average deposit thickness as coefficient x volume^(1/3).";
+    public static final String OMSDEBRISFLOW_pEasting_DESCRIPTION = "The easting of the start point, usually the apex of the fan.";
+    public static final String OMSDEBRISFLOW_pNorthing_DESCRIPTION = "The northing of the start point.";
+    public static final String OMSDEBRISFLOW_pMontecarlo_DESCRIPTION = "The maximum number of random paths.";
+    public static final String OMSDEBRISFLOW_outMcs_DESCRIPTION = "The map of the probability of each cell to be crossed by the debris flow.";
+    public static final String OMSDEBRISFLOW_outDepo_DESCRIPTION = "The map of the deposit thickness.";
 
     public static final String OMSMULTITCA_DESCRIPTION = "It calculates the contributing areas differently in convex and concave areas";
     public static final String OMSMULTITCA_DOCUMENTATION = "OmsMultiTca.html";

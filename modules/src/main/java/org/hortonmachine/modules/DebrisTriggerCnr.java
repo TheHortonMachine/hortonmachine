@@ -58,6 +58,7 @@ import oms3.annotations.Unit;
 public class DebrisTriggerCnr extends HMModel {
 
     @Description(OMSDEBRISTRIGGERCNR_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -68,17 +69,18 @@ public class DebrisTriggerCnr extends HMModel {
     public String inNet = null;
 
     @Description(OMSDEBRISTRIGGERCNR_inTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSDEBRISTRIGGERCNR_pTcathres_DESCRIPTION)
-    @Unit("km2")
+    @Unit("km²")
     @In
     public double pTcathres = 10;
 
     @Description(OMSDEBRISTRIGGERCNR_pGradthres_DESCRIPTION)
-    @Unit("degree")
+    @Unit("°")
     @In
     public double pGradthres = 38;
 

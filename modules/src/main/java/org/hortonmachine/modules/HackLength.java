@@ -35,6 +35,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.network.hacklength.OmsHackLength;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -44,8 +45,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSHACKLENGTH_DESCRIPTION)
+@Bibliography({OmsHackLength.BIBLIOGRAPHY_HACK_1957})
 @Author(name = OMSHACKLENGTH_AUTHORNAMES, contact = OMSHACKLENGTH_AUTHORCONTACTS)
 @Keywords(OMSHACKLENGTH_KEYWORDS)
 @Label(OMSHACKLENGTH_LABEL)
@@ -60,16 +63,19 @@ public class HackLength extends HMModel {
     public String inFlow = null;
 
     @Description(OMSHACKLENGTH_inTca_DESCRIPTION)
+    @Unit("cells")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTca = null;
 
     @Description(OMSHACKLENGTH_inElevation_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElevation = null;
 
     @Description(OMSHACKLENGTH_outHacklength_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outHacklength = null;

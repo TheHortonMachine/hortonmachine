@@ -50,6 +50,7 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -86,6 +87,7 @@ public class OmsWateroutlet extends HMModel {
     public GridCoverage2D outBasin = null;
 
     @Description(OMSWATEROUTLET_outArea_DESCRIPTION)
+    @Unit("m²")
     @Out
     public double outArea = 0;
 

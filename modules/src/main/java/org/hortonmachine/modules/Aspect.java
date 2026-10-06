@@ -33,6 +33,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSASPECT_DESCRIPTION)
 @Author(name = OMSASPECT_AUTHORNAMES, contact = OMSASPECT_AUTHORCONTACTS)
@@ -43,6 +44,7 @@ import oms3.annotations.UI;
 @License(OMSASPECT_LICENSE)
 public class Aspect extends HMModel {
     @Description(OMSASPECT_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -56,6 +58,7 @@ public class Aspect extends HMModel {
     public boolean doRound = false;
 
     @Description(OMSASPECT_outAspect_DESCRIPTION)
+    @Unit("° or rad")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outAspect = null;

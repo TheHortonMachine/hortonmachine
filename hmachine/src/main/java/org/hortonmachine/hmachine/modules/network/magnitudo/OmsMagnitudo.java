@@ -45,6 +45,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -56,6 +57,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSMAGNITUDO_DESCRIPTION)
+@Bibliography({OmsMagnitudo.BIBLIOGRAPHY_SHREVE_1966})
 @Author(name = OMSMAGNITUDO_AUTHORNAMES, contact = OMSMAGNITUDO_AUTHORCONTACTS)
 @Keywords(OMSMAGNITUDO_KEYWORDS)
 @Label(OMSMAGNITUDO_LABEL)
@@ -63,6 +65,8 @@ import oms3.annotations.Status;
 @Status(OMSMAGNITUDO_STATUS)
 @License(OMSMAGNITUDO_LICENSE)
 public class OmsMagnitudo extends HMModel {
+
+    public static final String BIBLIOGRAPHY_SHREVE_1966 = "Shreve, R. L. (1966). Statistical law of stream numbers. The Journal of Geology, 74(1), 17-37.";
 
     @Description(OMSMAGNITUDO_inFlow_DESCRIPTION)
     @In

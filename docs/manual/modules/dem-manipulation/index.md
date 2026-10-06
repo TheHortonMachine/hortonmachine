@@ -8,4 +8,6 @@ The modules that prepare and cut digital elevation models for the hydro-geomorph
 pitfiller
 extractbasin
 markoutlets
+wateroutlet
+pitfillerbarnes
 ```

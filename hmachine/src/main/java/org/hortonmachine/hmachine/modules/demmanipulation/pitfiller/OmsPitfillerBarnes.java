@@ -41,6 +41,7 @@ import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.barnes.Prior
 import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.barnes.PriorityFloodTile.FloodResult;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -92,6 +93,7 @@ import oms3.annotations.UI;
  * a steepest descent flow reference, OmsTca and OmsExtractNetwork.</p>
  */
 @Description(OmsPitfillerBarnes.OMSPITFILLERBARNES_DESCRIPTION)
+@Bibliography(OmsPitfillerBarnes.BIBLIOGRAPHY_BARNES_2016)
 @Author(name = OmsPitfillerBarnes.OMSPITFILLERBARNES_AUTHORNAMES, contact = OmsPitfillerBarnes.OMSPITFILLERBARNES_AUTHORCONTACTS)
 @Keywords(OmsPitfillerBarnes.OMSPITFILLERBARNES_KEYWORDS)
 @Label(OmsPitfillerBarnes.OMSPITFILLERBARNES_LABEL)
@@ -172,6 +174,7 @@ public class OmsPitfillerBarnes extends HMModel {
     @Out
     public GridCoverage2D outNet = null;
 
+    public static final String BIBLIOGRAPHY_BARNES_2016 = "Barnes, R. (2016). Parallel priority-flood depression filling for trillion cell digital elevation models on desktops or clusters. Computers & Geosciences, 96, 56-68. doi:10.1016/j.cageo.2016.07.001";
     public static final String OMSPITFILLERBARNES_DESCRIPTION = "Fills the depressions of a DEM using the parallel Priority-Flood algorithm by Barnes (2016).";
     public static final String OMSPITFILLERBARNES_DOCUMENTATION = "";
     public static final String OMSPITFILLERBARNES_KEYWORDS = "Dem manipulation, Geomorphology, Pitfiller, Priority-Flood";

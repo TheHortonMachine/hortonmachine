@@ -11,4 +11,7 @@ gradient
 curvatures
 slope
 ab
+tca
+aspect
+geomorphon
 ```

@@ -43,6 +43,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSDISTANCETOOUTLET_DESCRIPTION)
 @Author(name = OMSDISTANCETOOUTLET_AUTHORNAMES, contact = OMSDISTANCETOOUTLET_AUTHORCONTACTS)
@@ -54,6 +55,7 @@ import oms3.annotations.UI;
 public class DistanceToOutlet extends HMModel {
 
     @Description(OMSDISTANCETOOUTLET_inPit_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inPit = null;
@@ -68,6 +70,7 @@ public class DistanceToOutlet extends HMModel {
     public int pMode;
 
     @Description(OMSDISTANCETOOUTLET_outDistance_DESCRIPTION)
+    @Unit("m or cells")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outDistance = null;

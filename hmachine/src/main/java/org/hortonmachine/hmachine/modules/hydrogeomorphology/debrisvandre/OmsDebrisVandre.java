@@ -73,6 +73,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -85,6 +86,7 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 @Description(OMSDEBRISVANDRE_DESCRIPTION)
+@Bibliography({OmsDebrisVandre.BIBLIOGRAPHY_VANDRE_1985, OmsDebrisVandre.BIBLIOGRAPHY_BURTON_BATHURST_1998})
 @Author(name = OMSDEBRISVANDRE_AUTHORNAMES, contact = OMSDEBRISVANDRE_AUTHORCONTACTS)
 @Keywords(OMSDEBRISVANDRE_KEYWORDS)
 @Label(OMSDEBRISVANDRE_LABEL)
@@ -93,7 +95,11 @@ import oms3.annotations.Unit;
 @License(OMSDEBRISVANDRE_LICENSE)
 public class OmsDebrisVandre extends HMModel {
 
+    public static final String BIBLIOGRAPHY_VANDRE_1985 = "Vandre, B. C. (1985). Rudd Creek debris flow. In: Bowles, D. S. (Ed.), Delineation of landslide, flash flood and debris flow hazards in Utah. Utah Water Research Laboratory, Logan, 117-131.";
+    public static final String BIBLIOGRAPHY_BURTON_BATHURST_1998 = "Burton, A., Bathurst, J. C. (1998). Physically based modelling of shallow landslide sediment yield at a catchment scale. Environmental Geology, 35(2-3), 89-99.";
+
     @Description(OMSDEBRISVANDRE_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
@@ -102,7 +108,7 @@ public class OmsDebrisVandre extends HMModel {
     public GridCoverage2D inFlow = null;
 
     @Description(OMSDEBRISVANDRE_inSlope_DESCRIPTION)
-    @Unit("degree")
+    @Unit("°")
     @In
     public GridCoverage2D inSlope = null;
 
@@ -111,6 +117,7 @@ public class OmsDebrisVandre extends HMModel {
     public GridCoverage2D inTriggers = null;
 
     @Description(OMSDEBRISVANDRE_inSoil_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inSoil = null;
 

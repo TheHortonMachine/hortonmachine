@@ -31,5 +31,33 @@ The boulders are moved and their positions recorded about every **step** meters 
 - The maximum velocity and height are real numbers, r.stone truncates them to integers.
 - The random numbers differ, so the single trajectories differ: the results are equivalent in their statistics, as the results of two runs of r.stone with different random numbers.
 
+## Example
+
+The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
+
+```{literalinclude} ../examples/hm/stone.groovy
+:language: groovy
+```
+
+:::{figure} ../../images/modules/Stone_counter.png
+:alt: The number of trajectories crossing each cell, with 10 boulders from each source of StoneInputs and the coefficients of the unclassified class everywhere.
+
+The number of trajectories crossing each cell, with 10 boulders from each source of StoneInputs and the coefficients of the unclassified class everywhere.
+:::
+
+:::{figure} ../../images/modules/Stone_velocity.png
+:alt: The maximum velocity of the boulders in each cell, in m/s.
+
+The maximum velocity of the boulders in each cell, in m/s.
+:::
+
+:::{figure} ../../images/modules/Stone_height.png
+:alt: The maximum height of the trajectories over the ground in each cell, in m.
+
+The maximum height of the trajectories over the ground in each cell, in m.
+:::
+
+## Reference
+
 ```{include} ../generated/Stone.md
 ```

@@ -44,6 +44,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.debrisvandre.OmsDebrisVandre;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -56,6 +57,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSDEBRISVANDRE_DESCRIPTION)
+@Bibliography({OmsDebrisVandre.BIBLIOGRAPHY_VANDRE_1985, OmsDebrisVandre.BIBLIOGRAPHY_BURTON_BATHURST_1998})
 @Author(name = OMSDEBRISVANDRE_AUTHORNAMES, contact = OMSDEBRISVANDRE_AUTHORCONTACTS)
 @Keywords(OMSDEBRISVANDRE_KEYWORDS)
 @Label(OMSDEBRISVANDRE_LABEL)
@@ -65,6 +67,7 @@ import oms3.annotations.Unit;
 public class DebrisVandre extends HMModel {
 
     @Description(OMSDEBRISVANDRE_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -76,7 +79,7 @@ public class DebrisVandre extends HMModel {
 
     @Description(OMSDEBRISVANDRE_inSlope_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @Unit("degree")
+    @Unit("°")
     @In
     public String inSlope = null;
 
@@ -86,6 +89,7 @@ public class DebrisVandre extends HMModel {
     public String inTriggers = null;
 
     @Description(OMSDEBRISVANDRE_inSoil_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inSoil = null;

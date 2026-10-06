@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.hmachine.models.hm;
 
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.utils.PrintUtilities;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -65,6 +67,35 @@ public class TestTca extends HMTestCase {
 
         PrintUtilities.printCoverageData(tcaCoverage);
         checkMatrixEqual(tcaCoverage.getRenderedImage(), HMTestMaps.tcaData);
+    }
+
+    /**
+     * The flow maps of OmsFlowDirections have -1 as novalue, not the HortonMachine one.
+     */
+    public void testTcaWithFlowNovalue() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+
+        double flowNovalue = -1;
+        double[][] flowData = HMTestMaps.flowData;
+        double[][] flowDataNv = new double[flowData.length][];
+        for( int r = 0; r < flowData.length; r++ ) {
+            flowDataNv[r] = flowData[r].clone();
+            for( int c = 0; c < flowDataNv[r].length; c++ ) {
+                if (isNovalue(flowDataNv[r][c])) {
+                    flowDataNv[r][c] = flowNovalue;
+                }
+            }
+        }
+        GridCoverage2D flowCoverage = CoverageUtilities.buildCoverageWithNovalue("flow", flowDataNv, envelopeParams, crs,
+                true, flowNovalue);
+
+        OmsTca tca = new OmsTca();
+        tca.inFlow = flowCoverage;
+        tca.pm = pm;
+        tca.process();
+
+        checkMatrixEqual(tca.outTca.getRenderedImage(), HMTestMaps.tcaData);
     }
 
 }

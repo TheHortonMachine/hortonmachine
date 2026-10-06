@@ -38,6 +38,7 @@ import org.hortonmachine.gears.utils.coverage.ProfilePoint;
 import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -50,6 +51,7 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 @Description(OmsGeomorphon.DESCRIPTION)
+@Bibliography({OmsGeomorphon.BIBLIOGRAPHY_JASIEWICZ_STEPINSKI_2013})
 @Author(name = OmsGeomorphon.AUTHORS, contact = OmsGeomorphon.CONTACT)
 @Keywords(OmsGeomorphon.KEYWORDS)
 @Label(GEOMORPHOLOGY)
@@ -57,6 +59,8 @@ import oms3.annotations.Unit;
 @Status(OmsGeomorphon.STATUS)
 @License(OmsGeomorphon.LICENSE)
 public class OmsGeomorphon extends HMModel {
+
+    public static final String BIBLIOGRAPHY_JASIEWICZ_STEPINSKI_2013 = "Jasiewicz, J., Stepinski, T. F. (2013). Geomorphons - a pattern recognition approach to classification and mapping of landforms. Geomorphology, 182, 147-156.";
 
     @Description(inELEV_DESCR)
     @In
@@ -79,14 +83,14 @@ public class OmsGeomorphon extends HMModel {
     public static final String LICENSE = HMConstants.GPL3_LICENSE;
     public static final int STATUS = Status.EXPERIMENTAL;
     public static final String NAME = "geomorphonraster";
-    public static final String KEYWORDS = "raster, geomorphon";
+    public static final String KEYWORDS = "Geomorphology, Geomorphon, Landforms";
     public static final String CONTACT = "www.hydrologis.com";
     public static final String AUTHORS = "Andrea Antonello, Silvia Franceschi";
-    public static final String DESCRIPTION = "The Geomorphon method for rasters";
-    public static final String outRaster_DESCR = "Output categories raster.";
-    public static final String pThreshold_DESCR = "Vertical angle threshold.";
-    public static final String pRadius_DESCR = "Maximum search radius";
-    public static final String inELEV_DESCR = "An elevation raster.";
+    public static final String DESCRIPTION = "Classifies the landforms with the geomorphon method: in each of the 8 directions, within the search radius, the terrain is compared with the line of sight from the cell, and it is higher, lower or level with it. The pattern of the 8 directions gives the landform: 1000 flat, 1001 peak, 1002 ridge, 1003 shoulder, 1004 spur, 1005 slope, 1006 hollow, 1007 footslope, 1008 valley, 1009 pit.";
+    public static final String outRaster_DESCR = "The map of the landforms, with the codes 1000 to 1009.";
+    public static final String pThreshold_DESCR = "The angle under which the terrain is considered level with the line of sight: larger values give more flat areas.";
+    public static final String pRadius_DESCR = "The search radius: the scale of the landforms that are recognized, larger values find larger landforms.";
+    public static final String inELEV_DESCR = "The map of the elevation.";
     public static final String pThreshold_UNIT = "degree";
     public static final String pRadius_UNIT = "m";
 

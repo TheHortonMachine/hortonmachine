@@ -76,6 +76,25 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import org.locationtech.jts.geom.Coordinate;
 
+/**
+ * Debris flow inundation area and deposit, with a Monte Carlo simulation of random paths.
+ *
+ * <p>
+ * Known issues, still to be solved:
+ * <ul>
+ * <li>TODO the random generators ({@code new Random()}) have no seed: the results change at
+ * every run, also with the same input. A seed, fixed or a parameter, would make them
+ * reproducible.</li>
+ * <li>TODO the counts of the paths crossing the cells are divided by {@code processedMc - 1},
+ * where {@code processedMc} is the index of the last path, not the number of paths
+ * ({@code processedMc + 1}): the probability can exceed 1.</li>
+ * <li>TODO {@link Point#compareTo(Point)} never returns a negative value, so it is not a valid
+ * ordering, and the {@link java.util.TreeSet} of the cells already crossed by a path can fail
+ * to find them: a path can come back on its cells.</li>
+ * <li>TODO the defaults of {@link #pEasting} and {@link #pNorthing} (143, 604) are the
+ * coordinates of a test dataset: there should be no default for the start point.</li>
+ * </ul>
+ */
 @Description(OMSDEBRISFLOW_DESCRIPTION)
 @Author(name = OMSDEBRISFLOW_AUTHORNAMES, contact = OMSDEBRISFLOW_AUTHORCONTACTS)
 @Keywords(OMSDEBRISFLOW_KEYWORDS)
@@ -85,11 +104,12 @@ import org.locationtech.jts.geom.Coordinate;
 @License(OMSDEBRISFLOW_LICENSE)
 public class OmsDebrisFlow extends HMModel {
     @Description(OMSDEBRISFLOW_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
     @Description(OMSDEBRISFLOW_pVolume_DESCRIPTION)
-    @Unit("m2")
+    @Unit("m³")
     @In
     public double pVolume = 4000;
 
@@ -122,6 +142,7 @@ public class OmsDebrisFlow extends HMModel {
     public GridCoverage2D outMcs = null;
 
     @Description(OMSDEBRISFLOW_outDepo_DESCRIPTION)
+    @Unit("m")
     @Out
     public GridCoverage2D outDepo = null;
 

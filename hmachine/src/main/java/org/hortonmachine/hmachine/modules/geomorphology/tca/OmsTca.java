@@ -74,6 +74,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSTCA_DESCRIPTION)
 @Documentation(OMSTCA_DOCUMENTATION)
@@ -93,6 +94,7 @@ public class OmsTca extends HMModel {
     public boolean doLoopCheck = false;
 
     @Description(OMSTCA_outTca_DESCRIPTION)
+    @Unit("cells")
     @Out
     public GridCoverage2D outTca = null;
 

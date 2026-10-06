@@ -45,6 +45,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSHILLSHADE_DESCRIPTION)
 @Author(name = OMSHILLSHADE_AUTHORNAMES, contact = OMSHILLSHADE_AUTHORCONTACTS)
@@ -56,6 +57,7 @@ import oms3.annotations.UI;
 public class Hillshade extends HMModel {
 
     @Description(OMSHILLSHADE_inElev_DESCRIPTION)
+    @Unit("m")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inElev = null;
@@ -65,10 +67,12 @@ public class Hillshade extends HMModel {
     public double pMinDiffuse = 0.0;
 
     @Description(OMSHILLSHADE_pAzimuth_DESCRIPTION)
+    @Unit("°")
     @In
     public double pAzimuth = 360;
 
     @Description(OMSHILLSHADE_pElev_DESCRIPTION)
+    @Unit("°")
     @In
     public double pElev = 90;
 

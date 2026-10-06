@@ -55,6 +55,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.Unit;
 
 @Description(OMSDISTANCETOOUTLET_DESCRIPTION)
 @Author(name = OMSDISTANCETOOUTLET_AUTHORNAMES, contact = OMSDISTANCETOOUTLET_AUTHORCONTACTS)
@@ -66,6 +67,7 @@ import oms3.annotations.Status;
 public class OmsDistanceToOutlet extends HMModel {
 
     @Description(OMSDISTANCETOOUTLET_inPit_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inPit = null;
 
@@ -78,6 +80,7 @@ public class OmsDistanceToOutlet extends HMModel {
     public int pMode;
 
     @Description(OMSDISTANCETOOUTLET_outDistance_DESCRIPTION)
+    @Unit("m or cells")
     @Out
     public GridCoverage2D outDistance = null;
 

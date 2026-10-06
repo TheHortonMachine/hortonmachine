@@ -78,7 +78,7 @@ public class FlowNode extends Node {
             synchronized (gridIter) {
                 flowD = gridIter.getSampleDouble(col, row, 0);
             }
-            if (HMConstants.isNovalue(flowD)) {
+            if (isFlowNovalue(flowD)) {
                 isValid = false;
             } else {
                 isValid = true;
@@ -105,7 +105,7 @@ public class FlowNode extends Node {
                 } else {
                     synchronized (gridIter) {
                         double tmpD = gridIter.getSampleDouble(newC, newR, 0);
-                        if (!HMConstants.isNovalue(tmpD)) {
+                        if (!isFlowNovalue(tmpD)) {
                             tmp = (int) tmpD;
                         }
                     }
@@ -142,7 +142,7 @@ public class FlowNode extends Node {
                     throw new RuntimeException();
                 }
 
-                if (HMConstants.isNovalue(tmp)) {
+                if (isFlowNovalue(tmp)) {
                     touchesBound = true;
                 }
             }
@@ -229,6 +229,14 @@ public class FlowNode extends Node {
         default:
             throw new IllegalArgumentException();
         }
+    }
+
+    /**
+     * @return <code>true</code> if the value is a novalue, the HortonMachine one or the one of
+     *         the flow raster, as the -1 of the maps of OmsFlowDirections.
+     */
+    private boolean isFlowNovalue( double value ) {
+        return HMConstants.isNovalue(value) || value == doubleNovalue;
     }
 
     /**
@@ -412,7 +420,7 @@ public class FlowNode extends Node {
             }
             if (isInRaster(newCol, newRow)) {
                 int flowValue = gridIter.getSample(newCol, newRow, 0);
-                if (HMConstants.isNovalue(flowValue)) {
+                if (isFlowNovalue(flowValue)) {
                     continue;
                 }
                 int tcaValue = tcaIter.getSample(newCol, newRow, 0);

@@ -23,6 +23,19 @@ org.hortonmachine.modules.Curvatures
 org.hortonmachine.modules.Ab
 org.hortonmachine.modules.TopIndex
 org.hortonmachine.modules.RescaledDistance
+org.hortonmachine.modules.Tca
+org.hortonmachine.modules.Wateroutlet
+org.hortonmachine.modules.Aspect
+org.hortonmachine.modules.Hillshade
+org.hortonmachine.modules.DistanceToOutlet
+org.hortonmachine.modules.HackLength
+org.hortonmachine.modules.Magnitudo
+org.hortonmachine.modules.PitfillerBarnes
+org.hortonmachine.modules.Geomorphon
+org.hortonmachine.modules.Insolation
+org.hortonmachine.modules.DebrisTriggerCnr
+org.hortonmachine.modules.DebrisVandre
+org.hortonmachine.modules.DebrisFlow
 
 # Raster processing
 org.hortonmachine.modules.RasterResizer
