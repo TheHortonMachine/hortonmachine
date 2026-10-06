@@ -15,7 +15,23 @@ The plugin is developed in the [g-ant-eu/qgis-plugins](https://github.com/g-ant-
 The plugin needs a HortonMachine installation, which it can download. Open **Plugins › HortonMachine › HortonMachine setup** (QGIS also proposes it with a message the first time):
 
 HortonMachine installation
-: **Download the latest release** downloads the HortonMachine from the [GitHub releases page](https://github.com/TheHortonMachine/hortonmachine/releases) and installs it in the QGIS profile folder. **Choose...** uses a HortonMachine already extracted on this computer instead.
+: **Download the latest release** downloads the HortonMachine from the [GitHub releases page](https://github.com/TheHortonMachine/hortonmachine/releases) and installs it in the QGIS profile folder. **Choose...** uses a HortonMachine already extracted on this computer instead. **Reload modules** reads the list of the modules again, for example after updating the installation.
+
+:::{figure} ../images/apps/qgisplugin/download_hm.png
+:alt: Downloading the HortonMachine in the setup dialog
+:width: 70%
+:align: center
+
+The latest release of the HortonMachine being downloaded.
+:::
+
+:::{figure} ../images/apps/qgisplugin/local_hm.png
+:alt: A HortonMachine installation chosen on the computer
+:width: 70%
+:align: center
+
+A HortonMachine already extracted on the computer, chosen with **Choose...**, after reloading its modules.
+:::
 
 Java runtime
 : the modules need Java 17 or newer. On Windows the HortonMachine includes it. On Linux and macOS the plugin uses the `java` found on the system; if there is none, or it is too old, **Download a Java runtime** downloads one for the system into the HortonMachine installation (about 50 MB). After a release is downloaded, the plugin proposes it by itself when it is needed.
@@ -27,7 +43,17 @@ Once the installation is ready, the modules appear in the **HortonMachine** grou
 
 ## Using the modules
 
-The dialog of each module shows its parameters, with the description of the module and of its parameters on the right. Some notes:
+The dialog of each module shows its parameters, with the description of the module and of its parameters on the right.
+
+:::{figure} ../images/apps/qgisplugin/processing_toolbox_peakflow.png
+:alt: The HortonMachine modules in the Processing Toolbox and the dialog of the Peakflow module
+:width: 100%
+:align: center
+
+The HortonMachine group in the Processing Toolbox, on the right, and the dialog of the Peakflow module, with its help.
+:::
+
+Some notes:
 
 - The modules don't declare which of their inputs are mandatory, so QGIS shows most of them as optional; a module run without a needed input stops with an error.
 - Raster inputs are read directly when they are GeoTIFF or ESRI ASCII grid files; other layers are first converted to a temporary GeoTIFF. Vector inputs are passed as shapefiles, converted when needed.
