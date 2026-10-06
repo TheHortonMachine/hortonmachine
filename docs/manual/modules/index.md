@@ -7,7 +7,7 @@ The modules are grouped in the same folders as in the Spatial Toolbox. For each 
 :::{admonition} Work in progress
 :class: warning
 
-This section is still being written. For now it covers the [ERM water budget workflow](geoframe/erm/index.md) and the modules it uses to prepare the data. Maps of the results and more modules will follow.
+This section is still being written. For now it covers a selection of the more used processing modules. More modules will follow.
 :::
 
 ```{toctree}
