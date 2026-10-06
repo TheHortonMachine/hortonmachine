@@ -17,4 +17,5 @@ geomorphon
 leastcostflowdirections
 multitca
 tca3d
+viewshed
 ```

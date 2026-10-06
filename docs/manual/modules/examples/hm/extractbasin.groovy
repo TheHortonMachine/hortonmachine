@@ -10,4 +10,5 @@ extractBasin.pEast = 1638705.0
 extractBasin.pNorth = 5112805.0
 extractBasin.outBasin = folder + "basin.tif"
 extractBasin.outVectorBasin = folder + "basin.shp"
+extractBasin.outOutlet = folder + "outlet.shp"
 extractBasin.process()

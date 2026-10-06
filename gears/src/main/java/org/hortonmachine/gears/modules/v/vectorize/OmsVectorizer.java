@@ -189,7 +189,8 @@ public class OmsVectorizer extends HMModel {
 
         pm.beginTask("Vectorizing map...", IHMProgressMonitor.UNKNOWN);
         Map<String, Object> args = new HashMap<String, Object>();
-        // args.put("outsideValues", Collections.singleton(0));
+        // the novalue cells are not vectorized
+        args.put("outsideValues", java.util.Collections.singleton(novalue));
         Collection<Polygon> polygonsList = doVectorize(inRaster.getRenderedImage(), args);
         pm.done();
 

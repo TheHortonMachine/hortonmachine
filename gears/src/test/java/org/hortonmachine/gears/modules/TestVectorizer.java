@@ -53,20 +53,9 @@ public class TestVectorizer extends HMTestCase {
         vectorizer.process();
 
         SimpleFeatureCollection outGeodata = vectorizer.outVector;
-        List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(outGeodata);
-        SimpleFeature f1 = features.get(0);
-        Geometry g1 = (Geometry) f1.getDefaultGeometry();
-
-        assertEquals(2, outGeodata.size());
-        SimpleFeature f2 = features.get(1);
-        Geometry g2 = (Geometry) f2.getDefaultGeometry();
-
-        // SimpleFeature nvFeature = f1;
-        SimpleFeature valuesFeature = f2;
-        if (g1.getArea() < g2.getArea()) {
-            // nvFeature = f2;
-            valuesFeature = f1;
-        }
+        // the novalue cells are not vectorized
+        assertEquals(1, outGeodata.size());
+        SimpleFeature valuesFeature = FeatureUtilities.featureCollectionToList(outGeodata).get(0);
 
         double value = ((Number) valuesFeature.getAttribute("rast")).doubleValue();
         assertEquals(2.0, value, 0.0000001);
@@ -90,20 +79,9 @@ public class TestVectorizer extends HMTestCase {
         vectorizer.process();
 
         SimpleFeatureCollection outGeodata = vectorizer.outVector;
-        assertEquals(2, outGeodata.size());
-
-        List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(outGeodata);
-        SimpleFeature f1 = features.get(0);
-        SimpleFeature f2 = features.get(1);
-        Geometry g1 = (Geometry) f1.getDefaultGeometry();
-        Geometry g2 = (Geometry) f2.getDefaultGeometry();
-
-        // SimpleFeature nvFeature = f1;
-        SimpleFeature valuesFeature = f2;
-        if (g1.getArea() < g2.getArea()) {
-            // nvFeature = f2;
-            valuesFeature = f1;
-        }
+        // the novalue cells are not vectorized
+        assertEquals(1, outGeodata.size());
+        SimpleFeature valuesFeature = FeatureUtilities.featureCollectionToList(outGeodata).get(0);
 
         double value = ((Number) valuesFeature.getAttribute("rast")).doubleValue();
         assertEquals(2.0, value, 0.0000001);

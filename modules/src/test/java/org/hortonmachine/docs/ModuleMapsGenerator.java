@@ -81,7 +81,8 @@ import groovy.lang.GroovyShell;
  * example scripts are run in the order of the file, each on the outputs of the previous ones,
  * and each raster is drawn over the hillshade of the sample elevation, with a legend, into
  * <code>Module_output.png</code> of the images folder, named after the module and the drawn
- * raster, since a module can have several outputs, each in its own line.
+ * raster (<code>Module_a-b.png</code> for a difference), since a module can have several outputs,
+ * each in its own line.
  *
  * <p>
  * The scripts are the ones shown in the manual: their line <code>var folder = "..."</code> is
@@ -100,6 +101,8 @@ import groovy.lang.GroovyShell;
  * <li><b>classes</b>: the legend shows the distinct values of the raster, as classes, instead of a
  * color bar, for maps of integer classes or codes (at most 30);</li>
  * <li><b>nolegend</b>: no legend, for example for a single class;</li>
+ * <li><b>base=elevation.tif</b>: the elevation of the hillshade, and with vectors of the extent of
+ * the map, instead of the sample elevation;</li>
  * <li><b>clip</b>: the colors span from the 2nd to the 98th percentile of the values, for rasters
  * with a few extreme values; the cells outside get the colors of the ends.</li>
  * </ul>
@@ -122,7 +125,6 @@ public class ModuleMapsGenerator {
     /** The rings of border cells that are 0 in the hillshade. */
     private static final int BORDER = 2;
 
-    public static final String HILLSHADE = "hillshade.tif";
     public static final String ELEVATION = "dtm_flanginec.tif";
 
     public record MapSpec( String module, String script, String raster, String colortable, Set<String> options,
@@ -176,13 +178,6 @@ public class ModuleMapsGenerator {
         prepareWorkFolder();
         imagesFolder.mkdirs();
 
-        Hillshade hillshade = new Hillshade();
-        hillshade.inElev = path(ELEVATION);
-        hillshade.pAzimuth = 315;
-        hillshade.pElev = 45;
-        hillshade.outHill = path(HILLSHADE);
-        hillshade.process();
-
         for( MapSpec spec : readSpecs(specFile) ) {
             if (!spec.script().equals("-")) {
                 runScript(new File(specFile.getParentFile(), spec.script()));
@@ -201,8 +196,14 @@ public class ModuleMapsGenerator {
      * @return the name of the image of the map: the module and the name of the drawn raster.
      */
     public static String imageName( MapSpec spec ) {
-        String raster = spec.raster().split(" - ")[0].trim();
-        return spec.module() + "_" + raster.replaceFirst("\\.[^.]+$", "") + ".png";
+        StringBuilder name = new StringBuilder(spec.module());
+        String separator = "_";
+        // a difference of two rasters is named after both: a-b
+        for( String raster : spec.raster().split(" - ") ) {
+            name.append(separator).append(raster.trim().replaceFirst("\\.[^.]+$", ""));
+            separator = "-";
+        }
+        return name.append(".png").toString();
     }
 
     private void prepareWorkFolder() throws Exception {
@@ -251,7 +252,7 @@ public class ModuleMapsGenerator {
         double opacity = spec.options().contains("positive") ? 1.0 : OPACITY;
         Style style = RasterStyleUtilities.createStyleForColortable(colortable, minMax[0], minMax[1], opacity);
 
-        GridCoverage2D hillshade = readHillshade();
+        GridCoverage2D hillshade = readHillshade(baseElevation(spec));
         double[] hillMinMax = minMax(hillshade);
         Style hillStyle = RasterStyleUtilities.createStyleForColortable(EColorTables.greyscale.name(), hillMinMax[0],
                 hillMinMax[1], 1.0);
@@ -299,10 +300,11 @@ public class ModuleMapsGenerator {
     }
 
     /**
-     * Draws the lines of a vector over the hillshade, on the extent of the elevation.
+     * Draws a vector over the hillshade, on the extent of the base elevation: points as dots,
+     * lines as lines, polygons as their outline.
      */
     private BufferedImage drawVectorMap( MapSpec spec ) throws Exception {
-        GridCoverage2D hillshade = readHillshade();
+        GridCoverage2D hillshade = readHillshade(baseElevation(spec));
         double[] hillMinMax = minMax(hillshade);
         Style hillStyle = RasterStyleUtilities.createStyleForColortable(EColorTables.greyscale.name(), hillMinMax[0],
                 hillMinMax[1], 1.0);
@@ -313,7 +315,17 @@ public class ModuleMapsGenerator {
         Style colorsStyle = RasterStyleUtilities.createStyleForColortable(colortable, 0, 1, 1.0);
         List<ColorMapEntry> entries = legendEntries(colorsStyle, new double[]{0, 1});
         Color lineColor = color(entries.get(entries.size() - 1));
-        Style lineStyle = SLD.createLineStyle(lineColor, 1.5f);
+
+        SimpleFeatureCollection features = OmsVectorReader.readVector(path(spec.raster()));
+        Class< ? > geometryType = features.getSchema().getGeometryDescriptor().getType().getBinding();
+        Style lineStyle;
+        if (org.locationtech.jts.geom.Puntal.class.isAssignableFrom(geometryType)) {
+            lineStyle = SLD.createPointStyle("Circle", lineColor, lineColor, 1f, 3f);
+        } else if (org.locationtech.jts.geom.Polygonal.class.isAssignableFrom(geometryType)) {
+            lineStyle = SLD.createPolygonStyle(lineColor, null, 0f);
+        } else {
+            lineStyle = SLD.createLineStyle(lineColor, 1.5f);
+        }
 
         ReferencedEnvelope envelope = new ReferencedEnvelope(hillshade.getEnvelope2D());
         int mapHeight = (int) Math.round(MAP_WIDTH * envelope.getHeight() / envelope.getWidth());
@@ -323,7 +335,6 @@ public class ModuleMapsGenerator {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, image.getWidth(), image.getHeight());
 
-        SimpleFeatureCollection features = OmsVectorReader.readVector(path(spec.raster()));
         MapContent content = new MapContent();
         try {
             content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
@@ -336,6 +347,19 @@ public class ModuleMapsGenerator {
         }
         g.dispose();
         return image;
+    }
+
+    /**
+     * @return the elevation of the hillshade of the map: the one of the option base=..., or the
+     *         sample elevation.
+     */
+    private static String baseElevation( MapSpec spec ) {
+        for( String option : spec.options() ) {
+            if (option.startsWith("base=")) {
+                return option.substring("base=".length()).trim();
+            }
+        }
+        return ELEVATION;
     }
 
     private GridCoverage2D readRaster( MapSpec spec ) throws Exception {
@@ -373,14 +397,30 @@ public class ModuleMapsGenerator {
      * @return the hillshade, without the two rings of cells at the border of the elevation, which are 0
      *         and would draw a black frame.
      */
-    private GridCoverage2D readHillshade() throws Exception {
-        GridCoverage2D hillshade = OmsRasterReader.readRaster(path(HILLSHADE));
-        GridCoverage2D elevation = OmsRasterReader.readRaster(path(ELEVATION));
+    private GridCoverage2D readHillshade( String base ) throws Exception {
+        File hillshadeFile = new File(workFolder, "hillshade_" + base);
+        if (!hillshadeFile.exists()) {
+            Hillshade hillshade = new Hillshade();
+            hillshade.inElev = path(base);
+            hillshade.pAzimuth = 315;
+            hillshade.pElev = 45;
+            hillshade.outHill = hillshadeFile.getAbsolutePath();
+            hillshade.process();
+        }
+        GridCoverage2D hillshade = OmsRasterReader.readRaster(hillshadeFile.getAbsolutePath());
+        GridCoverage2D elevation = OmsRasterReader.readRaster(path(base));
         RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(hillshade);
         int cols = region.getCols();
         int rows = region.getRows();
-        WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(hillshade.getRenderedImage(), false);
+        // copied into a raster of the grid size: the image of a tiled file can be larger
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
+        RandomIter hillIter = CoverageUtilities.getRandomIterator(hillshade);
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                outIter.setSample(c, r, 0, hillIter.getSampleDouble(c, r, 0));
+            }
+        }
         RandomIter elevIter = CoverageUtilities.getRandomIterator(elevation);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {

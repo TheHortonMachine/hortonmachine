@@ -23,4 +23,5 @@ network/index
 hydro-geomorphology/index
 statistics/index
 raster-processing/index
+vector-processing/index
 ```

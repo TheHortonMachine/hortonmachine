@@ -95,20 +95,20 @@ public class OmsContourExtractor extends HMModel {
 
     public Integer precisionScale = null;
 
-    public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Module that extracts contour lines from a raster.";
+    public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Extracts the contour lines of a raster, at regular intervals of its values, as a vector of lines.";
     public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
-    public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Raster, Vector";
+    public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Contours, Isolines, Raster, Vector";
     public static final String OMSCONTOUREXTRACTOR_LABEL = VECTORPROCESSING;
     public static final String OMSCONTOUREXTRACTOR_NAME = "contourextract";
     public static final int OMSCONTOUREXTRACTOR_STATUS = 5;
     public static final String OMSCONTOUREXTRACTOR_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSCONTOUREXTRACTOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSCONTOUREXTRACTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION = "The raster on which to calculate the contours.";
-    public static final String OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION = "The minimum value for the contours.";
-    public static final String OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION = "The maximum value for the contours.";
-    public static final String OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION = "The contours interval.";
-    public static final String OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION = "The generated contour lines vector.";
+    public static final String OMSCONTOUREXTRACTOR_IN_COVERAGE_DESCRIPTION = "The raster of which to extract the contours.";
+    public static final String OMSCONTOUREXTRACTOR_P_MIN_DESCRIPTION = "The value of the lowest contour.";
+    public static final String OMSCONTOUREXTRACTOR_P_MAX_DESCRIPTION = "The value of the highest contour.";
+    public static final String OMSCONTOUREXTRACTOR_P_INTERVAL_DESCRIPTION = "The interval between the contours.";
+    public static final String OMSCONTOUREXTRACTOR_OUT_GEODATA_DESCRIPTION = "The vector of the contour lines, with their value.";
 
     @Execute
     public void process() throws Exception {

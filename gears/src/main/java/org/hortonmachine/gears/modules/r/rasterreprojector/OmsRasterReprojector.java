@@ -110,21 +110,21 @@ public class OmsRasterReprojector extends HMModel {
     @Out
     public GridCoverage2D outRaster = null;
 
-    public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Module for raster reprojection.";
+    public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Reprojects a raster into another coordinate reference system, optionally with a new cell size.";
     public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "";
-    public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Crs, Reprojection, Raster, OmsRasterConverter, OmsRasterReader";
+    public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Raster, Reprojection, CRS";
     public static final String OMSRASTERREPROJECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERREPROJECTOR_NAME = "rreproject";
     public static final int OMSRASTERREPROJECTOR_STATUS = 40;
     public static final String OMSRASTERREPROJECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTERREPROJECTOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERREPROJECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION = "The raster that has to be reprojected.";
-    public static final String OMSRASTERREPROJECTOR_P_XRES_DESCRIPTION = "The optional X resolution to set for the output.";
-    public static final String OMSRASTERREPROJECTOR_P_YRES_DESCRIPTION = "The optional Y resolution to set for the output.";
-    public static final String OMSRASTERREPROJECTOR_P_OUTCODE_DESCRIPTION = "The projection code for the target coordinate reference system (ex. EPSG:32632).";
-    public static final String OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
-    public static final String OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION = "The reprojected output raster.";
+    public static final String OMSRASTERREPROJECTOR_IN_RASTER_DESCRIPTION = "The raster to reproject.";
+    public static final String OMSRASTERREPROJECTOR_P_XRES_DESCRIPTION = "The optional cell size in x of the output.";
+    public static final String OMSRASTERREPROJECTOR_P_YRES_DESCRIPTION = "The optional cell size in y of the output.";
+    public static final String OMSRASTERREPROJECTOR_P_OUTCODE_DESCRIPTION = "The code of the target coordinate reference system, as EPSG:32632.";
+    public static final String OMSRASTERREPROJECTOR_P_INTERPOLATION_DESCRIPTION = "The interpolation of the new cells: nearest neighbour keeps the original values, as needed for classes and codes; bilinear and bicubic smooth them.";
+    public static final String OMSRASTERREPROJECTOR_OUT_RASTER_DESCRIPTION = "The reprojected raster.";
 
     @Execute
     public void process() throws Exception {

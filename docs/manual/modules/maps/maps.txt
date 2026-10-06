@@ -13,7 +13,8 @@
 # Options: positive (draw only values above 0), classes (legend with the distinct values
 # of the raster, at most 30, not a bar: for integer classes and codes),
 # nolegend (no legend, for example for a single class), clip (colors from the 2nd to the
-# 98th percentile, for rasters with a few extreme values)
+# 98th percentile, for rasters with a few extreme values), base=elevation.tif (the elevation of
+# the hillshade, and with vectors of the extent, instead of dtm_flanginec.tif)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
 
 Pitfiller      | ../examples/hm/pitfiller.groovy      | pit.tif                     | elev
@@ -66,3 +67,14 @@ NetworkAttributesBuilder | ../examples/hm/networkattributesbuilder.groovy | hack
 SplitSubbasins | ../examples/hm/splitsubbasins.groovy | split_subbasins.tif         | contrasting | nolegend
 SumDownStream  | ../examples/hm/sumdownstream.groovy  | unstable_upstream.tif       | logarithmic
 MeltonNumber   | ../examples/hm/meltonnumber.groovy   | -                           | -
+Mapcalc        | ../examples/hm/mapcalc.groovy        | filled.tif                  | rainbow  | positive
+RasterReprojector | ../examples/hm/rasterreprojector.groovy | -                     | -
+RasterResolutionResampler | ../examples/hm/rasterresolutionresampler.groovy | dtm_50m.tif | elev
+Vectorizer     | ../examples/hm/vectorizer.groovy     | outlet_basin.shp            | blues
+Mosaic12       | ../examples/hm/mosaic12.groovy       | dtm_mosaic.tif              | elev
+ContourExtractor | ../examples/hm/contourextractor.groovy | contours.shp            | reds
+RasterSummary  | ../examples/hm/rastersummary.groovy  | -                           | -
+LasConverter   | ../examples/hm/lasconverter.groovy   | las_points.shp              | greens   | base=dtm_777.tif
+SurfaceInterpolator | ../examples/hm/surfaceinterpolator.groovy | dsm_777.tif         | elev     | base=dtm_777.tif
+SurfaceInterpolator | -                               | dsm_777.tif - dtm_777.tif   | rainbow  | positive,base=dtm_777.tif
+Viewshed       | ../examples/hm/viewshed.groovy       | viewshed.tif                | reds     | nolegend

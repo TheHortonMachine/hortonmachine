@@ -99,7 +99,7 @@ public class OmsMosaic extends HMModel {
     public static final String OMSMOSAIC_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSMOSAIC_IN_FILES_DESCRIPTION = "An optional list of map files that have to be patched.";
     public static final String OMSMOSAIC_IN_COVERAGES_DESCRIPTION = "An optional list of rasters that have to be patched.";
-    public static final String OMSMOSAIC_P_MERGEMODE_DESCRIPTION = "The merge mode to use";
+    public static final String OMSMOSAIC_P_MERGEMODE_DESCRIPTION = "The value where the rasters overlap: INSERT_ON_NOVALUE keeps the first value, SUBSTITUTE the last one, AVG and SUM their average and sum.";
     public static final String OMSMOSAIC_doFindSmallesresolution = "Force the reading of all coverages to find the smalles resolution for the final patched raster.";
     public static final String OMSMOSAIC_OUT_RASTER_DESCRIPTION = "The patched map.";
 

@@ -136,9 +136,9 @@ public class OmsLasConverter extends HMModel {
     public String outFile;
 
     // VARS DOCS START
-    public static final String OMSLASCONVERTER_DESCRIPTION = "Coverter from LAS to vector point data.";
+    public static final String OMSLASCONVERTER_DESCRIPTION = "Converts the points of a LAS lidar file into a vector of points, with their elevation, intensity, classification and return number, or into a csv or a new LAS file. The points can be filtered by area, classes, returns and intensity.";
     public static final String OMSLASCONVERTER_DOCUMENTATION = "";
-    public static final String OMSLASCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
+    public static final String OMSLASCONVERTER_KEYWORDS = "Lidar, LAS, Points, Conversion";
     public static final String OMSLASCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSLASCONVERTER_NAME = "lasconverter";
     public static final int OMSLASCONVERTER_STATUS = 5;
@@ -146,19 +146,19 @@ public class OmsLasConverter extends HMModel {
     public static final String OMSLASCONVERTER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSLASCONVERTER_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSLASCONVERTER_inFile_DESCRIPTION = "The LAS file.";
-    public static final String OMSLASCONVERTER_inPolygons_DESCRIPTION = "A vector map of polygons to filter the data on.";
-    public static final String OMSLASCONVERTER_pIntensityrange_DESCRIPTION = "The (min, max) range inside which the values should be taken.";
-    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of impulses values to keep.";
-    public static final String OMSLASCONVERTER_pClasses_DESCRIPTION = "The comma separated list of classes to keep.";
+    public static final String OMSLASCONVERTER_inPolygons_DESCRIPTION = "An optional vector of polygons: only the points inside them are kept.";
+    public static final String OMSLASCONVERTER_pIntensityrange_DESCRIPTION = "The range of the intensity of the points to keep, as min,max.";
+    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of the returns to keep, as 1 for the first returns.";
+    public static final String OMSLASCONVERTER_pClasses_DESCRIPTION = "The comma separated list of the classes to keep, as 2 for the ground.";
     public static final String OMSLASCONVERTER_pIndexrange_DESCRIPTION = "The min,max index of data to consider (useful to split in different files). Note that filters are applied after this for performance reasons, so resulting data might be less than expected.";
-    public static final String OMSLASCONVERTER_pNorth_DESCRIPTION = "The optional requested boundary north coordinate.";
-    public static final String OMSLASCONVERTER_pSouth_DESCRIPTION = "The optional requested boundary south coordinate.";
-    public static final String OMSLASCONVERTER_pWest_DESCRIPTION = "The optional requested boundary west coordinate.";
-    public static final String OMSLASCONVERTER_pEast_DESCRIPTION = "The optional requested boundary east coordinate.";
-    public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print header and exit (default is false).";
-    public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Print additional info and exit (default is false).";
-    public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Generate a bounding box polygon as output vector (default is false).";
-    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file (csv, shp, las).";
+    public static final String OMSLASCONVERTER_pNorth_DESCRIPTION = "The optional north boundary of the area to keep.";
+    public static final String OMSLASCONVERTER_pSouth_DESCRIPTION = "The optional south boundary of the area to keep.";
+    public static final String OMSLASCONVERTER_pWest_DESCRIPTION = "The optional west boundary of the area to keep.";
+    public static final String OMSLASCONVERTER_pEast_DESCRIPTION = "The optional east boundary of the area to keep.";
+    public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print the header of the file.";
+    public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Only print information about the points of the file.";
+    public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Write the bounding box of the points as a polygon, instead of the points.";
+    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file: a vector of points, a csv or a LAS file.";
     // VARS DOCS END
 
     private double[] intensityRange = null;

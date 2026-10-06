@@ -7,4 +7,10 @@ General purpose modules to process rasters.
 
 rasterresizer
 cutout
+mapcalc
+rasterreprojector
+rasterresolutionresampler
+mosaic12
+rastersummary
+surfaceinterpolator
 ```

@@ -17,7 +17,14 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_AUTHORCONTACTS;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_AUTHORNAMES;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_KEYWORDS;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_LABEL;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_LICENSE;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_STATUS;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,37 +34,49 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 
+import oms3.annotations.Author;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
 
+// hidden in the Spatial Toolbox, replaced by the Map Calculator application
+@Description(OMSMAPCALC_DESCRIPTION)
+@Author(name = OMSMAPCALC_AUTHORNAMES, contact = OMSMAPCALC_AUTHORCONTACTS)
+@Keywords(OMSMAPCALC_KEYWORDS)
+@Label(OMSMAPCALC_LABEL)
 @Name("mapcalc")
+@Status(OMSMAPCALC_STATUS)
+@License(OMSMAPCALC_LICENSE)
 @UI("hide")
 public class Mapcalc extends OmsMapcalc {
 
-    @Description("Raster map to process.")
+    @Description("A map used in the script, known by its file name without extension.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster1;
 
-    @Description("Optional raster map to process.")
+    @Description("An optional map used in the script, known by its file name without extension.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster2;
 
-    @Description("Optional raster map to process.")
+    @Description("An optional map used in the script, known by its file name without extension.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster3;
 
-    @Description("Optional raster map to process.")
+    @Description("An optional map used in the script, known by its file name without extension.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster4;
 
-    @Description("Optional raster map to process.")
+    @Description("An optional map used in the script, known by its file name without extension.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster5;

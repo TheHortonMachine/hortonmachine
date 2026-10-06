@@ -89,18 +89,18 @@ public class OmsViewshed extends HMModel {
     public ViewpointProcessingListener singleViewpointProcessListener = null;
 
     public static final String DOC = "Calculate a viewshed raster, with values based on the visibility by the supplied view points.";
-    public static final String DESCR_outViewshed = "Output viewshed raster.";
-    public static final String DESCR_pHeight = "Default height above the elevation model to use if no station's height field is available.";
-    public static final String DESCR_pField = "Name of the field containing the station's height above the elevation model";
-    public static final String DESCR_inViewPoints = "Input viewpoints collection.";
-    public static final String DESCR_inRaster = "Input elevation raster.";
+    public static final String DESCR_outViewshed = "The map of the number of viewpoints from which each cell is visible.";
+    public static final String DESCR_pHeight = "The height of the viewpoints above the elevation model, used when the points have no height field.";
+    public static final String DESCR_pField = "The field of the points with their height above the elevation model.";
+    public static final String DESCR_inViewPoints = "The vector of the viewpoints.";
+    public static final String DESCR_inRaster = "The elevation model.";
     public static final String LICENSE = HMConstants.GPL3_LICENSE;
     public static final String LABEL = GEOMORPHOLOGY;
     public static final int STATUS = Status.EXPERIMENTAL;
-    public static final String KEYWORDS = "viewshed";
+    public static final String KEYWORDS = "Viewshed, Visibility, Line of sight";
     public static final String CONTACT = "jlindsay@uoguelph.ca";
     public static final String AUTHOR = "Dr. John Lindsay";
-    public static final String DESCRIPTION = "Viewshed module";
+    public static final String DESCRIPTION = "Calculates the viewshed of one or more viewpoints on an elevation model: the cells visible from the viewpoints, with the number of viewpoints that see each cell. The cells not visible are no-data.";
 
     public static interface ViewpointProcessingListener {
 
