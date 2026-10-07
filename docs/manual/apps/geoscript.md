@@ -8,17 +8,6 @@ Scripts are written in [Groovy](https://groovy-lang.org/), a language that runs 
 
 Start the application with the `hm-geoscript` launcher (see [Launching an application](../installation.md#launching-an-application)). The console reopens the last script it had open.
 
-::::{note}
-This console is new and still experimental. The previous one, based on the standard Groovy Console, can still be used: start it with `--old` as first argument of the launcher, as in `./hm-geoscript.sh --old` (`hm-geoscript.bat --old` on Windows).
-
-:::{figure} ../images/apps/geoscript/old_console.png
-:alt: The previous Geoscript Console
-:width: 100%
-:align: center
-
-The previous console, based on the standard Groovy Console, with the same script.
-:::
-::::
 
 ## The console
 
@@ -210,3 +199,16 @@ Passing a script file to the launcher runs it without opening the console, print
 ```
 
 This is the way to run long processing chains unattended, or from a scheduled task. Only the first argument is used: scripts that need parameters can read them from a file, or be copied and adapted.
+
+
+## The _old_ console
+
+This console is new and still experimental. The previous one, based on the standard Groovy Console, can still be used: start it with `--old` as first argument of the launcher, as in `./hm-geoscript.sh --old` (`hm-geoscript.bat --old` on Windows).
+
+:::{figure} ../images/apps/geoscript/old_console.png
+:alt: The previous Geoscript Console
+:width: 100%
+:align: center
+
+The previous console, based on the standard Groovy Console, with the same script.
+:::
