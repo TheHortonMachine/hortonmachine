@@ -33,6 +33,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.skyview.OmsSkyview;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -44,6 +45,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSSKYVIEW_DESCRIPTION)
+@Bibliography({OmsSkyview.BIBLIOGRAPHY_CORRIPIO_2003})
 @Author(name = OMSSKYVIEW_AUTHORNAMES, contact = OMSSKYVIEW_AUTHORCONTACTS)
 @Keywords(OMSSKYVIEW_KEYWORDS)
 @Label(OMSSKYVIEW_LABEL)

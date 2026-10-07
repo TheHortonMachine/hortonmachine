@@ -36,6 +36,7 @@ import org.hortonmachine.hmachine.modules.geomorphology.flow.OmsFlowDirections;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +48,7 @@ import oms3.annotations.UI;
 
 @Description(OMSFLOWDIRECTIONS_DESCRIPTION)
 @Bibliography(OmsFlowDirections.OMSFLOWDIRECTIONS_BIBLIOGRAPHY)
+@Documentation(OmsFlowDirections.OMSFLOWDIRECTIONS_DOCUMENTATION)
 @Author(name = OMSFLOWDIRECTIONS_AUTHORNAMES, contact = OMSFLOWDIRECTIONS_AUTHORCONTACTS)
 @Keywords(OMSFLOWDIRECTIONS_KEYWORDS)
 @Label(OMSFLOWDIRECTIONS_LABEL)

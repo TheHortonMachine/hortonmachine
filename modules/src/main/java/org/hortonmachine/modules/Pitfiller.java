@@ -35,6 +35,7 @@ import org.hortonmachine.hmachine.modules.demmanipulation.pitfiller.OmsPitfiller
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +46,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSPITFILLER_DESCRIPTION)
+@Documentation(OmsPitfiller.OMSPITFILLER_DOCUMENTATION)
 @Author(name = OMSPITFILLER_AUTHORNAMES, contact = OMSPITFILLER_AUTHORCONTACTS)
 @Keywords(OMSPITFILLER_KEYWORDS)
 @Label(OMSPITFILLER_LABEL)

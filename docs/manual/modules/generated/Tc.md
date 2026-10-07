@@ -24,3 +24,7 @@ Classifies the terrain in topographic classes, from the profile and the tangenti
 | `outTc9` | output file |  | The map of the 9 topographic classes, codes 10 to 90. |
 | `outTc3` | output file |  | The map of the 3 topographic classes: 15 concave, 25 planar, 35 convex. |
 
+**References**
+
+- Parsons, A. J. (1988). Hillslope Form. Routledge, London.
+

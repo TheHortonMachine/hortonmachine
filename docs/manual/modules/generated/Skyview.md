@@ -20,3 +20,7 @@ Calculates the sky view factor: the fraction of the sky visible from each cell, 
 |---|---|---|---|
 | `outSky` | output file |  | The map of the sky view factor. |
 
+**References**
+
+- Corripio, J. G. (2003). Vectorial algebra algorithms for calculating terrain parameters from digital elevation models and solar radiation modelling in mountainous terrain. International Journal of Geographical Information Science, 17(1), 1-23.
+

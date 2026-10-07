@@ -42,6 +42,7 @@ import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -61,6 +62,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 @Description(OMSTC_DESCRIPTION)
+@Bibliography({OmsTc.BIBLIOGRAPHY_PARSONS_1988})
 @Author(name = OMSTC_AUTHORNAMES, contact = OMSTC_AUTHORCONTACTS)
 @Keywords(OMSTC_KEYWORDS)
 @Label(OMSTC_LABEL)
@@ -68,6 +70,8 @@ import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 @Status(OMSTC_STATUS)
 @License(OMSTC_LICENSE)
 public class OmsTc extends HMModel {
+
+    public static final String BIBLIOGRAPHY_PARSONS_1988 = "Parsons, A. J. (1988). Hillslope Form. Routledge, London.";
 
     @Description(OMSTC_inProf_DESCRIPTION)
     @Unit("1/m")

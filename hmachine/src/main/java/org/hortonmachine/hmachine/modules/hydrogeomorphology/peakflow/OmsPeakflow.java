@@ -141,7 +141,7 @@ public class OmsPeakflow extends HMModel {
     public static final String OMSPEAKFLOW_DESCRIPTION = "Computes the flood hydrograph at the outlet of a basin with the geomorphological instantaneous unit hydrograph (GIUH), built from the width functions of the surface and of the subsurface flow. With the parameters a and n of the rainfall depth-duration-frequency curve, it finds the rainfall duration that gives the largest discharge, and its peak; with a measured rainfall event, it computes the hydrograph of the event. The surface runoff comes from the saturated areas of the basin, defined by the topographic index or by a map.";
     public static final String BIBLIOGRAPHY_RIGON_2011 = "Rigon, R., D'Odorico, P., Bertoldi, G. (2011). The geomorphic structure of the runoff peak. Hydrology and Earth System Sciences, 15(6), 1853-1863. doi:10.5194/hess-15-1853-2011";
     public static final String BIBLIOGRAPHY_RODRIGUEZ_ITURBE_1979 = "Rodríguez-Iturbe, I., Valdés, J. B. (1979). The geomorphologic structure of hydrologic response. Water Resources Research, 15(6), 1409-1420.";
-    public static final String OMSPEAKFLOW_DOCUMENTATION = "OmsPeakflow.html";
+    public static final String OMSPEAKFLOW_DOCUMENTATION = "";
     public static final String OMSPEAKFLOW_KEYWORDS = "Peakflow, Discharge, Flood, GIUH, Width function, Hydrologic";
     public static final String OMSPEAKFLOW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSPEAKFLOW_NAME = "peakflow";

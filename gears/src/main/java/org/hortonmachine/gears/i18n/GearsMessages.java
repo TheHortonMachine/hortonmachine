@@ -487,7 +487,7 @@ public class GearsMessages {
     public static final String OMSVECTORTABLEJOINER_OUT_VECTOR_DESCRIPTION = "The joined vector.";
 
     public static final String OMSMAPCALC_DESCRIPTION = "Raster map algebra with the Jiffle language, created by Michael Bedward: the script computes the value of each cell of the output map from the values of the input maps in the same cell, or in the cells around it. The maps are known in the script by their file name without extension, and must be declared in the images block of the script, the inputs with read and the output with write.";
-    public static final String OMSMAPCALC_DOCUMENTATION = "OmsMapcalc.html";
+    public static final String OMSMAPCALC_DOCUMENTATION = "";
     public static final String OMSMAPCALC_KEYWORDS = "Map algebra, Raster, Jiffle";
     public static final String OMSMAPCALC_LABEL = RASTERPROCESSING;
     public static final String OMSMAPCALC_NAME = "omsmapcalc";
@@ -696,7 +696,7 @@ public class GearsMessages {
     public static final String OMSCOVERAGELISTER_OUT_GC_DESCRIPTION = "All rasters matching read from the input files.";
 
     public static final String OMSVECTORIZER_DESCRIPTION = "Converts a raster into a vector of polygons, one for each area of cells with the same value. The no-data cells are not converted.";
-    public static final String OMSVECTORIZER_DOCUMENTATION = "OmsVectorizer.html";
+    public static final String OMSVECTORIZER_DOCUMENTATION = "";
     public static final String OMSVECTORIZER_KEYWORDS = "Raster, Vector, Polygons, Conversion";
     public static final String OMSVECTORIZER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORIZER_NAME = "vectorizer";

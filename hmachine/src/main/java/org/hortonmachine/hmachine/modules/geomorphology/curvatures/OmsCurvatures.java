@@ -89,7 +89,7 @@ public class OmsCurvatures extends GridMultiProcessing {
 
     public static final String BIBLIOGRAPHY_MITASOVA_HOFIERKA_1993 = "Mitasova, H., Hofierka, J. (1993). Interpolation by regularized spline with tension: II. Application to terrain modeling and surface geometry analysis. Mathematical Geology, 25(6), 657-669.";
     public static final String OMSCURVATURES_DESCRIPTION = "Calculates the profile, planar and tangential curvatures of the terrain, from the 3x3 window around each cell. Positive values are concave forms: convergent for the planar and tangential curvatures, slowing down the flow for the profile curvature. The cells at the border of the map or of the no-data are left as no-data, the flat cells get 0.";
-    public static final String OMSCURVATURES_DOCUMENTATION = "OmsCurvatures.html";
+    public static final String OMSCURVATURES_DOCUMENTATION = "";
     public static final String OMSCURVATURES_KEYWORDS = "Geomorphology, Curvature, Convergence";
     public static final String OMSCURVATURES_LABEL = GEOMORPHOLOGY;
     public static final String OMSCURVATURES_NAME = "curvatures";

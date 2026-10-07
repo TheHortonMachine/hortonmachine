@@ -50,6 +50,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -61,6 +62,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSSKYVIEW_DESCRIPTION)
+@Bibliography({OmsSkyview.BIBLIOGRAPHY_CORRIPIO_2003})
 @Author(name = OMSSKYVIEW_AUTHORNAMES, contact = OMSSKYVIEW_AUTHORCONTACTS)
 @Keywords(OMSSKYVIEW_KEYWORDS)
 @Label(OMSSKYVIEW_LABEL)
@@ -68,6 +70,8 @@ import oms3.annotations.Status;
 @Status(OMSSKYVIEW_STATUS)
 @License(OMSSKYVIEW_LICENSE)
 public class OmsSkyview extends HMModel {
+
+    public static final String BIBLIOGRAPHY_CORRIPIO_2003 = "Corripio, J. G. (2003). Vectorial algebra algorithms for calculating terrain parameters from digital elevation models and solar radiation modelling in mountainous terrain. International Journal of Geographical Information Science, 17(1), 1-23.";
 
     @Description(OMSSKYVIEW_inElev_DESCRIPTION)
     @In

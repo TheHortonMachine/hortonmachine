@@ -32,13 +32,14 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMParameterKind;
 
 import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
 
 /**
  * Generates the reference part of the manual pages of the modules from their annotations.
  *
  * <p>For each module listed in the modules list file, a Markdown fragment is written with the
- * description, the toolbox folder, the status, the keywords and the table of the parameters, all
- * read by reflection from the oms3 annotations. The narrative pages of the manual include these
+ * description, the toolbox folder, the status, the keywords, the table of the parameters, the notes
+ * and the references, all read by reflection from the oms3 annotations. The narrative pages of the manual include these
  * fragments, so the module descriptions are maintained only in the code.</p>
  *
  * <p>Usage: <code>ModuleDocsGenerator &lt;modules list file&gt; &lt;output folder&gt;</code>, where the list file
@@ -108,6 +109,10 @@ public class ModuleDocsGenerator {
             }
             sb.append("\n");
         }
+        if (content.notes != null) {
+            sb.append("**Notes**\n\n");
+            sb.append(content.notes).append("\n\n");
+        }
         if (!content.references.isEmpty()) {
             sb.append("**References**\n\n");
             for( String reference : content.references ) {
@@ -145,6 +150,12 @@ public class ModuleDocsGenerator {
             sb.append("<h3>Outputs</h3>");
             appendHtmlTable(sb, new String[]{"Parameter", "Type", "Unit", "Description"}, content.outputs,
                     new int[]{0, 1, 2, 4});
+        }
+        if (content.notes != null) {
+            sb.append("<h3>Notes</h3>");
+            for( String paragraph : content.notes.split("\n\\s*\n") ) {
+                sb.append("<p>").append(toHtml(paragraph)).append("</p>");
+            }
         }
         if (!content.references.isEmpty()) {
             sb.append("<h3>References</h3><ul>");
@@ -192,6 +203,8 @@ public class ModuleDocsGenerator {
         /** Rows of name, type, unit, default and description. */
         List<String[]> inputs = new ArrayList<>();
         List<String[]> outputs = new ArrayList<>();
+        /** Markdown paragraphs from the documentation annotation, or null. */
+        String notes;
         List<String> references = new ArrayList<>();
     }
 
@@ -238,6 +251,15 @@ public class ModuleDocsGenerator {
                 content.outputs.add(row);
             } else {
                 content.inputs.add(row);
+            }
+        }
+
+        Documentation documentation = moduleClass.getAnnotation(Documentation.class);
+        if (documentation != null) {
+            String notes = documentation.value().strip();
+            // the legacy values are names of html files, not shown
+            if (!notes.isEmpty() && !notes.endsWith(".html")) {
+                content.notes = notes;
             }
         }
 

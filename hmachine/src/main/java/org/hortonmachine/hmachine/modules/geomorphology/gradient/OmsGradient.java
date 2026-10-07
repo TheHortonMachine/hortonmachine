@@ -88,7 +88,7 @@ public class OmsGradient extends GridMultiProcessing {
     public static final String BIBLIOGRAPHY_HORN_1981 = "Horn, B. K. P. (1981). Hill shading and the reflectance map. Proceedings of the IEEE, 69(1), 14-47.";
     public static final String BIBLIOGRAPHY_EVANS_1980 = "Evans, I. S. (1980). An integrated system of terrain analysis and slope mapping. Zeitschrift für Geomorphologie, Supplementband 36, 274-295.";
     public static final String OMSGRADIENT_DESCRIPTION = "Calculates the gradient of the elevation, the steepest slope in each cell, in any direction, from the 3x3 window around the cell.";
-    public static final String OMSGRADIENT_DOCUMENTATION = "OmsGradient.html";
+    public static final String OMSGRADIENT_DOCUMENTATION = "";
     public static final String OMSGRADIENT_KEYWORDS = "Geomorphology, Slope, Gradient";
     public static final String OMSGRADIENT_LABEL = GEOMORPHOLOGY;
     public static final String OMSGRADIENT_NAME = "gradient";

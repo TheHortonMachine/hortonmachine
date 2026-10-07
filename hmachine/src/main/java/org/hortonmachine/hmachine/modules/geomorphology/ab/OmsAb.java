@@ -84,7 +84,16 @@ public class OmsAb extends GridMultiProcessing {
     public GridCoverage2D outB = null;
 
     public static final String OMSAB_DESCRIPTION = "Calculates the contributing area per unit contour length (a/b) of each cell, the specific contributing area used by the hydrological and slope stability models. The contour length b is estimated from the planar curvature, between 0.1 and 1.9 times the cell size.";
-    public static final String OMSAB_DOCUMENTATION = "OmsAb.html";
+    public static final String OMSAB_DOCUMENTATION = """
+            The contour length b is derived from the planar curvature k of the cell: the contour line is \
+            approximated by an arc of radius `r = 1/k`, whose ends, a cell size L apart, enclose the angle \
+            `α = 2 arcsin(L/2r)`. The length of the arc at the downslope side of the cell is taken as b: \
+            `b = 2 arcsin(L/2r) (r - L)`.
+
+            In convergent cells (positive curvature) the contour shrinks downslope and b is smaller than L, in \
+            divergent cells (negative curvature) it widens and b is larger than L. On planar cells b is L. The \
+            values are limited between 0.1 L and 1.9 L, which are also used where the radius is smaller than the cell.
+            """;
     public static final String OMSAB_KEYWORDS = "Geomorphology, Contributing area, Specific contributing area";
     public static final String OMSAB_LABEL = GEOMORPHOLOGY;
     public static final String OMSAB_NAME = "ab";

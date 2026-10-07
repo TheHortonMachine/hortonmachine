@@ -39,6 +39,7 @@ import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.utils.RegionMap;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -50,6 +51,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSH2CA_DESCRIPTION)
+@Bibliography({OmsH2cA.BIBLIOGRAPHY_DODORICO_RIGON_2003})
 @Author(name = OMSH2CA_AUTHORNAMES, contact = OMSH2CA_AUTHORCONTACTS)
 @Keywords(OMSH2CA_KEYWORDS)
 @Label(OMSH2CA_LABEL)
@@ -57,6 +59,8 @@ import oms3.annotations.Status;
 @Status(OMSH2CA_STATUS)
 @License(OMSH2CA_LICENSE)
 public class OmsH2cA extends HMModel {
+    public static final String BIBLIOGRAPHY_DODORICO_RIGON_2003 = "D'Odorico, P., Rigon, R. (2003). Hillslope and channel contributions to the hydrologic response. Water Resources Research, 39(5), 1113.";
+
     @Description(OMSH2CA_inFlow_DESCRIPTION)
     @In
     public GridCoverage2D inFlow = null;

@@ -37,6 +37,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hillslopeanalyses.tc.OmsTc;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -49,6 +50,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSTC_DESCRIPTION)
+@Bibliography({OmsTc.BIBLIOGRAPHY_PARSONS_1988})
 @Author(name = OMSTC_AUTHORNAMES, contact = OMSTC_AUTHORCONTACTS)
 @Keywords(OMSTC_KEYWORDS)
 @Label(OMSTC_LABEL)

@@ -40,6 +40,7 @@ import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -57,8 +58,10 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2ca.OmsH2cA;
 
 @Description(OMSH2CD_DESCRIPTION)
+@Bibliography({OmsH2cA.BIBLIOGRAPHY_DODORICO_RIGON_2003})
 @Author(name = OMSH2CD_AUTHORNAMES, contact = OMSH2CD_AUTHORCONTACTS)
 @Keywords(OMSH2CD_KEYWORDS)
 @Label(OMSH2CD_LABEL)

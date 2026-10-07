@@ -20,6 +20,10 @@ Calculates the magnitude of each cell: the number of sources upstream of it, the
 |---|---|---|---|
 | `outMag` | output file |  | The map of the magnitude. |
 
+**Notes**
+
+In a network where two channels join at every confluence, a network of magnitude n has 2n - 1 links: n exterior links, from the sources to the first confluence, and n - 1 interior ones. As every source drains a comparable area, the magnitude is also a rough index of the contributing area.
+
 **References**
 
 - Shreve, R. L. (1966). Statistical law of stream numbers. The Journal of Geology, 74(1), 17-37.

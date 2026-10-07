@@ -22,3 +22,7 @@ Gives each hillslope cell the value that a map has on the network cell into whic
 |---|---|---|---|
 | `outAttribute` | output file |  | The map of the values of the network cells into which each cell drains. |
 
+**References**
+
+- D'Odorico, P., Rigon, R. (2003). Hillslope and channel contributions to the hydrologic response. Water Resources Research, 39(5), 1113.
+

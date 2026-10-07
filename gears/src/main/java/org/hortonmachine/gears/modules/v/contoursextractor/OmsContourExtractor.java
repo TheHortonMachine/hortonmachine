@@ -96,7 +96,7 @@ public class OmsContourExtractor extends HMModel {
     public Integer precisionScale = null;
 
     public static final String OMSCONTOUREXTRACTOR_DESCRIPTION = "Extracts the contour lines of a raster, at regular intervals of its values, as a vector of lines.";
-    public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "OmsContourExtractor.html";
+    public static final String OMSCONTOUREXTRACTOR_DOCUMENTATION = "";
     public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Contours, Isolines, Raster, Vector";
     public static final String OMSCONTOUREXTRACTOR_LABEL = VECTORPROCESSING;
     public static final String OMSCONTOUREXTRACTOR_NAME = "contourextract";

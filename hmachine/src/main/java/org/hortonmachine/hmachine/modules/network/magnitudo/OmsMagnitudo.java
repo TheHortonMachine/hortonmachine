@@ -47,6 +47,7 @@ import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -58,6 +59,7 @@ import oms3.annotations.Status;
 
 @Description(OMSMAGNITUDO_DESCRIPTION)
 @Bibliography({OmsMagnitudo.BIBLIOGRAPHY_SHREVE_1966})
+@Documentation(OmsMagnitudo.OMSMAGNITUDO_DOCUMENTATION)
 @Author(name = OMSMAGNITUDO_AUTHORNAMES, contact = OMSMAGNITUDO_AUTHORCONTACTS)
 @Keywords(OMSMAGNITUDO_KEYWORDS)
 @Label(OMSMAGNITUDO_LABEL)
@@ -67,6 +69,11 @@ import oms3.annotations.Status;
 public class OmsMagnitudo extends HMModel {
 
     public static final String BIBLIOGRAPHY_SHREVE_1966 = "Shreve, R. L. (1966). Statistical law of stream numbers. The Journal of Geology, 74(1), 17-37.";
+    public static final String OMSMAGNITUDO_DOCUMENTATION = """
+            In a network where two channels join at every confluence, a network of magnitude n has 2n - 1 links: \
+            n exterior links, from the sources to the first confluence, and n - 1 interior ones. As every source \
+            drains a comparable area, the magnitude is also a rough index of the contributing area.
+            """;
 
     @Description(OMSMAGNITUDO_inFlow_DESCRIPTION)
     @In

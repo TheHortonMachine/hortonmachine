@@ -114,7 +114,7 @@ public class OmsRasterSummary extends HMModel {
     public boolean printToConsole = true;
 
     public static final String OMSRASTERSUMMARY_DESCRIPTION = "Calculates the basic statistics of a raster: minimum, maximum, mean, standard deviation, range and sum of the values, and optionally their histogram.";
-    public static final String OMSRASTERSUMMARY_DOCUMENTATION = "OmsRasterSummary.html";
+    public static final String OMSRASTERSUMMARY_DOCUMENTATION = "";
     public static final String OMSRASTERSUMMARY_KEYWORDS = "Statistics, Raster, Histogram";
     public static final String OMSRASTERSUMMARY_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERSUMMARY_NAME = "rsummary";

@@ -75,7 +75,7 @@ public class OmsCutOut extends HMModel {
     public GridCoverage2D outRaster = null;
 
     public static final String OMSCUTOUT_DESCRIPTION = "Masks a raster with another raster, or with thresholds on its values: the cells outside the mask, or outside the range of the thresholds, become no-data.";
-    public static final String OMSCUTOUT_DOCUMENTATION = "OmsCutOut.html";
+    public static final String OMSCUTOUT_DOCUMENTATION = "";
     public static final String OMSCUTOUT_KEYWORDS = "Raster, Mask, Threshold";
     public static final String OMSCUTOUT_LABEL = RASTERPROCESSING;
     public static final String OMSCUTOUT_NAME = "cutout";

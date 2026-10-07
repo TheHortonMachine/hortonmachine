@@ -88,7 +88,7 @@ public class OmsViewshed extends HMModel {
      */
     public ViewpointProcessingListener singleViewpointProcessListener = null;
 
-    public static final String DOC = "Calculate a viewshed raster, with values based on the visibility by the supplied view points.";
+    public static final String DOC = "";
     public static final String DESCR_outViewshed = "The map of the number of viewpoints from which each cell is visible.";
     public static final String DESCR_pHeight = "The height of the viewpoints above the elevation model, used when the points have no height field.";
     public static final String DESCR_pField = "The field of the points with their height above the elevation model.";

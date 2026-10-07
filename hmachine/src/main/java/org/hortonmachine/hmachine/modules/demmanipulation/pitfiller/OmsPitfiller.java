@@ -30,6 +30,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -40,6 +41,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OmsPitfiller.OMSPITFILLER_DESCRIPTION)
+@Documentation(OmsPitfiller.OMSPITFILLER_DOCUMENTATION)
 @Author(name = OmsPitfiller.OMSPITFILLER_AUTHORNAMES, contact = OmsPitfiller.OMSPITFILLER_AUTHORCONTACTS)
 @Keywords(OmsPitfiller.OMSPITFILLER_KEYWORDS)
 @Label(OmsPitfiller.OMSPITFILLER_LABEL)
@@ -56,7 +58,11 @@ public class OmsPitfiller extends HMModel {
     public GridCoverage2D outPit = null;
 
     public static final String OMSPITFILLER_DESCRIPTION = "Fills the depressions (pits) of a digital elevation model, raising the cells that have no downhill neighbour, so that from every cell water can flow down to the border of the map. It is the first step of most hydro-geomorphological analyses.";
-    public static final String OMSPITFILLER_DOCUMENTATION = "OmsPitfiller.html";
+    public static final String OMSPITFILLER_DOCUMENTATION = """
+            All the depressions are filled, also the real closed ones, like lakes, ponds or karst sinks, which can't \
+            be told apart from the errors of the data. The drainage directions computed afterwards cross them as if \
+            they were filled, so where real depressions matter the results have to be checked there.
+            """;
     public static final String OMSPITFILLER_KEYWORDS = "Dem manipulation, Geomorphology, Depressions, Pits";
     public static final String OMSPITFILLER_LABEL = DEMMANIPULATION;
     public static final String OMSPITFILLER_NAME = "pit";

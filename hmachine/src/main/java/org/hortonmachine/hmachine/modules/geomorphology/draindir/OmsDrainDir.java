@@ -89,7 +89,7 @@ public class OmsDrainDir extends HMModel {
 
     public static final String OMSDRAINDIR_BIBLIOGRAPHY = "Orlandini, S., Moretti, G., Franchini, M., Aldighieri, B., Testa, B. (2003). Path-based methods for the determination of nondispersive drainage directions in grid-based digital elevation models. Water Resources Research, 39(6), 1144.";
     public static final String OMSDRAINDIR_DESCRIPTION = "Corrects the D8 drainage directions so that the flow paths deviate as little as possible from the real direction of steepest descent, with the LAD (least angular deviation) or LTD (least transversal deviation) method, and calculates the total contributing area of each cell.";
-    public static final String OMSDRAINDIR_DOCUMENTATION = "OmsDrainDir.html";
+    public static final String OMSDRAINDIR_DOCUMENTATION = "";
     public static final String OMSDRAINDIR_KEYWORDS = "Geomorphology, Drainage directions, Total contributing area, LAD, LTD";
     public static final String OMSDRAINDIR_LABEL = GEOMORPHOLOGY;
     public static final String OMSDRAINDIR_NAME = "draindir";

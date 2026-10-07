@@ -23,3 +23,7 @@ Calculates the hillslope to channel distance: the distance of each cell from the
 |---|---|---|---|
 | `outH2cd` | output file | cells or m | The map of the hillslope to channel distance. |
 
+**References**
+
+- D'Odorico, P., Rigon, R. (2003). Hillslope and channel contributions to the hydrologic response. Water Resources Research, 39(5), 1113.
+

@@ -34,7 +34,7 @@ The modules are documented in the `modules/` section, with their screenshots in 
 
 ## Module references
 
-The description, parameters and references of each module are generated from its OMS annotations (`@Description`, `@Label`, `@Keywords`, `@Status`, `@UI`, `@Unit`, `@In`, `@Out`, `@Bibliography`) by `ModuleDocsGenerator` in the `modules` project, for the classes listed in `modules/modules.txt`. The pages include them with `{include}`. Always document the module classes without the `Oms` prefix.
+The description, parameters and references of each module are generated from its OMS annotations (`@Description`, `@Label`, `@Keywords`, `@Status`, `@UI`, `@Unit`, `@In`, `@Out`, `@Documentation`, `@Bibliography`) by `ModuleDocsGenerator` in the `modules` project, for the classes listed in `modules/modules.txt`. The pages include them with `{include}`. Always document the module classes without the `Oms` prefix.
 
 To change a module reference, change the annotations and regenerate the fragments. From the repository root:
 

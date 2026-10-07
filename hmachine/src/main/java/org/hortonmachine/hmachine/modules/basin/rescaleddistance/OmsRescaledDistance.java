@@ -93,7 +93,7 @@ public class OmsRescaledDistance extends GridMultiProcessing {
 
     public static final String BIBLIOGRAPHY_DODORICO_RIGON_2003 = "D'Odorico, P., Rigon, R. (2003). Hillslope and channel contributions to the hydrologic response. Water Resources Research, 39(5), 1113. doi:10.1029/2002WR001708";
     public static final String OMSRESCALEDDISTANCE_DESCRIPTION = "Calculates the rescaled distance of each cell from the outlet along the drainage directions: the distance along the hillslopes is multiplied by the ratio between the channel and the hillslope velocities, so that it becomes proportional to the travel time. The outlets are the network cells draining out of the map.";
-    public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "OmsRescaledDistance.html";
+    public static final String OMSRESCALEDDISTANCE_DOCUMENTATION = "";
     public static final String OMSRESCALEDDISTANCE_KEYWORDS = "Basin, Geomorphology, Width function, Distance to outlet";
     public static final String OMSRESCALEDDISTANCE_LABEL = BASIN;
     public static final String OMSRESCALEDDISTANCE_NAME = "rescdist";

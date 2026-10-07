@@ -98,7 +98,7 @@ public class OmsExtractNetwork extends GridMultiProcessing {
     public GridCoverage2D outNet = null;
 
     public static final String OMSEXTRACTNETWORK_DESCRIPTION = "Extracts the river network as a raster: the cells whose total contributing area exceeds a threshold, optionally combined with the slope or the topographic classes.";
-    public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "OmsExtractNetwork.html";
+    public static final String OMSEXTRACTNETWORK_DOCUMENTATION = "";
     public static final String OMSEXTRACTNETWORK_KEYWORDS = "Network, Channels, Total contributing area, Threshold";
     public static final String OMSEXTRACTNETWORK_LABEL = NETWORK;
     public static final String OMSEXTRACTNETWORK_NAME = "extractnet";

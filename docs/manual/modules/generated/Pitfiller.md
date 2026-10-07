@@ -20,3 +20,7 @@ Fills the depressions (pits) of a digital elevation model, raising the cells tha
 |---|---|---|---|
 | `outPit` | output file |  | The depitted elevation model. |
 
+**Notes**
+
+All the depressions are filled, also the real closed ones, like lakes, ponds or karst sinks, which can't be told apart from the errors of the data. The drainage directions computed afterwards cross them as if they were filled, so where real depressions matter the results have to be checked there.
+

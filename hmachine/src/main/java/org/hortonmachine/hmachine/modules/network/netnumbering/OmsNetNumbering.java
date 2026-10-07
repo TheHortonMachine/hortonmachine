@@ -140,7 +140,7 @@ public class OmsNetNumbering extends HMModel {
 	public ADb inGeoframeDb = null;
 
 	public static final String OMSNETNUMBERING_DESCRIPTION = "Numbers the links of the river network and extracts the sub-basin draining into each link. With a desired area, the links are aggregated into sub-basins of about that size, which can be used as hydrological response units.";
-	public static final String OMSNETNUMBERING_DOCUMENTATION = "OmsNetNumbering.html";
+	public static final String OMSNETNUMBERING_DOCUMENTATION = "";
 	public static final String OMSNETNUMBERING_KEYWORDS = "Network, Sub-basins, Topology, Hydrological response units";
 	public static final String OMSNETNUMBERING_LABEL = NETWORK;
 	public static final String OMSNETNUMBERING_NAME = "netnum";

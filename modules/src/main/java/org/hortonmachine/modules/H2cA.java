@@ -35,6 +35,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2ca.OmsH2cA;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -46,6 +47,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSH2CA_DESCRIPTION)
+@Bibliography({OmsH2cA.BIBLIOGRAPHY_DODORICO_RIGON_2003})
 @Author(name = OMSH2CA_AUTHORNAMES, contact = OMSH2CA_AUTHORCONTACTS)
 @Keywords(OMSH2CA_KEYWORDS)
 @Label(OMSH2CA_LABEL)

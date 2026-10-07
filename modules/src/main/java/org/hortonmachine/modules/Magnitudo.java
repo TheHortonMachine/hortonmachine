@@ -35,6 +35,7 @@ import org.hortonmachine.hmachine.modules.network.magnitudo.OmsMagnitudo;
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,6 +47,7 @@ import oms3.annotations.UI;
 
 @Description(OMSMAGNITUDO_DESCRIPTION)
 @Bibliography({OmsMagnitudo.BIBLIOGRAPHY_SHREVE_1966})
+@Documentation(OmsMagnitudo.OMSMAGNITUDO_DOCUMENTATION)
 @Author(name = OMSMAGNITUDO_AUTHORNAMES, contact = OMSMAGNITUDO_AUTHORCONTACTS)
 @Keywords(OMSMAGNITUDO_KEYWORDS)
 @Label(OMSMAGNITUDO_LABEL)

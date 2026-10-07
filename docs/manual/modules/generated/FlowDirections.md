@@ -21,6 +21,10 @@ Calculates the drainage directions of a depitted elevation model with the D8 met
 |---|---|---|---|
 | `outFlow` | output file |  | The map of the drainage directions (D8). |
 
+**Notes**
+
+The outlets are not marked with the conventional value 10, which several modules use to recognize them: run Markoutlets on the drainage directions when one of these follows.
+
 **References**
 
 - O'Callaghan, J. F., Mark, D. M. (1984). The extraction of drainage networks from digital elevation data. Computer Vision, Graphics, and Image Processing, 28(3), 323-344.

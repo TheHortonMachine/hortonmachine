@@ -33,9 +33,11 @@ import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSH2CD_pMode_DESCR
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2ca.OmsH2cA;
 import org.hortonmachine.hmachine.modules.hillslopeanalyses.h2cd.OmsH2cd;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -48,6 +50,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSH2CD_DESCRIPTION)
+@Bibliography({OmsH2cA.BIBLIOGRAPHY_DODORICO_RIGON_2003})
 @Author(name = OMSH2CD_AUTHORNAMES, contact = OMSH2CD_AUTHORCONTACTS)
 @Keywords(OMSH2CD_KEYWORDS)
 @Label(OMSH2CD_LABEL)

@@ -76,7 +76,10 @@ public class OmsFlowDirections extends HMModel {
 
     public static final String OMSFLOWDIRECTIONS_BIBLIOGRAPHY = "O'Callaghan, J. F., Mark, D. M. (1984). The extraction of drainage networks from digital elevation data. Computer Vision, Graphics, and Image Processing, 28(3), 323-344.";
     public static final String OMSFLOWDIRECTIONS_DESCRIPTION = "Calculates the drainage directions of a depitted elevation model with the D8 method: each cell drains to the neighbour of steepest descent among its eight neighbours. The directions are coded counterclockwise from 1 (east) to 8 (south-east).";
-    public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = "OmsFlowDirections.html";
+    public static final String OMSFLOWDIRECTIONS_DOCUMENTATION = """
+            The outlets are not marked with the conventional value 10, which several modules use to recognize \
+            them: run Markoutlets on the drainage directions when one of these follows.
+            """;
     public static final String OMSFLOWDIRECTIONS_KEYWORDS = "Geomorphology, Flow directions, D8";
     public static final String OMSFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
     public static final String OMSFLOWDIRECTIONS_NAME = "flow";

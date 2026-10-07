@@ -80,7 +80,7 @@ public class OmsTopIndex extends GridMultiProcessing {
 
     public static final String BIBLIOGRAPHY_BEVEN_KIRKBY_1979 = "Beven, K. J., Kirkby, M. J. (1979). A physically based, variable contributing area model of basin hydrology. Hydrological Sciences Bulletin, 24(1), 43-69.";
     public static final String OMSTOPINDEX_DESCRIPTION = "Calculates the topographic index, ln(a/tan β), the natural logarithm of the contributing area over the slope: the higher it is, the more the cell tends to saturate. It depends only on the morphology. It is not defined where the slope is 0, which is left as no-data.";
-    public static final String OMSTOPINDEX_DOCUMENTATION = "OmsTopIndex.html";
+    public static final String OMSTOPINDEX_DOCUMENTATION = "";
     public static final String OMSTOPINDEX_KEYWORDS = "Topographic index, Saturation, Hydrology";
     public static final String OMSTOPINDEX_LABEL = BASIN;
     public static final String OMSTOPINDEX_NAME = "topindex";

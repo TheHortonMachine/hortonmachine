@@ -85,7 +85,7 @@ public class OmsAspect extends GridNodeMultiProcessing {
     public GridCoverage2D outAspect = null;
 
     public static final String OMSASPECT_DESCRIPTION = "Calculates the aspect of the terrain, the direction the slope faces, clockwise from north: 0 for the slopes facing north, 90 east, 180 south, 270 west. It is computed from the 3x3 window around each cell, and the cells at the border of the map are left as no-data.";
-    public static final String OMSASPECT_DOCUMENTATION = "OmsAspect.html";
+    public static final String OMSASPECT_DOCUMENTATION = "";
     public static final String OMSASPECT_KEYWORDS = "Geomorphology, Aspect, Exposure";
     public static final String OMSASPECT_LABEL = GEOMORPHOLOGY;
     public static final String OMSASPECT_NAME = "aspect";

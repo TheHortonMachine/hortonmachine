@@ -63,7 +63,7 @@ public class HortonMessages {
     public static final String DUFFYINPUTS_outFinalconditions_DESCRIPTION = "The final conditions of the model to persist.";
 
     public static final String OMSWATEROUTLET_DESCRIPTION = "Extracts the basin of an outlet: the cells that drain into it along the drainage directions. Ported from the r.water.outlet module of GRASS GIS.";
-    public static final String OMSWATEROUTLET_DOCUMENTATION = "OmsWateroutlet.html";
+    public static final String OMSWATEROUTLET_DOCUMENTATION = "";
     public static final String OMSWATEROUTLET_KEYWORDS = "Basin, Outlet, Drainage directions";
     public static final String OMSWATEROUTLET_LABEL = DEMMANIPULATION;
     public static final String OMSWATEROUTLET_NAME = "wateroutlet";
@@ -130,7 +130,7 @@ public class HortonMessages {
     public static final String OMSKRIGING_outData_DESCRIPTION = "The interpolated data (for mode 0 and 1).";
 
     public static final String OMSTC_DESCRIPTION = "Classifies the terrain in topographic classes, from the profile and the tangential curvatures, each concave, planar or convex according to its threshold. The 9 classes combine the two curvatures: 10 planar-planar, 20 planar-convex, 30 planar-concave, 40 divergent-planar, 50 divergent-convex, 60 divergent-concave, 70 convergent-planar, 80 convergent-convex, 90 convergent-concave (tangential first, profile second). The 3 classes group them: 15 concave (30, 70, 90), 25 planar (10), 35 convex (the others).";
-    public static final String OMSTC_DOCUMENTATION = "OmsTc.html";
+    public static final String OMSTC_DOCUMENTATION = "";
     public static final String OMSTC_KEYWORDS = "Hillslope, Curvature, Topographic classes";
     public static final String OMSTC_LABEL = HILLSLOPE;
     public static final String OMSTC_NAME = "tc";
@@ -146,7 +146,7 @@ public class HortonMessages {
     public static final String OMSTC_outTc3_DESCRIPTION = "The map of the 3 topographic classes: 15 concave, 25 planar, 35 convex.";
 
     public static final String OMSSKYVIEW_DESCRIPTION = "Calculates the sky view factor: the fraction of the sky visible from each cell, between 0 and 1, reduced by the surrounding terrain. It is used to compute the diffuse radiation.";
-    public static final String OMSSKYVIEW_DOCUMENTATION = "OmsSkyview.html";
+    public static final String OMSSKYVIEW_DOCUMENTATION = "";
     public static final String OMSSKYVIEW_KEYWORDS = "Hydrology, Radiation, Sky view factor";
     public static final String OMSSKYVIEW_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSSKYVIEW_NAME = "skyview";
@@ -158,7 +158,7 @@ public class HortonMessages {
     public static final String OMSSKYVIEW_outSky_DESCRIPTION = "The map of the sky view factor.";
 
     public static final String OMSSHALSTAB_DESCRIPTION = "Maps the stability of the slopes to shallow landslides with the SHALSTAB model, which couples the infinite slope stability model with a steady-state model of the subsurface flow. The cells are classified as unconditionally stable, unconditionally unstable, stable or unstable for the given effective precipitation, and the critical effective precipitation that makes them unstable is computed. Each property of the soil can be a map or a constant.";
-    public static final String OMSSHALSTAB_DOCUMENTATION = "OmsShalstab.html";
+    public static final String OMSSHALSTAB_DOCUMENTATION = "";
     public static final String OMSSHALSTAB_KEYWORDS = "Shalstab, Landslides, Slope stability, Hydrology, Transmissivity";
     public static final String OMSSHALSTAB_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSSHALSTAB_NAME = "shalstab";
@@ -205,7 +205,7 @@ public class HortonMessages {
     public static final String OMSEPANETPARAMETERSTIME_outProperties_DESCRIPTION = "The Properties needed for epanet.";
 
     public static final String OMSHACKLENGTH_DESCRIPTION = "Calculates the Hack length of each cell: the length of the main stream upstream of it, from its source, following at each confluence the branch with the largest contributing area. Hack's law relates it to the contributing area.";
-    public static final String OMSHACKLENGTH_DOCUMENTATION = "OmsHackLength.html";
+    public static final String OMSHACKLENGTH_DOCUMENTATION = "";
     public static final String OMSHACKLENGTH_KEYWORDS = "Network, Hack length, Main stream, Geomorphology";
     public static final String OMSHACKLENGTH_LABEL = NETWORK;
     public static final String OMSHACKLENGTH_NAME = "hacklength";
@@ -219,7 +219,7 @@ public class HortonMessages {
     public static final String OMSHACKLENGTH_outHacklength_DESCRIPTION = "The map of the Hack lengths.";
 
     public static final String OMSH2CD_DESCRIPTION = "Calculates the hillslope to channel distance: the distance of each cell from the network, along the drainage directions, in number of cells or in meters. The network cells get 0, as the cells whose path leaves the map without reaching the network.";
-    public static final String OMSH2CD_DOCUMENTATION = "OmsH2cd.html";
+    public static final String OMSH2CD_DOCUMENTATION = "";
     public static final String OMSH2CD_KEYWORDS = "Hillslope, Network, Distance";
     public static final String OMSH2CD_LABEL = HILLSLOPE;
     public static final String OMSH2CD_NAME = "h2cd";
@@ -299,7 +299,7 @@ public class HortonMessages {
     public static final String OMSGC_outAggregateClasses_DESCRIPTION = "The map with the geomorphological classes";
 
     public static final String OMSHILLSHADE_DESCRIPTION = "Calculates the hillshade of the terrain, lit by the sun from a given direction and elevation, with the shadows cast by the surrounding terrain.";
-    public static final String OMSHILLSHADE_DOCUMENTATION = "OmsHillshade.html";
+    public static final String OMSHILLSHADE_DOCUMENTATION = "";
     public static final String OMSHILLSHADE_KEYWORDS = "Hillshade, Shadow, Radiation, Visualization";
     public static final String OMSHILLSHADE_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSHILLSHADE_NAME = "hillshade";
@@ -326,7 +326,7 @@ public class HortonMessages {
     public static final String OMSEPANETPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
 
     public static final String OMSSUMDOWNSTREAM_DESCRIPTION = "Sums the values of a map downstream, along the drainage directions: each cell gets the sum of the values of the cells upstream of it, itself included. The values outside the thresholds are not summed, and stop the paths.";
-    public static final String OMSSUMDOWNSTREAM_DOCUMENTATION = "OmsSumDownStream.html";
+    public static final String OMSSUMDOWNSTREAM_DOCUMENTATION = "";
     public static final String OMSSUMDOWNSTREAM_KEYWORDS = "Statistics, Downstream, Drainage directions";
     public static final String OMSSUMDOWNSTREAM_LABEL = STATISTICS;
     public static final String OMSSUMDOWNSTREAM_NAME = "sumdownstream";
@@ -341,7 +341,7 @@ public class HortonMessages {
     public static final String OMSSUMDOWNSTREAM_outSummed_DESCRIPTION = "The map of the sums of the values upstream.";
 
     public static final String OMSSLOPE_DESCRIPTION = "Calculates the slope of each cell along its drainage direction, as the drop to the downstream cell over their distance. Unlike the gradient, it is the slope the water follows.";
-    public static final String OMSSLOPE_DOCUMENTATION = "OmsSlope.html";
+    public static final String OMSSLOPE_DOCUMENTATION = "";
     public static final String OMSSLOPE_KEYWORDS = "Geomorphology, Slope, Drainage directions";
     public static final String OMSSLOPE_LABEL = GEOMORPHOLOGY;
     public static final String OMSSLOPE_NAME = "slope";
@@ -395,7 +395,7 @@ public class HortonMessages {
     public static final String HYMODINPUTS_outInputs_DESCRIPTION = "The inputs instance for linking.";
 
     public static final String OMSH2CA_DESCRIPTION = "Gives each hillslope cell the value that a map has on the network cell into which the hillslope drains. For example, with the elevation it gives the elevation of the channel each cell drains into, and its difference with the elevation is the height above the nearest drainage.";
-    public static final String OMSH2CA_DOCUMENTATION = "OmsH2cA.html";
+    public static final String OMSH2CA_DOCUMENTATION = "";
     public static final String OMSH2CA_KEYWORDS = "Hillslope, Network, Attribute";
     public static final String OMSH2CA_LABEL = HILLSLOPE;
     public static final String OMSH2CA_NAME = "OmsH2cA";
@@ -409,7 +409,7 @@ public class HortonMessages {
     public static final String OMSH2CA_outAttribute_DESCRIPTION = "The map of the values of the network cells into which each cell drains.";
 
     public static final String OMSTCA3D_DESCRIPTION = "Calculates the total contributing areas as the real, three-dimensional surface of the cells draining into each cell, instead of their number: on steep terrain the surface of a cell is larger than its plan area.";
-    public static final String OMSTCA3D_DOCUMENTATION = "OmsTca3d.html";
+    public static final String OMSTCA3D_DOCUMENTATION = "";
     public static final String OMSTCA3D_KEYWORDS = "Geomorphology, Contributing area, 3D";
     public static final String OMSTCA3D_LABEL = GEOMORPHOLOGY;
     public static final String OMSTCA3D_NAME = "tca3d";
@@ -435,7 +435,7 @@ public class HortonMessages {
     public static final String OMSNABLA_outNabla_DESCRIPTION = "The map of nabla.";
 
     public static final String OMSINSOLATION_DESCRIPTION = "Calculates the clear-sky direct solar radiation that reaches the terrain over a period of days, with the slope, the aspect and the shadows cast by the surrounding terrain. The radiation is computed every half hour of each day, through an atmosphere with standard transmittances, and the values in kW/m² are summed: half of the sum is the energy in kWh/m². The diffuse radiation is not considered.";
-    public static final String OMSINSOLATION_DOCUMENTATION = "OmsInsolation.html";
+    public static final String OMSINSOLATION_DOCUMENTATION = "";
     public static final String OMSINSOLATION_KEYWORDS = "Radiation, Insolation, Solar, Shadow";
     public static final String OMSINSOLATION_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSINSOLATION_NAME = "insolation";
@@ -463,7 +463,7 @@ public class HortonMessages {
     public static final String OMSMELTONNUMBER_outMelton_DESCRIPTION = "The Melton numbers, as pairs of id and number.";
 
     public static final String OMSPRESTEYTAYLORETPMODEL_DESCRIPTION = "Calculates the potential evapotranspiration with the Priestley-Taylor method, from time series of net radiation, air temperature and atmospheric pressure, at hourly or daily time steps. Missing values are replaced by the default values.";
-    public static final String OMSPRESTEYTAYLORETPMODEL_DOCUMENTATION = "OmsPresteyTaylorEtpModel.html";
+    public static final String OMSPRESTEYTAYLORETPMODEL_DOCUMENTATION = "";
     public static final String OMSPRESTEYTAYLORETPMODEL_KEYWORDS = "Evapotranspiration, Priestley-Taylor, Hydrologic";
     public static final String OMSPRESTEYTAYLORETPMODEL_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSPRESTEYTAYLORETPMODEL_NAME = "ptetp";
@@ -563,7 +563,6 @@ public class HortonMessages {
     public static final String OMSNETWORKATTRIBUTESBUILDER_outHack_DESCRIPTION = "The map of the Hack orders of the network.";
 
     public static final String OMSMAGNITUDO_DESCRIPTION = "Calculates the magnitude of each cell: the number of sources upstream of it, the sources being the cells into which nothing drains. On the drainage directions of the network alone, the sources are the channel heads and the result is the Shreve magnitude of the network.";
-    public static final String OMSMAGNITUDO_DOCUMENTATION = "OmsMagnitudo.html";
     public static final String OMSMAGNITUDO_KEYWORDS = "Network, Magnitude, Shreve";
     public static final String OMSMAGNITUDO_LABEL = NETWORK;
     public static final String OMSMAGNITUDO_NAME = "magnitudo";
@@ -607,7 +606,7 @@ public class HortonMessages {
     public static final String OMSJAMI_outInterpolated_DESCRIPTION = "Output interpolated meteo data for every point. Every value is associated to the id of the interpolation point.";
 
     public static final String OMSMARKOUTLETS_DESCRIPTION = "Marks with the conventional value 10 the outlets on the map of the drainage directions: the cells that drain out of the map or into no-data cells.";
-    public static final String OMSMARKOUTLETS_DOCUMENTATION = "OmsMarkoutlets.html";
+    public static final String OMSMARKOUTLETS_DOCUMENTATION = "";
     public static final String OMSMARKOUTLETS_KEYWORDS = "Outlets, Drainage directions, Raster";
     public static final String OMSMARKOUTLETS_LABEL = DEMMANIPULATION;
     public static final String OMSMARKOUTLETS_NAME = "markoutlets";
@@ -722,7 +721,7 @@ public class HortonMessages {
     public static final String OMSVARIOGRAM_outResult_DESCRIPTION = "The Experimental OmsVariogram.";
 
     public static final String OMSDISTANCETOOUTLET_DESCRIPTION = "Calculates the distance of each cell from the outlet, along the drainage directions. The outlets must be marked with the value 10 in the drainage directions, for example with MarkOutlets: the paths that leave the map elsewhere get 0.";
-    public static final String OMSDISTANCETOOUTLET_DOCUMENTATION = "OmsDistanceToOutlet.html";
+    public static final String OMSDISTANCETOOUTLET_DOCUMENTATION = "";
     public static final String OMSDISTANCETOOUTLET_KEYWORDS = "Network, Distance to outlet, Drainage directions";
     public static final String OMSDISTANCETOOUTLET_LABEL = NETWORK;
     public static final String OMSDISTANCETOOUTLET_NAME = "d2o";
