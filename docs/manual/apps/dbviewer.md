@@ -115,6 +115,14 @@ On a column, the menu writes into the editor a select on the column, sorted in a
 
 On a geometry column there is also **Show spatial metadata**, and depending on the database, actions to create, check, recover or disable the spatial index.
 
+### GeoFrame databases
+
+The databases written by the GeoFrame modules are recognized: their name in the tree gets the GeoFrame icon, and the context menus of their tables get actions to chart the data. For the databases of the [ERM workflow](../modules/geoframe/erm/index.md):
+
+- **Open ERM Simulation Chart** on a simulation table (`sim…_water_budget_simulation_discharge`), with the precipitation, the temperature and the simulated and observed discharge of a sub-basin, chosen on a map of the sub-basins: see [the results of ErmSimulation](../modules/geoframe/erm/ermsimulation.md#the-results-in-the-database);
+- **Open Station Data Chart** on the `station_data` table, with the data measured by the stations: see [ErmStationDataImporter](../modules/geoframe/erm/ermstationdataimporter.md);
+- **Open Basin Data Chart** on the `basin_data` table, with the input data of the sub-basins: see [ErmPrestleyEt](../modules/geoframe/erm/ermprestleyet.md).
+
 ## Running queries
 
 Write a query in the SQL Editor and press the run button (the green arrow) on its left. The results appear in the current tab of the Data Viewer, and the number of records and the time taken are shown below it.

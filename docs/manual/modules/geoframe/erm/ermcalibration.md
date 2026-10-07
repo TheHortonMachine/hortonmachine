@@ -31,5 +31,11 @@ At the end, the best parameters and their KGE are reported in the log. These are
 :language: groovy
 ```
 
+:::{figure} ../../../images/modules/Geoframe_erm_calibration.png
+:alt: The calibration script in the Geoscript Console, with the best cost of each iteration and the best parameters found.
+
+The calibration run in the [Geoscript Console](../../../apps/geoscript.md): the log shows the best cost of the swarm at each iteration and, at the end, the best parameters found. They can be copied into the simulation script.
+:::
+
 ```{include} ../../generated/ErmCalibration.md
 ```

@@ -20,5 +20,13 @@ The `ID` row holds the station ids, the following rows the timestamp and the val
 :language: groovy
 ```
 
+The imported data can be checked in the [Database Viewer](../../../apps/dbviewer.md): right-click on the `station_data` table of the GeoFrame database and choose **Open Station Data Chart**, then pick the station in the combo box at the top.
+
+:::{figure} ../../../images/modules/Geoframe_erm_stationdata_chart.png
+:alt: The station data chart of the Database Viewer, with the precipitation and temperature measured at a meteo station.
+
+The data of a meteo station: the measured precipitation and temperature.
+:::
+
 ```{include} ../../generated/ErmStationDataImporter.md
 ```

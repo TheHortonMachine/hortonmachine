@@ -10,14 +10,14 @@ The ERM modules form a workflow that goes from a digital elevation model and the
 | 4 | [ErmRadiation](ermradiation.md) | the net radiation of each sub-basin |
 | 5 | [ErmPrestleyEt](ermprestleyet.md) | the potential evapotranspiration of each sub-basin |
 | 6 | [ErmCalibration](ermcalibration.md) | nothing: the best model parameters are reported in the log |
-| 7 | [ErmSimulation](ermsimulation.md) | nothing: the simulated discharge is shown against the observed one |
+| 7 | [ErmSimulation](ermsimulation.md) | the simulated discharge of each sub-basin, in a new table for each run, also shown against the observed one in a chart |
 
 The modules can be run from the [Spatial Toolbox](../../../apps/spatialtoolbox.md), in the GeoFrame folder, or with scripts in the [Geoscript Console](../../../apps/geoscript.md). The page of each module has the script of its step: together they are a complete run on a basin in Japan, and only the `workspace` folder at the top of each script needs to be changed to run them on other data.
 
 :::{admonition} TODO
 :class: warning
 
-References for the ERM model and the GEOframe environment, and maps of the results of each step, are still to be added.
+References for the ERM model and the GEOframe environment are still to be added.
 :::
 
 ```{toctree}

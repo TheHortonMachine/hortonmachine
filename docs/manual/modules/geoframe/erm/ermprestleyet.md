@@ -17,5 +17,13 @@ The soil heat flux is used only with hourly time steps.
 :language: groovy
 ```
 
+With this step the input data of the sub-basins are complete, and they can be checked in the [Database Viewer](../../../apps/dbviewer.md): right-click on the `basin_data` table of the GeoFrame database and choose **Open Basin Data Chart**, then pick the sub-basin in the combo box at the top.
+
+:::{figure} ../../../images/modules/Geoframe_erm_basindata_chart.png
+:alt: The basin data chart of the Database Viewer, with the evapotranspiration, precipitation, radiation and temperature of a sub-basin.
+
+The input data of a sub-basin: the potential evapotranspiration of this step, the net radiation of [ErmRadiation](ermradiation.md), the precipitation and temperature of [ErmKriging](ermkriging.md).
+:::
+
 ```{include} ../../generated/ErmPrestleyEt.md
 ```
