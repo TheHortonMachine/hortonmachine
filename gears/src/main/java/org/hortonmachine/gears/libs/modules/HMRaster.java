@@ -24,12 +24,15 @@ import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,7 +40,6 @@ import java.util.concurrent.Future;
 import java.util.stream.IntStream;
 
 import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -81,13 +83,30 @@ public class HMRaster implements AutoCloseable {
     
     private RandomIter iter;
     /**
-     * Iterator used exclusively for writes on a writable raster.
+     * The thread that uses {@link #iter}, the one that built the raster.
      *
-     * <p>Kept distinct from {@link #iter} (used for reads) because the underlying tiled-image
-     * writable iterator tracks per-tile write locks; interleaving reads and writescan raise issues. See
-     * {@link CoverageUtilities#getRandomIterator(java.awt.image.RenderedImage)}.
+     * <p>The image iterators keep the tile of the last accessed cell, so they can't be shared
+     * between threads: the other threads get their own, see {@link #readIter()}. They are kept
+     * here, not in thread locals, so that they don't keep the image alive after the raster is
+     * gone, through the threads of the pools.</p>
      */
-    private WritableRandomIter writerIter;
+    private Thread iterOwner;
+    private final Map<Thread, RandomIter> otherThreadsIters = new ConcurrentHashMap<>();
+    /**
+     * The tiles of the writable image, [tileRow][tileCol], written directly.
+     *
+     * <p>No writable iterators: they check tiles out of the image with
+     * {@link WritableRenderedImage#getWritableTile(int, int)}, whose writers count is not thread
+     * safe, so writes from several threads end up with the tiles locked (null). Writing into
+     * the tiles is safe as long as the threads write different cells.</p>
+     */
+    private WritableRaster[][] writableTiles;
+    private int tileWidth;
+    private int tileHeight;
+    private int tileGridXOffset;
+    private int tileGridYOffset;
+    private int minTileX;
+    private int minTileY;
     private boolean isWritable = false;
     private GridGeometry2D gridGeometry;
     private WritableRenderedImage writableImage;
@@ -191,6 +210,60 @@ public class HMRaster implements AutoCloseable {
         shortNovalue = (short) HMConstants.getNovalue(coverage);
         byteNovalue = (byte) HMConstants.getNovalue(coverage);
         iter = CoverageUtilities.getRandomIterator(coverage);
+        iterOwner = Thread.currentThread();
+    }
+
+    /**
+     * @return the read iterator of the calling thread.
+     */
+    private RandomIter readIter() {
+        Thread thread = Thread.currentThread();
+        if (thread == iterOwner) {
+            return iter;
+        }
+        RandomIter threadIter = otherThreadsIters.get(thread);
+        if (threadIter == null) {
+            threadIter = otherThreadsIters.computeIfAbsent(thread, t -> CoverageUtilities.getRandomIterator(getRenderedImage()));
+        }
+        return threadIter;
+    }
+
+    /**
+     * Set the writable image of the raster, with the iterator to read it and its tiles to write it.
+     *
+     * @param image the image.
+     */
+    private void initWritableImage( WritableRenderedImage image ) {
+        writableImage = image;
+        iter = CoverageUtilities.getRandomIterator(image);
+        iterOwner = Thread.currentThread();
+        tileWidth = image.getTileWidth();
+        tileHeight = image.getTileHeight();
+        tileGridXOffset = image.getTileGridXOffset();
+        tileGridYOffset = image.getTileGridYOffset();
+        minTileX = image.getMinTileX();
+        minTileY = image.getMinTileY();
+        writableTiles = new WritableRaster[image.getNumYTiles()][image.getNumXTiles()];
+        for( int ty = 0; ty < writableTiles.length; ty++ ) {
+            for( int tx = 0; tx < writableTiles[ty].length; tx++ ) {
+                // getTile does not touch the writers count; tiles of writable images are writable
+                Raster tile = image.getTile(minTileX + tx, minTileY + ty);
+                writableTiles[ty][tx] = tile instanceof WritableRaster
+                        ? (WritableRaster) tile
+                        : image.getWritableTile(minTileX + tx, minTileY + ty);
+            }
+        }
+    }
+
+    /**
+     * @param col the col of a cell of the image.
+     * @param row the row of a cell of the image.
+     * @return the writable tile containing the cell.
+     */
+    private WritableRaster writableTile( int col, int row ) {
+        int tileX = Math.floorDiv(col - tileGridXOffset, tileWidth) - minTileX;
+        int tileY = Math.floorDiv(row - tileGridYOffset, tileHeight) - minTileY;
+        return writableTiles[tileY][tileX];
     }
 
     /**
@@ -362,8 +435,11 @@ public class HMRaster implements AutoCloseable {
         return gridGeometry;
     }
     
+    /**
+     * @return the read iterator of the calling thread (iterators can't be shared between threads).
+     */
     public RandomIter getIter() {
-        return iter;
+        return readIter();
     }
 
     /**
@@ -487,10 +563,45 @@ public class HMRaster implements AutoCloseable {
      */
     public double getValue( int col, int row ) {
         if (isContained(col, row)) {
-            return iter.getSampleDouble(col, row, 0);
+            try {
+                return readIter().getSampleDouble(col, row, 0);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw outOfImageBounds(col, row, e);
+            }
         } else {
             return novalue;
         }
+    }
+
+    /**
+     * Describe a cell that is inside the region of the raster, but outside of its image, which
+     * is otherwise reported by the image iterators without any position.
+     *
+     * @param col the col of the cell.
+     * @param row the row of the cell.
+     * @param cause the exception of the iterator.
+     * @return the exception to throw, with the cell in grid and world space and the bounds of
+     *          region and image.
+     */
+    private ArrayIndexOutOfBoundsException outOfImageBounds( int col, int row, ArrayIndexOutOfBoundsException cause ) {
+        StringBuilder sb = new StringBuilder("Cell out of the image bounds: col=").append(col).append(", row=").append(row);
+        try {
+            Coordinate world = getWorld(col, row);
+            sb.append(" (cell center x=").append(world.x).append(", y=").append(world.y).append(")");
+        } catch (Exception e) {
+            // the grid position is still useful
+        }
+        sb.append(". Raster region: cols ").append(startCol).append("..").append(startCol + cols - 1);
+        sb.append(", rows ").append(startRow).append("..").append(startRow + rows - 1);
+        RenderedImage image = getRenderedImage();
+        if (image != null) {
+            sb.append(". Image: cols ").append(image.getMinX()).append("..").append(image.getMinX() + image.getWidth() - 1);
+            sb.append(", rows ").append(image.getMinY()).append("..").append(image.getMinY() + image.getHeight() - 1);
+        }
+        sb.append(".");
+        ArrayIndexOutOfBoundsException exception = new ArrayIndexOutOfBoundsException(sb.toString());
+        exception.initCause(cause);
+        return exception;
     }
 
     /**
@@ -625,7 +736,11 @@ public class HMRaster implements AutoCloseable {
      */
     public int getIntValue( int col, int row ) {
         if (isContained(col, row)) {
-            return iter.getSample(col, row, 0);
+            try {
+                return readIter().getSample(col, row, 0);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw outOfImageBounds(col, row, e);
+            }
         } else {
             return intNovalue;
         }
@@ -651,7 +766,11 @@ public class HMRaster implements AutoCloseable {
      */
     public short getShortValue( int col, int row ) {
         if (isContained(col, row)) {
-            return (short) iter.getSample(col, row, 0);
+            try {
+                return (short) readIter().getSample(col, row, 0);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw outOfImageBounds(col, row, e);
+            }
         } else {
             return shortNovalue;
         }
@@ -681,7 +800,11 @@ public class HMRaster implements AutoCloseable {
             throw new IOException("The current HMRaster is not writable.");
         }
         if (isContained(col, row)) {
-            writerIter.setSample(col, row, 0, value);
+            try {
+                writableTile(col, row).setSample(col, row, 0, value);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw outOfImageBounds(col, row, e);
+            }
         }
     }
 
@@ -690,7 +813,11 @@ public class HMRaster implements AutoCloseable {
             throw new IOException("The current HMRaster is not writable.");
         }
         if (isContained(col, row)) {
-            writerIter.setSample(col, row, 0, value);
+            try {
+                writableTile(col, row).setSample(col, row, 0, value);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw outOfImageBounds(col, row, e);
+            }
         }
     }
 
@@ -699,7 +826,11 @@ public class HMRaster implements AutoCloseable {
             throw new IOException("The current HMRaster is not writable.");
         }
         if (isContained(col, row)) {
-            writerIter.setSample(col, row, 0, value);
+            try {
+                writableTile(col, row).setSample(col, row, 0, value);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                throw outOfImageBounds(col, row, e);
+            }
         }
     }
 
@@ -922,9 +1053,8 @@ public class HMRaster implements AutoCloseable {
         if (iter != null) {
             iter.done();
         }
-        if (writerIter != null) {
-            writerIter.done();
-        }
+        otherThreadsIters.values().forEach(RandomIter::done);
+        otherThreadsIters.clear();
     }
     
     /**
@@ -1647,8 +1777,7 @@ public class HMRaster implements AutoCloseable {
                     hmRaster.writableImage = CoverageUtilities.createWritableImage(hmRaster.cols, hmRaster.rows, Double.class,
                             initialValue != null ? initialValue : hmRaster.novalue);
                 }
-                hmRaster.writerIter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableImage);
-                hmRaster.iter = CoverageUtilities.getRandomIterator(hmRaster.writableImage);
+                hmRaster.initWritableImage(hmRaster.writableImage);
 //                if (nullBorders) {
 //                    for( int c = 0; c < width; c++ ) {
 //                        writableRaster.setSample(c, 0, 0, doubleNovalue);
@@ -1670,18 +1799,19 @@ public class HMRaster implements AutoCloseable {
                                 for( int c = 0; c < _cols; c++ ) {
                                     boolean isBorder = doNullBorder && (c == 0 || r == 0 || c == _cols - 1 || r == _rows - 1);
                                     double value = values[rr * _cols + c];
+                                    WritableRaster tile = hmRaster.writableTile(c, r);
                                     if (doInteger) {
                                         if (isBorder) {
-                                            hmRaster.writerIter.setSample(c, r, 0, template.intNovalue);
+                                            tile.setSample(c, r, 0, template.intNovalue);
                                         } else {
-                                            hmRaster.writerIter.setSample(c, r, 0, value);
+                                            tile.setSample(c, r, 0, value);
                                         }
                                     } else if (doShort) {
-                                        hmRaster.writerIter.setSample(c, r, 0, isBorder ? template.shortNovalue : (short) value);
+                                        tile.setSample(c, r, 0, isBorder ? template.shortNovalue : (short) value);
                                     } else if (doByte) {
-                                        hmRaster.writerIter.setSample(c, r, 0, isBorder ? (byte) template.novalue : (byte) value);
+                                        tile.setSample(c, r, 0, isBorder ? (byte) template.novalue : (byte) value);
                                     } else {
-                                        hmRaster.writerIter.setSample(c, r, 0, isBorder ? template.novalue : value);
+                                        tile.setSample(c, r, 0, isBorder ? template.novalue : value);
                                     }
                                 }
                             }
@@ -1720,13 +1850,12 @@ public class HMRaster implements AutoCloseable {
                     hmRaster.writableImage = CoverageUtilities.createWritableImage(hmRaster.cols, hmRaster.rows, Double.class,
                             initialValue != null ? initialValue : hmRaster.novalue);
                 }
-                hmRaster.writerIter = CoverageUtilities.getWritableRandomIterator(hmRaster.writableImage);
-                hmRaster.iter = CoverageUtilities.getRandomIterator(hmRaster.writableImage);
+                hmRaster.initWritableImage(hmRaster.writableImage);
 
                 if (dataMatrix != null) {
                     for( int r = 0; r < hmRaster.rows; r++ ) {
                         for( int c = 0; c < hmRaster.cols; c++ ) {
-                            hmRaster.writerIter.setSample(c, r, 0, dataMatrix[r][c]);
+                            hmRaster.writableTile(c, r).setSample(c, r, 0, dataMatrix[r][c]);
                         }
                     }
                 }

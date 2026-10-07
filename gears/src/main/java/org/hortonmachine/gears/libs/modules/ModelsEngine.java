@@ -920,6 +920,8 @@ public class ModelsEngine {
 		int cols = regionMap.getCols();
 		int rows = regionMap.getRows();
 		double attributeNV = attributeRaster.getNovalue();
+        // no path to the outlet can be longer: more steps mean that the flow directions loop
+        long maxSteps = (long) cols * rows;
         pm.beginTask("Marking the hillslopes with the channel value...", rows);
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
@@ -943,12 +945,22 @@ public class ModelsEngine {
                     var runningNode = flowNode.goDownstream();
                     int runningRow = -1;
                     int runningCol = -1;
+                    long steps = 0;
                     while( runningNode != null && runningNode.isValid() ) {
                         runningRow = runningNode.row;
                         runningCol = runningNode.col;
                         if (runningNode.isMarkedAsOutlet()) {
                             attributeValue = runningNode.getDoubleValueFromRaster(attributeRaster);
                             break;
+                        }
+                        if (++steps > maxSteps) {
+                            RasterCellInfo cellInfo = new RasterCellInfo(runningCol, runningRow, flowRaster, attributeRaster,
+                                    markedRaster);
+                            Coordinate world = flowRaster.getWorld(runningCol, runningRow);
+                            throw new ModelsIllegalargumentException("The flow directions loop: going downstream from the source "
+                                    + c + "/" + r + " never reaches an outlet. The loop passes through the cell " + runningCol
+                                    + "/" + runningRow + " (x=" + world.x + ", y=" + world.y
+                                    + ").\nInvolved cell infos with buffer:\n" + cellInfo.toString2(), "MODELSENGINE", pm);
                         }
                         runningNode = runningNode.goDownstream();
                     }
