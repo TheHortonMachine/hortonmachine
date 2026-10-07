@@ -25,6 +25,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 
 /**
  * Modal dialog that displays SQL command history as a selectable list with a
@@ -41,6 +42,22 @@ public class SqlHistoryDialog {
      * the user cancels.
      */
     public static String show( Component parent, List<String> history ) {
+        return show(parent, history, "SQL History", "Select a query from the history:");
+    }
+
+    /**
+     * Opens the dialog with a custom title and label, as for other kinds of scripts.
+     */
+    public static String show( Component parent, List<String> history, String title, String label ) {
+        return show(parent, history, title, label, null);
+    }
+
+    /**
+     * Opens the dialog with a custom title, label and preview component, as a text pane with
+     * syntax highlighting. A <code>null</code> preview gives a plain text area.
+     */
+    public static String show( Component parent, List<String> history, String title, String label,
+            JTextComponent preview ) {
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for( String cmd : history ) {
             listModel.addElement(cmd);
@@ -66,11 +83,16 @@ public class SqlHistoryDialog {
             }
         });
 
-        JTextArea previewArea = new JTextArea();
+        JTextComponent previewComponent = preview;
+        if (previewComponent == null) {
+            JTextArea textArea = new JTextArea();
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setFont(historyList.getFont().deriveFont(Font.PLAIN));
+            previewComponent = textArea;
+        }
+        JTextComponent previewArea = previewComponent;
         previewArea.setEditable(false);
-        previewArea.setLineWrap(true);
-        previewArea.setWrapStyleWord(true);
-        previewArea.setFont(historyList.getFont().deriveFont(Font.PLAIN));
         previewArea.setText(listModel.getElementAt(0));
 
         historyList.addListSelectionListener(ev -> {
@@ -95,12 +117,12 @@ public class SqlHistoryDialog {
         buttonPanel.add(cancelButton);
 
         JPanel contentPanel = new JPanel(new BorderLayout(0, 4));
-        contentPanel.add(new JLabel("Select a query from the history:"), BorderLayout.NORTH);
+        contentPanel.add(new JLabel(label), BorderLayout.NORTH);
         contentPanel.add(splitPane, BorderLayout.CENTER);
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         Window owner = SwingUtilities.getWindowAncestor(parent);
-        JDialog dialog = new JDialog(owner, "SQL History", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().add(contentPanel, BorderLayout.CENTER);
         dialog.setSize(800, 700);

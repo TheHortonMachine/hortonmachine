@@ -71,6 +71,11 @@ SplitSubbasins | ../examples/hm/splitsubbasins.groovy | split_subbasins.tif     
 SumDownStream  | ../examples/hm/sumdownstream.groovy  | unstable_upstream.tif       | logarithmic
 MeltonNumber   | ../examples/hm/meltonnumber.groovy   | -                           | -
 Mapcalc        | ../examples/hm/mapcalc.groovy        | filled.tif                  | rainbow  | positive
+Mapcalc        | ../examples/hm/mapcalc_rings.groovy  | rings.tif                   | rainbow  | base=rings.tif
+Mapcalc        | ../examples/hm/mapcalc_hill.groovy   | hill.tif                    | elev     | base=hill.tif
+Mapcalc        | ../examples/hm/mapcalc_valley.groovy | valley.tif                  | elev     | base=valley.tif
+Mapcalc        | ../examples/hm/mapcalc_terrain.groovy | terrain.tif                | elev     | base=terrain.tif
+Mapcalc        | ../examples/hm/mapcalc_terrain_network.groovy | terrain_net.tif    | blues    | base=terrain.tif,nolegend
 RasterReprojector | ../examples/hm/rasterreprojector.groovy | -                     | -
 RasterResolutionResampler | ../examples/hm/rasterresolutionresampler.groovy | dtm_50m.tif | elev
 Vectorizer     | ../examples/hm/vectorizer.groovy     | outlet_basin.shp            | blues

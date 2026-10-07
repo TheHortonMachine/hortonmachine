@@ -1,316 +1,164 @@
 package org.hortonmachine.mapcalc;
 
-import com.jgoodies.forms.layout.CellConstraints;
-import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Container;
-import java.awt.Dimension;
-import javax.swing.Box;
-import javax.swing.ImageIcon;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
+/**
+ * The layout of the map calculator: the script with its helpers on the left, the maps and the
+ * execution options on the right.
+ */
+public class MapcalcView extends JPanel {
+    JButton _examplesButton = new JButton();
+    JButton _historyButton = new JButton();
+    JPanel _functionAreaPanel = new JPanel();
+    JButton _runButton = new JButton();
+    JTable _availableMapsTable = new JTable();
+    JPanel _manualAddFileLayout = new JPanel();
+    JLabel _allMapsLabel = new JLabel();
+    JButton _addMapButton = new JButton();
+    JPanel _comboAddLayerlayout = new JPanel();
+    JButton _addMapFromComboButton = new JButton();
+    JComboBox _layerCombo = new JComboBox();
+    JTextField _outputPathText = new JTextField();
+    JButton _outPathButton = new JButton();
+    JTabbedPane _syntaxHelpTab = new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT);
+    JCheckBox _debugCheckbox = new JCheckBox();
+    JComboBox _heapCombo = new JComboBox();
 
-public class MapcalcView extends JPanel
-{
-   JComboBox _historyCombo = new JComboBox();
-   JPanel _functionAreaPanel = new JPanel();
-   JButton _runButton = new JButton();
-   JTable _availableMapsTable = new JTable();
-   JPanel _manualAddFileLayout = new JPanel();
-   JLabel _allMapsLabel = new JLabel();
-   JButton _addMapButton = new JButton();
-   JPanel _comboAddLayerlayout = new JPanel();
-   JButton _addMapFromComboButton = new JButton();
-   JComboBox _layerCombo = new JComboBox();
-   JTextField _outputPathText = new JTextField();
-   JButton _outPathButton = new JButton();
-   JTabbedPane _syntaxHelpTab = new JTabbedPane();
-   JCheckBox _debugCheckbox = new JCheckBox();
-   JComboBox _heapCombo = new JComboBox();
+    public MapcalcView() {
+        initializePanel();
+    }
 
-   /**
-    * Default constructor
-    */
-   public MapcalcView()
-   {
-      initializePanel();
-   }
+    private static TitledBorder titledBorder( String title ) {
+        return new TitledBorder(null, title, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null,
+                new Color(33, 33, 33));
+    }
 
-   /**
-    * Adds fill components to empty cells in the first row and first column of the grid.
-    * This ensures that the grid spacing will be the same as shown in the designer.
-    * @param cols an array of column indices in the first row where fill components should be added.
-    * @param rows an array of row indices in the first column where fill components should be added.
-    */
-   void addFillComponents( Container panel, int[] cols, int[] rows )
-   {
-      Dimension filler = new Dimension(10,10);
+    private JPanel createScriptPanel() {
+        _examplesButton.setName("examplesButton");
+        _examplesButton.setText("examples");
+        _examplesButton.setToolTipText("Fill the function area with one of the examples of the manual");
+        _historyButton.setName("historyButton");
+        _historyButton.setText("history");
+        _historyButton.setToolTipText("Recall one of the scripts run so far");
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        buttonsPanel.add(_examplesButton);
+        buttonsPanel.add(_historyButton);
 
-      boolean filled_cell_11 = false;
-      CellConstraints cc = new CellConstraints();
-      if ( cols.length > 0 && rows.length > 0 )
-      {
-         if ( cols[0] == 1 && rows[0] == 1 )
-         {
-            /** add a rigid area  */
-            panel.add( Box.createRigidArea( filler ), cc.xy(1,1) );
-            filled_cell_11 = true;
-         }
-      }
+        _functionAreaPanel.setName("functionAreaPanel");
+        JPanel functionPanel = new JPanel(new BorderLayout(0, 4));
+        functionPanel.setBorder(titledBorder("Function Area"));
+        functionPanel.add(buttonsPanel, BorderLayout.NORTH);
+        functionPanel.add(_functionAreaPanel, BorderLayout.CENTER);
 
-      for( int index = 0; index < cols.length; index++ )
-      {
-         if ( cols[index] == 1 && filled_cell_11 )
-         {
-            continue;
-         }
-         panel.add( Box.createRigidArea( filler ), cc.xy(cols[index],1) );
-      }
+        _syntaxHelpTab.setName("syntaxHelpTab");
+        _syntaxHelpTab.setBorder(titledBorder("Syntax Help"));
 
-      for( int index = 0; index < rows.length; index++ )
-      {
-         if ( rows[index] == 1 && filled_cell_11 )
-         {
-            continue;
-         }
-         panel.add( Box.createRigidArea( filler ), cc.xy(1,rows[index]) );
-      }
+        JPanel scriptPanel = new JPanel(new BorderLayout(0, 4));
+        scriptPanel.add(functionPanel, BorderLayout.CENTER);
+        scriptPanel.add(_syntaxHelpTab, BorderLayout.SOUTH);
+        return scriptPanel;
+    }
 
-   }
+    private JPanel createMapsPanel() {
+        _allMapsLabel.setName("allMapsLabel");
+        _allMapsLabel.setText("add map files from filesystem");
+        _addMapButton.setName("addMapButton");
+        _addMapButton.setText("...");
+        _manualAddFileLayout.setName("manualAddFileLayout");
+        _manualAddFileLayout.setLayout(new BorderLayout(4, 0));
+        _manualAddFileLayout.add(_allMapsLabel, BorderLayout.CENTER);
+        _manualAddFileLayout.add(_addMapButton, BorderLayout.EAST);
 
-   /**
-    * Helper method to load an image file from the CLASSPATH
-    * @param imageName the package and name of the file to load relative to the CLASSPATH
-    * @return an ImageIcon instance with the specified image file
-    * @throws IllegalArgumentException if the image resource cannot be loaded.
-    */
-   public ImageIcon loadImage( String imageName )
-   {
-      try
-      {
-         ClassLoader classloader = getClass().getClassLoader();
-         java.net.URL url = classloader.getResource( imageName );
-         if ( url != null )
-         {
-            ImageIcon icon = new ImageIcon( url );
-            return icon;
-         }
-      }
-      catch( Exception e )
-      {
-         e.printStackTrace();
-      }
-      throw new IllegalArgumentException( "Unable to load image: " + imageName );
-   }
+        _layerCombo.setName("layerCombo");
+        _addMapFromComboButton.setName("addMapFromComboButton");
+        _addMapFromComboButton.setText("+");
+        _comboAddLayerlayout.setName("comboAddLayerlayout");
+        _comboAddLayerlayout.setLayout(new BorderLayout(4, 0));
+        _comboAddLayerlayout.add(_layerCombo, BorderLayout.CENTER);
+        _comboAddLayerlayout.add(_addMapFromComboButton, BorderLayout.EAST);
 
-   /**
-    * Method for recalculating the component orientation for 
-    * right-to-left Locales.
-    * @param orientation the component orientation to be applied
-    */
-   public void applyComponentOrientation( ComponentOrientation orientation )
-   {
-      // Not yet implemented...
-      // I18NUtils.applyComponentOrientation(this, orientation);
-      super.applyComponentOrientation(orientation);
-   }
+        JPanel addPanel = new JPanel(new BorderLayout(0, 4));
+        addPanel.add(_manualAddFileLayout, BorderLayout.NORTH);
+        addPanel.add(_comboAddLayerlayout, BorderLayout.SOUTH);
 
-   public JPanel createPanel()
-   {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.6),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
+        _availableMapsTable.setName("availableMapsTable");
+        JPanel mapsPanel = new JPanel(new BorderLayout(0, 4));
+        mapsPanel.setBorder(titledBorder("Available maps"));
+        mapsPanel.add(addPanel, BorderLayout.NORTH);
+        mapsPanel.add(new JScrollPane(_availableMapsTable), BorderLayout.CENTER);
+        return mapsPanel;
+    }
 
-      jpanel1.add(createPanel1(),cc.xywh(2,2,9,1));
-      jpanel1.add(createPanel2(),cc.xywh(2,4,9,3));
-      jpanel1.add(createPanel3(),cc.xywh(2,14,18,1));
-      jpanel1.add(createPanel4(),cc.xywh(13,2,7,5));
-      jpanel1.add(createPanel5(),cc.xywh(13,12,7,1));
-      _syntaxHelpTab.setName("syntaxHelpTab");
-      TitledBorder titledborder1 = new TitledBorder(null,"Syntax Help",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      _syntaxHelpTab.setBorder(titledborder1);
-      jpanel1.add(_syntaxHelpTab,cc.xywh(2,8,9,5));
+    private JPanel createOptionsPanel() {
+        _debugCheckbox.setName("debugCheckbox");
+        _debugCheckbox.setText("Debug");
+        _heapCombo.setName("heapCombo");
 
-      _debugCheckbox.setActionCommand("Debug");
-      _debugCheckbox.setName("debugCheckbox");
-      _debugCheckbox.setText("Debug");
-      jpanel1.add(_debugCheckbox,cc.xywh(13,8,7,1));
+        _outputPathText.setName("outputPathText");
+        _outPathButton.setName("outPathButton");
+        _outPathButton.setText("...");
+        JPanel outputPanel = new JPanel(new BorderLayout(4, 0));
+        outputPanel.setBorder(titledBorder("Output Path"));
+        outputPanel.add(_outputPathText, BorderLayout.CENTER);
+        outputPanel.add(_outPathButton, BorderLayout.EAST);
 
-      jpanel1.add(createPanel6(),cc.xywh(13,10,7,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15 });
-      return jpanel1;
-   }
+        JPanel optionsPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(2, 2, 2, 2);
+        c.anchor = GridBagConstraints.WEST;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        optionsPanel.add(_debugCheckbox, c);
+        c.gridy = 1;
+        c.gridwidth = 1;
+        optionsPanel.add(new JLabel("Heap [MB]"), c);
+        c.gridx = 1;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        optionsPanel.add(_heapCombo, c);
+        c.gridx = 0;
+        c.gridy = 2;
+        c.gridwidth = 2;
+        optionsPanel.add(outputPanel, c);
+        return optionsPanel;
+    }
 
-   public JPanel createPanel1()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Mapcalc History",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
+    protected void initializePanel() {
+        JPanel rightPanel = new JPanel(new BorderLayout(0, 4));
+        rightPanel.add(createMapsPanel(), BorderLayout.CENTER);
+        rightPanel.add(createOptionsPanel(), BorderLayout.SOUTH);
 
-      _historyCombo.setName("historyCombo");
-      jpanel1.add(_historyCombo,cc.xy(1,2));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, createScriptPanel(), rightPanel);
+        splitPane.setResizeWeight(0.65);
+        splitPane.setBorder(null);
 
-      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1 });
-      return jpanel1;
-   }
+        _runButton.setName("runButton");
+        _runButton.setText("run");
+        JPanel runPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        runPanel.add(_runButton);
 
-   public JPanel createPanel2()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Function Area",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _functionAreaPanel.setName("functionAreaPanel");
-      jpanel1.add(_functionAreaPanel,cc.xy(1,1));
-
-      addFillComponents(jpanel1,new int[0],new int[0]);
-      return jpanel1;
-   }
-
-   public JPanel createPanel3()
-   {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _runButton.setActionCommand("run");
-      _runButton.setName("runButton");
-      _runButton.setText("run");
-      jpanel1.add(_runButton,cc.xy(2,1));
-
-      addFillComponents(jpanel1,new int[]{ 1,3 },new int[]{ 1 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel4()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Available maps",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _availableMapsTable.setName("availableMapsTable");
-      JScrollPane jscrollpane1 = new JScrollPane();
-      jscrollpane1.setViewportView(_availableMapsTable);
-      jscrollpane1.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-      jscrollpane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-      jpanel1.add(jscrollpane1,cc.xywh(2,5,7,1));
-
-      jpanel1.add(createmanualAddFileLayout(),cc.xywh(2,2,7,1));
-      jpanel1.add(createcomboAddLayerlayout(),cc.xywh(2,3,7,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9 },new int[]{ 1,2,3,4,5 });
-      return jpanel1;
-   }
-
-   public JPanel createmanualAddFileLayout()
-   {
-      _manualAddFileLayout.setName("manualAddFileLayout");
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      _manualAddFileLayout.setLayout(formlayout1);
-
-      _allMapsLabel.setName("allMapsLabel");
-      _allMapsLabel.setText("add map files from filesystem");
-      _allMapsLabel.setHorizontalAlignment(JLabel.LEFT);
-      _manualAddFileLayout.add(_allMapsLabel,cc.xy(1,1));
-
-      _addMapButton.setActionCommand("...");
-      _addMapButton.setName("addMapButton");
-      _addMapButton.setText("...");
-      _manualAddFileLayout.add(_addMapButton,cc.xy(3,1));
-
-      addFillComponents(_manualAddFileLayout,new int[]{ 2 },new int[0]);
-      return _manualAddFileLayout;
-   }
-
-   public JPanel createcomboAddLayerlayout()
-   {
-      _comboAddLayerlayout.setName("comboAddLayerlayout");
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      _comboAddLayerlayout.setLayout(formlayout1);
-
-      _addMapFromComboButton.setActionCommand("...");
-      _addMapFromComboButton.setName("addMapFromComboButton");
-      _addMapFromComboButton.setText("+");
-      _comboAddLayerlayout.add(_addMapFromComboButton,cc.xy(3,1));
-
-      _layerCombo.setName("layerCombo");
-      _comboAddLayerlayout.add(_layerCombo,cc.xy(1,1));
-
-      addFillComponents(_comboAddLayerlayout,new int[]{ 2 },new int[0]);
-      return _comboAddLayerlayout;
-   }
-
-   public JPanel createPanel5()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Output Path",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _outputPathText.setName("outputPathText");
-      jpanel1.add(_outputPathText,cc.xy(1,1));
-
-      _outPathButton.setActionCommand("...");
-      _outPathButton.setName("outPathButton");
-      _outPathButton.setText("...");
-      jpanel1.add(_outPathButton,cc.xy(3,1));
-
-      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
-      return jpanel1;
-   }
-
-   public JPanel createPanel6()
-   {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      JLabel jlabel1 = new JLabel();
-      jlabel1.setText("Heap [MB]");
-      jpanel1.add(jlabel1,cc.xy(1,1));
-
-      _heapCombo.setName("heapCombo");
-      jpanel1.add(_heapCombo,cc.xy(3,1));
-
-      addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
-      return jpanel1;
-   }
-
-   /**
-    * Initializer
-    */
-   protected void initializePanel()
-   {
-      setLayout(new BorderLayout());
-      add(createPanel(), BorderLayout.CENTER);
-   }
-
-
+        setLayout(new BorderLayout(0, 4));
+        setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+        add(splitPane, BorderLayout.CENTER);
+        add(runPanel, BorderLayout.SOUTH);
+    }
 }

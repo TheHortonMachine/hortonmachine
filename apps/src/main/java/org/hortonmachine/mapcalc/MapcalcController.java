@@ -2,7 +2,7 @@ package org.hortonmachine.mapcalc;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -14,8 +14,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -26,9 +26,11 @@ import javax.swing.JTextPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 
-import org.hortonmachine.database.DatabaseViewer;
+import org.hortonmachine.database.SqlHistoryDialog;
+import org.hortonmachine.database.SqlTemplatesDialog;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 import org.hortonmachine.gears.utils.DataUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -40,10 +42,12 @@ import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.gui.utils.ImageCache;
 
 public class MapcalcController extends MapcalcView implements IOnCloseListener {
     private static final long serialVersionUID = 1L;
     private static final String MAPCALC_HISTORY_KEY = "MAPCALC_HISTORY_KEY";
+    private static final int MAX_HISTORY = 30;
     private GuiBridgeHandler guiBridge;
     private JTextPane _functionArea;
 
@@ -144,10 +148,16 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         _runButton.addActionListener(( e ) -> {
 
             String script = _functionArea.getText();
-            if (!historyList.contains(script)) {
-                historyList.add(0, script);
-                _historyCombo.setModel(new DefaultComboBoxModel<>(historyList.toArray(new String[0])));
+            if (script.trim().length() == 0) {
+                GuiUtilities.showWarningMessage(this, "The function area is empty.");
+                return;
             }
+            if (!OmsMapcalc.assignsVariable(script, MapcalcJiffler.RESULT_MAP_NAME)) {
+                GuiUtilities.showWarningMessage(this, "The script never assigns a value to " + MapcalcJiffler.RESULT_MAP_NAME
+                        + ", the output map. Assign it in the script, as in:\n" + MapcalcJiffler.RESULT_MAP_NAME + " = ...;");
+                return;
+            }
+            addScriptToHistory(script);
 
             final ProcessLogConsoleController logConsole = new ProcessLogConsoleController();
             guiBridge.showWindow(logConsole.asJComponent(), "Console Log");
@@ -231,14 +241,32 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
 
         });
 
-        String[] historyArray = PreferencesHandler.getPreference(MAPCALC_HISTORY_KEY, new String[]{""});
+        String[] historyArray = PreferencesHandler.getPreference(MAPCALC_HISTORY_KEY, new String[0]);
         for( String entry : historyArray ) {
-            historyList.add(entry);
+            if (entry != null && entry.trim().length() > 0) {
+                historyList.add(entry);
+            }
         }
-        _historyCombo.setModel(new DefaultComboBoxModel<>(historyList.toArray(new String[0])));
-        _historyCombo.addActionListener(e -> {
-            String selectedItem = (String) _historyCombo.getSelectedItem();
-            addTextToFunctionArea(selectedItem);
+        _historyButton.setIcon(ImageCache.getInstance().getImage(ImageCache.HISTORY_DB));
+        _historyButton.addActionListener(e -> {
+            if (historyList.isEmpty()) {
+                GuiUtilities.showWarningMessage(this, "No history available.");
+                return;
+            }
+            String script = SqlHistoryDialog.show(this, historyList, "Mapcalc History", "Select a script from the history:",
+                    createPreviewPane());
+            if (script != null) {
+                setFunctionAreaText(script);
+            }
+        });
+
+        _examplesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
+        _examplesButton.addActionListener(e -> {
+            String script = SqlTemplatesDialog.show(this, MapcalcExamples.getExamples(), "Mapcalc Examples",
+                    "Select an example:", createPreviewPane());
+            if (script != null) {
+                setFunctionAreaText(script);
+            }
         });
 
         boolean doDebug = false;
@@ -293,6 +321,11 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
                 inputCount++;
             }
         }
+        if (inputCount == 1 && !name2PathMap.isEmpty()) {
+            // the script uses no map, as for synthetic maps: the first map gives the grid of the output
+            String path = FileUtilities.replaceBackSlashesWithSlashes(name2PathMap.values().iterator().next());
+            mc.append("_mapcalc.inRaster1 =\"\"\"").append(path).append("\"\"\";\n");
+        }
         mc.append("_mapcalc.process()\n");
 
         StageScriptExecutor exec = new StageScriptExecutor(guiBridge.getLibsFolder());
@@ -334,6 +367,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
 
     public void loadNewMap( String name, String path ) {
         name2PathMap.put(name, path);
+        ((MapcalcDocument) _functionArea.getDocument()).setMapNames(name2PathMap.keySet());
 
         Object[] names = {"Map Name", "Path"};
 
@@ -384,9 +418,47 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
         return dataModel;
     }
 
+    /**
+     * @return a text pane with the syntax highlighting of the function area, to preview scripts.
+     */
+    private JTextPane createPreviewPane() {
+        MapcalcDocument previewDoc = new MapcalcDocument();
+        previewDoc.setMapNames(name2PathMap.keySet());
+        JTextPane previewPane = new JTextPane(previewDoc);
+        previewPane.setFont(_functionArea.getFont());
+        return previewPane;
+    }
+
+    /**
+     * Puts a script on top of the history, which keeps the last {@value #MAX_HISTORY} scripts.
+     */
+    private void addScriptToHistory( String script ) {
+        historyList.remove(script);
+        historyList.add(0, script);
+        while( historyList.size() > MAX_HISTORY ) {
+            historyList.remove(historyList.size() - 1);
+        }
+        PreferencesHandler.setPreference(MAPCALC_HISTORY_KEY, historyList.toArray(new String[0]));
+    }
+
+    /**
+     * Replaces the script of the function area, after asking if it is not empty.
+     */
+    private void setFunctionAreaText( String script ) {
+        String text = _functionArea.getText();
+        if (text.trim().length() > 0 && !text.equals(script)
+                && !GuiUtilities.showYesNoDialog(this, "Replace the script of the function area?")) {
+            return;
+        }
+        _functionArea.setText(script);
+        _functionArea.setCaretPosition(0);
+    }
+
     protected void addTab( Entry<String, List<Constructs>> entry ) {
+        // a grid, unlike a flow layout, asks for the height of all its rows of buttons
         JPanel jplPanel = new JPanel();
-        jplPanel.setLayout(new FlowLayout());
+        jplPanel.setLayout(new GridLayout(0, 6, 4, 4));
+        jplPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
         List<Constructs> constructs = entry.getValue();
         for( Constructs c : constructs ) {
@@ -398,7 +470,10 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
             });
         }
 
-        _syntaxHelpTab.add(entry.getKey(), jplPanel);
+        // on top, so that the buttons don't stretch to the height of the tab with the most rows
+        JPanel tabPanel = new JPanel(new BorderLayout());
+        tabPanel.add(jplPanel, BorderLayout.NORTH);
+        _syntaxHelpTab.add(entry.getKey(), tabPanel);
     }
 
     protected void addTextToFunctionArea( String newText ) {

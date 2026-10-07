@@ -34,9 +34,12 @@ import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.util.List;
+import java.util.regex.Pattern;
 
+import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.media.jiffle.Jiffle;
 import org.eclipse.imagen.media.jiffle.runtime.AffineCoordinateTransform;
 import org.eclipse.imagen.media.jiffle.runtime.CoordinateTransform;
@@ -133,7 +136,8 @@ public class OmsMapcalc extends HMModel {
                 double yRes = regionParameters.yres;
                 jiffleRuntime.setWorldByResolution(worldBounds, xRes, yRes);
             }
-            RenderedImage renderedImage = mapGC.getRenderedImage();
+            // the novalues of the map become NaN, the null of Jiffle
+            RenderedImage renderedImage = novalueToNaN(mapGC);
             // add map
             String name = mapGC.getName().toString();
             jiffleRuntime.setSourceImage(name, renderedImage, jiffleCRS);
@@ -151,12 +155,27 @@ public class OmsMapcalc extends HMModel {
         updateInterval = pixelsNum / totalCount;
 
         String destName = jiffleRuntime.getDestinationVarNames()[0];
+        if (!assignsVariable(script, destName)) {
+            throw new ModelsIllegalargumentException("The script never assigns a value to the output map " + destName
+                    + ", which would be all 0. Assign it in the script, as in: " + destName + " = ...;",
+                    this.getClass().getSimpleName(), pm);
+        }
         WritableRenderedImage destImg = ImageUtils.createConstantImage(nCols, nRows, 0d);
         jiffleRuntime.setDestinationImage(destName, destImg, jiffleCRS);
         
         jiffleRuntime.evaluateAll(new NullProgressListener());
-        
-        outRaster = CoverageUtilities.buildCoverage(destName, destImg, regionParameters, crs);
+
+        // the null results of Jiffle become the novalue of the HortonMachine
+        WritableRaster outWR = destImg.getData().createCompatibleWritableRaster();
+        outWR.setRect(destImg.getData());
+        for( int r = 0; r < nRows; r++ ) {
+            for( int c = 0; c < nCols; c++ ) {
+                if (Double.isNaN(outWR.getSampleDouble(c, r, 0))) {
+                    outWR.setSample(c, r, 0, HMConstants.doubleNovalue);
+                }
+            }
+        }
+        outRaster = CoverageUtilities.buildCoverage(destName, outWR, regionParameters, crs);
 
 //        // create the executor
 //        JiffleExecutor executor = new JiffleExecutor();
@@ -216,6 +235,33 @@ public class OmsMapcalc extends HMModel {
 
     }
 
+    /**
+     * Checks if the statements of a script assign a variable, outside of its comments and of the
+     * images block, where the output map is declared. Jiffle accepts an output map that is never
+     * assigned, and leaves it at the constant value of the destination image.
+     *
+     * @param script the Jiffle script.
+     * @param name the name of the variable.
+     * @return <code>true</code> if the variable is assigned somewhere.
+     */
+    public static boolean assignsVariable( String script, String name ) {
+        String statements = script.replaceAll("(?s)/\\*.*?\\*/", " ") //
+                .replaceAll("//[^\\n]*", " ") //
+                .replaceAll("(?s)\\bimages\\s*\\{.*?\\}", " ");
+        Pattern assignment = Pattern.compile("\\b" + Pattern.quote(name) + "\\s*([-+*/%]?=(?!=)|\\+\\+|--)");
+        return assignment.matcher(statements).find();
+    }
+
+    /**
+     * The transform from the world positions of the script to the image cells: the rows grow
+     * towards the south, so north is up, and each position goes to the cell that contains it.
+     * 
+     * <p>
+     * Jiffle rounds the transformed positions to the nearest cell, and walks the world from the
+     * south-west corner of each cell: the half cell shift makes the rounding pick the cell that
+     * contains a position, and the epsilon keeps the corners of the walk, on the edges between
+     * two cells, in their cell.
+     */
     private static CoordinateTransform getTransform( Rectangle2D worldBounds, Rectangle imageBounds ) {
         if (worldBounds == null || worldBounds.isEmpty()) {
             throw new IllegalArgumentException("worldBounds must not be null or empty");
@@ -223,16 +269,41 @@ public class OmsMapcalc extends HMModel {
         if (imageBounds == null || imageBounds.isEmpty()) {
             throw new IllegalArgumentException("imageBounds must not be null or empty");
         }
+        double epsilon = 1E-6;
 
         double xscale = (imageBounds.getMaxX() - imageBounds.getMinX()) / (worldBounds.getMaxX() - worldBounds.getMinX());
-
-        double xoff = imageBounds.getMinX() - xscale * worldBounds.getMinX();
+        double xoff = imageBounds.getMinX() - xscale * worldBounds.getMinX() - 0.5 + epsilon;
 
         double yscale = (imageBounds.getMaxY() - imageBounds.getMinY()) / (worldBounds.getMaxY() - worldBounds.getMinY());
+        double yoff = imageBounds.getMinY() + yscale * worldBounds.getMaxY() - 0.5 - epsilon;
 
-        double yoff = imageBounds.getMinY() - yscale * worldBounds.getMinY();
+        return new AffineCoordinateTransform(new AffineTransform(xscale, 0, 0, -yscale, xoff, yoff));
+    }
 
-        return new AffineCoordinateTransform(new AffineTransform(xscale, 0, 0, yscale, xoff, yoff));
+    /**
+     * @return the image of the map as doubles, with its novalues set to NaN, the null of Jiffle.
+     */
+    private static RenderedImage novalueToNaN( GridCoverage2D map ) {
+        double novalue = HMConstants.getNovalue(map);
+        RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(map);
+        int cols = region.getCols();
+        int rows = region.getRows();
+        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, null);
+        RandomIter iter = CoverageUtilities.getRandomIterator(map);
+        try {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    double value = iter.getSampleDouble(c, r, 0);
+                    if (HMConstants.isNovalue(value, novalue)) {
+                        value = Double.NaN;
+                    }
+                    outWR.setSample(c, r, 0, value);
+                }
+            }
+        } finally {
+            iter.done();
+        }
+        return CoverageUtilities.buildCoverage("map", outWR, region, map.getCoordinateReferenceSystem()).getRenderedImage();
     }
 
 }

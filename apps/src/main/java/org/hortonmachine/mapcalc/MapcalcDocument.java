@@ -2,8 +2,11 @@ package org.hortonmachine.mapcalc;
 
 import java.awt.Color;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.AttributeSet;
@@ -29,6 +32,10 @@ public class MapcalcDocument extends DefaultStyledDocument {
     private HashSet<String> keywordsMap;
     private HashSet<String> splKeywordsMap;
     private SimpleAttributeSet splKeyword;
+    private MutableAttributeSet number;
+    private MutableAttributeSet mapName;
+    private Set<String> mapNames = new HashSet<>();
+    private static final Pattern NUMBER = Pattern.compile("\\d+(\\.\\d*)?|\\.\\d+");
 
     public MapcalcDocument() {
 
@@ -40,19 +47,21 @@ public class MapcalcDocument extends DefaultStyledDocument {
         StyleConstants.setForeground(normal, Color.black);
 
         comment = new SimpleAttributeSet();
-        Color green = new Color(0, 140, 0);
-        StyleConstants.setForeground(comment, green);
+        StyleConstants.setForeground(comment, new Color(128, 128, 128));
         StyleConstants.setItalic(comment, true);
 
-        StyleConstants.setForeground(comment, green);
-        StyleConstants.setItalic(comment, true);
         keyword = new SimpleAttributeSet();
         Color blue = new Color(0, 0, 140);
         StyleConstants.setForeground(keyword, blue);
         StyleConstants.setBold(keyword, true);
 
-        StyleConstants.setForeground(comment, green);
-        StyleConstants.setItalic(comment, true);
+        number = new SimpleAttributeSet();
+        StyleConstants.setForeground(number, new Color(170, 85, 0));
+
+        mapName = new SimpleAttributeSet();
+        StyleConstants.setForeground(mapName, new Color(150, 0, 150));
+        StyleConstants.setBold(mapName, true);
+
         splKeyword = new SimpleAttributeSet();
         StyleConstants.setForeground(splKeyword, new Color(0, 128, 0));
         StyleConstants.setBold(splKeyword, true);
@@ -67,7 +76,7 @@ public class MapcalcDocument extends DefaultStyledDocument {
         keywordsMap = new HashSet<>();
         while( keywordsScanner.hasNext() ) {
             String keyword = keywordsScanner.next();
-            keywordsMap.add(keyword.toUpperCase().trim());
+            keywordsMap.add(keyword.trim());
         }
         keywordsScanner.close();
 
@@ -76,9 +85,22 @@ public class MapcalcDocument extends DefaultStyledDocument {
         splKeywordsMap = new HashSet<>();
         while( keywordsScanner.hasNext() ) {
             String keyword = keywordsScanner.next();
-            splKeywordsMap.add(keyword.toUpperCase().trim());
+            splKeywordsMap.add(keyword.trim());
         }
         keywordsScanner.close();
+    }
+
+    /**
+     * Sets the names of the maps available to the script, which are highlighted, and highlights
+     * the whole document again.
+     */
+    public void setMapNames( Collection<String> names ) {
+        mapNames = new HashSet<>(names);
+        try {
+            processChangedLines(0, getLength());
+        } catch (BadLocationException e) {
+            // the whole document is always a valid range
+        }
     }
 
     /*
@@ -305,6 +327,10 @@ public class MapcalcDocument extends DefaultStyledDocument {
             doc.setCharacterAttributes(startOffset, endOfToken - startOffset, keyword, false);
         if (isSpatialiteKeyword(token))
             doc.setCharacterAttributes(startOffset, endOfToken - startOffset, splKeyword, false);
+        if (mapNames.contains(token))
+            doc.setCharacterAttributes(startOffset, endOfToken - startOffset, mapName, false);
+        if (NUMBER.matcher(token).matches())
+            doc.setCharacterAttributes(startOffset, endOfToken - startOffset, number, false);
         return endOfToken + 1;
     }
 
@@ -378,7 +404,7 @@ public class MapcalcDocument extends DefaultStyledDocument {
      * Override for other languages
      */
     protected boolean isDelimiter( String character ) {
-        String operands = ";:{}()[]+-/%<=>!&|^~*";
+        String operands = ";:,?{}()[]+-/%<=>!&|^~*$";
         if (Character.isWhitespace(character.charAt(0)) || operands.indexOf(character) != -1)
             return true;
         else
@@ -400,14 +426,14 @@ public class MapcalcDocument extends DefaultStyledDocument {
      * Override for other languages
      */
     protected boolean isKeyword( String token ) {
-        return keywordsMap.contains(token.toUpperCase());
+        return keywordsMap.contains(token);
     }
 
     /*
      * Override for other languages
      */
     protected boolean isSpatialiteKeyword( String token ) {
-        return splKeywordsMap.contains(token.toUpperCase());
+        return splKeywordsMap.contains(token);
     }
 
     /*
@@ -428,7 +454,7 @@ public class MapcalcDocument extends DefaultStyledDocument {
      * Override for other languages
      */
     protected String getSingleLineDelimiter() {
-        return "--";
+        return "//";
     }
 
     /*

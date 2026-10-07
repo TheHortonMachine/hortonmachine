@@ -28,8 +28,8 @@ public enum Constructs {
     LOGICAL4("!=", "!=", "inequality test", Constructs.LOGICAL), //
     LOGICAL5("> ", "> ", "greater than", Constructs.LOGICAL), //
     LOGICAL6(">=", ">=", "greater than or equal to", Constructs.LOGICAL), //
-    LOGICAL7("<=", "<=", "less than", Constructs.LOGICAL), //
-    LOGICAL8("< ", "< ", "less than or equal to", Constructs.LOGICAL), //
+    LOGICAL7("<=", "<=", "less than or equal to", Constructs.LOGICAL), //
+    LOGICAL8("< ", "< ", "less than", Constructs.LOGICAL), //
     // ARITHMETIC
     ARITHM1("^", "^", "Raise to power", Constructs.ARITHMETIC), //
     ARITHM2("*", "*", "Multiply", Constructs.ARITHMETIC), //
@@ -44,7 +44,7 @@ public enum Constructs {
     ISINF("inf?", "isinf( ? )", "Is infinite test on value x", Constructs.NUMERIC), //
     ISNAN("nan?", "isnan( ? )", "Is not a number test on value x", Constructs.NUMERIC), //
     RADTODEG("r2d", "radToDeg( ? )", "Radians to degrees", Constructs.NUMERIC), //
-    DEG2RAD("r2d", "degToRad( ? )", "Degrees to radians", Constructs.NUMERIC), //
+    DEG2RAD("d2r", "degToRad( ? )", "Degrees to radians", Constructs.NUMERIC), //
     // STATISTICAL
     STATS1("max", "max(?, ?)", "Maximum", Constructs.STATISTICAL), //
     STATS3("mean", "mean(?)", "Mean", Constructs.STATISTICAL), //

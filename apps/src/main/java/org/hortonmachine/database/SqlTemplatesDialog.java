@@ -23,6 +23,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
+import javax.swing.text.JTextComponent;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 
@@ -41,6 +42,22 @@ public class SqlTemplatesDialog {
      * {@code null} when the user cancels.
      */
     public static String show( Component parent, LinkedHashMap<String, String> templatesMap ) {
+        return show(parent, templatesMap, "SQL Templates", "Select a template:");
+    }
+
+    /**
+     * Opens the dialog with a custom title and label, as for other kinds of scripts.
+     */
+    public static String show( Component parent, LinkedHashMap<String, String> templatesMap, String title, String label ) {
+        return show(parent, templatesMap, title, label, null);
+    }
+
+    /**
+     * Opens the dialog with a custom title, label and preview component, as a text pane with
+     * syntax highlighting. A <code>null</code> preview gives a plain text area.
+     */
+    public static String show( Component parent, LinkedHashMap<String, String> templatesMap, String title, String label,
+            JTextComponent preview ) {
         String[] names = templatesMap.keySet().toArray(new String[0]);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
@@ -65,11 +82,16 @@ public class SqlTemplatesDialog {
             }
         });
 
-        JTextArea previewArea = new JTextArea();
+        JTextComponent previewComponent = preview;
+        if (previewComponent == null) {
+            JTextArea textArea = new JTextArea();
+            textArea.setLineWrap(true);
+            textArea.setWrapStyleWord(true);
+            textArea.setFont(templateList.getFont().deriveFont(Font.PLAIN));
+            previewComponent = textArea;
+        }
+        JTextComponent previewArea = previewComponent;
         previewArea.setEditable(false);
-        previewArea.setLineWrap(true);
-        previewArea.setWrapStyleWord(true);
-        previewArea.setFont(templateList.getFont().deriveFont(Font.PLAIN));
         previewArea.setText(templatesMap.get(names[0]));
 
         templateList.addListSelectionListener(ev -> {
@@ -94,12 +116,12 @@ public class SqlTemplatesDialog {
         buttonPanel.add(cancelButton);
 
         JPanel contentPanel = new JPanel(new BorderLayout(0, 4));
-        contentPanel.add(new JLabel("Select a template:"), BorderLayout.NORTH);
+        contentPanel.add(new JLabel(label), BorderLayout.NORTH);
         contentPanel.add(splitPane, BorderLayout.CENTER);
         contentPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         Window owner = SwingUtilities.getWindowAncestor(parent);
-        JDialog dialog = new JDialog(owner, "SQL Templates", Dialog.ModalityType.APPLICATION_MODAL);
+        JDialog dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         dialog.getContentPane().add(contentPanel, BorderLayout.CENTER);
         dialog.setSize(800, 700);

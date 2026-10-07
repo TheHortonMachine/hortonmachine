@@ -20,19 +20,24 @@ Available maps
 : the rasters the script can use. Add them with the **...** button. Each map is known in the script by its file name without extension, like `dtm_flanginec` for `dtm_flanginec.asc`. Double-click on a map to insert its name in the script.
 
 Function Area
-: the script, with syntax highlighting.
+: the script, with syntax highlighting. The **examples** button fills it with one of the examples of this manual, and the **history** button with one of the scripts run so far: both show the list of scripts with a preview of the selected one.
 
 Syntax Help
 : buttons that insert the constructs of the language, grouped by topic: control flow (`if`, `con`, `foreach`, `while`), general syntax, logical and arithmetic operators, numeric and statistical functions, and the functions describing the processing area (like `xres()` or `xmin()`). Hover over a button to see what it does.
-
-Mapcalc History
-: the scripts run so far, to recall one of them.
 
 Output Path
 : the raster file to create.
 
 Heap [MB] and Debug
 : the memory and the log level of the process running the script, as in the [Spatial Toolbox](spatialtoolbox.md#execution-options).
+
+:::{figure} ../images/apps/mapcalc/examples.png
+:alt: The examples of the Map Calculator
+:width: 70%
+:align: center
+
+The examples, with a preview of the selected script.
+:::
 
 Press **run** to execute the script. Like the modules of the Spatial Toolbox, it runs in a separate process, with its progress shown in a log window.
 
@@ -46,13 +51,13 @@ The log of the landform classification.
 
 ## Writing scripts
 
-The script assigns the value of each cell of the output map to the variable `result`. The Map Calculator declares the maps for Jiffle by itself, so the script contains just the calculation. The simplest scripts are one-liners, like the depth of the depressions filled by the Pitfiller module:
+The scripts are written in Jiffle, the raster algebra language created by [Michael Bedward](https://github.com/mbedward). The script assigns the value of each cell of the output map to the variable `result`: a script that never assigns it is refused. The Map Calculator declares the maps for Jiffle by itself, so the script contains just the calculation. The simplest scripts are one-liners, like the depth of the depressions filled by the Pitfiller module:
 
 ```text
 result = pit_flanginec - dtm_flanginec;
 ```
 
-The main elements of the language:
+The main elements of the language, described in full with examples in the [Jiffle language reference](../modules/raster-processing/mapcalc.md#the-jiffle-language) of the Mapcalc module:
 
 - **variables** need no declaration: `r = 5;`;
 - **conditions**, with `if (...) { ... } else { ... }` blocks, or inline with `con(condition, valueIfTrue, valueIfFalse)`;
@@ -62,7 +67,7 @@ The main elements of the language:
 
 ### Neighbouring cells
 
-`map[dx, dy]` reads the value of a map at an offset from the current cell. In the Map Calculator the offsets are expressed in **map units**, not in cells, since the maps are georeferenced: the cell on the right is `map[xres(), 0]`, the one above `map[0, yres()]`. Reading outside of the map stops the script with an error, so scripts reading the neighbours have to skip the cells along the borders, as in the example below.
+`map[dx, dy]` reads the value of a map at an offset from the current cell. In the Map Calculator the offsets are expressed in **map units**, not in cells, since the maps are georeferenced: the cell on the right is `map[xres(), 0]`, the one above `map[0, yres()]`. Reading outside of the map stops the script with an error, so scripts reading the neighbours have to skip the cells along the borders, as in the example below, or set a value for the cells outside with the option `options { outside = null; }` at the top of the script.
 
 ## Example: landform classification
 

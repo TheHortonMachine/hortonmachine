@@ -486,14 +486,14 @@ public class GearsMessages {
     public static final String OMSVECTORTABLEJOINER_P_FIELDS_DESCRIPTION = "The commaseparated list of fields to merge in.";
     public static final String OMSVECTORTABLEJOINER_OUT_VECTOR_DESCRIPTION = "The joined vector.";
 
-    public static final String OMSMAPCALC_DESCRIPTION = "Raster map algebra with the Jiffle language: the script computes the value of each cell of the output map from the values of the input maps in the same cell, or in the cells around it. The maps are known in the script by their file name without extension, and must be declared in the images block of the script, the inputs with read and the output with write.";
+    public static final String OMSMAPCALC_DESCRIPTION = "Raster map algebra with the Jiffle language, created by Michael Bedward: the script computes the value of each cell of the output map from the values of the input maps in the same cell, or in the cells around it. The maps are known in the script by their file name without extension, and must be declared in the images block of the script, the inputs with read and the output with write.";
     public static final String OMSMAPCALC_DOCUMENTATION = "OmsMapcalc.html";
     public static final String OMSMAPCALC_KEYWORDS = "Map algebra, Raster, Jiffle";
     public static final String OMSMAPCALC_LABEL = RASTERPROCESSING;
     public static final String OMSMAPCALC_NAME = "omsmapcalc";
     public static final int OMSMAPCALC_STATUS = 40;
     public static final String OMSMAPCALC_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSMAPCALC_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSMAPCALC_AUTHORNAMES = "Andrea Antonello, Michael Bedward";
     public static final String OMSMAPCALC_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSMAPCALC_IN_RASTERS_DESCRIPTION = "The maps used in the script.";
     public static final String OMSMAPCALC_P_FUNCTION_DESCRIPTION = "The Jiffle script, with the images block that declares the maps.";

@@ -17,11 +17,15 @@
  */
 package org.hortonmachine.gears.modules;
 
+import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+
 import java.awt.image.RenderedImage;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.imagen.iterator.RandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
@@ -107,6 +111,103 @@ public class TestMapcalc extends HMTestCase {
         // printImage(renderedImage);
 
         checkEqualsSinlgeValue(renderedImage, 900.0, 0.000000001);
+    }
+
+    /**
+     * North is up: y() is the northing of the south edge of the cell, so it decreases
+     * from the first row to the last.
+     */
+    public void testMapcalcNorthUp() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", HMTestMaps.pitData, envelopeParams,
+                HMTestMaps.getCrs(), true);
+
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest = y();";
+        mapcalc.process();
+
+        RandomIter iter = CoverageUtilities.getRandomIterator(mapcalc.outRaster);
+        double north = envelopeParams.getNorth();
+        double south = envelopeParams.getSouth();
+        double yres = envelopeParams.getYres();
+        int rows = envelopeParams.getRows();
+        assertEquals(north - yres, iter.getSampleDouble(0, 0, 0), 0.000001);
+        assertEquals(south, iter.getSampleDouble(0, rows - 1, 0), 0.000001);
+    }
+
+    /**
+     * The offsets are in map units, positive towards east and north.
+     */
+    public void testMapcalcNeighbours() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        double[][] elevationData = HMTestMaps.pitData;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams,
+                HMTestMaps.getCrs(), true);
+
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = "options{outside=null;} images{ele=read; dest=write;} dest = ele[xres(), yres()];";
+        mapcalc.process();
+
+        RandomIter iter = CoverageUtilities.getRandomIterator(mapcalc.outRaster);
+        // the cell to the north east
+        assertEquals(elevationData[2][4], iter.getSampleDouble(3, 3, 0), 0.000001);
+        // north of the first row there is nothing
+        assertTrue(isNovalue(iter.getSampleDouble(3, 0, 0)));
+    }
+
+    /**
+     * The novalues are the null of Jiffle: they are recognized by isnull, and they stay novalue
+     * in the calculations.
+     */
+    public void testMapcalcNovalue() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        double[][] elevationData = HMTestMaps.pitData;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams,
+                HMTestMaps.getCrs(), true);
+
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest = isnull(ele) ? 1 : ele * 0;";
+        mapcalc.process();
+        RandomIter iter = CoverageUtilities.getRandomIterator(mapcalc.outRaster);
+        assertEquals(1.0, iter.getSampleDouble(1, 1, 0), 0.0);
+        assertEquals(0.0, iter.getSampleDouble(0, 0, 0), 0.0);
+
+        mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = "images{ele=read; dest=write;} dest = ele + 1;";
+        mapcalc.process();
+        iter = CoverageUtilities.getRandomIterator(mapcalc.outRaster);
+        assertTrue(isNovalue(iter.getSampleDouble(1, 1, 0)));
+        assertEquals(801.0, iter.getSampleDouble(0, 0, 0), 0.0);
+    }
+
+    /**
+     * A script that never assigns the output map is refused, instead of giving a map of 0.
+     */
+    public void testMapcalcUnassignedOutput() throws Exception {
+        assertTrue(OmsMapcalc.assignsVariable("images{ele=read; dest=write;} dest = ele;", "dest"));
+        assertTrue(OmsMapcalc.assignsVariable("images{dest=write;} if (1) { dest += 2; }", "dest"));
+        assertTrue(OmsMapcalc.assignsVariable("images{dest=write;} dest++;", "dest"));
+        assertFalse(OmsMapcalc.assignsVariable("images{ele=read; dest=write;} other = ele;", "dest"));
+        assertFalse(OmsMapcalc.assignsVariable("images{dest=write;} x = 1; // dest = 2;", "dest"));
+        assertFalse(OmsMapcalc.assignsVariable("images{dest=write;} /* dest = 2; */ x = 1;", "dest"));
+        assertFalse(OmsMapcalc.assignsVariable("images{dest=write;} x = dest == 1;", "dest"));
+        assertFalse(OmsMapcalc.assignsVariable("images{dest=write;} mydest = 1;", "dest"));
+
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", HMTestMaps.pitData,
+                HMTestMaps.getEnvelopeparams(), HMTestMaps.getCrs(), true);
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = "images{ele=read; dest=write;} other = ele + 1;";
+        try {
+            mapcalc.process();
+            fail("The unassigned output map should be refused.");
+        } catch (ModelsIllegalargumentException e) {
+            assertTrue(e.getMessage().contains("dest"));
+        }
     }
 
     public static void main( String[] args ) throws Exception {
