@@ -21,6 +21,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.IntStream;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -344,6 +345,57 @@ public class TestHMRasterTiles extends HMTestCase {
             } finally {
                 file.delete();
             }
+        }
+    }
+
+    /**
+     * Cell reads and writes from many threads on a raster of several tiles: the image iterators
+     * keep the current tile, so a shared one returns values of other cells or fails.
+     */
+    public void testCellAccessFromManyThreads() throws Exception {
+        // 3x3 tiles of the writable images
+        int cols = 2600;
+        int rows = 2300;
+        RegionMap region = RegionMap.fromBoundsAndGrid(500000, 500000 + cols, 5000000, 5000000 + rows, cols, rows);
+        try (HMRaster raster = new HMRaster.HMRasterWritableBuilder().setName("threads").setRegion(region)
+                .setCrs(HMTestMaps.getCrs()).setNoValue(-99).build()) {
+            // parallel writes
+            IntStream.range(0, rows).parallel().forEach(r -> {
+                for( int c = 0; c < cols; c++ ) {
+                    try {
+                        raster.setValue(c, r, (double) r * cols + c);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            });
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    assertEquals("written cell " + c + "/" + r, (double) r * cols + c, raster.getValue(c, r), 0.0);
+                }
+            }
+
+            // parallel reads, jumping between opposite tiles at each read
+            AtomicInteger wrong = new AtomicInteger();
+            AtomicInteger failed = new AtomicInteger();
+            IntStream.range(0, rows).parallel().forEach(r -> {
+                for( int c = 0; c < cols; c++ ) {
+                    int c2 = cols - 1 - c;
+                    int r2 = rows - 1 - r;
+                    try {
+                        if (raster.getValue(c, r) != (double) r * cols + c) {
+                            wrong.incrementAndGet();
+                        }
+                        if (raster.getValue(c2, r2) != (double) r2 * cols + c2) {
+                            wrong.incrementAndGet();
+                        }
+                    } catch (Exception e) {
+                        failed.incrementAndGet();
+                    }
+                }
+            });
+            assertEquals("cells read with wrong values", 0, wrong.get());
+            assertEquals("cell reads failed", 0, failed.get());
         }
     }
 

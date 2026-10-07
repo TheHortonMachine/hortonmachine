@@ -295,39 +295,31 @@ public class RegionMap {
      * @return the new {@link RegionMap}.
      */
     public RegionMap toSubRegion( double n, double s, double w, double e ) {
-        double originalXres = getXres();
-        double originalYres = getYres();
-        double originalWest = getWest();
-        double originalSouth = getSouth();
+        double xres = getXres();
+        double yres = getYres();
+        double west = getWest();
+        double south = getSouth();
 
-        double envWest = w;
-        double deltaX = (envWest - originalWest) % originalXres;
-        double newWest = envWest - deltaX;
+        /*
+         * Work on whole cells from the origin of the grid: snapping with remainders of floating
+         * point divisions gave, for bounds lying on grid lines, a cell less than the snapped size,
+         * i.e. a region with a stretched resolution. The tolerance keeps bounds that lie on a grid
+         * line, up to floating point errors, from taking an extra cell.
+         */
+        double tolerance = 1E-6;
+        long firstCol = (long) Math.floor((Math.min(w, e) - west) / xres + tolerance);
+        long lastCol = (long) Math.ceil((Math.max(w, e) - west) / xres - tolerance);
+        long firstRow = (long) Math.floor((Math.min(s, n) - south) / yres + tolerance);
+        long lastRow = (long) Math.ceil((Math.max(s, n) - south) / yres - tolerance);
 
-        double envSouth = s;
-        double deltaY = (envSouth - originalSouth) % originalYres;
-        double newSouth = envSouth - deltaY;
+        double newWest = west + firstCol * xres;
+        double newEast = west + lastCol * xres;
+        double newSouth = south + firstRow * yres;
+        double newNorth = south + lastRow * yres;
+        int cols = (int) (lastCol - firstCol);
+        int rows = (int) (lastRow - firstRow);
 
-        double newWidth = e - w;
-        double deltaW = newWidth % originalXres;
-        if (deltaW > 0) {
-            newWidth = newWidth - deltaW + originalXres;
-        }
-
-        double newHeight = n - s;
-        double deltaH = newHeight % originalYres;
-        if (deltaH > 0) {
-            newHeight = newHeight - deltaH + originalYres;
-        }
-
-        double newNorth = newSouth + newHeight;
-        double newEast = newWest + newWidth;
-
-        int rows = (int) ((newHeight) / originalYres);
-        int cols = (int) ((newWidth) / originalXres);
-
-        RegionMap regionMap = RegionMap.fromBoundsAndGrid(newWest, newEast, newSouth, newNorth,  cols, rows);
-        return regionMap;
+        return RegionMap.fromBoundsAndGrid(newWest, newEast, newSouth, newNorth, cols, rows);
     }
 
     /**
