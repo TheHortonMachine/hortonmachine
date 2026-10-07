@@ -12,6 +12,8 @@ The ERM modules form a workflow that goes from a digital elevation model and the
 | 6 | [ErmCalibration](ermcalibration.md) | nothing: the best model parameters are reported in the log |
 | 7 | [ErmSimulation](ermsimulation.md) | the simulated discharge of each sub-basin, in a new table for each run, also shown against the observed one in a chart |
 
+Where the meteo stations are too few, the steps 3 to 5 can be replaced by [ErmCopernicusImporter](ermcopernicusimporter.md), which takes the temperature, precipitation and evapotranspiration of the sub-basins from the daily AgERA5 data of Copernicus. The stream gauges of step 2 are still needed, for the observed discharge.
+
 The modules can be run from the [Spatial Toolbox](../../../apps/spatialtoolbox.md), in the GeoFrame folder, or with scripts in the [Geoscript Console](../../../apps/geoscript.md). The page of each module has the script of its step: together they are a complete run on a basin in Japan, and only the `workspace` folder at the top of each script needs to be changed to run them on other data.
 
 :::{admonition} TODO
@@ -28,6 +30,7 @@ ermstationdataimporter
 ermkriging
 ermradiation
 ermprestleyet
+ermcopernicusimporter
 ermcalibration
 ermsimulation
 ```

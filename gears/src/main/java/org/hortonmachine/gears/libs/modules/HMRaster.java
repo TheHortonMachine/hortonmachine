@@ -19,6 +19,7 @@ package org.hortonmachine.gears.libs.modules;
 
 import org.hortonmachine.gears.libs.modules.hmraster.HMRasterFileWindowed;
 import org.hortonmachine.gears.libs.modules.hmraster.HMRasterTile;
+import org.hortonmachine.gears.libs.modules.hmraster.HMRasterZones;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
@@ -50,10 +51,12 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -156,8 +159,6 @@ public class HMRaster implements AutoCloseable {
 
         /**
          * Collects all the values in the cell and keeps track of the post present one.
-         * 
-         * <p>This requires the call of {@link #applyMostPopular()} to perform the proper substitution.
          */
         MOST_POPULAR_VALUE
     }
@@ -1274,38 +1275,106 @@ public class HMRaster implements AutoCloseable {
 	 * @throws Exception
 	 */
 	public HashMap<Integer, double[]> getZonalStats(IHMProgressMonitor pm, SimpleFeatureCollection fc, String idFieldName) throws Exception {
+		return getZonalStats(pm, rasterizeZones(pm, fc, idFieldName));
+	}
+
+	/**
+	 * Rasterizes zones on the grid of this raster, to compute the zonal statistics of this or
+	 * other rasters on the same grid with {@link #getZonalStats(IHMProgressMonitor, HMRasterZones)}
+	 * without rasterizing them again.
+	 *
+	 * @param pm optional Process monitor.
+	 * @param fc the feature collection containing the zones, in the projection of this raster.
+	 * @param idFieldName the name of the field in the feature collection that contains the zone identifiers.
+	 * @return the zones, on the part of the grid of this raster that covers them.
+	 * @throws Exception
+	 */
+	public HMRasterZones rasterizeZones(IHMProgressMonitor pm, SimpleFeatureCollection fc, String idFieldName) throws Exception {
 		if (pm == null)
 			pm = new DummyProgressMonitor();
-		Envelope totalEnv = fc.getBounds();
-		var procRaster = toSubRaster(null, getRegionMap().toSubRegion(totalEnv));
+		if (!HMCrsRegistry.crsEquals(getCrs(), fc.getSchema().getCoordinateReferenceSystem())) {
+			throw new ModelsIllegalargumentException("The zones have to be in the projection of the raster.", this, pm);
+		}
+		RegionMap zonesRegion = getRegionMap().toSubRegion(fc.getBounds());
 		OmsScanLineRasterizer rasterizer = new OmsScanLineRasterizer();
-		rasterizer.inRaster = procRaster.buildCoverage();
+		rasterizer.pNorth = zonesRegion.getNorth();
+		rasterizer.pSouth = zonesRegion.getSouth();
+		rasterizer.pWest = zonesRegion.getWest();
+		rasterizer.pEast = zonesRegion.getEast();
+		rasterizer.pRows = zonesRegion.getRows();
+		rasterizer.pCols = zonesRegion.getCols();
 		rasterizer.inVector = fc;
 		rasterizer.fCat = idFieldName;
 		rasterizer.pm = pm;
 		rasterizer.process();
-		HMRaster idsRaster = HMRaster.fromGridCoverage(rasterizer.outRaster);
+		try (HMRaster idsRaster = HMRaster.fromGridCoverage(rasterizer.outRaster)) {
+			int zonesCols = zonesRegion.getCols();
+			int zonesRows = zonesRegion.getRows();
+			int[] cellZones = new int[zonesCols * zonesRows];
+			for (int row = 0; row < zonesRows; row++) {
+				for (int col = 0; col < zonesCols; col++) {
+					double idValue = idsRaster.getValue(col, row);
+					cellZones[row * zonesCols + col] = idsRaster.isNovalue(idValue) ? HMRasterZones.NO_ZONE : (int) idValue;
+				}
+			}
+			return new HMRasterZones(zonesRegion, cellZones);
+		}
+	}
+
+	/**
+	 * Calculates zonal statistics for zones already rasterized on the grid of this raster.
+	 *
+	 * @param pm optional Process monitor.
+	 * @param zones the zones, rasterized with {@link #rasterizeZones(IHMProgressMonitor, SimpleFeatureCollection, String)}
+	 *          on this raster or on another one with the same grid.
+	 * @return a HashMap where the key is the zone identifier and the value is an array of statistics: [min, max, avg, sum, count].
+	 *          Zones without valid values are not in the map.
+	 */
+	public HashMap<Integer, double[]> getZonalStats(IHMProgressMonitor pm, HMRasterZones zones) {
+		if (pm == null)
+			pm = new DummyProgressMonitor();
+		// the position of the zones grid in this raster's grid, which it has to be aligned to
+		RegionMap zonesRegion = zones.getRegion();
+		double colOffset = (zonesRegion.getWest() - regionMap.getWest()) / regionMap.getXres();
+		double rowOffset = (regionMap.getNorth() - zonesRegion.getNorth()) / regionMap.getYres();
+		int fromCol = (int) Math.round(colOffset);
+		int fromRow = (int) Math.round(rowOffset);
+		double tolerance = 1E-6;
+		if (Math.abs(colOffset - fromCol) > tolerance || Math.abs(rowOffset - fromRow) > tolerance
+				|| Math.abs(zonesRegion.getXres() - regionMap.getXres()) > tolerance * regionMap.getXres()
+				|| Math.abs(zonesRegion.getYres() - regionMap.getYres()) > tolerance * regionMap.getYres()) {
+			throw new ModelsIllegalargumentException("The zones are not on the grid of the raster.", this, pm);
+		}
+
 		// hashmap containing the id and the stats array: [min, max, avg, sum, count]
 		HashMap<Integer, double[]> statsMap = new HashMap<>();
-		idsRaster.process(pm, "zonal stats", (col, row, idValue, cols, rows) -> {
-			if (idsRaster.isNovalue(idValue)) {
-				return;
+		int zonesCols = zonesRegion.getCols();
+		int zonesRows = zonesRegion.getRows();
+		pm.beginTask("zonal stats", zonesRows);
+		for (int row = 0; row < zonesRows; row++) {
+			for (int col = 0; col < zonesCols; col++) {
+				int zone = zones.getZone(col, row);
+				if (zone == HMRasterZones.NO_ZONE) {
+					continue;
+				}
+				double value = getValue(startCol + fromCol + col, startRow + fromRow + row);
+				if (isNovalue(value)) {
+					continue;
+				}
+				double[] statsArray = statsMap.get(zone);
+				if (statsArray == null) {
+					statsArray = new double[] { Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 0, 0, 0 };
+					statsMap.put(zone, statsArray);
+				}
+				statsArray[0] = Math.min(statsArray[0], value); // min
+				statsArray[1] = Math.max(statsArray[1], value); // max
+				statsArray[3] += value; // sum
+				statsArray[4]++; // count
 			}
-			double value = procRaster.getValue(col, row);
-			if (procRaster.isNovalue(value)) {
-				return;
-			}
-			double[] statsArray = statsMap.get((int) idValue);
-			if (statsArray == null) {
-				statsArray = new double[] { Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, 0, 0, 0 };
-				statsMap.put((int) idValue, statsArray);
-			}
-			statsArray[0] = Math.min(statsArray[0], value); // min
-			statsArray[1] = Math.max(statsArray[1], value); // max
-			statsArray[3] += value; // sum
-			statsArray[4]++; // count
-		});
-		
+			pm.worked(1);
+		}
+		pm.done();
+
 		// calculate the average
 		for (double[] statsArray : statsMap.values()) {
 			if (statsArray[4] > 0) {

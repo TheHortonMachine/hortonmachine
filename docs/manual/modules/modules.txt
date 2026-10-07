@@ -69,5 +69,6 @@ org.hortonmachine.hmachine.geoframe.ermworkflow.ErmStationDataImporter
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmKriging
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmRadiation
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmPrestleyEt
+org.hortonmachine.hmachine.geoframe.ermworkflow.ErmCopernicusImporter
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmCalibration
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmSimulation

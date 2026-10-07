@@ -6,9 +6,11 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
+import org.hortonmachine.gears.libs.modules.hmraster.HMRasterZones;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -251,6 +253,55 @@ public class TestHMRaster extends HMTestCase {
 				assertEquals(730.2820512820513, stats[2], DELTA);
 				assertEquals(28481.0, stats[3], DELTA);
 				assertEquals(39, stats[4], DELTA);
+		}
+	}
+
+	public void testZonalStatsWithReusedZones() throws Exception {
+		SimpleFeatureCollection fc = HMTestMaps.getTestLeftFC();
+		try (HMRaster elev = HMRaster.fromGridCoverage(inElev);
+				HMRaster doubled = new HMRaster.HMRasterWritableBuilder().setTemplate(elev).setCopyValues(true).build()) {
+			HMRasterZones zones = elev.rasterizeZones(null, fc, "cat");
+			assertTrue(zones.getZoneIds().contains(1));
+
+			// the same stats of the zonal stats of the polygons
+			double[] stats = elev.getZonalStats(null, zones).get(1);
+			assertEquals(400, stats[0], DELTA);
+			assertEquals(1200, stats[1], DELTA);
+			assertEquals(730.2820512820513, stats[2], DELTA);
+			assertEquals(28481.0, stats[3], DELTA);
+			assertEquals(39, stats[4], DELTA);
+
+			// the zones reused on another raster with the same grid
+			for (int row = 0; row < doubled.getRows(); row++) {
+				for (int col = 0; col < doubled.getCols(); col++) {
+					double value = doubled.getValue(col, row);
+					if (!doubled.isNovalue(value)) {
+						doubled.setValue(col, row, value * 2);
+					}
+				}
+			}
+			stats = doubled.getZonalStats(null, zones).get(1);
+			assertEquals(800, stats[0], DELTA);
+			assertEquals(2400, stats[1], DELTA);
+			assertEquals(2 * 730.2820512820513, stats[2], DELTA);
+			assertEquals(2 * 28481.0, stats[3], DELTA);
+			assertEquals(39, stats[4], DELTA);
+		}
+
+		// the zones can't be used on a different grid
+		RegionMap region = HMTestMaps.getEnvelopeparams();
+		double halfCell = region.getXres() / 2;
+		RegionMap shifted = RegionMap.fromBoundsAndGrid(region.getWest() + halfCell, region.getEast() + halfCell,
+				region.getSouth(), region.getNorth(), region.getCols(), region.getRows());
+		try (HMRaster elev = HMRaster.fromGridCoverage(inElev);
+				HMRaster other = new HMRaster.HMRasterWritableBuilder().setRegion(shifted).setCrs(elev.getCrs()).build()) {
+			HMRasterZones zones = elev.rasterizeZones(null, fc, "cat");
+			try {
+				other.getZonalStats(null, zones);
+				fail("Zones on another grid must be refused.");
+			} catch (ModelsIllegalargumentException e) {
+				// expected
+			}
 		}
 	}
 	
