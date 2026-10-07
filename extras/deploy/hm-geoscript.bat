@@ -23,6 +23,13 @@ IF EXIST "%~dp0\jre\bin\java.exe" (
 	set JAVAEXE="java"
 )
 
+:: the new console by default, the old groovy console with --old as first argument
+set MAINCLASS=org.hortonmachine.geoscript.console.ScriptConsole
+IF "%~1"=="--old" (
+    set MAINCLASS=org.hortonmachine.geoscript.GeoscriptConsole
+    shift
+)
+
 IF [%1]==[] (
     set SPLASH=-splash:imgs/splash_geoscript.png
 )
@@ -33,6 +40,6 @@ IF [%1]==[] (
 IF "%HM_MEM%"=="" (set MEM=-Xmx2g) ELSE (set MEM=-Xmx%HM_MEM%)
 set XSS=-Xss64m
 set PATH=%~dp0\natives\;%PATH%
-%JAVAEXE% %SPLASH% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp "%~dp0\libs\*" org.hortonmachine.geoscript.GeoscriptConsole %1
+%JAVAEXE% %SPLASH% %MEM% %XSS% -Djava.util.logging.config.file=.\quiet-logging.properties -Djava.library.path="%~dp0\natives" -cp "%~dp0\libs\*" %MAINCLASS% %1
 
 endlocal

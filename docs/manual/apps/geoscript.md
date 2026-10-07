@@ -6,7 +6,19 @@ Scripts are written in [Groovy](https://groovy-lang.org/), a language that runs 
 
 ## Launching
 
-Start the application with the `hm-geoscript` launcher (see [Launching an application](../installation.md#launching-an-application)).
+Start the application with the `hm-geoscript` launcher (see [Launching an application](../installation.md#launching-an-application)). The console reopens the last script it had open.
+
+::::{note}
+This console is new and still experimental. The previous one, based on the standard Groovy Console, can still be used: start it with `--old` as first argument of the launcher, as in `./hm-geoscript.sh --old` (`hm-geoscript.bat --old` on Windows).
+
+:::{figure} ../images/apps/geoscript/old_console.png
+:alt: The previous Geoscript Console
+:width: 100%
+:align: center
+
+The previous console, based on the standard Groovy Console, with the same script.
+:::
+::::
 
 ## The console
 
@@ -18,13 +30,56 @@ Start the application with the `hm-geoscript` launcher (see [Launching an applic
 A script extracting the stream network from a DTM, and its output.
 :::
 
-The console is based on the standard Groovy Console:
+The window has:
 
-- the **editor** on the left, with syntax highlighting and line numbers;
-- the **output** on the right, where the script prints its messages and the modules their progress;
-- the **status bar** at the bottom, which tells whether the last execution completed or ended with an error.
+- the **editor**, with syntax highlighting, line numbers, code folding and bracket matching;
+- the **output**, where the script prints its messages, the modules their progress, and the console the result of the script; it is below the editor, or on its right with **View > Output on the right**;
+- the **status bar** at the bottom, which tells whether the last execution completed or ended with an error, and how long it took, and the position of the cursor.
 
-Run the script with **Script > Run** (or Ctrl+R) or the run button of the toolbar. The **Script** menu also has an entry to interrupt a running script, and the broom button of the toolbar clears the output. Scripts are saved and opened with the **File** menu, as `.groovy` files.
+Scripts are saved and opened with the **File** menu, as `.groovy` files. **View** changes the size of the font (Ctrl+= and Ctrl+-), and **Edit > Find/Replace** (Ctrl+F) opens a bar below the editor to find and replace text, also with regular expressions; Escape closes it.
+
+### Running scripts
+
+Run the script with **Script > Run** (Ctrl+Enter) or the run button of the toolbar: if some text is selected, only the selected lines are run. **Script > Run selection** (Ctrl+Shift+Enter) always runs the selected lines.
+
+The variables assigned without `def` (as `dtm = "/data/dtm.tif"`) are kept between runs: a script can so be run piece by piece, selecting the lines to run, and the following pieces can use the variables of the previous ones. **Script > Clear variables** forgets them.
+
+The output gets a header for each run, and the result of the script, the value of its last line, at the end: lists and maps are shown as tables, and geometries, layers, rasters and maps as images.
+
+:::{figure} ../images/apps/geoscript/result_image.png
+:alt: The result of a script shown as an image
+:width: 100%
+:align: center
+
+The geometries returned by a script, shown as an image, with the output on the right of the editor.
+:::
+
+**Script > Clear output** (Ctrl+W) and the trash button of the toolbar clear the output; with **Script > Clear output before running** it is cleared at each run.
+
+The stop button of the toolbar, or **Script > Interrupt**, stops a running script. The modules can't be stopped in the middle of an operation: they stop at their next progress step.
+
+### Errors
+
+The syntax is checked while typing, as unbalanced brackets, incomplete expressions or unterminated strings: the syntax errors are underlined in the editor, with their message as a tooltip, and marked on the right border of the editor, where a click goes to them. Only the syntax is checked: Groovy resolves methods and properties only when the script runs, so for example a call to a method that doesn't exist is reported only by the run.
+
+When a run ends with an error, the output shows its message and the line of the script where it happened, which is also highlighted in the editor. Errors raised inside the modules show the whole chain of their causes, since the useful message is often in the last one.
+
+### Code completion
+
+Ctrl+Space shows the possible completions of what is being typed, and they also open by themselves after typing a dot or a few letters:
+
+- after a dot, the methods and properties of the object before it: the type of the object is known from the value of a variable after a run, from its declaration (as `new Pitfiller()` or `as Polygon`) or from the methods that produced it;
+- for the HortonMachine modules, their parameters first, with their description;
+- the methods that Groovy adds to the Java classes, as `each` or `collect`;
+- the variables, keywords, templates for loops and conditions, and the names of the classes: choosing a class not yet imported adds its import at the top of the script.
+
+:::{figure} ../images/apps/geoscript/completion.png
+:alt: The completions of a module
+:width: 100%
+:align: center
+
+The completions of a module: its parameters first, with the description of the selected one.
+:::
 
 ## The HM menu
 
@@ -56,7 +111,7 @@ Examples
   - *Extract stream network from dtm*: the example used below.
 
 :::{note}
-The console doesn't add any import automatically: start your scripts with **Add HM main imports** (and **Add Geoscript main imports** when using GeoScript), or with your own imports.
+Only the completion of a class name adds an import: start your scripts with **Add HM main imports** (and **Add Geoscript main imports** when using GeoScript), or with your own imports.
 :::
 
 ## Running modules from a script

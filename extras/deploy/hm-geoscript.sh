@@ -22,6 +22,14 @@ MEM="-Xmx${HM_MEM:-2g} -Xss64m"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# the new console by default, the old groovy console with --old as first argument
+MAINCLASS=org.hortonmachine.geoscript.console.ScriptConsole
+if [ "$1" == "--old" ]
+then
+    MAINCLASS=org.hortonmachine.geoscript.GeoscriptConsole
+    shift
+fi
+
 SPLASH=""
 if [ -z "$1" ]
 then
@@ -35,4 +43,4 @@ else
 fi
 
 
-"$JAVAEXE" ${SPLASH:+"$SPLASH"} $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -cp "$DIR/libs/*" org.hortonmachine.geoscript.GeoscriptConsole "$1"
+"$JAVAEXE" ${SPLASH:+"$SPLASH"} $MEM -Djava.util.logging.config.file="$DIR/quiet-logging.properties" -cp "$DIR/libs/*" $MAINCLASS "$1"
