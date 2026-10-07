@@ -62,6 +62,7 @@ public class LogProgressMonitor implements IHMProgressMonitor {
     }
 
     public void beginTask( String name, int totalWork ) {
+        IHMProgressMonitor.checkInterrupted();
         this.taskName = name;
         this.totalWork = totalWork;
         runningWork = 0;
@@ -72,6 +73,7 @@ public class LogProgressMonitor implements IHMProgressMonitor {
     }
 
     public void beginTask( String name ) {
+        IHMProgressMonitor.checkInterrupted();
         this.taskName = name;
         this.totalWork = -1;
         runningWork = 0;
@@ -93,7 +95,7 @@ public class LogProgressMonitor implements IHMProgressMonitor {
     }
 
     public boolean isCanceled() {
-        return cancelled;
+        return cancelled || Thread.currentThread().isInterrupted();
     }
 
     public void setCanceled( boolean cancelled ) {
@@ -108,6 +110,7 @@ public class LogProgressMonitor implements IHMProgressMonitor {
     }
 
     public synchronized void worked( int workDone ) {
+        IHMProgressMonitor.checkInterrupted();
         runningWork = runningWork + workDone;
         if (totalWork == -1) {
             if (runningWork % 10 == 0) {

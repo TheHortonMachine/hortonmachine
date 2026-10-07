@@ -56,6 +56,7 @@ public class PrintStreamProgressMonitor implements IHMProgressMonitor {
     }
 
     public void beginTask( String name, int totalWork ) {
+        IHMProgressMonitor.checkInterrupted();
         this.taskName = name;
         this.totalWork = totalWork;
         runningWork = 0;
@@ -66,6 +67,7 @@ public class PrintStreamProgressMonitor implements IHMProgressMonitor {
     }
 
     public void beginTask( String name ) {
+        IHMProgressMonitor.checkInterrupted();
         this.taskName = name;
         this.totalWork = -1;
         runningWork = 0;
@@ -86,7 +88,7 @@ public class PrintStreamProgressMonitor implements IHMProgressMonitor {
     }
 
     public boolean isCanceled() {
-        return cancelled;
+        return cancelled || Thread.currentThread().isInterrupted();
     }
 
     public void setCanceled( boolean cancelled ) {
@@ -101,6 +103,7 @@ public class PrintStreamProgressMonitor implements IHMProgressMonitor {
     }
 
     public void worked( int work ) {
+        IHMProgressMonitor.checkInterrupted();
         if (totalWork == -1) {
             if (prefix != null) {
                 outStream.print(prefix);

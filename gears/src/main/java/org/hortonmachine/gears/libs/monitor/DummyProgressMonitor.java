@@ -26,9 +26,11 @@ package org.hortonmachine.gears.libs.monitor;
 public class DummyProgressMonitor implements IHMProgressMonitor {
 
     public void beginTask( String name, int totalWork ) {
+        IHMProgressMonitor.checkInterrupted();
     }
 
     public void beginTask( String name ) {
+        IHMProgressMonitor.checkInterrupted();
     }
 
     public void done() {
@@ -38,7 +40,7 @@ public class DummyProgressMonitor implements IHMProgressMonitor {
     }
 
     public boolean isCanceled() {
-        return false;
+        return Thread.currentThread().isInterrupted();
     }
 
     public void setCanceled( boolean value ) {
@@ -51,6 +53,7 @@ public class DummyProgressMonitor implements IHMProgressMonitor {
     }
 
     public void worked( int work ) {
+        IHMProgressMonitor.checkInterrupted();
     }
 
     public <T> T adapt( Class<T> adaptee ) {

@@ -18,6 +18,8 @@
  */
 package org.hortonmachine.gears.libs.monitor;
 
+import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
+
 /**
  * The Main Progress Monitor.
  * 
@@ -33,6 +35,21 @@ public interface IHMProgressMonitor {
      * Constant indicating an unknown amount of work.
      */
     public final static int UNKNOWN = -1;
+
+    /**
+     * Stop the calling thread if it has been interrupted, as a script console does to stop the
+     * running script.
+     *
+     * <p>Java code can't be stopped from outside, it has to check. Modules report their progress
+     * regularly, so the monitors checking here make them stoppable without changing them.</p>
+     *
+     * @throws ModelsUserCancelException if the calling thread is interrupted.
+     */
+    static void checkInterrupted() {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new ModelsUserCancelException();
+        }
+    }
 
     /**
      * Notifies that the main task is beginning.
