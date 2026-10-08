@@ -70,6 +70,7 @@ import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.InvalidGridGeometryException;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.Position2D;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.map.GridCoverageLayer;
@@ -324,16 +325,38 @@ public class HM {
         return sb.toString();
     }
 
+    /**
+     * Reads a vector file and returns a list of SimpleFeature objects.
+     * 
+     * @param path the path to the vector file
+     * @return a list of SimpleFeature objects representing the features in the vector file
+     * @throws Exception if an error occurs while reading the vector file
+     */
     public static List<SimpleFeature> readVector( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
         return FeatureUtilities.featureCollectionToList(readVectorFc(path));
     }
 
+    /**
+     * Reads a vector file and returns a SimpleFeatureCollection.
+     * 
+     * @param path the path to the vector file
+     * @return a SimpleFeatureCollection representing the features in the vector file
+     * @throws Exception if an error occurs while reading the vector file
+     */
 	public static SimpleFeatureCollection readVectorFc(String path) throws Exception {
 		return OmsVectorReader.readVector(path);
 	}
 
+
+    /**
+     * Reads a vector file and returns its envelope as a ReferencedEnvelope.
+     * 
+     * @param path the path to the vector file
+     * @return a ReferencedEnvelope representing the envelope of the vector file
+     * @throws Exception if an error occurs while reading the vector file
+     */
     public static ReferencedEnvelope readEnvelope( String path ) throws Exception {
         if (path == null || path.trim().length() == 0)
             return null;
@@ -346,6 +369,13 @@ public class HM {
         }
     }
 
+    /**
+     * Reads a raster file and returns it as a GridCoverage2D.
+     * 
+     * @param source the path to the raster file
+     * @return a GridCoverage2D representing the raster data
+     * @throws Exception if an error occurs while reading the raster file
+     */
     public static GridCoverage2D readRaster( String source ) throws Exception {
         if (source == null || source.trim().length() == 0)
             return null;
@@ -358,34 +388,75 @@ public class HM {
         return geodata;
     }
     
+    /**
+     * Reads a raster file and returns it as an HMRaster.
+     * 
+     * @param source the path to the raster file
+     * @return an HMRaster representing the raster data
+     * @throws Exception if an error occurs while reading the raster file
+     */
     public static HMRaster readHMRaster(String source) throws Exception {
     	if (source == null || source.trim().length() == 0)
             return null;
     	return HMRaster.fromFile(source);
     }
     
+    /**
+     * Dumps an HMRaster to a file.
+     * 
+     * @param raster the HMRaster to be dumped
+     * @param source the path to the output file
+     * @throws Exception if an error occurs while writing the raster to the file
+     */
     public static void dumpHMRaster( HMRaster raster, String source ) throws Exception {
 		if (raster == null || source == null)
 			return;
 		raster.writeToFile(source);
 	}
 
+    /**
+     * Dumps a GridCoverage2D raster to a file.
+     * 
+     * @param raster the GridCoverage2D raster to be dumped
+     * @param source the path to the output file
+     * @throws Exception if an error occurs while writing the raster to the file
+     */
     public static void dumpRaster( GridCoverage2D raster, String source ) throws Exception {
         if (raster == null || source == null)
             return;
         OmsRasterWriter.writeRaster(source, raster);
     }
 
+    /**
+     * Dumps a SimpleFeatureCollection vector to a file.
+     * 
+     * @param vector the SimpleFeatureCollection vector to be dumped
+     * @param source the path to the output file
+     * @param suggestedSrid the suggested SRID for the output file (can be null)
+     * @throws Exception if an error occurs while writing the vector to the file
+     */
     public static void dumpVector( SimpleFeatureCollection vector, String source, Integer suggestedSrid ) throws Exception {
     	if (vector == null || source == null)
     		return;
     	OmsVectorWriter.writeVector(source, vector, suggestedSrid);    	
     }
     
+    /**
+     * Dumps a SimpleFeatureCollection vector to a file.
+     * 
+     * @param vector the SimpleFeatureCollection vector to be dumped
+     * @param source the path to the output file
+     * @throws Exception if an error occurs while writing the vector to the file
+     */
     public static void dumpVector( SimpleFeatureCollection vector, String source ) throws Exception {
     	dumpVector(vector, source, null);
     }
 
+    /**
+     * Returns a string listing all registered raster formats for reading and writing.
+     * 
+     * @return a string listing all registered raster formats
+     */
 	public static String getRegisteredRasterFormats() {
 		StringBuilder sb = new StringBuilder();
 		ServiceLoader<ImageReaderSpi> loader = ServiceLoader.load(ImageReaderSpi.class);
@@ -444,6 +515,12 @@ public class HM {
 		return sb.toString();
 	}
 
+    /**
+     * Returns a spatial index (STRtree) for a list of objects with their corresponding envelopes.
+     * 
+     * @param objects a list of objects, each represented as a list containing an Envelope and the object itself
+     * @return an STRtree spatial index containing the objects
+     */
     public static STRtree getSpatialIndex( List<List<Object>> objects ) {
         STRtree tree = new STRtree();
         for( Object envAndObject : objects ) {
@@ -477,6 +554,17 @@ public class HM {
         return gsh.parse(new File(scriptPath));
     }
 
+    /**
+     * Creates a chart matrix from a list of lists of numbers.
+     * 
+     * @param title the title of the chart
+     * @param xLabel the label for the x-axis
+     * @param yLabel the label for the y-axis
+     * @param data the data for the chart as a list of lists of numbers
+     * @param series the series names
+     * @param colors the colors for the series
+     * @param doLegend whether to display the legend
+     */
     public static void chartMatrix( String title, String xLabel, String yLabel, List<List<Number>> data, List<String> series,
             List<String> colors, boolean doLegend ) {
         double[][] dataMatrix = new double[data.size()][data.get(0).size()];
@@ -489,6 +577,17 @@ public class HM {
         chartMatrix(title, xLabel, yLabel, dataMatrix, series, colors, doLegend);
     }
 
+    /**
+     * Creates a chart matrix from a 2D array of numbers.
+     * 
+     * @param title the title of the chart
+     * @param xLabel the label for the x-axis
+     * @param yLabel the label for the y-axis
+     * @param data the data for the chart as a 2D array of numbers
+     * @param series the series names
+     * @param colors the colors for the series
+     * @param doLegend whether to display the legend
+     */
     public static void chartMatrix( String title, String xLabel, String yLabel, double[][] data, List<String> series,
             List<String> colors, boolean doLegend ) {
         OmsMatrixCharter charter = new OmsMatrixCharter();
@@ -514,6 +613,14 @@ public class HM {
         }
     }
 
+    /**
+     * Creates a time series chart from the given options, series names, times, and values.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param seriesNames the names of the series
+     * @param times the times for each series as a list of lists of numbers
+     * @param values the values for each series as a list of lists of numbers
+     */
     public static void timeseries( Map<String, Object> options, List<String> seriesNames, List<List<Number>> times,
             List<List<Number>> values ) {
         String title = "";
@@ -572,6 +679,13 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
+    /**
+     * Creates a time series chart from the given options, series names, and a list of times and values.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param seriesNames the names of the series
+     * @param timesValuesList a list of lists of times and values for each series, where each inner list contains pairs of [time, value]
+     */
     public static void timeseries( Map<String, Object> options, List<String> seriesNames,
             List<List<List<Number>>> timesValuesList ) {
         String title = "";
@@ -626,10 +740,22 @@ public class HM {
 
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
+
+    /**
+     * Creates a time series chart from the given list of times and values.
+     * 
+     * @param timesValuesList a list of lists of times and values for each series, where each inner list contains pairs of [time, value]
+     */
     public static void timeseries( List<List<List<Number>>> timesValuesList ) {
         timeseries(null, timesValuesList);
     }
 
+    /**
+     * Creates a time series chart from the given options and a list of times and values.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param timesValuesList a list of lists of times and values for each series, where each inner list contains pairs of [time, value]
+     */
     @SuppressWarnings("unchecked")
     public static void timeseries( Map<String, Object> options, List<List<List<Number>>> timesValuesList ) {
         String title = "";
@@ -716,10 +842,25 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
+    /**
+     * Creates a histogram chart from the given options and values.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param categories the categories for the histogram
+     * @param values the values for each category
+     */
     public static void histogram( Map<String, ?> options, List<String> categories, List<? extends Number> values ) {
         histogram(options, Arrays.asList(""), categories, values);
     }
 
+    /**
+     * Creates a histogram chart from the given options, series names, categories, and values.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param series the names of the series
+     * @param categories the categories for the histogram
+     * @param values the values for each category
+     */
     @SuppressWarnings("unchecked")
     public static void histogram( Map<String, ?> options, List<String> series, List<String> categories,
             List<? extends Number> values ) {
@@ -787,6 +928,12 @@ public class HM {
 
     }
 
+    /**
+     * Creates a histogram chart from the given options and values.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param values a list of lists of numbers, where each inner list contains pairs of [category, value]
+     */
     public static void histogram( Map<String, Object> options, List<List<Number>> values ) {
         String title = "";
         String xLabel = "x";
@@ -835,18 +982,39 @@ public class HM {
 
     }
 
+    /**
+     * Plots a list of geoscript geometries.
+     * 
+     * @param geomsList a list of geoscript geometries to plot
+     */
     public static void plotGeometries( List<geoscript.geom.Geometry> geomsList ) {
         plotJtsGeometries(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
-
+    /**
+     * Plots a list of geoscript geometries with the given options.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param geomsList a list of geoscript geometries to plot
+     */
     public static void plotGeometries( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
         plotJtsGeometries(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
 
+    /**
+     * Plots a list of JTS geometries.
+     * 
+     * @param geomsList a list of JTS geometries to plot
+     */
     public static void plotJtsGeometries(List<Geometry> geomsList ) {
 		plotJtsGeometries(null, geomsList);
     }
     
+    /**
+     * Plots a list of JTS geometries with the given options.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param geomsList a list of JTS geometries to plot
+     */
     public static void plotJtsGeometries( Map<String, ?> options, List<Geometry> geomsList ) {
         JFreeChart chart = makeJtsGeometriesChart(options, geomsList);
         ChartPanel chartPanel = new ChartPanel(chart, true);
@@ -885,14 +1053,53 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "Simple Geometry Plot", preferredSize, false);
     }
 
+    /**
+     * Plots a list of SimpleFeature geometries.
+     * 
+     * @param featuresList a list of SimpleFeature geometries to plot
+     */
+    public static void plotFeaturesGeometries(List<SimpleFeature> featuresList) {
+        plotFeaturesGeometries(null, featuresList);
+    }
+
+    /**
+     * Plots a list of SimpleFeature geometries with the given options.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param featuresList a list of SimpleFeature geometries to plot
+     */
+    public static void plotFeaturesGeometries(Map<String, ?> options, List<SimpleFeature> featuresList) {
+        List<Geometry> geomsList = featuresList.stream().map(f -> (Geometry) f.getDefaultGeometry()).collect(Collectors.toList());
+        plotJtsGeometries(options, geomsList);
+    }
+
+    /**
+     * Creates a chart for a list of geoscript geometries.
+     * 
+     * @param geomsList a list of geoscript geometries to plot
+     * @return a JFreeChart representing the geometries
+     */
     public static JFreeChart makeGeometriesChart( List<geoscript.geom.Geometry> geomsList ) {
         return makeJtsGeometriesChart(null, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
 
+    /**
+     * Creates a chart for a list of geoscript geometries with the given options.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param geomsList a list of geoscript geometries to plot
+     * @return a JFreeChart representing the geometries
+     */
     public static JFreeChart makeGeometriesChart( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
         return makeJtsGeometriesChart(options, geomsList.stream().map(gg -> gg.getG()).collect(Collectors.toList()));
     }
-
+    /**
+     * Creates a chart for a list of JTS geometries with the given options.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, width, and height
+     * @param geomsList a list of JTS geometries to plot
+     * @return a JFreeChart representing the geometries
+     */
     public static JFreeChart makeJtsGeometriesChart( Map<String, ?> options, List<Geometry> geomsList ) {
         String title = "";
         String xLabel = "x";
@@ -1066,10 +1273,21 @@ public class HM {
     }
 
     
+    /**
+     * Creates a scatter plot with the given data.
+     * 
+     * @param data a list of series, each containing a list of points, each point being a list of numbers [x, y]
+     */
     public static void scatterPlot( List<? extends List<? extends List<? extends Number>>> data) {
         scatterPlot(null, data);
     }
 
+    /**
+     * Creates a scatter plot with the given options and data.
+     * 
+     * @param options a map of chart options, including title, xlabel, ylabel, series, colors, dolines, doshapes, width, and height
+     * @param data a list of series, each containing a list of points, each point being a list of numbers [x, y]
+     */
     @SuppressWarnings("unchecked")
     public static void scatterPlot(Map<String,?> options, List<? extends List<? extends List<? extends Number>>> data) {
         String title = "";
@@ -1165,16 +1383,39 @@ public class HM {
         GuiUtilities.openDialogWithPanel(chartPanel, "HM Chart Window", preferredSize, false);
     }
 
+    /**
+     * Performs a logarithmic regression on the given data.
+     * 
+     * @param data a list of points, each point being a list of numbers [x, y]
+     * @param result a list to store the resulting regression points
+     * @return the regression line representing the logarithmic fit
+     */
     public static RegressionLine logRegression( List<List<Double>> data, List<List<Double>> result ) {
         RegressionLine t = new LogTrendLine();
         return processregression(data, result, t);
     }
 
+    /**
+     * Performs a polynomial regression on the given data.
+     * 
+     * @param degree the degree of the polynomial
+     * @param data a list of points, each point being a list of numbers [x, y]
+     * @param result a list to store the resulting regression points
+     * @return the regression line representing the polynomial fit
+     */
     public static RegressionLine polynomialRegression( Number degree, List<List<Double>> data, List<List<Double>> result ) {
         RegressionLine t = new PolyTrendLine(degree.intValue());
         return processregression(data, result, t);
     }
 
+    /**
+     * Processes the regression for the given data using the specified regression function.
+     * 
+     * @param data a list of points, each point being a list of numbers [x, y]
+     * @param result a list to store the resulting regression points
+     * @param function the regression function to use
+     * @return the regression line after processing
+     */
     private static RegressionLine processregression( List<List<Double>> data, List<List<Double>> result,
             RegressionLine function ) {
         double[] x = new double[data.size()];
@@ -1193,6 +1434,17 @@ public class HM {
         return function;
     }
 
+    /**
+     * Connects to a PostGIS database with the given connection parameters.
+     * 
+     * @param host the database host
+     * @param port the database port
+     * @param database the database name
+     * @param user the username for authentication
+     * @param pwd the password for authentication
+     * @return the connected PostGIS spatial database
+     * @throws Exception if the connection fails
+     */
     public static ASpatialDb connectPostgis( String host, int port, String database, String user, String pwd ) throws Exception {
         PostgisDb spatialDb = (PostgisDb) EDb.POSTGIS.getSpatialDb();
         String dbPath = host + ":" + port + "/" + database;
@@ -1204,6 +1456,13 @@ public class HM {
         return spatialDb;
     }
 
+    /**
+     * Connects to a Spatialite database with the given database path.
+     * 
+     * @param databasePath the path to the Spatialite database file
+     * @return the connected Spatialite spatial database
+     * @throws Exception if the connection fails
+     */
     public static ASpatialDb connectSpatialite( String databasePath ) throws Exception {
         SpatialiteThreadsafeDb spatialDb = (SpatialiteThreadsafeDb) EDb.SPATIALITE.getSpatialDb();
         spatialDb.setMakePooled(false);
@@ -1213,6 +1472,13 @@ public class HM {
         return spatialDb;
     }
 
+    /**
+     * Connects to a GeoPackage database with the given database path.
+     * 
+     * @param databasePath the path to the GeoPackage database file
+     * @return the connected GeoPackage spatial database
+     * @throws Exception if the connection fails
+     */
     public static GeopackageCommonDb connectGeopackage( String databasePath ) throws Exception {
         GeopackageCommonDb spatialDb = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb();
         spatialDb.setMakePooled(false);
@@ -1220,6 +1486,13 @@ public class HM {
         return spatialDb;
     }
 
+    /**
+     * Connects to a SQLite database with the given database path.
+     * 
+     * @param databasePath the path to the SQLite database file
+     * @return the connected SQLite database
+     * @throws Exception if the connection fails
+     */
     public static SqliteDb connectSqlite( String databasePath ) throws Exception {
         SqliteDb spatialDb = (SqliteDb) EDb.SQLITE.getDb();
         spatialDb.setMakePooled(false);
@@ -1227,6 +1500,15 @@ public class HM {
         return spatialDb;
     }
 
+    /**
+     * Connects to an H2GIS database with the given connection parameters.
+     * 
+     * @param databasePath the path to the H2GIS database file
+     * @param user the username for authentication
+     * @param pwd the password for authentication
+     * @return the connected H2GIS spatial database
+     * @throws Exception if the connection fails
+     */
     public static ASpatialDb connectH2GIS( String databasePath, String user, String pwd ) throws Exception {
         H2GisDb spatialDb = (H2GisDb) EDb.H2GIS.getSpatialDb();
         if (user != null && pwd != null) {
@@ -1239,6 +1521,14 @@ public class HM {
         return spatialDb;
     }
 
+    /**
+     * Executes a query on the given database and returns the result as a list of maps.
+     * 
+     * @param db the database to query
+     * @param sql the SQL query to execute
+     * @return a list of maps representing the query result, where each map corresponds to a row
+     * @throws Exception if the query fails
+     */
     public static List<HashMap<String, Object>> query( ADb db, String sql ) throws Exception {
         QueryResult result = db.getTableRecordsMapFromRawSql(sql, -1);
         List<String> names = result.names;
@@ -1257,10 +1547,26 @@ public class HM {
         return list;
     }
 
+    /**
+     * Executes an SQL statement (insert, update, or delete) on the given database.
+     * 
+     * @param db the database to execute the statement on
+     * @param sql the SQL statement to execute
+     * @return the number of affected rows
+     * @throws Exception if the execution fails
+     */
     public static int execute( ADb db, String sql ) throws Exception {
         return db.executeInsertUpdateDeleteSql(sql);
     }
 
+    /**
+     * Executes a batch of SQL statements on the given database.
+     * 
+     * @param db the database to execute the statements on
+     * @param sqlList the list of SQL statements to execute
+     * @param updateMessageConsumer a consumer to receive update messages (can be null)
+     * @throws Exception if the execution fails
+     */
     public static void executeBatched( ADb db, List<String> sqlList, Consumer<String> updateMessageConsumer ) throws Exception {
         db.execOnConnection(conn -> {
             int count = 0;
@@ -1287,6 +1593,11 @@ public class HM {
 
     }
 
+    /**
+     * Prints the available color tables.
+     * 
+     * @return a comma-separated string of color table names
+     */
     public static String printColorTables() {
         StringBuilder sb = new StringBuilder();
         for( EColorTables table : EColorTables.values() ) {
@@ -1306,6 +1617,15 @@ public class HM {
         return distanceLL(c1.x, c1.y, c2.x, c2.y);
     }
 
+    /**
+     * Calculate the orthodromic distance between two geographic coordinates specified by longitude and latitude.
+     * 
+     * @param lon1 the longitude of the first coordinate.
+     * @param lat1 the latitude of the first coordinate.
+     * @param lon2 the longitude of the second coordinate.
+     * @param lat2 the latitude of the second coordinate.
+     * @return the distance in meters.
+     */
     public static double distanceLL( double lon1, double lat1, double lon2, double lat2 ) {
         GeodeticCalculator gc = new GeodeticCalculator(DefaultGeographicCRS.WGS84);
         gc.setStartingGeographicPoint(lon1, lat1);
@@ -1314,20 +1634,55 @@ public class HM {
         return distance;
     }
 
+    /**
+     * Creates a style for a color table with the specified parameters.
+     * 
+     * @param tableName the name of the color table.
+     * @param min the minimum value for the style.
+     * @param max the maximum value for the style.
+     * @param opacity the opacity of the style.
+     * @return the created style.
+     * @throws Exception if the style creation fails.
+     */
     public static Style styleForColorTable( String tableName, double min, double max, double opacity ) throws Exception {
         return new SLDReader().read(
                 RasterStyleUtilities.styleToString(RasterStyleUtilities.createStyleForColortable(tableName, min, max, opacity)));
     }
     
+    /**
+     * Creates a GeoTools style for a color table with the specified parameters.
+     * 
+     * @param tableName the name of the color table.
+     * @param min the minimum value for the style.
+     * @param max the maximum value for the style.
+     * @param opacity the opacity of the style.
+     * @return the created GeoTools style.
+     * @throws Exception if the style creation fails.
+     */
     public static org.geotools.api.style.Style styleForColorTableGT( String tableName, double min, double max, double opacity ) throws Exception {
     	var s = styleForColorTable(tableName, min, max, opacity);
     	return s.getGtStyle();
     }
 
+    /**
+     * Creates an SLD style file for a raster with the specified color table and opacity.
+     * 
+     * @param tableName the name of the color table.
+     * @param rasterPath the path to the raster file.
+     * @throws Exception if the style creation fails.
+     */
     public static void makeSldStyleForRaster( String tableName, String rasterPath ) throws Exception {
         makeSldStyleForRaster(tableName, rasterPath, 1);
     }
 
+    /**
+     * Creates an SLD style file for a raster with the specified color table and opacity.
+     * 
+     * @param tableName the name of the color table.
+     * @param rasterPath the path to the raster file.
+     * @param opacity the opacity of the style.
+     * @throws Exception if the style creation fails.
+     */
     public static void makeSldStyleForRaster( String tableName, String rasterPath, double opacity ) throws Exception {
     	HMRaster raster = HMRaster.fromFile(new File(rasterPath));
     	double[] minMax = raster.getStatistics();
@@ -1340,10 +1695,25 @@ public class HM {
         FileUtilities.writeFile(style, styleFile);
     }
 
+    /**
+     * Creates a QGIS style file for a raster with the specified color table and label decimals.
+     * 
+     * @param tableName the name of the color table.
+     * @param rasterPath the path to the raster file.
+     * @throws Exception if the style creation fails.
+     */
     public static void makeQgisStyleForRaster( String tableName, String rasterPath ) throws Exception {
         makeQgisStyleForRaster(tableName, rasterPath, 2);
     }
 
+    /**
+     * Creates a QGIS style file for a raster with the specified color table and label decimals.
+     * 
+     * @param tableName the name of the color table.
+     * @param rasterPath the path to the raster file.
+     * @param labelDecimals the number of decimal places for the labels.
+     * @throws Exception if the style creation fails.
+     */
     public static void makeQgisStyleForRaster( String tableName, String rasterPath, int labelDecimals ) throws Exception {
         HMRaster raster = HMRaster.fromFile(new File(rasterPath));
 		double[] minMax = raster.getStatistics();
@@ -1355,49 +1725,124 @@ public class HM {
         FileUtilities.writeFile(style, styleFile);
     }
 
+    /**
+     * Converts a timestamp in milliseconds to a formatted string.
+     * 
+     * @param millis the timestamp in milliseconds.
+     * @return the formatted string representation of the timestamp.
+     */
     public static String ts2str( long millis ) {
         return new DateTime(millis).toString(HMConstants.utcDateFormatterYYYYMMDDHHMMSS);
     }
 
+    /**
+     * Converts a formatted string representation of a timestamp to milliseconds.
+     * 
+     * @param isoString the formatted string representation of the timestamp.
+     * @return the timestamp in milliseconds.
+     */
     public static long str2ts( String isoString ) {
         return HMConstants.utcDateFormatterYYYYMMDDHHMMSS.parseDateTime(isoString).getMillis();
     }
 
+    /**
+     * Shows an input dialog with a message and a default input value.
+     * 
+     * @param message the message to display.
+     * @param defaultInput the default input value.
+     * @return the user's input.
+     */
     public static String showInputDialog( String message, String defaultInput ) {
         String answer = GuiUtilities.showInputDialog(null, message, defaultInput);
         return answer;
     }
-
+    
+    /**
+     * Shows a yes/no dialog with a message.
+     * 
+     * @param message the message to display.
+     * @return true if the user selects "Yes", false otherwise.
+     */
     public static boolean showYesNoDialog( String message ) {
         return GuiUtilities.showYesNoDialog(null, message);
     }
-
+    
+    /**
+     * Shows a combo dialog with a title, message, and selectable values.
+     * 
+     * @param title the title of the dialog.
+     * @param message the message to display.
+     * @param values the array of selectable values.
+     * @param selectedValue the initially selected value.
+     * @return the value selected by the user.
+     */
     public static String showComboDialog( String title, String message, String[] values, String selectedValue ) {
         String result = GuiUtilities.showComboDialog(null, message, title, values, selectedValue);
         return result;
     }
 
+    /**
+     * Shows an information message dialog with the specified message.
+     * 
+     * @param message the message to display.
+     */
     public static void showInfoMessage( String message ) {
         GuiUtilities.showInfoMessage(null, null, message);
     }
 
+    /**
+     * Shows a warning message dialog with the specified message.
+     * 
+     * @param message the message to display.
+     */
     public static void showWarningMessage( String message ) {
         GuiUtilities.showWarningMessage(null, null, message);
     }
 
+    /**
+     * Shows an error message dialog with the specified message.
+     * 
+     * @param message the message to display.
+     */
     public static void showErrorMessage( String message ) {
         GuiUtilities.showErrorMessage(null, null, message);
     }
 
+    /**
+     * Adds a projection to the specified folder with the given EPSG code.
+     * 
+     * @param folder the folder to add the projection to.
+     * @param epsg the EPSG code of the projection.
+     * @throws Exception if an error occurs while adding the projection.
+     */
     public static void addPrjs( String folder, int epsg ) throws Exception {
         FileIterator.addPrj(folder, "EPSG:" + epsg);
     }
 
+    /**
+     * Creates a color interpolator with the specified color table, minimum and maximum values, and optional alpha.
+     * 
+     * @param colortable the color table to use.
+     * @param min the minimum value.
+     * @param max the maximum value.
+     * @param alpha the optional alpha value.
+     * @return the created color interpolator.
+     */
     public static ColorInterpolator getColorInterpolator( String colortable, double min, double max, Integer alpha ) {
         ColorInterpolator ci = new ColorInterpolator(colortable, min, max, alpha);
         return ci;
     }
 
+    /**
+     * Retrieves cell information for the specified column, row, buffer, and raster paths.
+     * 
+     * @param col the column index.
+     * @param row the row index.
+     * @param buffer the buffer size.
+     * @param rasterPaths the paths to the raster files.
+     * @return the retrieved raster cell information.
+     * @throws Exception if an error occurs while reading the rasters.
+     */
     public static RasterCellInfo getCellInfo( int col, int row, int buffer, String... rasterPaths ) throws Exception {
         GridCoverage2D[] rasters = new GridCoverage2D[rasterPaths.length];
         int i = 0;
@@ -1409,6 +1854,16 @@ public class HM {
         return ri;
     }
 
+    /**
+     * Retrieves cell information for the specified longitude, latitude, buffer, and raster paths.
+     * 
+     * @param lon the longitude coordinate.
+     * @param lat the latitude coordinate.
+     * @param buffer the buffer size.
+     * @param rasterPaths the paths to the raster files.
+     * @return the retrieved raster cell information.
+     * @throws Exception if an error occurs while reading the rasters.
+     */
     public static RasterCellInfo getCellInfo( double lon, double lat, int buffer, String... rasterPaths ) throws Exception {
         GridCoverage2D[] rasters = new GridCoverage2D[rasterPaths.length];
         int i = 0;
@@ -1421,10 +1876,22 @@ public class HM {
     }
 
     // ANYTHING THAT CAN BE CONVERTED TO IMAGE
+    /**
+     * Converts the specified file or geometry WKT to a BufferedImage with default width and height.
+     * 
+     * @param fileOrGeometryWkt the file path or geometry WKT to convert.
+     * @return the resulting BufferedImage.
+     */
     public static BufferedImage toImage( String fileOrGeometryWkt ) {
         return toImage(fileOrGeometryWkt, 1000, 800);
     }
-
+    
+    /**
+     * Converts the specified GridCoverage2D map to a BufferedImage.
+     * 
+     * @param map the GridCoverage2D map to convert.
+     * @return the resulting BufferedImage.
+     */
     public static BufferedImage toImage(GridCoverage2D map) {
         // StyleFactory sf = CommonFactoryFinder.getStyleFactory(null);
 
@@ -1459,7 +1926,36 @@ public class HM {
 
         return bufferedImage;
     }
+
+    public static BufferedImage toImage( SimpleFeatureCollection featureCollection ) {
+        try {
+            List<Geometry> geometries = new ArrayList<>();
+            try (SimpleFeatureIterator it = featureCollection.features()) {
+                while (it.hasNext()) {
+                    SimpleFeature feature = it.next();
+                    Object geom = feature.getDefaultGeometry();
+                    if (geom instanceof Geometry) {
+                        geometries.add((Geometry) geom);
+                    }
+                }
+            }
+            JFreeChart chart = makeJtsGeometriesChart(null, geometries);
+            return chart.createBufferedImage(1000, 800);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     
+    /**
+     * Converts the specified file or geometry WKT to a BufferedImage with the given width and height.
+     * 
+     * @param fileOrGeometryWkt the file path or geometry WKT to convert.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the resulting BufferedImage.
+     */
     public static BufferedImage toImage( String fileOrGeometryWkt, int width, int height ) {
         try {
             File file = new File(fileOrGeometryWkt);
@@ -1491,6 +1987,12 @@ public class HM {
         }
     }
 
+    /**
+     * Converts the specified list of geometries to a BufferedImage.
+     * 
+     * @param geomsList the list of geometries to convert.
+     * @return the resulting BufferedImage.
+     */
     @SuppressWarnings("unchecked")
     public static BufferedImage toImage( List< ? > geomsList ) {
         Object object = geomsList.get(0);
@@ -1516,6 +2018,13 @@ public class HM {
         }
     }
 
+    /**
+     * Converts the specified list of geoscript geometries to a BufferedImage with the given options.
+     * 
+     * @param options the options for the image conversion, such as size, width, and height.
+     * @param geomsList the list of geoscript geometries to convert.
+     * @return the resulting BufferedImage.
+     */
     public static BufferedImage toImage( Map<String, Object> options, List<geoscript.geom.Geometry> geomsList ) {
         int width = 600;
         int height = 400;
@@ -1546,17 +2055,55 @@ public class HM {
                 .createBufferedImage(width, height);
     }
 
+    /**
+     * Converts the specified cell coordinates and raster information to a BufferedImage with the given parameters.
+     * 
+     * @param cellX the X coordinate of the cell.
+     * @param cellY the Y coordinate of the cell.
+     * @param bufferCells the number of buffer cells around the specified cell.
+     * @param mapPath the path to the raster map.
+     * @param dtm the digital terrain model (DTM) path.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the resulting BufferedImage.
+     * @throws Exception if an error occurs while reading the raster or creating the image.
+     */
     public static BufferedImage toImage( int cellX, int cellY, int bufferCells, String mapPath, String dtm, int width,
             int height ) throws Exception {
         GridCoverage2D map = OmsRasterReader.readRaster(mapPath);
         return createRasterImageWithInfoAroundCell(mapPath, map, cellX, cellY, bufferCells, width, height, dtm);
     }
 
+    /**
+     * Converts the specified cell coordinates and raster information to a BufferedImage with the given parameters, without a DTM.
+     * 
+     * @param cellX the X coordinate of the cell.
+     * @param cellY the Y coordinate of the cell.
+     * @param bufferCells the number of buffer cells around the specified cell.
+     * @param mapPath the path to the raster map.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the resulting BufferedImage.
+     * @throws Exception if an error occurs while reading the raster or creating the image.
+     */
     public static BufferedImage toImage( int cellX, int cellY, int bufferCells, String mapPath, int width, int height )
             throws Exception {
         return toImage(cellX, cellY, bufferCells, mapPath, null, width, height);
     }
 
+    /**
+     * Converts the specified world coordinates and raster information to a BufferedImage with the given parameters.
+     * 
+     * @param worldX the X coordinate in the world.
+     * @param worldY the Y coordinate in the world.
+     * @param bufferCells the number of buffer cells around the specified cell.
+     * @param mapPath the path to the raster map.
+     * @param dtm the digital terrain model (DTM) path.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the resulting BufferedImage.
+     * @throws Exception if an error occurs while reading the raster or creating the image.
+     */
     public static BufferedImage toImage( double worldX, double worldY, int bufferCells, String mapPath, String dtm, int width,
             int height ) throws Exception {
         GridCoverage2D map = OmsRasterReader.readRaster(mapPath);
@@ -1564,11 +2111,24 @@ public class HM {
         return createRasterImageWithInfoAroundCell(mapPath, map, colRow[0], colRow[1], bufferCells, width, height, dtm);
     }
 
+    /**
+     * Converts the specified world coordinates and raster information to a BufferedImage with the given parameters, without a DTM.
+     * 
+     * @param worldX the X coordinate in the world.
+     * @param worldY the Y coordinate in the world.
+     * @param bufferCells the number of buffer cells around the specified cell.
+     * @param mapPath the path to the raster map.
+     * @param width the width of the resulting image.
+     * @param height the height of the resulting image.
+     * @return the resulting BufferedImage.
+     * @throws Exception if an error occurs while reading the raster or creating the image.
+     */
     public static BufferedImage toImage( double worldX, double worldY, int bufferCells, String mapPath, int width, int height )
             throws Exception {
         return toImage(worldX, worldY, bufferCells, mapPath, null, width, height);
     }
 
+    
     private static BufferedImage createRasterImageWithInfoAroundCell( String mapPath, GridCoverage2D map, int col, int row,
             int bufferCells, int width, int height, String dtm ) throws Exception {
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(map);
@@ -1913,16 +2473,37 @@ public class HM {
         return dumpImage;
     }
 
+    /**
+     * Creates a Wcs object for the specified URL and version.
+     * 
+     * @param url the URL of the WCS service.
+     * @param version the version of the WCS service.
+     * @return the Wcs object.
+     * @throws Exception if an error occurs while creating the Wcs object.
+     */
     public static Wcs wcs(String url, String version) throws Exception {
         Wcs wcs = new Wcs(url, version);
         return wcs;
     }
 
+    /**
+     * Creates a Wcs object for the specified URL with the default version.
+     * 
+     * @param url the URL of the WCS service.
+     * @return the Wcs object.
+     * @throws Exception if an error occurs while creating the Wcs object.
+     */
     public static Wcs wcs(String url) throws Exception {
         Wcs wcs = new Wcs(url);
         return wcs;
     }
-    
+    /**
+     * Sends an HTTP GET request to the specified URL and returns the JSON response as a string.
+     * 
+     * @param url the URL to send the request to.
+     * @return the JSON response as a string.
+     * @throws Exception if an error occurs while sending the request or receiving the response.
+     */
     public static String getJsonResponse(String url) throws Exception {
         HttpClient client = HttpClient.newHttpClient();
 
@@ -1942,7 +2523,14 @@ public class HM {
 
         return response.body();
     }
-    
+
+    /**
+     * Converts a JSON string to a corresponding Java object (Map or List).
+     * 
+     * @param json the JSON string to convert.
+     * @return the corresponding Java object (Map or List).
+     * @throws IllegalArgumentException if the JSON is invalid or not a Map or List.
+     */
     public static Object jsonToObject(String json) {
         char first = json.stripLeading().charAt(0);
 
@@ -1952,7 +2540,14 @@ public class HM {
             default -> throw new IllegalArgumentException("Invalid JSON");
         };
     }
-    
+
+    /**
+     * Converts a Java object (Map or List) to a JSON string.
+     * 
+     * @param object the Java object to convert.
+     * @return the JSON string representation of the object.
+     * @throws IllegalArgumentException if the object is not a Map or List.
+     */
     public static String objectToJson(Object object) {
 		if (object instanceof Map) {
 			return new JSONObject((Map<?, ?>) object).toString();
@@ -1963,14 +2558,34 @@ public class HM {
 		}
 	}
     
+    /**
+     * Retrieves the projection information for the specified EPSG code.
+     * 
+     * @param epsgCode the EPSG code of the projection.
+     * @return the ProjectionInfo object representing the projection.
+     * @throws Exception if an error occurs while retrieving the projection information.
+     */
     public static ProjectionInfo getProjectionInfo(String epsgCode) throws Exception {
 		return new ProjectionInfo(epsgCode);
 	}
     
+    /**
+     * Creates a CRS transformer for converting coordinates between two EPSG codes.
+     * 
+     * @param fromEpsg the source EPSG code.
+     * @param toEpsg the target EPSG code.
+     * @return the HMCrsTransformer object for coordinate transformation.
+     * @throws Exception if an error occurs while creating the CRS transformer.
+     */
     public static HMCrsTransformer getCrsTransformer(String fromEpsg, String toEpsg) throws Exception {
 		return new HMCrsTransformer(fromEpsg, toEpsg);
 	}
-    
+
+    /**
+     * Retrieves the CRS registry instance.
+     * 
+     * @return the HMCrsRegistry instance.
+     */
     public static HMCrsRegistry getCrsRegistry() {
     	return HMCrsRegistry.INSTANCE;
     }
