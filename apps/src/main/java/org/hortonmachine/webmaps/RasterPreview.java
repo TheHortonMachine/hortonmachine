@@ -22,6 +22,7 @@ import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
+import java.util.Map;
 
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
@@ -41,7 +42,7 @@ import org.locationtech.jts.geom.Envelope;
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-class RasterPreview {
+public class RasterPreview {
     /** Larger rasters are subsampled. */
     private static final long MAX_PIXELS = 2_000_000L;
     /** Larger rasters are not reprojected to be drawn on the map. */
@@ -58,9 +59,9 @@ class RasterPreview {
     /** The image of the raster as it is. */
     BufferedImage image;
     /** The image reprojected to WGS84, null if not available. */
-    BufferedImage wgs84Image;
+    public BufferedImage wgs84Image;
     /** The lon/lat area of {@link #wgs84Image}, or the footprint of the raster if the image is not available. */
-    Envelope wgs84Envelope;
+    public Envelope wgs84Envelope;
     int cols;
     int rows;
     int bands;
@@ -69,11 +70,24 @@ class RasterPreview {
     ReferencedEnvelope envelope;
     Double novalue;
     /** The range of the first band, null for rgb and paletted images. */
-    double[] range;
-    String note;
+    public double[] range;
+    /** Why the image could not be placed on the map, null if all went well. */
+    public String note;
+    /** The argb colors of the classes of categorical data, null for continuous data. */
+    Map<Integer, Integer> classColors;
 
-    static RasterPreview create( GridCoverage2D coverage ) throws Exception {
+    public static RasterPreview create( GridCoverage2D coverage ) throws Exception {
+        return create(coverage, null);
+    }
+
+    /**
+     * @param coverage the raster.
+     * @param classColors for categorical data, the argb color of each class value: values without a
+     *          class are transparent. If null, the data are stretched on a color ramp.
+     */
+    public static RasterPreview create( GridCoverage2D coverage, Map<Integer, Integer> classColors ) throws Exception {
         RasterPreview preview = new RasterPreview();
+        preview.classColors = classColors;
         RenderedImage ri = coverage.getRenderedImage();
         preview.cols = ri.getWidth();
         preview.rows = ri.getHeight();
@@ -98,7 +112,7 @@ class RasterPreview {
             ReferencedEnvelope geoEnv = new ReferencedEnvelope(geographic.getEnvelope2D());
             preview.wgs84Envelope = new Envelope(geoEnv.getMinX(), geoEnv.getMaxX(), geoEnv.getMinY(), geoEnv.getMaxY());
             // same stretch as the original, so the colors match
-            preview.wgs84Image = render(geographic.getRenderedImage(), preview.novalue, preview.range);
+            preview.wgs84Image = render(geographic.getRenderedImage(), preview.novalue, preview.range, classColors);
         } else {
             preview.note = "The raster is too large to be reprojected for the map, only its footprint is shown.";
         }
@@ -107,11 +121,11 @@ class RasterPreview {
 
     private static BufferedImage render( RenderedImage ri, Double novalue, RasterPreview stats ) {
         double[] range = null;
-        if (!isRgb(ri) && !isPaletted(ri)) {
+        if (stats.classColors == null && !isRgb(ri) && !isPaletted(ri)) {
             range = computeRange(ri, novalue);
             stats.range = range;
         }
-        return render(ri, novalue, range);
+        return render(ri, novalue, range, stats.classColors);
     }
 
     private static boolean isRgb( RenderedImage ri ) {
@@ -152,7 +166,7 @@ class RasterPreview {
         return min <= max ? new double[]{min, max} : null;
     }
 
-    private static BufferedImage render( RenderedImage ri, Double novalue, double[] range ) {
+    private static BufferedImage render( RenderedImage ri, Double novalue, double[] range, Map<Integer, Integer> classColors ) {
         int step = step(ri);
         int width = (ri.getWidth() + step - 1) / step;
         int height = (ri.getHeight() + step - 1) / step;
@@ -168,7 +182,11 @@ class RasterPreview {
                 for( int ox = 0; ox < width; ox++ ) {
                     int x = ri.getMinX() + ox * step;
                     int argb;
-                    if (palette != null) {
+                    if (classColors != null) {
+                        double v = iter.getSampleDouble(x, y, 0);
+                        Integer color = isNovalue(v, novalue) ? null : classColors.get((int) Math.round(v));
+                        argb = color != null ? color : 0;
+                    } else if (palette != null) {
                         argb = palette.getRGB(iter.getSample(x, y, 0));
                     } else if (rgb) {
                         int a = bands >= 4 ? iter.getSample(x, y, 3) : 255;

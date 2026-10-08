@@ -74,9 +74,11 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.runtime.StackTraceUtils;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.Completion;
+import org.fife.ui.autocomplete.CompletionCellRenderer;
 import org.fife.ui.autocomplete.DescWindowVisibility;
 import org.fife.ui.rsyntaxtextarea.ErrorStrip;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaEditorKit;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -258,7 +260,9 @@ public class ScriptConsole {
         autoCompletion.setAutoCompleteSingleChoices(false);
         autoCompletion.setParameterAssistanceEnabled(true);
         autoCompletion.setDescWindowVisibility(DescWindowVisibility.ALWAYS);
-        autoCompletion.setChoicesWindowSize(450, 300);
+        // shows the parameters and return types, so that overloaded methods can be told apart
+        autoCompletion.setListCellRenderer(new CompletionCellRenderer());
+        autoCompletion.setChoicesWindowSize(600, 300);
         autoCompletion.setDescriptionWindowSize(450, 300);
         autoCompletion.install(editor);
     }
@@ -334,6 +338,11 @@ public class ScriptConsole {
         editMenu.add(new JMenuItem(RTextArea.getAction(RTextArea.PASTE_ACTION)));
         editMenu.add(new JMenuItem(RTextArea.getAction(RTextArea.SELECT_ALL_ACTION)));
         editMenu.addSeparator();
+        RSyntaxTextAreaEditorKit.ToggleCommentAction toggleComment = new RSyntaxTextAreaEditorKit.ToggleCommentAction();
+        editMenu.add(item("Toggle comment", null, keyCtrl(KeyEvent.VK_SLASH),
+                e -> toggleComment.actionPerformedImpl(e, editor)));
+        // also the slash of the numeric keypad
+        editor.getInputMap().put(keyCtrl(KeyEvent.VK_DIVIDE), "hm-console-Toggle comment");
         editMenu.add(item("Find/Replace...", null, keyCtrl(KeyEvent.VK_F), e -> findBar.open()));
         menuBar.add(editMenu);
 

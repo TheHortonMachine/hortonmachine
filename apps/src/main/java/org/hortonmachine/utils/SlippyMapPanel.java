@@ -90,6 +90,20 @@ public class SlippyMapPanel extends JPanel {
     private static final Color BBOX_COLOR = new Color(240, 130, 0);
     private static final Color FOOTPRINT_COLOR = new Color(20, 150, 70);
     private static final Color SELECTED_COLOR = new Color(220, 30, 30);
+    /** Colors given in turn to the vector layers, different from the ones above. */
+    private static final Color[] LAYER_COLORS = {new Color(140, 40, 180), new Color(220, 50, 150), new Color(0, 150, 160),
+            new Color(140, 90, 40), new Color(150, 150, 0), new Color(60, 60, 90)};
+    private static final int MAX_LEGEND_TITLE = 60;
+
+    /** A layer added on the map: an image or vector data. */
+    private static class MapLayer {
+        String title;
+        BufferedImage image;
+        Envelope envelope;
+        boolean mercator;
+        List<Geometry> geometries;
+        Color color;
+    }
 
     private int zoom = 2;
     /** Top left corner of the view in world pixels at the current zoom. */
@@ -120,6 +134,8 @@ public class SlippyMapPanel extends JPanel {
     private Envelope overlayEnvelope;
     private boolean overlayMercator;
     private float overlayOpacity = 1f;
+    private final Map<String, MapLayer> layers = new LinkedHashMap<>();
+    private int nextLayerColor = 0;
 
     private boolean drawMode = false;
     private Point dragStart;
@@ -273,6 +289,73 @@ public class SlippyMapPanel extends JPanel {
         repaint();
     }
 
+    /**
+     * Add an image layer, drawn over the overlay of {@link #setOverlay(BufferedImage, Envelope, boolean)}
+     * and listed in the legend. A layer with the same id is replaced.
+     *
+     * @param id the id of the layer.
+     * @param title the name shown in the legend.
+     * @param image the image.
+     * @param lonLatEnvelope the area covered by the image, in WGS84 lon/lat.
+     * @param mercator true if the image rows are in web mercator, false if they are linear in latitude.
+     */
+    public void addImageLayer( String id, String title, BufferedImage image, Envelope lonLatEnvelope, boolean mercator ) {
+        MapLayer layer = new MapLayer();
+        layer.title = title;
+        layer.image = image;
+        layer.envelope = lonLatEnvelope;
+        layer.mercator = mercator;
+        layers.remove(id); // so it goes on top
+        layers.put(id, layer);
+        repaint();
+    }
+
+    /**
+     * Add a vector layer, drawn over the image layers with a color of its own and listed in the
+     * legend. A layer with the same id is replaced, keeping its color.
+     *
+     * @param id the id of the layer.
+     * @param title the name shown in the legend.
+     * @param geometries the geometries in WGS84 lon/lat.
+     * @return the color given to the layer.
+     */
+    public Color addVectorLayer( String id, String title, List<Geometry> geometries ) {
+        MapLayer old = layers.remove(id);
+        MapLayer layer = new MapLayer();
+        layer.title = title;
+        layer.geometries = new ArrayList<>(geometries);
+        if (old != null && old.color != null) {
+            layer.color = old.color;
+        } else {
+            layer.color = LAYER_COLORS[nextLayerColor % LAYER_COLORS.length];
+            nextLayerColor++;
+        }
+        layers.put(id, layer);
+        repaint();
+        return layer.color;
+    }
+
+    public boolean hasLayer( String id ) {
+        return layers.containsKey(id);
+    }
+
+    public boolean hasLayers() {
+        return !layers.isEmpty();
+    }
+
+    public void removeLayer( String id ) {
+        layers.remove(id);
+        if (layers.isEmpty())
+            nextLayerColor = 0;
+        repaint();
+    }
+
+    public void removeAllLayers() {
+        layers.clear();
+        nextLayerColor = 0;
+        repaint();
+    }
+
     public void setOverlayOpacity( float opacity ) {
         this.overlayOpacity = Math.max(0f, Math.min(1f, opacity));
         repaint();
@@ -408,7 +491,16 @@ public class SlippyMapPanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         paintTiles(g2);
-        paintOverlay(g2);
+        paintImage(g2, overlayImage, overlayEnvelope, overlayMercator);
+        for( MapLayer layer : layers.values() ) {
+            if (layer.image != null)
+                paintImage(g2, layer.image, layer.envelope, layer.mercator);
+        }
+        g2.setStroke(new BasicStroke(1.5f));
+        for( MapLayer layer : layers.values() ) {
+            if (layer.geometries != null)
+                paintGeometries(g2, layer.geometries, layer.color);
+        }
 
         for( Envelope ext : extents ) {
             Shape s = envelopeShape(ext);
@@ -461,8 +553,73 @@ public class SlippyMapPanel extends JPanel {
             g2.draw(r);
         }
 
+        paintLegend(g2);
         paintAttribution(g2);
         g2.dispose();
+    }
+
+    private void paintGeometries( Graphics2D g2, List<Geometry> geometries, Color color ) {
+        for( Geometry geometry : geometries ) {
+            Shape s = geometryShape(geometry);
+            if (s == null)
+                continue;
+            if (geometry.getDimension() != 1) {
+                // polygons and the marks of points
+                g2.setColor(withAlpha(color, geometry.getDimension() == 0 ? 160 : 50));
+                g2.fill(s);
+            }
+            g2.setColor(color);
+            g2.draw(s);
+        }
+    }
+
+    /**
+     * The names of the added layers, top left, with the color of the vector ones.
+     */
+    private void paintLegend( Graphics2D g2 ) {
+        if (layers.isEmpty())
+            return;
+        g2.setFont(getFont().deriveFont(Font.PLAIN, 11f));
+        FontMetrics fm = g2.getFontMetrics();
+        int lineHeight = fm.getHeight() + 2;
+        int swatch = fm.getAscent() - 1;
+        List<String> titles = new ArrayList<>();
+        int textWidth = 0;
+        for( MapLayer layer : layers.values() ) {
+            String title = layer.title.length() > MAX_LEGEND_TITLE
+                    ? layer.title.substring(0, MAX_LEGEND_TITLE - 1) + "…"
+                    : layer.title;
+            titles.add(title);
+            textWidth = Math.max(textWidth, fm.stringWidth(title));
+        }
+        int x = 6;
+        int y = 6;
+        int w = swatch + textWidth + 14;
+        int h = lineHeight * titles.size() + 6;
+        g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0.8f));
+        g2.setColor(Color.WHITE);
+        g2.fillRect(x, y, w, h);
+        g2.setComposite(AlphaComposite.SrcOver);
+        int i = 0;
+        for( MapLayer layer : layers.values() ) {
+            int lineY = y + 3 + i * lineHeight;
+            int swatchY = lineY + (lineHeight - swatch) / 2;
+            if (layer.color != null) {
+                g2.setColor(withAlpha(layer.color, 90));
+                g2.fillRect(x + 4, swatchY, swatch, swatch);
+                g2.setColor(layer.color);
+            } else {
+                // images: a little color ramp
+                g2.setPaint(new java.awt.GradientPaint(x + 4, 0, new Color(44, 123, 182), x + 4 + swatch, 0,
+                        new Color(215, 25, 28)));
+                g2.fillRect(x + 4, swatchY, swatch, swatch);
+                g2.setColor(Color.DARK_GRAY);
+            }
+            g2.drawRect(x + 4, swatchY, swatch, swatch);
+            g2.setColor(Color.DARK_GRAY);
+            g2.drawString(titles.get(i), x + swatch + 10, lineY + fm.getAscent() + 1);
+            i++;
+        }
     }
 
     private void paintTiles( Graphics2D g2 ) {
@@ -489,20 +646,20 @@ public class SlippyMapPanel extends JPanel {
         }
     }
 
-    private void paintOverlay( Graphics2D g2 ) {
-        if (overlayImage == null || overlayEnvelope == null)
+    private void paintImage( Graphics2D g2, BufferedImage image, Envelope envelope, boolean mercator ) {
+        if (image == null || envelope == null)
             return;
         Graphics2D og = (Graphics2D) g2.create();
         og.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         og.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, overlayOpacity));
-        int x1 = (int) Math.round(sx(overlayEnvelope.getMinX()));
-        int x2 = (int) Math.round(sx(overlayEnvelope.getMaxX()));
-        int iw = overlayImage.getWidth();
-        int ih = overlayImage.getHeight();
-        if (overlayMercator) {
-            int y1 = (int) Math.round(sy(overlayEnvelope.getMaxY()));
-            int y2 = (int) Math.round(sy(overlayEnvelope.getMinY()));
-            og.drawImage(overlayImage, x1, y1, x2, y2, 0, 0, iw, ih, null);
+        int x1 = (int) Math.round(sx(envelope.getMinX()));
+        int x2 = (int) Math.round(sx(envelope.getMaxX()));
+        int iw = image.getWidth();
+        int ih = image.getHeight();
+        if (mercator) {
+            int y1 = (int) Math.round(sy(envelope.getMaxY()));
+            int y2 = (int) Math.round(sy(envelope.getMinY()));
+            og.drawImage(image, x1, y1, x2, y2, 0, 0, iw, ih, null);
         } else {
             // rows are linear in latitude: draw horizontal strips, each placed at its mercator position.
             // The strips overlap by a pixel to avoid seams, so they are warped opaque into a buffer
@@ -510,8 +667,8 @@ public class SlippyMapPanel extends JPanel {
             BufferedImage warped = new BufferedImage(Math.max(1, getWidth()), Math.max(1, getHeight()), BufferedImage.TYPE_INT_ARGB);
             Graphics2D wg = warped.createGraphics();
             wg.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            double north = overlayEnvelope.getMaxY();
-            double latPerRow = overlayEnvelope.getHeight() / ih;
+            double north = envelope.getMaxY();
+            double latPerRow = envelope.getHeight() / ih;
             int strip = Math.max(1, ih / 256);
             for( int row = 0; row < ih; row += strip ) {
                 int rowEnd = Math.min(ih, row + strip);
@@ -519,7 +676,7 @@ public class SlippyMapPanel extends JPanel {
                 int y2 = (int) Math.round(sy(north - rowEnd * latPerRow));
                 if (y2 < 0 || y1 > getHeight())
                     continue;
-                wg.drawImage(overlayImage, x1, y1, x2, Math.max(y2, y1) + 1, 0, row, iw, rowEnd, null);
+                wg.drawImage(image, x1, y1, x2, Math.max(y2, y1) + 1, 0, row, iw, rowEnd, null);
             }
             wg.dispose();
             og.drawImage(warped, 0, 0, null);

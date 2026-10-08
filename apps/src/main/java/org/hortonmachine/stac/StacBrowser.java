@@ -27,6 +27,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -57,6 +60,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -108,16 +112,27 @@ import javax.swing.table.TableRowSorter;
 
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.geojson.GeoJSONReader;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.io.stac.HMStacCollection;
 import org.hortonmachine.gears.io.stac.HMStacItem;
 import org.hortonmachine.gears.io.stac.HMStacManager;
 import org.hortonmachine.gears.io.stac.PlanetaryComputerMicrosoft;
+import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.CsvfileHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.GeojsonHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.GeopackageVectorHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.ShapefileHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler;
 import org.hortonmachine.gears.io.stac.auth.HMS3Authentication;
 import org.hortonmachine.gears.io.stac.auth.HMS3Location;
@@ -130,13 +145,16 @@ import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
+import org.hortonmachine.utils.CsvViewer;
 import org.hortonmachine.utils.MetadataTree;
 import org.hortonmachine.utils.RowTableModel;
 import org.hortonmachine.utils.SlippyMapPanel;
+import org.hortonmachine.webmaps.RasterPreview;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -164,6 +182,9 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     };
     private static final int MAX_ACCESS_CHECKS = 50;
     private static final long MAX_EXPORT_CELLS = 100_000_000L;
+    /** Larger vector assets are shown on the map only after confirming the download. */
+    private static final long MAX_MAP_VECTOR_BYTES = 100L * 1024 * 1024;
+    private static final int MAX_MAP_FEATURES = 100_000;
     private static final String NO_ITEM_SELECTED = "Select an item to see its thumbnail.";
     private static final String UNSUPPORTED = "✗ unsupported";
 
@@ -610,8 +631,23 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         JMenuItem copyUrlItem = new JMenuItem("Copy URL");
         copyUrlItem.addActionListener(e -> GuiUtilities
                 .copyToClipboard(getSelectedDownloads().stream().map(r -> r.href).collect(Collectors.joining("\n"))));
+        JMenuItem showOnMapItem = new JMenuItem("Show on map");
+        showOnMapItem.setToolTipText(
+                "Rasters are read on the part of their item visible in the map, at screen resolution; vectors are read whole");
+        showOnMapItem.addActionListener(e -> showOnMap(getSelectedDownloads().get(0)));
+        JMenuItem removeFromMapItem = new JMenuItem("Remove from map");
+        removeFromMapItem.addActionListener(e -> getSelectedDownloads().forEach(r -> mapPanel.removeLayer(mapLayerId(r))));
+        JMenuItem removeAllFromMapItem = new JMenuItem("Remove all from map");
+        removeAllFromMapItem.addActionListener(e -> mapPanel.removeAllLayers());
+        JMenuItem viewTableItem = new JMenuItem("View table...");
+        viewTableItem.addActionListener(e -> viewCsv(getSelectedDownloads().get(0)));
         downloadsPopup.add(downloadItem);
         downloadsPopup.add(clipItem);
+        downloadsPopup.addSeparator();
+        downloadsPopup.add(showOnMapItem);
+        downloadsPopup.add(removeFromMapItem);
+        downloadsPopup.add(removeAllFromMapItem);
+        downloadsPopup.add(viewTableItem);
         downloadsPopup.addSeparator();
         downloadsPopup.add(copyUrlItem);
         downloadsTable.addMouseListener(new MouseAdapter(){
@@ -640,6 +676,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     clipItem.setText("Export " + rasterCount + " raster(s) clipped to bbox (GeoTIFF)...");
                     clipItem.setEnabled(!busy && rasterCount > 0 && readBboxFields() != null);
                     clipItem.setToolTipText(readBboxFields() == null ? "Needs a valid query bbox" : null);
+                    HMStacAsset first = selected.get(0).asset;
+                    showOnMapItem.setEnabled(!busy && selected.size() == 1 && (isRasterAsset(first) || isVectorAsset(first)));
+                    removeFromMapItem.setEnabled(selected.stream().anyMatch(r -> mapPanel.hasLayer(mapLayerId(r))));
+                    removeAllFromMapItem.setEnabled(mapPanel.hasLayers());
+                    viewTableItem.setEnabled(!busy && selected.size() == 1 && isCsvAsset(first));
                     downloadsPopup.show(downloadsTable, e.getX(), e.getY());
                 }
             }
@@ -949,6 +990,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         assetKeysModel.setRows(null);
         downloadsModel.setRows(null);
         mapPanel.setFootprints(null);
+        mapPanel.removeAllLayers();
         searchInfoLabel.setText(" ");
         downloadSummaryLabel.setText(" ");
         thumbnailPanel.setMessage(NO_ITEM_SELECTED);
@@ -1513,6 +1555,255 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         }
     }
 
+    private void showOnMap( DownloadRow row ) {
+        if (isRasterAsset(row.asset))
+            showRasterOnMap(row);
+        else if (isVectorAsset(row.asset))
+            showVectorOnMap(row);
+    }
+
+    /**
+     * Read a raster asset on the part of its item visible in the map, at about the screen resolution
+     * (never finer than the native one), and draw it over the map.
+     */
+    private void showRasterOnMap( DownloadRow row ) {
+        Map<Integer, Integer> classColors = readClassColors(row.asset.getAssetNode());
+        Envelope area = mapPanel.getViewEnvelope();
+        if (row.itemRow.footprint != null)
+            area = area.intersection(row.itemRow.footprint.getEnvelopeInternal());
+        if (area.isNull() || area.getWidth() <= 0 || area.getHeight() <= 0) {
+            GuiUtilities.showWarningMessage(this, "The item of the asset is not in the map view, zoom to it first.");
+            return;
+        }
+        Integer epsg = row.asset.getEpsg() != null ? row.asset.getEpsg() : row.itemRow.epsg;
+        if (epsg == null) {
+            GuiUtilities.showWarningMessage(this, "The asset has no EPSG, it can't be placed on the map.");
+            return;
+        }
+        ClipPlan plan;
+        try {
+            CoordinateReferenceSystem assetCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + epsg, true);
+            ReferencedEnvelope areaAsset = new ReferencedEnvelope(area, DefaultGeographicCRS.WGS84).transform(assetCrs, true);
+            int[] pixels = mapPanel.getPixelSize(area);
+            double resolution = Math.max(areaAsset.getWidth() / pixels[0], areaAsset.getHeight() / pixels[1]);
+            double nativeRes = ((IHMStacAssetRasterHandler) row.asset.getHandler()).getResolution();
+            if (nativeRes > 0)
+                resolution = Math.max(resolution, nativeRes);
+            plan = planClip(row, area, resolution);
+        } catch (Exception e) {
+            logException("Unable to compute the map region of " + row.href, e);
+            GuiUtilities.showWarningMessage(this, "Unable to compute the region to read: " + e.getMessage());
+            return;
+        }
+        if (plan.skipReason != null) {
+            GuiUtilities.showWarningMessage(this, "Unable to show the asset: " + plan.skipReason);
+            return;
+        }
+
+        String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+        runTask("Reading " + name + " for the map", () -> {
+            log("Reading " + row.asset.getId() + " of " + row.itemRow.item.getId() + " for the map on EPSG:" + plan.epsg
+                    + " region " + plan.region.getCols() + "x" + plan.region.getRows() + " cells");
+            IHMStacAssetRasterHandler handler = (IHMStacAssetRasterHandler) row.asset.getHandler();
+            GridCoverage2D coverage = handler.readRaster(plan.region);
+            try {
+                if (isRgb(coverage))
+                    return RasterPreview.create(readRgbOnRegion(coverage, plan.region, handler.getNoValue()));
+                try (HMRaster raster = new HMRasterWritableBuilder().setName(row.asset.getId()).setRegion(plan.region)
+                        .setCrs(coverage.getCoordinateReferenceSystem()).setNoValue(handler.getNoValue()).build()) {
+                    // as for the clipped export, mapping on the region fetches only the needed parts
+                    raster.mapRaster(null, HMRaster.fromGridCoverage(coverage), MergeMode.SUBSTITUTE);
+                    return RasterPreview.create(raster.buildCoverage(), classColors);
+                }
+            } finally {
+                coverage.dispose(true);
+            }
+        }, preview -> {
+            if (preview.wgs84Image == null) {
+                GuiUtilities.showWarningMessage(this, "Unable to show the asset: " + preview.note);
+                return;
+            }
+            mapPanel.addImageLayer(mapLayerId(row), name, preview.wgs84Image, preview.wgs84Envelope, false);
+            String msg = "Shown on map: " + name + (preview.range != null
+                    ? String.format(Locale.ROOT, " (stretched %.4g - %.4g)", preview.range[0], preview.range[1])
+                    : classColors != null ? " (" + classColors.size() + " classes, other values transparent)" : "");
+            log(msg);
+            statusLabel.setText(msg);
+        });
+    }
+
+    /**
+     * Read the classes of categorical data, declared with the classification extension on the asset or
+     * on its first band.
+     *
+     * @return the argb color of each class value, null if no classes are declared. Classes without a
+     *          color hint get a generated color, the ones flagged as nodata are left out.
+     */
+    static Map<Integer, Integer> readClassColors( JsonNode assetNode ) {
+        JsonNode classes = assetNode.get("classification:classes");
+        for( String bandsField : new String[]{"bands", "raster:bands"} ) {
+            JsonNode bands = assetNode.get(bandsField);
+            if (classes == null && bands != null && bands.isArray() && bands.size() > 0)
+                classes = bands.get(0).get("classification:classes");
+        }
+        if (classes == null || !classes.isArray())
+            return null;
+        Map<Integer, Integer> colors = new LinkedHashMap<>();
+        for( JsonNode c : classes ) {
+            JsonNode value = c.get("value");
+            if (value == null || !value.canConvertToInt() || c.path("nodata").asBoolean(false))
+                continue;
+            String hint = c.path("color_hint").asText("").trim();
+            Integer color = null;
+            if (hint.matches("#?[0-9a-fA-F]{6}"))
+                color = 0xff000000 | Integer.parseInt(hint.replace("#", ""), 16);
+            if (color == null) // golden ratio hues, well apart from each other
+                color = Color.HSBtoRGB((colors.size() * 0.618034f) % 1f, 0.65f, 0.9f);
+            colors.put(value.intValue(), color);
+        }
+        return colors.isEmpty() ? null : colors;
+    }
+
+    /**
+     * @return true for 8 bit images with at least three bands, shown in true colors.
+     */
+    private static boolean isRgb( GridCoverage2D coverage ) {
+        SampleModel sampleModel = coverage.getRenderedImage().getSampleModel();
+        return sampleModel.getNumBands() >= 3 && sampleModel.getDataType() == DataBuffer.TYPE_BYTE;
+    }
+
+    /**
+     * Map the color bands (and the alpha, if any) of an 8 bit image on the region, one at a time to fetch
+     * only the needed parts, and compose them into a rgba coverage. The cells that are novalue in all the
+     * color bands are transparent.
+     */
+    static GridCoverage2D readRgbOnRegion( GridCoverage2D coverage, RegionMap region, double noValue ) throws Exception {
+        int bandsCount = Math.min(4, coverage.getRenderedImage().getSampleModel().getNumBands());
+        // the novalue of the file, in case the catalog declares none
+        Double fileNoValue = CoverageUtilities.getNovalue(coverage);
+        CoordinateReferenceSystem crs = coverage.getCoordinateReferenceSystem();
+        List<HMRaster> bands = new ArrayList<>();
+        try {
+            for( int b = 0; b < bandsCount; b++ ) {
+                HMRaster band = new HMRasterWritableBuilder().setName("band" + b).setRegion(region).setCrs(crs)
+                        .setNoValue(noValue).build();
+                bands.add(band);
+                band.mapRaster(null, HMRaster.fromGridCoverage(HMRaster.extractBand(coverage, b)), MergeMode.SUBSTITUTE);
+            }
+            int cols = region.getCols();
+            int rows = region.getRows();
+            BufferedImage image = new BufferedImage(cols, rows, BufferedImage.TYPE_4BYTE_ABGR);
+            WritableRaster out = image.getRaster();
+            int[] rgba = new int[4];
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    boolean empty = true;
+                    for( int b = 0; b < 3; b++ ) {
+                        double v = bands.get(b).getValue(c, r);
+                        if (!bands.get(b).isNovalue(v) && !(fileNoValue != null && v == fileNoValue))
+                            empty = false;
+                        rgba[b] = toByte(v);
+                    }
+                    rgba[3] = empty ? 0 : bandsCount == 4 ? toByte(bands.get(3).getValue(c, r)) : 255;
+                    if (rgba[3] != 0)
+                        out.setPixel(c, r, rgba);
+                }
+            }
+            ReferencedEnvelope envelope = new ReferencedEnvelope(region.getWest(), region.getEast(), region.getSouth(),
+                    region.getNorth(), crs);
+            return CoverageFactoryFinder.getGridCoverageFactory(null).create("rgb", image, envelope);
+        } finally {
+            for( HMRaster band : bands ) {
+                band.close();
+            }
+        }
+    }
+
+    private static int toByte( double value ) {
+        return Double.isNaN(value) ? 0 : (int) Math.max(0, Math.min(255, Math.round(value)));
+    }
+
+    /**
+     * Read a vector asset (the whole file, vector formats can't be read partially) and draw its
+     * geometries over the map.
+     */
+    private void showVectorOnMap( DownloadRow row ) {
+        if (row.bytes > MAX_MAP_VECTOR_BYTES && !GuiUtilities.showYesNoDialog(this, "The file is " + humanSize(row.bytes)
+                + " and needs to be downloaded completely to be shown. Continue?")) {
+            return;
+        }
+        String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+        runTask("Reading " + name + " for the map", () -> {
+            log("Reading " + row.href + " for the map");
+            SimpleFeatureCollection fc = row.asset.getHandler().read(SimpleFeatureCollection.class, monitor);
+            if (fc == null)
+                throw new IllegalArgumentException("the asset could not be read as vector data.");
+            CoordinateReferenceSystem crs = fc.getSchema().getCoordinateReferenceSystem();
+            MathTransform toLonLat = null;
+            if (crs != null && !HMCrsRegistry.crsEquals(crs, DefaultGeographicCRS.WGS84))
+                toLonLat = CRS.findMathTransform(crs, DefaultGeographicCRS.WGS84, true);
+            List<Geometry> geometries = new ArrayList<>();
+            int total = 0;
+            try (SimpleFeatureIterator it = fc.features()) {
+                while( it.hasNext() ) {
+                    Object geometry = it.next().getDefaultGeometry();
+                    if (!(geometry instanceof Geometry g) || g.isEmpty())
+                        continue;
+                    total++;
+                    if (geometries.size() < MAX_MAP_FEATURES)
+                        geometries.add(toLonLat != null ? JTS.transform(g, toLonLat) : g);
+                }
+            }
+            String note = total > geometries.size() ? ", only the first " + geometries.size() + " of " + total + " shown" : "";
+            log("Read " + total + " geometries of " + name + (crs == null ? " (no CRS, assumed lon/lat)" : "") + note);
+            return new Object[]{geometries, total + " geometries" + note};
+        }, result -> {
+            @SuppressWarnings("unchecked")
+            List<Geometry> geometries = (List<Geometry>) result[0];
+            if (geometries.isEmpty()) {
+                GuiUtilities.showWarningMessage(this, "The asset contains no geometries.");
+                return;
+            }
+            mapPanel.addVectorLayer(mapLayerId(row), name, geometries);
+            Envelope env = new Envelope();
+            geometries.forEach(g -> env.expandToInclude(g.getEnvelopeInternal()));
+            if (!mapPanel.getViewEnvelope().intersects(env))
+                mapPanel.zoomToEnvelope(env);
+            String msg = "Shown on map: " + name + " (" + result[1] + ")";
+            log(msg);
+            statusLabel.setText(msg);
+        });
+    }
+
+    /**
+     * Download a csv asset and show it in a table.
+     */
+    private void viewCsv( DownloadRow row ) {
+        String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+        runTask("Reading " + name, () -> {
+            log("Downloading " + row.href + " to view it");
+            File csvFile = row.asset.getHandler().read(File.class, monitor);
+            if (csvFile == null)
+                throw new IllegalArgumentException("no csv file found in the asset.");
+            return csvFile;
+        }, csvFile -> {
+            try {
+                CsvViewer.show(csvFile, name);
+                statusLabel.setText("Opened " + name);
+            } catch (Exception e) {
+                logException("Unable to show " + csvFile, e);
+                GuiUtilities.showWarningMessage(this, "Unable to read the csv: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * @return the id of the map layer showing the asset of a row.
+     */
+    private static String mapLayerId( DownloadRow row ) {
+        return row.itemRow.item.getId() + "/" + row.asset.getId();
+    }
+
     private static String humanCount( long count ) {
         if (count < 1_000)
             return String.valueOf(count);
@@ -1668,6 +1959,19 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
 
     private static boolean isRasterAsset( HMStacAsset asset ) {
         return asset.isValid() && asset.getHandler() instanceof IHMStacAssetRasterHandler;
+    }
+
+    /**
+     * @return true for the assets HM reads as features (geopackage, geojson, shapefile).
+     */
+    private static boolean isVectorAsset( HMStacAsset asset ) {
+        IHMStacAssetHandler handler = asset.isValid() ? asset.getHandler() : null;
+        return handler instanceof GeopackageVectorHandler || handler instanceof GeojsonHandler
+                || handler instanceof ShapefileHandler;
+    }
+
+    private static boolean isCsvAsset( HMStacAsset asset ) {
+        return asset.isValid() && asset.getHandler() instanceof CsvfileHandler;
     }
 
     /**
