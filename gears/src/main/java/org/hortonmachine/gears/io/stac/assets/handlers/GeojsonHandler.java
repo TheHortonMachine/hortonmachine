@@ -76,8 +76,14 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 				return targetType.cast(tempFile);
 			}
 
-			SimpleFeatureCollection featureCollection = OmsVectorReader.readVector(tempFile.getAbsolutePath());
-			return targetType.cast(featureCollection);
+			try {
+				SimpleFeatureCollection featureCollection = OmsVectorReader.readVector(tempFile.getAbsolutePath());
+				return targetType.cast(featureCollection);
+			} catch (Exception e) {
+				// if unable to read as SimpleFeatureCollection, return null and log error, 
+				// most likely it is not geojson, but just json
+				monitor.errorMessage("Error reading GeoJSON file as SimpleFeatureCollection: " + e.getMessage());
+			}
 		}
 		return null;
 	}

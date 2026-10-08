@@ -16,12 +16,13 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class CsvfileHandler implements IHMStacAssetHandler {
-	public final static String[] ACCEPTED_TYPES = { "application/x.csv+zip" };
+	public final static String[] ACCEPTED_TYPES = { "application/x.csv+zip", "text/csv" };
 
 	private HMStacAsset asset;
 	private JsonNode assetNode;
 	private boolean supported = false;
 	private String assetUrl;
+	private boolean isZipped = false;
 
 	@Override
 	public void initialize(HMStacAsset asset) throws IOException {
@@ -31,6 +32,9 @@ public class CsvfileHandler implements IHMStacAssetHandler {
 		for (String acceptedType : ACCEPTED_TYPES) {
 			if (asset.getType()!=null && asset.getType().toLowerCase().contains(acceptedType)) {
 				supported = true;
+				if (acceptedType.toLowerCase().contains("zip")) {
+					isZipped = true;
+				}
 				break;
 			}
 		}
@@ -70,21 +74,29 @@ public class CsvfileHandler implements IHMStacAssetHandler {
 
 			File tempDir = Files.createTempDirectory("stac_asset_").toFile();
 
-			// download the zipped shapefile file
-			File tempFile = new File(tempDir, "stac_asset.zip");
-			// code to download the file from assetUrl to tempFile
-			downloadAsset(tempFile.getAbsolutePath(), monitor);
+			if (!isZipped) {
+				String id = asset.getId();
+				// if the file is not zipped, just download it directly as a CSV
+				File tempFile = new File(tempDir, id + ".csv");
+				downloadAsset(tempFile.getAbsolutePath(), monitor);
+				return targetType.cast(tempFile);
+			} else {
+				// download the zipped shapefile file
+				File tempFile = new File(tempDir, "stac_asset.zip");
+				// code to download the file from assetUrl to tempFile
+				downloadAsset(tempFile.getAbsolutePath(), monitor);
 
-			// unzip the file
-			CompressionUtilities.unzipFolder(tempFile.getAbsolutePath(), tempDir.getAbsolutePath(), false);
+				// unzip the file
+				CompressionUtilities.unzipFolder(tempFile.getAbsolutePath(), tempDir.getAbsolutePath(), false);
 
-			// find the csv inside the folder
-			List<File> csvFiles = FileUtilities.findFilesByPattern(tempDir.getAbsolutePath(), ".*\\.csv$");
-			if (csvFiles.size() > 1) {
-				monitor.errorMessage("WARNING: Returning only first resource of " + csvFiles.size() + ". Use readAll.");
-			}
-			if (csvFiles.size() > 0) {
-				return targetType.cast(csvFiles.get(0));
+				// find the csv inside the folder
+				List<File> csvFiles = FileUtilities.findFilesByPattern(tempDir.getAbsolutePath(), ".*\\.csv$");
+				if (csvFiles.size() > 1) {
+					monitor.errorMessage("WARNING: Returning only first resource of " + csvFiles.size() + ". Use readAll.");
+				}
+				if (csvFiles.size() > 0) {
+					return targetType.cast(csvFiles.get(0));
+				}
 			}
 		}
 		return null;
@@ -95,23 +107,30 @@ public class CsvfileHandler implements IHMStacAssetHandler {
 		Map<String, T> objectsMap = new HashMap<>();
 		checkSupported();
 		if (targetType.isAssignableFrom(File.class)) {
-
 			File tempDir = Files.createTempDirectory("stac_asset_").toFile();
+			if (!isZipped) {
+				String id = asset.getId();
+				// if the file is not zipped, just download it directly as a CSV
+				File tempFile = new File(tempDir, id + ".csv");
+				downloadAsset(tempFile.getAbsolutePath(), monitor);
+				objectsMap.put(id, targetType.cast(tempFile));
+				return objectsMap;
+			} else {
+				// download the zipped csv file
+				File tempFile = new File(tempDir, "stac_asset.zip");
+				// code to download the file from assetUrl to tempFile
+				downloadAsset(tempFile.getAbsolutePath(), monitor);
 
-			// download the zipped csv file
-			File tempFile = new File(tempDir, "stac_asset.zip");
-			// code to download the file from assetUrl to tempFile
-			downloadAsset(tempFile.getAbsolutePath(), monitor);
+				// unzip the file
+				CompressionUtilities.unzipFolder(tempFile.getAbsolutePath(), tempDir.getAbsolutePath(), false);
 
-			// unzip the file
-			CompressionUtilities.unzipFolder(tempFile.getAbsolutePath(), tempDir.getAbsolutePath(), false);
-
-			// find the shapefile inside the folder
-			List<File> csvFiles = FileUtilities.findFilesByPattern(tempDir.getAbsolutePath(), ".*\\.csv$");
-			for (File csvFile : csvFiles) {
-				// get name from file
-				String nameWithoutExtention = FileUtilities.getNameWithoutExtention(csvFile);
-				objectsMap.put(nameWithoutExtention, targetType.cast(csvFile));
+				// find the shapefile inside the folder
+				List<File> csvFiles = FileUtilities.findFilesByPattern(tempDir.getAbsolutePath(), ".*\\.csv$");
+				for (File csvFile : csvFiles) {
+					// get name from file
+					String nameWithoutExtention = FileUtilities.getNameWithoutExtention(csvFile);
+					objectsMap.put(nameWithoutExtention, targetType.cast(csvFile));
+				}
 			}
 		}
 		return objectsMap;
