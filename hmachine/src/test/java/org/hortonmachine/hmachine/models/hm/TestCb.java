@@ -94,4 +94,39 @@ public class TestCb extends HMTestCase {
         }
     }
 
+    /**
+     * The second moment is the variance of the second map in each bin, around its mean.
+     */
+    public void testCbSecondMoment() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        double[][] data = HMTestMaps.mapData;
+        GridCoverage2D map = CoverageUtilities.buildCoverage("map1", data, envelopeParams, crs, true);
+
+        OmsCb cb = new OmsCb();
+        cb.pBins = 3;
+        cb.pFirst = 1;
+        cb.pLast = 2;
+        cb.inRaster1 = map;
+        cb.inRaster2 = map;
+        cb.process();
+
+        // in each bin the cells are n = row[1], their mean row[2] and variance row[3], so the sum
+        // of their squares is n * (variance + mean^2): over all the bins, the one of all the cells
+        double binsSumOfSquares = 0;
+        for( double[] row : cb.outCb ) {
+            assertTrue(row[3] >= 0);
+            binsSumOfSquares += row[1] * (row[3] + row[2] * row[2]);
+        }
+        double sumOfSquares = 0;
+        for( double[] dataRow : data ) {
+            for( double value : dataRow ) {
+                if (value != HMTestMaps.N) {
+                    sumOfSquares += value * value;
+                }
+            }
+        }
+        assertEquals(sumOfSquares, binsSumOfSquares, sumOfSquares * 1E-9);
+    }
+
 }

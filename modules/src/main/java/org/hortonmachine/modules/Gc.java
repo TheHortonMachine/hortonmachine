@@ -3,6 +3,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_DOCUMENTATION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_KEYWORDS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_LABEL;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSGC_LICENSE;
@@ -21,6 +22,7 @@ import org.hortonmachine.hmachine.modules.geomorphology.gc.OmsGc;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -31,6 +33,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSGC_DESCRIPTION)
+@Documentation(OMSGC_DOCUMENTATION)
 @Author(name = OMSGC_AUTHORNAMES, contact = OMSGC_AUTHORCONTACTS)
 @Keywords(OMSGC_KEYWORDS)
 @Label(OMSGC_LABEL)

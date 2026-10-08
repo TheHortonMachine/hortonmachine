@@ -86,3 +86,11 @@ LasConverter   | ../examples/hm/lasconverter.groovy   | las_points.shp          
 SurfaceInterpolator | ../examples/hm/surfaceinterpolator.groovy | dsm_777.tif         | elev     | base=dtm_777.tif
 SurfaceInterpolator | -                               | dsm_777.tif - dtm_777.tif   | rainbow  | positive,base=dtm_777.tif
 Viewshed       | ../examples/hm/viewshed.groovy       | viewshed.tif                | reds     | nolegend
+Gc             | ../examples/hm/gc.groovy             | gc_aggregated.tif           | contrasting | classes | 15=non-channelled valley;25=planar;35=channel;45=hillslope;55=steep
+NetDiff        | ../examples/hm/netdiff.groovy        | netdiff.tif                 | rainbow
+Cb             | ../examples/hm/cb.groovy             | elevation_histogram.csv     | elev
+BasinShape     | ../examples/hm/basinshape.groovy     | subbasins.shp               | rainbow  | field=avgelev
+Netshape2Flow  | ../examples/hm/netshape2flow.groovy  | flownet.tif                 | flow     | classes
+RangeLookup    | ../examples/hm/rangelookup.groovy    | elevation_belts.tif         | contrasting | classes | 1=below 1300 m;2=1300 to 1700 m;3=above 1700 m
+VectorReshaper | ../examples/hm/vectorreshaper.groovy | -                           | -
+VectorSimplifier | ../examples/hm/vectorsimplifier.groovy | contours_simple.shp     | reds

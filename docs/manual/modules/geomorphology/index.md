@@ -18,4 +18,5 @@ leastcostflowdirections
 multitca
 tca3d
 viewshed
+gc
 ```

@@ -17,6 +17,9 @@
  */
 package org.hortonmachine.gears;
 
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
 import java.util.List;
 
@@ -216,6 +219,19 @@ public class TestCoverageUtilities extends HMTestCase {
         for( int i = 0; i < expected.length; i++ ) {
             assertEquals(expected[i], losData[i], DELTA);
         }
+    }
+
+    /**
+     * The sample model of a tiled image has the size of a tile, the raster must still have the
+     * requested size.
+     */
+    public void testCreateWritableRasterWithTileSampleModel() throws Exception {
+        SampleModel tileSampleModel = new ComponentSampleModel(DataBuffer.TYPE_INT, 4, 4, 1, 4, new int[]{0});
+        WritableRaster raster = CoverageUtilities.createWritableRaster(10, 7, null, tileSampleModel, -1);
+        assertEquals(10, raster.getWidth());
+        assertEquals(7, raster.getHeight());
+        assertEquals(DataBuffer.TYPE_INT, raster.getSampleModel().getDataType());
+        assertEquals(-1, raster.getSample(9, 6, 0));
     }
 
     private void checkProfile( List<ProfilePoint> profile, double[][] expected ) {

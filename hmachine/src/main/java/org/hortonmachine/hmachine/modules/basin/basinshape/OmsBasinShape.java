@@ -63,6 +63,7 @@ import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -73,6 +74,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSBASINSHAPE_DESCRIPTION)
+@Documentation(OmsBasinShape.OMSBASINSHAPE_DOCUMENTATION)
 @Author(name = OMSBASINSHAPE_AUTHORNAMES, contact = OMSBASINSHAPE_AUTHORCONTACTS)
 @Keywords(OMSBASINSHAPE_KEYWORDS)
 @Label(OMSBASINSHAPE_LABEL)
@@ -95,7 +97,12 @@ public class OmsBasinShape extends HMModel {
 
     // VARS DOC START
     public static final String OMSBASINSHAPE_DESCRIPTION = "Creates a Feature collection of the subbasins created with the netnumbering module.";
-    public static final String OMSBASINSHAPE_DOCUMENTATION = "OmsBasinShape.html";
+    public static final String OMSBASINSHAPE_DOCUMENTATION = """
+            Each basin of the input map becomes a polygon with the attributes `netnum`, the basin number; `area` and \
+            `perimeter`, in the units of the map CRS; `maxelev`, `minelev` and `avgelev`, the statistics of the \
+            elevation of its cells; `height`, the elevation at the centroid of the polygon, -1 where the centroid is \
+            not on a valid cell.
+            """;
     public static final String OMSBASINSHAPE_KEYWORDS = "Basin, Geomorphology";
     public static final String OMSBASINSHAPE_LABEL = BASIN;
     public static final String OMSBASINSHAPE_NAME = "basinshape";

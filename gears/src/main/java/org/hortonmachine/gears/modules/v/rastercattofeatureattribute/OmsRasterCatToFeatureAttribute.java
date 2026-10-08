@@ -97,7 +97,7 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
     public SimpleFeatureCollection outVector = null;
 
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION = "Module that extracts raster categories and adds them to a feature collection.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION = "OmsRasterCatToFeatureAttribute.html";
+    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION = "";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS = "Raster, Vector";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LABEL = VECTORPROCESSING;
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_NAME = "rat2featureattr";

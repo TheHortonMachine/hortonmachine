@@ -144,7 +144,7 @@ public class OmsScanLineRasterizer extends HMModel {
 
 	// PARAMS DESCR START
 	public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
-	public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "OmsScanLineRasterizer.html";
+	public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "";
 	public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
 	public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
 	public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";

@@ -8,4 +8,6 @@ The modules that convert between rasters, vectors and point clouds.
 vectorizer
 contourextractor
 lasconverter
+vectorreshaper
+vectorsimplifier
 ```

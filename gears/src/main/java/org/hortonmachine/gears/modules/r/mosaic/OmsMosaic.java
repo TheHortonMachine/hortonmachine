@@ -89,7 +89,7 @@ public class OmsMosaic extends HMModel {
     public GridCoverage2D outRaster = null;
 
     public static final String OMSMOSAIC_DESCRIPTION = "Module for raster patching.";
-    public static final String OMSMOSAIC_DOCUMENTATION = "OmsMosaic.html";
+    public static final String OMSMOSAIC_DOCUMENTATION = "";
     public static final String OMSMOSAIC_KEYWORDS = "OmsMosaic, Raster";
     public static final String OMSMOSAIC_LABEL = RASTERPROCESSING;
     public static final String OMSMOSAIC_NAME = "mosaic";

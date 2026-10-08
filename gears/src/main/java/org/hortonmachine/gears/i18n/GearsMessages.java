@@ -55,7 +55,7 @@ public class GearsMessages {
     public static final String GENERIC_P_Y_RES_DESCRIPTION = "The requested resolution in y.";
 
     public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
-    public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "OmsLineSmootherMcMaster.html";
+    public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "";
     public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, OmsLineSmootherJaitools";
     public static final String OMSLINESMOOTHERMCMASTER_LABEL = VECTORPROCESSING;
     public static final String OMSLINESMOOTHERMCMASTER_NAME = "linesmoother";
@@ -85,7 +85,7 @@ public class GearsMessages {
     public static final String OMSVECTORCONVERTER_OUT_GEODATA_DESCRIPTION = "The output features.";
 
     public static final String OMSTIMESERIESITERATORWRITER_DESCRIPTION = "Utility class for writing a id2values map to a OMS formatted csv file.";
-    public static final String OMSTIMESERIESITERATORWRITER_DOCUMENTATION = "OmsTimeSeriesIteratorWriter.html";
+    public static final String OMSTIMESERIESITERATORWRITER_DOCUMENTATION = "";
     public static final String OMSTIMESERIESITERATORWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSTIMESERIESITERATORWRITER_LABEL = HASHMAP_WRITER;
     public static final String OMSTIMESERIESITERATORWRITER_NAME = "tsitwriter";
@@ -219,7 +219,7 @@ public class GearsMessages {
     public static final String OMSLINESVECTORIZER_OUT_VECTOR_DESCRIPTION = "The extracted vector.";
 
     public static final String OMSRASTERWRITER_DESCRIPTION = "Raster writer module.";
-    public static final String OMSRASTERWRITER_DOCUMENTATION = "OmsRasterWriter.html";
+    public static final String OMSRASTERWRITER_DOCUMENTATION = "";
     public static final String OMSRASTERWRITER_KEYWORDS = "IO, Grass, Coverage, Raster, Writing";
     public static final String OMSRASTERWRITER_LABEL = RASTERWRITER;
     public static final String OMSRASTERWRITER_NAME = "rasterwriter";
@@ -374,7 +374,7 @@ public class GearsMessages {
     public static final String OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION = "The transformed feature collection.";
 
     public static final String OMSVECTORFIELDROUNDER_DESCRIPTION = "Module that rounds a defined field attribute.";
-    public static final String OMSVECTORFIELDROUNDER_DOCUMENTATION = "OmsVectorFieldRounder.html";
+    public static final String OMSVECTORFIELDROUNDER_DOCUMENTATION = "";
     public static final String OMSVECTORFIELDROUNDER_KEYWORDS = "Round, VectorFieldJoiner";
     public static final String OMSVECTORFIELDROUNDER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORFIELDROUNDER_NAME = "vround";
@@ -388,7 +388,7 @@ public class GearsMessages {
     public static final String OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION = "The modified vector.";
 
     public static final String OMSVECTORMERGER_DESCRIPTION = "Module for merging vecotrs into one single.";
-    public static final String OMSVECTORMERGER_DOCUMENTATION = "OmsVectorMerger.html";
+    public static final String OMSVECTORMERGER_DOCUMENTATION = "";
     public static final String OMSVECTORMERGER_KEYWORDS = "IO, Feature, Vector, Merge";
     public static final String OMSVECTORMERGER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORMERGER_NAME = "vmerge";
@@ -472,7 +472,7 @@ public class GearsMessages {
     public static final String OMSRASTERRESOLUTIONRESAMPLER_OUT_GEODATA_DESCRIPTION = "The resampled raster.";
 
     public static final String OMSVECTORTABLEJOINER_DESCRIPTION = "Module that joins attributes from one vector into another based on a common field.";
-    public static final String OMSVECTORTABLEJOINER_DOCUMENTATION = "OmsVectorTableJoiner.html";
+    public static final String OMSVECTORTABLEJOINER_DOCUMENTATION = "";
     public static final String OMSVECTORTABLEJOINER_KEYWORDS = "Join, OmsVectorFieldRounder";
     public static final String OMSVECTORTABLEJOINER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORTABLEJOINER_NAME = "vjoin";
@@ -524,7 +524,7 @@ public class GearsMessages {
     public static final String OMSMOSAIC12_OUT_MAP_DESCRIPTION = "The patched raster.";
 
     public static final String OMSVECTORFILTER_DESCRIPTION = "Module that creates a subset of a vector based on a filtered vector.";
-    public static final String OMSVECTORFILTER_DOCUMENTATION = "OmsVectorFilter.html";
+    public static final String OMSVECTORFILTER_DOCUMENTATION = "";
     public static final String OMSVECTORFILTER_KEYWORDS = "Filter, Vector, OmsVectorReshaper";
     public static final String OMSVECTORFILTER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORFILTER_NAME = "vfilter";
@@ -585,7 +585,7 @@ public class GearsMessages {
     public static final String OMSXYZ2RASTER_OUT_RASTER_DESCRIPTION = "The generated raster.";
 
     public static final String OMSDWGCONVERTER_DESCRIPTION = "Module to convert dxf files to geotools vecotors.";
-    public static final String OMSDWGCONVERTER_DOCUMENTATION = "OmsDwgConverter.html";
+    public static final String OMSDWGCONVERTER_DOCUMENTATION = "";
     public static final String OMSDWGCONVERTER_KEYWORDS = "IO, OmsDxfConverter, Feature, Vector, Reading";
     public static final String OMSDWGCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSDWGCONVERTER_NAME = "dwgimport";
@@ -632,7 +632,13 @@ public class GearsMessages {
 
 
     public static final String OMSRANGELOOKUP_DESCRIPTION = "Module for raster rangelookup.";
-    public static final String OMSRANGELOOKUP_DOCUMENTATION = "OmsRangeLookup.html";
+    public static final String OMSRANGELOOKUP_DOCUMENTATION = """
+            The ranges are separated by commas, each with its lower and upper bound separated by a space and enclosed \
+            in brackets: a square bracket includes the bound, a round one excludes it, and `null` leaves the range \
+            open on that side. The classes, also separated by commas, go to the ranges in the same order. For example \
+            `[0 10),[10 20),[20 null)` with `1,2,3` gives 1 to the values from 0 to below 10, 2 from 10 to below 20 \
+            and 3 from 20 up. The cells that fall in no range become no-data.
+            """;
     public static final String OMSRANGELOOKUP_KEYWORDS = "Raster, Rangelookup";
     public static final String OMSRANGELOOKUP_LABEL = RASTERPROCESSING;
     public static final String OMSRANGELOOKUP_NAME = "rrangelookup";
@@ -892,7 +898,7 @@ public class GearsMessages {
     public static final String OMSCSVMATRIXREADER_OUT_TYPES_DESCRIPTION = "The data types (dates or numerics like double, int) or null.";
 
     public static final String OMSTIMESERIESWRITER_DESCRIPTION = "Utility class for writing a set of timestamps and an array of values to an OMS formatted csv file.";
-    public static final String OMSTIMESERIESWRITER_DOCUMENTATION = "OmsTimeSeriesWriter.html";
+    public static final String OMSTIMESERIESWRITER_DOCUMENTATION = "";
     public static final String OMSTIMESERIESWRITER_KEYWORDS = "IO, Writing";
     public static final String OMSTIMESERIESWRITER_LABEL = HASHMAP_WRITER;
     public static final String OMSTIMESERIESWRITER_NAME = "tswriter";
@@ -908,7 +914,7 @@ public class GearsMessages {
     public static final String OMSTIMESERIESWRITER_IN_META_DATA_DESCRIPTION = "A list of lists of metadata that can be attached to the column of the csv file.";
 
     public static final String OMSDXFCONVERTER_DESCRIPTION = "Module to convert dxf files to geotools vecotors.";
-    public static final String OMSDXFCONVERTER_DOCUMENTATION = "OmsDxfConverter.html";
+    public static final String OMSDXFCONVERTER_DOCUMENTATION = "";
     public static final String OMSDXFCONVERTER_KEYWORDS = "IO, OmsDwgConverter, Feature, Vector, Reading";
     public static final String OMSDXFCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSDXFCONVERTER_NAME = "dxfimport";
@@ -993,7 +999,7 @@ public class GearsMessages {
     public static final String OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION = "The new raster geometry.";
 
     public static final String OMSLINESMOOTHERJAITOOLS_DESCRIPTION = "The line smoother from the jaitools project.";
-    public static final String OMSLINESMOOTHERJAITOOLS_DOCUMENTATION = "OmsLineSmootherJaitools.html";
+    public static final String OMSLINESMOOTHERJAITOOLS_DOCUMENTATION = "";
     public static final String OMSLINESMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector";
     public static final String OMSLINESMOOTHERJAITOOLS_LABEL = VECTORPROCESSING;
     public static final String OMSLINESMOOTHERJAITOOLS_NAME = "linesmootherjai";
@@ -1124,7 +1130,7 @@ public class GearsMessages {
     public static final String OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
 
     public static final String OMSTIMESERIESITERATORREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.";
-    public static final String OMSTIMESERIESITERATORREADER_DOCUMENTATION = "OmsTimeSeriesIteratorReader.html";
+    public static final String OMSTIMESERIESITERATORREADER_DOCUMENTATION = "";
     public static final String OMSTIMESERIESITERATORREADER_KEYWORDS = "IO, Reading";
     public static final String OMSTIMESERIESITERATORREADER_LABEL = HASHMAP_READER;
     public static final String OMSTIMESERIESITERATORREADER_NAME = "tsitreader";
@@ -1191,7 +1197,19 @@ public class GearsMessages {
     public static final String OMSSHAPEFILEFEATUREREADER_GEODATA_DESCRIPTION = "The read feature collection.";
 
     public static final String OMSVECTORRESHAPER_DESCRIPTION = "Module to reshape a vector.";
-    public static final String OMSVECTORRESHAPER_DOCUMENTATION = "OmsVectorReshaper.html";
+    public static final String OMSVECTORRESHAPER_DOCUMENTATION = """
+            The expressions are written one per line, as `name=expression` in ECQL. An expression with the name of an \
+            existing field replaces it, a new name adds a field; the other fields are kept, except the ones listed to \
+            be removed. The type of each field is taken from its value on the first feature.
+
+            Some examples, for a layer whose geometry field is `the_geom`, as in shapefiles:
+
+            - `the_geom=centroid(the_geom)`: the centroids of the polygons.
+            - `the_geom=buffer(the_geom, 20.0)`: a buffer of 20 map units.
+            - `the_geom=convexHull(the_geom)`: the convex hulls.
+            - `area=area(the_geom)` and `length=geomLength(the_geom)`: new fields with the area and the perimeter.
+            - `newfield=-1`: a new field with a constant value.
+            """;
     public static final String OMSVECTORRESHAPER_KEYWORDS = "Reshape, Vector, OmsVectorFilter";
     public static final String OMSVECTORRESHAPER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORRESHAPER_NAME = "reshape";
@@ -1205,7 +1223,7 @@ public class GearsMessages {
     public static final String OMSVECTORRESHAPER_OUT_VECTOR_DESCRIPTION = "The new reshaped vector.";
 
     public static final String OMSVECTORREPROJECTOR_DESCRIPTION = "Module for vector reprojection.";
-    public static final String OMSVECTORREPROJECTOR_DOCUMENTATION = "OmsVectorReprojector.html";
+    public static final String OMSVECTORREPROJECTOR_DOCUMENTATION = "";
     public static final String OMSVECTORREPROJECTOR_KEYWORDS = "CRS, Reprojection, Vector";
     public static final String OMSVECTORREPROJECTOR_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORREPROJECTOR_NAME = "vreproject";

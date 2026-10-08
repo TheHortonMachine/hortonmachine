@@ -132,7 +132,7 @@ public class OmsRasterReader extends HMModel {
     public GridCoverage2D outRaster = null;
 
     public static final String OMSRASTERREADER_DESCRIPTION = "Raster reader module.";
-    public static final String OMSRASTERREADER_DOCUMENTATION = "OmsRasterReader.html";
+    public static final String OMSRASTERREADER_DOCUMENTATION = "";
     public static final String OMSRASTERREADER_KEYWORDS = "IO, Coverage, Raster, Reading";
     public static final String OMSRASTERREADER_LABEL = RASTERREADER;
     public static final String OMSRASTERREADER_NAME = "rasterreader";

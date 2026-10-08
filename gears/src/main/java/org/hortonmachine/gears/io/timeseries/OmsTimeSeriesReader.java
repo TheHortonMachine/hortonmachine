@@ -83,7 +83,7 @@ public class OmsTimeSeriesReader extends HMModel {
     public HashMap<DateTime, double[]> outData;
 
     public static final String OMSTIMESERIESREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The data is assumed to be first col a date and then al numbers.";
-    public static final String OMSTIMESERIESREADER_DOCUMENTATION = "OmsTimeSeriesReader.html";
+    public static final String OMSTIMESERIESREADER_DOCUMENTATION = "";
     public static final String OMSTIMESERIESREADER_KEYWORDS = "IO, Reading";
     public static final String OMSTIMESERIESREADER_LABEL = HASHMAP_READER;
     public static final String OMSTIMESERIESREADER_NAME = "tsreader";

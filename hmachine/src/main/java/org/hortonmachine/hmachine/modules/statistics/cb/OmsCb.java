@@ -20,6 +20,7 @@ package org.hortonmachine.hmachine.modules.statistics.cb;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_DOCUMENTATION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_KEYWORDS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_LABEL;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSCB_LICENSE;
@@ -36,6 +37,7 @@ import java.awt.image.RenderedImage;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -51,6 +53,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.math.CoupledFieldsMoments;
 
 @Description(OMSCB_DESCRIPTION)
+@Documentation(OMSCB_DOCUMENTATION)
 @Author(name = OMSCB_AUTHORNAMES, contact = OMSCB_AUTHORCONTACTS)
 @Keywords(OMSCB_KEYWORDS)
 @Label(OMSCB_LABEL)

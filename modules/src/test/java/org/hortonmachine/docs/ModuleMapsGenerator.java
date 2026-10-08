@@ -97,7 +97,8 @@ import groovy.lang.GroovyShell;
  * <p>
  * The raster can be the difference of two rasters, written as <code>a.tif - b.tif</code>, or a
  * vector of lines (<code>.shp</code>), drawn in the strongest color of the colortable, without
- * legend.
+ * legend, or a table (<code>.csv</code>) written by the script, drawn as a histogram: the first
+ * column is the value of each bar, colored with the colortable, the second its height.
  * The colortable is one of {@link EColorTables}: <b>rainbow</b> is used if it is not.
  * The options, separated by commas, are:
  * <ul>
@@ -250,6 +251,9 @@ public class ModuleMapsGenerator {
     private BufferedImage drawMap( MapSpec spec ) throws Exception {
         if (spec.raster().endsWith(".shp")) {
             return drawVectorMap(spec);
+        }
+        if (spec.raster().endsWith(".csv")) {
+            return drawHistogram(spec);
         }
         GridCoverage2D raster = readRaster(spec);
         double[] minMax = spec.options().contains("clip") ? percentiles(raster, 0.02, 0.98) : minMax(raster);
@@ -412,6 +416,105 @@ public class ModuleMapsGenerator {
         } else if (field != null && !spec.options().contains("nolegend")) {
             drawBarLegend(g, legendEntries(colorsStyle, minMax), MAP_WIDTH + 20, 20, Math.min(mapHeight - 40, 400));
         }
+        g.dispose();
+        return image;
+    }
+
+    /**
+     * Draws a histogram from a csv with a header: the first column is the value of each bar, the
+     * second its height, and the header names the axes. Each bar gets the color of its value in
+     * the colortable.
+     */
+    private BufferedImage drawHistogram( MapSpec spec ) throws Exception {
+        List<String> lines = Files.readAllLines(new File(path(spec.raster())).toPath(), StandardCharsets.UTF_8);
+        String[] header = lines.get(0).split(",");
+        List<double[]> bars = new ArrayList<>();
+        for( String line : lines.subList(1, lines.size()) ) {
+            if (!line.isBlank()) {
+                String[] split = line.split(",");
+                bars.add(new double[]{Double.parseDouble(split[0].trim()), Double.parseDouble(split[1].trim())});
+            }
+        }
+        double minX = bars.get(0)[0];
+        double maxX = bars.get(bars.size() - 1)[0];
+        double maxY = bars.stream().mapToDouble(b -> b[1]).max().getAsDouble();
+        // about 5 ticks, at a round step of 1, 2 or 5 times a power of 10
+        double magnitude = Math.pow(10, Math.floor(Math.log10(maxY / 5)));
+        double yStep = magnitude;
+        for( double factor : new double[]{2, 5, 10} ) {
+            if (maxY / yStep <= 6) {
+                break;
+            }
+            yStep = factor * magnitude;
+        }
+        int yTicks = (int) Math.ceil(maxY / yStep);
+        maxY = yTicks * yStep;
+
+        String colortable = Arrays.stream(EColorTables.values()).anyMatch(t -> t.name().equals(spec.colortable()))
+                ? spec.colortable()
+                : EColorTables.rainbow.name();
+        List<ColorMapEntry> entries = colorMapEntries(
+                RasterStyleUtilities.createStyleForColortable(colortable, minX, maxX == minX ? minX + 1 : maxX, 1.0));
+
+        int width = MAP_WIDTH;
+        int height = 450;
+        int left = 90;
+        int right = 20;
+        int top = 20;
+        int bottom = 70;
+        int plotWidth = width - left - right;
+        int plotHeight = height - top - bottom;
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+        g.setFont(FONT);
+        FontMetrics metrics = g.getFontMetrics();
+
+        // the horizontal grid lines with the labels of the heights
+        for( int i = 0; i <= yTicks; i++ ) {
+            double value = i * yStep;
+            int y = top + plotHeight - (int) Math.round(plotHeight * (double) i / yTicks);
+            g.setColor(new Color(225, 225, 225));
+            g.drawLine(left, y, left + plotWidth, y);
+            g.setColor(Color.DARK_GRAY);
+            String label = format(Math.rint(value));
+            g.drawString(label, left - 8 - metrics.stringWidth(label), y + metrics.getAscent() / 2 - 1);
+        }
+
+        double barWidth = (double) plotWidth / bars.size();
+        int labelEvery = Math.max(1, (int) Math.ceil(bars.size() / 10.0));
+        for( int i = 0; i < bars.size(); i++ ) {
+            double[] bar = bars.get(i);
+            int x1 = left + (int) Math.round(i * barWidth);
+            int x2 = left + (int) Math.round((i + 1) * barWidth);
+            int barHeight = (int) Math.round(plotHeight * bar[1] / maxY);
+            g.setColor(colorAt(entries, bar[0]));
+            g.fillRect(x1 + 1, top + plotHeight - barHeight, x2 - x1 - 2, barHeight);
+            g.setColor(Color.DARK_GRAY);
+            g.drawRect(x1 + 1, top + plotHeight - barHeight, x2 - x1 - 2, barHeight);
+            if (i % labelEvery == 0) {
+                String label = format(Math.rint(bar[0]));
+                int xLabel = (x1 + x2) / 2 - metrics.stringWidth(label) / 2;
+                g.drawString(label, xLabel, top + plotHeight + 6 + metrics.getAscent());
+            }
+        }
+        g.setColor(Color.DARK_GRAY);
+        g.drawLine(left, top + plotHeight, left + plotWidth, top + plotHeight);
+        g.drawLine(left, top, left, top + plotHeight);
+
+        // the names of the axes, from the header
+        String xName = header[0].trim();
+        g.drawString(xName, left + plotWidth / 2 - metrics.stringWidth(xName) / 2, height - 12);
+        String yName = header[1].trim();
+        Graphics2D rotated = (Graphics2D) g.create();
+        rotated.rotate(-Math.PI / 2);
+        rotated.drawString(yName, -(top + plotHeight / 2) - metrics.stringWidth(yName) / 2, 20);
+        rotated.dispose();
+
         g.dispose();
         return image;
     }

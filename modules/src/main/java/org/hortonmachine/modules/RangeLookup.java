@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_IN_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_KEYWORDS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_LABEL;
@@ -36,6 +37,7 @@ import org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,6 +48,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSRANGELOOKUP_DESCRIPTION)
+@Documentation(OMSRANGELOOKUP_DOCUMENTATION)
 @Author(name = OMSRANGELOOKUP_AUTHORNAMES, contact = OMSRANGELOOKUP_AUTHORCONTACTS)
 @Keywords(OMSRANGELOOKUP_KEYWORDS)
 @Label(OMSRANGELOOKUP_LABEL)

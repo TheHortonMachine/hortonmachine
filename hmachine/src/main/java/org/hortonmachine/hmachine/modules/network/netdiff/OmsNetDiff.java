@@ -22,6 +22,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_DOCUMENTATION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_KEYWORDS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_LABEL;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_LICENSE;
@@ -48,6 +49,7 @@ import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -58,6 +60,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSNETDIFF_DESCRIPTION)
+@Documentation(OMSNETDIFF_DOCUMENTATION)
 @Author(name = OMSNETDIFF_AUTHORNAMES, contact = OMSNETDIFF_AUTHORCONTACTS)
 @Keywords(OMSNETDIFF_KEYWORDS)
 @Label(OMSNETDIFF_LABEL)
@@ -150,8 +153,7 @@ public class OmsNetDiff extends HMModel {
             }
             pm.worked(1);
         }
-        WritableRaster diffImage = CoverageUtilities.createWritableRaster(cols, rows, null, inFlow.getRenderedImage()
-                .getSampleModel(), null);
+        WritableRaster diffImage = CoverageUtilities.createWritableRaster(cols, rows, null, null, doubleNovalue);
         WritableRandomIter diffIter = RandomIterFactory.createWritable(diffImage, null);
         // Second step: It calculate the difference among the first and the last
         // point of a link

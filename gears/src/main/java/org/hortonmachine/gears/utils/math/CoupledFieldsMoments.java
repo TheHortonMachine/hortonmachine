@@ -121,7 +121,7 @@ public class CoupledFieldsMoments {
                     pFirst++;
                 for( int k = pFirst; k <= pLast; k++ ) {
                     outCb[h][k - pFirst + 3] = calculateNthMoment(theSplit.splitValues2[h], (int) theSplit.splitIndex[h],
-                            outCb[h][1], (double) k, pm);
+                            outCb[h][2], (double) k, pm);
                 }
             }
         }

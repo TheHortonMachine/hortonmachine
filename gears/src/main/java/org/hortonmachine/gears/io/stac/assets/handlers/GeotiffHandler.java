@@ -72,20 +72,65 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			}
 		}
 		if (supported) {
+			Double assetNoValue = readNoValue(assetNode);
+			if (assetNoValue != null) {
+				noValue = assetNoValue;
+			}
 			JsonNode rasterBandNode = assetNode.get("raster:bands");
 			if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
 				Iterator<JsonNode> rbIterator = rasterBandNode.elements();
 				while (rbIterator.hasNext()) {
 					JsonNode rbNode = rbIterator.next();
-					JsonNode noValueNode = rbNode.get("nodata");
-					if (noValueNode != null) {
-						noValue = noValueNode.asDouble();
-					}
 					JsonNode resolNode = rbNode.get("spatial_resolution");
 					if (resolNode != null) {
 						resolution = resolNode.asDouble();
 					}
 				}
+			}
+		}
+	}
+
+	/**
+	 * Read the nodata of an asset: the asset field (STAC 1.1), else the one of the first band, in the
+	 * bands of STAC 1.1 or in the raster:bands of the raster extension.
+	 *
+	 * @param assetNode the asset json.
+	 * @return the nodata or null if not declared.
+	 */
+	static Double readNoValue(JsonNode assetNode) {
+		Double value = parseNoValue(assetNode.get("nodata"));
+		for (String bandsField : new String[] { "bands", "raster:bands" }) {
+			JsonNode bands = assetNode.get(bandsField);
+			if (value == null && bands != null && bands.isArray() && bands.size() > 0) {
+				value = parseNoValue(bands.get(0).get("nodata"));
+			}
+		}
+		return value;
+	}
+
+	/**
+	 * The STAC nodata is a number or one of the strings "nan", "inf" and "-inf".
+	 */
+	private static Double parseNoValue(JsonNode node) {
+		if (node == null || node.isNull()) {
+			return null;
+		}
+		if (node.isNumber()) {
+			return node.doubleValue();
+		}
+		String text = node.asText().trim().toLowerCase();
+		switch (text) {
+		case "nan":
+			return Double.NaN;
+		case "inf":
+			return Double.POSITIVE_INFINITY;
+		case "-inf":
+			return Double.NEGATIVE_INFINITY;
+		default:
+			try {
+				return Double.parseDouble(text);
+			} catch (NumberFormatException e) {
+				return null;
 			}
 		}
 	}

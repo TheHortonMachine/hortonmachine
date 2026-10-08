@@ -47,6 +47,11 @@ org.hortonmachine.modules.SplitSubbasins
 org.hortonmachine.modules.SumDownStream
 org.hortonmachine.modules.MeltonNumber
 org.hortonmachine.modules.Viewshed
+org.hortonmachine.modules.Gc
+org.hortonmachine.modules.NetDiff
+org.hortonmachine.modules.Netshape2Flow
+org.hortonmachine.modules.BasinShape
+org.hortonmachine.modules.Cb
 
 # Raster processing
 org.hortonmachine.modules.RasterResizer
@@ -57,11 +62,14 @@ org.hortonmachine.modules.RasterResolutionResampler
 org.hortonmachine.modules.Mosaic12
 org.hortonmachine.modules.RasterSummary
 org.hortonmachine.modules.SurfaceInterpolator
+org.hortonmachine.modules.RangeLookup
 
 # Vector processing
 org.hortonmachine.modules.Vectorizer
 org.hortonmachine.modules.ContourExtractor
 org.hortonmachine.modules.LasConverter
+org.hortonmachine.modules.VectorReshaper
+org.hortonmachine.modules.VectorSimplifier
 
 # GeoFrame › ERM water budget workflow
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmDataPreparator

@@ -21,6 +21,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_DOCUMENTATION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_KEYWORDS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_LABEL;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETSHAPE2FLOW_LICENSE;
@@ -68,6 +69,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -78,6 +80,7 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OMSNETSHAPE2FLOW_DESCRIPTION)
+@Documentation(OMSNETSHAPE2FLOW_DOCUMENTATION)
 @Author(name = OMSNETSHAPE2FLOW_AUTHORNAMES, contact = OMSNETSHAPE2FLOW_AUTHORCONTACTS)
 @Keywords(OMSNETSHAPE2FLOW_KEYWORDS)
 @Label(OMSNETSHAPE2FLOW_LABEL)

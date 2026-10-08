@@ -89,7 +89,7 @@ public class OmsVectorWriter extends HMModel {
     
     // PARAM NAMES START
     public static final String OMSVECTORWRITER_DESCRIPTION = "Vectors features writer to file module.";
-    public static final String OMSVECTORWRITER_DOCUMENTATION = "OmsVectorWriter.html";
+    public static final String OMSVECTORWRITER_DOCUMENTATION = "";
     public static final String OMSVECTORWRITER_KEYWORDS = "IO, Shapefile, Feature, Vector, Writing";
     public static final String OMSVECTORWRITER_LABEL = FEATUREWRITER;
     public static final String OMSVECTORWRITER_NAME = "vectorwriter";

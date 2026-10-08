@@ -101,7 +101,7 @@ public class HortonMessages {
     public static final String OMSDEBRISVANDRE_outSoil_DESCRIPTION = "The optional map of the cumulated soil.";
 
     public static final String OMSKRIGING_DESCRIPTION = "Ordinary kriging algorithm.";
-    public static final String OMSKRIGING_DOCUMENTATION = "OmsKriging.html";
+    public static final String OMSKRIGING_DOCUMENTATION = "";
     public static final String OMSKRIGING_KEYWORDS = "OmsKriging, Hydrology";
     public static final String OMSKRIGING_LABEL = STATISTICS;
     public static final String OMSKRIGING_NAME = "kriging";
@@ -266,7 +266,18 @@ public class HortonMessages {
 
     
     public static final String OMSNETSHAPE2FLOW_DESCRIPTION = "Transforms the network shape to a flow map.";
-    public static final String OMSNETSHAPE2FLOW_DOCUMENTATION = "OmsNetshape2Flow.html";
+    public static final String OMSNETSHAPE2FLOW_DOCUMENTATION = """
+            The network lines must be drawn from upstream to downstream: the order of their vertices gives the flow \
+            direction. The cells of a reach get the D8 direction to the next cell, its last cell the outlet value 10, \
+            unless another reach already passes there, as at a confluence. The flow map can be used to force the \
+            drainage directions along a known network, as the network flow input of DrainDir.
+
+            The reach id comes from the id field or, without it, from the feature id. With the active field, the \
+            reaches whose value starts with n (as no) are skipped, empty values count as active.
+
+            The cells where a reach runs into another one already rasterized, before its last segment, are written to \
+            the problem points, to correct the network lines.
+            """;
     public static final String OMSNETSHAPE2FLOW_KEYWORDS = "Network, Flowdirections";
     public static final String OMSNETSHAPE2FLOW_LABEL = NETWORK;
     public static final String OMSNETSHAPE2FLOW_NAME = "net2flow";
@@ -283,7 +294,13 @@ public class HortonMessages {
     public static final String OMSNETSHAPE2FLOW_outProblems_DESCRIPTION = "The problems features points.";
 
     public static final String OMSGC_DESCRIPTION = "Subdivides the sites of a basin in 11 topographic classes.";
-    public static final String OMSGC_DOCUMENTATION = "OmsGc.html";
+    public static final String OMSGC_DOCUMENTATION = """
+            Each cell gets, in this order: 110 if its slope reaches the threshold (steep sites), 100 if it is a \
+            network cell (value 2 in the network map, as from ExtractNetwork), otherwise its class from Tc (10 to 90).
+
+            The aggregated map groups them in 15 non-channelled valleys (classes 30, 70, 90), 25 planar sites (10), \
+            35 channels (100), 45 hillslopes (20, 40, 50, 60, 80) and 55 steep sites (110).
+            """;
     public static final String OMSGC_KEYWORDS = "Geomorphology, OmsTc, OmsSlope, OmsExtractNetwork";
     public static final String OMSGC_LABEL = GEOMORPHOLOGY;
     public static final String OMSGC_NAME = "gc";
@@ -294,7 +311,7 @@ public class HortonMessages {
     public static final String OMSGC_inSlope_DESCRIPTION = "The map of the slope";
     public static final String OMSGC_inNetwork_DESCRIPTION = "The map with the network";
     public static final String OMSGC_inCp9_DESCRIPTION = "The map with the Thopological classes cp9";
-    public static final String OMSGC_pTh_DESCRIPTION = "The gradient formula mode (0 = finite differences, 1 = horn, 2 = evans).";
+    public static final String OMSGC_pTh_DESCRIPTION = "The slope, as tangent like the output of Slope, from which a cell is classified as steep (class 110).";
     public static final String OMSGC_outClasses_DESCRIPTION = "The map with the geomorphological classes";
     public static final String OMSGC_outAggregateClasses_DESCRIPTION = "The map with the geomorphological classes";
 
@@ -618,7 +635,13 @@ public class HortonMessages {
     public static final String OMSMARKOUTLETS_outFlow_DESCRIPTION = "The map of the drainage directions with the outlets marked.";
 
     public static final String OMSNETDIFF_DESCRIPTION = "Calculates the difference between the value of a quantity in one point and the value of the same quantity in another point across a basin";
-    public static final String OMSNETDIFF_DOCUMENTATION = "OmsNetDiff.html";
+    public static final String OMSNETDIFF_DOCUMENTATION = """
+            The stream map splits the network in stretches of cells with the same value, for example the Strahler \
+            order or the link numbers of NetNumbering. Every cell of a stretch gets the absolute difference of the \
+            input map between the first, most upstream, and the last cell of the stretch: with the elevation and the \
+            Strahler order, the drop along each Strahler branch; with the link numbers, the drop of each link. The \
+            cells outside the network are no-data.
+            """;
     public static final String OMSNETDIFF_KEYWORDS = "Network, Pitfiller, OmsDrainDir, OmsFlowDirections";
     public static final String OMSNETDIFF_LABEL = NETWORK;
     public static final String OMSNETDIFF_NAME = "netdiff";
@@ -923,7 +946,14 @@ public class HortonMessages {
     public static final String OMSMULTITCA_outMultiTca_DESCRIPTION = "The map of the total contributing areas, in cells.";
 
     public static final String OMSCB_DESCRIPTION = "Calculates the histogram of a set of data contained in a matrix with respect to the set of data contained in another matrix.";
-    public static final String OMSCB_DOCUMENTATION = "OmsCb.html";
+    public static final String OMSCB_DOCUMENTATION = """
+            The cells are sorted by the value of the first map and split in bins. For each bin the output row has the \
+            mean of the first map, the number of cells, the mean of the second map and its moments from the first to \
+            the last order requested; the first order is the mean, already in the third column, and is skipped. \
+            Without the second map, the first is used for both.
+
+            Both maps are loaded in memory as arrays and sorted, so large maps need a lot of memory.
+            """;
     public static final String OMSCB_KEYWORDS = "Histogram, Geomorphology, Statistic";
     public static final String OMSCB_LABEL = STATISTICS;
     public static final String OMSCB_NAME = "cb";

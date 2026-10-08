@@ -28,6 +28,7 @@ import org.hortonmachine.gears.modules.v.vectorsimplifier.OmsVectorSimplifier;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -38,6 +39,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORSIMPLIFIER_DESCRIPTION)
+@Documentation(OMSVECTORSIMPLIFIER_DOCUMENTATION)
 @Author(name = OMSVECTORSIMPLIFIER_AUTHORNAMES, contact = OMSVECTORSIMPLIFIER_AUTHORCONTACTS)
 @Keywords(OMSVECTORSIMPLIFIER_KEYWORDS)
 @Label(OMSVECTORSIMPLIFIER_LABEL)

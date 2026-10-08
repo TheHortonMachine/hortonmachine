@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_AUTHORNAMES;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_DESCRIPTION;
+import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_DOCUMENTATION;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_KEYWORDS;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_LABEL;
 import static org.hortonmachine.hmachine.i18n.HortonMessages.OMSNETDIFF_LICENSE;
@@ -36,6 +37,7 @@ import org.hortonmachine.hmachine.modules.network.netdiff.OmsNetDiff;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,6 +48,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSNETDIFF_DESCRIPTION)
+@Documentation(OMSNETDIFF_DOCUMENTATION)
 @Author(name = OMSNETDIFF_AUTHORNAMES, contact = OMSNETDIFF_AUTHORCONTACTS)
 @Keywords(OMSNETDIFF_KEYWORDS)
 @Label(OMSNETDIFF_LABEL)

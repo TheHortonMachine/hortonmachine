@@ -103,7 +103,7 @@ public class OmsMapsViewer extends HMModel {
     public String[] inVectors = null;
 
     public static final String OMSMAPSVIEWER_DESCRIPTION = "A simple geodata viewer.";
-    public static final String OMSMAPSVIEWER_DOCUMENTATION = "OmsMapsViewer.html";
+    public static final String OMSMAPSVIEWER_DOCUMENTATION = "";
     public static final String OMSMAPSVIEWER_KEYWORDS = "Coverage, Raster, Viewer, UI";
     public static final String OMSMAPSVIEWER_LABEL = OTHER;
     public static final String OMSMAPSVIEWER_NAME = "mapsviewer";

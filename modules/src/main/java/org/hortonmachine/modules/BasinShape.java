@@ -35,6 +35,7 @@ import org.hortonmachine.hmachine.modules.basin.basinshape.OmsBasinShape;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +46,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSBASINSHAPE_DESCRIPTION)
+@Documentation(OmsBasinShape.OMSBASINSHAPE_DOCUMENTATION)
 @Author(name = OMSBASINSHAPE_AUTHORNAMES, contact = OMSBASINSHAPE_AUTHORCONTACTS)
 @Keywords(OMSBASINSHAPE_KEYWORDS)
 @Label(OMSBASINSHAPE_LABEL)

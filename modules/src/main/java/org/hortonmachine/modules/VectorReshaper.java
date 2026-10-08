@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_IN_VECTOR_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_KEYWORDS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORRESHAPER_LABEL;
@@ -36,6 +37,7 @@ import org.hortonmachine.gears.modules.v.vectorreshaper.OmsVectorReshaper;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,6 +48,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORRESHAPER_DESCRIPTION)
+@Documentation(OMSVECTORRESHAPER_DOCUMENTATION)
 @Author(name = OMSVECTORRESHAPER_AUTHORNAMES, contact = OMSVECTORRESHAPER_AUTHORCONTACTS)
 @Keywords(OMSVECTORRESHAPER_KEYWORDS)
 @Label(OMSVECTORRESHAPER_LABEL)

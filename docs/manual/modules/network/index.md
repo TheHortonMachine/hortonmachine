@@ -11,4 +11,6 @@ distancetooutlet
 hacklength
 magnitudo
 networkattributesbuilder
+netdiff
+netshape2flow
 ```

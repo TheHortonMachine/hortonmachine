@@ -248,8 +248,10 @@ public class CoverageUtilities {
      * @param width width of the raster to create.
      * @param height height of the raster to create.
      * @param dataClass data type for the raster. If <code>null</code>, defaults to double.
-     * @param sampleModel the samplemodel to use. If <code>null</code>, defaults to 
+     * @param sampleModel the samplemodel to use. If <code>null</code>, defaults to
      *                  <code>new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});</code>.
+     *                  If its size differs from width and height (as the sample model of a tiled
+     *                  image, which has the size of a tile), a compatible one of the right size is used.
      * @param value value to which to set the raster to. If null, the default of the raster creation is 
      *                  used, which is 0.
      * @return a {@link WritableRaster writable raster}.
@@ -271,6 +273,8 @@ public class CoverageUtilities {
 
         if (sampleModel == null) {
             sampleModel = new ComponentSampleModel(dataType, width, height, 1, width, new int[]{0});
+        } else if (sampleModel.getWidth() != width || sampleModel.getHeight() != height) {
+            sampleModel = sampleModel.createCompatibleSampleModel(width, height);
         }
 
         WritableRaster raster = RasterFactory.createWritableRaster(sampleModel, null);

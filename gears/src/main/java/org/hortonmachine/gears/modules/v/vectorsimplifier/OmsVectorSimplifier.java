@@ -94,7 +94,16 @@ public class OmsVectorSimplifier extends HMModel {
 
     // PARAM DESC START
     public static final String OMSVECTORSIMPLIFIER_DESCRIPTION = "Collection of vector simplification algorithms.";
-    public static final String OMSVECTORSIMPLIFIER_DOCUMENTATION = "OmsVectorSimplifier.html";
+    public static final String OMSVECTORSIMPLIFIER_DOCUMENTATION = """
+            TopologyPreservingSimplifier keeps the result valid, with the same dimension and number of parts, also \
+            with large tolerances; Douglas Peucker is faster but can produce invalid or collapsed geometries. Both \
+            drop the vertices that are closer than the tolerance, in map units, to the simplified line. The \
+            precision reduction instead rounds the coordinates to a grid of 1/scale: with a scale of 1000, to the \
+            third decimal.
+
+            Each part of a multi geometry is simplified on its own, so the topology between the parts is not \
+            preserved, and the parts are returned as a geometry collection.
+            """;
     public static final String OMSVECTORSIMPLIFIER_KEYWORDS = "Simplify, OmsLineSmootherMcMaster, OmsLineSmootherJaitools";
     public static final String OMSVECTORSIMPLIFIER_LABEL = VECTORPROCESSING;
     public static final String OMSVECTORSIMPLIFIER_NAME = "vsimplify";
@@ -103,7 +112,7 @@ public class OmsVectorSimplifier extends HMModel {
     public static final String OMSVECTORSIMPLIFIER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSVECTORSIMPLIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSVECTORSIMPLIFIER_IN_VECTOR_DESCRIPTION = "The vector to be simplified.";
-    public static final String OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION = "The simplification type: TopologyPreservingSimplifier = 0, Douglas Peucker = 1 (default = 0).";
+    public static final String OMSVECTORSIMPLIFIER_P_TYPE_DESCRIPTION = "The simplification method.";
     public static final String OMSVECTORSIMPLIFIER_P_TOLERANCE_DESCRIPTION = "The distance tolerance for the simplification.";
     public static final String OMSVECTORSIMPLIFIER_P_SCALE_DESCRIPTION = "The amount by which to multiply a coordinate after subtracting the offset, to obtain a precise coordinate";
     public static final String OMSVECTORSIMPLIFIER_OUT_VECTOR_DESCRIPTION = "The simplified vector.";

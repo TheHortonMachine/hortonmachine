@@ -112,7 +112,7 @@ public class OmsVectorReader extends HMModel {
 
     // PARAM NAMES START
     public static final String OMSVECTORREADER_DESCRIPTION = "Vectors features reader module.";
-    public static final String OMSVECTORREADER_DOCUMENTATION = "OmsVectorReader.html";
+    public static final String OMSVECTORREADER_DOCUMENTATION = "";
     public static final String OMSVECTORREADER_KEYWORDS = "IO, Shapefile, Feature, Vector, Reading";
     public static final String OMSVECTORREADER_LABEL = FEATUREREADER;
     public static final String OMSVECTORREADER_NAME = "vectorreader";

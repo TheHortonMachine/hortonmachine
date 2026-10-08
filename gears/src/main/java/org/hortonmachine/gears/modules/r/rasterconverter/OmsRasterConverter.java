@@ -69,7 +69,7 @@ public class OmsRasterConverter extends HMModel {
     public GridCoverage2D outRaster;
 
     public static final String OMSRASTERCONVERTER_DESCRIPTION = "Raster conversion module.";
-    public static final String OMSRASTERCONVERTER_DOCUMENTATION = "OmsRasterConverter.html";
+    public static final String OMSRASTERCONVERTER_DOCUMENTATION = "";
     public static final String OMSRASTERCONVERTER_KEYWORDS = "IO, Coverage, Raster, Convert, OmsRasterReader";
     public static final String OMSRASTERCONVERTER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERCONVERTER_NAME = "oms_rconvert";

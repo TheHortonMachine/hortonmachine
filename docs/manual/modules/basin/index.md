@@ -7,4 +7,5 @@ The modules that describe a basin as a whole: how its cells are arranged with re
 
 topindex
 rescaleddistance
+basinshape
 ```

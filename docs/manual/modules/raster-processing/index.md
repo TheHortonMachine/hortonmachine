@@ -13,4 +13,5 @@ rasterresolutionresampler
 mosaic12
 rastersummary
 surfaceinterpolator
+rangelookup
 ```
