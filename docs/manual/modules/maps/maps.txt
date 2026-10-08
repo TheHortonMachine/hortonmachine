@@ -89,6 +89,8 @@ Viewshed       | ../examples/hm/viewshed.groovy       | viewshed.tif            
 Gc             | ../examples/hm/gc.groovy             | gc_aggregated.tif           | contrasting | classes | 15=non-channelled valley;25=planar;35=channel;45=hillslope;55=steep
 NetDiff        | ../examples/hm/netdiff.groovy        | netdiff.tif                 | rainbow
 Cb             | ../examples/hm/cb.groovy             | elevation_histogram.csv     | elev
+Cb             | ../examples/hm/cb_elevation.groovy   | elevation_moments.csv       | -        | panels=cells;elevation_skewness
+Cb             | ../examples/hm/cb_slope.groovy       | elevation_slope.csv         | -        | panels=slope_mean+slope_stddev;slope_skewness
 BasinShape     | ../examples/hm/basinshape.groovy     | subbasins.shp               | rainbow  | field=avgelev
 Netshape2Flow  | ../examples/hm/netshape2flow.groovy  | flownet.tif                 | flow     | classes
 RangeLookup    | ../examples/hm/rangelookup.groovy    | elevation_belts.tif         | contrasting | classes | 1=below 1300 m;2=1300 to 1700 m;3=above 1700 m

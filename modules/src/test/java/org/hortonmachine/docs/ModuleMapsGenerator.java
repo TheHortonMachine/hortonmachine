@@ -41,6 +41,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.DoubleToIntFunction;
 import java.util.regex.Matcher;
 
 import javax.imageio.ImageIO;
@@ -112,6 +113,9 @@ import groovy.lang.GroovyShell;
  * a color bar, or with a legend of the classes with the option classes;</li>
  * <li><b>clip</b>: the colors span from the 2nd to the 98th percentile of the values, for rasters
  * with a few extreme values; the cells outside get the colors of the ends.</li>
+ * <li><b>panels=a;b+c</b>: with a table, instead of the histogram, the named columns as panels one
+ * over the other on the first column: <code>a</code> as bars from zero, <code>b+c</code> as the
+ * line of b in the band of plus and minus c, as a mean and its standard deviation.</li>
  * </ul>
  * The optional class names, as <code>1=stable;2=unstable</code>, replace the values in the legend
  * of the classes.
@@ -253,7 +257,8 @@ public class ModuleMapsGenerator {
             return drawVectorMap(spec);
         }
         if (spec.raster().endsWith(".csv")) {
-            return drawHistogram(spec);
+            String panels = optionValue(spec, "panels");
+            return panels != null ? drawPanels(spec, panels) : drawHistogram(spec);
         }
         GridCoverage2D raster = readRaster(spec);
         double[] minMax = spec.options().contains("clip") ? percentiles(raster, 0.02, 0.98) : minMax(raster);
@@ -438,15 +443,7 @@ public class ModuleMapsGenerator {
         double minX = bars.get(0)[0];
         double maxX = bars.get(bars.size() - 1)[0];
         double maxY = bars.stream().mapToDouble(b -> b[1]).max().getAsDouble();
-        // about 5 ticks, at a round step of 1, 2 or 5 times a power of 10
-        double magnitude = Math.pow(10, Math.floor(Math.log10(maxY / 5)));
-        double yStep = magnitude;
-        for( double factor : new double[]{2, 5, 10} ) {
-            if (maxY / yStep <= 6) {
-                break;
-            }
-            yStep = factor * magnitude;
-        }
+        double yStep = tickStep(maxY);
         int yTicks = (int) Math.ceil(maxY / yStep);
         maxY = yTicks * yStep;
 
@@ -517,6 +514,179 @@ public class ModuleMapsGenerator {
 
         g.dispose();
         return image;
+    }
+
+    /**
+     * Draws columns of a csv with a header as panels one over the other, each with its own
+     * vertical axis, over the first column as the shared horizontal axis, one slot per row as in a
+     * histogram. The panels are separated by semicolons: a column name is drawn as bars from zero,
+     * blue, or with negative values red above and blue below zero, and a pair <code>mean+stddev</code> as the line of the mean in
+     * the band of one standard deviation around it.
+     */
+    private BufferedImage drawPanels( MapSpec spec, String panels ) throws Exception {
+        List<String> lines = Files.readAllLines(new File(path(spec.raster())).toPath(), StandardCharsets.UTF_8);
+        List<String> header = Arrays.stream(lines.get(0).split(",")).map(String::trim).toList();
+        List<double[]> rows = new ArrayList<>();
+        for( String line : lines.subList(1, lines.size()) ) {
+            if (!line.isBlank()) {
+                rows.add(Arrays.stream(line.split(",")).mapToDouble(v -> Double.parseDouble(v.trim())).toArray());
+            }
+        }
+        String[] panelSpecs = panels.split(";");
+
+        // the blue and red of a palette safe for color blindness
+        Color blue = new Color(0x2a78d6);
+        Color red = new Color(0xe34948);
+        Color band = new Color(0xcde2fb);
+        Color grid = new Color(225, 225, 225);
+
+        int width = MAP_WIDTH;
+        int left = 90;
+        int right = 20;
+        int top = 10;
+        int titleHeight = 26;
+        int panelHeight = 180;
+        int panelGap = 18;
+        int bottom = 60;
+        int plotWidth = width - left - right;
+        int height = top + panelSpecs.length * (titleHeight + panelHeight) + (panelSpecs.length - 1) * panelGap + bottom;
+        double slotWidth = (double) plotWidth / rows.size();
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+        g.setFont(FONT);
+        FontMetrics metrics = g.getFontMetrics();
+
+        int panelTop = top;
+        for( String panelSpec : panelSpecs ) {
+            String[] columns = panelSpec.split("\\+");
+            int valueIndex = header.indexOf(columns[0].trim());
+            int spreadIndex = columns.length > 1 ? header.indexOf(columns[1].trim()) : -1;
+            if (valueIndex < 0 || (columns.length > 1 && spreadIndex < 0)) {
+                throw new IllegalArgumentException("Unknown column of the panel " + panelSpec + " in " + spec.raster());
+            }
+            String title = header.get(valueIndex).replace('_', ' ');
+            if (spreadIndex >= 0) {
+                title += " ± " + header.get(spreadIndex).replace('_', ' ');
+            }
+            g.setColor(Color.DARK_GRAY);
+            g.drawString(title, left, panelTop + metrics.getAscent());
+            int plotTop = panelTop + titleHeight;
+
+            // the range of the values, with zero for the bars, on round ticks
+            double min = spreadIndex >= 0 ? Double.POSITIVE_INFINITY : 0;
+            double max = spreadIndex >= 0 ? Double.NEGATIVE_INFINITY : 0;
+            for( double[] row : rows ) {
+                double spread = spreadIndex >= 0 ? row[spreadIndex] : 0;
+                min = Math.min(min, row[valueIndex] - spread);
+                max = Math.max(max, row[valueIndex] + spread);
+            }
+            double step = tickStep(max - min);
+            double yMin = Math.floor(min / step) * step;
+            double yMax = Math.max(Math.ceil(max / step) * step, yMin + step);
+            int ticks = (int) Math.round((yMax - yMin) / step);
+            double scale = panelHeight / (yMax - yMin);
+            DoubleToIntFunction yOf = v -> plotTop + panelHeight - (int) Math.round((v - yMin) * scale);
+
+            for( int i = 0; i <= ticks; i++ ) {
+                double value = yMin + i * step;
+                int y = yOf.applyAsInt(value);
+                g.setColor(grid);
+                g.drawLine(left, y, left + plotWidth, y);
+                g.setColor(Color.DARK_GRAY);
+                String label = tickLabel(value, step);
+                g.drawString(label, left - 8 - metrics.stringWidth(label), y + metrics.getAscent() / 2 - 1);
+            }
+
+            if (spreadIndex >= 0) {
+                // the band of one standard deviation, then the line of the mean with its markers
+                int[] xs = new int[rows.size() * 2];
+                int[] ys = new int[rows.size() * 2];
+                for( int i = 0; i < rows.size(); i++ ) {
+                    int x = left + (int) Math.round((i + 0.5) * slotWidth);
+                    double[] row = rows.get(i);
+                    xs[i] = x;
+                    ys[i] = yOf.applyAsInt(row[valueIndex] + row[spreadIndex]);
+                    xs[xs.length - 1 - i] = x;
+                    ys[ys.length - 1 - i] = yOf.applyAsInt(row[valueIndex] - row[spreadIndex]);
+                }
+                g.setColor(band);
+                g.fillPolygon(xs, ys, xs.length);
+                g.setColor(blue);
+                g.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+                for( int i = 1; i < rows.size(); i++ ) {
+                    g.drawLine(xs[i - 1], yOf.applyAsInt(rows.get(i - 1)[valueIndex]), xs[i],
+                            yOf.applyAsInt(rows.get(i)[valueIndex]));
+                }
+                for( int i = 0; i < rows.size(); i++ ) {
+                    int y = yOf.applyAsInt(rows.get(i)[valueIndex]);
+                    g.setColor(Color.WHITE);
+                    g.fillOval(xs[i] - 6, y - 6, 12, 12);
+                    g.setColor(blue);
+                    g.fillOval(xs[i] - 4, y - 4, 8, 8);
+                }
+                g.setStroke(new BasicStroke(1f));
+            } else {
+                // the sign gets a color only when there are negative values
+                boolean signed = min < 0;
+                int zero = yOf.applyAsInt(0);
+                for( int i = 0; i < rows.size(); i++ ) {
+                    double value = rows.get(i)[valueIndex];
+                    int x1 = left + (int) Math.round(i * slotWidth);
+                    int x2 = left + (int) Math.round((i + 1) * slotWidth);
+                    int y = yOf.applyAsInt(value);
+                    g.setColor(signed && value >= 0 ? red : blue);
+                    g.fillRect(x1 + 2, Math.min(y, zero), x2 - x1 - 4, Math.abs(zero - y));
+                }
+                g.setColor(Color.DARK_GRAY);
+                g.drawLine(left, zero, left + plotWidth, zero);
+            }
+            g.setColor(Color.DARK_GRAY);
+            g.drawLine(left, plotTop, left, plotTop + panelHeight);
+            panelTop = plotTop + panelHeight + panelGap;
+        }
+
+        // the shared horizontal axis under the last panel
+        int axisY = panelTop - panelGap;
+        int labelEvery = Math.max(1, (int) Math.ceil(rows.size() / 10.0));
+        g.setColor(Color.DARK_GRAY);
+        for( int i = 0; i < rows.size(); i += labelEvery ) {
+            String label = format(Math.rint(rows.get(i)[0]));
+            int x = left + (int) Math.round((i + 0.5) * slotWidth);
+            g.drawString(label, x - metrics.stringWidth(label) / 2, axisY + 6 + metrics.getAscent());
+        }
+        String xName = header.get(0);
+        g.drawString(xName, left + plotWidth / 2 - metrics.stringWidth(xName) / 2, height - 12);
+
+        g.dispose();
+        return image;
+    }
+
+    /**
+     * @return a round step for about 5 ticks over the span: 1, 2 or 5 times a power of 10.
+     */
+    private static double tickStep( double span ) {
+        double magnitude = Math.pow(10, Math.floor(Math.log10(span / 5)));
+        double step = magnitude;
+        for( double factor : new double[]{2, 5, 10} ) {
+            if (span / step <= 6) {
+                break;
+            }
+            step = factor * magnitude;
+        }
+        return step;
+    }
+
+    /**
+     * @return the label of a tick, with the decimals of the step.
+     */
+    private static String tickLabel( double value, double step ) {
+        int decimals = Math.max(0, (int) -Math.floor(Math.log10(step) + 1e-9));
+        return decimals == 0 ? format(Math.rint(value)) : String.format("%." + decimals + "f", value);
     }
 
     private static Style vectorStyle( Class< ? > geometryType, Color color ) {
