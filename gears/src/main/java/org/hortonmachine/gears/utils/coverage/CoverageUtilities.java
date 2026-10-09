@@ -1582,6 +1582,10 @@ public class CoverageUtilities {
         GridCoordinates2D gridCoords;
         while( progressive < lineLength + step ) { // run over by a step to make sure we get the
                                                    // last coord back from the extractor
+            if (progressive > lineLength) {
+                // the last point is the end of the line, at its length
+                progressive = lineLength;
+            }
             Coordinate c = indexedLine.extractPoint(progressive);
             gridCoords = gridGeometry.worldToGrid(new Position2D(c.x, c.y));
             double value = HMConstants.doubleNovalue;
@@ -1811,6 +1815,16 @@ public class CoverageUtilities {
         return outCoverage;
     }
 
+    /**
+     * Coverage adder.
+     *
+     * <p>Where gc1 is valid, its values are added to the ones of gc2; elsewhere, and where gc2 is
+     * novalue, gc2 is kept.</p>
+     *
+     * @param gc1 the map of the values to add.
+     * @param gc2 the base map.
+     * @return the sum of gc1 over gc2.
+     */
     public static GridCoverage2D sumCoverages( GridCoverage2D gc1, GridCoverage2D gc2 ) {
         RegionMap gc1RegionMap = getRegionParamsFromGridCoverage(gc1);
         int c1 = gc1RegionMap.getCols();
@@ -1828,11 +1842,13 @@ public class CoverageUtilities {
         WritableRandomIter gc2Iter = RandomIterFactory.createWritable(outWR, null);
 
         double nv1 = HMConstants.getNovalue(gc1);
+        double nv2 = HMConstants.getNovalue(gc2);
         for( int r = 0; r < r1; r++ ) {
             for( int c = 0; c < c1; c++ ) {
                 double v1 = gc1Iter.getSampleDouble(c, r, 0);
                 double v2 = gc2Iter.getSampleDouble(c, r, 0);
-                if (!HMConstants.isNovalue(v1, nv1)) {
+                // the novalues of the base map stay novalue
+                if (!HMConstants.isNovalue(v1, nv1) && !HMConstants.isNovalue(v2, nv2)) {
                     double newV = v1 + v2;
                     gc2Iter.setSample(c, r, 0, newV);
                 }

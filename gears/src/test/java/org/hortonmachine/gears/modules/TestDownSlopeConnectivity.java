@@ -75,4 +75,24 @@ public class TestDownSlopeConnectivity extends HMTestCase {
         checkMatrixEqual(outConnectivity.getRenderedImage(), expected, DELTA);
     }
 
+    public void testPathsNotReachingTheNetworkAreNovalue() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        double[][] noNetData = new double[envelopeParams.getRows()][envelopeParams.getCols()];
+        for( double[] row : noNetData ) {
+            java.util.Arrays.fill(row, NaN);
+        }
+        OmsDownSlopeConnectivity c = new OmsDownSlopeConnectivity();
+        c.inFlow = flowGC;
+        c.inNet = CoverageUtilities.buildCoverage("net", noNetData, envelopeParams, HMTestMaps.getCrs(), true);
+        c.inSlope = slopeGC;
+        c.pWeight = 100.0;
+        c.process();
+
+        double[][] expected = new double[envelopeParams.getRows()][envelopeParams.getCols()];
+        for( double[] row : expected ) {
+            java.util.Arrays.fill(row, NaN);
+        }
+        checkMatrixEqual(c.outConnectivity.getRenderedImage(), expected, DELTA);
+    }
+
 }

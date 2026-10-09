@@ -23,6 +23,7 @@ import static org.hortonmachine.gears.io.cog.OmsRasterToCog.AUTO;
 import static org.hortonmachine.gears.io.cog.OmsRasterToCog.AVERAGE;
 import static org.hortonmachine.gears.io.cog.OmsRasterToCog.DEFLATE;
 import static org.hortonmachine.gears.io.cog.OmsRasterToCog.DESCRIPTION;
+import static org.hortonmachine.gears.io.cog.OmsRasterToCog.DOCUMENTATION;
 import static org.hortonmachine.gears.io.cog.OmsRasterToCog.KEYWORDS;
 import static org.hortonmachine.gears.io.cog.OmsRasterToCog.LABEL;
 import static org.hortonmachine.gears.io.cog.OmsRasterToCog.LICENSE;
@@ -46,6 +47,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,6 +58,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(DESCRIPTION)
+@Documentation(DOCUMENTATION)
 @Author(name = AUTHORNAMES, contact = AUTHORCONTACTS)
 @Keywords(KEYWORDS)
 @Label(LABEL)

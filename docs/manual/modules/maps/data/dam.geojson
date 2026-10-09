@@ -1,0 +1,16 @@
+{
+  "type": "FeatureCollection",
+  "crs": { "type": "name", "properties": { "name": "EPSG:3003" } },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "name": "dam", "height": 20.0 },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [1638200, 5112420], [1638220, 5112440], [1638460, 5112200], [1638440, 5112180], [1638200, 5112420]
+        ]]
+      }
+    }
+  ]
+}

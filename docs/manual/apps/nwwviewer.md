@@ -64,10 +64,16 @@ The 3D terrain needs an internet connection the first time an area is viewed. Th
 
 The chosen globe mode is remembered for the next sessions.
 
+### Terrain from a DEM
+
+With the **...** button of **Terrain from a DEM**, under the globe mode, a DEM of your own (`.tif`, `.tiff` or `.asc`) becomes the 3D terrain of its area, with the Copernicus terrain around it. The viewer switches to **Earth with 3D terrain** and zooms to the DEM. This shows terrain that the Copernicus DEM doesn't have: the details of a lidar DEM, or a modified elevation model, as a dam built with [BobTheBuilder](../modules/raster-processing/bobthebuilder.md). The **x** button goes back to the Copernicus terrain.
+
+The DEM is only the shape of the terrain: to see its colors, load it also as a layer with **Load supported file**.
+
 ## Tools
 
 Load supported file
-: loads a file as a new layer: rasters in ESRI ASCII grid (`.asc`) or GeoTIFF (`.tiff`) format, shapefiles, GeoPackages (vector and tile tables), MBTiles, Mapsforge maps (`.map`), RasterLite2 and SpatiaLite databases. Choosing a folder loads all the shapefiles it contains. The rasters are drawn with their style file (`.sld`) if present, or with a default color table.
+: loads a file as a new layer: rasters in ESRI ASCII grid (`.asc`) or GeoTIFF (`.tif`, `.tiff`) format, shapefiles, GeoPackages (vector and tile tables), MBTiles, Mapsforge maps (`.map`), RasterLite2 and SpatiaLite databases. Choosing a folder loads all the shapefiles it contains. The rasters are drawn with their style file (`.sld`) if present, also with its opacity, or with a default color table.
 
 Load shapefile to fly
 : moves a GPS marker along the points of a shapefile, simulating a GPS track.
@@ -77,6 +83,9 @@ Open Cache Manager
 
 Globe Mode
 : the shape of the globe: **Earth**, **Earth with 3D terrain**, or a flat map in Mercator or lat/long projection.
+
+Terrain from a DEM
+: uses a DEM as the 3D terrain of its area, as described above; **x** goes back to the Copernicus terrain.
 
 Prefer rasterized vectors
 : draws the vector layers as images instead of as geometries, which is much faster for large datasets.

@@ -27,6 +27,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -37,6 +38,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OmsRasterToCog.DESCRIPTION)
+@Documentation(OmsRasterToCog.DOCUMENTATION)
 @Author(name = OmsRasterToCog.AUTHORNAMES, contact = OmsRasterToCog.AUTHORCONTACTS)
 @Keywords(OmsRasterToCog.KEYWORDS)
 @Label(OmsRasterToCog.LABEL)
@@ -88,6 +90,11 @@ public class OmsRasterToCog extends HMModel {
     public static final String LZW = "lzw";
 
     public static final String DESCRIPTION = "Converts a raster to a Cloud Optimized GeoTIFF (COG): tiled, with overviews, directories before the data and lossless compression. Large GeoTIFFs are read by windows, so they don't need to fit in memory.";
+    public static final String DOCUMENTATION = """
+            The COG is written as the COG driver of GDAL does: square tiles, overviews halving the resolution until the image fits a single tile, all the image directories at the beginning of the file, then the tiles of the smallest overview first and those of the full resolution last. So a client reading the file over HTTP, as a web map or QGIS, gets the part and the resolution it needs with a few range requests, without downloading the file.
+
+            The compression is lossless, and the tiles are compressed in parallel. The input is read by windows when it is a GeoTIFF, and the compressed tiles go to a temporary file next to the output, so rasters larger than the memory can be converted; BigTIFF is used when the file exceeds 4 GB. The nodata of the file is the one of the input if it has one, else NaN for floating point data and the novalue of the raster for integer data.
+            """;
     public static final String KEYWORDS = "IO, COG, Cloud Optimized GeoTIFF, Raster, Overviews, Writing";
     public static final String LABEL = HMConstants.RASTERPROCESSING;
     public static final String NAME = "rastertocog";

@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DO_ERODE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DO_POLYGON_BORDER_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSBOBTHEBUILDER_DO_USE_ONLY_INTERNAL_DESCRIPTION;
@@ -41,6 +42,7 @@ import org.hortonmachine.gears.modules.r.bobthebuilder.OmsBobTheBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,8 +51,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSBOBTHEBUILDER_DESCRIPTION)
+@Documentation(OMSBOBTHEBUILDER_DOCUMENTATION)
 @Author(name = OMSBOBTHEBUILDER_AUTHORNAMES, contact = OMSBOBTHEBUILDER_AUTHORCONTACTS)
 @Keywords(OMSBOBTHEBUILDER_KEYWORDS)
 @Label(OMSBOBTHEBUILDER_LABEL)
@@ -75,6 +79,7 @@ public class BobTheBuilder extends HMModel {
     public String inElevations = null;
 
     @Description(OMSBOBTHEBUILDER_P_MAX_BUFFER_DESCRIPTION)
+    @Unit("m")
     @In
     public double pMaxbuffer = -1;
 

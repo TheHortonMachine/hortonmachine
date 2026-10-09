@@ -31,6 +31,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,6 +49,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSINTENSITYCLASSIFIER_DESCRIPTION)
+@Documentation(OMSINTENSITYCLASSIFIER_DOCUMENTATION)
 @Author(name = OMSINTENSITYCLASSIFIER_AUTHORNAMES, contact = OMSINTENSITYCLASSIFIER_AUTHORCONTACTS)
 @Keywords(OMSINTENSITYCLASSIFIER_KEYWORDS)
 @Label(OMSINTENSITYCLASSIFIER_LABEL)
@@ -121,32 +123,42 @@ public class OmsIntensityClassifierDebrisFlowTN extends HMModel {
     public GridCoverage2D outIntensity = null;
 
     // VARS DOC START
-    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Module for the calculation of the debris flow intensity following TN guidelines.";
-    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = "";
-    public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Flooding";
+    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Classifies the intensity of a debris flow, from the maps of its depth, velocity, deposits and erosion, following the guidelines of the Province of Trento (TN): 1 low, 2 medium, 3 high.";
+    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = """
+            The intensity of each cell is given by four quantities, each with a lower and an upper threshold: the depth of the flow, its velocity outside of the river bed, the thickness of the deposits and the depth of the erosion. The intensity is:
+
+            - high (3), where any of them is over its upper threshold;
+            - medium (2), where any of them is over its lower threshold, and none over the upper one;
+            - low (1), where all are within their lower thresholds.
+
+            The four maps have to cover the same cells: the cells where only some of them have a value are skipped, with a warning. The cells with all values 0 are classified as low intensity: to keep the cells not reached by the flow out of the map, set them to novalue.
+
+            The intensity maps of the events of different return periods are the input of HazardClassifier.
+            """;
+    public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Debris flow";
     public static final String OMSINTENSITYCLASSIFIER_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSINTENSITYCLASSIFIER_NAME = "intensityclassifierdebrisflowtn";
     public static final int OMSINTENSITYCLASSIFIER_STATUS = 5;
     public static final String OMSINTENSITYCLASSIFIER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSINTENSITYCLASSIFIER_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSINTENSITYCLASSIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION = "The map of the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The upper threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The lower threshold value for the water depth.";
+    public static final String OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION = "The map of the depth of the flow.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The depth over which the intensity is high.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The depth over which the intensity is at least medium.";
 
-    public static final String OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION = "The map of the water velocity outside of the river bed.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocity_DESCRIPTION = "The upper threshold value of the water velocity outside of the river bed.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocity_DESCRIPTION = "The lower threshold value of the water velocity outside of the river bed.";
+    public static final String OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION = "The map of the velocity of the flow outside of the river bed.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocity_DESCRIPTION = "The velocity over which the intensity is high.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocity_DESCRIPTION = "The velocity over which the intensity is at least medium.";
 
-    public static final String OMSINTENSITYCLASSIFIER_inDepositsThickness_DESCRIPTION = "The map of the thickness of the deposits outside the bed of the river.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresDepositsThickness_DESCRIPTION = "The upper threshold value for the deposits thickness.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresDepositsThickness_DESCRIPTION = "The lower threshold value for the deposits thickness.";
+    public static final String OMSINTENSITYCLASSIFIER_inDepositsThickness_DESCRIPTION = "The map of the thickness of the deposits outside of the river bed.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresDepositsThickness_DESCRIPTION = "The thickness of the deposits over which the intensity is high.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresDepositsThickness_DESCRIPTION = "The thickness of the deposits over which the intensity is at least medium.";
 
-    public static final String OMSINTENSITYCLASSIFIER_inErosionDepth_DESCRIPTION = "The map of erosion depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresErosionDepth_DESCRIPTION = "The upper threshold value for the erosion depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresErosionDepth_DESCRIPTION = "The lower threshold value for the erosion depth.";
+    public static final String OMSINTENSITYCLASSIFIER_inErosionDepth_DESCRIPTION = "The map of the depth of the erosion.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresErosionDepth_DESCRIPTION = "The depth of the erosion over which the intensity is high.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresErosionDepth_DESCRIPTION = "The depth of the erosion over which the intensity is at least medium.";
 
-    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of flooding intensity.";
+    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of the debris flow intensity: 1 low, 2 medium, 3 high.";
     // VARS DOC END
 
     @Execute
@@ -216,7 +228,7 @@ public class OmsIntensityClassifierDebrisFlowTN extends HMModel {
 
                     outIter.setSample(c, r, 0, value);
                 } else {
-                    pm.errorMessage("WARNING: a cell was found in which one of velocity, water depth, erosion depth or deposit thickness are novalue, while the other not. /nThe maps should be covering the exact same cells. /nGoing on ignoring the cell: "
+                    pm.errorMessage("WARNING: a cell was found in which one of velocity, water depth, erosion depth or deposit thickness are novalue, while the other not. \nThe maps should be covering the exact same cells. \nGoing on ignoring the cell: "
                             + c + "/" + r);
                 }
             }

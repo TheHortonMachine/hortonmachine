@@ -25,6 +25,7 @@ import org.hortonmachine.hmachine.modules.statistics.kerneldensity.OmsKernelDens
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -35,6 +36,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSKERNELDENSITY_DESCRIPTION)
+@Documentation(OMSKERNELDENSITY_DOCUMENTATION)
 @Author(name = OMSKERNELDENSITY_AUTHORNAMES, contact = OMSKERNELDENSITY_AUTHORCONTACTS)
 @Keywords(OMSKERNELDENSITY_KEYWORDS)
 @Label(OMSKERNELDENSITY_LABEL)

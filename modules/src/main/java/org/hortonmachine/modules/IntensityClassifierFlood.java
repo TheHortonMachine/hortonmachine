@@ -25,6 +25,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -36,6 +37,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSINTENSITYCLASSIFIER_DESCRIPTION)
+@Documentation(OMSINTENSITYCLASSIFIER_DOCUMENTATION)
 @Author(name = OMSINTENSITYCLASSIFIER_AUTHORNAMES, contact = OMSINTENSITYCLASSIFIER_AUTHORCONTACTS)
 @Keywords(OMSINTENSITYCLASSIFIER_KEYWORDS)
 @Label(OMSINTENSITYCLASSIFIER_LABEL)

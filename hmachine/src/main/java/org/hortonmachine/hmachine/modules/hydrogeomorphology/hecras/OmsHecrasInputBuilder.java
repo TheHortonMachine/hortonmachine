@@ -20,6 +20,7 @@ package org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.KEYWORDS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.LABEL;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.LICENSE;
@@ -32,6 +33,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -55,6 +57,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 
 @Description(DESCRIPTION)
+@Documentation(DOCUMENTATION)
 @Author(name = AUTHORNAMES, contact = AUTHORCONTACTS)
 @Keywords(KEYWORDS)
 @Label(LABEL)
@@ -83,8 +86,14 @@ public class OmsHecrasInputBuilder extends HMModel {
     @UI(HMConstants.FILEOUT_UI_HINT)
     public String outHecras = null;
 
-    public static final String DESCRIPTION = "Module that prepares input data for Hecras.";
-    public static final String DOCUMENTATION = "";
+    public static final String DESCRIPTION = "Writes the sections of RiverSectionsExtractor as a geometry file for the GIS import of HEC-RAS.";
+    public static final String DOCUMENTATION = """
+            The file follows the spatial data format of the GIS import of HEC-RAS (the .sdf files of HEC-GeoRAS): a single reach, with its centerline and its cross sections, in metric units.
+
+            The river stations of the sections are numbers that grow upstream, the reach lengths are the distances between the sections along the river and along their ends. The whole section is the main channel, between the bank positions 0 and 1, with a Manning coefficient of 0.0333 (a Gauckler-Strickler coefficient of 30). Two levees are written at the ends of each section, with the length of the section as their elevation: they have no effect where the terrain is higher than that, but have to be removed or corrected in HEC-RAS elsewhere.
+
+            The banks, the levees and the roughness are meant to be refined in HEC-RAS after the import.
+            """;
     public static final String KEYWORDS = "Hecras, Raster, Vector, Hydraulic";
     public static final String LABEL = HMConstants.HYDROGEOMORPHOLOGY;
     public static final String NAME = "inhecras";
@@ -92,15 +101,15 @@ public class OmsHecrasInputBuilder extends HMModel {
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String inRiver_DESCRIPTION = "The river points with elevation.";
-    public static final String inSections_DESCRIPTION = "The section lines.";
-    public static final String inSectionPoints_DESCRIPTION = "The section points (with the elevation in the attribute table).";
-    public static final String pTitle_DESCRIPTION = "The id of the river/simulation.";
+    public static final String inRiver_DESCRIPTION = "The points of the river between the sections, from RiverSectionsExtractor.";
+    public static final String inSections_DESCRIPTION = "The section lines, from RiverSectionsExtractor.";
+    public static final String inSectionPoints_DESCRIPTION = "The points of the sections, with their elevation, from RiverSectionsExtractor.";
+    public static final String pTitle_DESCRIPTION = "The id of the river in HEC-RAS.";
     public static final String pSectionsIntervalDistance_DESCRIPTION = "The sections interval distance.";
     public static final String pSectionsWidth_DESCRIPTION = "The section width.";
     public static final String pBridgeBuffer_DESCRIPTION = "The bridge buffer.";
     public static final String fBridgeWidth_DESCRIPTION = "The bridge width.";
-    public static final String outHecras_DESCRIPTION = "The path to the generated hecras.";
+    public static final String outHecras_DESCRIPTION = "The output file for HEC-RAS (.sdf).";
 
     @Execute
     public void process() throws Exception {
@@ -128,10 +137,12 @@ public class OmsHecrasInputBuilder extends HMModel {
 
         outBuf.append("BEGIN STREAM NETWORK:\r\n");
         outBuf.append("# List of all endpoint of the multiline that represents the river\r\n");
+        // the river points are ordered by section id, which grows upstream: the last one is the upstream end
         Coordinate[] riverCoords = riverInfo.riverCoords;
-        outBuf.append("ENDPOINT:\t" + riverCoords[0].x + "," + riverCoords[0].y + "," + riverCoords[0].z + ",\t1\r\n");
-        outBuf.append("ENDPOINT:\t" + riverCoords[(riverCoords.length - 1)].x + "," + riverCoords[(riverCoords.length - 1)].y
-                + "," + riverCoords[(riverCoords.length - 1)].z + ",\t2\r\n");
+        Coordinate upstream = riverCoords[riverCoords.length - 1];
+        Coordinate downstream = riverCoords[0];
+        outBuf.append("ENDPOINT:\t" + upstream.x + "," + upstream.y + "," + upstream.z + ",\t1\r\n");
+        outBuf.append("ENDPOINT:\t" + downstream.x + "," + downstream.y + "," + downstream.z + ",\t2\r\n");
 
         outBuf.append("# Description of the river reach\r\n");
         outBuf.append("REACH:\r\n");
@@ -215,6 +226,9 @@ public class OmsHecrasInputBuilder extends HMModel {
             outBuf.append("NVALUES: \r\n");
             outBuf.append("0.00,\t0.0333\r\n");
             if (bankPositions.size() == 4) {
+                // the format is levee id, fraction along the cut line, levee elevation: the elevation
+                // here is the progressive distance of the section end, so the levees are only harmless
+                // where the terrain is higher than the section length in meters
                 outBuf.append("LEVEE POSITIONS:\r\n");
                 outBuf.append("1," + bankPositions.get(0) + "," + bankPositions.get(2) + "\r\n");
                 outBuf.append("2," + bankPositions.get(1) + "," + bankPositions.get(3) + "\r\n");

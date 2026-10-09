@@ -14,4 +14,14 @@ mosaic12
 rastersummary
 surfaceinterpolator
 rangelookup
+bobthebuilder
+carver
+kerneldensity
+profile
+morpher
+raster2xyz
+xyz2raster
+rastertocog
+scanlinerasterizer
+rasterextruder
 ```

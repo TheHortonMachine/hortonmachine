@@ -27,6 +27,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,7 +48,8 @@ import org.hortonmachine.gears.modules.utils.BinaryFast;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
-@Description("Mophologic binary operations")
+@Description(OmsMorpher.DESCRIPTION)
+@Documentation(OmsMorpher.DOCUMENTATION)
 @Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
 @Keywords("Dilation, Erosion, Skeletonize, Open, Close, Raster")
 @Label(HMConstants.RASTERPROCESSING)
@@ -56,29 +58,38 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class OmsMorpher extends HMModel {
 
-    @Description("The map to morph.")
+    public static final String DESCRIPTION = "Morphological operations on rasters, where the valid cells are the objects and the novalues the background: dilation, erosion, opening and closing of the objects, their thinning to lines one cell wide (skeletonize) and the pruning of the short branches, and the search of the ends and of the junctions of the lines.";
+    public static final String DOCUMENTATION = """
+            The dilation gives to the novalue cells next to an object the largest value of their neighbours within the kernel, so the objects grow by one ring of cells. The erosion sets to novalue the cells of an object that have a novalue within the kernel, and gives the others the smallest value of their neighbours, so the objects shrink by one ring. The opening, an erosion followed by a dilation, removes the small objects and the thin parts; the closing, a dilation followed by an erosion, fills the small holes and gaps. The kernel is a square of 0 and 1, by default the 3x3 of all 1.
+
+            The other operations work on the shapes only, all the valid cells being 1. The skeletonize ones thin the objects to lines of one cell, with four variants of the thinning kernels; the pruning removes from the lines the branches shorter than the number of iterations. The line endings and junctions give 1 on the cells where the lines end and where they meet, as the sources and the confluences of a network of channels.
+
+            The operations are the ones of the Hypermedia Image Processing Reference (HIPR2), ported from the work of Simon Horne.
+            """;
+
+    @Description("The map to morph: the valid cells are the objects, the novalues the background.")
     @In
     public GridCoverage2D inMap = null;
 
-    @Description("A kernel to use instead of the default.")
+    @Description("The kernel of the dilation and erosion, as the rows of a square of 0 and 1 one after the other: 1,1,1,1,1,1,1,1,1 is the default 3x3 one.")
     @In
     public int[] pKernel = null;
 
-    @Description("Process in binary mode.")
+    @Description("If true, the dilation is faster but uses only the first valid value of each row of the kernel, so it gives the largest neighbour value only for maps of a single value, as masks.")
     @In
     public boolean doBinary = true;
 
-    @Description("The operation type to perform (dilate, erode, skeletonize(1,2,2var,3), prune, open, close, lineendings, linejunctions)")
+    @Description("The morphological operation.")
     @UI("combo:" + DILATE + "," + ERODE + "," + SKELETONIZE1 + "," + SKELETONIZE2 + "," + SKELETONIZE2VAR + "," + SKELETONIZE3
             + "," + PRUNE + "," + OPEN + "," + CLOSE + "," + LINEENDINGS + "," + LINEJUNCTIONS)
     @In
     public String pMode = DILATE;
 
-    @Description("Number of iterations (used in case of pruning).")
+    @Description("The number of iterations of the pruning: the branches shorter than this number of cells are removed.")
     @In
     public int pIterations = 3;
 
-    @Description("The resulting map.")
+    @Description("The morphed map: the values of the objects for dilate, erode, open and close, 1 for the other operations.")
     @Out
     public GridCoverage2D outMap = null;
 

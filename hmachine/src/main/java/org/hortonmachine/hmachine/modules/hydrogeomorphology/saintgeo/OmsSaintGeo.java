@@ -29,6 +29,7 @@ import java.util.TreeMap;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -41,6 +42,8 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -52,6 +55,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.locationtech.jts.geom.Coordinate;
 
 @Description(OmsSaintGeo.DESCRIPTION)
+@Documentation(OmsSaintGeo.DOCUMENTATION)
 @Author(name = OmsSaintGeo.AUTHORNAMES, contact = OmsSaintGeo.AUTHORCONTACTS)
 @Keywords(OmsSaintGeo.KEYWORDS)
 @Label(OmsSaintGeo.LABEL)
@@ -122,8 +126,18 @@ public class OmsSaintGeo extends HMModel {
 	public Map<Integer, List<Result>> outResultsMap;
 	
 	// VARS DOC START
-	public static final String DESCRIPTION = "A simple 1D hydraulic model based on the equations of Saint Venant.";
-	public static final String DOCUMENTATION = "OmsSaintGeo.html";
+	public static final String DESCRIPTION = "A 1D hydraulic model of a river, based on the equations of de Saint-Venant: water levels and discharges along its sections, in time, for a discharge entering at its head.";
+	public static final String DOCUMENTATION = """
+			The river is described by the three vectors of RiverSectionsExtractor: its sections, their points with the elevations, and the points of the river between them. The sections are ordered by their distance along the river, from upstream.
+
+			The unsteady flow is solved with a semi-implicit finite difference scheme: at each step a tridiagonal system gives the new water levels of all the sections, and from them the discharges between the sections. Upstream, the discharge is given; downstream, the flow passes through the critical depth, or, when a downstream level is given, the level is imposed. The simulation starts from the steady flow of the first discharge, found with the formula of Gauckler-Strickler in each section.
+
+			The wetted area, the wetted perimeter and the width of each section are computed for its water level from the points of the section. The roughness of the section is the one of its Gauckler-Strickler field, set to 30 by RiverSectionsExtractor; pKs is used for the sections that have none. Where the water rises over the ends of the sections, the overflowing discharge is computed as over a side weir.
+
+			Each value of the head discharge is one step of the model: the length of the steps is set by the model, for the stability of the scheme, from the length of the reaches and the velocity of the water, so the steps are not of a fixed time and the timestamps of the discharge file only give the order of the values. The lateral inflows and outflows, and the inflows from the confluences, are given for the ids of the sections, with a value for each step.
+
+			The model is meant for the subcritical flow of lowland rivers, with sections that cross the valley without crossing each other. In steep streams, where the flow is supercritical, the scheme diverges, or gives velocities without physical meaning: the model stops with an error when the levels are no longer numbers.
+			""";
 	public static final String KEYWORDS = "1D, Hydraulic";
 	public static final String LABEL = HYDROGEOMORPHOLOGY;
 	public static final String NAME = "SaintGeo";
@@ -132,18 +146,18 @@ public class OmsSaintGeo extends HMModel {
 	public static final String AUTHORNAMES = "Silvia Franceschi, Andrea Antonello, Riccardo Rigon, Angelo Zacchia";
 	public static final String AUTHORCONTACTS = "www.hydrologis.com";
 
-	public static final String inRiver_DESCRIPTION = "The main stream river points (with the elevation in the attribute table).";
-	public static final String inSections_DESCRIPTION = "The section lines.";
-	public static final String inSectionPoints_DESCRIPTION = "The section points (with the elevation in the attribute table).";
+	public static final String inRiver_DESCRIPTION = "The points of the river between the sections, from RiverSectionsExtractor.";
+	public static final String inSections_DESCRIPTION = "The section lines, from RiverSectionsExtractor.";
+	public static final String inSectionPoints_DESCRIPTION = "The points of the sections, with their elevation, from RiverSectionsExtractor.";
 	public static final String pDeltaTMillis_UNIT = "millisec";
-	public static final String pKs_Description = "Gaukler-Strickler coefficient for the evaluation of the steady flow initial condition.";
+	public static final String pKs_Description = "The Gauckler-Strickler coefficient of the sections that have none.";
 	public static final String outputLevelFile_DESCRIPTION = "Output file with levels.";
 	public static final String outputDischargeFile_DESCRIPTION = "Output file with the quantities related to discharge.";
-	public static final String pDeltaTMillis_DESCRIPTION = "Time interval.";
-	public static final String inConfluenceId2DischargeMap_DESCRIPTION = "Lateral immission from confluences discharge values for each id.";
-	public static final String inLateralId2DischargeMap_DESCRIPTION = "Lateral discharge tribute or offtake section discharge values for each id.";
-	public static final String inDownstreamLevel_DESCRIPTION = "Input downstream level.";
-	public static final String inDischarge_DESCRIPTION = "Input head discharge.";
+	public static final String pDeltaTMillis_DESCRIPTION = "Not used: the model sets the length of its steps, for the stability of the scheme.";
+	public static final String inConfluenceId2DischargeMap_DESCRIPTION = "The inflows from confluences, for the ids of the sections, with a value for each step.";
+	public static final String inLateralId2DischargeMap_DESCRIPTION = "The lateral inflows (positive) or outflows (negative), for the ids of the sections, with a value for each step.";
+	public static final String inDownstreamLevel_DESCRIPTION = "The water level at the last section, with a value for each step. If not given, the flow passes through the critical depth.";
+	public static final String inDischarge_DESCRIPTION = "The discharge entering at the head of the river, with a value for each step of the model.";
 	// VARS DOC END
 
 	private LinearAlgebra linearAlgebra = new LinearAlgebra();
@@ -180,8 +194,13 @@ public class OmsSaintGeo extends HMModel {
 		// 1 level elevation over time
 		// 2 transition to critical flow
 		// 3 transmissive conditio
+		// the level is imposed when it is given, else the flow goes critical
 		if (SCELTA_A_VALLE == null)
-			SCELTA_A_VALLE = 2;
+			SCELTA_A_VALLE = inDownstreamLevel != null ? 1 : 2;
+		if (inDownstreamLevel != null && inDownstreamLevel.length < inDischarge.length) {
+			throw new ModelsIllegalargumentException("The downstream level needs a value for each value of the head discharge.",
+					this, pm);
+		}
 		DELT = pDeltaTMillis / 1000.0;
 
 		if (pKs != null) {
@@ -298,6 +317,7 @@ public class OmsSaintGeo extends HMModel {
 					}
 					conta_cicli = conta_cicli + 1;
 				}
+				checkLevels(waterLevel, riverPoints, -1);
 				pm.message("Number of cicles used to reach the steady flow condition: " + conta_cicli);
 
 				/*
@@ -320,7 +340,8 @@ public class OmsSaintGeo extends HMModel {
 						double lateralDischarge = discharges[timeIndex];
 						ql[i] = ql[i] + lateralDischarge / DELXM[i];
 					}
-				} else if (hasConfluences) {
+				}
+				if (hasConfluences) {
 					double[] discharges = inConfluenceId2DischargeMap.get(section.getSectionId());
 					if (discharges != null) {
 						double confluenceDischarge = discharges[timeIndex];
@@ -335,6 +356,7 @@ public class OmsSaintGeo extends HMModel {
 			 */
 			new_tirante(riverPoints, waterLevel, discharge, celerity, DELXM, SCELTA_A_MONTE, qHead, qHeadPrevious,
 					SCELTA_A_VALLE, downstreamLevel, ql);
+			checkLevels(waterLevel, riverPoints, timeIndex);
 
 			idrgeo = wettedArea(waterLevel, riverPoints);
 
@@ -507,6 +529,26 @@ public class OmsSaintGeo extends HMModel {
 					}
 					outputDischargeWriter.write(sbDischarge.toString() + "\n");
 				}
+			}
+		}
+	}
+
+	/**
+	 * Stops the simulation when the solution diverged, instead of going on with
+	 * invalid levels.
+	 *
+	 * @param waterLevel  the water levels of the sections.
+	 * @param riverPoints the sections.
+	 * @param timeIndex   the time step, -1 for the initial steady flow.
+	 */
+	private void checkLevels(double[] waterLevel, List<RiverPoint> riverPoints, int timeIndex) {
+		for (int i = 0; i < waterLevel.length; i++) {
+			if (!Double.isFinite(waterLevel[i])) {
+				String when = timeIndex < 0 ? "in the initial steady flow" : "at time step " + timeIndex;
+				throw new ModelsRuntimeException("The solution diverged " + when + ", at the section "
+						+ riverPoints.get(i).getSectionId()
+						+ ". Check that the discharges have no missing values, and that the flow is subcritical: the model is not meant for steep rivers, and the sections have to cross the valley.",
+						this);
 			}
 		}
 	}
@@ -707,14 +749,15 @@ public class OmsSaintGeo extends HMModel {
 			alfa_num = 0;
 			alfa_den = 0;
 
-			dx = section.getStartNodeIndex() + 1;
-			sx = section.getEndNodeIndex() - 1;
+			dx = section.getStartNodeIndex();
+			sx = section.getEndNodeIndex();
 
 			Coordinate[] sectionCoordinates = section.getSectionCoordinates();
 			List<Double> sectionProgressives = section.getSectionProgressive();
 			double sectionGauklerStrickler = section.getSectionGauklerStrickler();
 
-			for (int j = (int) dx - 1; j < sx - 1; j++) {
+			// all the segments between the start and the end node
+			for (int j = (int) dx; j < sx; j++) {
 				/*
 				 * Check the segments between the stations j and j+1 of the current section
 				 * 
@@ -1007,8 +1050,7 @@ public class OmsSaintGeo extends HMModel {
 			C1 = (G * DELT * geomid[0][0]) / (DELXM[0] * (1.0 + DELT * GAM[0]));
 			DS[0] = -C1 / dx;
 			D[0] = C1 / dx + base / DELT;
-			B[0] = (base / DELT) * tirante[0] - F_Q[0] / (dx * (1.0 + DELT * GAM[0])) + qin / dx + ql[imax - 2]
-					- qs[imax - 2];
+			B[0] = (base / DELT) * tirante[0] - F_Q[0] / (dx * (1.0 + DELT * GAM[0])) + qin / dx + ql[0] - qs[0];
 			/* the coefficients of the second line */
 			dx = (DELXM[1] + DELXM[0]) / 2.0;
 			Ci = C1;

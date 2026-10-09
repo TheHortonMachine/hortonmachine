@@ -132,21 +132,30 @@ public class OmsXyz2Raster extends HMModel {
 				pm.worked(1);
 				continue;
 			}
-			double x = Double.parseDouble(split[0].trim());
+			double x;
+			double y;
+			double z;
+			try {
+				x = Double.parseDouble(split[0].trim());
+				y = Double.parseDouble(split[1].trim());
+				z = Double.parseDouble(split[2].trim());
+			} catch (NumberFormatException ex) {
+				// a header or a comment
+				pm.worked(1);
+				continue;
+			}
 			if (x > e) {
 				e = x;
 			}
 			if (x < w) {
 				w = x;
 			}
-			double y = Double.parseDouble(split[1].trim());
 			if (y > n) {
 				n = y;
 			}
 			if (y < s) {
 				s = y;
 			}
-			double z = Double.parseDouble(split[2].trim());
 			Coordinate c = new Coordinate(x, y, z);
 			coordList.add(c);
 
@@ -167,8 +176,9 @@ public class OmsXyz2Raster extends HMModel {
 		e = env.getMaxX();
 		w = env.getMinX();
 
-		int rows = (int) ((n - s) / res);
-		int cols = (int) ((e - w) / res);
+		// rounded, a truncation can lose a row or column to the floating point errors
+		int rows = (int) Math.round((n - s) / res);
+		int cols = (int) Math.round((e - w) / res);
 		RegionMap regionMap = RegionMap.fromEnvelopeAndGrid(env, cols, rows);
 
 		HMRaster outHMRaster = new HMRaster.HMRasterWritableBuilder().setName("convertedxyz").setRegion(regionMap)

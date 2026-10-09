@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.KEYWORDS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.LABEL;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.saintgeo.OmsSaintGeo.LICENSE;
@@ -59,6 +60,7 @@ import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -73,6 +75,7 @@ import oms3.io.DataIO;
 import oms3.io.TableIterator;
 
 @Description(DESCRIPTION)
+@Documentation(DOCUMENTATION)
 @Author(name = AUTHORNAMES, contact = AUTHORCONTACTS)
 @Keywords(KEYWORDS)
 @Label(LABEL)
@@ -128,7 +131,7 @@ public class SaintGeo extends HMModel {
 	@In
 	public String outTableName = "saintgeoresults";
 
-	@Description("Output geopackage file for water levels and discharges.")
+	@Description("The output GeoPackage, with a row for each step and section: its timestep, sectionid, progressivedistance, waterlevel, discharge, celerity (the mean velocity), froudenumber, wettedarea, minsectionelevation, leftbankelevation and rightbankelevation.")
 	@UI(HMConstants.FILEOUT_UI_HINT)
 	@In
 	public String outGpkg;
@@ -162,6 +165,7 @@ public class SaintGeo extends HMModel {
 		}
 
 		saintGeo.pDeltaTMillis = pDeltaTMillis;
+		saintGeo.pm = pm;
 		saintGeo.outputLevelFile = null;
 		saintGeo.outputDischargeFile = null;
 		saintGeo.process();

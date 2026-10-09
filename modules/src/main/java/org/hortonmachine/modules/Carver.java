@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_F_DEPTH_LINES_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_F_DEPTH_POLYGONS_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSCARVER_IN_CARVE_R_LINES_DESCRIPTION;
@@ -40,6 +41,7 @@ import org.hortonmachine.gears.modules.r.carver.OmsCarver;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,8 +50,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 @Description(OMSCARVER_DESCRIPTION)
+@Documentation(OMSCARVER_DOCUMENTATION)
 @Author(name = OMSCARVER_AUTHORNAMES, contact = OMSCARVER_AUTHORCONTACTS)
 @Keywords(OMSCARVER_KEYWORDS)
 @Label(OMSCARVER_LABEL)
@@ -78,6 +82,7 @@ public class Carver extends HMModel {
     public String fDepthLines = null;
 
     @Description(OMSCARVER_P_DEPTH_LINES_DESCRIPTION)
+    @Unit("m")
     @In
     public double pDepthLines = 6.0;
 
@@ -86,6 +91,7 @@ public class Carver extends HMModel {
     public String fDepthPolygons = null;
 
     @Description(OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION)
+    @Unit("m")
     @In
     public double pDepthPolygons = 6.0;
 

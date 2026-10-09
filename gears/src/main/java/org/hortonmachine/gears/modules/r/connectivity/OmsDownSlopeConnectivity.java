@@ -31,7 +31,6 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.FlowNode;
 import org.hortonmachine.gears.libs.modules.GridNode;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -89,16 +88,16 @@ public class OmsDownSlopeConnectivity extends HMModel {
     public GridCoverage2D outConnectivity = null;
 
     // VARS DOC START
-    public static final String outConnectivity_DESCR = "The connectivity map.";
-    public static final String pWeight_DESCR = "The optional constant value of weights.";
-    public static final String inWeights_DESCR = "The optional map of weights.";
-    public static final String inSlope_DESCR = "The map of slope.";
-    public static final String inNet_DESCR = "The network map.";
-    public static final String inFlow_DESCR = "The map of flowdirections.";
-    public static final String KEYWORDS = "connectivity, raster";
-    public static final String BIBLIO = "Geomorphometric assessment of spatial sediment connectivity in small Alpine catchments. - Cavalli et al. 2012";
+    public static final String outConnectivity_DESCR = "The downslope component of the connectivity: the sum of the flow lengths divided by weight and slope, along the flow path down to the network. It is 0 on the network, and novalue where the path leaves the map or the data before reaching it.";
+    public static final String pWeight_DESCR = "The constant weight, used if the map of the weights is not given.";
+    public static final String inWeights_DESCR = "The optional map of the weights, the impedance to the sediment flow, from 0 to 1, as 1 - roughness / maximum roughness in Cavalli et al.";
+    public static final String inSlope_DESCR = "The map of the slope, as from Slope. Values below 0.005 are raised to 0.005.";
+    public static final String inNet_DESCR = "The map of the network, the target of the connectivity.";
+    public static final String inFlow_DESCR = "The map of the D8 flowdirections.";
+    public static final String KEYWORDS = "connectivity, sediment, raster";
+    public static final String BIBLIO = "Cavalli M., Trevisani S., Comiti F., Marchi L., 2013. Geomorphometric assessment of spatial sediment connectivity in small Alpine catchments. Geomorphology, 188, 31-41. https://doi.org/10.1016/j.geomorph.2012.05.007";
     public static final String NAME = "downslopeconnectivity";
-    public static final String DESCRIPTION = "Module for the calculation of the downslope connectivity.";
+    public static final String DESCRIPTION = "Calculates the downslope component of the index of sediment connectivity of Cavalli et al.: for each cell, the sum along its flow path down to the network of the length of each step divided by the weight and the slope of its cell. Low values mark the cells well connected to the network.";
     public static final String LABEL = HMConstants.HILLSLOPE;
     // VARS DOC END
 
@@ -152,8 +151,9 @@ public class OmsDownSlopeConnectivity extends HMModel {
                 while( flowNode.isValid() && !netNode.isValid() ) {
                     FlowNode nextFlowNode = flowNode.goDownstream();
                     if (nextFlowNode == null) {
-                        throw new ModelsRuntimeException(
-                                "Could not properly navigate the flowdirections. Are you using an extracted basin?", this);
+                        // the path leaves the map or the data before reaching the network
+                        connectivitySum = HMConstants.doubleNovalue;
+                        break;
                     }
                     int col = flowNode.col;
                     int nextCol = nextFlowNode.col;
@@ -163,7 +163,8 @@ public class OmsDownSlopeConnectivity extends HMModel {
 
                     double weight = weightsIter.getSampleDouble(flowNode.col, flowNode.row, 0);
                     double slope = slopeIter.getSampleDouble(flowNode.col, flowNode.row, 0);
-                    if (slope == 0.0) {
+                    // the lower limit of the slope of Cavalli et al., to avoid infinite values
+                    if (slope < 0.005) {
                         slope = 0.005;
                     }
                     double Di = distance / weight / slope;

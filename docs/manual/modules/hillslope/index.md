@@ -8,4 +8,5 @@ The modules that describe the hillslopes: their distance from the channels, the 
 h2cd
 h2ca
 tc
+downslopeconnectivity
 ```

@@ -83,8 +83,12 @@ public class OmsProfile extends HMModel {
     @Out
     public double[][] outProfile;
     
-    public static final String OMSPROFILE_DESCRIPTION = "Module creating profiles over rasters.";
-    public static final String OMSPROFILE_DOCUMENTATION = "";
+    public static final String OMSPROFILE_DESCRIPTION = "Extracts the profile of a raster along a line, given as coordinates or as the lines of a vector: the values of the raster at regular steps along the line, with their progressive distance and position.";
+    public static final String OMSPROFILE_DOCUMENTATION = """
+            The line is sampled every cell size, the smaller of the two resolutions, from its start to its end, which is always the last point. Each point takes the value of the cell it falls in, without interpolation; the points outside the raster or on novalues get the novalue -9999.
+
+            With coordinates, the profile is the output matrix. With a vector, each line gives a profile: with an output folder and an id field, each one is written into the CSV file named after its id; without them, only the first line is used. The mean slope of each profile, the mean of the slopes between its points, is printed.
+            """;
     public static final String OMSPROFILE_KEYWORDS = "OmsProfile, Raster";
     public static final String OMSPROFILE_LABEL = RASTERPROCESSING;
     public static final String OMSPROFILE_NAME = "profile";
@@ -92,12 +96,12 @@ public class OmsProfile extends HMModel {
     public static final String OMSPROFILE_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSPROFILE_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSPROFILE_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSPROFILE_IN_RASTER_DESCRIPTION = "The raster map to use for the profile";
-    public static final String OMSPROFILE_IN_COORDINATES_DESCRIPTION = "Comma separated list of easting,northing coordinates to trace the profile on (optional).";
-    public static final String OMSPROFILE_IN_VECTOR_DESCRIPTION = "Line vector map to use to trace the profile on (optional).";
-    public static final String OMSPROFILE_F_LINE_ID_DESCRIPTION = "The id of the line to use for the name of the profile output file name (used in case of inVector use).";
-    public static final String OMSPROFILE_OUT_FOLDER_DESCRIPTION = "The folder in which to place the output profiles if multiple (used in case of inVector use).";
-    public static final String OMSPROFILE_OUT_PROFILE_DESCRIPTION = "The output profile for the last line read (contains progressive, elevation, x, y).";
+    public static final String OMSPROFILE_IN_RASTER_DESCRIPTION = "The raster to sample, usually an elevation model.";
+    public static final String OMSPROFILE_IN_COORDINATES_DESCRIPTION = "The vertexes of the line, as a comma separated list of easting,northing pairs: easting1,northing1,easting2,northing2,... Used instead of the vector if given.";
+    public static final String OMSPROFILE_IN_VECTOR_DESCRIPTION = "The optional vector of the lines to trace the profiles on.";
+    public static final String OMSPROFILE_F_LINE_ID_DESCRIPTION = "With a vector, the field of the lines that names their CSV file.";
+    public static final String OMSPROFILE_OUT_FOLDER_DESCRIPTION = "With a vector, the folder of the CSV files of the profiles, one per line.";
+    public static final String OMSPROFILE_OUT_PROFILE_DESCRIPTION = "The profile of the last line, a row per point: progressive distance, value, easting, northing.";
 
 
     @Execute

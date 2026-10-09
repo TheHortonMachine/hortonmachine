@@ -19,6 +19,7 @@ package org.hortonmachine.modules;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -32,6 +33,7 @@ import oms3.annotations.Unit;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_KEYWORDS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_LABEL;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN.OMSINTENSITYCLASSIFIER_LICENSE;
@@ -60,6 +62,7 @@ import org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsIntensityClassifierDebrisFlowTN;
 
 @Description(OMSINTENSITYCLASSIFIER_DESCRIPTION)
+@Documentation(OMSINTENSITYCLASSIFIER_DOCUMENTATION)
 @Author(name = OMSINTENSITYCLASSIFIER_AUTHORNAMES, contact = OMSINTENSITYCLASSIFIER_AUTHORCONTACTS)
 @Keywords(OMSINTENSITYCLASSIFIER_KEYWORDS)
 @Label(OMSINTENSITYCLASSIFIER_LABEL)

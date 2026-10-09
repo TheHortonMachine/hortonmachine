@@ -246,4 +246,29 @@ public class TestCoverageUtilities extends HMTestCase {
             }
         }
     }
+
+    public void testSumCoverages() throws Exception {
+        RegionMap region = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        double nv = HMConstants.doubleNovalue;
+        double[][] base = new double[region.rows][region.cols];
+        double[][] add = new double[region.rows][region.cols];
+        for( int r = 0; r < region.rows; r++ ) {
+            for( int c = 0; c < region.cols; c++ ) {
+                base[r][c] = 100;
+                add[r][c] = c < 3 ? 5 : nv;
+            }
+        }
+        base[0][0] = nv;
+        GridCoverage2D sum = CoverageUtilities.sumCoverages(CoverageUtilities.buildCoverage("add", add, region, crs, true),
+                CoverageUtilities.buildCoverage("base", base, region, crs, true));
+
+        java.awt.image.Raster out = sum.getRenderedImage().getData();
+        // the novalue of the base stays novalue
+        assertTrue(HMConstants.isNovalue(out.getSampleDouble(0, 0, 0)));
+        assertEquals(105.0, out.getSampleDouble(1, 0, 0), DELTA);
+        assertEquals(105.0, out.getSampleDouble(2, 4, 0), DELTA);
+        // no value to add: the base
+        assertEquals(100.0, out.getSampleDouble(3, 4, 0), DELTA);
+    }
 }

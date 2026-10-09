@@ -25,6 +25,7 @@ import org.hortonmachine.gears.modules.r.profile.OmsProfile;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -36,6 +37,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSPROFILE_DESCRIPTION)
+@Documentation(OMSPROFILE_DOCUMENTATION)
 @Author(name = OMSPROFILE_AUTHORNAMES, contact = OMSPROFILE_AUTHORCONTACTS)
 @Keywords(OMSPROFILE_KEYWORDS)
 @Label(OMSPROFILE_LABEL)

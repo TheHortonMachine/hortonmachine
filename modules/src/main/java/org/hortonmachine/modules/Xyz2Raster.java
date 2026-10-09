@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_IN_FILE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_KEYWORDS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSXYZ2RASTER_LABEL;
@@ -37,6 +38,7 @@ import org.hortonmachine.gears.modules.r.raster4xyz.OmsXyz2Raster;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +49,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSXYZ2RASTER_DESCRIPTION)
+@Documentation(OMSXYZ2RASTER_DOCUMENTATION)
 @Author(name = OMSXYZ2RASTER_AUTHORNAMES, contact = OMSXYZ2RASTER_AUTHORCONTACTS)
 @Keywords(OMSXYZ2RASTER_KEYWORDS)
 @Label(OMSXYZ2RASTER_LABEL)

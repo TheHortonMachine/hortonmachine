@@ -52,4 +52,17 @@ public class TestModuleDocs {
             assertEquals("Outdated fragment, regenerate the module docs: " + fragment, entry.getValue(), committed);
         }
     }
+
+    @Test
+    public void testUndocumentedListIsUpToDate() throws Exception {
+        File listFile = new File(MANUAL_MODULES, "modules.txt");
+        File undocumentedFile = new File(MANUAL_MODULES, "undocumented.md");
+        assertTrue("Missing undocumented modules list, regenerate the module docs: " + undocumentedFile,
+                undocumentedFile.exists());
+
+        String expected = ModuleDocsGenerator.generateUndocumented(ModuleDocsGenerator.readModulesList(listFile));
+        String committed = Files.readString(undocumentedFile.toPath(), StandardCharsets.UTF_8);
+        assertEquals("Outdated undocumented modules list, regenerate the module docs: " + undocumentedFile, expected,
+                committed);
+    }
 }

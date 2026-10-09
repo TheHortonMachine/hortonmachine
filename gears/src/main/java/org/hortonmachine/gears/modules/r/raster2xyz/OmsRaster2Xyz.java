@@ -22,7 +22,7 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORNAM
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_IN_FILE_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_OUT_FILE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_IN_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_KEYWORDS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_LABEL;
@@ -34,9 +34,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 import org.eclipse.imagen.iterator.RandomIter;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -67,9 +65,9 @@ public class OmsRaster2Xyz extends HMModel {
     @In
     public GridCoverage2D inRaster;
 
-    @Description(OMSRASTER2XYZ_IN_FILE_DESCRIPTION)
+    @Description(OMSRASTER2XYZ_OUT_FILE_DESCRIPTION)
     @In
-    public String inFile;
+    public String outFile;
 
     @Description(OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION)
     @In
@@ -78,31 +76,35 @@ public class OmsRaster2Xyz extends HMModel {
     @SuppressWarnings("nls")
     @Execute
     public void process() throws Exception {
-        checkNull(inRaster);
+        checkNull(inRaster, outFile);
 
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(inRaster);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        GridGeometry2D gridGeometry = inRaster.getGridGeometry();
-
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
+        double west = regionMap.getWest();
+        double north = regionMap.getNorth();
+        double xres = regionMap.getXres();
+        double yres = regionMap.getYres();
 
         BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(inFile));
+            writer = new BufferedWriter(new FileWriter(outFile));
             for( int r = 0; r < rows; r++ ) {
                 for( int c = 0; c < cols; c++ ) {
                     double elevation = rasterIter.getSampleDouble(c, r, 0);
                     if (doRemovenv && HMConstants.isNovalue(elevation)) {
                         continue;
                     }
-                    var position = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
-                    double[] coordinate = position.getCoordinate();
+                    // the center of the cell, in double precision: gridToWorld works in float,
+                    // which is not enough for the large coordinates of projected systems
+                    double x = west + (c + 0.5) * xres;
+                    double y = north - (r + 0.5) * yres;
 
                     StringBuilder sb = new StringBuilder();
-                    sb.append(coordinate[0]);
+                    sb.append(x);
                     sb.append("\t");
-                    sb.append(coordinate[1]);
+                    sb.append(y);
                     sb.append("\t");
                     sb.append(elevation);
                     sb.append("\n");

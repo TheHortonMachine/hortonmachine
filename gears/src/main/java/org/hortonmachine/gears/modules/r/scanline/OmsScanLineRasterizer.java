@@ -143,8 +143,14 @@ public class OmsScanLineRasterizer extends HMModel {
 	public GridCoverage2D outRaster;
 
 	// PARAMS DESCR START
-	public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Module for polygon vector to raster conversion.";
-	public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = "";
+	public static final String OMSSCANLINERASTERIZER_DESCRIPTION = "Converts polygons to a raster: the cells whose center is inside a polygon get a value, the others are novalue. The value is a constant, the one of a field of the polygon, or the one of a raster, which so gets cut by the polygons.";
+	public static final String OMSSCANLINERASTERIZER_DOCUMENTATION = """
+			The polygons are intersected with a line through the centers of each row of cells, the scanline, and the cells between the intersections are filled. The grid is given by its bounds and number of rows and columns, or taken from a raster, which must have the CRS of the polygons.
+
+			The value of the cells is the constant value if given, else the value of the field of each polygon. With a raster and neither of them, the cells take the values of the raster: the result is the raster cut with the polygons.
+
+			Only polygons are supported. Where they overlap, the cells take the value of one of them. If the scanline fails on complex geometries, the point in polygon mode checks the center of each cell against the union of the polygons instead: it is slower, needs a raster for the grid, and uses only the constant value.
+			""";
 	public static final String OMSSCANLINERASTERIZER_KEYWORDS = "Raster, Vector, Rasterize";
 	public static final String OMSSCANLINERASTERIZER_LABEL = RASTERPROCESSING;
 	public static final String OMSSCANLINERASTERIZER_NAME = "rscanline";
@@ -152,9 +158,9 @@ public class OmsScanLineRasterizer extends HMModel {
 	public static final String OMSSCANLINERASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
 	public static final String OMSSCANLINERASTERIZER_AUTHORNAMES = "Andrea Antonello";
 	public static final String OMSSCANLINERASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
-	public static final String OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION = "The vector to rasterize.";
-	public static final String OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION = "The value to use as raster value if no field is given.";
-	public static final String OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION = "The field to use to retrieve the category value for the raster.";
+	public static final String OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION = "The polygons to rasterize.";
+	public static final String OMSSCANLINERASTERIZER_P_VALUE_DESCRIPTION = "The constant value of the cells inside the polygons. If given, it is used instead of the field.";
+	public static final String OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION = "The numeric field of the polygons with the value of their cells.";
 	public static final String OMSSCANLINERASTERIZER_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
 	public static final String OMSSCANLINERASTERIZER_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
 	public static final String OMSSCANLINERASTERIZER_P_WEST_DESCRIPTION = "The west bound of the region to consider";
@@ -163,9 +169,9 @@ public class OmsScanLineRasterizer extends HMModel {
 	public static final String OMSSCANLINERASTERIZER_P_COLS_DESCRIPTION = "The cols of the region to consider";
 	public static final String OMSSCANLINERASTERIZER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 4)";
 
-	public static final String OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION = "Use point in polygon (needs an input raster). In case scanline doesn't work.";
-	public static final String OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION = "An optional raster to take the values and region from.";
-	public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
+	public static final String OMSSCANLINERASTERIZER_P_USEPIP_DESCRIPTION = "If true, the slower point in polygon mode is used, for the geometries where the scanline fails. It needs the raster and the constant value.";
+	public static final String OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION = "An optional raster that gives the grid, instead of bounds, rows and columns; without value and field, also the values of the cells.";
+	public static final String OMSSCANLINERASTERIZER_OUT_RASTER_DESCRIPTION = "The rasterized polygons.";
 	// PARAMS DESCR END
 
 //    private WritableRaster outWR;
@@ -180,8 +186,8 @@ public class OmsScanLineRasterizer extends HMModel {
 	@Execute
 	public void process() throws Exception {
 		checkNull(inVector);
-		if (pValue == null && fCat == null) {
-			throw new ModelsIllegalargumentException("One of pValue or the fCat have to be defined.", this, pm);
+		if (pValue == null && fCat == null && inRaster == null) {
+			throw new ModelsIllegalargumentException("One of pValue, fCat or inRaster have to be defined.", this, pm);
 		}
 		if (pNorth == null || pSouth == null || pWest == null || pEast == null || pRows == null || pCols == null) {
 			if (inRaster == null) {
@@ -242,6 +248,11 @@ public class OmsScanLineRasterizer extends HMModel {
 						throw new ModelsIllegalargumentException(
 								"The point in polygon mode needs an input raster to work on.", this);
 					}
+					// the polygons are merged, so the value can't come from their field
+					if (pValue == null) {
+						throw new ModelsIllegalargumentException("The point in polygon mode needs the value pValue.",
+								this);
+					}
 					pm.beginTask("Prepare input data...", IHMProgressMonitor.UNKNOWN);
 					List<Geometry> allGeoms = FeatureUtilities.featureCollectionToGeometriesList(inVector, false, null);
 					Geometry allGeomsUnion = CascadedPolygonUnion.union(allGeoms);
@@ -289,11 +300,12 @@ public class OmsScanLineRasterizer extends HMModel {
 			final SimpleFeature feature = featureIterator.next();
 
 			// extract the value to put into the raster.
-			double tmpValue = -1.0;
-			if (pValue == null) {
-				tmpValue = ((Number) feature.getAttribute(fCat)).doubleValue();
-			} else {
+			// with a raster and no field, the cells take the values of the raster
+			double tmpValue = doubleNovalue;
+			if (pValue != null) {
 				tmpValue = pValue;
+			} else if (fCat != null) {
+				tmpValue = ((Number) feature.getAttribute(fCat)).doubleValue();
 			}
 			final double value = tmpValue;
 			final double delta = xRes / 4.0;

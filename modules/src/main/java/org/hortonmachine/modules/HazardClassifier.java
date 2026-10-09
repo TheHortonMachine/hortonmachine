@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.AUTHORS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.CONTACT;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.KEYWORDS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.LABEL;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier.OmsHazardClassifier.LICENSE;
@@ -37,6 +38,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.intensityclassifier
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +49,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(DESCRIPTION)
+@Documentation(DOCUMENTATION)
 @Author(name = AUTHORS, contact = CONTACT)
 @Keywords(KEYWORDS)
 @Label(LABEL)

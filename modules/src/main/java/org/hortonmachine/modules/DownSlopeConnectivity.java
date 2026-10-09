@@ -97,6 +97,9 @@ public class DownSlopeConnectivity extends HMModel {
         odsc.inSlope = getRaster(inSlope);
         odsc.inWeights = getRaster(inWeights);
         odsc.pWeight = pWeight;
+        odsc.pm = pm;
+        odsc.doProcess = doProcess;
+        odsc.doReset = doReset;
         odsc.process();
         dumpRaster(odsc.outConnectivity, outConnectivity);
     }

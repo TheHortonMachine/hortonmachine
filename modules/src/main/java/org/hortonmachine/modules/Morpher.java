@@ -21,6 +21,7 @@ import org.hortonmachine.gears.modules.r.morpher.OmsMorpher;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -30,7 +31,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Mophologic binary operations")
+@Description(OmsMorpher.DESCRIPTION)
+@Documentation(OmsMorpher.DOCUMENTATION)
 @Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
 @Keywords("Dilation, Erosion, Skeletonize, Open, Close, Raster")
 @Label(HMConstants.RASTERPROCESSING)
@@ -39,12 +41,12 @@ import oms3.annotations.UI;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Morpher extends OmsMorpher {
 
-    @Description("The map to morph.")
+    @Description("The map to morph: the valid cells are the objects, the novalues the background.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap = null;
 
-    @Description("The resulting map.")
+    @Description("The morphed map: the values of the objects for dilate, erode, open and close, 1 for the other operations.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;

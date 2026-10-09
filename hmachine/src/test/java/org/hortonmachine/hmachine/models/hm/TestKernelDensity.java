@@ -91,4 +91,49 @@ public class TestKernelDensity extends HMTestCase {
         checkMatrixEqual(density.getRenderedImage(), gaussian, 0.00001);
 
     }
+
+    /**
+     * With doConstant, every valid cell counts as 1: values of 5 give the same density as values of 1.
+     */
+    public void testKernelDensityConstant() throws Exception {
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        RegionMap region = RegionMap.fromBoundsAndGrid(1640000.0, 1640200.0, 5140000.0, 5140160.0, 20, 16);
+
+        double[][] ones = new double[16][20];
+        double[][] fives = new double[16][20];
+        for( int r = 0; r < 16; r++ ) {
+            for( int c = 0; c < 20; c++ ) {
+                boolean present = (r + c) % 3 == 0;
+                ones[r][c] = present ? 1 : -9999.0;
+                fives[r][c] = present ? 5 : -9999.0;
+            }
+        }
+
+        OmsKernelDensity onesDensity = new OmsKernelDensity();
+        onesDensity.inMap = new HMRaster.HMRasterWritableBuilder().setCrs(crs).setData(ones).setName("ones").setNoValue(-9999.0)
+                .setRegion(region).build().buildCoverage();
+        onesDensity.pRadius = 3;
+        onesDensity.pm = pm;
+        onesDensity.process();
+
+        OmsKernelDensity fivesDensity = new OmsKernelDensity();
+        fivesDensity.inMap = new HMRaster.HMRasterWritableBuilder().setCrs(crs).setData(fives).setName("fives").setNoValue(-9999.0)
+                .setRegion(region).build().buildCoverage();
+        fivesDensity.pRadius = 3;
+        fivesDensity.doConstant = true;
+        fivesDensity.pm = pm;
+        fivesDensity.process();
+
+        java.awt.image.Raster expected = onesDensity.outDensity.getRenderedImage().getData();
+        java.awt.image.Raster actual = fivesDensity.outDensity.getRenderedImage().getData();
+        boolean someValue = false;
+        for( int r = 0; r < 16; r++ ) {
+            for( int c = 0; c < 20; c++ ) {
+                double value = expected.getSampleDouble(c, r, 0);
+                assertEquals(value, actual.getSampleDouble(c, r, 0), 0.00001);
+                someValue = someValue || value > 0;
+            }
+        }
+        assertTrue(someValue);
+    }
 }

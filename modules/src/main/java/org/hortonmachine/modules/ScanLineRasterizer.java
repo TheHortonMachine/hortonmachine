@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_DOCUMENTATION;
 import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_F_CAT_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_IN_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer.OMSSCANLINERASTERIZER_IN_VECTOR_DESCRIPTION;
@@ -44,6 +45,7 @@ import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -54,6 +56,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSSCANLINERASTERIZER_DESCRIPTION)
+@Documentation(OMSSCANLINERASTERIZER_DOCUMENTATION)
 @Author(name = OMSSCANLINERASTERIZER_AUTHORNAMES, contact = OMSSCANLINERASTERIZER_AUTHORCONTACTS)
 @Keywords(OMSSCANLINERASTERIZER_KEYWORDS)
 @Label(OMSSCANLINERASTERIZER_LABEL)

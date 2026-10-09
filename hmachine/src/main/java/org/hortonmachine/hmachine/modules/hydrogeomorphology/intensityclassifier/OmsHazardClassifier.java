@@ -29,6 +29,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +46,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OmsHazardClassifier.DESCRIPTION)
+@Documentation(OmsHazardClassifier.DOCUMENTATION)
 @Author(name = OmsHazardClassifier.AUTHORS, contact = OmsHazardClassifier.CONTACT)
 @Keywords(OmsHazardClassifier.KEYWORDS)
 @Label(OmsHazardClassifier.LABEL)
@@ -81,12 +83,32 @@ public class OmsHazardClassifier extends HMModel {
     public static final String KEYWORDS = "Raster, Flooding, Hazard";
     public static final String CONTACT = "http://www.hydrologis.com";
     public static final String AUTHORS = "Silvia Franceschi, Andrea Antonello";
-    public static final String DESCRIPTION = "Hazard classifier.";
-    public static final String outHazardIP2_DESCR = "Output hazard map IP2";
-    public static final String outHazardIP1_DESCR = "Output hazard map IP1";
-    public static final String inIntensityTr30_DESCR = "Intensity map for Tr=30 years.";
-    public static final String inIntensityTr100_DESCR = "Intensity map for Tr=100 years.";
-    public static final String inIntensityTr200_DESCR = "Intensity map for Tr=200 years.";
+    public static final String DESCRIPTION = "Classifies the hazard from the intensity maps of the events of 30, 100 and 200 years of return period: two hazard maps, IP1 and IP2, with classes from 2 (low) to 4 (high).";
+    public static final String DOCUMENTATION = """
+            The intensity maps are the ones of IntensityClassifierFlood or IntensityClassifierDebrisFlowTN, with the classes 1 low, 2 medium and 3 high. A cell without a value in a map is not reached by that event.
+
+            Each intensity of each return period gets a score, higher for the more intense and the more frequent events:
+
+            | Intensity | Tr 30 | Tr 100 | Tr 200 |
+            |---|---|---|---|
+            | high (3) | 9 | 8 | 7 |
+            | medium (2) | 6 | 5 | 4 |
+            | low (1) | 3 | 2 | 1 |
+
+            The highest score of the three events gives the hazard of the cell, in two classifications that differ only in where the classes change:
+
+            | Score | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+            |---|---|---|---|---|---|---|---|---|---|
+            | IP1 | 2 | 3 | 3 | 3 | 3 | 4 | 4 | 4 | 4 |
+            | IP2 | 2 | 2 | 3 | 3 | 3 | 3 | 4 | 4 | 4 |
+
+            So with IP1 a medium intensity of the event of 30 years is already a high hazard, and only a low intensity of the event of 200 years is a low hazard; with IP2 a high hazard needs a high intensity, and the low intensities of the events of 100 and 200 years are a low hazard.
+            """;
+    public static final String outHazardIP2_DESCR = "The hazard map IP2: 2 low, 3 medium, 4 high.";
+    public static final String outHazardIP1_DESCR = "The hazard map IP1: 2 low, 3 medium, 4 high.";
+    public static final String inIntensityTr30_DESCR = "The intensity map of the event of 30 years of return period.";
+    public static final String inIntensityTr100_DESCR = "The intensity map of the event of 100 years of return period.";
+    public static final String inIntensityTr200_DESCR = "The intensity map of the event of 200 years of return period.";
     // VARS DOC END
 
     public static final double INTENSITY_HIGH = 3.0;

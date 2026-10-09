@@ -77,6 +77,27 @@ public class TestProfile extends HMTestCase {
 
     }
 
+    public void testProfileEndsAtTheLineEnd() throws Exception {
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", HMTestMaps.mapData, ep, crs, true);
+
+        // 100 m long, not a multiple of the 30 m cells
+        double y = centerCoord.y + ep.getYres() / 2;
+        double x1 = westNorth.x + ep.getXres() / 2;
+        OmsProfile profile = new OmsProfile();
+        profile.inRaster = elevationCoverage;
+        profile.pm = pm;
+        profile.inCoordinates = x1 + "," + y + "," + (x1 + 100) + "," + y;
+        profile.process();
+        double[][] outProfile = profile.outProfile;
+
+        double[] last = outProfile[outProfile.length - 1];
+        assertEquals(100.0, last[0], 0.000001);
+        assertEquals(x1 + 100, last[2], 0.000001);
+        // 0, 30, 60, 90 and the end
+        assertEquals(5, outProfile.length);
+    }
+
     private SimpleFeatureCollection doCollection() {
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();

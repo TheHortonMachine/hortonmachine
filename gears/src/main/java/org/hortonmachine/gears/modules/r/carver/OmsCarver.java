@@ -163,8 +163,8 @@ public class OmsCarver extends HMModel {
             raster.pWest = regionMap.getWest();
             raster.pRows = rows;
             raster.pCols = cols;
-            raster.fCat = fDepthLines;
-            raster.pValue = pDepthLines;
+            raster.fCat = fDepthPolygons;
+            raster.pValue = pDepthPolygons;
             raster.pm = pm;
             raster.process();
 

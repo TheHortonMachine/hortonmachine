@@ -438,8 +438,14 @@ public class HortonMessages {
     public static final String OMSTCA3D_inFlow_DESCRIPTION = "The map of the drainage directions.";
     public static final String OMSTCA3D_outTca_DESCRIPTION = "The map of the three-dimensional total contributing areas.";
 
-    public static final String OMSNABLA_DESCRIPTION = "Calculates the nabla in each point of the map.";
-    public static final String OMSNABLA_DOCUMENTATION = "";
+    public static final String OMSNABLA_DESCRIPTION = "Calculates the nabla, or laplacian, of the elevation in each cell: the sum of its second derivatives in two perpendicular directions, which measures the curvature of the terrain. Positive values mark concave sites, as valleys, negative values convex sites, as ridges. With a threshold, it creates a mask of the convex sites instead.";
+    public static final String OMSNABLA_DOCUMENTATION = """
+            The laplacian is the mean of two estimates from the 3x3 window around the cell: one with the four neighbours along the rows and the columns, one with the four diagonal neighbours. Its unit is 1/m, the inverse of the length unit of the map.
+
+            The cells of the border of the map have no value. The cells next to a novalue get the mean nabla of their neighbours.
+
+            With a threshold, the output is a mask: 1 where the nabla is lower than minus the threshold, the clearly convex sites, and in the cells next to a novalue; 0 in the rest, planar and concave sites.
+            """;
     public static final String OMSNABLA_KEYWORDS = "Geomorphology, Nabla, Gradient";
     public static final String OMSNABLA_LABEL = GEOMORPHOLOGY;
     public static final String OMSNABLA_NAME = "nabla";
@@ -448,8 +454,8 @@ public class HortonMessages {
     public static final String OMSNABLA_AUTHORNAMES = "Antonello Andrea, Daniele Andreis, Erica Ghesla, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSNABLA_AUTHORCONTACTS = "http://www.hydrologis.com, http://www.ing.unitn.it/dica/hp/?user=rigon";
     public static final String OMSNABLA_inElev_DESCRIPTION = "The map of the digital elevation model (DEM or pit).";
-    public static final String OMSNABLA_pThres_DESCRIPTION = "An optional threshold on the nabla value.";
-    public static final String OMSNABLA_outNabla_DESCRIPTION = "The map of nabla.";
+    public static final String OMSNABLA_pThres_DESCRIPTION = "An optional threshold on the nabla, in 1/m: if set, the output is the mask of the cells with a nabla below minus the threshold.";
+    public static final String OMSNABLA_outNabla_DESCRIPTION = "The map of the nabla, in 1/m, or the mask of the convex sites if a threshold is set.";
 
     public static final String OMSINSOLATION_DESCRIPTION = "Calculates the clear-sky direct solar radiation that reaches the terrain over a period of days, with the slope, the aspect and the shadows cast by the surrounding terrain. The radiation is computed every half hour of each day, through an atmosphere with standard transmittances, and the values in kW/m² are summed: half of the sum is the energy in kWh/m². The diffuse radiation is not considered.";
     public static final String OMSINSOLATION_DOCUMENTATION = "";
@@ -709,22 +715,6 @@ public class HortonMessages {
     public static final String OMSADIGE_pRainduration_DESCRIPTION = "The duration of the constant rain in minutes.";
     public static final String OMSADIGE_outDischarge_DESCRIPTION = "The superficial discharge for every basin id.";
     public static final String OMSADIGE_outSubdischarge_DESCRIPTION = "The sub-superficial discharge for every basin id.";
-
-    public static final String OMSSTRAHLERRATIOS_DESCRIPTION = "Calculates the OmsStrahler ratios.";
-    public static final String OMSSTRAHLERRATIOS_DOCUMENTATION = "";
-    public static final String OMSSTRAHLERRATIOS_KEYWORDS = "Network, OmsStrahler";
-    public static final String OMSSTRAHLERRATIOS_LABEL = NETWORK;
-    public static final String OMSSTRAHLERRATIOS_NAME = "strahlerratio";
-    public static final int OMSSTRAHLERRATIOS_STATUS = 5;
-    public static final String OMSSTRAHLERRATIOS_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSSTRAHLERRATIOS_AUTHORNAMES = "Antonello Andrea, Silvia Franceschi";
-    public static final String OMSSTRAHLERRATIOS_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSSTRAHLERRATIOS_inFlow_DESCRIPTION = "The map of flowdirections.";
-    public static final String OMSSTRAHLERRATIOS_inStrahler_DESCRIPTION = "The map of OmsStrahler.";
-    public static final String OMSSTRAHLERRATIOS_inNet_DESCRIPTION = "The map of the network.";
-    public static final String OMSSTRAHLERRATIOS_outBisfurcation_DESCRIPTION = "The bifurcation ratio.";
-    public static final String OMSSTRAHLERRATIOS_outArea_DESCRIPTION = "The area ratio.";
-    public static final String OMSSTRAHLERRATIOS_outLength_DESCRIPTION = "The length ratio.";
 
     public static final String OMSVARIOGRAM_DESCRIPTION = "Experimental semivariogram algorithm.";
     public static final String OMSVARIOGRAM_DOCUMENTATION = "Experimental semivariogram";

@@ -116,6 +116,12 @@ import groovy.lang.GroovyShell;
  * <li><b>panels=a;b+c</b>: with a table, instead of the histogram, the named columns as panels one
  * over the other on the first column: <code>a</code> as bars from zero, <code>b+c</code> as the
  * line of b in the band of plus and minus c, as a mean and its standard deviation.</li>
+ * <li><b>lines=a;b</b>: with a table, the named columns as lines over the first column, as
+ * profiles along a distance, with a legend.</li>
+ * <li><b>extent=west:east:south:north</b>: the map shows only this part of the data, to zoom on
+ * small features; the colors still span the values of the whole raster.</li>
+ * <li><b>over=vector.shp</b>: with vectors, another vector drawn over them in blue, as the river
+ * under its sections.</li>
  * </ul>
  * The optional class names, as <code>1=stable;2=unstable</code>, replace the values in the legend
  * of the classes.
@@ -131,6 +137,10 @@ public class ModuleMapsGenerator {
     private static final int LEGEND_WIDTH = 160;
     private static final double OPACITY = 0.75;
     private static final Font FONT = new Font("SansSerif", Font.PLAIN, 14);
+    /**
+     * The color of the vector drawn over the map by the option over=.
+     */
+    private static final Color OVER_COLOR = new Color(30, 90, 200);
     /** The number of color intervals of the continuous values of a vector field. */
     private static final int VECTOR_COLOR_STEPS = 32;
     /** The maximum number of classes of a legend of classes. */
@@ -258,6 +268,10 @@ public class ModuleMapsGenerator {
         }
         if (spec.raster().endsWith(".csv")) {
             String panels = optionValue(spec, "panels");
+            String lines = optionValue(spec, "lines");
+            if (lines != null) {
+                return drawLines(spec, lines);
+            }
             return panels != null ? drawPanels(spec, panels) : drawHistogram(spec);
         }
         GridCoverage2D raster = readRaster(spec);
@@ -279,7 +293,7 @@ public class ModuleMapsGenerator {
         Style hillStyle = RasterStyleUtilities.createStyleForColortable(EColorTables.greyscale.name(), hillMinMax[0],
                 hillMinMax[1], 1.0);
 
-        ReferencedEnvelope envelope = new ReferencedEnvelope(raster.getEnvelope2D());
+        ReferencedEnvelope envelope = mapEnvelope(spec, new ReferencedEnvelope(raster.getEnvelope2D()));
         int mapHeight = (int) Math.round(MAP_WIDTH * envelope.getHeight() / envelope.getWidth());
 
         BufferedImage image = new BufferedImage(MAP_WIDTH + legendWidth(spec), mapHeight, BufferedImage.TYPE_INT_ARGB);
@@ -393,7 +407,7 @@ public class ModuleMapsGenerator {
             }
         }
 
-        ReferencedEnvelope envelope = new ReferencedEnvelope(hillshade.getEnvelope2D());
+        ReferencedEnvelope envelope = mapEnvelope(spec, new ReferencedEnvelope(hillshade.getEnvelope2D()));
         int mapHeight = (int) Math.round(MAP_WIDTH * envelope.getHeight() / envelope.getWidth());
         BufferedImage image = new BufferedImage(MAP_WIDTH + legendWidth(spec), mapHeight, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = image.createGraphics();
@@ -407,6 +421,12 @@ public class ModuleMapsGenerator {
             content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
             for( Map.Entry<Color, DefaultFeatureCollection> group : groups.entrySet() ) {
                 content.addLayer(new FeatureLayer(group.getValue(), vectorStyle(geometryType, group.getKey())));
+            }
+            String over = optionValue(spec, "over");
+            if (over != null) {
+                SimpleFeatureCollection overFeatures = OmsVectorReader.readVector(path(over));
+                Class< ? > overType = overFeatures.getSchema().getGeometryDescriptor().getType().getBinding();
+                content.addLayer(new FeatureLayer(overFeatures, vectorStyle(overType, OVER_COLOR)));
             }
             StreamingRenderer renderer = new StreamingRenderer();
             renderer.setMapContent(content);
@@ -667,6 +687,117 @@ public class ModuleMapsGenerator {
     }
 
     /**
+     * Draws the named columns of a table as lines over its first column, as the profiles of the
+     * elevation along a distance, with a legend when there are several.
+     */
+    private BufferedImage drawLines( MapSpec spec, String linesSpec ) throws Exception {
+        List<String> lines = Files.readAllLines(new File(path(spec.raster())).toPath(), StandardCharsets.UTF_8);
+        List<String> header = Arrays.stream(lines.get(0).split(",")).map(String::trim).toList();
+        List<double[]> rows = new ArrayList<>();
+        for( String line : lines.subList(1, lines.size()) ) {
+            if (!line.isBlank()) {
+                rows.add(Arrays.stream(line.split(",")).mapToDouble(v -> Double.parseDouble(v.trim())).toArray());
+            }
+        }
+        String[] names = linesSpec.split(";");
+        int[] indexes = new int[names.length];
+        for( int i = 0; i < names.length; i++ ) {
+            indexes[i] = header.indexOf(names[i].trim());
+            if (indexes[i] < 0) {
+                throw new IllegalArgumentException("Unknown column " + names[i] + " in " + spec.raster());
+            }
+        }
+        // the blue and red of a palette safe for color blindness, the first line drawn last, on top
+        Color[] colors = {new Color(0x2a78d6), new Color(0xe34948), new Color(0x7a7a7a)};
+        Color grid = new Color(225, 225, 225);
+
+        int width = MAP_WIDTH;
+        int left = 90;
+        int right = 20;
+        int top = 40;
+        int plotHeight = 320;
+        int bottom = 60;
+        int plotWidth = width - left - right;
+        int height = top + plotHeight + bottom;
+
+        double xMinData = Double.POSITIVE_INFINITY;
+        double xMaxData = Double.NEGATIVE_INFINITY;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for( double[] row : rows ) {
+            xMinData = Math.min(xMinData, row[0]);
+            xMaxData = Math.max(xMaxData, row[0]);
+            for( int index : indexes ) {
+                min = Math.min(min, row[index]);
+                max = Math.max(max, row[index]);
+            }
+        }
+        double yStep = tickStep(max - min);
+        double yMin = Math.floor(min / yStep) * yStep;
+        double yMax = Math.max(Math.ceil(max / yStep) * yStep, yMin + yStep);
+        double xStep = tickStep(xMaxData - xMinData);
+        double xMin = Math.floor(xMinData / xStep) * xStep;
+        double xMax = Math.max(Math.ceil(xMaxData / xStep) * xStep, xMin + xStep);
+        DoubleToIntFunction yOf = v -> top + plotHeight - (int) Math.round((v - yMin) * plotHeight / (yMax - yMin));
+        DoubleToIntFunction xOf = v -> left + (int) Math.round((v - xMin) * plotWidth / (xMax - xMin));
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = image.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g.setColor(Color.WHITE);
+        g.fillRect(0, 0, width, height);
+        g.setFont(FONT);
+        FontMetrics metrics = g.getFontMetrics();
+
+        for( double value = yMin; value <= yMax + yStep / 2; value += yStep ) {
+            int y = yOf.applyAsInt(value);
+            g.setColor(grid);
+            g.drawLine(left, y, left + plotWidth, y);
+            g.setColor(Color.DARK_GRAY);
+            String label = tickLabel(value, yStep);
+            g.drawString(label, left - 8 - metrics.stringWidth(label), y + metrics.getAscent() / 2 - 1);
+        }
+        for( double value = xMin; value <= xMax + xStep / 2; value += xStep ) {
+            int x = xOf.applyAsInt(value);
+            g.setColor(grid);
+            g.drawLine(x, top, x, top + plotHeight);
+            g.setColor(Color.DARK_GRAY);
+            String label = tickLabel(value, xStep);
+            g.drawString(label, x - metrics.stringWidth(label) / 2, top + plotHeight + 6 + metrics.getAscent());
+        }
+        String xName = header.get(0).replace('_', ' ');
+        g.drawString(xName, left + plotWidth / 2 - metrics.stringWidth(xName) / 2, height - 12);
+
+        g.setStroke(new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+        for( int l = indexes.length - 1; l >= 0; l-- ) {
+            g.setColor(colors[l % colors.length]);
+            for( int i = 1; i < rows.size(); i++ ) {
+                g.drawLine(xOf.applyAsInt(rows.get(i - 1)[0]), yOf.applyAsInt(rows.get(i - 1)[indexes[l]]),
+                        xOf.applyAsInt(rows.get(i)[0]), yOf.applyAsInt(rows.get(i)[indexes[l]]));
+            }
+        }
+        g.setStroke(new BasicStroke(1f));
+
+        // the legend over the plot, one entry per line
+        int legendX = left;
+        for( int l = 0; l < indexes.length; l++ ) {
+            String name = header.get(indexes[l]).replace('_', ' ');
+            g.setColor(colors[l % colors.length]);
+            g.fillRect(legendX, 14, 18, 4);
+            g.setColor(Color.DARK_GRAY);
+            g.drawString(name, legendX + 24, 14 + metrics.getAscent() / 2 + 1);
+            legendX += 24 + metrics.stringWidth(name) + 24;
+        }
+        g.setColor(Color.DARK_GRAY);
+        g.drawLine(left, top, left, top + plotHeight);
+        g.drawLine(left, top + plotHeight, left + plotWidth, top + plotHeight);
+
+        g.dispose();
+        return image;
+    }
+
+    /**
      * @return a round step for about 5 ticks over the span: 1, 2 or 5 times a power of 10.
      */
     private static double tickStep( double span ) {
@@ -709,6 +840,24 @@ public class ModuleMapsGenerator {
             }
         }
         return null;
+    }
+
+    /**
+     * @return the extent of the map: the one of the option extent=west:east:south:north, to zoom
+     *         on a part of the data, or the given full extent.
+     */
+    private static ReferencedEnvelope mapEnvelope( MapSpec spec, ReferencedEnvelope fullEnvelope ) {
+        String extent = optionValue(spec, "extent");
+        if (extent == null) {
+            return fullEnvelope;
+        }
+        String[] bounds = extent.split(":");
+        if (bounds.length != 4) {
+            throw new IllegalArgumentException("The extent must be west:east:south:north: " + extent);
+        }
+        return new ReferencedEnvelope(Double.parseDouble(bounds[0]), Double.parseDouble(bounds[1]),
+                Double.parseDouble(bounds[2]), Double.parseDouble(bounds[3]),
+                fullEnvelope.getCoordinateReferenceSystem());
     }
 
     /**

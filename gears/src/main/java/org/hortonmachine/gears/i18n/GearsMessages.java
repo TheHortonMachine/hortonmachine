@@ -536,8 +536,12 @@ public class GearsMessages {
     public static final String OMSVECTORFILTER_P_CQL_DESCRIPTION = "The ECQL filter function.";
     public static final String OMSVECTORFILTER_OUT_VECTOR_DESCRIPTION = "The filtered vector.";
 
-    public static final String OMSCARVER_DESCRIPTION = "Carves a raster using a vector map.";
-    public static final String OMSCARVER_DOCUMENTATION = "";
+    public static final String OMSCARVER_DESCRIPTION = "Carves lines and polygons into an elevation model, lowering the cells they cover by a depth: as rivers burned into the terrain, so that the flow follows them, or excavations.";
+    public static final String OMSCARVER_DOCUMENTATION = """
+            The lines and the polygons are rasterized on the grid of the elevation model, and the cells they cover are lowered by their depth, from a field of the vector or a single value. The other cells are not changed. Where a polygon and a line overlap, the depth of the polygon is used.
+
+            The depth is the same for the whole feature: the bottom of a carved channel follows the terrain, lowered by the depth, it is not leveled.
+            """;
     public static final String OMSCARVER_KEYWORDS = "Carve, Raster";
     public static final String OMSCARVER_LABEL = RASTERPROCESSING;
     public static final String OMSCARVER_NAME = "carver";
@@ -545,14 +549,14 @@ public class GearsMessages {
     public static final String OMSCARVER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSCARVER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSCARVER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSCARVER_IN_RASTER_DESCRIPTION = "The input raster.";
-    public static final String OMSCARVER_IN_CARVE_R_POLYGONS_DESCRIPTION = "The polygon vector map used to carve the raster.";
-    public static final String OMSCARVER_IN_CARVE_R_LINES_DESCRIPTION = "The lines vector map used to carve the raster.";
-    public static final String OMSCARVER_F_DEPTH_LINES_DESCRIPTION = "The optional vector lines field containing the depth to be carved.";
-    public static final String OMSCARVER_P_DEPTH_LINES_DESCRIPTION = "The carve depth to use for vector lines if no field is supplied.";
-    public static final String OMSCARVER_F_DEPTH_POLYGONS_DESCRIPTION = "The optional vector polygons field containing the depth to be carved.";
-    public static final String OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION = "The carve depth to use for vector polygons if no field is supplied.";
-    public static final String OMSCARVER_OUT_RASTER_DESCRIPTION = "The carved raster map.";
+    public static final String OMSCARVER_IN_RASTER_DESCRIPTION = "The elevation model to carve.";
+    public static final String OMSCARVER_IN_CARVE_R_POLYGONS_DESCRIPTION = "The optional polygons to carve. At least the lines or the polygons are needed.";
+    public static final String OMSCARVER_IN_CARVE_R_LINES_DESCRIPTION = "The optional lines to carve. At least the lines or the polygons are needed.";
+    public static final String OMSCARVER_F_DEPTH_LINES_DESCRIPTION = "The optional field of the lines with their depth.";
+    public static final String OMSCARVER_P_DEPTH_LINES_DESCRIPTION = "The depth of the lines, used if no field is given.";
+    public static final String OMSCARVER_F_DEPTH_POLYGONS_DESCRIPTION = "The optional field of the polygons with their depth.";
+    public static final String OMSCARVER_P_DEPTH_POLYGONS_DESCRIPTION = "The depth of the polygons, used if no field is given.";
+    public static final String OMSCARVER_OUT_RASTER_DESCRIPTION = "The carved elevation model.";
 
     public static final String OMSSHAPEFILEFEATUREWRITER_DESCRIPTION = "Utility class for writing geotools featurecollections to shapefile.";
     public static final String OMSSHAPEFILEFEATUREWRITER_DOCUMENTATION = "";
@@ -569,8 +573,12 @@ public class GearsMessages {
     public static final String OMSSHAPEFILEFEATUREWRITER_DO_INDEX_DESCRIPTION = "Create also the spatial index for the file.";
     public static final String OMSSHAPEFILEFEATUREWRITER_P_TYPE_DESCRIPTION = "The feature type. It's mandatory only if you want to write down an empty FeatureCollection";
 
-    public static final String OMSXYZ2RASTER_DESCRIPTION = "Convert evenly spaced XYZ triplets to regular raster grid.";
-    public static final String OMSXYZ2RASTER_DOCUMENTATION = "";
+    public static final String OMSXYZ2RASTER_DESCRIPTION = "Converts a text file of XYZ triplets on a regular grid, as the ones of the lidar elevation models distributed as text, into a raster: each point becomes the value of the cell centered on it.";
+    public static final String OMSXYZ2RASTER_DOCUMENTATION = """
+            The points must be the centers of the cells of a regular grid with the given resolution, as written by Raster2Xyz: the bounds of the raster are the ones of the points, enlarged by half a cell. It is not an interpolation: the cells without a point are novalue, and the points that are not on the grid end up in the cell they fall in. To make a raster from scattered points, use SurfaceInterpolator.
+
+            The lines that are not three numbers, as a header, are skipped. The values are separated by spaces or tabs, or by the given separator.
+            """;
     public static final String OMSXYZ2RASTER_KEYWORDS = "Raster, Conversion";
     public static final String OMSXYZ2RASTER_LABEL = RASTERPROCESSING;
     public static final String OMSXYZ2RASTER_NAME = "xyz2raster";
@@ -578,10 +586,10 @@ public class GearsMessages {
     public static final String OMSXYZ2RASTER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSXYZ2RASTER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSXYZ2RASTER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSXYZ2RASTER_IN_FILE_DESCRIPTION = "The file of regularly distributed xyz triplets.";
-    public static final String OMSXYZ2RASTER_P_RES_DESCRIPTION = "The resolution to use.";
-    public static final String OMSXYZ2RASTER_P_CODE_DESCRIPTION = "The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
-    public static final String OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION = "The value separator (if not set, spaces will be used).";
+    public static final String OMSXYZ2RASTER_IN_FILE_DESCRIPTION = "The text file of the XYZ triplets, on a regular grid.";
+    public static final String OMSXYZ2RASTER_P_RES_DESCRIPTION = "The resolution of the grid of the points, in the units of the coordinates.";
+    public static final String OMSXYZ2RASTER_P_CODE_DESCRIPTION = "The code of the coordinate reference system of the points, as authority and number (ex. EPSG:32632).";
+    public static final String OMSXYZ2RASTER_P_SEPARATOR_DESCRIPTION = "The separator of the values, as a regular expression. If not set, any sequence of spaces or tabs.";
     public static final String OMSXYZ2RASTER_OUT_RASTER_DESCRIPTION = "The generated raster.";
 
     public static final String OMSDWGCONVERTER_DESCRIPTION = "Module to convert dxf files to geotools vecotors.";
@@ -718,8 +726,10 @@ public class GearsMessages {
     public static final String OMSVECTORIZER_DO_REGION_CHECK_DESCRIPTION = "First shrink the region to the cells with values, faster on sparse rasters.";
     public static final String OMSVECTORIZER_OUT_VECTOR_DESCRIPTION = "The vector of the polygons.";
 
-    public static final String OMSRASTER2XYZ_DESCRIPTION = "Convert a raster to XYZ triplets.";
-    public static final String OMSRASTER2XYZ_DOCUMENTATION = "";
+    public static final String OMSRASTER2XYZ_DESCRIPTION = "Converts a raster to a text file of XYZ triplets: a line for each cell, with the easting and the northing of its center and its value, separated by tabs.";
+    public static final String OMSRASTER2XYZ_DOCUMENTATION = """
+            The cells are written row by row, from the north west corner. The novalues are left out, unless they are asked for, in which case they are written as -9999. The file can be read back into a raster with Xyz2Raster.
+            """;
     public static final String OMSRASTER2XYZ_KEYWORDS = "Raster, Conversion";
     public static final String OMSRASTER2XYZ_LABEL = RASTERPROCESSING;
     public static final String OMSRASTER2XYZ_NAME = "raster2xyz";
@@ -727,9 +737,9 @@ public class GearsMessages {
     public static final String OMSRASTER2XYZ_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTER2XYZ_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTER2XYZ_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTER2XYZ_IN_RASTER_DESCRIPTION = "The map to convert.";
-    public static final String OMSRASTER2XYZ_IN_FILE_DESCRIPTION = "The file into which to save the result.";
-    public static final String OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION = "Flag to remove novalues.";
+    public static final String OMSRASTER2XYZ_IN_RASTER_DESCRIPTION = "The raster to convert.";
+    public static final String OMSRASTER2XYZ_OUT_FILE_DESCRIPTION = "The output text file of the triplets.";
+    public static final String OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION = "If true, the cells with novalue are left out.";
 
     public static final String OMSPLAINID2VALUEREADER_DESCRIPTION = "Utility class for reading data from csv file that have the form: id1 value1 id2 value2 ... idn valuen.";
     public static final String OMSPLAINID2VALUEREADER_DOCUMENTATION = "";
@@ -1096,8 +1106,14 @@ public class GearsMessages {
     public static final String ADIGEBOUNDARYCONDITIONREADER_FILE_DESCRIPTION = "The csv file to read from.";
     public static final String ADIGEBOUNDARYCONDITIONREADER_DATA_DESCRIPTION = "The list initial boundary conditions.";
 
-    public static final String OMSBOBTHEBUILDER_DESCRIPTION = "Builds rasterized artifacts on a raster.";
-    public static final String OMSBOBTHEBUILDER_DOCUMENTATION = "";
+    public static final String OMSBOBTHEBUILDER_DESCRIPTION = "Builds an artifact, as a dam, an embankment or a levee, into an elevation model: inside a polygon, the elevations are interpolated from points with the elevation of the artifact, and replace the ones of the raster where they are higher, or everywhere if erosion is enabled.";
+    public static final String OMSBOBTHEBUILDER_DOCUMENTATION = """
+            The elevations inside the polygon are interpolated with the inverse distance weighting, with the square of the distance, from the points within the maximum radius of each cell. The cells with no point within the radius keep their elevation. The cells outside the polygon are not changed.
+
+            Without erosion, the artifact is only added: the cells where the raster is higher than the interpolated elevation keep their value, so a dam can be drawn wider than the valley, into its slopes. With erosion, the interpolated elevations replace the raster in the whole polygon, also lowering it, as for an excavation.
+
+            With the border of the polygon, the raster elevations along it are added to the points, so that the interpolated surface joins the surrounding terrain, as for a ramp.
+            """;
     public static final String OMSBOBTHEBUILDER_KEYWORDS = "Build, Raster";
     public static final String OMSBOBTHEBUILDER_LABEL = RASTERPROCESSING;
     public static final String OMSBOBTHEBUILDER_NAME = "bobbuilder";
@@ -1105,15 +1121,15 @@ public class GearsMessages {
     public static final String OMSBOBTHEBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSBOBTHEBUILDER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSBOBTHEBUILDER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSBOBTHEBUILDER_IN_RASTER_DESCRIPTION = "The input raster.";
-    public static final String OMSBOBTHEBUILDER_IN_AREA_DESCRIPTION = "The vector map containing the polygonal area to modify.";
-    public static final String OMSBOBTHEBUILDER_IN_ELEVATIONS_DESCRIPTION = "The vector map containing the points that provide the new elevations.";
-    public static final String OMSBOBTHEBUILDER_P_MAX_BUFFER_DESCRIPTION = "The maximum radius to use for interpolation.";
-    public static final String OMSBOBTHEBUILDER_F_ELEVATION_DESCRIPTION = "The field of the elevations map that contain the elevation of the point.";
-    public static final String OMSBOBTHEBUILDER_DO_ERODE_DESCRIPTION = "Switch that defines if the module should erode in places the actual raster is higher (default is false).";
-    public static final String OMSBOBTHEBUILDER_DO_USE_ONLY_INTERNAL_DESCRIPTION = "Switch that defines if the module should use only points contained in the polygon for the interpolation (default is false. i.e. use all).";
-    public static final String OMSBOBTHEBUILDER_DO_POLYGON_BORDER_DESCRIPTION = "Switch that defines if the module should add the border of the polygon as elevation point to aid connection between new and old (default is false).";
-    public static final String OMSBOBTHEBUILDER_OUT_RASTER_DESCRIPTION = "The modified raster map.";
+    public static final String OMSBOBTHEBUILDER_IN_RASTER_DESCRIPTION = "The elevation model to modify.";
+    public static final String OMSBOBTHEBUILDER_IN_AREA_DESCRIPTION = "The vector with the single polygon of the artifact, within the raster.";
+    public static final String OMSBOBTHEBUILDER_IN_ELEVATIONS_DESCRIPTION = "The vector of the points with the elevations of the artifact, at least 4.";
+    public static final String OMSBOBTHEBUILDER_P_MAX_BUFFER_DESCRIPTION = "The maximum distance of the points used to interpolate a cell. If negative, the largest side of the bounds of the polygon.";
+    public static final String OMSBOBTHEBUILDER_F_ELEVATION_DESCRIPTION = "The field of the points with their elevation.";
+    public static final String OMSBOBTHEBUILDER_DO_ERODE_DESCRIPTION = "If true, the interpolated elevations replace the raster also where it is higher, lowering it.";
+    public static final String OMSBOBTHEBUILDER_DO_USE_ONLY_INTERNAL_DESCRIPTION = "If true, only the points inside the polygon are used, else all of them.";
+    public static final String OMSBOBTHEBUILDER_DO_POLYGON_BORDER_DESCRIPTION = "If true, the raster elevations along the border of the polygon are added to the points, to join the artifact to the terrain.";
+    public static final String OMSBOBTHEBUILDER_OUT_RASTER_DESCRIPTION = "The elevation model with the artifact.";
 
     public static final String OMSPOINTSRASTERIZER_DESCRIPTION = "Module to convert vector points to raster. Currently this does simply put the point in the nearest cell, without check.";
     public static final String OMSPOINTSRASTERIZER_DOCUMENTATION = "";

@@ -25,6 +25,7 @@ This creates a local virtualenv (`.venv/`, git-ignored) on first run, installs `
 | `modules/geoframe/<model>/` | the GeoFrame models, like `erm/`, each with its workflow page (`index.md`) and the pages of its modules |
 | `modules/modules.txt` | the list of the documented module classes |
 | `modules/generated/<Module>.md` | the module references, generated from the annotations: do not edit |
+| `modules/undocumented.md` | the toolbox modules not in `modules.txt` yet, generated: not part of the manual |
 | `modules/examples/` | the example scripts included in the pages |
 | `modules/maps/maps.txt` | the maps of the module pages: script, raster, colortable |
 | `modules/maps/data/` | the sample data of the maps (`dtm_flanginec.tif`) |
@@ -36,16 +37,16 @@ The modules are documented in the `modules/` section, with their screenshots in 
 
 The description, parameters and references of each module are generated from its OMS annotations (`@Description`, `@Label`, `@Keywords`, `@Status`, `@UI`, `@Unit`, `@In`, `@Out`, `@Documentation`, `@Bibliography`) by `ModuleDocsGenerator` in the `modules` project, for the classes listed in `modules/modules.txt`. The pages include them with `{include}`. Always document the module classes without the `Oms` prefix.
 
-To change a module reference, change the annotations and regenerate the fragments. From the repository root:
+To change a module reference, change the annotations and regenerate the fragments. The same run regenerates `modules/undocumented.md`, the list of the toolbox modules that have no page yet, by toolbox folder. From the repository root:
 
 ```sh
 mvn -o install -pl modules -am -DskipTests
 mvn -o exec:java -pl modules \
     -Dexec.mainClass=org.hortonmachine.docs.ModuleDocsGenerator \
-    -Dexec.args="docs/manual/modules/modules.txt docs/manual/modules/generated"
+    -Dexec.args="docs/manual/modules/modules.txt docs/manual/modules/generated docs/manual/modules/undocumented.md"
 ```
 
-The `TestModuleDocs` test fails when the committed fragments differ from the annotations:
+The `TestModuleDocs` test fails when the committed fragments differ from the annotations, or the list of the undocumented modules from `modules.txt`:
 
 ```sh
 mvn -o test -pl modules -am -Dtest=TestModuleDocs -Dsurefire.failIfNoSpecifiedTests=false -DfailIfNoTests=false

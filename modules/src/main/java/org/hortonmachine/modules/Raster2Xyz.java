@@ -20,8 +20,9 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_DOCUMENTATION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_IN_FILE_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_OUT_FILE_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_IN_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_KEYWORDS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTER2XYZ_LABEL;
@@ -35,6 +36,7 @@ import org.hortonmachine.gears.modules.r.raster2xyz.OmsRaster2Xyz;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +47,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSRASTER2XYZ_DESCRIPTION)
+@Documentation(OMSRASTER2XYZ_DOCUMENTATION)
 @Author(name = OMSRASTER2XYZ_AUTHORNAMES, contact = OMSRASTER2XYZ_AUTHORCONTACTS)
 @Keywords(OMSRASTER2XYZ_KEYWORDS)
 @Label(OMSRASTER2XYZ_LABEL)
@@ -58,10 +61,10 @@ public class Raster2Xyz extends HMModel {
     @In
     public String inRaster;
 
-    @Description(OMSRASTER2XYZ_IN_FILE_DESCRIPTION)
+    @Description(OMSRASTER2XYZ_OUT_FILE_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
-    public String inFile;
+    public String outFile;
 
     @Description(OMSRASTER2XYZ_DO_REMOVE_NV_DESCRIPTION)
     @In
@@ -72,7 +75,7 @@ public class Raster2Xyz extends HMModel {
     public void process() throws Exception {
         OmsRaster2Xyz raster2xyz = new OmsRaster2Xyz();
         raster2xyz.inRaster = getRaster(inRaster);
-        raster2xyz.inFile = inFile;
+        raster2xyz.outFile = outFile;
         raster2xyz.doRemovenv = doRemovenv;
         raster2xyz.pm = pm;
         raster2xyz.doProcess = doProcess;

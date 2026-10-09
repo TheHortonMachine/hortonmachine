@@ -18,4 +18,10 @@ debrisflow
 meltonnumber
 stoneinputs
 stone
+riversectionsextractor
+hecrasinputbuilder
+saintgeo
+intensityclassifierflood
+intensityclassifierdebrisflowtn
+hazardclassifier
 ```

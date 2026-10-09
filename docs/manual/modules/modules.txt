@@ -52,6 +52,14 @@ org.hortonmachine.modules.NetDiff
 org.hortonmachine.modules.Netshape2Flow
 org.hortonmachine.modules.BasinShape
 org.hortonmachine.modules.Cb
+org.hortonmachine.modules.Nabla
+org.hortonmachine.modules.DownSlopeConnectivity
+org.hortonmachine.modules.RiverSectionsExtractor
+org.hortonmachine.modules.HecrasInputBuilder
+org.hortonmachine.modules.SaintGeo
+org.hortonmachine.modules.IntensityClassifierFlood
+org.hortonmachine.modules.IntensityClassifierDebrisFlowTN
+org.hortonmachine.modules.HazardClassifier
 
 # Raster processing
 org.hortonmachine.modules.RasterResizer
@@ -63,6 +71,16 @@ org.hortonmachine.modules.Mosaic12
 org.hortonmachine.modules.RasterSummary
 org.hortonmachine.modules.SurfaceInterpolator
 org.hortonmachine.modules.RangeLookup
+org.hortonmachine.modules.BobTheBuilder
+org.hortonmachine.modules.Carver
+org.hortonmachine.modules.KernelDensity
+org.hortonmachine.modules.Profile
+org.hortonmachine.modules.Morpher
+org.hortonmachine.modules.Raster2Xyz
+org.hortonmachine.modules.Xyz2Raster
+org.hortonmachine.modules.RasterToCog
+org.hortonmachine.modules.ScanLineRasterizer
+org.hortonmachine.modules.RasterExtruder
 
 # Vector processing
 org.hortonmachine.modules.Vectorizer

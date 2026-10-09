@@ -93,6 +93,18 @@ public class TestScanLineRasterizer extends HMTestCase {
         checkMatrixEqual(outGeodata.getRenderedImage(), HMTestMaps.all1Data);
     }
 
+    /**
+     * With a raster and no value or field, the cells inside the polygons take the values of the raster.
+     */
+    public void testScanLineRasterizerRasterValues() throws Exception {
+        OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
+        raster.inVector = doCollection(ep);
+        raster.inRaster = elevationCoverage;
+        raster.process();
+
+        checkMatrixEqual(raster.outRaster.getRenderedImage(), elevationData);
+    }
+
     public void testScanLineRasterizerUtilsMethod() throws Exception {
         RandomIter rasterIter = CoverageUtilities.getRandomIterator(elevationCoverage);
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(elevationCoverage);

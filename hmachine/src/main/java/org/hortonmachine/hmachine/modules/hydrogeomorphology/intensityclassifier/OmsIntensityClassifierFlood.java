@@ -31,6 +31,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,6 +49,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSINTENSITYCLASSIFIER_DESCRIPTION)
+@Documentation(OMSINTENSITYCLASSIFIER_DOCUMENTATION)
 @Author(name = OMSINTENSITYCLASSIFIER_AUTHORNAMES, contact = OMSINTENSITYCLASSIFIER_AUTHORCONTACTS)
 @Keywords(OMSINTENSITYCLASSIFIER_KEYWORDS)
 @Label(OMSINTENSITYCLASSIFIER_LABEL)
@@ -91,8 +93,18 @@ public class OmsIntensityClassifierFlood extends HMModel {
     public GridCoverage2D outIntensity = null;
 
     // VARS DOC START
-    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Module for the calculation of the flooding intensity.";
-    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = "";
+    public static final String OMSINTENSITYCLASSIFIER_DESCRIPTION = "Classifies the intensity of a flood, from the maps of its water depth and velocity: 1 low, 2 medium, 3 high.";
+    public static final String OMSINTENSITYCLASSIFIER_DOCUMENTATION = """
+            The intensity of each cell is given by its water depth h and by the product of the depth and the velocity v·h, the specific discharge:
+
+            - high (3), where h or v·h is over its upper threshold;
+            - medium (2), where h or v·h is over its lower threshold, and none over the upper one;
+            - low (1), where both are within their lower thresholds.
+
+            The two maps have to cover the same cells: the cells where only one of them has a value are skipped, with a warning. The cells with a depth of 0 are classified as low intensity: to keep the dry cells out of the map, set them to novalue in the maps of depth and velocity.
+
+            The intensity maps of the floods of different return periods are the input of HazardClassifier.
+            """;
     public static final String OMSINTENSITYCLASSIFIER_KEYWORDS = "Raster, Flooding";
     public static final String OMSINTENSITYCLASSIFIER_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSINTENSITYCLASSIFIER_NAME = "intensityclassifier";
@@ -102,11 +114,11 @@ public class OmsIntensityClassifierFlood extends HMModel {
     public static final String OMSINTENSITYCLASSIFIER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSINTENSITYCLASSIFIER_inWaterDepth_DESCRIPTION = "The map of the water depth.";
     public static final String OMSINTENSITYCLASSIFIER_inVelocity_DESCRIPTION = "The map of the water velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The upper threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION = "The upper threshold value for the product of water depth and velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The lower threshold value for the water depth.";
-    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION = "The lower threshold value for the product of water depth and velocity.";
-    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of flooding intensity.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresWaterdepth_DESCRIPTION = "The water depth over which the intensity is high.";
+    public static final String OMSINTENSITYCLASSIFIER_pUpperThresVelocityWaterdepth_DESCRIPTION = "The product of water depth and velocity over which the intensity is high.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresWaterdepth_DESCRIPTION = "The water depth over which the intensity is at least medium.";
+    public static final String OMSINTENSITYCLASSIFIER_pLowerThresVelocityWaterdepth_DESCRIPTION = "The product of water depth and velocity over which the intensity is at least medium.";
+    public static final String OMSINTENSITYCLASSIFIER_outIntensity_DESCRIPTION = "The map of the flood intensity: 1 low, 2 medium, 3 high.";
     // VARS DOC END
 
     @Execute
@@ -161,7 +173,7 @@ public class OmsIntensityClassifierFlood extends HMModel {
                     }
                     outIter.setSample(c, r, 0, value);
                 } else {
-                    pm.errorMessage("WARNING: a cell was found in which one of velocity and water depth are novalue, while the other not. /nThe maps should be covering the exact same cells. /nGoing on ignoring the cell: "
+                    pm.errorMessage("WARNING: a cell was found in which one of velocity and water depth are novalue, while the other not. \nThe maps should be covering the exact same cells. \nGoing on ignoring the cell: "
                             + c + "/" + r);
                 }
             }

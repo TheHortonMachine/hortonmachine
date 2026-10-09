@@ -132,7 +132,7 @@ public class OmsNabla extends HMModel {
                 if (!isNovalue((z[0]))) {
                     y = 1;
                     for( int h = 1; h <= 8; h++ ) {
-                        z[h] = elevationIter.getSample(c + v[h][0], r + v[h][1], 0);
+                        z[h] = elevationIter.getSampleDouble(c + v[h][0], r + v[h][1], 0);
                         if (isNovalue(z[h])) {
                             y = 0;
                             segnWR.setSample(c, r, 0, 1);
@@ -160,11 +160,12 @@ public class OmsNabla extends HMModel {
                     n = 0.0;
                     nablaT = 0.0;
                     y = 0;
+                    // the mean of the neighbours that have a nabla
                     for( int h = 1; h <= 8; h++ ) {
                         z[h] = elevationIter.getSampleDouble(c + v[h][0], r + v[h][1], 0);
                         y = 0;
                         double nablaSample = nablaRaster.getSampleDouble(c + v[h][0], r + v[h][1], 0);
-                        if (isNovalue(z[h]) || !isNovalue(nablaSample))
+                        if (isNovalue(z[h]) || isNovalue(nablaSample))
                             y = 1;
                         if (y == 0) {
                             n += 1;
@@ -185,8 +186,9 @@ public class OmsNabla extends HMModel {
     /**
      * Computes the nabla algorithm.
      * <p>
-     * This is the 0 mode which returns a "mask" so the value of the nablaRaster is equal to 1 of
-     * the nabla*nabla is <=threshold
+     * This is the 0 mode which returns a "mask": the value of the nablaRaster is 1 where
+     * the nabla is lower than -threshold (convex sites) or the cell has novalue neighbours,
+     * 0 elsewhere.
      * </p>
      * 
      * @param elevationIter holding the elevation data.

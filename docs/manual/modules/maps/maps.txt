@@ -15,7 +15,10 @@
 # nolegend (no legend, for example for a single class), clip (colors from the 2nd to the
 # 98th percentile, for rasters with a few extreme values), base=elevation.tif (the elevation of
 # the hillshade, and with vectors of the extent, instead of dtm_flanginec.tif), field=name (with
-# vectors, the color of the value of the field, with a color bar or, with classes, a class legend)
+# vectors, the color of the value of the field, with a color bar or, with classes, a class legend),
+# extent=west:east:south:north (the map shows only this part of the data, to zoom on small features),
+# lines=a;b (with a table, the named columns as lines over the first column, as profiles),
+# over=vector.shp (with vectors, another vector drawn over them in blue)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
 
 Pitfiller      | ../examples/hm/pitfiller.groovy      | pit.tif                     | elev
@@ -96,3 +99,26 @@ Netshape2Flow  | ../examples/hm/netshape2flow.groovy  | flownet.tif             
 RangeLookup    | ../examples/hm/rangelookup.groovy    | elevation_belts.tif         | contrasting | classes | 1=below 1300 m;2=1300 to 1700 m;3=above 1700 m
 VectorReshaper | ../examples/hm/vectorreshaper.groovy | -                           | -
 VectorSimplifier | ../examples/hm/vectorsimplifier.groovy | contours_simple.shp     | reds
+Nabla          | ../examples/hm/nabla.groovy          | nabla.tif                   | rainbow  | clip
+DownSlopeConnectivity | ../examples/hm/downslopeconnectivity.groovy | connectivity.tif | logarithmic
+BobTheBuilder  | ../examples/hm/bobthebuilder.groovy  | dtm_dam.tif - dtm_flanginec.tif | rainbow | positive,base=dtm_dam.tif,extent=1637830:1638830:5111910:5112710
+Carver         | ../examples/hm/carver.groovy         | dtm_flanginec.tif - dtm_carved.tif | reds | positive,nolegend
+KernelDensity  | ../examples/hm/kerneldensity.groovy  | channels_density.tif        | rainbow  | positive
+Profile        | ../examples/hm/profile.groovy        | dam_section.csv             | -        | lines=with_dam;terrain
+Raster2Xyz     | ../examples/hm/raster2xyz.groovy     | -                           | -
+RasterToCog    | ../examples/hm/rastertocog.groovy    | -                           | -
+ScanLineRasterizer | ../examples/hm/scanlinerasterizer.groovy | subbasins_avgelev.tif | elev
+RasterExtruder | ../examples/hm/rasterextruder.groovy | dtm_wall.tif - dtm_flanginec.tif | reds | positive,nolegend,base=dtm_wall.tif,extent=1637830:1638830:5111910:5112710
+Morpher        | ../examples/hm/morpher.groovy        | steep.tif                   | reds     | nolegend,positive
+Morpher        | -                                    | steep_open.tif              | reds     | nolegend,positive
+RiverSectionsExtractor | ../examples/hm/riversectionsextractor.groovy | sections.shp | reds | over=main_channel_smooth.shp,extent=1638500:1640200:5112600:5114000
+HecrasInputBuilder | ../examples/hm/hecrasinputbuilder.groovy | - | -
+SaintGeo       | ../examples/hm/saintgeo_river.groovy | river.tif                   | elev     | base=river.tif
+SaintGeo       | -                                    | river_net.shp               | blues    | base=river.tif
+SaintGeo       | ../examples/hm/saintgeo_sections.groovy | river_sections.shp       | reds     | base=river.tif,over=river_main_smooth.shp
+SaintGeo       | ../examples/hm/saintgeo.groovy       | flood_levels.csv            | -        | lines=bottom;start_level;max_level
+SaintGeo       | -                                    | flood_discharge.csv         | -        | lines=head;outlet
+IntensityClassifierFlood | ../examples/hm/intensityclassifierflood.groovy | intensity_tr200.tif | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 1=low;2=medium;3=high
+HazardClassifier | ../examples/hm/hazardclassifier.groovy | hazard_ip1.tif          | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 2=low;3=medium;4=high
+HazardClassifier | -                                  | hazard_ip2.tif              | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 2=low;3=medium;4=high
+IntensityClassifierDebrisFlowTN | ../examples/hm/intensityclassifierdebrisflowtn.groovy | debris_intensity.tif | contrasting | classes,extent=1638000:1638900:5112100:5112950 | 1=low;2=medium;3=high

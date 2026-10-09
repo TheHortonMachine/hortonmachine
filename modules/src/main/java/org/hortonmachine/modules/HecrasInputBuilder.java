@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.KEYWORDS;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.LABEL;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInputBuilder.LICENSE;
@@ -37,6 +38,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.hecras.OmsHecrasInp
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +49,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(DESCRIPTION)
+@Documentation(DOCUMENTATION)
 @Author(name = AUTHORNAMES, contact = AUTHORCONTACTS)
 @Keywords(KEYWORDS)
 @Label(LABEL)
