@@ -89,6 +89,18 @@ org.hortonmachine.modules.LasConverter
 org.hortonmachine.modules.VectorReshaper
 org.hortonmachine.modules.VectorSimplifier
 
+# Lesto
+org.hortonmachine.lesto.modules.filter.LasHistogram
+org.hortonmachine.lesto.modules.filter.LasThresholder
+org.hortonmachine.lesto.modules.filter.LasSplitter
+org.hortonmachine.lesto.modules.filter.LasMerger
+org.hortonmachine.lesto.modules.filter.LasHeightDistribution
+org.hortonmachine.lesto.modules.raster.AdaptiveTinFilter
+org.hortonmachine.lesto.modules.raster.LasOnRasterMapper
+org.hortonmachine.lesto.modules.raster.Las2RasterInterpolator
+org.hortonmachine.lesto.modules.raster.LasTriangulation2Dsm
+org.hortonmachine.lesto.modules.raster.Las2BivariateRasterMosaic
+
 # GeoFrame › ERM water budget workflow
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmDataPreparator
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmStationDataImporter

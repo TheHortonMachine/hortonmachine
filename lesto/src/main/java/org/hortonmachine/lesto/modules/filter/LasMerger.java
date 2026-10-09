@@ -35,6 +35,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -44,7 +45,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A module that merges las files to a single one.")
+@Description("Merges all the las files of a folder into a single file.")
+@Documentation(LasMerger.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, merge")
 @Label(HMConstants.LESTO + "/filter")
@@ -52,15 +54,21 @@ import oms3.annotations.UI;
 @Status(Status.EXPERIMENTAL)
 @License(HMConstants.GPL3_LICENSE)
 public class LasMerger extends HMModel {
-    @Description("A folder of las files to merge.")
+    @Description("The folder of the las files to merge.")
     @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 
-    @Description("The merged las output file.")
+    @Description("The merged las file.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outLas;
+
+    public static final String DOCUMENTATION = """
+            All the files with the .las extension of the folder are merged, the compressed .laz files are ignored. The merged file covers the bounds of all of them and gets the crs of the first one that has a prj file.
+
+            The merged file is written with a precision of 1 cm for the coordinates and 1 mm for the elevation, the default of the writer, whatever the precision of the merged files. Write it outside of the merged folder: if it is in it, it is merged too the next time.
+            """;
 
     @Execute
     public void process() throws Exception {
@@ -90,9 +98,13 @@ public class LasMerger extends HMModel {
         double zMax = Double.NEGATIVE_INFINITY;
         int count = 0;
         for( File lasFile : lasList ) {
-            ALasReader reader = ALasReader.getReader(lasFile, crs);
+            ALasReader reader = ALasReader.getReader(lasFile, null);
             reader.open();
             ILasHeader header = reader.getHeader();
+            if (crs == null) {
+                // the merged file takes the crs of the first file with a prj
+                crs = header.getCrs();
+            }
             long recordsNum = header.getRecordsCount();
             count = (int) (count + recordsNum);
             ReferencedEnvelope3D envelope = header.getDataEnvelope();

@@ -35,6 +35,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -75,7 +76,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
-@Description("Module that converts a las data into a set of mosaic rasters using a bivariate function.")
+@Description("Converts lidar points into a mosaic of raster tiles, each cell from the quadratic surface fitted to the points around it: a smooth surface model, or a map of the intensity.")
+@Documentation(Las2BivariateRasterMosaic.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("las, lidar, raster, bivariate, mosaic")
 @Label(HMConstants.LESTO + "/raster")
@@ -85,50 +87,56 @@ import org.locationtech.jts.geom.Polygon;
 @SuppressWarnings("nls")
 public class Las2BivariateRasterMosaic extends HMModel {
 
-    @Description("Las files folder main index file path.")
+    @Description("The lidar data, with a prj file: a las file, the index file of a folder of las files created by LasIndexer or a las database.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
-    @Description("A region of interest. If not supplied the whole dataset is used.")
+    @Description("An optional vector of the area of interest: its bounds are used. If not supplied, the bounds of the data are used.")
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inRoi;
 
-    @Description("The tilesize of the subrasters.")
+    @Description("The size of the square tiles.")
     @Unit("m")
     @In
     public double pTilesize = 5000;
 
-    @Description("New resolution used for the tiles.")
+    @Description("The resolution of the tiles.")
     @Unit("m")
     @In
     public double pRes = 1;
 
-    @Description("Buffer of influence for points interpolation in number of cells.")
+    @Description("The distance, in cells, around a cell within which the points are used for its value.")
     @In
     public int pBuffer = 2;
 
-    @Description("The impulse to use (if empty everything is used).")
+    @Description("The return to use, as 1 for the first returns. If not supplied, all the returns are used.")
     @In
     public Integer pImpulse = 1;
 
-    @Description("Number of threads to use.")
+    @Description("The number of tiles processed at the same time.")
     @In
     public int pThreads = 1;
 
-    @Description("If true, intensity is used instead of elevation.")
+    @Description("If true, the intensity of the points is used instead of their elevation.")
     @In
     public boolean doIntensity = false;
 
-    @Description("Minimum number of points to consider the resulting cell valid.")
+    @Description("The minimum number of points around a cell to compute its value: with fewer, the cell stays empty.")
     @In
     public int pMinpoints = 6;
 
-    @Description("The output folder.")
-    @UI(HMConstants.FILEOUT_UI_HINT)
+    @Description("The folder of the tiles and of the mosaic.")
+    @UI(HMConstants.FOLDEROUT_UI_HINT)
     @In
     public String outFolder = null;
+
+    public static final String DOCUMENTATION = """
+            The area is divided in square tiles of the given size, each written as a GeoTIFF named tile_column_row.tiff in the output folder; a tile with 100 points or less is not written, and an existing tile is not overwritten. The folder then gets the files of an image mosaic of all the tiles, that GIS can open as a single raster, and a style with a color table between the minimum and maximum value.
+
+            The value of each cell comes from the points within the buffer of cells around it, the cell included: a bivariate quadratic surface z = a x² + b y² + c xy + d x + e y + f is fitted to them with least squares, and evaluated at the center of the cell. The surface needs at least 6 points, as many as its parameters; the value is limited between the minimum and the maximum of the points read. Fitting a surface instead of averaging the points keeps the slopes and the shape of the crowns, and fills the cells without points.
+            """;
 
     private static final double NOINTENSITY = -9999.0;
     private volatile double minValue = Double.POSITIVE_INFINITY;
@@ -295,6 +303,10 @@ public class Las2BivariateRasterMosaic extends HMModel {
                     maxValue = max(dot.z, maxValue);
                 }
                 CoverageUtilities.colRowFromCoordinate(new Coordinate(dot.x, dot.y), bufferedGridGeometry, point);
+                if (point.x < 0 || point.x >= newCols || point.y < 0 || point.y >= newRows) {
+                    // a point on the east or south border of the buffered tile
+                    continue;
+                }
                 lasMatrix[point.x][point.y].add(dot);
             }
 

@@ -457,10 +457,6 @@ public class CoverageUtilities {
             WritableRaster[] writableRasterHolder ) {
         RegionMap regionMap = getRegionParamsFromGridCoverage(template);
 
-        double west = regionMap.getWest();
-        double south = regionMap.getSouth();
-        double east = regionMap.getEast();
-        double north = regionMap.getNorth();
         int cols = regionMap.getCols();
         int rows = regionMap.getRows();
         ComponentSampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, 1, cols, new int[]{0});
@@ -479,11 +475,9 @@ public class CoverageUtilities {
             writableRasterHolder[0] = raster;
         }
 
-        ReferencedEnvelope writeEnvelope = new ReferencedEnvelope(west, east, south, north,
-				template.getCoordinateReferenceSystem());
-        GridCoverageFactory factory = CoverageFactoryFinder.getGridCoverageFactory(null);
-        GridCoverage2D coverage2D = factory.create("newraster", raster, writeEnvelope);
-        return coverage2D;
+        // with the novalue as nodata, so that the writers declare it in the file
+        return buildCoverageWithNovalue("newraster", raster, regionMap, template.getCoordinateReferenceSystem(),
+                HMConstants.doubleNovalue);
     }
 
     /**
@@ -509,8 +503,9 @@ public class CoverageUtilities {
         double east = subregion.getMaxX();
         double north = subregion.getMaxY();
 
-        int cols = (int) ((east - west) / xRes);
-        int rows = (int) ((north - south) / yRes);
+        // rounded: the subregion is snapped on the grid, but the division can be off by a rounding error
+        int cols = (int) Math.round((east - west) / xRes);
+        int rows = (int) Math.round((north - south) / yRes);
         ComponentSampleModel sampleModel = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, cols, rows, 1, cols, new int[]{0});
 
         WritableRaster writableRaster = RasterFactory.createWritableRaster(sampleModel, null);
@@ -1628,19 +1623,17 @@ public class CoverageUtilities {
      * @return the rendered image with the substituted novalue. 
      */
     public static WritableRaster replaceNovalue( RenderedImage renderedImage, double newValue ) {
-        WritableRaster tmpWR = (WritableRaster) renderedImage.getData();
-        RandomIter pitTmpIterator = RandomIterFactory.create(renderedImage, null);
-
+        // a writable copy: getData() is not writable for every image
+        WritableRaster tmpWR = renderedImage.copyData(null);
         int height = renderedImage.getHeight();
         int width = renderedImage.getWidth();
         for( int y = 0; y < height; y++ ) {
             for( int x = 0; x < width; x++ ) {
-                if (isNovalue(pitTmpIterator.getSampleDouble(x, y, 0))) {
+                if (isNovalue(tmpWR.getSampleDouble(x, y, 0))) {
                     tmpWR.setSample(x, y, 0, newValue);
                 }
             }
         }
-        pitTmpIterator.done();
         return tmpWR;
     }
 
@@ -1717,6 +1710,8 @@ public class CoverageUtilities {
      * @return the coordinate or <code>null</code> if something went wrong.
      */
     public static Coordinate coordinateFromColRow( int col, int row, GridGeometry2D gridGeometry ) {
+        // in double precision, unlike GridGeometry2D.gridToWorld, that transforms a float point
+        // and is up to half a meter off at the northings of the projected crs
         try {
             MathTransform gridToCRS = gridGeometry.getGridToCRS(PixelInCell.CELL_CENTER);
             Position pos = new Position2D();
@@ -2284,10 +2279,8 @@ public class CoverageUtilities {
 
         for( int r = 0; r < rows; r++ ) {
             // do scan line to fill the polygon
-            double[] westPos = gridGeometry.gridToWorld(new GridCoordinates2D(0, r)).getCoordinate();
-            double[] eastPos = gridGeometry.gridToWorld(new GridCoordinates2D(cols - 1, r)).getCoordinate();
-            Coordinate west = new Coordinate(westPos[0], westPos[1]);
-            Coordinate east = new Coordinate(eastPos[0], eastPos[1]);
+            Coordinate west = coordinateFromColRow(0, r, gridGeometry);
+            Coordinate east = coordinateFromColRow(cols - 1, r, gridGeometry);
             LineString line = gf.createLineString(new Coordinate[]{west, east});
             if (preparedGeometry.intersects(line)) {
                 Geometry internalLines = polygon.intersection(line);
@@ -2319,8 +2312,8 @@ public class CoverageUtilities {
                                 if (coverageIterator != null) {
                                     v = coverageIterator.getSampleDouble(k, r, 0);
                                 }
-                                double[] xy = gridGeometry.gridToWorld(new GridCoordinates2D(k, r)).getCoordinate();
-                                Coordinate coordinate = new Coordinate(xy[0], xy[1], v);
+                                Coordinate coordinate = coordinateFromColRow(k, r, gridGeometry);
+                                coordinate.z = v;
                                 coordinatesList.add(coordinate);
                             }
                         }

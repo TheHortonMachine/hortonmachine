@@ -53,6 +53,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 
 public abstract class HMModelIM extends HMModel {
@@ -306,13 +307,13 @@ public abstract class HMModelIM extends HMModel {
         }
 
         try {
-            final GridCoordinates2D gridCoordinates2D = new GridCoordinates2D();
+            final Position2D writeCenter = new Position2D();
             for( int writeRow = 0; writeRow < writeRows; writeRow++ ) {
                 for( int writeCol = 0; writeCol < writeCols; writeCol++ ) {
-                    gridCoordinates2D.x = writeCol;
-                    gridCoordinates2D.y = writeRow;
-                    var writeGridToWorld = writeGridGeometry.gridToWorld(gridCoordinates2D);
-                    GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeGridToWorld);
+                    // the center of the cell in double precision
+                    Coordinate center = CoverageUtilities.coordinateFromColRow(writeCol, writeRow, writeGridGeometry);
+                    writeCenter.setLocation(center.x, center.y);
+                    GridCoordinates2D worldToReadGrid = readGridGeometry.worldToGrid(writeCenter);
                     int readCol = worldToReadGrid.x;
                     int readRow = worldToReadGrid.y;
 

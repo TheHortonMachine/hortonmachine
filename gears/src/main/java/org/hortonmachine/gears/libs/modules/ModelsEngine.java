@@ -248,9 +248,7 @@ public class ModelsEngine {
                             if (sourcesNet(m1RandomIter, flow, num, netNumRandomIter)) {
                                 flow_p[0] = flow[0];
                                 flow_p[1] = flow[1];
-                                double[] worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(flow[0], flow[1]))
-                                        .getCoordinate();
-                                Coordinate coordSource = new Coordinate(worldPosition[0], worldPosition[1]);
+                                Coordinate coordSource = CoverageUtilities.coordinateFromColRow(flow[0], flow[1], gridGeometry);
                                 // creates new Object Coordinate... SOURCE
                                 // POINT...
                                 // adds the points to the CoordinateList
@@ -264,9 +262,8 @@ public class ModelsEngine {
                                         && m1RandomIter.getSampleDouble(flow[0], flow[1], 0) != 10.0
                                         && netNumRandomIter.getSampleDouble(flow[0], flow[1], 0) == num
                                         && !isNovalue(netNumRandomIter.getSampleDouble(flow[0], flow[1], 0)) ) {
-                                    worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(flow[0], flow[1]))
-                                            .getCoordinate();
-                                    Coordinate coordPoint = new Coordinate(worldPosition[0], worldPosition[1]);
+                                    Coordinate coordPoint = CoverageUtilities.coordinateFromColRow(flow[0], flow[1],
+                                            gridGeometry);
                                     // creates new Object Coordinate... CHANNEL
                                     // POINT...
                                     // adds new points to CoordinateList
@@ -276,8 +273,7 @@ public class ModelsEngine {
                                     if (!go_downstream(flow, m1RandomIter.getSampleDouble(flow[0], flow[1], 0)))
                                         return null;
                                 }
-                                worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(flow[0], flow[1])).getCoordinate();
-                                Coordinate coordNode = new Coordinate(worldPosition[0], worldPosition[1]);
+                                Coordinate coordNode = CoverageUtilities.coordinateFromColRow(flow[0], flow[1], gridGeometry);
                                 // creates new Object Coordinate... NODE
                                 // POINT...
                                 // adds new points to CoordinateList

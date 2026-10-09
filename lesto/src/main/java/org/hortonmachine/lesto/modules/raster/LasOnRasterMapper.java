@@ -33,6 +33,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,7 +57,8 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Polygon;
 
-@Description("Module that creates a raster by mapping maximum elevation las points.")
+@Description("Creates a raster with the highest, or lowest, elevation of the lidar points in each cell: a surface model without interpolation.")
+@Documentation(LasOnRasterMapper.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("raster, lidar")
 @Label(HMConstants.LESTO + "/raster")
@@ -66,37 +68,43 @@ import org.locationtech.jts.geom.Polygon;
 @SuppressWarnings("nls")
 public class LasOnRasterMapper extends HMModel {
 
-    @Description("Las file path.")
+    @Description("The lidar data: a las file, the index file of a folder of las files created by LasIndexer or a las database.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
-    @Description("A dtm raster to use for the area of interest and lower threshold.")
+    @Description("The elevation model of the ground: it gives the area and the grid, and the lowest value of the cells.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 
-    @Description("New x resolution (if null, the dtm is used).")
+    @Description("The x resolution of the raster. If not supplied, the one of the elevation model is used.")
     @In
     public Double pXres;
 
-    @Description("New y resolution (if null, the dtm is used).")
+    @Description("The y resolution of the raster. If not supplied, the one of the elevation model is used.")
     @In
     public Double pYres;
 
-    @Description("If true, the maxima are mapped else the minima.")
+    @Description("If true, the highest point of each cell is mapped, if false the lowest.")
     @In
     public boolean doMax = true;
 
-    @Description("The output raster.")
+    @Description("The raster of the elevation of the points.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;
 
-    @Description("The input dtm, resampled on the new resolution.")
+    @Description("The optional output of the elevation model on the grid of the raster, to compare them cell by cell.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outDtm = null;
+
+    public static final String DOCUMENTATION = """
+            Each cell gets the elevation of its highest point, or lowest, but never less than the elevation model under the point: a point under the ground, as an error of the survey, takes the elevation of the ground. The cells without points stay empty: choose a resolution with a few points per cell, or fill the holes afterwards.
+
+            With the highest points, the raster is a model of the surface, of the canopy and the roofs; minus the elevation model, a model of their height. The elevation model can be written also on the grid of the raster, resampled with the value of the nearest cell, for that difference.
+            """;
 
     @Execute
     public void process() throws Exception {

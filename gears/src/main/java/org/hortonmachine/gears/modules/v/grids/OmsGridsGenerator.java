@@ -144,11 +144,11 @@ public class OmsGridsGenerator extends HMModel {
     public static final String OMSGRIDSGENERATOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSGRIDSGENERATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSGRIDSGENERATOR_inVector_DESCRIPTION = "Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.";
-    public static final String OMSGRIDSGENERATOR_inRaster_DESCRIPTION = "Optional raster map from which to take the bounds (if supplied, all other bounds related parameter are ignored. This needs pRows and pCols to be defined.";
+    public static final String OMSGRIDSGENERATOR_inRaster_DESCRIPTION = "Optional raster map from which to take the bounds: it is divided in pRows x pCols cells or, if pWidth and pHeight are supplied, the cells of that size start from its lower left corner. The longitude and latitude are ignored.";
     public static final String OMSGRIDSGENERATOR_pLon_DESCRIPTION = "The lower left longitude (needed if no map is supplied).";
     public static final String OMSGRIDSGENERATOR_pLat_DESCRIPTION = "The lower left latitude (needed if no map is supplied).";
-    public static final String OMSGRIDSGENERATOR_pWidth_DESCRIPTION = "The optional grid cell width.";
-    public static final String OMSGRIDSGENERATOR_pHeight_DESCRIPTION = "The optional grid cell height.";
+    public static final String OMSGRIDSGENERATOR_pWidth_DESCRIPTION = "The grid cell width: needed if no map is supplied, optional with a raster map, ignored with a vector map.";
+    public static final String OMSGRIDSGENERATOR_pHeight_DESCRIPTION = "The grid cell height: needed if no map is supplied, optional with a raster map, ignored with a vector map.";
     public static final String OMSGRIDSGENERATOR_pRows_DESCRIPTION = "The number of rows.";
     public static final String OMSGRIDSGENERATOR_pCols_DESCRIPTION = "The number of cols.";
     public static final String OMSGRIDSGENERATOR_pSpacing_DESCRIPTION = "The vertex spacing to use.";
@@ -181,8 +181,9 @@ public class OmsGridsGenerator extends HMModel {
             s = bounds.getMinY();
             w = bounds.getMinX();
             if (pWidth != null && pHeight != null) {
-                n = s + pWidth * pCols;
-                e = w + pHeight * pRows;
+                // cells of the given size from the lower left corner of the raster
+                n = s + pHeight * pRows;
+                e = w + pWidth * pCols;
             } else {
                 n = bounds.getMaxY();
                 e = bounds.getMaxX();
@@ -190,7 +191,7 @@ public class OmsGridsGenerator extends HMModel {
                 pHeight = bounds.getHeight() / pRows;
             }
         } else {
-            checkNull(pCode, pLat, pLon);
+            checkNull(pCode, pLat, pLon, pWidth, pHeight);
             s = pLat;
             n = pLat + pRows * pHeight;
             w = pLon;

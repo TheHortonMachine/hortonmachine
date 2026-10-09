@@ -38,6 +38,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.libs.modules.Variables.IDW;
 import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 
+import java.awt.geom.Point2D;
 import java.awt.image.WritableRaster;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -49,8 +50,6 @@ import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.type.GeometryDescriptor;
-import org.geotools.api.referencing.operation.TransformException;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -242,21 +241,18 @@ public class OmsSurfaceInterpolator extends HMModel {
             final int row ) {
         try {
             for( int c = 0; c < cols; c++ ) {
-                final var gridToWorld = gridGeometry.gridToWorld(new GridCoordinates2D(c, row));
+                // the center of the cell in double precision
+                final Coordinate currentCoord = CoverageUtilities.coordinateFromColRow(c, row, gridGeometry);
                 // System.out.println(row + "/" + c);
                 boolean doProcess = true;
                 if (inMask != null) {
-                    inMask.evaluate(gridToWorld, eval);
+                    inMask.evaluate(new Point2D.Double(currentCoord.x, currentCoord.y), eval);
                     if (isNovalue(eval[0])) {
                         doProcess = false;
                     }
                 }
 
                 if (doProcess) {
-                    final Coordinate currentCoord = new Coordinate();
-                    final double[] coord = gridToWorld.getCoordinate();
-                    currentCoord.x = coord[0];
-                    currentCoord.y = coord[1];
 
                     final Envelope env = new Envelope(currentCoord.x - pBuffer, currentCoord.x + pBuffer,
                             currentCoord.y - pBuffer, currentCoord.y + pBuffer);
@@ -278,7 +274,7 @@ public class OmsSurfaceInterpolator extends HMModel {
 
             }
             pm.worked(1);
-        } catch (TransformException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

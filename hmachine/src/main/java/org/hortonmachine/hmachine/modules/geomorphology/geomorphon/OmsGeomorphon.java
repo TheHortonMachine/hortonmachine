@@ -26,7 +26,6 @@ import java.util.List;
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.api.referencing.operation.TransformException;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -153,9 +152,7 @@ public class OmsGeomorphon extends HMModel {
         if (HMConstants.isNovalue(elevation)) {
             return HMConstants.doubleNovalue;
         }
-        var worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
-        double[] coordinateArray = worldPosition.getCoordinate();
-        Coordinate center = new Coordinate(coordinateArray[0], coordinateArray[1]);
+        Coordinate center = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
         center.z = elevation;
 
         // calc 8 directions at max distance

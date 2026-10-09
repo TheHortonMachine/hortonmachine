@@ -29,6 +29,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -38,7 +39,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A module that applies threshold and filters on a value inside the las")
+@Description("Keeps the points of a las file with an intensity or elevation between two thresholds.")
+@Documentation(LasThresholder.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, threshold, filter")
 @Label(HMConstants.LESTO + "/filter")
@@ -46,28 +48,34 @@ import oms3.annotations.UI;
 @Status(Status.EXPERIMENTAL)
 @License(HMConstants.GPL3_LICENSE)
 public class LasThresholder extends HMModel {
-    @Description("A las file to filter.")
+    @Description("The las file to filter.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 
-    @Description("Lower threshold.")
+    @Description("The lower threshold: the points with a lower value are removed. If not supplied, there is no lower limit.")
     @In
     public Double pLower;
 
-    @Description("Upper threshold.")
+    @Description("The upper threshold: the points with a higher value are removed. If not supplied, there is no upper limit.")
     @In
     public Double pUpper;
 
-    @Description("The value to analyze.")
+    @Description("The value of the points to compare with the thresholds.")
     @UI("combo:" + LasUtils.INTENSITY + "," + LasUtils.ELEVATION)
     @In
     public String pType = LasUtils.INTENSITY;
 
-    @Description("Output las file.")
+    @Description("The las file of the kept points.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outLas;
+
+    public static final String DOCUMENTATION = """
+            The points with a value equal to a threshold are kept. The kept points are written with the header, the precision and the crs of the input file.
+
+            The intensity of a return depends on the surface that reflected it, as bare soil, leaves or roads, but also on the distance from the sensor and on the angle of incidence: its values change between surveys and between the flight lines of the same survey. Look at their histogram with LasHistogram before choosing the thresholds.
+            """;
 
     @Execute
     public void process() throws Exception {
@@ -78,9 +86,15 @@ public class LasThresholder extends HMModel {
             doIntensity = true;
         }
 
-        CoordinateReferenceSystem crs = null;
         File lasFile = new File(inLas);
         File outFile = new File(outLas);
+
+        // the output gets the crs of the input, if it has a prj
+        CoordinateReferenceSystem crs;
+        try (ALasReader reader = ALasReader.getReader(lasFile, null)) {
+            reader.open();
+            crs = reader.getHeader().getCrs();
+        }
 
         try (ALasReader reader = ALasReader.getReader(lasFile, crs);//
                 ALasWriter writer = ALasWriter.getWriter(outFile, crs);) {

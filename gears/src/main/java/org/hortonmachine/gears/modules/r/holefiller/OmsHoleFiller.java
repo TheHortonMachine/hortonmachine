@@ -18,7 +18,6 @@
 package org.hortonmachine.gears.modules.r.holefiller;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.libs.modules.Variables.IDW;
 import static org.hortonmachine.gears.libs.modules.Variables.TPS;
 import static org.hortonmachine.gears.modules.r.holefiller.OmsHoleFiller.OMSHOLEFILLER_AUTHORCONTACTS;
@@ -31,22 +30,16 @@ import static org.hortonmachine.gears.modules.r.holefiller.OmsHoleFiller.OMSHOLE
 import static org.hortonmachine.gears.modules.r.holefiller.OmsHoleFiller.OMSHOLEFILLER_NAME;
 import static org.hortonmachine.gears.modules.r.holefiller.OmsHoleFiller.OMSHOLEFILLER_STATUS;
 
-import java.awt.image.WritableRaster;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.imagen.iterator.WritableRandomIter;
-import org.geotools.api.referencing.operation.TransformException;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.IDWInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.ISurfaceInterpolator;
 import org.hortonmachine.gears.modules.r.interpolation2d.core.TPSInterpolator;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Coordinate;
@@ -130,14 +123,10 @@ public class OmsHoleFiller extends HMModel {
             interpolator = new TPSInterpolator(0, pBuffer);
         }
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        int rows = regionMap.getRows();
-        int cols = regionMap.getCols();
-
-        WritableRaster outWR = CoverageUtilities.renderedImage2WritableRaster(inRaster.getRenderedImage(), false);
-        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
-
-        GridGeometry2D gridGeometry = inRaster.getGridGeometry();
+        // a copy of the input, filled in place: the filled cells help to fill the next ones
+        HMRaster filled = HMRaster.fromGridCoverageWritable("nulled", inRaster);
+        int rows = filled.getRows();
+        int cols = filled.getCols();
 
         PreparedGeometry preparedRoi = null;
         if (inROI != null) {
@@ -152,21 +141,19 @@ public class OmsHoleFiller extends HMModel {
                     return;
                 }
 
-                double value = outIter.getSampleDouble(c, r, 0);
-                if (isNovalue(value)) {
-                    var worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
-                    double[] coordinate = worldPosition.getCoordinate();
-                    Coordinate pointCoordinate = new Coordinate(coordinate[0], coordinate[1]);
+                double value = filled.getValue(c, r);
+                if (filled.isNovalue(value)) {
+                    Coordinate pointCoordinate = filled.getWorld(c, r);
                     Point point = gf.createPoint(pointCoordinate);
                     if (preparedRoi == null || preparedRoi.intersects(point)) {
 
                         // TODO this could be done considering more points and more far away points.
                         // For now, this works.
-                        List<Coordinate> surroundingValids = getValidSurroundingPoints(outIter, gridGeometry, c, r);
+                        List<Coordinate> surroundingValids = getValidSurroundingPoints(filled, c, r);
                         if (surroundingValids.size() > 3) {
                             double newValue = interpolator.getValue(surroundingValids.toArray(new Coordinate[0]),
                                     pointCoordinate);
-                            outIter.setSample(c, r, 0, newValue);
+                            filled.setValue(c, r, newValue);
                         }
                     }
                 }
@@ -175,24 +162,20 @@ public class OmsHoleFiller extends HMModel {
         }
         pm.done();
 
-        outIter.done();
-
-        outRaster = CoverageUtilities.buildCoverage("nulled", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
+        outRaster = filled.buildCoverage();
+        filled.close();
     }
 
-    private List<Coordinate> getValidSurroundingPoints( WritableRandomIter outIter, GridGeometry2D gridGeometry, int c, int r )
-            throws TransformException {
+    private List<Coordinate> getValidSurroundingPoints( HMRaster raster, int c, int r ) {
         List<Coordinate> coords = new ArrayList<>();
         for( int dc = -1; dc <= 1; dc++ ) {
             for( int dr = -1; dr <= 1; dr++ ) {
                 if (dc == 0 && dr == 0) {
                     continue;
                 }
-                double value = outIter.getSampleDouble(c + dc, r + dr, 0);
-                if (!isNovalue(value)) {
-                    var worldPosition = gridGeometry.gridToWorld(new GridCoordinates2D(c + dc, r + dr));
-                    double[] coordinate = worldPosition.getCoordinate();
-                    Coordinate pointCoordinate = new Coordinate(coordinate[0], coordinate[1]);
+                double value = raster.getValue(c + dc, r + dr);
+                if (!raster.isNovalue(value)) {
+                    Coordinate pointCoordinate = raster.getWorld(c + dc, r + dr);
                     pointCoordinate.z = value;
                     coords.add(pointCoordinate);
                 }

@@ -85,11 +85,11 @@ public class GridsGenerator extends HMModel {
 
     @Description(OMSGRIDSGENERATOR_pWidth_DESCRIPTION)
     @In
-    public double pWidth = 1.0;
+    public Double pWidth = null;
 
     @Description(OMSGRIDSGENERATOR_pHeight_DESCRIPTION)
     @In
-    public double pHeight = 1.0;
+    public Double pHeight = null;
 
     @Description(OMSGRIDSGENERATOR_pRows_DESCRIPTION)
     @In

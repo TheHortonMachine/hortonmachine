@@ -531,7 +531,8 @@ public class TinHandler {
         tRun.waitAndClose();
         pm.done();
 
-        pm.message("Final points removed from non ground: " + removedCount.get());
+        // removedCount counts the points kept as non ground, farther than the distance from the tin
+        pm.message("Final points removed from non ground: " + (leftOverCoordinateList.size() - removedCount.get()));
         pm.message("Final points left as non ground: " + newLeftOverCoordinateList.size());
         leftOverCoordinateList.clear();
         leftOverCoordinateList.addAll(newLeftOverCoordinateList);

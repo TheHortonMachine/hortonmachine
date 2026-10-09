@@ -32,7 +32,6 @@ import java.util.List;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.TransformException;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.hortonmachine.gears.io.las.ALasDataManager;
@@ -54,6 +53,7 @@ import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -62,8 +62,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
-@Description("Module that creates a DSM from the triangulation of point clouds.")
+@Description("Creates a surface model from the triangulation of the lidar points, without the triangles that span a large difference of elevation.")
+@Documentation(LasTriangulation2Dsm.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("triangulation, lidar, dsm")
 @Label(HMConstants.LESTO + "/raster")
@@ -73,32 +75,39 @@ import oms3.annotations.UI;
 @SuppressWarnings("nls")
 public class LasTriangulation2Dsm extends HMModel {
 
-    @Description("Las file path.")
+    @Description("The lidar data: a las file, the index file of a folder of las files created by LasIndexer or a las database.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
 
-    @Description("A dtm raster to use for the area of interest.")
+    @Description("The elevation model that gives the area and the grid of the surface model.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 
-    @Description("New x resolution (if null, the dtm is used).")
+    @Description("The x resolution of the raster. If not supplied, the one of the elevation model is used.")
     @In
     public Double pXres;
 
-    @Description("New y resolution (if null, the dtm is used).")
+    @Description("The y resolution of the raster. If not supplied, the one of the elevation model is used.")
     @In
     public Double pYres;
 
-    @Description("Elevation threshold for triangles.")
+    @Description("The maximum difference of elevation between the vertexes of a triangle: the triangles with a larger one are removed.")
+    @Unit("m")
     @In
     public double pElevThres = 0.5;
 
-    @Description("The output raster.")
+    @Description("The surface model.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;
+
+    public static final String DOCUMENTATION = """
+            All the points in the area are triangulated, with a Delaunay triangulation, and each cell gets the elevation of the triangle under its center. The triangles that join points at very different elevations, as the edge of a roof and the ground under it, would draw walls slanted over the cells around: they are removed, and the cells under them stay empty.
+
+            The threshold decides what is kept. A small one keeps the smooth surfaces, as the ground, the roofs and the roads, and leaves holes along their edges; on the rough crowns of the trees, it leaves holes everywhere. A larger one keeps the crowns and draws more slanted walls.
+            """;
 
     @Execute
     public void process() throws Exception {
@@ -205,9 +214,7 @@ public class LasTriangulation2Dsm extends HMModel {
     private void makeRow( STRtree tree, int newRows, GridGeometry2D newGridGeometry2D, WritableRaster newWR, int c )
             throws TransformException {
         for( int r = 0; r < newRows; r++ ) {
-            var worldPosition = newGridGeometry2D.gridToWorld(new GridCoordinates2D(c, r));
-            double[] wpCoords = worldPosition.getCoordinate();
-            Coordinate coordinate = new Coordinate(wpCoords[0], wpCoords[1]);
+            Coordinate coordinate = CoverageUtilities.coordinateFromColRow(c, r, newGridGeometry2D);
             Point point = gf.createPoint(coordinate);
             Envelope e = new Envelope(coordinate);
             List interceptedTriangles = tree.query(e);

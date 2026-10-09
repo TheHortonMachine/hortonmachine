@@ -29,7 +29,6 @@ import java.util.List;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -59,6 +58,7 @@ import org.locationtech.jts.index.strtree.STRtree;
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -67,79 +67,100 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
-@Description("Tool for DEM generation from laser scanner data using adaptive tin models .")
+@Description("Extracts the ground from lidar points with the adaptive tin filter of Axelsson, and interpolates it into an elevation model.")
+@Documentation(AdaptiveTinFilter.DOCUMENTATION)
 @Author(name = "Andrea Antonello, Silvia Franceschi", contact = "www.hydrologis.com")
 @Keywords("tin, filter, lidar")
 @Label(HMConstants.LESTO + "/raster")
 @Name("adaptivetinfilter")
 @Status(Status.EXPERIMENTAL)
 @License(HMConstants.GPL3_LICENSE)
-@Bibliography("Dem generation from laser scanner data using adaptive tin models - 01/2000 - P.Axelsson")
+@Bibliography(AdaptiveTinFilter.BIBLIOGRAPHY_AXELSSON_2000)
 @SuppressWarnings("nls")
 public class AdaptiveTinFilter extends HMModel {
-    @Description("The las folder index file")
+    @Description("The lidar data: a las file, the index file of a folder of las files created by LasIndexer or a las database.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas;
 
-    @Description("Input raster to use as output grid template.")
+    @Description("The raster that gives the area and the grid of the elevation model.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inTemplate;
 
-    @Description("Number of iterations permitted.")
+    @Description("The maximum number of iterations of the densification of the tin.")
     @In
     public int pIterations = 20;
 
-    @Description("Support grid resolution in meters (will be recalculated/corrected on grid template).")
+    @Description("The size of the squares of the support grid, each giving its lowest point as a seed of the tin. It is adjusted to divide the template in equal squares, and must be larger than the largest building.")
+    @Unit("m")
     @In
     public double pSecRes = 50.0;
 
-    @Description("Minimum distance threshold.")
+    @Description("The minimum of the distance threshold: the threshold computed at each iteration is not let below it.")
+    @Unit("m")
     @In
     public double pDistThres = 0.5;
 
-    @Description("Final cleanup distance.")
+    @Description("The final cleanup distance: the non ground points closer than it to the tin are removed from the non ground points.")
+    @Unit("m")
     @In
     public double pFinalCleanupDist = 1.0;
 
-    @Description("Minimum angle threshold.")
+    @Description("The angle threshold: a point with a smaller angle is added to the tin even if its angle is over the one computed at the iteration.")
+    @Unit("degrees")
     @In
     public double pAngleThres = 10.0;
 
-    @Description("Tin triangle edge limit (if null, ignored).")
+    @Description("If supplied, the triangles whose edges are on average shorter than it are not densified anymore.")
+    @Unit("m")
     @In
     public Double pEdgeThres = null;
 
-    @Description("If true the vector files of tin and nonground are dumped to shapefile.")
+    @Description("If true, the tin and the non ground points are written to the given files.")
     @In
     public boolean doTin = false;
 
-    @Description("The start seed triangles.")
+    @Description("The optional output of the triangles of the first tin, the one of the seeds.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outSeeds;
 
-    @Description("Final output tin.")
+    @Description("The optional output of the triangles of the final tin of the ground, written if doTin is true.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTin;
 
-    @Description("Output non ground points.")
+    @Description("The optional output of the non ground points, written if doTin is true.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outNonGround;
 
-    @Description("Output tiles.")
+    @Description("The optional output of the squares of the support grid.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTiles;
 
-    @Description("The interpolated output raster.")
+    @Description("The elevation model of the ground, interpolated from the tin on the grid of the template.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outDem;
+
+    public static final String BIBLIOGRAPHY_AXELSSON_2000 = "Axelsson, P. (2000). DEM generation from laser scanner data using adaptive TIN models. International Archives of Photogrammetry and Remote Sensing, 33(B4), 110-117.";
+    public static final String DOCUMENTATION = """
+            The filter grows a tin of the ground from below, as in Axelsson (2000):
+
+            1. the area of the template is divided in squares of the given size, and the lowest point of each is a seed of the first tin: the squares must be larger than the largest object over the ground, as buildings, or their roofs become seeds;
+            2. a first pass over the points in the triangles computes the thresholds: the distance of each point from the nearest vertex of its triangle, and the angle between the triangle and the line from that vertex to the point, of which the medians are the thresholds;
+            3. at each iteration, in each triangle the point nearest to its center within both thresholds is added to the tin, the others are left for the next iteration. The thresholds are computed again on the added points, the distance never below its minimum, and a point is added also if its angle is below the given angle threshold;
+            4. the iterations stop when no point is added, or at the maximum number.
+
+            The elevation model has, in each cell, the elevation of the triangle of the final tin that contains its center. The tin covers the convex hull of the seeds, that are inside the squares: the cells between the outer seeds and the border of the template stay empty. To cover a whole area, use a template larger than it, with points around it.
+
+            The points left out of the tin are the non ground points, except those closer than the cleanup distance to the tin, that are removed from them at the end without being added to the ground.
+            """;
 
     private GridCoverage2D inTemplateGC;
 
@@ -259,9 +280,7 @@ public class AdaptiveTinFilter extends HMModel {
                 tRun.executeRunnable(new Runnable(){
                     public void run() {
                         try {
-                            var directPosition = gridGeometry.gridToWorld(new GridCoordinates2D(col, row));
-                            double[] coord = directPosition.getCoordinate();
-                            Coordinate coordinate = new Coordinate(coord[0], coord[1]);
+                            Coordinate coordinate = CoverageUtilities.coordinateFromColRow(col, row, gridGeometry);
                             Envelope e = new Envelope(coordinate);
                             e.expandBy(TinHandler.POINTENVELOPE_EXPAND);
                             List nearTinGeoms = tinTree.query(e);
@@ -271,16 +290,17 @@ public class AdaptiveTinFilter extends HMModel {
                             }
                             Geometry tinGeom = null;
                             for( int i = 0; i < nearTinGeoms.size(); i++ ) {
-                                tinGeom = (Geometry) nearTinGeoms.get(i);
-                                SimplePointInAreaLocator pointLoc = new SimplePointInAreaLocator(tinGeom);
+                                Geometry nearTinGeom = (Geometry) nearTinGeoms.get(i);
+                                SimplePointInAreaLocator pointLoc = new SimplePointInAreaLocator(nearTinGeom);
                                 // check if the point is inside the projection
-                                // of the triangle
-                                if (pointLoc.locate(coordinate) == Location.INTERIOR) {
+                                // of the triangle, on its border too
+                                if (pointLoc.locate(coordinate) != Location.EXTERIOR) {
+                                    tinGeom = nearTinGeom;
                                     break;
                                 }
                             }
                             if (tinGeom == null) {
-                                pm.errorMessage("Didn't find a matching triangle...");
+                                // outside of the tin
                                 return;
                             }
 
@@ -338,7 +358,8 @@ public class AdaptiveTinFilter extends HMModel {
     }
 
     private List<Coordinate> getSeeds( List<Geometry> secGridGeoms ) throws Exception {
-        final List<Coordinate> seedsList = new ArrayList<Coordinate>();
+        // filled by the threads of the tiles
+        final List<Coordinate> seedsList = Collections.synchronizedList(new ArrayList<Coordinate>());
         try (ALasDataManager lasHandler = ALasDataManager.getDataManager(new File(inLas), null, 0,
                 inTemplateGC.getCoordinateReferenceSystem())) {
             lasHandler.open();

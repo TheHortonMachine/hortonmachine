@@ -36,6 +36,7 @@ import org.locationtech.jts.index.strtree.STRtree;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,7 +46,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A module that splits a las file into smaller pieces.")
+@Description("Splits a las file into a grid of smaller files.")
+@Documentation(LasSplitter.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, split")
 @Label(HMConstants.LESTO + "/filter")
@@ -53,18 +55,29 @@ import oms3.annotations.UI;
 @Status(Status.EXPERIMENTAL)
 @License(HMConstants.GPL3_LICENSE)
 public class LasSplitter extends HMModel {
-    @Description("A las file to split.")
+    @Description("The las file to split.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inFile;
 
-    @Description("The rows to split into.")
+    @Description("The number of rows of the grid of pieces.")
     @In
     public int pRows;
 
-    @Description("The cols to split into.")
+    @Description("The number of columns of the grid of pieces.")
     @In
     public int pCols;
+
+    @Description("The optional folder of the pieces, named as the input file with a number. If not supplied, the folder of the input file is used.")
+    @UI(HMConstants.FOLDEROUT_UI_HINT)
+    @In
+    public String outFolder;
+
+    public static final String DOCUMENTATION = """
+            The bounds of the points are divided into a grid of equal pieces, and each point is written to the piece that contains it. The pieces are named as the input file with a number, from 1 at the south-west corner, going north first and then east: with 2 x 2 pieces, 1 is the south-west one, 2 the north-west, 3 the south-east and 4 the north-east.
+
+            The pieces keep the scale, the offset and the crs of the input file. A piece without points is written all the same, empty. LasMerger merges the pieces back into a single file.
+            """;
 
     @SuppressWarnings("unchecked")
     @Execute
@@ -73,6 +86,7 @@ public class LasSplitter extends HMModel {
 
         File inLas = new File(inFile);
         String lasName = FileUtilities.getNameWithoutExtention(inLas);
+        File outFolderFile = outFolder != null ? new File(outFolder) : inLas.getParentFile();
         try (ALasReader reader = ALasReader.getReader(inLas, null)) {
             reader.open();
             ILasHeader header = reader.getHeader();
@@ -96,7 +110,7 @@ public class LasSplitter extends HMModel {
 
                     Envelope envelope = new Envelope(new Coordinate(minX, minY), new Coordinate(maxX, maxY));
 
-                    File outLasPiece = new File(inLas.getParentFile(), lasName + "_" + fileCount + ".las");
+                    File outLasPiece = new File(outFolderFile, lasName + "_" + fileCount + ".las");
                     ALasWriter writer = ALasWriter.getWriter(outLasPiece, env.getCoordinateReferenceSystem());
                     writer.setOffset(xyzOffset[0], xyzOffset[1], xyzOffset[2]);
                     writer.setScales(xyzScale[0], xyzScale[1], xyzScale[2]);
@@ -118,6 +132,7 @@ public class LasSplitter extends HMModel {
                 List<ALasWriter> result = envelopeTree.query(new Envelope(coord));
                 int size = result.size();
                 if (size == 0) {
+                    pm.worked(1);
                     continue;
                 }
 

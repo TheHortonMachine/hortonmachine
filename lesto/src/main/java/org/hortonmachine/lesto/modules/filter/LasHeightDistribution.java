@@ -45,12 +45,15 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureMate;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -59,8 +62,10 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
-@Description("Module that analyzes the height distribution of a las file and categorizes the forest type.")
+@Description("Maps the vertical structure of a forest from the height distribution of the lidar points: no forest, single layer, single layer of variable height or double layer.")
+@Documentation(LasHeightDistribution.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, distribution ")
 @Label(HMConstants.LESTO + "/filter")
@@ -68,30 +73,32 @@ import oms3.annotations.UI;
 @Status(Status.EXPERIMENTAL)
 @License(HMConstants.GPL3_LICENSE)
 public class LasHeightDistribution extends HMModel {
-    @Description("Las files folder main index file path.")
+    @Description("The lidar data: a las file, the index file of a folder of las files created by LasIndexer or a las database.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inIndexFile = null;
 
-    @Description("DEM to normalize heights.")
+    @Description("The elevation model of the ground: the heights of the points are taken over it, and the categories are mapped on its cells.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDem = null;
 
-    @Description("Tiled region to work on.")
+    @Description("The tiles to analyze, as polygons with an id: the height distribution is analyzed in each tile.")
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector = null;
 
-    @Description("Normalization difference threshold in meters.")
+    @Description("The minimum height of the points over the ground: the lower points, as the ground and the low vegetation, are not used.")
+    @Unit("m")
     @In
     public double pThres = 2;
 
-    @Description("Minumin percentage of overlap that defines a multilayer.")
+    @Description("The minimum percentage of the cells of a layer that have points also in the next layer, to call the forest of the tile double layered.")
+    @Unit("%")
     @In
     public double pOverlapPerc = 80.0;
 
-    @Description("Field name for tile id.")
+    @Description("The field of the id of the tiles.")
     @In
     public String fId = "id";
 
@@ -100,10 +107,25 @@ public class LasHeightDistribution extends HMModel {
 //    @In
 //    public String outChartsFolder = null;
 
-    @Description("The output raster of forest categories.")
+    @Description("The raster of the categories of the forest: 0 no forest, 1 single layer, 2 single layer of variable height, 3 double layer.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outCats = null;
+
+    public static final String DOCUMENTATION = """
+            In each tile, the heights over the ground of the points higher than the threshold are counted in bins of 0.5 m. The counts are smoothed with a gaussian kernel of a radius of 12 bins, 6 m, and the ranges of heights where their second derivative is negative, the peaks of the distribution, are the layers of the vegetation of the tile.
+
+            Each cell of the elevation model is then classified by the layers that have points in it:
+
+            | Category | Cell |
+            |---|---|
+            | 0 no forest | no points in any layer |
+            | 1 single layer | points in one layer |
+            | 2 single layer of variable height | points in more layers, in a tile whose layers are side by side, as trees of different heights |
+            | 3 double layer | points in more layers, in a tile where two consecutive layers overlap, as trees over a lower layer: the cells with points in both are more than the given percentage of the cells of one of them |
+
+            The tiles are snapped on the cells of the elevation model, so that each cell belongs to a single tile. The cells must be large enough to contain enough points of each layer: with a few points per square meter, use an elevation model of 2 m or more, resampling it if needed. The tiles must be large enough to have a meaningful height distribution, as some tens of meters.
+            """;
 
     private boolean doChart = false;
 
@@ -128,6 +150,7 @@ public class LasHeightDistribution extends HMModel {
 
         GridCoverage2D inDemGC = getRaster(inDem);
         CoordinateReferenceSystem crs = inDemGC.getCoordinateReferenceSystem();
+        RegionMap demRegionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inDemGC);
 
         WritableRaster[] finalCoverageWRH = new WritableRaster[1];
         GridCoverage2D outCatsGC = CoverageUtilities.createCoverageFromTemplate(inDemGC, HMConstants.doubleNovalue,
@@ -141,10 +164,23 @@ public class LasHeightDistribution extends HMModel {
                 pm.message("Processing tile: " + i + "/" + tilesMates.size());
                 FeatureMate tileMate = tilesMates.get(i);
                 String id = tileMate.getAttribute(fId, String.class);
-                Geometry tileGeom = tileMate.getGeometry();
 
-                Envelope geomEnvelope = tileGeom.getEnvelopeInternal();
-                ReferencedEnvelope refEnvelope = new ReferencedEnvelope(geomEnvelope, crs);
+                /*
+                 * snap the tile on the cells of the dem, so that neighbouring tiles share
+                 * their borders and each cell of the dem is in a single tile
+                 */
+                Envelope geomEnvelope = tileMate.getGeometry().getEnvelopeInternal();
+                Coordinate lowerLeft = demRegionMap.snapToNextHigherInRegionResolution(geomEnvelope.getMinX(),
+                        geomEnvelope.getMinY());
+                Coordinate upperRight = demRegionMap.snapToNextHigherInRegionResolution(geomEnvelope.getMaxX(),
+                        geomEnvelope.getMaxY());
+                Envelope tileEnvelope = new Envelope(lowerLeft, upperRight).intersection(demRegionMap.toEnvelope());
+                if (tileEnvelope.getWidth() < demRegionMap.getXres() || tileEnvelope.getHeight() < demRegionMap.getYres()) {
+                    pm.errorMessage("The tile is outside of the dem: " + id);
+                    continue;
+                }
+                Geometry tileGeom = GeometryUtilities.createPolygonFromEnvelope(tileEnvelope);
+                ReferencedEnvelope refEnvelope = new ReferencedEnvelope(tileEnvelope, crs);
                 WritableRaster[] tmpWrH = new WritableRaster[1];
                 GridCoverage2D tmp = CoverageUtilities.createSubCoverageFromTemplate(inDemGC, refEnvelope, doubleNovalue,
                         tmpWrH);
@@ -243,8 +279,9 @@ public class LasHeightDistribution extends HMModel {
                                 value = 2;
                             }
                         }
-                        var worldPosition = tileGridGeometry.gridToWorld(gridPosition);
-                        GridCoordinates2D worldPositionCats = gridGeometry.worldToGrid(worldPosition);
+                        // the center of the cell of the tile in double precision, then its cell of the dem
+                        Coordinate center = CoverageUtilities.coordinateFromColRow(c, r, tileGridGeometry);
+                        GridCoordinates2D worldPositionCats = gridGeometry.worldToGrid(new Position2D(center.x, center.y));
                         finalIter.setSample(worldPositionCats.x, worldPositionCats.y, 0, value);
                     }
                 }
@@ -304,11 +341,11 @@ public class LasHeightDistribution extends HMModel {
         if (overlapping == 0) {
             return false;
         }
-        double perc1 = overlapping / valid1;
+        double perc1 = (double) overlapping / valid1;
         if (perc1 > forPercentage) {
             return true;
         }
-        double perc2 = overlapping / valid2;
+        double perc2 = (double) overlapping / valid2;
         if (perc2 > forPercentage) {
             return true;
         }

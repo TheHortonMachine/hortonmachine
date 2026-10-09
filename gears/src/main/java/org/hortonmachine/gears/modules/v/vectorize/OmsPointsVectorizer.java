@@ -29,23 +29,15 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_LIC
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_NAME;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_OUT_VECTOR_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSVECTORIZER_STATUS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
-import static org.hortonmachine.gears.utils.coverage.CoverageUtilities.getRegionParamsFromGridCoverage;
 
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.locationtech.jts.geom.Coordinate;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 
@@ -89,11 +81,7 @@ public class OmsPointsVectorizer extends HMModel {
             return;
         }
         checkNull(inRaster);
-        GridGeometry2D gridGeometry = inRaster.getGridGeometry();
-
-        RegionMap regionMap = getRegionParamsFromGridCoverage(inRaster);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
+        HMRaster raster = HMRaster.fromGridCoverage(inRaster);
 
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName("pointtype");
@@ -105,28 +93,19 @@ public class OmsPointsVectorizer extends HMModel {
 
         GeometryFactory gF = new GeometryFactory();
 
-        outVector = new DefaultFeatureCollection();
-
-        RandomIter rasterIter = RandomIterFactory.create(inRaster.getRenderedImage(), null);
-
-        pm.beginTask("Extracting points...", rows);
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double value = rasterIter.getSampleDouble(c, r, 0);
-                if (isNovalue(value)) {
-                    continue;
-                }
-                var world = gridGeometry.gridToWorld(new GridCoordinates2D(c, r));
-                double[] coordinate = world.getCoordinate();
-                Coordinate coord = new Coordinate(coordinate[0], coordinate[1]);
-                Point point = gF.createPoint(coord);
-                SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-                Object[] values = new Object[]{point, value};
-                builder.addAll(values);
-                SimpleFeature feature = builder.buildFeature(null);
-                ((DefaultFeatureCollection) outVector).add(feature);
+        DefaultFeatureCollection points = new DefaultFeatureCollection();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        raster.process(pm, "Extracting points...", ( c, r, value, cols, rows ) -> {
+            if (raster.isNovalue(value)) {
+                return;
             }
-        }
+            // the center of the cell, in double precision
+            Point point = gF.createPoint(raster.getWorld(c, r));
+            builder.addAll(new Object[]{point, value});
+            points.add(builder.buildFeature(null));
+        });
+        raster.close();
+        outVector = points;
     }
 
 }

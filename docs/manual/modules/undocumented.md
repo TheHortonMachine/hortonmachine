@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-110 of the 198 toolbox modules have no manual page yet.
+100 of the 198 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -59,32 +59,12 @@
 |---|---|---|
 | LasOnDtmBuildingsExtractor | experimental | A simple buildings extractor module |
 
-## Lesto › filter (5)
-
-| Module | Status | Description |
-|---|---|---|
-| LasHeightDistribution | experimental | Module that analyzes the height distribution of a las file and categorizes the forest type. |
-| LasHistogram | experimental | A module that creates a histogram from a las file. |
-| LasMerger | experimental | A module that merges las files to a single one. |
-| LasSplitter | experimental | A module that splits a las file into smaller pieces. |
-| LasThresholder | experimental | A module that applies threshold and filters on a value inside the las |
-
 ## Lesto › flightlines (2)
 
 | Module | Status | Description |
 |---|---|---|
 | FlightLinesExtractor | experimental | A module that splits las files in its flightlines |
 | FlightLinesIntensityNormalizer | experimental | A module that normalizes flightlines based on the aircraft position. |
-
-## Lesto › raster (5)
-
-| Module | Status | Description |
-|---|---|---|
-| AdaptiveTinFilter | experimental | Tool for DEM generation from laser scanner data using adaptive tin models . |
-| Las2BivariateRasterMosaic | draft | Module that converts a las data into a set of mosaic rasters using a bivariate function. |
-| Las2RasterInterpolator | draft | Convert a las to a raster through IDW interpolation. |
-| LasOnRasterMapper | draft | Module that creates a raster by mapping maximum elevation las points. |
-| LasTriangulation2Dsm | draft | Module that creates a DSM from the triangulation of point clouds. |
 
 ## Lesto › utilities (10)
 

@@ -45,7 +45,6 @@ import java.util.List;
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -224,7 +223,6 @@ public class OmsBobTheBuilder extends HMModel {
             pMaxbuffer = Math.max(vectorBounds.getWidth(), vectorBounds.getHeight());
 
         IDWInterpolator interpolator = new IDWInterpolator(0, pMaxbuffer);
-        final GridCoordinates2D gridCoord = new GridCoordinates2D();
         RandomIter rasterizedIter = CoverageUtilities.getRandomIterator(outRasterized);
         pm.beginTask("Interpolating...", cols);
         for( int r = 0; r < rows; r++ ) {
@@ -233,10 +231,8 @@ public class OmsBobTheBuilder extends HMModel {
                 if (isNovalue(probValue)) {
                     continue;
                 }
-                gridCoord.setLocation(c, r);
-                var world = gridGeometry.gridToWorld(gridCoord);
-                double[] coordinate = world.getCoordinate();
-                double interpolated = interpolator.getValue(controlPoints, new Coordinate(coordinate[0], coordinate[1]));
+                Coordinate center = CoverageUtilities.coordinateFromColRow(c, r, gridGeometry);
+                double interpolated = interpolator.getValue(controlPoints, center);
                 outputIter.setSample(c, r, 0, interpolated);
             }
             pm.worked(1);

@@ -28,6 +28,7 @@ import java.util.List;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -36,6 +37,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -58,7 +60,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-@Description("Convert a las to a raster through IDW interpolation.")
+@Description("Interpolates the points of a lidar survey over the ground into a raster, with inverse distance weighting: the height of the canopy over the ground or the surface of the canopy.")
+@Documentation(Las2RasterInterpolator.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("raster, IDW, interpolation, lidar")
 @Label(HMConstants.LESTO + "/raster")
@@ -67,44 +70,51 @@ import org.locationtech.jts.geom.Polygon;
 @License(OMSHYDRO_LICENSE)
 public class Las2RasterInterpolator extends HMModel {
 
-    @Description("Las files folder main index file path.")
+    @Description("The lidar data: a las file, the index file of a folder of las files created by LasIndexer or a las database.")
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inIndexFile = null;
 
-    @Description("A dtm raster to use for the area of interest and to calculate the elevation threshold.")
+    @Description("The elevation model of the ground: it gives the area, the grid and the ground under the points.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
 
-    @Description("Flag to normalize with the dtm.")
+    @Description("If true, the height of the points over the ground is interpolated, if false their elevation.")
     @In
     public boolean doNormalize = true;
 
-    @Description("New x resolution (if null, the dtm is used).")
+    @Description("The x resolution of the raster. If not supplied, the one of the elevation model is used.")
     @In
     public Double pXres;
 
-    @Description("New y resolution (if null, the dtm is used).")
+    @Description("The y resolution of the raster. If not supplied, the one of the elevation model is used.")
     @In
     public Double pYres;
 
-    @Description("The elevation threshold to apply to the chm.")
+    @Description("The minimum height over the ground of the interpolated points.")
+    @Unit("m")
     @In
     public double pThreshold = 0.0;
 
-    @Description("The impulse to use (if empty everything is used).")
+    @Description("The return to use, as 1 for the first returns. If not supplied, all the returns are used.")
     @In
     public Integer pImpulse = 1;
 
-    @Description("The output raster.")
+    @Description("The interpolated raster.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster = null;
 
+    public static final String DOCUMENTATION = """
+            Only the points higher than the threshold over the elevation model are interpolated: with the default threshold of 0, the points over the ground. Each cell gets the average of the points within 10 m of it, weighted by the inverse of their distance. With the first returns and the normalization, the raster is a model of the height of the canopy, with its elevation a model of its surface.
+
+            The points on the ground are, with their errors, half over and half under the elevation model: in the open areas, the raster is interpolated from the few ground points over it and from the canopy around. Use a threshold of some decimeters to keep only the vegetation.
+            """;
+
     @Execute
     public void process() throws Exception {
-        checkNull(inIndexFile, inDtm);
+        checkNull(inIndexFile, inDtm, outRaster);
 
         GridCoverage2D inDtmGC = getRaster(inDtm);
         Polygon polygon = CoverageUtilities.getRegionPolygon(inDtmGC);
@@ -149,7 +159,9 @@ public class Las2RasterInterpolator extends HMModel {
             pm.beginTask("Prepare points collection for interpolation...", lasPoints.size());
             for( LasRecord r : lasPoints ) {
                 final Point point = gf.createPoint(new Coordinate(r.x, r.y));
-                final Object[] values = new Object[]{point, r.z,};
+                // the height over the dtm or the elevation
+                double value = doNormalize ? r.groundElevation : r.z;
+                final Object[] values = new Object[]{point, value};
                 builder.addAll(values);
                 final SimpleFeature feature = builder.buildFeature(null);
                 newCollection.add(feature);

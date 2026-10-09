@@ -68,6 +68,7 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.modules.Hillshade;
 
 import groovy.lang.GroovyShell;
@@ -223,7 +224,9 @@ public class ModuleMapsGenerator {
         String separator = "_";
         // a difference of two rasters is named after both: a-b
         for( String raster : spec.raster().split(" - ") ) {
-            name.append(separator).append(raster.trim().replaceFirst("\\.[^.]+$", ""));
+            // a raster in a subfolder of the outputs is named after its file only
+            String rasterName = new File(raster.trim()).getName();
+            name.append(separator).append(rasterName.replaceFirst("\\.[^.]+$", ""));
             separator = "-";
         }
         // a vector colored by a field is also named after it
@@ -236,9 +239,8 @@ public class ModuleMapsGenerator {
 
     private void prepareWorkFolder() throws Exception {
         if (workFolder.exists()) {
-            for( File file : workFolder.listFiles() ) {
-                file.delete();
-            }
+            // also the folders written by the scripts, as the tiles of a mosaic
+            FileUtilities.deleteFileOrDir(workFolder);
         }
         workFolder.mkdirs();
         File dataFolder = new File(specFile.getParentFile(), "data");

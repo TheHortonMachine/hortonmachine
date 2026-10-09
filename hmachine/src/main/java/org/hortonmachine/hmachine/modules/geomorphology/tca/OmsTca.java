@@ -46,7 +46,6 @@ import org.eclipse.imagen.iterator.RandomIterFactory;
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -157,10 +156,8 @@ public class OmsTca extends HMModel {
                             List<Coordinate> coordinates = new ArrayList<Coordinate>();
                             while( iterator.hasNext() ) {
                                 CheckPoint checkPoint = (CheckPoint) iterator.next();
-                                var world = gridGeometry
-                                        .gridToWorld(new GridCoordinates2D(checkPoint.col, checkPoint.row));
-                                double[] coord = world.getCoordinate();
-                                coordinates.add(new Coordinate(coord[0], coord[1]));
+                                coordinates.add(
+                                        CoverageUtilities.coordinateFromColRow(checkPoint.col, checkPoint.row, gridGeometry));
                             }
                             if (coordinates.size() == 1) {
                                 Coordinate first = coordinates.get(0);

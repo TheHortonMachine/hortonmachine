@@ -122,3 +122,14 @@ IntensityClassifierFlood | ../examples/hm/intensityclassifierflood.groovy | inte
 HazardClassifier | ../examples/hm/hazardclassifier.groovy | hazard_ip1.tif          | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 2=low;3=medium;4=high
 HazardClassifier | -                                  | hazard_ip2.tif              | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 2=low;3=medium;4=high
 IntensityClassifierDebrisFlowTN | ../examples/hm/intensityclassifierdebrisflowtn.groovy | debris_intensity.tif | contrasting | classes,extent=1638000:1638900:5112100:5112950 | 1=low;2=medium;3=high
+LasHistogram   | ../examples/hm/lashistogram.groovy   | las_intensity.csv           | rainbow
+LasSplitter    | ../examples/hm/lassplitter.groovy    | -                           | -
+LasMerger      | ../examples/hm/lasmerger.groovy      | -                           | -
+LasThresholder | ../examples/hm/lasthresholder.groovy | las_bright.shp              | rainbow  | base=dtm_777.tif,field=intensity
+LasHeightDistribution | ../examples/hm/lasheightdistribution.groovy | forest_layers.tif | contrasting | classes,base=dtm_777.tif | 0=no forest;1=single layer;2=single layer of variable height;3=double layer
+AdaptiveTinFilter | ../examples/hm/adaptivetinfilter.groovy | dtm_tin.tif           | elev     | base=dtm_tin.tif
+AdaptiveTinFilter | -                                 | dtm_tin.tif - dtm_777.tif   | rainbow  | base=dtm_777.tif
+Las2RasterInterpolator | ../examples/hm/las2rasterinterpolator.groovy | chm_idw.tif | greens | base=dtm_777.tif
+LasOnRasterMapper | ../examples/hm/lasonrastermapper.groovy | dsm_max.tif - dtm_777.tif | greens | positive,base=dtm_777.tif
+LasTriangulation2Dsm | ../examples/hm/lastriangulation2dsm.groovy | dsm_triangles.tif | elev | base=dtm_777.tif
+Las2BivariateRasterMosaic | ../examples/hm/las2bivariaterastermosaic.groovy | las_mosaic/tile_0_0.tiff | elev | base=dtm_777.tif,extent=725718:725778.5:5205734.5:5205795.5

@@ -119,82 +119,48 @@ class LasFileDataManager extends ALasDataManager {
     @SuppressWarnings("unchecked")
     @Override
     public synchronized List<LasRecord> getPointsInGeometry( Geometry checkGeom, boolean doOnlyEnvelope ) throws Exception {
-        checkOpen();
+        if (pointsTree == null) {
+            // the file is read once, all the following requests are served by the index
+            checkOpen();
+            pointsTree = new STRtree();
+            while( lasReader.hasNextPoint() ) {
+                LasRecord lasDot = lasReader.getNextPoint();
+                pointsTree.insert(new Envelope(new Coordinate(lasDot.x, lasDot.y)), lasDot);
+            }
+            close();
+        }
 
         ArrayList<LasRecord> pointsListForTile = new ArrayList<LasRecord>();
         Envelope checkEnvelope = checkGeom.getEnvelopeInternal();
-        if (pointsTree != null) {
-            List<LasRecord> pointsList = pointsTree.query(checkEnvelope);
-            PreparedGeometry preparedGeometry = null;
-            if (!doOnlyEnvelope) {
-                preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
+        PreparedGeometry preparedGeometry = null;
+        if (!doOnlyEnvelope) {
+            preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
+        }
+        List<LasRecord> pointsList = pointsTree.query(checkEnvelope);
+        for( LasRecord lasDot : pointsList ) {
+            if (!doAccept(lasDot)) {
+                continue;
             }
-            for( LasRecord lasDot : pointsList ) {
-                Coordinate c = new Coordinate(lasDot.x, lasDot.y);
-                if (!checkEnvelope.contains(c)) {
+            Coordinate c = new Coordinate(lasDot.x, lasDot.y);
+            if (!checkEnvelope.contains(c)) {
+                continue;
+            }
+            if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+                continue;
+            }
+            if (inDem != null) {
+                // keep only the points over the threshold, with their height over the dem
+                double value = CoverageUtilities.getValue(inDem, lasDot.x, lasDot.y);
+                if (HMConstants.isNovalue(value)) {
                     continue;
                 }
-                if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
+                double height = lasDot.z - value;
+                if (height <= elevThreshold) {
                     continue;
                 }
-                pointsListForTile.add(lasDot);
+                lasDot.groundElevation = height;
             }
-        } else {
-            pointsTree = new STRtree();
-            ReferencedEnvelope overallEnvelope = getOverallEnvelope();
-            if (doOnlyEnvelope && checkEnvelope.covers(overallEnvelope)) {
-                // read it straight
-                while( lasReader.hasNextPoint() ) {
-                    LasRecord lasDot = lasReader.getNextPoint();
-                    if (!doAccept(lasDot)) {
-                        continue;
-                    }
-                    pointsTree.insert(new Envelope(new Coordinate(lasDot.x, lasDot.y)), lasDot);
-                    pointsListForTile.add(lasDot);
-                }
-            } else {
-
-                Envelope env = checkGeom.getEnvelopeInternal();
-                PreparedGeometry preparedGeometry = null;
-                if (!doOnlyEnvelope) {
-                    preparedGeometry = PreparedGeometryFactory.prepare(checkGeom);
-                }
-
-                while( lasReader.hasNextPoint() ) {
-                    LasRecord lasDot = lasReader.getNextPoint();
-                    if (!doAccept(lasDot)) {
-                        continue;
-                    }
-                    Coordinate c = new Coordinate(lasDot.x, lasDot.y);
-                    pointsTree.insert(new Envelope(c), lasDot);
-                    if (!env.contains(c)) {
-                        continue;
-                    }
-
-                    if (inDem != null) {
-                        // check geom instead of only envelope?
-                        if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
-                            continue;
-                        }
-                        double value = CoverageUtilities.getValue(inDem, lasDot.x, lasDot.y);
-                        if (HMConstants.isNovalue(value)) {
-                            continue;
-                        }
-                        double height = lasDot.z - value;
-                        if (height > elevThreshold) {
-                            lasDot.groundElevation = height;
-                            pointsListForTile.add(lasDot);
-                        }
-                    } else {
-                        if (!doOnlyEnvelope && !preparedGeometry.contains(gf.createPoint(c))) {
-                            continue;
-                        }
-                        pointsListForTile.add(lasDot);
-                    }
-                }
-
-            }
-            close();
+            pointsListForTile.add(lasDot);
         }
         return pointsListForTile;
     }
