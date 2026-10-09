@@ -45,7 +45,6 @@ import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.hortonmachine.gears.utils.images.ImageUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
@@ -133,7 +132,13 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         int finalTileSize = tileSize;
 
         String tilesPart = "-tiles";
-        String cacheRelativePath = "imagemosaics/" + imsf.getName() + tilesPart;
+        // a changed raster or style gets new tiles
+        long stamp = imsf.lastModified();
+        File styleFile = SldUtilities.getStyleFile(imsf);
+        if (styleFile != null && styleFile.exists()) {
+            stamp = Math.max(stamp, styleFile.lastModified());
+        }
+        String cacheRelativePath = "imagemosaics/" + imsf.getName() + "-" + stamp + tilesPart;
 
         String urlString = imsf.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
@@ -171,10 +176,15 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
                 int y = tileNumber[1];
 
                 Rectangle imageBounds = new Rectangle(0, 0, finalTileSize, finalTileSize);
-                BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height, BufferedImage.TYPE_INT_RGB);
+                // with transparency, the empty parts stay transparent and the opacity of the style is kept
+                boolean transparent = colorToMakeTransparent != null;
+                BufferedImage image = new BufferedImage(imageBounds.width, imageBounds.height,
+                        transparent ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
                 Graphics2D gr = image.createGraphics();
-                gr.setPaint(Color.WHITE);
-                gr.fill(imageBounds);
+                if (!transparent) {
+                    gr.setPaint(Color.WHITE);
+                    gr.fill(imageBounds);
+                }
                 gr.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                 try {
@@ -187,9 +197,6 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
                         }
                         File imgFile = new File(tileImageFolderFile, y + ".png");
                         if (!imgFile.exists()) {
-                            if (colorToMakeTransparent != null) {
-                                image = ImageUtilities.makeColorTransparent(image, colorToMakeTransparent);
-                            }
                             ImageIO.write(image, "png", imgFile);
                         }
                         return imgFile.toURI().toURL();

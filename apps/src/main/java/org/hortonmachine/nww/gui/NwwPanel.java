@@ -70,6 +70,8 @@ public class NwwPanel extends JPanel {
 
     private WorldWindow wwd;
     protected StatusBar statusBar;
+    /** The terrain of a local DEM, used instead of the Copernicus one if set. */
+    private ElevationModel localTerrainElevationModel;
 
     private double lastElevation = Double.NaN;
 
@@ -329,7 +331,8 @@ public class NwwPanel extends JPanel {
      */
     public void setSphereGlobe( boolean withTerrain ) {
         Earth globe = new Earth();
-        globe.setElevationModel(withTerrain ? getTerrainElevationModel() : new ZeroElevationModel());
+        ElevationModel terrain = localTerrainElevationModel != null ? localTerrainElevationModel : getTerrainElevationModel();
+        globe.setElevationModel(withTerrain ? terrain : new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         wwd.redraw();
@@ -347,6 +350,17 @@ public class NwwPanel extends JPanel {
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         wwd.redraw();
+    }
+
+    /**
+     * Set the terrain of the globe with 3D terrain from a local DEM.
+     *
+     * @param elevationModel the elevation model of the DEM, e.g. one made with
+     *            {@link org.hortonmachine.nww.elevation.CoverageElevationModel}, or
+     *            <code>null</code> to use the Copernicus terrain again.
+     */
+    public void setLocalTerrain( ElevationModel elevationModel ) {
+        localTerrainElevationModel = elevationModel;
     }
 
     /**

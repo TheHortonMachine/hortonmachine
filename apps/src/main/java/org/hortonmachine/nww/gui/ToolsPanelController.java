@@ -35,11 +35,15 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.data.SimpleFeatureStore;
@@ -47,6 +51,7 @@ import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.parameter.ParameterValue;
 import org.geotools.api.style.Style;
+import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.imagemosaic.ImageMosaicFormat;
@@ -62,6 +67,7 @@ import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.dbs.utils.TableName;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
@@ -70,6 +76,7 @@ import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.nww.elevation.CoverageElevationModel;
 import org.hortonmachine.nww.gui.listeners.GenericSelectListener;
 import org.hortonmachine.nww.layers.defaults.annotations.HtmlScreenAnnotation;
 import org.hortonmachine.nww.layers.defaults.annotations.HtmlScreenAnnotation.Builder;
@@ -109,6 +116,7 @@ import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.awt.WorldWindowGLJPanel;
 import gov.nasa.worldwind.geom.Sector;
+import gov.nasa.worldwind.globes.ElevationModel;
 import gov.nasa.worldwind.layers.AnnotationLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
@@ -132,6 +140,11 @@ public class ToolsPanelController extends ToolsPanelView {
     private NwwPanel wwjPanel;
 
     private LayerEventsListener layerEventsListener;
+
+    private static final String NO_TERRAIN_DEM = "Terrain from a DEM";
+    private JLabel _terrainDemLabel = new JLabel(NO_TERRAIN_DEM);
+    private JButton _terrainDemButton = new JButton("...");
+    private JButton _terrainDemClearButton = new JButton("x");
 
     @SuppressWarnings("unchecked")
     public ToolsPanelController( final NwwPanel wwjPanel, LayerEventsListener layerEventsListener ) {
@@ -334,6 +347,29 @@ public class ToolsPanelController extends ToolsPanelView {
             }
         }
 
+        _terrainDemButton.setToolTipText("Use a DEM as the 3D terrain of its area, instead of the Copernicus one");
+        _terrainDemButton.addActionListener(e -> {
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            fileChooser.setFileFilter(new FileNameExtensionFilter("*.tif,*.tiff,*.asc", "tif", "tiff", "asc"));
+            fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
+            if (fileChooser.showOpenDialog((Component) wwjPanel) == JFileChooser.APPROVE_OPTION) {
+                File demFile = fileChooser.getSelectedFile();
+                PreferencesHandler.setLastPath(demFile.getAbsolutePath());
+                loadTerrainDem(demFile);
+            }
+        });
+        _terrainDemClearButton.setToolTipText("Use the Copernicus terrain again");
+        _terrainDemClearButton.setEnabled(false);
+        _terrainDemClearButton.addActionListener(e -> {
+            wwjPanel.setLocalTerrain(null);
+            _terrainDemLabel.setText(NO_TERRAIN_DEM);
+            _terrainDemClearButton.setEnabled(false);
+            if (EGlobeModes.getModeFromDescription(_globeModeCombo.getSelectedItem().toString()) == EGlobeModes.EarthTerrain) {
+                wwjPanel.setSphereGlobe(true);
+            }
+        });
+
         _infoEditingButton.addActionListener(e -> {
             if (_infoEditingButton.isSelected()) {
                 genericSelectListener = new GenericSelectListener(wwjPanel);
@@ -488,6 +524,42 @@ public class ToolsPanelController extends ToolsPanelView {
         return layerEventsListener;
     }
 
+    /**
+     * Use a DEM as the 3D terrain of its area, with the Copernicus terrain around it, switch to
+     * the globe with 3D terrain and zoom to the DEM.
+     */
+    private void loadTerrainDem( File demFile ) {
+        _terrainDemButton.setEnabled(false);
+        new Thread(() -> {
+            try {
+                GridCoverage2D dem = OmsRasterReader.readRaster(demFile.getAbsolutePath());
+                ElevationModel terrain = CoverageElevationModel.withSurrounding(dem, NwwPanel.getTerrainElevationModel());
+                ReferencedEnvelope demEnvelope = new ReferencedEnvelope(dem.getEnvelope2D()).transform(NwwUtilities.GPS_CRS,
+                        true);
+                Sector sector = NwwUtilities.envelope2Sector(demEnvelope);
+                SwingUtilities.invokeLater(() -> {
+                    wwjPanel.setLocalTerrain(terrain);
+                    _terrainDemLabel.setText("Terrain: " + FileUtilities.getNameWithoutExtention(demFile));
+                    _terrainDemClearButton.setEnabled(true);
+                    _terrainDemButton.setEnabled(true);
+                    if (EGlobeModes.getModeFromDescription(_globeModeCombo.getSelectedItem().toString()) == EGlobeModes.EarthTerrain) {
+                        wwjPanel.setSphereGlobe(true);
+                    } else {
+                        // applied by the listener of the combo
+                        _globeModeCombo.setSelectedItem(EGlobeModes.EarthTerrain.getDescription());
+                    }
+                    wwjPanel.goTo(sector, false);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+                SwingUtilities.invokeLater(() -> {
+                    _terrainDemButton.setEnabled(true);
+                    GuiUtilities.showWarningMessage(wwjPanel, "WARNING", "Unable to use the DEM as terrain: " + e.getMessage());
+                });
+            }
+        }, "NWW terrain DEM").start();
+    }
+
     public NwwPanel getWwjPanel() {
         return wwjPanel;
     }
@@ -495,7 +567,8 @@ public class ToolsPanelController extends ToolsPanelView {
     private void loadFile( File selectedFile ) {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
         try {
-            if (selectedFile.getName().endsWith(".asc") || selectedFile.getName().endsWith(".tiff")) {
+            if (selectedFile.getName().endsWith(".asc") || selectedFile.getName().endsWith(".tiff")
+                    || selectedFile.getName().endsWith(".tif")) {
                 GridCoverageNwwLayer coverageNwwLayer = new GridCoverageNwwLayer(selectedFile, null, Color.WHITE);
                 wwjPanel.getWwd().getModel().getLayers().add(coverageNwwLayer);
                 layerEventsListener.onLayerAdded(coverageNwwLayer);
@@ -789,6 +862,14 @@ public class ToolsPanelController extends ToolsPanelView {
         c.gridy++;
         c.insets = new Insets(2, 4, 2, 4);
         panel.add(_globeModeCombo, c);
+        c.gridy++;
+        JPanel terrainButtons = new JPanel(new GridLayout(1, 2, 2, 0));
+        terrainButtons.add(_terrainDemButton);
+        terrainButtons.add(_terrainDemClearButton);
+        JPanel terrainRow = new JPanel(new BorderLayout(4, 0));
+        terrainRow.add(_terrainDemLabel, BorderLayout.CENTER);
+        terrainRow.add(terrainButtons, BorderLayout.EAST);
+        panel.add(terrainRow, c);
         c.gridy++;
 
         c.insets = new Insets(6, 4, 0, 4);
