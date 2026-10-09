@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -239,6 +240,36 @@ public class TestGeopackage {
             assertEquals(2, geometries.size());
         } finally {
             gpkgFile.delete();
+        }
+    }
+
+    @Test
+    public void testRawSqlToCsv() throws Exception {
+        File gpkgFile = TestUtilities.createTmpFile(".gpkg");
+        gpkgFile.delete();
+        File csvFile = TestUtilities.createTmpFile(".csv");
+        try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+            db.open(gpkgFile.getAbsolutePath());
+            db.initSpatialMetadata(null);
+            TestUtilities.createGeomTablesAndPopulate(db, false);
+
+            String sql = "select id, name, temperature, the_geom from " + TestUtilities.MPOLY_TABLE.fixedDoubleName
+                    + " order by temperature";
+            db.runRawSqlToCsv(sql, csvFile, true, ";");
+
+            // the header and a row for each record, with all the values, the geometry as WKT
+            List<String> lines = Files.readAllLines(csvFile.toPath());
+            assertEquals(4, lines.size());
+            assertEquals("id;name;temperature;the_geom", lines.get(0));
+            String[] values = lines.get(1).split(";");
+            assertEquals(4, values.length);
+            assertFalse(values[0].isEmpty());
+            assertFalse(values[1].isEmpty());
+            assertEquals(34.0, Double.parseDouble(values[2]), 0.00001);
+            assertTrue(values[3].startsWith("MULTIPOLYGON"));
+        } finally {
+            gpkgFile.delete();
+            csvFile.delete();
         }
     }
 }

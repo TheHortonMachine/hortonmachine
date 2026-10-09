@@ -413,34 +413,32 @@ public class SpatialiteDb extends ASpatialDb {
                         if (j == geometryIndex) {
                             try {
                                 Geometry geometry = gp.fromResultSet(rs, j);
-                                if (geometry == null) {
-                                    Object object = rs.getObject(j);
-                                    if (object instanceof Clob) {
-                                        object = rs.getString(j);
-                                    }
-                                    if (object != null) {
-                                        bw.write(object.toString());
-                                    } else {
-                                        bw.write("");
-                                    }
+                                if (geometry != null) {
+                                    bw.write(geometry.toText());
+                                } else {
+                                    writeCsvValue(bw, rs, j);
                                 }
                             } catch (Exception e) {
                                 // write it as it comes
-                                Object object = rs.getObject(j);
-                                if (object instanceof Clob) {
-                                    object = rs.getString(j);
-                                }
-                                if (object != null) {
-                                    bw.write(object.toString());
-                                } else {
-                                    bw.write("");
-                                }
+                                writeCsvValue(bw, rs, j);
                             }
+                        } else {
+                            writeCsvValue(bw, rs, j);
                         }
                     }
                     bw.write("\n");
                 }
             }
+        }
+    }
+
+    private static void writeCsvValue( BufferedWriter bw, IHMResultSet rs, int index ) throws Exception {
+        Object object = rs.getObject(index);
+        if (object instanceof Clob) {
+            object = rs.getString(index);
+        }
+        if (object != null) {
+            bw.write(object.toString());
         }
     }
 
