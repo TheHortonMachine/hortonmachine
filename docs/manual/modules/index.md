@@ -25,4 +25,5 @@ statistics/index
 raster-processing/index
 vector-processing/index
 lesto/index
+netcdf/index
 ```

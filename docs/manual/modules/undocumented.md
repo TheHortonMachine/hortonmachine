@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-100 of the 198 toolbox modules have no manual page yet.
+97 of the 198 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -106,14 +106,6 @@
 | GeopaparazziMapsCreator | draft | A map creator for geopaparazzi. |
 | GeopaparazziProject3To4Converter | draft | Convert a geopaparazzi 3 folder project into a geopaparazzi 4 database. |
 | GeopaparazziSpatialiteCreator | draft | Creates a spatialite database for geopaparazzi from a set of shapefiles or adds to an existing one. |
-
-## NetCDF (3)
-
-| Module | Status | Description |
-|---|---|---|
-| ModisDownloader | certified | Download MODIS data and patch dem together to coverages. |
-| NetcdfGridDumper | certified | Dump NetCDF grids to geotools compatible rasters convering them to lat/lon epsg:4326. |
-| NetcdfInfo | certified | NetdcfInfo command. |
 
 ## Other (2)
 

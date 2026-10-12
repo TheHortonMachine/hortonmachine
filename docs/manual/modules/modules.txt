@@ -101,6 +101,11 @@ org.hortonmachine.lesto.modules.raster.Las2RasterInterpolator
 org.hortonmachine.lesto.modules.raster.LasTriangulation2Dsm
 org.hortonmachine.lesto.modules.raster.Las2BivariateRasterMosaic
 
+# NetCDF
+org.hortonmachine.modules.NetcdfInfo
+org.hortonmachine.modules.NetcdfGridDumper
+org.hortonmachine.modules.RasterToNetcdf
+
 # GeoFrame › ERM water budget workflow
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmDataPreparator
 org.hortonmachine.hmachine.geoframe.ermworkflow.ErmStationDataImporter

@@ -18,7 +18,8 @@
 # vectors, the color of the value of the field, with a color bar or, with classes, a class legend),
 # extent=west:east:south:north (the map shows only this part of the data, to zoom on small features),
 # lines=a;b (with a table, the named columns as lines over the first column, as profiles),
-# over=vector.shp (with vectors, another vector drawn over them in blue)
+# over=vector.shp (with vectors, another vector drawn over them in blue),
+# nohillshade (the raster alone, opaque, for data far from the sample elevation, as a satellite tile)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
 
 Pitfiller      | ../examples/hm/pitfiller.groovy      | pit.tif                     | elev
@@ -133,3 +134,7 @@ Las2RasterInterpolator | ../examples/hm/las2rasterinterpolator.groovy | chm_idw.
 LasOnRasterMapper | ../examples/hm/lasonrastermapper.groovy | dsm_max.tif - dtm_777.tif | greens | positive,base=dtm_777.tif
 LasTriangulation2Dsm | ../examples/hm/lastriangulation2dsm.groovy | dsm_triangles.tif | elev | base=dtm_777.tif
 Las2BivariateRasterMosaic | ../examples/hm/las2bivariaterastermosaic.groovy | las_mosaic/tile_0_0.tiff | elev | base=dtm_777.tif,extent=725718:725778.5:5205734.5:5205795.5
+RasterToNetcdf | ../examples/hm/rastertonetcdf.groovy | -                           | -
+NetcdfGridDumper | ../examples/hm/netcdfgriddumper_dtm.groovy | dtm_back/dtm_flanginec__elevation.tif | elev
+NetcdfInfo     | ../examples/hm/netcdfinfo.groovy     | -                           | -
+NetcdfGridDumper | ../examples/hm/netcdfgriddumper.groovy | modis_lst/MOD11A2.A2024201.h18v04.061.2024211134014__20240719_000000__MODIS_Grid_8Day_1km_LST_Data_Fields_LST_Day_1km.tif | rainbow | clip,nohillshade

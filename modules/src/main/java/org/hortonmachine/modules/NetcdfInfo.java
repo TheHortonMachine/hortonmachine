@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.modules;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -26,6 +27,7 @@ import org.locationtech.jts.geom.Coordinate;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,6 +51,7 @@ import ucar.nc2.dataset.CoordinateTransform;
 import ucar.nc2.dataset.DatasetUrl;
 import ucar.nc2.dataset.NetcdfDataset;
 import ucar.nc2.dataset.NetcdfDatasets;
+import ucar.nc2.dataset.VariableDS;
 import ucar.nc2.dt.GridCoordSystem;
 import ucar.nc2.dt.GridDatatype;
 import ucar.nc2.dt.grid.GridDataset;
@@ -58,20 +61,29 @@ import ucar.unidata.geoloc.ProjectionImpl;
 import ucar.unidata.geoloc.projection.LatLonProjection;
 import ucar.unidata.util.Parameter;
 
-@Description("NetdcfInfo command.")
+@Description("Prints the content of a NetCDF file or url: its variables, coordinate systems and grids, with their extents and times.")
+@Documentation(NetcdfInfo.DOCUMENTATION)
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("netdcf")
+@Keywords("IO, NetCDF, HDF, MODIS, Metadata")
 @Label(HMConstants.NETCDF)
 @Name("_netcdfinfo")
 @Status(40)
 @License("General Public License Version 3 (GPLv3)")
 public class NetcdfInfo extends HMModel {
+    public static final String DOCUMENTATION = """
+            The file is read with the Unidata netcdf-java library, which opens much more than NetCDF 3 and 4: also HDF4 and HDF-EOS, as the MODIS products, HDF5, GRIB and the OPeNDAP and THREDDS urls. The report has a first part on the whole file and a second one on its grids.
+
+            The first part lists the global attributes, the coordinate systems that netcdf-java recognizes, their axes with the attributes and the coordinate transforms, which are the projections of the projected grids, and then every variable, with its type, unit and attributes.
+
+            The second part, Grid definitions, lists the variables that are grids, with their **full name**: the one to give to NetcdfGridDumper, as `MODIS_Grid_8Day_1km_LST/Data_Fields/LST_Day_1km` for the groups of an HDF file. For each grid it gives the projection, the range and number of values of the x and y axes, the time axis with its first and last dates, and the bounds in longitude and latitude, computed from all the cells.
+
+            Projected axes are given in kilometers, as netcdf-java converts them, also when the file has them in meters. The bounds are those of the cell centers, half a cell inside the bounds of the cells.
+            """;
+
     @Description("The netcdf file or url to check.")
     @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inPath = null;
-
-    public boolean doLongitudeShift = false;
 
     @Execute
     public void process() throws Exception {
@@ -104,7 +116,7 @@ public class NetcdfInfo extends HMModel {
         List<Attribute> globalAttributes = netcdfDataset.getGlobalAttributes();
         sb.append("Global Attributes").append(NL);
         for( Attribute attribute : globalAttributes ) {
-            sb.append(IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue()).append(NL);
+            sb.append(IND).append(attribute.getFullName()).append(": ").append(valueOf(attribute)).append(NL);
         }
 
         sb.append(NL);
@@ -132,8 +144,7 @@ public class NetcdfInfo extends HMModel {
             sb.append(IND + IND).append("Attributes: ").append(NL);
             for( Attribute attribute : attributes ) {
                 String attrName = attribute.getFullName();
-                Array attrValue = attribute.getValues();
-                sb.append(IND + IND + IND).append(attrName).append(": ").append(attrValue).append(NL);
+                sb.append(IND + IND + IND).append(attrName).append(": ").append(valueOf(attribute)).append(NL);
             }
 
         }
@@ -148,7 +159,7 @@ public class NetcdfInfo extends HMModel {
             sb.append(IND + IND).append("Parameters").append(": ").append(NL);
             List<Parameter> parameters = ct.getParameters();
             for( Parameter parameter : parameters ) {
-                sb.append(IND + IND + IND).append(parameter.getName()).append(": ").append(parameter.getStringValue()).append(NL);
+                sb.append(IND + IND + IND).append(parameter.getName()).append(": ").append(valueOf(parameter)).append(NL);
             }
 
         }
@@ -181,7 +192,7 @@ public class NetcdfInfo extends HMModel {
             if (attributes.size() > 0) {
                 sb.append(IND + IND).append("Attributes: ").append(NL);
                 for( Attribute attr : attributes ) {
-                    sb.append(IND + IND + IND).append(attr.getFullName()).append(" -> ").append(attr.getStringValue()).append(NL);
+                    sb.append(IND + IND + IND).append(attr.getFullName()).append(" -> ").append(valueOf(attr, variable)).append(NL);
                 }
             }
 
@@ -211,7 +222,7 @@ public class NetcdfInfo extends HMModel {
                 sb.append(IND).append(i++).append(") ").append(gridName).append(": ").append(NL);
                 sb.append(IND + IND).append("Attributes:").append(NL);
                 for( Attribute attribute : attributes ) {
-                    sb.append(IND + IND + IND).append(attribute.getFullName()).append(": ").append(attribute.getStringValue())
+                    sb.append(IND + IND + IND).append(attribute.getFullName()).append(": ").append(valueOf(attribute, grid.getVariable()))
                             .append(NL);
                 }
 
@@ -285,14 +296,48 @@ public class NetcdfInfo extends HMModel {
             }
         }
         pm.message(sb.toString());
-
+        gds.close();
+        netcdfDataset.close();
     }
 
-    public static void main( String[] args ) throws Exception {
-        NetcdfInfo i = new NetcdfInfo();
-        i.doLongitudeShift = true;
-        i.inPath = "/home/hydrologis/TMP/KLAB/MODIS/MYD09A1.A2022265.h24v03.006.2022274080721.hdf";
-//        i.inPath = "/home/hydrologis/TMP/KLAB/cordex_scenarios/03_tas_EUR-11_CNRM-CERFACS-CNRM-CM5_rcp85_r1i1p1_CNRM-ALADIN63_v2_day_20510101-20551231.nc";
-        i.process();
+    /**
+     * @return the value of an attribute, numeric ones too, as text.
+     */
+    private static String valueOf( Attribute attribute ) {
+        return valueOf(attribute, null);
+    }
+
+    /**
+     * @param variable the variable of the attribute, or null for global ones.
+     * @return the value of an attribute, numeric ones too, as text.
+     */
+    private static String valueOf( Attribute attribute, Variable variable ) {
+        if (attribute.isString() || attribute.getValues() == null) {
+            return attribute.getStringValue();
+        }
+        // integer attributes, as valid_range and _FillValue, have the type of the variable, which can be
+        // unsigned before netcdf-java converts it
+        boolean unsignedVariable = variable instanceof VariableDS && ((VariableDS) variable).getOriginalDataType() != null
+                && ((VariableDS) variable).getOriginalDataType().isUnsigned() && attribute.getDataType().isIntegral();
+        StringBuilder sb = new StringBuilder();
+        for( int i = 0; i < attribute.getLength(); i++ ) {
+            Number number = attribute.getNumericValue(i);
+            if (attribute.getDataType().isUnsigned() || unsignedVariable) {
+                // the unsigned values are stored in the signed java types
+                number = DataType.widenNumberIfNegative(number);
+            }
+            sb.append(i > 0 ? " " : "").append(number);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * @return the value of a parameter, numeric ones too, as text.
+     */
+    private static String valueOf( Parameter parameter ) {
+        if (parameter.isString()) {
+            return parameter.getStringValue();
+        }
+        return Arrays.toString(parameter.getNumericValues());
     }
 }

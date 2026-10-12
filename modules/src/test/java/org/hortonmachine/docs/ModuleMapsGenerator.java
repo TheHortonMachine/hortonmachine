@@ -123,6 +123,8 @@ import groovy.lang.GroovyShell;
  * small features; the colors still span the values of the whole raster.</li>
  * <li><b>over=vector.shp</b>: with vectors, another vector drawn over them in blue, as the river
  * under its sections.</li>
+ * <li><b>nohillshade</b>: the raster alone, opaque, without hillshade, for data far from the sample
+ * elevation, as a satellite tile.</li>
  * </ul>
  * The optional class names, as <code>1=stable;2=unstable</code>, replace the values in the legend
  * of the classes.
@@ -286,14 +288,19 @@ public class ModuleMapsGenerator {
         String colortable = Arrays.stream(EColorTables.values()).anyMatch(t -> t.name().equals(spec.colortable()))
                 ? spec.colortable()
                 : EColorTables.rainbow.name();
-        // the few cells drawn with positive are shown opaque, to be visible
-        double opacity = spec.options().contains("positive") ? 1.0 : OPACITY;
+        boolean withHillshade = !spec.options().contains("nohillshade");
+        // the few cells drawn with positive are shown opaque, to be visible, as the maps without hillshade
+        double opacity = spec.options().contains("positive") || !withHillshade ? 1.0 : OPACITY;
         Style style = RasterStyleUtilities.createStyleForColortable(colortable, minMax[0], minMax[1], opacity);
 
-        GridCoverage2D hillshade = readHillshade(baseElevation(spec));
-        double[] hillMinMax = minMax(hillshade);
-        Style hillStyle = RasterStyleUtilities.createStyleForColortable(EColorTables.greyscale.name(), hillMinMax[0],
-                hillMinMax[1], 1.0);
+        GridCoverage2D hillshade = null;
+        Style hillStyle = null;
+        if (withHillshade) {
+            hillshade = readHillshade(baseElevation(spec));
+            double[] hillMinMax = minMax(hillshade);
+            hillStyle = RasterStyleUtilities.createStyleForColortable(EColorTables.greyscale.name(), hillMinMax[0],
+                    hillMinMax[1], 1.0);
+        }
 
         ReferencedEnvelope envelope = mapEnvelope(spec, new ReferencedEnvelope(raster.getEnvelope2D()));
         int mapHeight = (int) Math.round(MAP_WIDTH * envelope.getHeight() / envelope.getWidth());
@@ -316,7 +323,9 @@ public class ModuleMapsGenerator {
 
         MapContent content = new MapContent();
         try {
-            content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
+            if (withHillshade) {
+                content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
+            }
             content.addLayer(new GridCoverageLayer(raster, style));
             StreamingRenderer renderer = new StreamingRenderer();
             renderer.setMapContent(content);

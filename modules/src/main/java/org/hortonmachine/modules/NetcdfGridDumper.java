@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package org.hortonmachine.modules;
+import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_doLatLon;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_inPath;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_outFolder;
 import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.DESCR_pExcludePattern;
@@ -31,6 +32,7 @@ import static org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter.
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.netcdf.OmsNetcdf2GridCoverageConverter;
@@ -40,6 +42,7 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -50,9 +53,10 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Dump NetCDF grids to geotools compatible rasters convering them to lat/lon epsg:4326.")
+@Description("Dumps the timesteps of a NetCDF grid to GeoTIFFs: projected grids of known crs keep it, the others are resampled to lat/long WGS84.")
+@Documentation(OmsNetcdf2GridCoverageConverter.DOCUMENTATION)
 @Author(name = "Antonello Andrea", contact = "http://www.hydrologis.com")
-@Keywords("netdcf")
+@Keywords("IO, NetCDF, HDF, MODIS, Raster, Time series, Reading")
 @Label(HMConstants.NETCDF)
 @Name("_netcdfgriddumper")
 @Status(40)
@@ -99,6 +103,10 @@ public class NetcdfGridDumper extends HMModel {
     @In
     public Double pNorthPoleLatitudeCorrection = null;
     
+    @Description(DESCR_doLatLon)
+    @In
+    public boolean doLatLon = false;
+
     @Description(DESCR_outFolder)
     @UI(HMConstants.FOLDEROUT_UI_HINT)
     @In
@@ -113,32 +121,33 @@ public class NetcdfGridDumper extends HMModel {
     	checkNull(inPath, outFolder);
 
         OmsNetcdf2GridCoverageConverter converter = new OmsNetcdf2GridCoverageConverter();
+        converter.pm = pm;
         converter.inPath = inPath;
         converter.pGridName = pGridName;
+        converter.pIncludePattern = pIncludePattern;
+        converter.pExcludePattern = pExcludePattern;
         converter.pFromTimestep = pFromTimestep;
         converter.pToTimestep = pToTimestep;
         converter.pFalseEastingCorrection = pFalseEastingCorrection;
         converter.pFalseNorthingCorrection = pFalseNorthingCorrection;
         converter.pNorthPoleLatitudeCorrection = pNorthPoleLatitudeCorrection;
         converter.pNorthPoleLongitudeCorrection = pNorthPoleLongitudeCorrection;
+        converter.doLatLon = doLatLon;
 
         converter.initProcess();
 
+        SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd_HHmmss");
+        f.setTimeZone(TimeZone.getTimeZone("UTC"));
+        File folderFile = new File(outFolder);
+        folderFile.mkdirs();
+        String baseName = FileUtilities.getNameWithoutExtention(new File(inPath));
+        String gridName = "__" + FileUtilities.getSafeFileName(converter.selectedGridName);
         while( converter.doProcess ) {
             converter.process();
             GridCoverage2D outRaster = converter.outRaster;
             Date date = converter.currentDate;
-            SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd_HHmmss");
-            String tsString = f.format(date);
-            File folderFile = new File(outFolder);
-            File inFile = new File(inPath);
-            String name = FileUtilities.getNameWithoutExtention(inFile);
-            String safeName = "";
-            if (pGridName != null) {
-            	safeName = "__" +  FileUtilities.getSafeFileName(pGridName);
-            }
-            name = name + "__" + tsString +  safeName + ".tif";
-            convertedFile = new File(folderFile, name);
+            String tsString = date == null ? "" : "__" + f.format(date);
+            convertedFile = new File(folderFile, baseName + tsString + gridName + ".tif");
             dumpRaster(outRaster, convertedFile.getAbsolutePath());
         }
 
