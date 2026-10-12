@@ -81,6 +81,12 @@ org.hortonmachine.modules.Xyz2Raster
 org.hortonmachine.modules.RasterToCog
 org.hortonmachine.modules.ScanLineRasterizer
 org.hortonmachine.modules.RasterExtruder
+org.hortonmachine.modules.RasterNull
+org.hortonmachine.modules.RasterMissingValuesFiller
+org.hortonmachine.modules.RasterSubsampler
+org.hortonmachine.modules.RasterValueRounder
+org.hortonmachine.modules.RasterCompare
+org.hortonmachine.modules.ImageMosaicCreator
 
 # Vector processing
 org.hortonmachine.modules.Vectorizer

@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_AUTHORNAMES;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_DESCRIPTION;
+import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_DOCUMENTATION;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_FILE_DESCRIPTION;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_KEYWORDS;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_LABEL;
@@ -27,7 +28,12 @@ import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRAST
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_NAME;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_OUT_RASTER_DESCRIPTION;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_P_FACTOR_DESCRIPTION;
+import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_P_MODE_DESCRIPTION;
 import static org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler.OMSRASTERSUBSAMPLER_STATUS;
+import static org.hortonmachine.gears.libs.modules.Variables.AVG;
+import static org.hortonmachine.gears.libs.modules.Variables.MAX;
+import static org.hortonmachine.gears.libs.modules.Variables.MIN;
+import static org.hortonmachine.gears.libs.modules.Variables.SUM;
 
 import org.hortonmachine.gears.io.subsampling.OmsRasterSubsampler;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -35,6 +41,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +52,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSRASTERSUBSAMPLER_DESCRIPTION)
+@Documentation(OMSRASTERSUBSAMPLER_DOCUMENTATION)
 @Author(name = OMSRASTERSUBSAMPLER_AUTHORNAMES, contact = OMSRASTERSUBSAMPLER_AUTHORCONTACTS)
 @Keywords(OMSRASTERSUBSAMPLER_KEYWORDS)
 @Label(OMSRASTERSUBSAMPLER_LABEL)
@@ -62,6 +70,12 @@ public class RasterSubsampler extends HMModel {
     @In
     public int pFactor = 2;
 
+    @Description(OMSRASTERSUBSAMPLER_P_MODE_DESCRIPTION)
+    @UI("combo:" + AVG + "," + MIN + "," + MAX + "," + SUM + "," + OmsRasterSubsampler.MAJORITY + ","
+            + OmsRasterSubsampler.NEAREST)
+    @In
+    public String pMode = AVG;
+
     @Description(OMSRASTERSUBSAMPLER_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -72,6 +86,10 @@ public class RasterSubsampler extends HMModel {
         OmsRasterSubsampler ss = new OmsRasterSubsampler();
         ss.inRaster = getRaster(inRaster);
         ss.pFactor = pFactor;
+        ss.pMode = pMode;
+        ss.pm = pm;
+        ss.doProcess = doProcess;
+        ss.doReset = doReset;
         ss.process();
         dumpRaster(ss.outRaster, outRaster);
     }

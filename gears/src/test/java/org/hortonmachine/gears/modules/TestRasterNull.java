@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.gears.modules;
 
+import java.awt.image.RenderedImage;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -104,7 +105,6 @@ public class TestRasterNull extends HMTestCase {
         transformer.inRaster = inCoverage;
         transformer.pValue = 4.0;
         transformer.doInverse = true;
-        transformer.pNull = 1.0;
         transformer.process();
         GridCoverage2D outCoverage = transformer.outRaster;
 
@@ -119,5 +119,53 @@ public class TestRasterNull extends HMTestCase {
                 {NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN} //
         };
         checkMatrixEqual(outCoverage.getRenderedImage(), expected3);
+    }
+
+    /**
+     * The inverse with a null value gives a mask of the value: 4 on its cells, 0 on the others.
+     */
+    public void testRasterNullInverseWithNullValue() throws Exception {
+        OmsRasterNull transformer = new OmsRasterNull();
+        transformer.inRaster = CoverageUtilities.buildCoverage("data", data, HMTestMaps.getEnvelopeparams(), HMTestMaps.getCrs(),
+                true);
+        transformer.pValue = 4.0;
+        transformer.doInverse = true;
+        transformer.pNull = 0.0;
+        transformer.process();
+
+        RenderedImage image = transformer.outRaster.getRenderedImage();
+        for( int row = 0; row < data.length; row++ ) {
+            for( int col = 0; col < data[0].length; col++ ) {
+                double expected = data[row][col] == 4 ? 4 : 0;
+                assertEquals(row + "/" + col, expected, image.getData().getSampleDouble(col, row, 0), DELTA);
+            }
+        }
+    }
+
+    /**
+     * On a float raster the value is found as the float stores it.
+     */
+    public void testRasterNullOnFloatRaster() throws Exception {
+        float[][] floatData = new float[data.length][data[0].length];
+        for( int row = 0; row < data.length; row++ ) {
+            for( int col = 0; col < data[0].length; col++ ) {
+                floatData[row][col] = (float) (data[row][col] + 0.1);
+            }
+        }
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", floatData, HMTestMaps.getEnvelopeparams(),
+                HMTestMaps.getCrs(), true);
+
+        OmsRasterNull transformer = new OmsRasterNull();
+        transformer.inRaster = inCoverage;
+        transformer.pValue = 4.1;
+        transformer.process();
+
+        RenderedImage image = transformer.outRaster.getRenderedImage();
+        for( int row = 0; row < data.length; row++ ) {
+            for( int col = 0; col < data[0].length; col++ ) {
+                double value = image.getData().getSampleDouble(col, row, 0);
+                assertEquals(row + "/" + col, data[row][col] == 4, HMConstants.isNovalue(value));
+            }
+        }
     }
 }

@@ -17,17 +17,18 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_STATUS;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_LABEL;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_LICENSE;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_NAME;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -35,6 +36,7 @@ import org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounde
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +47,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSRASTERVALUEROUNDER_DESCRIPTION)
+@Documentation(OMSRASTERVALUEROUNDER_DOCUMENTATION)
 @Author(name = OMSRASTERVALUEROUNDER_AUTHORNAMES, contact = OMSRASTERVALUEROUNDER_AUTHORCONTACTS)
 @Keywords(OMSRASTERVALUEROUNDER_KEYWORDS)
 @Label(OMSRASTERVALUEROUNDER_LABEL)

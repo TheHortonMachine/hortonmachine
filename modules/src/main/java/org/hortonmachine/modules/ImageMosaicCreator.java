@@ -17,15 +17,16 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSIMAGEMOSAICCREATOR_STATUS;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_LABEL;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_LICENSE;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_NAME;
+import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -33,6 +34,7 @@ import org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -43,6 +45,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSIMAGEMOSAICCREATOR_DESCRIPTION)
+@Documentation(OMSIMAGEMOSAICCREATOR_DOCUMENTATION)
 @Author(name = OMSIMAGEMOSAICCREATOR_AUTHORNAMES, contact = OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS)
 @Keywords(OMSIMAGEMOSAICCREATOR_KEYWORDS)
 @Label(OMSIMAGEMOSAICCREATOR_LABEL)

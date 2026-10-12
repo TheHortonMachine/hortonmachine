@@ -18,6 +18,8 @@
 package org.hortonmachine.gears.modules;
 
 
+import java.util.Locale;
+
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder;
@@ -72,5 +74,27 @@ public class TestRasterRounder extends HMTestCase {
         valueStr = String.valueOf(value).replace(',', '.');
         assertEquals(expected, valueStr);
 
+    }
+
+    /**
+     * The pattern has the dot as separator also when the system has the comma, and rounds half up.
+     */
+    public void testRasterRounderLocaleAndHalfUp() throws Exception {
+        double[][] data = new double[][]{{2.25, 2.5, NaN}, {-2.25, 1234.5678, 0.04}};
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("data", data, RegionMap.fromBoundsAndGrid(0, 30, 0, 20, 3, 2),
+                HMTestMaps.getCrs(), true);
+
+        Locale defaultLocale = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.ITALY);
+            OmsRasterValueRounder rounder = new OmsRasterValueRounder();
+            rounder.inRaster = inCoverage;
+            rounder.pPattern = "0.0";
+            rounder.process();
+
+            checkMatrixEqual(rounder.outRaster.getRenderedImage(), new double[][]{{2.3, 2.5, NaN}, {-2.3, 1234.6, 0.0}}, 1E-12);
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 }

@@ -28,6 +28,7 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValue
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_DOCUMENTATION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_IN_VECTORMASK_DESCRIPTION;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_KEYWORDS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_LABEL;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller.OMSRASTERNULLFILLER_LICENSE;
@@ -75,6 +76,11 @@ public class RasterMissingValuesFiller extends HMModel {
     @In
     public String inMask;
 
+    @Description(OMSRASTERNULLFILLER_IN_VECTORMASK_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
+    @In
+    public String inVectorMask;
+
     @Description(OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION)
     @In
     public int pMinDistance = 0;
@@ -103,23 +109,12 @@ public class RasterMissingValuesFiller extends HMModel {
         ormvf.pm = pm;
         ormvf.inRaster = getRaster(inRaster);
         ormvf.inRasterMask = getRaster(inMask);
+        ormvf.inVectorMask = getVector(inVectorMask);
         ormvf.pMinDistance = pMinDistance;
         ormvf.pMaxDistance = pMaxDistance;
         ormvf.doUseOnlyBorderValues = doUseOnlyBorderValues;
         ormvf.pMode = pMode;
         ormvf.process();
         dumpRaster(ormvf.outRaster, outRaster);
-    }
-
-    public static void main( String[] args ) throws Exception {
-        RasterMissingValuesFiller r = new RasterMissingValuesFiller();
-        r.inRaster = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/senegal_agb_moved.tif";
-        r.inMask = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/Global_Mangrove_Watch_2010_30m_4326_v2.tif";
-        r.outRaster = "/home/hydrologis/TMP/KLAB/MANGROVE_INTERPOLATION/interpolated.tif";
-        r.pMinDistance = 4;
-        r.pMaxDistance = 10;
-        r.doUseOnlyBorderValues = false;
-        r.pMode = LDW;
-        r.process();
     }
 }

@@ -45,9 +45,7 @@ import java.util.stream.Stream;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.Direction;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -125,9 +123,30 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     @Out
     public GridCoverage2D outRaster;
 
-    public static final String OMSRASTERNULLFILLER_DESCRIPTION = "Modules that fills missing values in a raster by interpolation of border values.";
-    public static final String OMSRASTERNULLFILLER_DOCUMENTATION = "";
-    public static final String OMSRASTERNULLFILLER_KEYWORDS = "Null, Missing values, Raster";
+    public static final String OMSRASTERNULLFILLER_DESCRIPTION = "Fills the missing values (holes) of a raster by interpolation of the valid cells around them.";
+    public static final String OMSRASTERNULLFILLER_DOCUMENTATION = """
+            Every novalue cell is filled from the valid cells within the max distance, measured in \
+            cells from center to center, so a circle of radius pMaxDistance. The cells at the min \
+            distance or nearer are not used: a min distance of 1 or 2 skips the edge cells of the holes, which \
+            in lidar or photogrammetric models are often wrong. With the only border values switch, just \
+            the valid cells touching a hole (in the 8 directions) are used, the ones on the rim of the \
+            holes: the interior of the valid area doesn't weigh on the fill, and on large rasters it is \
+            faster.
+
+            A cell is filled only if at least 4 valid cells are found, otherwise it stays novalue: the \
+            holes wider than about twice the max distance keep a novalue core. The filled cells are not \
+            used to fill the others, so the result doesn't depend on the order of the cells.
+
+            The modes are inverse distance weighting (IDW, weights 1/d²), linear distance weighting \
+            (LDW), thin plate spline (TPS), the plain average (AVERAGING) and, for rasters of classes, \
+            the most frequent value (CATEGORIES), that never creates values that are not in the input.
+
+            Every novalue cell is a hole, also the ones outside the area of the data, as the border of a \
+            basin or the frame of an orthophoto: without a mask the valid area grows outwards by the max \
+            distance. A raster mask (on the grid of the input) or a vector mask of polygons limits the \
+            fill to its valid cells or to its area.
+            """;
+    public static final String OMSRASTERNULLFILLER_KEYWORDS = "Null, Missing values, Holes, Interpolation, Raster";
     public static final String OMSRASTERNULLFILLER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERNULLFILLER_NAME = "rmissingfiller";
     public static final int OMSRASTERNULLFILLER_STATUS = 40;
@@ -135,13 +154,13 @@ public class OmsRasterMissingValuesFiller extends HMModel {
     public static final String OMSRASTERNULLFILLER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERNULLFILLER_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSRASTERNULLFILLER_IN_RASTER_DESCRIPTION = "The raster in which to fill missing values.";
-    public static final String OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION = "An optional raster mask on which to fill missing data.";
-    public static final String OMSRASTERNULLFILLER_IN_VECTORMASK_DESCRIPTION = "An optional vector mask on which to fill missing data.";
-    public static final String OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION = "The min distance to consider for the interpolation (in cells).";
-    public static final String OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION = "The max distance to consider for the interpolation (in cells).";
-    public static final String OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION = "The new raster.";
-    public static final String OMSRASTERNULLFILLER_P_MODE_DESCRIPTION = "Interpolation mode.";
-    public static final String OMSRASTERNULLFILLER_doUseOnlyBorderValues_DESCRIPTION = "Use only border values to interpolate (as opposed to all in the min.max range).";
+    public static final String OMSRASTERNULLFILLER_IN_RASTERMASK_DESCRIPTION = "An optional raster mask, on the grid of the input: only the holes on its valid cells are filled.";
+    public static final String OMSRASTERNULLFILLER_IN_VECTORMASK_DESCRIPTION = "An optional vector mask of polygons: only the holes inside them are filled.";
+    public static final String OMSRASTERNULLFILLER_pMinDistance_DESCRIPTION = "The cells at this distance or nearer are not used for the interpolation (in cells).";
+    public static final String OMSRASTERNULLFILLER_pMaxDistance_DESCRIPTION = "The max distance of the cells used for the interpolation (in cells).";
+    public static final String OMSRASTERNULLFILLER_OUT_RASTER_DESCRIPTION = "The filled raster.";
+    public static final String OMSRASTERNULLFILLER_P_MODE_DESCRIPTION = "The interpolation mode.";
+    public static final String OMSRASTERNULLFILLER_doUseOnlyBorderValues_DESCRIPTION = "Use only the valid cells touching the holes, instead of all the valid cells within the max distance.";
 
     @Execute
     public void process() throws Exception {
@@ -182,6 +201,10 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             HMRaster mask = null;
             if (inRasterMask != null) {
                 mask = HMRaster.fromGridCoverage(inRasterMask);
+                if (mask.getCols() != inData.getCols() || mask.getRows() != inData.getRows()) {
+                    throw new ModelsIllegalargumentException("The raster mask needs to have the grid of the input raster.",
+                            this, pm);
+                }
             }
 
             PreparedGeometry vectorMask = null;
@@ -192,7 +215,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             }
 
             List<Coordinate> novaluePoints = new ArrayList<>();
-            inData.process(pm, "Identifing holes...", ( col, row, value, tcols, trows ) -> {
+            inData.process(pm, "Identifying holes...", ( col, row, value, tcols, trows ) -> {
                 if (inData.isNovalue(value)) {
                     novaluePoints.add(new Coordinate(col, row));
                 }
@@ -212,27 +235,20 @@ public class OmsRasterMissingValuesFiller extends HMModel {
         // now find touching points with values
         pm.beginTask("Filling holes...", novaluePoints.size());
         for( Coordinate noValuePoint : novaluePoints ) {
-            if (mask != null && mask.isNovalue(mask.getValue((int) noValuePoint.x, (int) noValuePoint.y))) {
-                // do not fill when the mask does not have value
+            // the holes are kept in grid space, as col/row coordinates, to interpolate on distances in cells
+            int col = (int) noValuePoint.x;
+            int row = (int) noValuePoint.y;
+            if (!isInMasks(inData, mask, vectorMask, col, row)) {
                 pm.worked(1);
                 continue;
             }
-            if (vectorMask != null) {
-                Coordinate w = inData.getWorld((int) noValuePoint.x, (int) noValuePoint.y);
-                Point nvPoint = gf.createPoint(w);
-                if (!vectorMask.intersects(nvPoint)) {
-                    // do not fill when not in ROI
-                    pm.worked(1);
-                    continue;
-                }
-            }
-            List<Coordinate> result = inData.getSurroundingCells((int) noValuePoint.x, (int) noValuePoint.y, pMaxDistance, true);
+            List<Coordinate> result = inData.getSurroundingCells(col, row, pMaxDistance, true);
             result = result.stream().filter(c -> !inData.isNovalue(c.z) && c.distance(noValuePoint) > pMinDistance)
                     .collect(Collectors.toList());
             if (result.size() > 3) {
                 try {
                     double value = interpolator.getValue(result, noValuePoint);
-                    outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
+                    outData.setValue(col, row, value);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -271,18 +287,11 @@ public class OmsRasterMissingValuesFiller extends HMModel {
 
         pm.beginTask("Filling holes...", novaluePoints.size());
         for( Coordinate noValuePoint : novaluePoints ) {
-            if (mask != null && mask.isNovalue(mask.getValue((int) noValuePoint.x, (int) noValuePoint.y))) {
-                // do not fill when the mask does not have value
+            int col = (int) noValuePoint.x;
+            int row = (int) noValuePoint.y;
+            if (!isInMasks(inData, mask, vectorMask, col, row)) {
                 pm.worked(1);
                 continue;
-            }
-            if (vectorMask != null) {
-                Point nvPoint = gf.createPoint(noValuePoint);
-                if (!vectorMask.intersects(nvPoint)) {
-                    // do not fill when not in ROI
-                    pm.worked(1);
-                    continue;
-                }
             }
             // get points with values in range
             Envelope env = new Envelope(new Coordinate(noValuePoint.x, noValuePoint.y));
@@ -293,7 +302,7 @@ public class OmsRasterMissingValuesFiller extends HMModel {
             if (result.size() > 3) {
                 try {
                     double value = interpolator.getValue(result, noValuePoint);
-                    outData.setValue((int) noValuePoint.x, (int) noValuePoint.y, value);
+                    outData.setValue(col, row, value);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -306,8 +315,23 @@ public class OmsRasterMissingValuesFiller extends HMModel {
         outRaster = outData.buildCoverage();
     }
 
+    /**
+     * @return <code>true</code> if the cell is on a valid cell of the raster mask and inside the
+     *         vector mask, the latter tested on the world position of the cell center.
+     */
+    private boolean isInMasks( HMRaster inData, HMRaster mask, PreparedGeometry vectorMask, int col, int row ) {
+        if (mask != null && mask.isNovalue(mask.getValue(col, row))) {
+            return false;
+        }
+        if (vectorMask != null) {
+            Point cellCenter = gf.createPoint(inData.getWorld(col, row));
+            return vectorMask.intersects(cellCenter);
+        }
+        return true;
+    }
+
     private boolean isValid( double distance ) {
-        return distance < pMaxDistance && distance > pMinDistance;
+        return distance <= pMaxDistance && distance > pMinDistance;
     }
 
     static public class CategoriesInterpolator implements ISurfaceInterpolator {

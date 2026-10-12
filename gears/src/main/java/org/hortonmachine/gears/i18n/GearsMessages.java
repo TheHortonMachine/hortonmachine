@@ -557,25 +557,6 @@ public class GearsMessages {
     public static final String OMSID2VALUEARRAYWRITER_DATA_DESCRIPTION = "The map of ids and values arrays to write.";
 
 
-    public static final String OMSRANGELOOKUP_DESCRIPTION = "Module for raster rangelookup.";
-    public static final String OMSRANGELOOKUP_DOCUMENTATION = """
-            The ranges are separated by commas, each with its lower and upper bound separated by a space and enclosed \
-            in brackets: a square bracket includes the bound, a round one excludes it, and `null` leaves the range \
-            open on that side. The classes, also separated by commas, go to the ranges in the same order. For example \
-            `[0 10),[10 20),[20 null)` with `1,2,3` gives 1 to the values from 0 to below 10, 2 from 10 to below 20 \
-            and 3 from 20 up. The cells that fall in no range become no-data.
-            """;
-    public static final String OMSRANGELOOKUP_KEYWORDS = "Raster, Rangelookup";
-    public static final String OMSRANGELOOKUP_LABEL = RASTERPROCESSING;
-    public static final String OMSRANGELOOKUP_NAME = "rrangelookup";
-    public static final int OMSRANGELOOKUP_STATUS = 40;
-    public static final String OMSRANGELOOKUP_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRANGELOOKUP_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRANGELOOKUP_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRANGELOOKUP_IN_RASTER_DESCRIPTION = "The raster that has to be processed.";
-    public static final String OMSRANGELOOKUP_P_RANGES_DESCRIPTION = "The ranges in the form [r1l r1h),[r2l r2h]";
-    public static final String OMSRANGELOOKUP_P_CLASSES_DESCRIPTION = "The classes to substitute in the same order of the ranges (in the form 1,2)";
-    public static final String OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION = "The processed raster.";
 
     public static final String OMSTMSGENERATOR_DESCRIPTION = "Module for the generation of map tiles.";
     public static final String OMSTMSGENERATOR_DOCUMENTATION = "";
@@ -860,19 +841,6 @@ public class GearsMessages {
     public static final String OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
     public static final String OMSGRIDGEOMETRYREADER_OUT_GRID_GEOM_DESCRIPTION = "The output GridGeometry.";
 
-    public static final String OMSRASTERVALUEROUNDER_DESCRIPTION = "Module that rounds the values of a raster map.";
-    public static final String OMSRASTERVALUEROUNDER_DOCUMENTATION = "";
-    public static final String OMSRASTERVALUEROUNDER_KEYWORDS = "Round, Raster";
-    public static final String OMSRASTERVALUEROUNDER_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERVALUEROUNDER_NAME = "rround";
-    public static final int OMSRASTERVALUEROUNDER_STATUS = 40;
-    public static final String OMSRASTERVALUEROUNDER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERVALUEROUNDER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERVALUEROUNDER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION = "The raster of which to round the values.";
-    public static final String OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION = "The rounding pattern.";
-    public static final String OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION = "The rounded raster.";
-
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DESCRIPTION = "Module for raster to vector conversion";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_DOCUMENTATION = "";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_KEYWORDS = "Raster, Vector";
@@ -947,17 +915,6 @@ public class GearsMessages {
     public static final String OMSCOVERAGEVIEWER_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSCOVERAGEVIEWER_UI = "hide";
     public static final String OMSCOVERAGEVIEWER_RASTER_DESCRIPTION = "The coverage to visualize.";
-
-    public static final String OMSIMAGEMOSAICCREATOR_DESCRIPTION = "Module for creating an mosaic shapefile for images.";
-    public static final String OMSIMAGEMOSAICCREATOR_DOCUMENTATION = "";
-    public static final String OMSIMAGEMOSAICCREATOR_KEYWORDS = "Imagemosaic, Raster";
-    public static final String OMSIMAGEMOSAICCREATOR_LABEL = RASTERPROCESSING;
-    public static final String OMSIMAGEMOSAICCREATOR_NAME = "imagemosaic";
-    public static final int OMSIMAGEMOSAICCREATOR_STATUS = 40;
-    public static final String OMSIMAGEMOSAICCREATOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSIMAGEMOSAICCREATOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION = "The folder containing the images to mosaic.";
 
     public static final String OMSEIALTIMETRYREADER_DESCRIPTION = "Utility class for reading altimetry data from csv files.";
     public static final String OMSEIALTIMETRYREADER_DOCUMENTATION = "";

@@ -18,8 +18,6 @@
 package org.hortonmachine.gears.modules.r.rasternull;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_DESCRIPTION;
@@ -30,15 +28,10 @@ import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRAST
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_NAME;
 import static org.hortonmachine.gears.modules.r.rasternull.OmsRasterNull.OMSRASTERNULL_STATUS;
 
-import java.awt.image.WritableRaster;
-
-import org.eclipse.imagen.iterator.WritableRandomIter;
-
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.multiprocessing.GridMultiProcessing;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 
 import oms3.annotations.Author;
@@ -61,7 +54,7 @@ import oms3.annotations.Status;
 @Name(OMSRASTERNULL_NAME)
 @Status(OMSRASTERNULL_STATUS)
 @License(OMSRASTERNULL_LICENSE)
-public class OmsRasterNull extends GridMultiProcessing {
+public class OmsRasterNull extends HMModel {
 
     @Description(OMSRASTERNULL_IN_RASTER_DESCRIPTION)
     @In
@@ -83,9 +76,20 @@ public class OmsRasterNull extends GridMultiProcessing {
     @Out
     public GridCoverage2D outRaster;
 
-    public static final String OMSRASTERNULL_DESCRIPTION = "Module that puts a certain value of the raster to null.";
-    public static final String OMSRASTERNULL_DOCUMENTATION = "";
-    public static final String OMSRASTERNULL_KEYWORDS = "Null, Raster";
+    public static final String OMSRASTERNULL_DESCRIPTION = "Sets the cells of a given value of a raster to novalue, or all the other cells.";
+    public static final String OMSRASTERNULL_DOCUMENTATION = """
+            The typical use is a value that means no data but isn't declared as novalue, as the 0 of \
+            the frame of an orthophoto or the -32768 of some elevation models. The inverse switch keeps \
+            only the cells of the value and sets all the others to novalue, which gives the mask of a \
+            class from a raster of classes.
+
+            The value is compared at float precision, so 1.1 finds also the cells of a float raster, \
+            that stores it as 1.100000023841858: the values nearer than about one ten millionth of the \
+            value are taken as equal. To null a range of values RangeLookup or Mapcalc are the tools. The cells that are novalue in \
+            the input stay novalue. A null value given sets the nulled cells to that value instead of \
+            the novalue, for example 0 to make a 1/0 raster with the inverse.
+            """;
+    public static final String OMSRASTERNULL_KEYWORDS = "Null, Novalue, Mask, Raster";
     public static final String OMSRASTERNULL_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERNULL_NAME = "rnull";
     public static final int OMSRASTERNULL_STATUS = 40;
@@ -94,56 +98,34 @@ public class OmsRasterNull extends GridMultiProcessing {
     public static final String OMSRASTERNULL_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSRASTERNULL_IN_RASTER_DESCRIPTION = "The raster to modify.";
     public static final String OMSRASTERNULL_P_VALUE_DESCRIPTION = "The value to set to null.";
-    public static final String OMSRASTERNULL_doInverse_DESCRIPTION = "If true, sets everything else to null.";
-    public static final String OMSRASTERNULL_P_NULL_DESCRIPTION = "The the null value to set (else it is guessed).";
+    public static final String OMSRASTERNULL_doInverse_DESCRIPTION = "If true, keeps the cells of the value and sets all the others to null.";
+    public static final String OMSRASTERNULL_P_NULL_DESCRIPTION = "An optional value to give to the nulled cells instead of the novalue.";
     public static final String OMSRASTERNULL_OUT_RASTER_DESCRIPTION = "The new raster.";
-
-    private double nullValue;
 
     @Execute
     public void process() throws Exception {
         checkNull(inRaster, pValue);
 
         double replaceValue = pValue;
-        nullValue = HMConstants.doubleNovalue;
-        if (pNull != null) {
-            nullValue = pNull;
-        }
+        // the values of float rasters are found also when they come as doubles
+        float replaceFloat = (float) replaceValue;
+        try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
+                HMRaster outData = new HMRasterWritableBuilder().setName("nulled").setTemplate(inRaster).build()) {
+            double nullValue = pNull != null ? pNull : outData.getNovalue();
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        int rows = regionMap.getRows();
-        int cols = regionMap.getCols();
-
-        WritableRaster outWR = CoverageUtilities.renderedImage2DoubleWritableRaster(inRaster.getRenderedImage(), false);
-        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
-
-        pm.beginTask("Nulling data...", cols * rows);
-        processGrid(cols, rows, ( c, r ) -> {
-            if (pm.isCanceled()) {
-                return;
-            }
-            double value = outIter.getSampleDouble(c, r, 0);
-            if (!isNovalue(value)) {
-                if (doInverse) {
-                    if (!NumericsUtilities.dEq(value, replaceValue)) {
-                        value = doubleNovalue;
-                    }
-                } else {
-                    if (NumericsUtilities.dEq(value, replaceValue)) {
-                        value = nullValue;
-                    }
+            inData.process(pm, "Nulling data...", ( col, row, value, cols, rows ) -> {
+                if (inData.isNovalue(value)) {
+                    // the output starts as novalue
+                    return;
                 }
-                outIter.setSample(c, r, 0, value);
-            } else {
-                outIter.setSample(c, r, 0, doubleNovalue);
-            }
-            pm.worked(1);
-        });
-        pm.done();
-
-        outIter.done();
-
-        outRaster = CoverageUtilities.buildCoverage("nulled", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
+                boolean isTheValue = (float) value == replaceFloat || NumericsUtilities.dEq(value, replaceValue);
+                if (isTheValue != doInverse) {
+                    value = nullValue;
+                }
+                outData.setValue(col, row, value);
+            });
+            outRaster = outData.buildCoverage();
+        }
     }
 
 }

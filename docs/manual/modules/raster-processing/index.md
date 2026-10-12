@@ -24,4 +24,10 @@ xyz2raster
 rastertocog
 scanlinerasterizer
 rasterextruder
+rasternull
+rastermissingvaluesfiller
+rastersubsampler
+rastervaluerounder
+rastercompare
+imagemosaiccreator
 ```

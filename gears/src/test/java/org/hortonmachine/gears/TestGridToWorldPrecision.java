@@ -25,12 +25,15 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.Variables;
-import org.hortonmachine.gears.modules.r.holefiller.OmsHoleFiller;
+import org.hortonmachine.gears.modules.r.rasternull.OmsRasterMissingValuesFiller;
 import org.hortonmachine.gears.modules.v.vectorize.OmsPointsVectorizer;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
 /**
@@ -90,10 +93,10 @@ public class TestGridToWorldPrecision extends HMTestCase {
     }
 
     /**
-     * A hole in a plane rising to the north is filled with the plane: its neighbours must be at
-     * their exact positions.
+     * A hole in a plane rising to the north is filled with the plane, also when the vector mask
+     * around it is smaller than a cell: the center of the hole must be at its exact position.
      */
-    public void testHoleFillerOnFineGrid() throws Exception {
+    public void testMissingValuesFillerVectorMaskOnFineGrid() throws Exception {
         double[][] data = new double[100][100];
         for( int row = 0; row < 100; row++ ) {
             for( int col = 0; col < 100; col++ ) {
@@ -101,16 +104,24 @@ public class TestGridToWorldPrecision extends HMTestCase {
             }
         }
         data[50][50] = HMConstants.doubleNovalue;
-        OmsHoleFiller filler = new OmsHoleFiller();
-        filler.pm = pm;
-        filler.inRaster = fineGrid(data);
-        filler.pMode = Variables.IDW;
-        filler.pBuffer = 1.0;
-        filler.process();
+        double x = WEST + 50.5 * RES;
+        double y = NORTH - 50.5 * RES;
+        Geometry mask = GeometryUtilities.gf().toGeometry(new Envelope(x - 0.3 * RES, x + 0.3 * RES, y - 0.3 * RES, y + 0.3 * RES));
 
-        RandomIter iter = CoverageUtilities.getRandomIterator(filler.outRaster);
-        assertEquals(1500.0, iter.getSampleDouble(50, 50, 0), 1E-6);
-        iter.done();
+        for( boolean onlyBorder : new boolean[]{false, true} ) {
+            OmsRasterMissingValuesFiller filler = new OmsRasterMissingValuesFiller();
+            filler.pm = pm;
+            filler.inRaster = fineGrid(data);
+            filler.inVectorMask = FeatureUtilities.featureCollectionFromGeometry(HMTestMaps.getCrs(), mask);
+            filler.pMode = Variables.IDW;
+            filler.pMaxDistance = 2;
+            filler.doUseOnlyBorderValues = onlyBorder;
+            filler.process();
+
+            RandomIter iter = CoverageUtilities.getRandomIterator(filler.outRaster);
+            assertEquals("only border = " + onlyBorder, 1500.0, iter.getSampleDouble(50, 50, 0), 1E-6);
+            iter.done();
+        }
     }
 
     private static GridCoverage2D fineGrid() {

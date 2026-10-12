@@ -18,6 +18,7 @@
 package org.hortonmachine.gears.modules;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
@@ -46,6 +47,33 @@ public class TestRangeLookup extends HMTestCase {
         range.process();
         GridCoverage2D out = range.outRaster;
         checkMatrixEqual(out.getRenderedImage(), HMTestMaps.rangeLookupOutData, 0);
+    }
+
+    /**
+     * A range open downwards contains the novalue -9999, whose cells must stay novalue.
+     */
+    public void testNovalueInOpenRange() throws Exception {
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("dtm", HMTestMaps.mapData, HMTestMaps.getEnvelopeparams(),
+                HMTestMaps.getCrs(), true);
+
+        OmsRangeLookup range = new OmsRangeLookup();
+        range.pm = pm;
+        range.inRaster = inCoverage;
+        range.pRanges = "[null 1000),[1000 null)";
+        range.pClasses = "1,2";
+        range.process();
+
+        double[][] data = HMTestMaps.mapData;
+        double[][] expected = new double[data.length][data[0].length];
+        for( int r = 0; r < data.length; r++ ) {
+            for( int c = 0; c < data[0].length; c++ ) {
+                double v = data[r][c];
+                expected[r][c] = HMConstants.isNovalue(v) ? HMConstants.doubleNovalue : v < 1000 ? 1 : 2;
+            }
+        }
+        checkMatrixEqual(range.outRaster.getRenderedImage(), expected, 0);
+        // the expected novalue is checked as novalue by checkMatrixEqual only in one direction
+        assertTrue(HMConstants.isNovalue(CoverageUtilities.getValue(range.outRaster, 1, 1)));
     }
 
 }

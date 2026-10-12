@@ -58,6 +58,10 @@ public class RasterNull extends HMModel {
     @In
     public Double pNull = null;
 
+    @Description(OMSRASTERNULL_doInverse_DESCRIPTION)
+    @In
+    public boolean doInverse = false;
+
     @Description(OMSRASTERNULL_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -69,6 +73,7 @@ public class RasterNull extends HMModel {
         rasternull.inRaster = getRaster(inRaster);
         rasternull.pValue = pValue;
         rasternull.pNull = pNull;
+        rasternull.doInverse = doInverse;
         rasternull.pm = pm;
         rasternull.doProcess = doProcess;
         rasternull.doReset = doReset;

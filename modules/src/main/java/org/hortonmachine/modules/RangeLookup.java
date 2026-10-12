@@ -17,19 +17,19 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_CLASSES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_RANGES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_LABEL;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_LICENSE;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_NAME;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_P_CLASSES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_P_RANGES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;

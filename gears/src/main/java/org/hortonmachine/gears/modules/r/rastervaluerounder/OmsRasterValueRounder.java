@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,26 +17,26 @@
  */
 package org.hortonmachine.gears.modules.r.rastervaluerounder;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERVALUEROUNDER_STATUS;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_LABEL;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_LICENSE;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_NAME;
+import static org.hortonmachine.gears.modules.r.rastervaluerounder.OmsRasterValueRounder.OMSRASTERVALUEROUNDER_STATUS;
 
-import java.awt.image.WritableRaster;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -49,11 +49,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 @Description(OMSRASTERVALUEROUNDER_DESCRIPTION)
 @Documentation(OMSRASTERVALUEROUNDER_DOCUMENTATION)
@@ -77,48 +72,48 @@ public class OmsRasterValueRounder extends HMModel {
     @Out
     public GridCoverage2D outRaster;
 
-    private DecimalFormat formatter = null;
+    public static final String OMSRASTERVALUEROUNDER_DESCRIPTION = "Rounds the values of a raster to a number of decimals.";
+    public static final String OMSRASTERVALUEROUNDER_DOCUMENTATION = """
+            The pattern is a Java DecimalFormat pattern, with the dot as decimal separator whatever the \
+            language of the system: 0.00 rounds to two decimals, # to the integer. The values are rounded \
+            half up, so 2.5 becomes 3 and 2.25 with 0.0 becomes 2.3. The novalues stay novalue.
+
+            The rounded values are doubles, nearest to the rounded decimals: 6.35 is not exact in \
+            binary. The rounding removes the noise of the last decimals, as in the output of an \
+            interpolation, and makes the files compress better; to round to steps that are not \
+            decimals, as to the half meter, Mapcalc does it with round(value * 2) / 2.
+            """;
+    public static final String OMSRASTERVALUEROUNDER_KEYWORDS = "Round, Raster";
+    public static final String OMSRASTERVALUEROUNDER_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERVALUEROUNDER_NAME = "rround";
+    public static final int OMSRASTERVALUEROUNDER_STATUS = 40;
+    public static final String OMSRASTERVALUEROUNDER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERVALUEROUNDER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERVALUEROUNDER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRASTERVALUEROUNDER_IN_RASTER_DESCRIPTION = "The raster of which to round the values.";
+    public static final String OMSRASTERVALUEROUNDER_P_PATTERN_DESCRIPTION = "The rounding pattern, as 0.00 for two decimals.";
+    public static final String OMSRASTERVALUEROUNDER_OUT_RASTER_DESCRIPTION = "The rounded raster.";
 
     @Execute
     public void process() throws Exception {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
-
         checkNull(inRaster, pPattern);
 
-        formatter = new DecimalFormat(pPattern);
+        DecimalFormat formatter = new DecimalFormat(pPattern, DecimalFormatSymbols.getInstance(Locale.ROOT));
+        formatter.setRoundingMode(RoundingMode.HALF_UP);
+        formatter.setGroupingUsed(false);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        int rows = regionMap.getRows();
-        int cols = regionMap.getCols();
-
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
-        RandomIter inRasterIter = CoverageUtilities.getRandomIterator(inRaster);
-        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
-
-        pm.beginTask("Rounding data...", rows);
-        for( int r = 0; r < rows; r++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double value = inRasterIter.getSampleDouble(c, r, 0);
-                if (!isNovalue(value)) {
-                    String formatted = formatter.format(value);
-                    value = Double.parseDouble(formatted);
-                    outIter.setSample(c, r, 0, value);
-                } else {
-                    outIter.setSample(c, r, 0, doubleNovalue);
+        try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
+                HMRaster outData = new HMRasterWritableBuilder().setName("rounded").setTemplate(inRaster).build()) {
+            inData.process(pm, "Rounding data...", ( col, row, value, cols, rows ) -> {
+                if (!inData.isNovalue(value)) {
+                    outData.setValue(col, row, formatter.parse(formatter.format(value)).doubleValue());
                 }
-            }
-            pm.worked(1);
+            });
+            outRaster = outData.buildCoverage();
         }
-        pm.done();
-
-        outIter.done();
-
-        outRaster = CoverageUtilities.buildCoverage("rounded", outWR, regionMap, inRaster.getCoordinateReferenceSystem());
     }
 
 }

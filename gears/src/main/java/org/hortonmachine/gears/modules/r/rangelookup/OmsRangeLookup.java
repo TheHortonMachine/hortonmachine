@@ -17,19 +17,16 @@
  */
 package org.hortonmachine.gears.modules.r.rangelookup;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_CLASSES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_P_RANGES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRANGELOOKUP_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_LABEL;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_LICENSE;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_NAME;
+import static org.hortonmachine.gears.modules.r.rangelookup.OmsRangeLookup.OMSRANGELOOKUP_STATUS;
 
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
@@ -43,6 +40,8 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
@@ -83,6 +82,27 @@ public class OmsRangeLookup extends HMModel {
     @Description(OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
+
+    public static final String OMSRANGELOOKUP_DESCRIPTION = "Module for raster rangelookup.";
+    public static final String OMSRANGELOOKUP_DOCUMENTATION = """
+            The ranges are separated by commas, each with its lower and upper bound separated by a space and enclosed \
+            in brackets: a square bracket includes the bound, a round one excludes it, and `null` leaves the range \
+            open on that side. The classes, also separated by commas, go to the ranges in the same order. For example \
+            `[0 10),[10 20),[20 null)` with `1,2,3` gives 1 to the values from 0 to below 10, 2 from 10 to below 20 \
+            and 3 from 20 up. The cells that fall in no range become no-data, and the no-data cells of the input \
+            stay no-data, also in a range open downwards.
+            """;
+    public static final String OMSRANGELOOKUP_KEYWORDS = "Raster, Rangelookup";
+    public static final String OMSRANGELOOKUP_LABEL = RASTERPROCESSING;
+    public static final String OMSRANGELOOKUP_NAME = "rrangelookup";
+    public static final int OMSRANGELOOKUP_STATUS = 40;
+    public static final String OMSRANGELOOKUP_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRANGELOOKUP_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRANGELOOKUP_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSRANGELOOKUP_IN_RASTER_DESCRIPTION = "The raster that has to be processed.";
+    public static final String OMSRANGELOOKUP_P_RANGES_DESCRIPTION = "The ranges in the form [r1l r1h),[r2l r2h]";
+    public static final String OMSRANGELOOKUP_P_CLASSES_DESCRIPTION = "The classes to substitute in the same order of the ranges (in the form 1,2)";
+    public static final String OMSRANGELOOKUP_OUT_RASTER_DESCRIPTION = "The processed raster.";
 
     @SuppressWarnings("nls")
     @Execute
@@ -161,7 +181,20 @@ public class OmsRangeLookup extends HMModel {
         RenderedImage lookupImg = ImageN.create("RLookup", pb);
 
         RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-        outRaster = CoverageUtilities.buildCoverageWithNovalue("rangelookup", lookupImg, regionMap,
+        GridCoverage2D lookupCoverage = CoverageUtilities.buildCoverageWithNovalue("rangelookup", lookupImg, regionMap,
                 inRaster.getCoordinateReferenceSystem(), novalue);
+
+        // the lookup classes also the novalue cells, if a range contains the novalue
+        try (HMRaster inData = HMRaster.fromGridCoverage(inRaster);
+                HMRaster lookupData = HMRaster.fromGridCoverage(lookupCoverage);
+                HMRaster outData = new HMRasterWritableBuilder().setName("rangelookup").setTemplate(inRaster)
+                        .setNoValue(novalue).build()) {
+            inData.process(pm, "Classifying ranges...", ( col, row, value, cols, rows ) -> {
+                if (!inData.isNovalue(value)) {
+                    outData.setValue(col, row, lookupData.getValue(col, row));
+                }
+            });
+            outRaster = outData.buildCoverage();
+        }
     }
 }

@@ -152,3 +152,10 @@ DelaunayTriangulation | ../examples/hm/delaunaytriangulation.groovy | triangles.
 VoronoiDiagram | ../examples/hm/voronoidiagram.groovy | voronoi.shp                 | elev     | field=avgelev,fill,over=subbasins_centroids.shp,extent=1638500:1640500:5112400:5114300
 VectorTableJoiner | ../examples/hm/vectortablejoiner.groovy | -                   | -
 DxfConverter   | ../examples/hm/dxfconverter.groovy   | dxf_lines.shp               | reds     | over=dxf_polygons.shp,extent=1638500:1640500:5112400:5114300
+RasterNull     | ../examples/hm/rasternull.groovy     | belt_middle.tif             | blues    | nolegend
+RasterMissingValuesFiller | ../examples/hm/rastermissingvaluesfiller.groovy | dtm_holes.tif | elev
+RasterMissingValuesFiller | -                         | dtm_filled.tif              | elev
+RasterSubsampler | ../examples/hm/rastersubsampler.groovy | belts_100m.tif          | contrasting | classes | 1=below 1300 m;2=1300 to 1700 m;3=above 1700 m
+RasterValueRounder | ../examples/hm/rastervaluerounder.groovy | -                 | -
+RasterCompare  | ../examples/hm/rastercompare.groovy  | -                           | -
+ImageMosaicCreator | ../examples/hm/imagemosaiccreator.groovy | dtm_tiles/dtm_tiles.shp | reds
