@@ -19,13 +19,21 @@ package org.hortonmachine.geoscript.console;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -34,9 +42,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -57,6 +69,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -64,6 +77,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.text.BadLocationException;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -80,6 +94,9 @@ import org.fife.ui.rsyntaxtextarea.ErrorStrip;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaEditorKit;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.Gutter;
+import org.fife.ui.rtextarea.GutterIconInfo;
+import org.fife.ui.rtextarea.IconRowHeader;
 import org.fife.ui.rtextarea.RTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchContext;
@@ -106,6 +123,10 @@ import groovy.transform.ThreadInterrupt;
  * Variables assigned without <code>def</code> live in the binding and survive between runs, so
  * that a script can be run piece by piece (run selection) and the completion knows the type of
  * their values.
+ *
+ * <p>
+ * A script can also be debugged: it stops at the breakpoints set in the gutter, shows the
+ * variables and can be stepped (see {@link ScriptDebugger}).
  *
  * <p>Developed by Andrea Antonello with the assistance of an AI coding agent;
  * design, review and validation by the author.</p>
@@ -161,6 +182,20 @@ public class ScriptConsole {
     private Action runAction;
     private Action runSelectionAction;
     private Action interruptAction;
+    private Action debugAction;
+    private Action stepOverAction;
+    private Action stepIntoAction;
+    private Action stepOutAction;
+
+    private final DebugCustomizer debugCustomizer = new DebugCustomizer();
+    private final ScriptDebugger debugger;
+    private final List<GutterIconInfo> breakpoints = new ArrayList<>();
+    private Gutter gutter;
+    private JSplitPane outputSplit;
+    private JComponent variablesPanel;
+    private final VariablesTableModel variablesModel = new VariablesTableModel();
+    private boolean paused = false;
+    private Object pausedLineTag;
 
     /**
      * @param exitOnClose if <code>true</code> the jvm exits when the console is closed.
@@ -169,8 +204,16 @@ public class ScriptConsole {
         this.exitOnClose = exitOnClose;
 
         CompilerConfiguration config = new CompilerConfiguration();
-        config.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class));
+        config.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class), debugCustomizer);
         shell = new GroovyShell(ScriptConsole.class.getClassLoader(), binding, config);
+        debugger = new ScriptDebugger(binding, new ScriptDebugger.Listener(){
+            public void paused( int line, List<ScriptDebugger.Variable> variables ) {
+                SwingUtilities.invokeLater(() -> showPause(line, variables));
+            }
+            public void resumed() {
+                SwingUtilities.invokeLater(() -> clearPause());
+            }
+        });
 
         editor = CodeEditorFactory.createEditor(SyntaxConstants.SYNTAX_STYLE_GROOVY);
         output = new ConsoleOutputPane();
@@ -211,6 +254,16 @@ public class ScriptConsole {
             }
         });
         editor.addCaretListener(e -> updateCaretLabel());
+        // Ctrl+/ (and Ctrl+=, Ctrl+-) also produce a typed char that the editor would insert after the
+        // shortcut ran. Swallow it, but leave AltGr (Ctrl+Alt) alone, since it types real characters.
+        editor.addKeyListener(new KeyAdapter(){
+            @Override
+            public void keyTyped( KeyEvent e ) {
+                if (e.isControlDown() && !e.isAltDown() && !e.isAltGraphDown()) {
+                    e.consume();
+                }
+            }
+        });
 
         System.setOut(output.createStream(output.normalStyle, originalOut, ScriptConsole::isNotNoise));
         System.setErr(output.createStream(output.errorStyle, originalErr, ScriptConsole::isNotNoise));
@@ -220,7 +273,8 @@ public class ScriptConsole {
         output.appendLine("HortonMachine " + org.hortonmachine.Version.getVersion() + " - Groovy "
                 + GroovyShell.class.getPackage().getImplementationVersion() + " - Java " + System.getProperty("java.version"),
                 output.promptStyle);
-        output.appendLine("Ctrl+Space completes, Ctrl+Enter runs the script (or the selection).", output.normalStyle);
+        output.appendLine("Ctrl+Space completes, Ctrl+Enter runs the script (or the selection), F5 debugs it.",
+                output.normalStyle);
     }
 
     /**
@@ -294,13 +348,13 @@ public class ScriptConsole {
         runAction = new AbstractAction("Run", ImageCache.get(ImageCache.RUN)){
             public void actionPerformed( ActionEvent e ) {
                 String selected = editor.getSelectedText();
-                runScript(selected != null && !selected.isBlank());
+                runScript(selected != null && !selected.isBlank(), false);
             }
         };
         runAction.putValue(Action.SHORT_DESCRIPTION, "Run the script, or the selection if any (Ctrl+Enter)");
         runSelectionAction = new AbstractAction("Run selection", ImageCache.get(ImageCache.RUN_TO_FILE)){
             public void actionPerformed( ActionEvent e ) {
-                runScript(true);
+                runScript(true, false);
             }
         };
         runSelectionAction.putValue(Action.SHORT_DESCRIPTION, "Run the selected lines (Ctrl+Shift+Enter)");
@@ -315,6 +369,44 @@ public class ScriptConsole {
         };
         interruptAction.putValue(Action.SHORT_DESCRIPTION, "Interrupt the running script");
         interruptAction.setEnabled(false);
+
+        // the same key starts debugging and, once paused, continues
+        debugAction = new AbstractAction("Debug", ImageCache.get(ImageCache.DEBUG)){
+            public void actionPerformed( ActionEvent e ) {
+                if (paused) {
+                    debugger.resume();
+                } else if (runThread == null) {
+                    String selected = editor.getSelectedText();
+                    runScript(selected != null && !selected.isBlank(), true);
+                }
+            }
+        };
+        debugAction.putValue(Action.SHORT_DESCRIPTION, "Debug the script, or the selection if any, stopping at the breakpoints (F5)");
+        stepOverAction = new AbstractAction("Step over", ImageCache.get(ImageCache.STEP_OVER)){
+            public void actionPerformed( ActionEvent e ) {
+                if (paused) {
+                    debugger.stepOver();
+                }
+            }
+        };
+        stepOverAction.putValue(Action.SHORT_DESCRIPTION, "Run the current line and stop at the next one (F10)");
+        stepIntoAction = new AbstractAction("Step into", ImageCache.get(ImageCache.STEP_INTO)){
+            public void actionPerformed( ActionEvent e ) {
+                if (paused) {
+                    debugger.stepInto();
+                }
+            }
+        };
+        stepIntoAction.putValue(Action.SHORT_DESCRIPTION, "Stop at the next statement, also inside the called script methods and closures (F11)");
+        stepOutAction = new AbstractAction("Step out", ImageCache.get(ImageCache.STEP_OUT)){
+            public void actionPerformed( ActionEvent e ) {
+                if (paused) {
+                    debugger.stepOut();
+                }
+            }
+        };
+        stepOutAction.putValue(Action.SHORT_DESCRIPTION, "Run up to the end of the current method or closure (Shift+F11)");
+        setStepping(false);
     }
 
     private JMenuBar createMenuBar() {
@@ -361,6 +453,13 @@ public class ScriptConsole {
         scriptMenu.add(item(runSelectionAction, keyCtrlShift(KeyEvent.VK_ENTER)));
         scriptMenu.add(new JMenuItem(interruptAction));
         scriptMenu.addSeparator();
+        scriptMenu.add(item(debugAction, key(KeyEvent.VK_F5, 0)));
+        scriptMenu.add(item(stepOverAction, key(KeyEvent.VK_F10, 0)));
+        scriptMenu.add(item(stepIntoAction, key(KeyEvent.VK_F11, 0)));
+        scriptMenu.add(item(stepOutAction, key(KeyEvent.VK_F11, InputEvent.SHIFT_DOWN_MASK)));
+        scriptMenu.add(item("Toggle breakpoint", null, key(KeyEvent.VK_F9, 0), e -> toggleBreakpointAtCaret()));
+        scriptMenu.add(item("Remove all breakpoints", null, null, e -> removeAllBreakpoints()));
+        scriptMenu.addSeparator();
         scriptMenu.add(item("Clear output", ImageCache.get(ImageCache.TRASH), keyCtrl(KeyEvent.VK_W), e -> output.clear()));
         JCheckBoxMenuItem autoClearItem = new JCheckBoxMenuItem("Clear output before running", autoClearOutput);
         autoClearItem.addActionListener(e -> {
@@ -389,6 +488,10 @@ public class ScriptConsole {
         hmMenu.add(examplesMenu);
         menuBar.add(hmMenu);
 
+        JMenu helpMenu = new JMenu("Help");
+        helpMenu.add(item("Keyboard shortcuts", null, null, e -> showShortcuts()));
+        menuBar.add(helpMenu);
+
         return menuBar;
     }
 
@@ -401,7 +504,12 @@ public class ScriptConsole {
         toolBar.addSeparator();
         toolBar.add(runAction);
         toolBar.add(runSelectionAction);
+        toolBar.add(debugAction);
         toolBar.add(interruptAction);
+        toolBar.addSeparator();
+        toolBar.add(stepOverAction);
+        toolBar.add(stepIntoAction);
+        toolBar.add(stepOutAction);
         toolBar.addSeparator();
         toolBar.add(toolButton("Clear output", ImageCache.get(ImageCache.TRASH), e -> output.clear()));
         return toolBar;
@@ -409,6 +517,24 @@ public class ScriptConsole {
 
     private JComponent createMainPanel() {
         RTextScrollPane editorScroll = CodeEditorFactory.createScrollPane(editor);
+        // breakpoints: a click in the icon column of the gutter (or F9) toggles them
+        editorScroll.setIconRowHeaderEnabled(true);
+        gutter = editorScroll.getGutter();
+        for( Component component : gutter.getComponents() ) {
+            if (component instanceof IconRowHeader) {
+                component.addMouseListener(new MouseAdapter(){
+                    @Override
+                    public void mousePressed( MouseEvent e ) {
+                        int offset = editor.viewToModel2D(new Point(0, e.getY()));
+                        try {
+                            toggleBreakpoint(editor.getLineOfOffset(offset));
+                        } catch (BadLocationException ex) {
+                            // ignore
+                        }
+                    }
+                });
+            }
+        }
         JPanel editorPanel = new JPanel(new BorderLayout());
         editorPanel.add(editorScroll, BorderLayout.CENTER);
         editorPanel.add(new ErrorStrip(editor), BorderLayout.LINE_END);
@@ -418,8 +544,15 @@ public class ScriptConsole {
         outputScroll.setMinimumSize(new Dimension(100, 80));
 
         boolean outputRight = Boolean.parseBoolean(PreferencesHandler.getPreference(PREF_OUTPUT_RIGHT, "false"));
+        // the variables are shown next to the output, only when debugging
+        variablesPanel = createVariablesPanel();
+        variablesPanel.setVisible(false);
+        outputSplit = new JSplitPane(outputRight ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT, outputScroll,
+                variablesPanel);
+        outputSplit.setResizeWeight(0.5);
+        outputSplit.setDividerSize(0);
         splitPane = new JSplitPane(outputRight ? JSplitPane.HORIZONTAL_SPLIT : JSplitPane.VERTICAL_SPLIT, editorPanel,
-                outputScroll);
+                outputSplit);
         splitPane.setResizeWeight(outputRight ? 0.55 : 0.65);
         splitPane.setDividerLocation(outputRight ? 600 : 500);
         return splitPane;
@@ -435,7 +568,59 @@ public class ScriptConsole {
         double weight = right ? 0.55 : 0.65;
         splitPane.setResizeWeight(weight);
         splitPane.setDividerLocation(weight);
+        outputSplit.setOrientation(right ? JSplitPane.VERTICAL_SPLIT : JSplitPane.HORIZONTAL_SPLIT);
+        if (variablesPanel.isVisible()) {
+            outputSplit.setDividerLocation(0.5);
+        }
         PreferencesHandler.setPreference(PREF_OUTPUT_RIGHT, String.valueOf(right));
+    }
+
+    private JComponent createVariablesPanel() {
+        JTable table = new JTable(variablesModel){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public String getToolTipText( MouseEvent e ) {
+                int row = rowAtPoint(e.getPoint());
+                if (row < 0) {
+                    return null;
+                }
+                String value = variablesModel.get(convertRowIndexToModel(row)).longValue;
+                String escaped = value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+                return "<html><pre>" + escaped + "</pre></html>";
+            }
+        };
+        table.setFillsViewportHeight(true);
+        table.getColumnModel().getColumn(0).setPreferredWidth(110);
+        table.getColumnModel().getColumn(1).setPreferredWidth(90);
+        table.getColumnModel().getColumn(2).setPreferredWidth(300);
+        table.getColumnModel().getColumn(3).setPreferredWidth(60);
+        table.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                int row = table.rowAtPoint(e.getPoint());
+                if (e.getClickCount() == 2 && row >= 0) {
+                    ScriptDebugger.Variable variable = variablesModel.get(table.convertRowIndexToModel(row));
+                    output.appendValue(variable.name, variable.value);
+                }
+            }
+        });
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setMinimumSize(new Dimension(100, 80));
+        scroll.setToolTipText("Double click a variable to print it in the output");
+        return scroll;
+    }
+
+    private void showVariablesPanel( boolean show ) {
+        if (variablesPanel.isVisible() == show) {
+            return;
+        }
+        variablesPanel.setVisible(show);
+        outputSplit.setDividerSize(show ? splitPane.getDividerSize() : 0);
+        if (show) {
+            outputSplit.setDividerLocation(0.5);
+        }
+        outputSplit.revalidate();
     }
 
     private JComponent createStatusBar() {
@@ -476,6 +661,10 @@ public class ScriptConsole {
         return button;
     }
 
+    private static KeyStroke key( int keyCode, int modifiers ) {
+        return KeyStroke.getKeyStroke(keyCode, modifiers);
+    }
+
     private static KeyStroke keyCtrl( int keyCode ) {
         return KeyStroke.getKeyStroke(keyCode, InputEvent.CTRL_DOWN_MASK);
     }
@@ -484,7 +673,14 @@ public class ScriptConsole {
         return KeyStroke.getKeyStroke(keyCode, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK);
     }
 
-    private void runScript( boolean selectionOnly ) {
+    /**
+     * Run the script in a separate thread.
+     *
+     * @param selectionOnly if <code>true</code>, only the selected lines are run.
+     * @param debug if <code>true</code>, the script is instrumented to stop at the breakpoints and
+     *          to step.
+     */
+    private void runScript( boolean selectionOnly, boolean debug ) {
         if (runThread != null) {
             setStatus("A script is already running: wait or interrupt it.");
             return;
@@ -517,15 +713,35 @@ public class ScriptConsole {
         String scriptName = SCRIPT_NAME + scriptCounter++ + ".groovy";
         String what = selectionOnly ? "selection" : (currentFile != null ? currentFile.getName() : "script");
         String separator = output.getDocument().getLength() > 0 ? "\n" : "";
-        output.appendLine(separator + "> " + LocalTime.now().format(TIME_FORMAT) + " running " + what, output.promptStyle);
+        String verb = debug ? "debugging" : "running";
+        output.appendLine(separator + "> " + LocalTime.now().format(TIME_FORMAT) + " " + verb + " " + what, output.promptStyle);
         setRunning(true);
-        setStatus("Running " + what + "...");
+        setStatus((debug ? "Debugging " : "Running ") + what + "...");
 
         int lineOffset = firstLine;
+        if (debug) {
+            // the lines must not move while the script runs, the pauses refer to them
+            editor.setEditable(false);
+            updateBreakpoints();
+            variablesModel.setVariables(Collections.emptyList());
+            showVariablesPanel(true);
+            debugCustomizer.setEnabled(true, lineOffset);
+            debugger.start(scriptName);
+        } else {
+            showVariablesPanel(false);
+        }
         long start = System.currentTimeMillis();
         runThread = new Thread(() -> {
             try {
-                Object result = shell.evaluate(text, scriptName);
+                Object result;
+                try {
+                    result = shell.evaluate(text, scriptName);
+                } finally {
+                    if (debug) {
+                        debugger.stop();
+                        debugCustomizer.setEnabled(false, 0);
+                    }
+                }
                 long elapsed = System.currentTimeMillis() - start;
                 System.out.flush();
                 SwingUtilities.invokeLater(() -> {
@@ -629,6 +845,116 @@ public class ScriptConsole {
         runAction.setEnabled(!running);
         runSelectionAction.setEnabled(!running);
         interruptAction.setEnabled(running);
+        if (!running) {
+            clearPause();
+            variablesModel.setVariables(Collections.emptyList());
+            editor.setEditable(true);
+        }
+        debugAction.setEnabled(!running);
+    }
+
+    /**
+     * Enable the actions that only make sense while paused.
+     */
+    private void setStepping( boolean stepping ) {
+        stepOverAction.setEnabled(stepping);
+        stepIntoAction.setEnabled(stepping);
+        stepOutAction.setEnabled(stepping);
+        debugAction.putValue(Action.NAME, stepping ? "Continue" : "Debug");
+        debugAction.putValue(Action.SHORT_DESCRIPTION, stepping ? "Continue up to the next breakpoint (F5)"
+                : "Debug the script, or the selection if any, stopping at the breakpoints (F5)");
+    }
+
+    private void showPause( int line, List<ScriptDebugger.Variable> variables ) {
+        if (runThread == null) {
+            return; // a late event of a script that already ended
+        }
+        paused = true;
+        setStepping(true);
+        debugAction.setEnabled(true);
+        variablesModel.setVariables(variables);
+        try {
+            int index = line - 1;
+            pausedLineTag = editor.addLineHighlight(index, CodeEditorFactory.isDarkLaf() ? new Color(0x4b4520) : new Color(0xfff2a8));
+            editor.setCaretPosition(editor.getLineStartOffset(index));
+        } catch (BadLocationException e) {
+            // ignore
+        }
+        setStatus("Paused at line " + line + ": F5 continues, F10 steps over, F11 steps into, Shift+F11 steps out.");
+    }
+
+    private void clearPause() {
+        if (pausedLineTag != null) {
+            editor.removeLineHighlight(pausedLineTag);
+            pausedLineTag = null;
+        }
+        if (paused) {
+            paused = false;
+            setStepping(false);
+            debugAction.setEnabled(runThread == null);
+            setStatus("Debugging...");
+        }
+    }
+
+    private void toggleBreakpointAtCaret() {
+        try {
+            toggleBreakpoint(editor.getLineOfOffset(editor.getCaretPosition()));
+        } catch (BadLocationException e) {
+            // ignore
+        }
+    }
+
+    /**
+     * @param line the line, 0 based.
+     */
+    private void toggleBreakpoint( int line ) {
+        for( Iterator<GutterIconInfo> iterator = breakpoints.iterator(); iterator.hasNext(); ) {
+            GutterIconInfo breakpoint = iterator.next();
+            if (lineOf(breakpoint) == line) {
+                gutter.removeTrackingIcon(breakpoint);
+                iterator.remove();
+                updateBreakpoints();
+                return;
+            }
+        }
+        try {
+            breakpoints.add(gutter.addLineTrackingIcon(line, BreakpointIcon.INSTANCE, "Breakpoint"));
+        } catch (BadLocationException e) {
+            return;
+        }
+        updateBreakpoints();
+    }
+
+    private void removeAllBreakpoints() {
+        for( GutterIconInfo breakpoint : breakpoints ) {
+            gutter.removeTrackingIcon(breakpoint);
+        }
+        breakpoints.clear();
+        updateBreakpoints();
+    }
+
+    /**
+     * Pass the breakpoints to the debugger. The icons follow the edits, so the lines are read from
+     * them, and the ones that the edits merged on the same line are dropped.
+     */
+    private void updateBreakpoints() {
+        Set<Integer> lines = new HashSet<>();
+        for( Iterator<GutterIconInfo> iterator = breakpoints.iterator(); iterator.hasNext(); ) {
+            GutterIconInfo breakpoint = iterator.next();
+            if (!lines.add(lineOf(breakpoint) + 1)) {
+                gutter.removeTrackingIcon(breakpoint);
+                iterator.remove();
+            }
+        }
+        debugger.setBreakpoints(lines);
+    }
+
+    private int lineOf( GutterIconInfo breakpoint ) {
+        try {
+            return editor.getLineOfOffset(breakpoint.getMarkedOffset());
+        } catch (BadLocationException e) {
+            return -1;
+        }
     }
 
     private static boolean isNotNoise( String line ) {
@@ -664,6 +990,7 @@ public class ScriptConsole {
         if (!checkSaved()) {
             return;
         }
+        removeAllBreakpoints();
         editor.setText("");
         editor.discardAllEdits();
         currentFile = null;
@@ -689,6 +1016,7 @@ public class ScriptConsole {
      */
     public void openFile( File file ) {
         try {
+            removeAllBreakpoints();
             editor.setText(Files.readString(file.toPath(), StandardCharsets.UTF_8));
             editor.setCaretPosition(0);
             editor.discardAllEdits();
@@ -786,6 +1114,128 @@ public class ScriptConsole {
 
     private void setStatus( String status ) {
         statusLabel.setText(status);
+    }
+
+    private void showShortcuts() {
+        String[][] shortcuts = { //
+                {"Console", null}, //
+                {"Ctrl+Enter", "Run the script, or the selection if any"}, //
+                {"Ctrl+Shift+Enter", "Run the selected lines"}, //
+                {"Ctrl+Space", "Complete code"}, //
+                {"Ctrl+W", "Clear the output"}, //
+                {"Ctrl+N / Ctrl+O", "New / open script"}, //
+                {"Ctrl+S / Ctrl+Shift+S", "Save / save as"}, //
+                {"Ctrl+F", "Find and replace (Esc closes it)"}, //
+                {"Ctrl+= / Ctrl+-", "Bigger / smaller font"}, //
+                {"Debugging", null}, //
+                {"F5", "Debug the script (or the selection), continue when paused"}, //
+                {"F9", "Toggle a breakpoint (or click in the gutter, left of the line numbers)"}, //
+                {"F10", "Step over: run the line, stop at the next one"}, //
+                {"F11", "Step into the script methods and closures"}, //
+                {"Shift+F11", "Step out of the current method or closure"}, //
+                {"Editing", null}, //
+                {"Ctrl+/", "Toggle comment"}, //
+                {"Alt+Up / Alt+Down", "Move the line or selection up / down"}, //
+                {"Ctrl+D", "Delete the line"}, //
+                {"Ctrl+J", "Join lines"}, //
+                {"Ctrl+Backspace", "Delete the previous word"}, //
+                {"Ctrl+Delete", "Delete the rest of the line"}, //
+                {"Tab / Shift+Tab", "Indent / unindent the selection"}, //
+                {"Ctrl+Z / Ctrl+Y", "Undo / redo"}, //
+                {"Ctrl+Shift+V", "Paste from the clipboard history"}, //
+                {"Navigation", null}, //
+                {"Ctrl+K / Ctrl+Shift+K", "Next / previous occurrence of the selection"}, //
+                {"Ctrl+[", "Go to the matching bracket"}, //
+                {"Ctrl+Up / Ctrl+Down", "Scroll without moving the caret"}, //
+                {"Ctrl+Keypad + / -", "Expand / collapse the fold"}, //
+                {"Ctrl+Keypad *", "Expand all folds"}};
+        StringBuilder sb = new StringBuilder("<html><table cellpadding='2'>");
+        for( String[] shortcut : shortcuts ) {
+            if (shortcut[1] == null) {
+                sb.append("<tr><td colspan='2'><br><b>").append(shortcut[0]).append("</b></td></tr>");
+            } else {
+                sb.append("<tr><td><code>").append(shortcut[0]).append("</code></td><td>").append(shortcut[1])
+                        .append("</td></tr>");
+            }
+        }
+        sb.append("</table></html>");
+        JLabel label = new JLabel(sb.toString());
+        JScrollPane scroll = new JScrollPane(label);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        // as wide as the table, plus the vertical scrollbar, so that no row is cut
+        Dimension size = label.getPreferredSize();
+        int scrollbarWidth = scroll.getVerticalScrollBar().getPreferredSize().width;
+        scroll.setPreferredSize(new Dimension(size.width + scrollbarWidth + 10, Math.min(640, size.height + 10)));
+        JOptionPane.showMessageDialog(frame, scroll, "Keyboard shortcuts", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    /**
+     * The marker of the breakpoints in the gutter.
+     */
+    private static class BreakpointIcon implements Icon {
+        static final BreakpointIcon INSTANCE = new BreakpointIcon();
+        private static final int SIZE = 10;
+
+        public void paintIcon( Component c, Graphics g, int x, int y ) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(new Color(0xe0, 0x3c, 0x31));
+            g2.fillOval(x, y, SIZE, SIZE);
+            g2.dispose();
+        }
+
+        public int getIconWidth() {
+            return SIZE;
+        }
+
+        public int getIconHeight() {
+            return SIZE;
+        }
+    }
+
+    /**
+     * The variables seen at a pause of the debugger.
+     */
+    private static class VariablesTableModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        private static final String[] COLUMNS = {"Name", "Type", "Value", "Scope"};
+        private List<ScriptDebugger.Variable> variables = Collections.emptyList();
+
+        void setVariables( List<ScriptDebugger.Variable> variables ) {
+            this.variables = variables;
+            fireTableDataChanged();
+        }
+
+        ScriptDebugger.Variable get( int row ) {
+            return variables.get(row);
+        }
+
+        public int getRowCount() {
+            return variables.size();
+        }
+
+        public int getColumnCount() {
+            return COLUMNS.length;
+        }
+
+        @Override
+        public String getColumnName( int column ) {
+            return COLUMNS[column];
+        }
+
+        public Object getValueAt( int row, int column ) {
+            ScriptDebugger.Variable variable = variables.get(row);
+            switch( column ) {
+            case 0:
+                return variable.name;
+            case 1:
+                return variable.type;
+            case 2:
+                return variable.shortValue;
+            default:
+                return variable.local ? "local" : "binding";
+            }
+        }
     }
 
     /**

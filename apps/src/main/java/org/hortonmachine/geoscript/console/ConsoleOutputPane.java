@@ -147,17 +147,27 @@ public class ConsoleOutputPane extends JTextPane {
      * @param result the result.
      */
     public void appendResult( Object result ) {
+        appendValue("Result", result);
+    }
+
+    /**
+     * Append a value with a label, in the gui thread. Geometries, layers and images are drawn.
+     *
+     * @param label the label, ex. the name of a variable.
+     * @param value the value.
+     */
+    public void appendValue( String label, Object value ) {
         flushPending();
         Object rendered;
         try {
-            rendered = render(result);
+            rendered = render(value);
         } catch (Throwable e) {
-            rendered = String.valueOf(result);
+            rendered = String.valueOf(value);
         }
         StyledDocument doc = getStyledDocument();
         try {
             boolean isGraphic = rendered instanceof Component || rendered instanceof Icon;
-            doc.insertString(doc.getLength(), isGraphic ? "Result:\n" : "Result: ", promptStyle);
+            doc.insertString(doc.getLength(), label + (isGraphic ? ":\n" : ": "), promptStyle);
             if (rendered instanceof Component) {
                 SimpleAttributeSet style = new SimpleAttributeSet();
                 StyleConstants.setComponent(style, (Component) rendered);

@@ -53,6 +53,9 @@ public class ImageCache {
 
     public static final String MEMORY = "memory.gif";
     public static final String DEBUG = "debug.gif";
+    public static final String STEP_OVER = "stepover_co.gif";
+    public static final String STEP_INTO = "stepinto_co.gif";
+    public static final String STEP_OUT = "stepreturn_co.gif";
     public static final String FONT = "font.gif";
     public static final String FILE = "file.gif";
     public static final String FOLDER = "folder.gif";
