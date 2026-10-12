@@ -17,18 +17,19 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFIELDROUNDER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_NAME;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder.OMSVECTORFIELDROUNDER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -36,6 +37,7 @@ import org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounde
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,6 +48,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORFIELDROUNDER_DESCRIPTION)
+@Documentation(OMSVECTORFIELDROUNDER_DOCUMENTATION)
 @Author(name = OMSVECTORFIELDROUNDER_AUTHORNAMES, contact = OMSVECTORFIELDROUNDER_AUTHORCONTACTS)
 @Keywords(OMSVECTORFIELDROUNDER_KEYWORDS)
 @Label(OMSVECTORFIELDROUNDER_LABEL)

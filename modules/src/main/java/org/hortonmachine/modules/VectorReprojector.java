@@ -17,20 +17,21 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DO_LENIENT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_DO_LONGITUDE_FIRST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_P_CODE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_P_FORCE_CODE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORREPROJECTOR_STATUS;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_DO_LENIENT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_DO_LONGITUDE_FIRST_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_LABEL;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_NAME;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_P_CODE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_P_FORCE_CODE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorreprojector.OmsVectorReprojector.OMSVECTORREPROJECTOR_STATUS;
 
 import java.io.File;
 import java.io.FilenameFilter;
@@ -42,6 +43,7 @@ import org.hortonmachine.gears.utils.DataUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -52,6 +54,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORREPROJECTOR_DESCRIPTION)
+@Documentation(OMSVECTORREPROJECTOR_DOCUMENTATION)
 @Author(name = OMSVECTORREPROJECTOR_AUTHORNAMES, contact = OMSVECTORREPROJECTOR_AUTHORCONTACTS)
 @Keywords(OMSVECTORREPROJECTOR_KEYWORDS)
 @Label(OMSVECTORREPROJECTOR_LABEL)

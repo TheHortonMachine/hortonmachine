@@ -17,18 +17,17 @@
  */
 package org.hortonmachine.gears.modules.v.smoothing;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_BIBLIOGRAPHY;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_LABEL;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_LICENSE;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_NAME;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_STATUS;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +46,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.MultiLineString;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
@@ -60,6 +60,7 @@ import oms3.annotations.Status;
 
 @Description(OMSLINESMOOTHERJAITOOLS_DESCRIPTION)
 @Documentation(OMSLINESMOOTHERJAITOOLS_DOCUMENTATION)
+@Bibliography(OMSLINESMOOTHERJAITOOLS_BIBLIOGRAPHY)
 @Author(name = OMSLINESMOOTHERJAITOOLS_AUTHORNAMES, contact = OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS)
 @Keywords(OMSLINESMOOTHERJAITOOLS_KEYWORDS)
 @Label(OMSLINESMOOTHERJAITOOLS_LABEL)
@@ -75,6 +76,31 @@ public class OmsLineSmootherJaitools extends HMModel {
     @Description(OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION)
     @In
     public double pAlpha = 0;
+
+    public static final String OMSLINESMOOTHERJAITOOLS_DESCRIPTION = "Smooths lines with cubic Bezier curves through their vertices, with the line smoother of the jaitools project.";
+    public static final String OMSLINESMOOTHERJAITOOLS_DOCUMENTATION = """
+            The smoothed line passes through all the vertices of the original one: each segment is replaced \
+            by a cubic Bezier curve of 10 vertices, with the control points set by the neighbouring segments, \
+            so the line gets 9 new vertices for each segment. With an alpha of 1 the curves are the straight \
+            segments, so the line keeps its shape, only with more vertices; with 0 they are the roundest. \
+            Since the curve doesn't cut the corners, on the staircase lines of a vectorized raster it rounds \
+            the steps instead of removing them: simplify the lines first, with VectorSimplifier, to smooth \
+            their general shape.
+
+            Only the lines of the features are smoothed, as multi lines: features without lines are left \
+            out.
+            """;
+    public static final String OMSLINESMOOTHERJAITOOLS_BIBLIOGRAPHY = "Shemanarev, M. Interpolation with Bezier Curves: a very simple method of smoothing polygons. http://www.antigrain.com/research/bezier_interpolation/index.html";
+    public static final String OMSLINESMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector, Bezier";
+    public static final String OMSLINESMOOTHERJAITOOLS_LABEL = VECTORPROCESSING;
+    public static final String OMSLINESMOOTHERJAITOOLS_NAME = "linesmootherjai";
+    public static final int OMSLINESMOOTHERJAITOOLS_STATUS = 40;
+    public static final String OMSLINESMOOTHERJAITOOLS_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSLINESMOOTHERJAITOOLS_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION = "The vector containing the lines to be smoothed.";
+    public static final String OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION = "A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed line: 0 is the loosest, 1 keeps the straight segments.";
+    public static final String OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION = "The smoothed features.";
 
     @Description(OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION)
     @Out

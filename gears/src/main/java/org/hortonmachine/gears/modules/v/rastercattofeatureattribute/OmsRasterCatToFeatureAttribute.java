@@ -65,6 +65,7 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
+import oms3.annotations.UI;
 
 @Description(OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION)
 @Documentation(OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION)
@@ -89,6 +90,7 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
     public String fNew = "new";
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION)
+    @UI("combo:" + START + "," + MIDDLE + "," + END)
     @In
     public String pPos = MIDDLE;
 
@@ -96,8 +98,19 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
     @Out
     public SimpleFeatureCollection outVector = null;
 
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION = "Module that extracts raster categories and adds them to a feature collection.";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION = "";
+    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION = "Adds to the features of a vector the values of a raster below them: the value at the points and lines, the statistics of the cells inside the polygons.";
+    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION = """
+            A point takes the value of the cell it falls in, a line the one of the cell of its first, middle \
+            or last vertex, as set by the position: the middle one is the vertex in the middle of the list \
+            of the vertices, not the point at half of the length. The value goes in the new field, or in \
+            the existing field with that name. Novalues are written as -9999. The points and lines outside \
+            the raster are left out of the output.
+
+            A polygon gets four fields, with the name of the new field followed by _min, _max, _avg and \
+            _sum: the minimum, maximum, mean and sum of the valid cells with the center inside the polygon. \
+            The sum of a raster of rain heights in mm, for example, times the cell area, gives the volume \
+            on the polygon, and the mean of an elevation model the mean elevation of a basin.
+            """;
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS = "Raster, Vector";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_LABEL = VECTORPROCESSING;
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_NAME = "rat2featureattr";
@@ -108,12 +121,12 @@ public class OmsRasterCatToFeatureAttribute extends HMModel {
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_IN_RASTER_DESCRIPTION = "The raster on which to map the vector features.";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_IN_VECTOR_DESCRIPTION = "The vector to use for the geometric mapping.";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_F_NEW_DESCRIPTION = "The name for the new field to create (if existing, the field is populated).";
-    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION = "The position of the coordinate to take in the case of multi geometries.";
+    public static final String OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION = "The vertex of the lines where to take the value: start, middle or end.";
     public static final String OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION = "The extended vector.";
 
-    private static final String MIDDLE = "middle";
-    private static final String START = "start";
-    private static final String END = "end";
+    public static final String MIDDLE = "middle";
+    public static final String START = "start";
+    public static final String END = "end";
 
     private RandomIter inIter = null;
 

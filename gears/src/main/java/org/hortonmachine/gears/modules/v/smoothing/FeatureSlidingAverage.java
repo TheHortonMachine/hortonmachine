@@ -175,7 +175,8 @@ public class FeatureSlidingAverage {
             coordinate.y = coordinates[i].y;
             coordinate.z = coordinates[i].z;
         }
-        for( int i = n - halfLookAhead - 1; i < n; i++ ) {
+        // the last smoothed point is n - halfLookAhead - 1, keep it
+        for( int i = n - halfLookAhead; i < n; i++ ) {
             Coordinate coordinate = res.get(i);
             coordinate.x = coordinates[i].x;
             coordinate.y = coordinates[i].y;

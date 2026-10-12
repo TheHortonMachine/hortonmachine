@@ -21,7 +21,11 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCatToFeatureAttribute;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestCase;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -104,6 +108,50 @@ public class TestRasterCatToFeatureAttribute extends HMTestCase {
             attr = "elev_sum";
             value = getAttr(feature, attr);
             System.out.println(value);
+        }
+    }
+
+    /**
+     * The statistics of the polygons are those of the cells with the center inside them.
+     */
+    public void testPolygonStatsFromCellCenters() throws Exception {
+        double[][] elevationData = HMTestMaps.outPitData;
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("elevation", elevationData, envelopeParams, crs, true);
+        SimpleFeatureCollection inFC = HMTestMaps.getTestLeftFC();
+
+        OmsRasterCatToFeatureAttribute rc2fa = new OmsRasterCatToFeatureAttribute();
+        rc2fa.pm = pm;
+        rc2fa.inRaster = elevationCoverage;
+        rc2fa.inVector = inFC;
+        rc2fa.fNew = "elev";
+        rc2fa.process();
+
+        HMRaster raster = HMRaster.fromGridCoverage(elevationCoverage);
+        for( SimpleFeature feature : FeatureUtilities.featureCollectionToList(rc2fa.outVector) ) {
+            Geometry polygon = (Geometry) feature.getDefaultGeometry();
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+            double sum = 0;
+            int count = 0;
+            for( int row = 0; row < raster.getRows(); row++ ) {
+                for( int col = 0; col < raster.getCols(); col++ ) {
+                    Coordinate center = raster.getWorld(col, row);
+                    double value = raster.getValue(col, row);
+                    if (!raster.isNovalue(value) && polygon.contains(polygon.getFactory().createPoint(center))) {
+                        min = Math.min(min, value);
+                        max = Math.max(max, value);
+                        sum += value;
+                        count++;
+                    }
+                }
+            }
+            assertTrue(count > 0);
+            assertEquals(min, getAttr(feature, "elev_min"), 1E-6);
+            assertEquals(max, getAttr(feature, "elev_max"), 1E-6);
+            assertEquals(sum, getAttr(feature, "elev_sum"), 1E-6);
+            assertEquals(sum / count, getAttr(feature, "elev_avg"), 1E-6);
         }
     }
 

@@ -19,7 +19,8 @@
 # extent=west:east:south:north (the map shows only this part of the data, to zoom on small features),
 # lines=a;b (with a table, the named columns as lines over the first column, as profiles),
 # over=vector.shp (with vectors, another vector drawn over them in blue),
-# nohillshade (the raster alone, opaque, for data far from the sample elevation, as a satellite tile)
+# nohillshade (the raster alone, opaque, for data far from the sample elevation, as a satellite tile),
+# fill (with polygons, filled with their color over the hillshade, instead of only their outline)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
 
 Pitfiller      | ../examples/hm/pitfiller.groovy      | pit.tif                     | elev
@@ -138,3 +139,16 @@ RasterToNetcdf | ../examples/hm/rastertonetcdf.groovy | -                       
 NetcdfGridDumper | ../examples/hm/netcdfgriddumper_dtm.groovy | dtm_back/dtm_flanginec__elevation.tif | elev
 NetcdfInfo     | ../examples/hm/netcdfinfo.groovy     | -                           | -
 NetcdfGridDumper | ../examples/hm/netcdfgriddumper.groovy | modis_lst/MOD11A2.A2024201.h18v04.061.2024211134014__20240719_000000__MODIS_Grid_8Day_1km_LST_Data_Fields_LST_Day_1km.tif | rainbow | clip,nohillshade
+GridsGenerator | ../examples/hm/gridsgenerator.groovy | grid.shp                  | reds
+RasterCatToFeatureAttribute | ../examples/hm/rastercattofeatureattribute.groovy | grid_elev.shp | elev | field=elev_avg,fill
+VectorFieldRounder | ../examples/hm/vectorfieldrounder.groovy | -              | -
+VectorFilter   | ../examples/hm/vectorfilter.groovy   | grid_high.shp               | elev     | field=elev_avg,fill
+VectorMerger   | ../examples/hm/vectormerger.groovy   | grid_extremes.shp           | elev     | field=elev_avg,fill
+VectorReprojector | ../examples/hm/vectorreprojector.groovy | -                   | -
+VectorTransformer | ../examples/hm/vectortransformer.groovy | grid_rotated.shp    | reds     | over=grid.shp
+LineSmootherMcMaster | ../examples/hm/linesmoothermcmaster.groovy | contours_mcmaster.shp | reds | over=contours.shp,extent=1638400:1638900:5112300:5112750
+LineSmootherJaitools | ../examples/hm/linesmootherjaitools.groovy | contours_bezier.shp | reds | over=contours.shp,extent=1638300:1639300:5112000:5112900
+DelaunayTriangulation | ../examples/hm/delaunaytriangulation.groovy | triangles.shp | elev   | field=maxelev,fill,extent=1638500:1640500:5112400:5114300
+VoronoiDiagram | ../examples/hm/voronoidiagram.groovy | voronoi.shp                 | elev     | field=avgelev,fill,over=subbasins_centroids.shp,extent=1638500:1640500:5112400:5114300
+VectorTableJoiner | ../examples/hm/vectortablejoiner.groovy | -                   | -
+DxfConverter   | ../examples/hm/dxfconverter.groovy   | dxf_lines.shp               | reds     | over=dxf_polygons.shp,extent=1638500:1640500:5112400:5114300

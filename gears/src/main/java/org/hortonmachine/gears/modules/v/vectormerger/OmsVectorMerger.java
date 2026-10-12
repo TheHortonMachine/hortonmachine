@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,19 +17,29 @@
  */
 package org.hortonmachine.gears.modules.v.vectormerger;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_IN_VECTORS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_NAME;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_STATUS;
 
 import java.util.List;
+
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.data.DataUtilities;
+import org.geotools.data.collection.ListFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.features.FeatureExtender;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -42,16 +52,6 @@ import oms3.annotations.License;
 import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
-
-import org.geotools.data.DataUtilities;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.feature.DefaultFeatureCollection;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.features.FeatureExtender;
-import org.geotools.api.feature.simple.SimpleFeature;
-import org.geotools.api.feature.simple.SimpleFeatureType;
 
 @Description(OMSVECTORMERGER_DESCRIPTION)
 @Documentation(OMSVECTORMERGER_DOCUMENTATION)
@@ -71,6 +71,26 @@ public class OmsVectorMerger extends HMModel {
     @Out
     public SimpleFeatureCollection outVector;
 
+    public static final String OMSVECTORMERGER_DESCRIPTION = "Merges vectors with the same fields into a single one.";
+    public static final String OMSVECTORMERGER_DOCUMENTATION = """
+            The vectors must have the same geometry type and the same fields, with the same names, types \
+            and order, and the same crs: a vector with more or fewer fields stops the merge, as one in \
+            another crs, which would need VectorReprojector first. The features are copied as they are, the \
+            ones of the first vector first, without joining the geometries that touch or overlap: the \
+            merge of two maps of adjacent areas has both the features along their border.
+            """;
+    public static final String OMSVECTORMERGER_KEYWORDS = "IO, Feature, Vector, Merge";
+    public static final String OMSVECTORMERGER_LABEL = VECTORPROCESSING;
+    public static final String OMSVECTORMERGER_NAME = "vmerge";
+    public static final int OMSVECTORMERGER_STATUS = 40;
+    public static final String OMSVECTORMERGER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSVECTORMERGER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSVECTORMERGER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSVECTORMERGER_IN_VECTORS_DESCRIPTION = "The input vectors to be merged.";
+    public static final String OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION = "The first vector to be merged.";
+    public static final String OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION = "The second vector to be merged.";
+    public static final String OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION = "The output vector.";
+
     @Execute
     public void process() throws Exception {
         checkNull(inVectors);
@@ -81,28 +101,37 @@ public class OmsVectorMerger extends HMModel {
 
         pm.beginTask("Merging features...", inVectors.size());
         try {
-            outVector = new DefaultFeatureCollection();
+            ListFeatureCollection outFC = null;
             for( SimpleFeatureCollection featureCollection : inVectors ) {
                 if (firstType == null) {
                     firstType = featureCollection.getSchema();
                     fEx = new FeatureExtender(firstType, new String[0], new Class< ? >[0]);
+                    // a list keeps the features in the order of the vectors
+                    outFC = new ListFeatureCollection(fEx.getNewFeatureType());
                 } else {
                     SimpleFeatureType schema = featureCollection.getSchema();
                     int compare = DataUtilities.compare(firstType, schema);
                     if (compare != 0) {
                         throw new ModelsIllegalargumentException("Merging is done only on same feature types.", this, pm);
                     }
+                    if (!HMCrsRegistry.crsEquals(firstType.getCoordinateReferenceSystem(),
+                            schema.getCoordinateReferenceSystem())) {
+                        throw new ModelsIllegalargumentException("Merging is done only on vectors with the same crs.", this,
+                                pm);
+                    }
                 }
                 SimpleFeatureIterator featureIterator = featureCollection.features();
-                while( featureIterator.hasNext() ) {
-                    SimpleFeature f = featureIterator.next();
-
-                    SimpleFeature extendFeature = fEx.extendFeature(f, new Object[0]);
-
-                    ((DefaultFeatureCollection) outVector).add(extendFeature);
+                try {
+                    while( featureIterator.hasNext() ) {
+                        SimpleFeature f = featureIterator.next();
+                        outFC.add(fEx.extendFeature(f, new Object[0]));
+                    }
+                } finally {
+                    featureIterator.close();
                 }
                 pm.worked(1);
             }
+            outVector = outFC;
         } finally {
             pm.done();
         }

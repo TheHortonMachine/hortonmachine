@@ -31,6 +31,7 @@ import org.hortonmachine.gears.modules.v.triangulation.OmsDelaunayTriangulation;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -41,6 +42,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OmsDelaunayTriangulation.DESCRIPTION)
+@Documentation(OmsDelaunayTriangulation.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsDelaunayTriangulation.KEYWORDS)
 @Label(HMConstants.VECTORPROCESSING)
@@ -56,7 +58,7 @@ public class DelaunayTriangulation extends HMModel {
 
     @Description(fElev_DESCR)
     @In
-    public String fElev = "elev";
+    public String fElev = null;
 
     @Description(outMap_DESCR)
     @UI(HMConstants.FILEOUT_UI_HINT)

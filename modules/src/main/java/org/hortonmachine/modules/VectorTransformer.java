@@ -18,18 +18,22 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_P_TRANS_X_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_P_TRANS_Y_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORTRANSFORMER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_P_CENTER_X_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_P_CENTER_Y_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_P_ROTATE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_NAME;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_P_TRANS_X_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_P_TRANS_Y_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer.OMSVECTORTRANSFORMER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -37,6 +41,7 @@ import org.hortonmachine.gears.modules.v.vectortransformer.OmsVectorTransformer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +52,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORTRANSFORMER_DESCRIPTION)
+@Documentation(OMSVECTORTRANSFORMER_DOCUMENTATION)
 @Author(name = OMSVECTORTRANSFORMER_AUTHORNAMES, contact = OMSVECTORTRANSFORMER_AUTHORCONTACTS)
 @Keywords(OMSVECTORTRANSFORMER_KEYWORDS)
 @Label(OMSVECTORTRANSFORMER_LABEL)
@@ -68,6 +74,18 @@ public class VectorTransformer extends HMModel {
     @In
     public double pTransY;
 
+    @Description(OMSVECTORTRANSFORMER_P_ROTATE_DESCRIPTION)
+    @In
+    public Double pRotate;
+
+    @Description(OMSVECTORTRANSFORMER_P_CENTER_X_DESCRIPTION)
+    @In
+    public Double pCenterX;
+
+    @Description(OMSVECTORTRANSFORMER_P_CENTER_Y_DESCRIPTION)
+    @In
+    public Double pCenterY;
+
     @Description(OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -79,6 +97,9 @@ public class VectorTransformer extends HMModel {
         vectortransformer.inVector = getVector(inVector);
         vectortransformer.pTransX = pTransX;
         vectortransformer.pTransY = pTransY;
+        vectortransformer.pRotate = pRotate;
+        vectortransformer.pCenterX = pCenterX;
+        vectortransformer.pCenterY = pCenterY;
         vectortransformer.pm = pm;
         vectortransformer.doProcess = doProcess;
         vectortransformer.doReset = doReset;

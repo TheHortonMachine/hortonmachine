@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,24 +17,30 @@
  */
 package org.hortonmachine.gears.modules.v.vectorconverter;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_P_CODE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_NAME;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_STATUS;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.nio.channels.FileChannel;
+
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.data.PrjFileReader;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.hortonmachine.gears.io.dxfdwg.libs.dxf.DxfFile;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -48,17 +54,6 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
-
-import org.geotools.data.PrjFileReader;
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.io.dxfdwg.libs.dxf.DxfFile;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 @Description(OMSDXFCONVERTER_DESCRIPTION)
 @Documentation(OMSDXFCONVERTER_DOCUMENTATION)
@@ -92,6 +87,34 @@ public class OmsDxfConverter extends HMModel {
     @Out
     public SimpleFeatureCollection polygonVector = null;
 
+    public static final String OMSDXFCONVERTER_DESCRIPTION = "Reads the points, lines and polygons of an ASCII DXF file of a CAD into three vectors.";
+    public static final String OMSDXFCONVERTER_DOCUMENTATION = """
+            The entities read are POINT and TEXT, as points, LINE and the open POLYLINE and LWPOLYLINE, as \
+            lines, and the closed POLYLINE and LWPOLYLINE, as polygons. The other entities, as CIRCLE, ARC, \
+            SPLINE, HATCH, MTEXT and the INSERT of the blocks, are ignored. The entities inside the \
+            definitions of the blocks are read where they are defined, in the coordinates of the block, not \
+            where the blocks are inserted in the drawing.
+
+            The features have the fields of the DXF entity: LAYER, LTYPE (the line type), ELEVATION, \
+            THICKNESS, COLOR (the AutoCAD color index), and for the texts TEXT, TEXT_HEIGHT and TEXT_STYLE. \
+            A filter on LAYER, with VectorFilter, separates the layers of the drawing.
+
+            The DXF has no crs: it is taken from a prj file with the same name next to the DXF or, without \
+            it, from the given code. Only the ASCII DXF is read, not the binary one.
+            """;
+    public static final String OMSDXFCONVERTER_KEYWORDS = "IO, DXF, CAD, Feature, Vector, Reading";
+    public static final String OMSDXFCONVERTER_LABEL = VECTORPROCESSING;
+    public static final String OMSDXFCONVERTER_NAME = "dxfimport";
+    public static final int OMSDXFCONVERTER_STATUS = 40;
+    public static final String OMSDXFCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSDXFCONVERTER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSDXFCONVERTER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSDXFCONVERTER_FILE_DESCRIPTION = "The dxf file.";
+    public static final String OMSDXFCONVERTER_P_CODE_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:3003). Applied if there is no prj file next to the dxf.";
+    public static final String OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION = "The output point vector.";
+    public static final String OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION = "The output lines vector.";
+    public static final String OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION = "The output polygons vector.";
+
     private CoordinateReferenceSystem crs;
 
     @Execute
@@ -99,6 +122,7 @@ public class OmsDxfConverter extends HMModel {
         if (!concatOr(pointsVector == null, lineVector == null, polygonVector == null, doReset)) {
             return;
         }
+        checkNull(file);
 
         File dxfFile = new File(file);
         File parentFolder = dxfFile.getParentFile();
@@ -118,7 +142,7 @@ public class OmsDxfConverter extends HMModel {
         }
         if (crs == null) {
             if (pCode != null) {
-                crs = CrsUtilities.getCrsFromEpsg(pCode, null);
+                crs = HMCrsRegistry.INSTANCE.getCrs(pCode);
             } else {
                 throw new ModelsIllegalargumentException("Please specify the CRS for the imported DXF file.", this, pm);
             }

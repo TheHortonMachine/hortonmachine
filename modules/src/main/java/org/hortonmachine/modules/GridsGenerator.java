@@ -21,6 +21,7 @@ import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.LINE;
 import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_DOCUMENTATION;
 import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_KEYWORDS;
 import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_LABEL;
 import static org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator.OMSGRIDSGENERATOR_LICENSE;
@@ -47,6 +48,7 @@ import org.hortonmachine.gears.modules.v.grids.OmsGridsGenerator;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -57,6 +59,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSGRIDSGENERATOR_DESCRIPTION)
+@Documentation(OMSGRIDSGENERATOR_DOCUMENTATION)
 @Author(name = OMSGRIDSGENERATOR_AUTHORNAMES, contact = OMSGRIDSGENERATOR_AUTHORCONTACTS)
 @Keywords(OMSGRIDSGENERATOR_KEYWORDS)
 @Label(OMSGRIDSGENERATOR_LABEL)

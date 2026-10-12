@@ -83,7 +83,7 @@ public class DxfBLOCKS {
                     } else if (group.getValue().equals("LINE")) {
                         group = DxfLINE.readEntity(raf, dxfEntities.lineEntities);
                     } else if (group.getValue().equals("POLYLINE")) {
-                        group = DxfPOLYLINE.readEntity(raf, dxfEntities.lineEntities);
+                        group = DxfPOLYLINE.readEntity(raf, dxfEntities.lineEntities, dxfEntities.polygonEntities);
                     } else if (group.getValue().equals("TEXT")) {
                         group = DxfTEXT.readEntity(raf, dxfEntities.pointEntities);
                     } else {

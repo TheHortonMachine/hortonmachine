@@ -125,6 +125,8 @@ import groovy.lang.GroovyShell;
  * under its sections.</li>
  * <li><b>nohillshade</b>: the raster alone, opaque, without hillshade, for data far from the sample
  * elevation, as a satellite tile.</li>
+ * <li><b>fill</b>: with polygons, filled with their color, as transparent as the rasters,
+ * instead of only their outline, for polygons that cover the map, as the cells of a grid.</li>
  * </ul>
  * The optional class names, as <code>1=stable;2=unstable</code>, replace the values in the legend
  * of the classes.
@@ -431,13 +433,14 @@ public class ModuleMapsGenerator {
         try {
             content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
             for( Map.Entry<Color, DefaultFeatureCollection> group : groups.entrySet() ) {
-                content.addLayer(new FeatureLayer(group.getValue(), vectorStyle(geometryType, group.getKey())));
+                content.addLayer(new FeatureLayer(group.getValue(),
+                        vectorStyle(geometryType, group.getKey(), spec.options().contains("fill"))));
             }
             String over = optionValue(spec, "over");
             if (over != null) {
                 SimpleFeatureCollection overFeatures = OmsVectorReader.readVector(path(over));
                 Class< ? > overType = overFeatures.getSchema().getGeometryDescriptor().getType().getBinding();
-                content.addLayer(new FeatureLayer(overFeatures, vectorStyle(overType, OVER_COLOR)));
+                content.addLayer(new FeatureLayer(overFeatures, vectorStyle(overType, OVER_COLOR, false)));
             }
             StreamingRenderer renderer = new StreamingRenderer();
             renderer.setMapContent(content);
@@ -831,10 +834,13 @@ public class ModuleMapsGenerator {
         return decimals == 0 ? format(Math.rint(value)) : String.format("%." + decimals + "f", value);
     }
 
-    private static Style vectorStyle( Class< ? > geometryType, Color color ) {
+    private static Style vectorStyle( Class< ? > geometryType, Color color, boolean fill ) {
         if (org.locationtech.jts.geom.Puntal.class.isAssignableFrom(geometryType)) {
             return SLD.createPointStyle("Circle", color, color, 1f, 3f);
         } else if (org.locationtech.jts.geom.Polygonal.class.isAssignableFrom(geometryType)) {
+            if (fill) {
+                return SLD.createPolygonStyle(color, color, (float) OPACITY);
+            }
             return SLD.createPolygonStyle(color, null, 0f);
         } else {
             return SLD.createLineStyle(color, 1.5f);

@@ -26,7 +26,7 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
-import org.hortonmachine.gears.modules.v.vectorfieldrounder.OmsVectorFieldRounder;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.modules.v.vectortablejoiner.OmsVectorTableJoiner;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
@@ -37,7 +37,7 @@ import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 /**
- * Test {@link OmsVectorFieldRounder}.
+ * Test {@link OmsVectorTableJoiner}.
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -80,5 +80,89 @@ public class TestVectorTableJoiner extends HMTestCase {
         String areaStr = f.getAttribute("area").toString();
 
         assertTrue(areaStr.equals("123.45"));
+    }
+
+    /**
+     * Integer ids of the vector matched with decimal and text codes of the table, a field with an
+     * empty first value, a feature without match left out.
+     */
+    public void testJoinOnDifferentTypes() throws Exception {
+        HashMap<String, List<Object>> tabledata = new HashMap<String, List<Object>>();
+        tabledata.put("code", Arrays.asList(new Object[]{3.0, " 1 ", 2L, 1.0}));
+        tabledata.put("name", Arrays.asList(new Object[]{"three", "one", "two", "one again"}));
+        tabledata.put("rain", Arrays.asList(new Object[]{null, 120.5, 98.0, 0.0}));
+
+        OmsVectorTableJoiner joiner = new OmsVectorTableJoiner();
+        joiner.inVector = points(1, 2, 3, 4);
+        joiner.tabledata = tabledata;
+        joiner.fCommon = "id, code";
+        joiner.pFields = "name, rain";
+        joiner.process();
+
+        List<SimpleFeature> features = FeatureUtilities.featureCollectionToList(joiner.outVector);
+        assertEquals(3, features.size());
+        assertEquals(Double.class, joiner.outVector.getSchema().getDescriptor("rain").getType().getBinding());
+        for( SimpleFeature f : features ) {
+            int id = (Integer) f.getAttribute("id");
+            switch( id ) {
+            case 1:
+                // the first row with the code
+                assertEquals("one", f.getAttribute("name"));
+                assertEquals(120.5, (Double) f.getAttribute("rain"), 1E-9);
+                break;
+            case 2:
+                assertEquals("two", f.getAttribute("name"));
+                break;
+            case 3:
+                assertEquals("three", f.getAttribute("name"));
+                assertNull(f.getAttribute("rain"));
+                break;
+            default:
+                fail("Feature without match: " + id);
+            }
+        }
+    }
+
+    public void testExistingField() throws Exception {
+        HashMap<String, List<Object>> tabledata = new HashMap<String, List<Object>>();
+        tabledata.put("id", Arrays.asList(new Object[]{1}));
+        OmsVectorTableJoiner joiner = new OmsVectorTableJoiner();
+        joiner.inVector = points(1);
+        joiner.tabledata = tabledata;
+        joiner.fCommon = "id";
+        joiner.pFields = "id";
+        try {
+            joiner.process();
+            fail("A field of the vector can't be joined again.");
+        } catch (ModelsIllegalargumentException e) {
+            assertTrue(e.getMessage().contains("id"));
+        }
+    }
+
+    public void testKeys() throws Exception {
+        assertEquals("12", OmsVectorTableJoiner.toKey(12));
+        assertEquals("12", OmsVectorTableJoiner.toKey(12.0));
+        assertEquals("12", OmsVectorTableJoiner.toKey(" 12 "));
+        assertEquals("12", OmsVectorTableJoiner.toKey("12.0"));
+        assertEquals("12.5", OmsVectorTableJoiner.toKey(12.5f));
+        assertEquals("Rio Torto", OmsVectorTableJoiner.toKey(" Rio Torto"));
+        assertNull(OmsVectorTableJoiner.toKey(" "));
+        assertNull(OmsVectorTableJoiner.toKey(null));
+    }
+
+    private static SimpleFeatureCollection points( int... ids ) {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("test");
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", Point.class);
+        b.add("id", Integer.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+        for( int id : ids ) {
+            builder.addAll(new Object[]{GeometryUtilities.gf().createPoint(new Coordinate(id, 0)), id});
+            fc.add(builder.buildFeature("test." + id));
+        }
+        return fc;
     }
 }

@@ -59,7 +59,7 @@ import org.locationtech.jts.geom.Envelope;
 @Description(OmsShp2DxfConverter.DESCRIPTION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsShp2DxfConverter.KEYWORDS)
-@Label(OMSDXFCONVERTER_LABEL)
+@Label(HMConstants.VECTORPROCESSING)
 @Name("_" + OmsShp2DxfConverter.NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)

@@ -88,6 +88,19 @@ org.hortonmachine.modules.ContourExtractor
 org.hortonmachine.modules.LasConverter
 org.hortonmachine.modules.VectorReshaper
 org.hortonmachine.modules.VectorSimplifier
+org.hortonmachine.modules.DxfConverter
+org.hortonmachine.modules.RasterCatToFeatureAttribute
+org.hortonmachine.modules.GridsGenerator
+org.hortonmachine.modules.DelaunayTriangulation
+org.hortonmachine.modules.VoronoiDiagram
+org.hortonmachine.modules.VectorFieldRounder
+org.hortonmachine.modules.VectorTableJoiner
+org.hortonmachine.modules.VectorFilter
+org.hortonmachine.modules.VectorMerger
+org.hortonmachine.modules.VectorReprojector
+org.hortonmachine.modules.VectorTransformer
+org.hortonmachine.modules.LineSmootherMcMaster
+org.hortonmachine.modules.LineSmootherJaitools
 
 # Lesto
 org.hortonmachine.lesto.modules.filter.LasHistogram

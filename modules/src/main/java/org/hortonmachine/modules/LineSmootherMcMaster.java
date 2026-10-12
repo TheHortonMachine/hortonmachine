@@ -17,28 +17,32 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_STATUS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_BIBLIOGRAPHY;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_LABEL;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_LICENSE;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_NAME;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -49,6 +53,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSLINESMOOTHERMCMASTER_DESCRIPTION)
+@Documentation(OMSLINESMOOTHERMCMASTER_DOCUMENTATION)
+@Bibliography(OMSLINESMOOTHERMCMASTER_BIBLIOGRAPHY)
 @Author(name = OMSLINESMOOTHERMCMASTER_AUTHORNAMES, contact = OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS)
 @Keywords(OMSLINESMOOTHERMCMASTER_KEYWORDS)
 @Label(OMSLINESMOOTHERMCMASTER_LABEL)

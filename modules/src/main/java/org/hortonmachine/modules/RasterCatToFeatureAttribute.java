@@ -25,6 +25,7 @@ import org.hortonmachine.gears.modules.v.rastercattofeatureattribute.OmsRasterCa
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -35,6 +36,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSRASTERCATTOFEATUREATTRIBUTE_DESCRIPTION)
+@Documentation(OMSRASTERCATTOFEATUREATTRIBUTE_DOCUMENTATION)
 @Author(name = OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORNAMES, contact = OMSRASTERCATTOFEATUREATTRIBUTE_AUTHORCONTACTS)
 @Keywords(OMSRASTERCATTOFEATUREATTRIBUTE_KEYWORDS)
 @Label(OMSRASTERCATTOFEATUREATTRIBUTE_LABEL)
@@ -58,8 +60,9 @@ public class RasterCatToFeatureAttribute extends HMModel {
     public String fNew = "new";
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_P_POS_DESCRIPTION)
+    @UI("combo:" + START + "," + MIDDLE + "," + END)
     @In
-    public String pPos = "middle";
+    public String pPos = MIDDLE;
 
     @Description(OMSRASTERCATTOFEATUREATTRIBUTE_OUT_VECTOR_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)

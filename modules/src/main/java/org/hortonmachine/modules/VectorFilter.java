@@ -17,17 +17,18 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_P_CQL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORFILTER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_NAME;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_P_CQL_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter.OMSVECTORFILTER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -35,6 +36,7 @@ import org.hortonmachine.gears.modules.v.vectorfilter.OmsVectorFilter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +47,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORFILTER_DESCRIPTION)
+@Documentation(OMSVECTORFILTER_DOCUMENTATION)
 @Author(name = OMSVECTORFILTER_AUTHORNAMES, contact = OMSVECTORFILTER_AUTHORCONTACTS)
 @Keywords(OMSVECTORFILTER_KEYWORDS)
 @Label(OMSVECTORFILTER_LABEL)

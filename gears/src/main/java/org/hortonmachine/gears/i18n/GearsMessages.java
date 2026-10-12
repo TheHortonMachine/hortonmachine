@@ -54,23 +54,6 @@ public class GearsMessages {
     public static final String GENERIC_P_X_RES_DESCRIPTION = "The requested resolution in x.";
     public static final String GENERIC_P_Y_RES_DESCRIPTION = "The requested resolution in y.";
 
-    public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "The McMasters Sliding Averaging smoothing algorithm.";
-    public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = "";
-    public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, OmsLineSmootherJaitools";
-    public static final String OMSLINESMOOTHERMCMASTER_LABEL = VECTORPROCESSING;
-    public static final String OMSLINESMOOTHERMCMASTER_NAME = "linesmoother";
-    public static final int OMSLINESMOOTHERMCMASTER_STATUS = 40;
-    public static final String OMSLINESMOOTHERMCMASTER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSLINESMOOTHERMCMASTER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION = "The vector containing the lines to be smoothed.";
-    public static final String OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION = "The number of points to consider in every smoothing step (default = 7).";
-    public static final String OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION = "Minimum length for a line to be smoothed.";
-    public static final String OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION = "Slide parameter.";
-    public static final String OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION = "Densifier interval.";
-    public static final String OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION = "Simplifier tollerance.";
-    public static final String OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION = "The vector with smoothed features.";
-
     public static final String OMSVECTORCONVERTER_DESCRIPTION = "A simple middleman module to do feature conversion.";
     public static final String OMSVECTORCONVERTER_DOCUMENTATION = "";
     public static final String OMSVECTORCONVERTER_KEYWORDS = "IO, Feature, Vector, Convert";
@@ -359,47 +342,8 @@ public class GearsMessages {
     public static final String OMSEIENERGYREADER_P_SEPARATOR_DESCRIPTION = "The csv separator.";
     public static final String OMSEIENERGYREADER_OUT_ENERGY_DESCRIPTION = "The read data.";
 
-    public static final String OMSVECTORTRANSFORMER_DESCRIPTION = "Module for vector tranforms. Currently only translation is supported.";
-    public static final String OMSVECTORTRANSFORMER_DOCUMENTATION = "";
-    public static final String OMSVECTORTRANSFORMER_KEYWORDS = "Transform, Vector";
-    public static final String OMSVECTORTRANSFORMER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORTRANSFORMER_NAME = "vtrans";
-    public static final int OMSVECTORTRANSFORMER_STATUS = 40;
-    public static final String OMSVECTORTRANSFORMER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORTRANSFORMER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORTRANSFORMER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSVECTORTRANSFORMER_IN_VECTOR_DESCRIPTION = "The feature collection that has to be transformed.";
-    public static final String OMSVECTORTRANSFORMER_P_TRANS_X_DESCRIPTION = "The translation along the X axis.";
-    public static final String OMSVECTORTRANSFORMER_P_TRANS_Y_DESCRIPTION = "The translation along the Y axis.";
-    public static final String OMSVECTORTRANSFORMER_OUT_VECTOR_DESCRIPTION = "The transformed feature collection.";
 
-    public static final String OMSVECTORFIELDROUNDER_DESCRIPTION = "Module that rounds a defined field attribute.";
-    public static final String OMSVECTORFIELDROUNDER_DOCUMENTATION = "";
-    public static final String OMSVECTORFIELDROUNDER_KEYWORDS = "Round, VectorFieldJoiner";
-    public static final String OMSVECTORFIELDROUNDER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORFIELDROUNDER_NAME = "vround";
-    public static final int OMSVECTORFIELDROUNDER_STATUS = 40;
-    public static final String OMSVECTORFIELDROUNDER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORFIELDROUNDER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORFIELDROUNDER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORFIELDROUNDER_IN_VECTOR_DESCRIPTION = "The vector of which to round a numeric value.";
-    public static final String OMSVECTORFIELDROUNDER_F_ROUND_DESCRIPTION = "The double field of the number to round.";
-    public static final String OMSVECTORFIELDROUNDER_P_PATTERN_DESCRIPTION = "The rounding pattern.";
-    public static final String OMSVECTORFIELDROUNDER_OUT_VECTOR_DESCRIPTION = "The modified vector.";
 
-    public static final String OMSVECTORMERGER_DESCRIPTION = "Module for merging vecotrs into one single.";
-    public static final String OMSVECTORMERGER_DOCUMENTATION = "";
-    public static final String OMSVECTORMERGER_KEYWORDS = "IO, Feature, Vector, Merge";
-    public static final String OMSVECTORMERGER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORMERGER_NAME = "vmerge";
-    public static final int OMSVECTORMERGER_STATUS = 40;
-    public static final String OMSVECTORMERGER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORMERGER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORMERGER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORMERGER_IN_VECTORS_DESCRIPTION = "The input vectors to be merged.";
-    public static final String OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION = "The first vector to be merged.";
-    public static final String OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION = "The second vector to be merged.";
-    public static final String OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION = "The output vector.";
 
     public static final String OMSDATETIME2VALUEMAPWRITER_DESCRIPTION = "Utility class for writing data to csv file that have the form: time1 value1[] time2 value2[] ... timen valuen[].";
     public static final String OMSDATETIME2VALUEMAPWRITER_DOCUMENTATION = "";
@@ -471,20 +415,6 @@ public class GearsMessages {
     public static final String OMSRASTERRESOLUTIONRESAMPLER_P_Y_RES_DESCRIPTION = "The new cell size in y; if not set, the one in x.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_OUT_GEODATA_DESCRIPTION = "The resampled raster.";
 
-    public static final String OMSVECTORTABLEJOINER_DESCRIPTION = "Module that joins attributes from one vector into another based on a common field.";
-    public static final String OMSVECTORTABLEJOINER_DOCUMENTATION = "";
-    public static final String OMSVECTORTABLEJOINER_KEYWORDS = "Join, OmsVectorFieldRounder";
-    public static final String OMSVECTORTABLEJOINER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORTABLEJOINER_NAME = "vjoin";
-    public static final int OMSVECTORTABLEJOINER_STATUS = 40;
-    public static final String OMSVECTORTABLEJOINER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORTABLEJOINER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORTABLEJOINER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORTABLEJOINER_IN_VECTOR_DESCRIPTION = "The vector to extend.";
-    public static final String OMSVECTORTABLEJOINER_TABLEDATA_DESCRIPTION = "The dbf tabledata to merge in.";
-    public static final String OMSVECTORTABLEJOINER_F_COMMON_DESCRIPTION = "The common field (if different in the two sources, commaseparated, first shapefile, then dbf.";
-    public static final String OMSVECTORTABLEJOINER_P_FIELDS_DESCRIPTION = "The commaseparated list of fields to merge in.";
-    public static final String OMSVECTORTABLEJOINER_OUT_VECTOR_DESCRIPTION = "The joined vector.";
 
     public static final String OMSMAPCALC_DESCRIPTION = "Raster map algebra with the Jiffle language, created by Michael Bedward: the script computes the value of each cell of the output map from the values of the input maps in the same cell, or in the cells around it. The maps are known in the script by their file name without extension, and must be declared in the images block of the script, the inputs with read and the output with write.";
     public static final String OMSMAPCALC_DOCUMENTATION = "";
@@ -523,18 +453,6 @@ public class GearsMessages {
     public static final String OMSMOSAIC12_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
     public static final String OMSMOSAIC12_OUT_MAP_DESCRIPTION = "The patched raster.";
 
-    public static final String OMSVECTORFILTER_DESCRIPTION = "Module that creates a subset of a vector based on a filtered vector.";
-    public static final String OMSVECTORFILTER_DOCUMENTATION = "";
-    public static final String OMSVECTORFILTER_KEYWORDS = "Filter, Vector, OmsVectorReshaper";
-    public static final String OMSVECTORFILTER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORFILTER_NAME = "vfilter";
-    public static final int OMSVECTORFILTER_STATUS = 40;
-    public static final String OMSVECTORFILTER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORFILTER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORFILTER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORFILTER_IN_VECTOR_DESCRIPTION = "The vector to filter.";
-    public static final String OMSVECTORFILTER_P_CQL_DESCRIPTION = "The ECQL filter function.";
-    public static final String OMSVECTORFILTER_OUT_VECTOR_DESCRIPTION = "The filtered vector.";
 
     public static final String OMSCARVER_DESCRIPTION = "Carves lines and polygons into an elevation model, lowering the cells they cover by a depth: as rivers burned into the terrain, so that the flow follows them, or excavations.";
     public static final String OMSCARVER_DOCUMENTATION = """
@@ -923,20 +841,6 @@ public class GearsMessages {
     public static final String OMSTIMESERIESWRITER_COLUMNS_DESCRIPTION = "The comma separated list of column names.";
     public static final String OMSTIMESERIESWRITER_IN_META_DATA_DESCRIPTION = "A list of lists of metadata that can be attached to the column of the csv file.";
 
-    public static final String OMSDXFCONVERTER_DESCRIPTION = "Module to convert dxf files to geotools vecotors.";
-    public static final String OMSDXFCONVERTER_DOCUMENTATION = "";
-    public static final String OMSDXFCONVERTER_KEYWORDS = "IO, OmsDwgConverter, Feature, Vector, Reading";
-    public static final String OMSDXFCONVERTER_LABEL = VECTORPROCESSING;
-    public static final String OMSDXFCONVERTER_NAME = "dxfimport";
-    public static final int OMSDXFCONVERTER_STATUS = 40;
-    public static final String OMSDXFCONVERTER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSDXFCONVERTER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSDXFCONVERTER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSDXFCONVERTER_FILE_DESCRIPTION = "The dxf file.";
-    public static final String OMSDXFCONVERTER_P_CODE_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.";
-    public static final String OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION = "The output point vector.";
-    public static final String OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION = "The output lines vector.";
-    public static final String OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION = "The output polygons vector.";
 
     public static final String OMSGRIDGEOMETRYREADER_DESCRIPTION = "GridGeometry reader module.";
     public static final String OMSGRIDGEOMETRYREADER_DOCUMENTATION = "";
@@ -1007,19 +911,6 @@ public class GearsMessages {
     public static final String OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION = "The rotation angle in degree (rotation is performed before translation).";
     public static final String OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION = "The transformed raster.";
     public static final String OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION = "The new raster geometry.";
-
-    public static final String OMSLINESMOOTHERJAITOOLS_DESCRIPTION = "The line smoother from the jaitools project.";
-    public static final String OMSLINESMOOTHERJAITOOLS_DOCUMENTATION = "";
-    public static final String OMSLINESMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector";
-    public static final String OMSLINESMOOTHERJAITOOLS_LABEL = VECTORPROCESSING;
-    public static final String OMSLINESMOOTHERJAITOOLS_NAME = "linesmootherjai";
-    public static final int OMSLINESMOOTHERJAITOOLS_STATUS = 40;
-    public static final String OMSLINESMOOTHERJAITOOLS_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSLINESMOOTHERJAITOOLS_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION = "The vector containing the lines to be smoothed.";
-    public static final String OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION = "A value between 0 and 1 (inclusive) specifying the tightness of fit of the smoothed boundary (0 is loose).";
-    public static final String OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION = "The smoothed features.";
 
     public static final String OMSPOLYGONSMOOTHERJAITOOLS_DESCRIPTION = "The polygon smoother from the jaitools project.";
     public static final String OMSPOLYGONSMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector";
@@ -1238,21 +1129,6 @@ public class GearsMessages {
     public static final String OMSVECTORRESHAPER_P_REMOVE_DESCRIPTION = "The list of fields to remove, comma separated.";
     public static final String OMSVECTORRESHAPER_OUT_VECTOR_DESCRIPTION = "The new reshaped vector.";
 
-    public static final String OMSVECTORREPROJECTOR_DESCRIPTION = "Module for vector reprojection.";
-    public static final String OMSVECTORREPROJECTOR_DOCUMENTATION = "";
-    public static final String OMSVECTORREPROJECTOR_KEYWORDS = "CRS, Reprojection, Vector";
-    public static final String OMSVECTORREPROJECTOR_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORREPROJECTOR_NAME = "vreproject";
-    public static final int OMSVECTORREPROJECTOR_STATUS = 40;
-    public static final String OMSVECTORREPROJECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSVECTORREPROJECTOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORREPROJECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSVECTORREPROJECTOR_IN_VECTOR_DESCRIPTION = "The vector that has to be reprojected.";
-    public static final String OMSVECTORREPROJECTOR_P_CODE_DESCRIPTION = "The code defining the target coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
-    public static final String OMSVECTORREPROJECTOR_DO_LONGITUDE_FIRST_DESCRIPTION = "A flag to modify the axes order.";
-    public static final String OMSVECTORREPROJECTOR_P_FORCE_CODE_DESCRIPTION = "A coordinate reference system on which to force the input, composed by authority and code number (ex. EPSG:4328).";
-    public static final String OMSVECTORREPROJECTOR_DO_LENIENT_DESCRIPTION = "Switch that set to true allows for some error due to different datums. If set to false, it won't reproject without Bursa Wolf parameters.";
-    public static final String OMSVECTORREPROJECTOR_OUT_VECTOR_DESCRIPTION = "The output reprojected vector.";
 
     private GearsMessages() {}
 

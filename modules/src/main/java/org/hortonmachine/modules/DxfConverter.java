@@ -17,19 +17,20 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_FILE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_P_CODE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSDXFCONVERTER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_FILE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_LINE_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_NAME;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_POINTS_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_POLYGON_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_P_CODE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter.OMSDXFCONVERTER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -37,6 +38,7 @@ import org.hortonmachine.gears.modules.v.vectorconverter.OmsDxfConverter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +49,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSDXFCONVERTER_DESCRIPTION)
+@Documentation(OMSDXFCONVERTER_DOCUMENTATION)
 @Author(name = OMSDXFCONVERTER_AUTHORNAMES, contact = OMSDXFCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSDXFCONVERTER_KEYWORDS)
 @Label(OMSDXFCONVERTER_LABEL)

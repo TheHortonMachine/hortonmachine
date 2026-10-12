@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-97 of the 198 toolbox modules have no manual page yet.
+84 of the 198 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -148,31 +148,18 @@
 | Kriging | experimental | Ordinary kriging algorithm. |
 | TheoreticalVariogram | certified | Teorethical semivariogram models. |
 
-## Vector Processing (23)
+## Vector Processing (10)
 
 | Module | Status | Description |
 |---|---|---|
 | Buffer | experimental | A module that performs a buffer operation on a vector layer. |
-| DelaunayTriangulation | certified | Creates a Delaunay triangulation from a set of points. |
 | DwgConverter | experimental | Module to convert dxf files to geotools vecotors. |
-| DxfConverter | certified | Module to convert dxf files to geotools vecotors. |
-| GridsGenerator | certified | Generates grid of lines or polygons. |
 | IntersectionFinder | draft | Finds intersection geometries in feature collections |
 | LasFilter | experimental | Filter and/or modify a las file. |
-| LineSmootherJaitools | certified | The line smoother from the jaitools project. |
-| LineSmootherMcMaster | certified | The McMasters Sliding Averaging smoothing algorithm. |
 | LinesPolygonizer | draft | Polygonizes a layer of lines. |
 | PointsVectorizer | experimental | Module that creates a points vector layer from raster values. |
-| RasterCatToFeatureAttribute | certified | Module that extracts raster categories and adds them to a feature collection. |
 | Shp2DxfConverter | draft | Shapefiles to dxf converter (Based on work of Michael Michaud) |
 | VectorClipper | experimental | A vector clipping module. |
-| VectorFieldRounder | certified | Module that rounds a defined field attribute. |
-| VectorFilter | certified | Module that creates a subset of a vector based on a filtered vector. |
 | VectorIntersector | draft | Vector layer intersector with maintaining of attributes. |
-| VectorMerger | certified | Module for merging vecotrs into one single. |
 | VectorOverlayOperators | experimental | A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables. |
-| VectorReprojector | certified | Module for vector reprojection. |
-| VectorTableJoiner | certified | Module that joins attributes from one vector into another based on a common field. |
-| VectorTransformer | certified | Module for vector tranforms. Currently only translation is supported. |
-| VoronoiDiagram | certified | Creates a Voronoi diagram from a set of points. |
 

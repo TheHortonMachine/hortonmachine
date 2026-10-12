@@ -30,6 +30,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.io.WKTReader;
@@ -77,5 +78,112 @@ public class TestLineSmootherMcMaster extends HMTestCase {
 
         assertEquals(expectedLength, newLength);
 
+    }
+
+    /**
+     * The smoothing of a symmetric line is symmetric, keeps the ends and lowers the peak.
+     */
+    public void testSymmetricSmoothing() throws Exception {
+        OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
+        smoother.inVector = lines("LINESTRING (0 0, 1 1, 2 2, 3 3, 4 4, 5 3, 6 2, 7 1, 8 0)");
+        smoother.pLookahead = 5;
+        smoother.pSlide = 1.0;
+        smoother.pDensify = 0.25;
+        smoother.process();
+
+        Coordinate[] c = smoothedLines(smoother).get(0).getCoordinates();
+        int n = c.length;
+        // each side of 1.41 m densified in 6 parts
+        assertEquals(8 * 6 + 1, n);
+        assertTrue(c[0].equals2D(new Coordinate(0, 0)));
+        assertTrue(c[n - 1].equals2D(new Coordinate(8, 0)));
+        double maxY = 0;
+        for( int i = 0; i < n; i++ ) {
+            assertEquals(8.0, c[i].x + c[n - 1 - i].x, 1E-9);
+            assertEquals(c[i].y, c[n - 1 - i].y, 1E-9);
+            maxY = Math.max(maxY, c[i].y);
+        }
+        // the average of the 5 vertices around the peak, 1/6 m lower one from the other
+        assertEquals(4.0 - 2 * (1 / 6.0 + 2 / 6.0) / 5.0, maxY, 1E-9);
+    }
+
+    /**
+     * On a curved line all the vertices but the first and the last are averaged, at both ends.
+     */
+    public void testCurvedEnds() throws Exception {
+        OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
+        // y = (x - 5)^2
+        smoother.inVector = lines("LINESTRING (0 25, 1 16, 2 9, 3 4, 4 1, 5 0, 6 1, 7 4, 8 9, 9 16, 10 25)");
+        smoother.pLookahead = 3;
+        smoother.pSlide = 1.0;
+        smoother.process();
+
+        Coordinate[] c = smoothedLines(smoother).get(0).getCoordinates();
+        assertEquals(11, c.length);
+        assertEquals(25.0, c[0].y, 1E-9);
+        assertEquals((25 + 16 + 9) / 3.0, c[1].y, 1E-9);
+        assertEquals((25 + 16 + 9) / 3.0, c[9].y, 1E-9);
+        assertEquals(25.0, c[10].y, 1E-9);
+    }
+
+    /**
+     * With a slide of 0 the vertices stay where they are.
+     */
+    public void testNoSlide() throws Exception {
+        OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
+        smoother.inVector = lines("LINESTRING (0 0, 1 1, 2 2, 3 3, 4 4, 5 3, 6 2, 7 1, 8 0)");
+        smoother.pLookahead = 5;
+        smoother.pSlide = 0.0;
+        smoother.pDensify = 0.25;
+        smoother.process();
+
+        Geometry smoothed = smoothedLines(smoother).get(0);
+        Geometry original = new WKTReader().read("LINESTRING (0 0, 4 4, 8 0)");
+        assertTrue(smoothed.getCoordinates().length > 3);
+        assertEquals(0.0, smoothed.difference(original.buffer(1E-9)).getLength(), 1E-9);
+    }
+
+    /**
+     * The lines not longer than the limit are not smoothed. Among them, the closed ones and the ones not
+     * connected to other lines are removed.
+     */
+    public void testLimit() throws Exception {
+        OmsLineSmootherMcMaster smoother = new OmsLineSmootherMcMaster();
+        smoother.inVector = lines(//
+                "LINESTRING (0 0, 10 10, 20 20, 30 30, 40 40, 50 30, 60 20, 70 10, 80 0)", // long
+                "LINESTRING (80 0, 82 2, 84 0)", // short, connected to the long one
+                "LINESTRING (200 200, 202 202, 204 200)", // short, alone
+                "LINESTRING (300 300, 302 300, 302 302, 300 300)" // short, closed
+        );
+        smoother.pLookahead = 3;
+        smoother.pLimit = 10;
+        smoother.process();
+
+        List<Geometry> smoothed = smoothedLines(smoother);
+        assertEquals(2, smoothed.size());
+        // the short connected line is kept as it is
+        Geometry connected = new WKTReader().read("LINESTRING (80 0, 82 2, 84 0)");
+        boolean hasConnected = smoothed.stream().anyMatch(g -> g.getGeometryN(0).equalsExact(connected));
+        assertTrue(hasConnected);
+    }
+
+    private static SimpleFeatureCollection lines( String... wkts ) throws Exception {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("test");
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", LineString.class);
+        b.add("id", Integer.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+        for( int i = 0; i < wkts.length; i++ ) {
+            builder.addAll(new Object[]{new WKTReader().read(wkts[i]), i});
+            fc.add(builder.buildFeature(type.getTypeName() + "." + i));
+        }
+        return fc;
+    }
+
+    private static List<Geometry> smoothedLines( OmsLineSmootherMcMaster smoother ) {
+        return FeatureUtilities.featureCollectionToGeometriesList(smoother.outVector, false, null);
     }
 }

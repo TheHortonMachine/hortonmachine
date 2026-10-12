@@ -22,9 +22,9 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_CERTIFIED;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.DOCUMENTATION;
 import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.KEYWORDS;
 import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.NAME;
-import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.fElev_DESCR;
 import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.inMap_DESCR;
 import static org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram.outMap_DESCR;
 
@@ -34,6 +34,7 @@ import org.hortonmachine.gears.modules.v.triangulation.OmsVoronoiDiagram;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -44,6 +45,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(DESCRIPTION)
+@Documentation(DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(KEYWORDS)
 @Label(HMConstants.VECTORPROCESSING)
@@ -57,10 +59,6 @@ public class VoronoiDiagram extends HMModel {
     @In
     public String inMap = null;
 
-    @Description(fElev_DESCR)
-    @In
-    public String fElev = "elev";
-
     @Description(outMap_DESCR)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -71,7 +69,6 @@ public class VoronoiDiagram extends HMModel {
         OmsVoronoiDiagram voronoiDiagram = new OmsVoronoiDiagram();
         voronoiDiagram.pm = pm;
         voronoiDiagram.inMap = getVector(inMap);
-        voronoiDiagram.fElev = fElev;
         voronoiDiagram.process();
         dumpVector(voronoiDiagram.outMap, outMap);
     }

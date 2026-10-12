@@ -31,6 +31,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.io.WKTReader;
@@ -76,5 +77,43 @@ public class TestLineSmootherJaitools extends HMTestCase {
 
         assertEquals(expectedLength, newLength);
 
+    }
+
+    /**
+     * The curve passes through all the vertices, with 10 vertices for each segment: with alpha 1 it
+     * stays on the segments, with alpha 0 it is rounded.
+     */
+    public void testAlpha() throws Exception {
+        Geometry original = new WKTReader().read("LINESTRING (0 0, 1 1, 2 0, 3 1)");
+
+        Geometry tight = smooth(original, 1.0);
+        Geometry loose = smooth(original, 0.0);
+        for( Geometry smoothed : new Geometry[]{tight, loose} ) {
+            assertEquals(3 * 9 + 1, smoothed.getNumPoints());
+            for( Coordinate vertex : original.getCoordinates() ) {
+                assertEquals(0.0, smoothed.distance(original.getFactory().createPoint(vertex)), 1E-9);
+            }
+        }
+        assertEquals(0.0, tight.difference(original.buffer(1E-9)).getLength(), 1E-9);
+        assertTrue(original.distance(loose) < 1E-9);
+        assertTrue(loose.difference(original.buffer(0.05)).getLength() > 0.5);
+    }
+
+    private Geometry smooth( Geometry line, double alpha ) throws Exception {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("test");
+        b.setCRS(DefaultGeographicCRS.WGS84);
+        b.add("the_geom", LineString.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        builder.addAll(new Object[]{line});
+        fc.add(builder.buildFeature(null));
+
+        OmsLineSmootherJaitools smoother = new OmsLineSmootherJaitools();
+        smoother.inVector = fc;
+        smoother.pAlpha = alpha;
+        smoother.process();
+        return FeatureUtilities.featureCollectionToGeometriesList(smoother.outVector, false, null).get(0);
     }
 }

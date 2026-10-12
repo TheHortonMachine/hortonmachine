@@ -51,8 +51,11 @@ public class DxfLWPOLYLINE extends DxfENTITY {
         super("DEFAULT");
     }
 
-    public static DxfGroup readEntity( RandomAccessFile raf, DefaultFeatureCollection entities )
-            throws IOException {
+    /**
+     * Read a light polyline: open into the lines, closed into the polygons.
+     */
+    public static DxfGroup readEntity( RandomAccessFile raf, DefaultFeatureCollection entities,
+            DefaultFeatureCollection polygonEntities ) throws IOException {
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(DxfFile.DXF_LINESCHEMA);
         String layer = "";
         String ltype = "";
@@ -124,13 +127,14 @@ public class DxfLWPOLYLINE extends DxfENTITY {
                 coordList.closeRing();
                 Polygon polygon = gF.createPolygon(gF.createLinearRing(coordList.toCoordinateArray()), null);
                 Object[] values = new Object[]{polygon, layer, ltype, elevation, thickness, color, text, text_height, text_style};
-                builder.addAll(values);
+                SimpleFeatureBuilder polygonBuilder = new SimpleFeatureBuilder(DxfFile.DXF_POLYGONSCHEMA);
+                polygonBuilder.addAll(values);
                 StringBuilder featureId = new StringBuilder();
-                featureId.append(DxfFile.DXF_LINESCHEMA.getTypeName());
+                featureId.append(DxfFile.DXF_POLYGONSCHEMA.getTypeName());
                 featureId.append(".");
                 featureId.append(DxfFile.getNextFid());
-                SimpleFeature feature = builder.buildFeature(featureId.toString());
-                entities.add(feature);
+                SimpleFeature feature = polygonBuilder.buildFeature(featureId.toString());
+                polygonEntities.add(feature);
             } else {
                 System.out.println("Can't handle geometry type: " + geomType);
             }

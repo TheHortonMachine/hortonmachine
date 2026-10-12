@@ -17,24 +17,28 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERJAITOOLS_STATUS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_BIBLIOGRAPHY;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_LABEL;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_LICENSE;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_NAME;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_P_ALPHA_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools.OMSLINESMOOTHERJAITOOLS_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherJaitools;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -45,6 +49,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSLINESMOOTHERJAITOOLS_DESCRIPTION)
+@Documentation(OMSLINESMOOTHERJAITOOLS_DOCUMENTATION)
+@Bibliography(OMSLINESMOOTHERJAITOOLS_BIBLIOGRAPHY)
 @Author(name = OMSLINESMOOTHERJAITOOLS_AUTHORNAMES, contact = OMSLINESMOOTHERJAITOOLS_AUTHORCONTACTS)
 @Keywords(OMSLINESMOOTHERJAITOOLS_KEYWORDS)
 @Label(OMSLINESMOOTHERJAITOOLS_LABEL)

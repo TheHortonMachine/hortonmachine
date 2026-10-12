@@ -17,17 +17,18 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORMERGER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_IN_VECTOR1_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_IN_VECTOR2_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_NAME;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_OUT_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger.OMSVECTORMERGER_STATUS;
 import static org.hortonmachine.gears.libs.modules.HMConstants.FILEIN_UI_HINT_VECTOR;
 
 import java.util.Arrays;
@@ -38,6 +39,7 @@ import org.hortonmachine.gears.modules.v.vectormerger.OmsVectorMerger;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,6 +50,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORMERGER_DESCRIPTION)
+@Documentation(OMSVECTORMERGER_DOCUMENTATION)
 @Author(name = OMSVECTORMERGER_AUTHORNAMES, contact = OMSVECTORMERGER_AUTHORCONTACTS)
 @Keywords(OMSVECTORMERGER_KEYWORDS)
 @Label(OMSVECTORMERGER_LABEL)

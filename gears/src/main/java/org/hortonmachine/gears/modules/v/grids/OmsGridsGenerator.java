@@ -29,7 +29,7 @@ import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -134,8 +134,22 @@ public class OmsGridsGenerator extends HMModel {
     public static final String POLYGON = "polygon";
 
     // VARS DOCS START
-    public static final String OMSGRIDSGENERATOR_DESCRIPTION = "Generates grid of lines or polygons.";
-    public static final String OMSGRIDSGENERATOR_DOCUMENTATION = "";
+    public static final String OMSGRIDSGENERATOR_DESCRIPTION = "Generates a regular grid of polygons, lines or points, on the bounds of a vector or a raster, or from a corner and a cell size.";
+    public static final String OMSGRIDSGENERATOR_DOCUMENTATION = """
+            The grid has pRows x pCols cells, and its place is taken, in order, from a vector, a raster or the \
+            coordinates. With a vector, its bounds are divided in the cells. With a raster, its bounds are \
+            divided in the cells as well or, if the cell width and height are given, the cells of that size \
+            start from its lower left corner, so the grid can be smaller or larger than the raster. Without \
+            maps, the grid starts from the lower left corner pLon, pLat, which are the easting and northing in \
+            the crs pCode, not necessarily a longitude and a latitude.
+
+            The polygons are the cells. The lines are their borders, pRows + 1 horizontal and pCols + 1 \
+            vertical lines, each across the whole grid, the horizontal ones first. The points are the corners \
+            of the cells, (pRows + 1) x (pCols + 1). Each feature has an id, starting from 0.
+
+            The vertex spacing adds vertices along the sides of the cells and along the lines, so that they \
+            keep their shape when they are reprojected, as a grid of a projected crs drawn in lat/long.
+            """;
     public static final String OMSGRIDSGENERATOR_KEYWORDS = "Vector, Grid";
     public static final String OMSGRIDSGENERATOR_LABEL = VECTORPROCESSING;
     public static final String OMSGRIDSGENERATOR_NAME = "gridgenerator";
@@ -143,17 +157,17 @@ public class OmsGridsGenerator extends HMModel {
     public static final String OMSGRIDSGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSGRIDSGENERATOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSGRIDSGENERATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSGRIDSGENERATOR_inVector_DESCRIPTION = "Optional vector map from which to take the bounds (if supplied, all other bounds related parameter are ignored). This needs pRows and pCols to be defined.";
+    public static final String OMSGRIDSGENERATOR_inVector_DESCRIPTION = "Optional vector map from which to take the bounds, divided in pRows x pCols cells: all the other parameters of the bounds and of the cell size are ignored.";
     public static final String OMSGRIDSGENERATOR_inRaster_DESCRIPTION = "Optional raster map from which to take the bounds: it is divided in pRows x pCols cells or, if pWidth and pHeight are supplied, the cells of that size start from its lower left corner. The longitude and latitude are ignored.";
-    public static final String OMSGRIDSGENERATOR_pLon_DESCRIPTION = "The lower left longitude (needed if no map is supplied).";
-    public static final String OMSGRIDSGENERATOR_pLat_DESCRIPTION = "The lower left latitude (needed if no map is supplied).";
+    public static final String OMSGRIDSGENERATOR_pLon_DESCRIPTION = "The west coordinate of the grid, in the units of its crs (needed if no map is supplied).";
+    public static final String OMSGRIDSGENERATOR_pLat_DESCRIPTION = "The south coordinate of the grid, in the units of its crs (needed if no map is supplied).";
     public static final String OMSGRIDSGENERATOR_pWidth_DESCRIPTION = "The grid cell width: needed if no map is supplied, optional with a raster map, ignored with a vector map.";
     public static final String OMSGRIDSGENERATOR_pHeight_DESCRIPTION = "The grid cell height: needed if no map is supplied, optional with a raster map, ignored with a vector map.";
     public static final String OMSGRIDSGENERATOR_pRows_DESCRIPTION = "The number of rows.";
     public static final String OMSGRIDSGENERATOR_pCols_DESCRIPTION = "The number of cols.";
-    public static final String OMSGRIDSGENERATOR_pSpacing_DESCRIPTION = "The vertex spacing to use.";
-    public static final String OMSGRIDSGENERATOR_pType_DESCRIPTION = "The output type.";
-    public static final String OMSGRIDSGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328). Applied in the case the file is missing.";
+    public static final String OMSGRIDSGENERATOR_pSpacing_DESCRIPTION = "The optional distance between the vertices added along the sides of the cells and along the lines.";
+    public static final String OMSGRIDSGENERATOR_pType_DESCRIPTION = "The output type: the cells (polygon), their borders (line) or their corners (point).";
+    public static final String OMSGRIDSGENERATOR_pCode_DESCRIPTION = "The code of the coordinate reference system of the grid, composed by authority and code number (ex. EPSG:32632). Needed if no map is supplied, the grid takes the crs of the map otherwise.";
     public static final String OMSGRIDSGENERATOR_outMap_DESCRIPTION = "The grid.";
     // VARS DOC END
 
@@ -200,8 +214,6 @@ public class OmsGridsGenerator extends HMModel {
         }
         isSquare = NumericsUtilities.dEq(pWidth, pHeight) ? true : false;
 
-        outMap = new DefaultFeatureCollection();
-
         double delta = 0.000001;
         ReferencedEnvelope env = new ReferencedEnvelope(w, e + delta, s, n + delta, crs);
 
@@ -230,9 +242,10 @@ public class OmsGridsGenerator extends HMModel {
             break;
         case LINE:
         case POINT:
+            // the vertical lines are spaced by the cell width, the horizontal ones by the height
             List<OrthoLineDef> lineDefs = Arrays.asList(//
-                    new OrthoLineDef(LineOrientation.VERTICAL, 1, pHeight), //
-                    new OrthoLineDef(LineOrientation.HORIZONTAL, 1, pWidth) //
+                    new OrthoLineDef(LineOrientation.VERTICAL, 1, pWidth), //
+                    new OrthoLineDef(LineOrientation.HORIZONTAL, 1, pHeight) //
                     );
             if (pSpacing != null) {
                 grid = Lines.createOrthoLines(env, lineDefs, pSpacing, builder);
@@ -246,9 +259,15 @@ public class OmsGridsGenerator extends HMModel {
             List<LineString> horizontals = new ArrayList<LineString>();
             for( Geometry geometry : geoms ) {
                 Envelope envelope = geometry.getEnvelopeInternal();
-                Coordinate first = new Coordinate(envelope.getMinX(), envelope.getMinY());
-                Coordinate last = new Coordinate(envelope.getMaxX(), envelope.getMaxY());
-                LineString lineString = gf.createLineString(new Coordinate[]{first, last});
+                LineString lineString;
+                if (geometry instanceof LineString) {
+                    // keep the vertices of the spacing
+                    lineString = (LineString) geometry;
+                } else {
+                    Coordinate first = new Coordinate(envelope.getMinX(), envelope.getMinY());
+                    Coordinate last = new Coordinate(envelope.getMaxX(), envelope.getMaxY());
+                    lineString = gf.createLineString(new Coordinate[]{first, last});
+                }
                 if (envelope.getWidth() > envelope.getHeight()) {
                     horizontals.add(lineString);
                 } else {
@@ -271,7 +290,6 @@ public class OmsGridsGenerator extends HMModel {
     }
 
     private void createPolygons( CoordinateReferenceSystem crs, GeometryFactory gf, List<Geometry> polygons ) {
-        outMap = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(POLYGON);
         b.setCRS(crs);
@@ -279,6 +297,8 @@ public class OmsGridsGenerator extends HMModel {
         b.add("id", Long.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(type);
+        // a list keeps the features in the order of their id
+        ListFeatureCollection fc = new ListFeatureCollection(type);
 
         long index = 0;
         int numGeometries = polygons.size();
@@ -287,13 +307,13 @@ public class OmsGridsGenerator extends HMModel {
             Object[] values = new Object[]{geometry, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            ((DefaultFeatureCollection) outMap).add(feature);
+            fc.add(feature);
         }
+        outMap = fc;
     }
 
     private void createPoints( CoordinateReferenceSystem crs, GeometryFactory gf, List<LineString> verticals,
             List<LineString> horizontals ) {
-        outMap = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(POINT);
         b.setCRS(crs);
@@ -301,6 +321,7 @@ public class OmsGridsGenerator extends HMModel {
         b.add("id", Long.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(type);
+        ListFeatureCollection fc = new ListFeatureCollection(type);
 
         Geometry gVer = gf.createMultiLineString(verticals.toArray(new LineString[0]));
         Geometry gHor = gf.createMultiLineString(horizontals.toArray(new LineString[0]));
@@ -314,12 +335,12 @@ public class OmsGridsGenerator extends HMModel {
             Object[] values = new Object[]{geometry, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            ((DefaultFeatureCollection) outMap).add(feature);
+            fc.add(feature);
         }
+        outMap = fc;
     }
 
     private void createLines( CoordinateReferenceSystem crs, List<LineString> verticals, List<LineString> horizontals ) {
-        outMap = new DefaultFeatureCollection();
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
         b.setName(LINE);
         b.setCRS(crs);
@@ -327,19 +348,21 @@ public class OmsGridsGenerator extends HMModel {
         b.add("id", Long.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder fbuilder = new SimpleFeatureBuilder(type);
+        ListFeatureCollection fc = new ListFeatureCollection(type);
 
         long index = 0;
         for( LineString lineString : horizontals ) {
             Object[] values = new Object[]{lineString, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            ((DefaultFeatureCollection) outMap).add(feature);
+            fc.add(feature);
         }
         for( LineString lineString : verticals ) {
             Object[] values = new Object[]{lineString, index++};
             fbuilder.addAll(values);
             SimpleFeature feature = fbuilder.buildFeature(null);
-            ((DefaultFeatureCollection) outMap).add(feature);
+            fc.add(feature);
         }
+        outMap = fc;
     }
 }

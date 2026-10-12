@@ -17,22 +17,17 @@
  */
 package org.hortonmachine.gears.modules.v.smoothing;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESMOOTHERMCMASTER_STATUS;
+import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_BIBLIOGRAPHY;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_LABEL;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_LICENSE;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_NAME;
+import static org.hortonmachine.gears.modules.v.smoothing.OmsLineSmootherMcMaster.OMSLINESMOOTHERMCMASTER_STATUS;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +35,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
@@ -74,6 +70,7 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 
 @Description(OMSLINESMOOTHERMCMASTER_DESCRIPTION)
 @Documentation(OMSLINESMOOTHERMCMASTER_DOCUMENTATION)
+@Bibliography(OMSLINESMOOTHERMCMASTER_BIBLIOGRAPHY)
 @Author(name = OMSLINESMOOTHERMCMASTER_AUTHORNAMES, contact = OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS)
 @Keywords(OMSLINESMOOTHERMCMASTER_KEYWORDS)
 @Label(OMSLINESMOOTHERMCMASTER_LABEL)
@@ -109,7 +106,41 @@ public class OmsLineSmootherMcMaster extends HMModel {
     @Description(OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION)
     @Out
     public SimpleFeatureCollection outVector;
-    
+
+    public static final String OMSLINESMOOTHERMCMASTER_DESCRIPTION = "Smooths lines with the sliding averaging of McMaster: each vertex moves towards the average of the vertices around it.";
+    public static final String OMSLINESMOOTHERMCMASTER_DOCUMENTATION = """
+            Each vertex moves to (1 - slide) x its position + slide x the average position of the look ahead \
+            vertices centered on it: with a slide of 1 it goes to the average, with 0 it stays. An even look \
+            ahead is increased by one. The window is a number of vertices, not a distance, so on lines with \
+            unevenly spaced vertices the densify interval, applied before the smoothing, makes it a length as \
+            well: the window is then about look ahead x interval long. Lines with fewer vertices than four \
+            times the look ahead use a window of a fifth of their vertices, and lines with fewer than 10 \
+            vertices are not smoothed.
+
+            The first and the last half window of vertices stay in place, so the lines keep their ends and \
+            stay connected to each other. Closed lines are smoothed across their closing vertex.
+
+            The lines not longer than the limit are not smoothed. Among them, the closed ones and the ones \
+            not touching another line at their ends are removed, as the small rings and the isolated bits of \
+            a vectorized raster. The optional simplification, after the smoothing, drops the vertices closer \
+            than its tolerance to the line, without changing the topology.
+            """;
+    public static final String OMSLINESMOOTHERMCMASTER_BIBLIOGRAPHY = "McMaster, R. B. (1989). The integration of simplification and smoothing algorithms in line generalization. Cartographica, 26(1), 101-121.";
+    public static final String OMSLINESMOOTHERMCMASTER_KEYWORDS = "Smoothing, Vector, Generalization";
+    public static final String OMSLINESMOOTHERMCMASTER_LABEL = VECTORPROCESSING;
+    public static final String OMSLINESMOOTHERMCMASTER_NAME = "linesmoother";
+    public static final int OMSLINESMOOTHERMCMASTER_STATUS = 40;
+    public static final String OMSLINESMOOTHERMCMASTER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSLINESMOOTHERMCMASTER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSLINESMOOTHERMCMASTER_AUTHORCONTACTS = "http://www.hydrologis.com";
+    public static final String OMSLINESMOOTHERMCMASTER_IN_VECTOR_DESCRIPTION = "The vector containing the lines to be smoothed.";
+    public static final String OMSLINESMOOTHERMCMASTER_P_LOOK_AHEAD_DESCRIPTION = "The number of vertices averaged for each vertex, an odd number (default = 7).";
+    public static final String OMSLINESMOOTHERMCMASTER_P_LIMIT_DESCRIPTION = "The length up to which the lines are not smoothed: of them, the closed ones and the ones not connected to other lines are removed.";
+    public static final String OMSLINESMOOTHERMCMASTER_P_SLIDE_DESCRIPTION = "How far each vertex moves towards the average, from 0 (it stays) to 1 (it goes to the average).";
+    public static final String OMSLINESMOOTHERMCMASTER_P_DENSIFY_DESCRIPTION = "The optional maximum distance between the vertices, added before the smoothing.";
+    public static final String OMSLINESMOOTHERMCMASTER_P_SIMPLIFY_DESCRIPTION = "The optional tolerance of a simplification after the smoothing.";
+    public static final String OMSLINESMOOTHERMCMASTER_OUT_VECTOR_DESCRIPTION = "The vector with smoothed features.";
+
     public boolean doParallel = false;
 
     private static final double SAMEPOINTTHRESHOLD = 0.1;
@@ -157,8 +188,7 @@ public class OmsLineSmootherMcMaster extends HMModel {
             stream = linesList.stream();
         }
         stream.forEach(line -> {
-            Geometry geometry = (Geometry) line.getDefaultGeometry();
-            List<LineString> lsList = smoothGeometries(geometry);
+            List<LineString> lsList = smoothGeometries(line);
             if (lsList.size() != 0) {
                 LineString[] lsArray = (LineString[]) lsList.toArray(new LineString[lsList.size()]);
                 MultiLineString multiLineString = gF.createMultiLineString(lsArray);
@@ -172,7 +202,8 @@ public class OmsLineSmootherMcMaster extends HMModel {
         pm.done();
     }
 
-    private List<LineString> smoothGeometries( Geometry geometry ) {
+    private List<LineString> smoothGeometries( SimpleFeature line ) {
+        Geometry geometry = (Geometry) line.getDefaultGeometry();
         List<LineString> lsList = new ArrayList<LineString>();
         int numGeometries = geometry.getNumGeometries();
         for( int i = 0; i < numGeometries; i++ ) {
@@ -187,7 +218,7 @@ public class OmsLineSmootherMcMaster extends HMModel {
                     continue;
                 }
                 // check if the line is an error lying around somewhere
-                if (isAlone(geometryN)) {
+                if (isAlone(line, geometryN)) {
                     continue;
                 }
             } else {
@@ -220,13 +251,14 @@ public class OmsLineSmootherMcMaster extends HMModel {
 
     /**
      * Checks if the given geometry is connected to any other line.
-     * 
+     *
+     * @param feature the feature of the geometry, that is not checked against itself.
      * @param geometryN the geometry to test.
      * @return true if the geometry is alone in the space, i.e. not connected at
      *              one of the ends to any other geometry.
      */
     @SuppressWarnings("unchecked")
-    private boolean isAlone( Geometry geometryN ) {
+    private boolean isAlone( SimpleFeature feature, Geometry geometryN ) {
         Coordinate[] coordinates = geometryN.getCoordinates();
         if (coordinates.length > 1) {
             Coordinate first = coordinates[0];
@@ -235,6 +267,10 @@ public class OmsLineSmootherMcMaster extends HMModel {
             env.expandBy(SAMEPOINTTHRESHOLD*3/2);
             List<SimpleFeature> nearLinesList = linesIndex.query(env);
             for( SimpleFeature line : nearLinesList ) {
+                if (line.getID().equals(feature.getID())) {
+                    // the index has the line itself
+                    continue;
+                }
                 Geometry lineGeom = (Geometry) line.getDefaultGeometry();
                 int numGeometries = lineGeom.getNumGeometries();
                 for( int i = 0; i < numGeometries; i++ ) {
