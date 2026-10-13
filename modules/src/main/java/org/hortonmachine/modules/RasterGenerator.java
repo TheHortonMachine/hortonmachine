@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,6 @@ package org.hortonmachine.modules;
 
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -28,6 +27,7 @@ import org.hortonmachine.gears.modules.r.rastergenerator.OmsRasterGenerator;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -38,11 +38,12 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OmsRasterGenerator.DESCRIPTION)
+@Documentation(OmsRasterGenerator.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsRasterGenerator.KEYWORDS)
 @Label(HMConstants.RASTERPROCESSING)
 @Name(OmsRasterGenerator.NAME)
-@Status(OMSHYDRO_DRAFT)
+@Status(OmsRasterGenerator.STATUS)
 @License(OMSHYDRO_LICENSE)
 public class RasterGenerator extends HMModel {
 
@@ -76,7 +77,7 @@ public class RasterGenerator extends HMModel {
     @In
     public Double pYres = null;
 
-    @Description(OmsRasterGenerator.pXres_DESCRIPTION)
+    @Description(OmsRasterGenerator.pCode_DESCRIPTION)
     @UI(HMConstants.CRS_UI_HINT)
     @In
     public String pCode;
@@ -97,6 +98,10 @@ public class RasterGenerator extends HMModel {
     @In
     public double pScale = 1.0;
 
+    @Description(OmsRasterGenerator.pSeed_DESCRIPTION)
+    @In
+    public Long pSeed = null;
+
     @Description(OmsRasterGenerator.outRaster_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -116,10 +121,11 @@ public class RasterGenerator extends HMModel {
         omsRasterGenerator.doRandom = doRandom;
         omsRasterGenerator.pOffset = pOffset;
         omsRasterGenerator.pScale = pScale;
+        omsRasterGenerator.pSeed = pSeed;
+        omsRasterGenerator.pm = pm;
         omsRasterGenerator.process();
 
         dumpRaster(omsRasterGenerator.outRaster, outRaster);
-
     }
 
 }

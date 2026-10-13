@@ -1,73 +1,48 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * JGrass - Free Open Source Java GIS http://www.jgrass.org
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Library General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option) any
  * later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.hortonmachine.gears.modules.r.transformer;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DOCUMENTATION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_STATUS;
-import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
+import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
 import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
 import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_LABEL;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_LICENSE;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_NAME;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_STATUS;
 
-import java.awt.geom.AffineTransform;
-import java.awt.image.RenderedImage;
-
-import org.eclipse.imagen.Interpolation;
-import org.eclipse.imagen.RenderedOp;
-import org.eclipse.imagen.media.scale.ScaleDescriptor;
-import org.eclipse.imagen.media.translate.TranslateDescriptor;
-import org.eclipse.imagen.operator.TransposeDescriptor;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.operation.transform.AffineTransform2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
-import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Polygon;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -97,7 +72,7 @@ public class OmsRasterTransformer extends HMModel {
     public GridCoverage2D inRaster;
 
     @Description(OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION)
-    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
@@ -137,10 +112,10 @@ public class OmsRasterTransformer extends HMModel {
     @In
     public Double pEast;
 
-//    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
-//    @Unit("degrees")
-//    @In
-//    public Double pAngle;
+    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
+    @Unit("degrees")
+    @In
+    public Double pAngle;
 
     @Description(OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION)
     @Out
@@ -150,185 +125,190 @@ public class OmsRasterTransformer extends HMModel {
     @Out
     public SimpleFeatureCollection outBounds = null;
 
+    public static final String OMSRASTERTRANSFORMER_DESCRIPTION = "Flips, rotates, scales and translates a raster.";
+    public static final String OMSRASTERTRANSFORMER_DOCUMENTATION = """
+            The transformations are applied in this order: the flips, the rotation, the scale, \
+            the translation. The flips mirror the columns (horizontal) or the rows (vertical) on \
+            the same grid. The rotation, counterclockwise in degrees, turns the raster around the \
+            pivot, which is the given point or else the center of the raster: the result covers \
+            the whole rotated raster, on cells of the same size, and the cells outside of it are \
+            novalue. Their values come from the nearest input cell, or are interpolated between \
+            the four nearest cell centers with the bilinear interpolation, that suits the \
+            continuous values but not the classes. The other transformations don't touch the \
+            values.
+
+            The scale multiplies the size of the cells around the same pivot, and the translation \
+            moves the raster, in the units of its reference system: they change only where the \
+            raster lies, as to fix a raster with a wrong georeference or a scan placed by hand. \
+            The bounds output is the outline of the transformed raster, rotated with it.
+            """;
+    public static final String OMSRASTERTRANSFORMER_KEYWORDS = "Transform, Rotate, Flip, Scale, Translate, Raster";
+    public static final String OMSRASTERTRANSFORMER_LABEL = RASTERPROCESSING;
+    public static final String OMSRASTERTRANSFORMER_NAME = "rtrans";
+    public static final int OMSRASTERTRANSFORMER_STATUS = 40;
+    public static final String OMSRASTERTRANSFORMER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSRASTERTRANSFORMER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSRASTERTRANSFORMER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION = "The raster to transform.";
+    public static final String OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION = "The interpolation of the values of the rotated raster.";
+    public static final String OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION = "The translation along the X axis.";
+    public static final String OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION = "The translation along the Y axis.";
+    public static final String OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION = "The scale factor along the X axis.";
+    public static final String OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION = "The scale factor along the Y axis.";
+    public static final String OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION = "Flip horizontally, mirroring the columns.";
+    public static final String OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION = "Flip vertically, mirroring the rows.";
+    public static final String OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION = "The northing of the pivot of rotation and scale (default the center of the raster).";
+    public static final String OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION = "The easting of the pivot of rotation and scale (default the center of the raster).";
+    public static final String OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION = "The counterclockwise rotation angle.";
+    public static final String OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION = "The transformed raster.";
+    public static final String OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION = "The outline of the transformed raster.";
+
     @Execute
     public void process() throws Exception {
         if (!concatOr(outRaster == null, doReset)) {
             return;
         }
+        checkNull(inRaster);
 
-        Interpolation interpolation = Interpolation.getInstance(Interpolation.INTERP_NEAREST);
-        if (pInterpolation.equals(BILINEAR)) {
-            interpolation = Interpolation.getInstance(Interpolation.INTERP_BILINEAR);
-        } else if (pInterpolation.equals(BICUBIC)) {
-            interpolation = Interpolation.getInstance(Interpolation.INTERP_BICUBIC);
+        double scaleX = pScaleX != null ? pScaleX : 1.0;
+        double scaleY = pScaleY != null ? pScaleY : 1.0;
+        if (scaleX <= 0 || scaleY <= 0) {
+            throw new ModelsIllegalargumentException("The scale factors need to be positive: to mirror use the flips.", this,
+                    pm);
         }
+        double transX = pTransX != null ? pTransX : 0.0;
+        double transY = pTransY != null ? pTransY : 0.0;
+        double angle = pAngle != null ? Math.toRadians(pAngle) : 0.0;
+        boolean doBilinear = BILINEAR.equals(pInterpolation);
 
-        RenderedImage inRasterRI = inRaster.getRenderedImage();
-        RegionMap sourceRegion = RegionMap.fromGridGeometry(inRaster.getGridGeometry());
-        var envelope2d = inRaster.getEnvelope2D();
-        Envelope targetEnvelope = new Envelope(envelope2d.getMinX(), envelope2d.getMaxX(), envelope2d.getMinY(),
-                envelope2d.getMaxY());
-        Geometry targetGeometry = null;
-        GeometryFactory gf = GeometryUtilities.gf();
+        try (HMRaster inData = HMRaster.fromGridCoverage(inRaster)) {
+            RegionMap inRegion = inData.getRegionMap();
+            double west = inRegion.getWest();
+            double north = inRegion.getNorth();
+            double xRes = inRegion.getXres();
+            double yRes = inRegion.getYres();
+            int inCols = inRegion.getCols();
+            int inRows = inRegion.getRows();
+            Coordinate pivot = new Coordinate(pEast != null ? pEast : (west + inRegion.getEast()) / 2.0,
+                    pNorth != null ? pNorth : (north + inRegion.getSouth()) / 2.0);
+            double cos = Math.cos(angle);
+            double sin = Math.sin(angle);
 
-        RenderedOp finalImg = null;
-//        if (pAngle != null) {
-//            pm.beginTask("Rotate raster by angle: " + pAngle, IHMProgressMonitor.UNKNOWN);
-//
-//            float centerX = 0f;
-//            float centerY = 0f;
-//            if (pEast == null) {
-//                centerX = (float) envelope2d.getCenterX();
-//            } else {
-//                centerX = pEast.floatValue();
-//            }
-//            if (pNorth == null) {
-//                centerY = (float) envelope2d.getCenterY();
-//            } else {
-//                centerY = pNorth.floatValue();
-//            }
-//            finalImg = RotateDescriptor.create(inRasterRI, centerX, centerY, (float) Math.toRadians(pAngle), interpolation, null,
-//                    null);
-//
-//            // also keep track of the transforming envelope
-//            AffineTransform rotationAT = new AffineTransform();
-//            rotationAT.translate(centerX, centerY);
-//            rotationAT.rotate(Math.toRadians(-pAngle));
-//            rotationAT.translate(-centerX, -centerY);
-//            MathTransform rotationTransform = new AffineTransform2D(rotationAT);
-//
-//            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
-//                    targetEnvelope.getMaxY());
-//            targetEnvelope = JTS.transform(jtsEnv, rotationTransform);
-//
-//            Geometry rotGeometry = gf.toGeometry(jtsEnv);
-//            targetGeometry = JTS.transform(rotGeometry, rotationTransform);
-//
-//            pm.done();
-//        }
-
-        if (doFlipHorizontal) {
-            pm.beginTask("Flip horizontally...", IHMProgressMonitor.UNKNOWN);
-
-            if (finalImg != null) {
-                finalImg = TransposeDescriptor.create(finalImg, TransposeDescriptor.FLIP_HORIZONTAL, null);
-            } else {
-                finalImg = TransposeDescriptor.create(inRasterRI, TransposeDescriptor.FLIP_HORIZONTAL, null);
+            // the rotated input corners, before scale and translation
+            Coordinate[] corners = {new Coordinate(west, north), new Coordinate(inRegion.getEast(), north),
+                    new Coordinate(inRegion.getEast(), inRegion.getSouth()), new Coordinate(west, inRegion.getSouth())};
+            Coordinate[] rotatedCorners = new Coordinate[corners.length];
+            double minX = Double.POSITIVE_INFINITY;
+            double maxX = Double.NEGATIVE_INFINITY;
+            double minY = Double.POSITIVE_INFINITY;
+            double maxY = Double.NEGATIVE_INFINITY;
+            for( int i = 0; i < corners.length; i++ ) {
+                rotatedCorners[i] = rotate(corners[i], pivot, cos, sin);
+                minX = Math.min(minX, rotatedCorners[i].x);
+                maxX = Math.max(maxX, rotatedCorners[i].x);
+                minY = Math.min(minY, rotatedCorners[i].y);
+                maxY = Math.max(maxY, rotatedCorners[i].y);
             }
 
-            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
-                    targetEnvelope.getMaxY());
-            targetGeometry = gf.toGeometry(jtsEnv);
-            pm.done();
+            // the grid of the rotated raster, on cells of the input size; without rotation it is the input grid
+            int outCols = inCols;
+            int outRows = inRows;
+            double outWest = west;
+            double outNorth = north;
+            if (angle != 0.0) {
+                // the tolerance keeps the exact multiples, as the 90 degrees rotations, from getting one cell more
+                outCols = (int) Math.ceil((maxX - minX) / xRes - 1E-9);
+                outRows = (int) Math.ceil((maxY - minY) / yRes - 1E-9);
+                outWest = minX;
+                outNorth = maxY;
+            }
+
+            // scale and translation change only the georeference of that grid
+            double finalWest = pivot.x + (outWest - pivot.x) * scaleX + transX;
+            double finalNorth = pivot.y + (outNorth - pivot.y) * scaleY + transY;
+            double finalXRes = xRes * scaleX;
+            double finalYRes = yRes * scaleY;
+            RegionMap outRegion = RegionMap.fromBoundsAndGrid(finalWest, finalWest + outCols * finalXRes,
+                    finalNorth - outRows * finalYRes, finalNorth, outCols, outRows);
+
+            try (HMRaster outData = new HMRasterWritableBuilder().setName("transformed").setRegion(outRegion)
+                    .setCrs(inData.getCrs()).setNoValue(HMConstants.doubleNovalue).build()) {
+                pm.beginTask("Transforming raster...", outRows);
+                for( int r = 0; r < outRows; r++ ) {
+                    for( int c = 0; c < outCols; c++ ) {
+                        double value;
+                        if (angle == 0.0) {
+                            value = flippedValue(inData, c, r, inCols, inRows);
+                        } else {
+                            // the center of the output cell, rotated back onto the input
+                            Coordinate center = new Coordinate(outWest + (c + 0.5) * xRes, outNorth - (r + 0.5) * yRes);
+                            Coordinate source = rotate(center, pivot, cos, -sin);
+                            double col = (source.x - west) / xRes;
+                            double row = (north - source.y) / yRes;
+                            if (doBilinear) {
+                                value = bilinearValue(inData, col - 0.5, row - 0.5, inCols, inRows);
+                            } else {
+                                value = flippedValue(inData, (int) Math.floor(col), (int) Math.floor(row), inCols, inRows);
+                            }
+                        }
+                        if (!inData.isNovalue(value)) {
+                            outData.setValue(c, r, value);
+                        }
+                    }
+                    pm.worked(1);
+                }
+                pm.done();
+                outRaster = outData.buildCoverage();
+            }
+
+            Coordinate[] outline = new Coordinate[rotatedCorners.length + 1];
+            for( int i = 0; i < rotatedCorners.length; i++ ) {
+                Coordinate corner = rotatedCorners[i];
+                outline[i] = new Coordinate(pivot.x + (corner.x - pivot.x) * scaleX + transX,
+                        pivot.y + (corner.y - pivot.y) * scaleY + transY);
+            }
+            outline[rotatedCorners.length] = outline[0];
+            Polygon outlinePolygon = GeometryUtilities.gf().createPolygon(outline);
+            outBounds = FeatureUtilities.featureCollectionFromGeometry(inData.getCrs(), outlinePolygon);
         }
-        if (doFlipVertical) {
-            pm.beginTask("Flip vertically...", IHMProgressMonitor.UNKNOWN);
+    }
 
-            if (finalImg != null) {
-                finalImg = TransposeDescriptor.create(finalImg, TransposeDescriptor.FLIP_VERTICAL, null);
-            } else {
-                finalImg = TransposeDescriptor.create(inRasterRI, TransposeDescriptor.FLIP_VERTICAL, null);
-            }
+    private static Coordinate rotate( Coordinate coordinate, Coordinate pivot, double cos, double sin ) {
+        double dx = coordinate.x - pivot.x;
+        double dy = coordinate.y - pivot.y;
+        return new Coordinate(pivot.x + dx * cos - dy * sin, pivot.y + dx * sin + dy * cos);
+    }
 
-            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
-                    targetEnvelope.getMaxY());
-            targetGeometry = gf.toGeometry(jtsEnv);
-            pm.done();
+    /**
+     * The value of a cell of the input, after the flips, or novalue outside of it.
+     */
+    private double flippedValue( HMRaster inData, int col, int row, int cols, int rows ) {
+        if (col < 0 || col >= cols || row < 0 || row >= rows) {
+            return inData.getNovalue();
         }
+        int sourceCol = doFlipHorizontal ? cols - 1 - col : col;
+        int sourceRow = doFlipVertical ? rows - 1 - row : row;
+        return inData.getValue(sourceCol, sourceRow);
+    }
 
-        if (pScaleX != null || pScaleY != null) {
-            float scaleX = 1f;
-            float scaleY = 1f;
-            if (pScaleX == null) {
-                scaleX = 1f;
-            } else {
-                scaleX = pScaleX.floatValue();
-            }
-            if (pScaleY == null) {
-                scaleY = 1f;
-            } else {
-                scaleY = pScaleY.floatValue();
-            }
-            pm.beginTask("Scale raster by: " + scaleX + " and " + scaleY, IHMProgressMonitor.UNKNOWN);
-
-            // float centerX = (float) envelope2d.getCenterX();
-            // float centerY = (float) envelope2d.getCenterY();
-            if (finalImg != null) {
-                finalImg = ScaleDescriptor.create(finalImg, new Float(scaleX), new Float(scaleY), new Float(0.0f),
-                        new Float(0.0f), interpolation, null);
-            } else {
-                finalImg = ScaleDescriptor.create(inRasterRI, new Float(scaleX), new Float(scaleY), new Float(0.0f), new Float(
-                        0.0f), interpolation, null);
-            }
-            // also keep track of the transforming envelope
-            AffineTransform scaleAT = new AffineTransform();
-            // scaleAT.translate(centerX, centerY);
-            scaleAT.scale(scaleX, scaleY);
-            // scaleAT.translate(-centerX, -centerY);
-            MathTransform scaleTransform = new AffineTransform2D(scaleAT);
-
-            Envelope jtsEnv = new Envelope(targetEnvelope.getMinX(), targetEnvelope.getMaxX(), targetEnvelope.getMinY(),
-                    targetEnvelope.getMaxY());
-            targetEnvelope = JTS.transform(jtsEnv, scaleTransform);
-
-            Geometry scaledGeometry = gf.toGeometry(jtsEnv);
-            targetGeometry = JTS.transform(scaledGeometry, scaleTransform);
-            pm.done();
+    /**
+     * The bilinear interpolation between the four cell centers around a point in grid space, measured from the
+     * center of the first cell. Near the novalues and the borders it falls back to the nearest cell.
+     */
+    private double bilinearValue( HMRaster inData, double col, double row, int cols, int rows ) {
+        int col0 = (int) Math.floor(col);
+        int row0 = (int) Math.floor(row);
+        double fCol = col - col0;
+        double fRow = row - row0;
+        double v00 = flippedValue(inData, col0, row0, cols, rows);
+        double v10 = flippedValue(inData, col0 + 1, row0, cols, rows);
+        double v01 = flippedValue(inData, col0, row0 + 1, cols, rows);
+        double v11 = flippedValue(inData, col0 + 1, row0 + 1, cols, rows);
+        if (inData.isNovalue(v00) || inData.isNovalue(v10) || inData.isNovalue(v01) || inData.isNovalue(v11)) {
+            return flippedValue(inData, (int) Math.round(col), (int) Math.round(row), cols, rows);
         }
-
-        if (pTransX != null || pTransY != null) {
-            float transX = 1f;
-            float transY = 1f;
-            if (pTransX == null) {
-                transX = 1f;
-            } else {
-                transX = pTransX.floatValue();
-            }
-            if (pTransY == null) {
-                transY = 1f;
-            } else {
-                transY = pTransY.floatValue();
-            }
-            pm.beginTask("Translate raster by: " + transX + " and " + transY, IHMProgressMonitor.UNKNOWN);
-
-            if (finalImg != null) {
-                finalImg = TranslateDescriptor.create(finalImg, transX, transY, interpolation, null);
-            } else {
-                finalImg = TranslateDescriptor.create(inRasterRI, transX, transY, interpolation, null);
-            }
-
-            // also keep track of the transforming envelope
-            AffineTransform translationAT = new AffineTransform();
-            translationAT.translate(transX, transY);
-            MathTransform translateTransform = new AffineTransform2D(translationAT);
-
-            if (targetGeometry == null) {
-                targetGeometry = gf.toGeometry(targetEnvelope);
-            }
-
-            targetEnvelope = JTS.transform(targetEnvelope, translateTransform);
-            targetGeometry = JTS.transform(targetGeometry, translateTransform);
-
-            pm.done();
-        }
-
-        if (finalImg != null) {
-            RegionMap targetRegion = new RegionMap();
-            targetRegion.north = targetEnvelope.getMaxY();
-            targetRegion.south = targetEnvelope.getMinY();
-            targetRegion.west = targetEnvelope.getMinX();
-            targetRegion.east = targetEnvelope.getMaxX();
-            targetRegion.xres = sourceRegion.getXres();
-            targetRegion.yres = sourceRegion.getYres();
-            // targetRegion.rows = (double) height);
-            // targetRegion.cols = (double) width);
-
-            CoordinateReferenceSystem crs = inRaster.getCoordinateReferenceSystem();
-            outRaster = CoverageUtilities.buildCoverage("out", finalImg, targetRegion, crs);
-
-            outBounds = FeatureUtilities.featureCollectionFromGeometry(crs, targetGeometry);
-        }
-
-        pm.done();
+        double top = v00 + (v10 - v00) * fCol;
+        double bottom = v01 + (v11 - v01) * fCol;
+        return top + (bottom - top) * fRow;
     }
 }

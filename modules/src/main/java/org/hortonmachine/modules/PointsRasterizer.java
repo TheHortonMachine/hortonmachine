@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,8 +17,36 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_EAST_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_SOUTH_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_WEST_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_X_RES_DESCRIPTION;
+import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_Y_RES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_LABEL;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_LICENSE;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_NAME;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_P_CAT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer.OMSPOINTSRASTERIZER_STATUS;
+
+import org.hortonmachine.gears.io.gridgeometryreader.OmsGridGeometryReader;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer;
+
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -28,32 +56,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_CODE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_X_RES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSGRIDGEOMETRYREADER_P_Y_RES_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSPOINTSRASTERIZER_STATUS;
-
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.hortonmachine.gears.io.gridgeometryreader.OmsGridGeometryReader;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.modules.r.pointsrasterizer.OmsPointsRasterizer;
-
 @Description(OMSPOINTSRASTERIZER_DESCRIPTION)
+@Documentation(OMSPOINTSRASTERIZER_DOCUMENTATION)
 @Author(name = OMSPOINTSRASTERIZER_AUTHORNAMES, contact = OMSPOINTSRASTERIZER_AUTHORCONTACTS)
 @Keywords(OMSPOINTSRASTERIZER_KEYWORDS)
 @Label(OMSPOINTSRASTERIZER_LABEL)
@@ -66,6 +70,19 @@ public class PointsRasterizer extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inVector = null;
+
+    @Description(OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION)
+    @In
+    public String fCat;
+
+    @Description(OMSPOINTSRASTERIZER_P_CAT_DESCRIPTION)
+    @In
+    public double pCat = 1.0;
+
+    @Description(OMSPOINTSRASTERIZER_IN_RASTER_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @In
+    public String inRaster;
 
     @Description(OMSGRIDGEOMETRYREADER_P_NORTH_DESCRIPTION)
     @UI(HMConstants.PROCESS_NORTH_UI_HINT)
@@ -102,10 +119,6 @@ public class PointsRasterizer extends HMModel {
     @In
     public String pCode;
 
-    @Description(OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION)
-    @In
-    public String fCat;
-
     @Description(OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -113,24 +126,24 @@ public class PointsRasterizer extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        OmsGridGeometryReader gridgeometryreader = new OmsGridGeometryReader();
-        gridgeometryreader.pNorth = pNorth;
-        gridgeometryreader.pSouth = pSouth;
-        gridgeometryreader.pWest = pWest;
-        gridgeometryreader.pEast = pEast;
-        gridgeometryreader.pXres = pXres;
-        gridgeometryreader.pYres = pYres;
-        gridgeometryreader.pCode = pCode;
-        gridgeometryreader.pm = pm;
-        gridgeometryreader.doProcess = doProcess;
-        gridgeometryreader.doReset = doReset;
-        gridgeometryreader.process();
-        GridGeometry2D outGridgeom = gridgeometryreader.outGridgeom;
-
         OmsPointsRasterizer pointsrasterizer = new OmsPointsRasterizer();
         pointsrasterizer.inVector = getVector(inVector);
-        pointsrasterizer.inGrid = outGridgeom;
         pointsrasterizer.fCat = fCat;
+        pointsrasterizer.pCat = pCat;
+        pointsrasterizer.inRaster = getRaster(inRaster);
+        if (inRaster == null) {
+            OmsGridGeometryReader gridgeometryreader = new OmsGridGeometryReader();
+            gridgeometryreader.pNorth = pNorth;
+            gridgeometryreader.pSouth = pSouth;
+            gridgeometryreader.pWest = pWest;
+            gridgeometryreader.pEast = pEast;
+            gridgeometryreader.pXres = pXres;
+            gridgeometryreader.pYres = pYres;
+            gridgeometryreader.pCode = pCode;
+            gridgeometryreader.pm = pm;
+            gridgeometryreader.process();
+            pointsrasterizer.inGrid = gridgeometryreader.outGridgeom;
+        }
         pointsrasterizer.pm = pm;
         pointsrasterizer.doProcess = doProcess;
         pointsrasterizer.doReset = doReset;

@@ -108,6 +108,8 @@ import groovy.lang.GroovyShell;
  * <li><b>positive</b>: draw only the cells with values above 0;</li>
  * <li><b>classes</b>: the legend shows the distinct values of the raster, as classes, instead of a
  * color bar, for maps of integer classes or codes (at most 30);</li>
+ * <li><b>categorical</b>: with classes, the classes get colors evenly spaced along the colortable,
+ * by their order instead of their value, for codes far apart, as 1, 2 and 10001;</li>
  * <li><b>nolegend</b>: no legend, for example for a single class;</li>
  * <li><b>base=elevation.tif</b>: the elevation of the hillshade, and with vectors of the extent of
  * the map, instead of the sample elevation;</li>
@@ -340,6 +342,9 @@ public class ModuleMapsGenerator {
             classValues = distinctValues(raster, MAX_CLASSES);
             if (classValues == null) {
                 throw new IllegalArgumentException("Too many values for a legend of classes, use a color bar: " + spec.raster());
+            }
+            if (spec.options().contains("categorical") && classValues.size() > 1) {
+                style = categoricalStyle(style, classValues, minMax, opacity);
             }
         }
 
@@ -1167,6 +1172,22 @@ public class ModuleMapsGenerator {
             g.drawLine(x + barWidth, yLabel, x + barWidth + 4, yLabel);
             g.drawString(format(quantity(entries.get(steps - i))), x + barWidth + 8, yLabel + metrics.getAscent() / 2 - 1);
         }
+    }
+
+    /**
+     * A style that gives the classes colors evenly spaced along the colortable of the style, by
+     * their order instead of their value.
+     */
+    private static Style categoricalStyle( Style style, List<Double> classValues, double[] minMax, double opacity ) {
+        List<ColorMapEntry> entries = colorMapEntries(style);
+        int count = classValues.size();
+        double[] values = new double[count];
+        Color[] colors = new Color[count];
+        for( int i = 0; i < count; i++ ) {
+            values[i] = classValues.get(i);
+            colors[i] = colorAt(entries, minMax[0] + (minMax[1] - minMax[0]) * i / (count - 1));
+        }
+        return RasterStyleUtilities.createStyleForValues(values, colors, opacity);
     }
 
     /**

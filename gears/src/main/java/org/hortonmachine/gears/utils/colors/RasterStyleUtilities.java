@@ -58,6 +58,18 @@ public class RasterStyleUtilities {
         return styleStr;
     }
 
+    /**
+     * Create a style that gives each of the values its color, interpolating the colors in between.
+     *
+     * @param values the increasing values.
+     * @param colors the colors of the values.
+     * @param opacity the opacity.
+     * @return the style.
+     */
+    public static Style createStyleForValues( double[] values, Color[] colors, double opacity ) {
+        return createRasterStyle(values[0], values[values.length - 1], values, colors, opacity);
+    }
+
     private static Style createRasterStyle( double min, double max, double[] values, Color[] colors, double opacity ) {
         StyleBuilder sB = new StyleBuilder(sf);
         RasterSymbolizer rasterSym = sf.createRasterSymbolizer();

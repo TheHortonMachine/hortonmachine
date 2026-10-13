@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -18,7 +18,6 @@
 package org.hortonmachine.gears.modules.r.rasterdiff;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.RASTERPROCESSING;
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_DESCRIPTION;
@@ -29,15 +28,13 @@ import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRAST
 import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_NAME;
 import static org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff.OMSRASTERDIFF_STATUS;
 
-import java.awt.image.WritableRaster;
-
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.eclipse.imagen.iterator.WritableRandomIter;
+import java.util.Arrays;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
@@ -83,76 +80,66 @@ public class OmsRasterDiff extends HMModel {
     @Out
     public GridCoverage2D outRaster;
 
-    public static final String OMSRASTERDIFF_DESCRIPTION = "Raster diff module.";
-    public static final String OMSRASTERDIFF_DOCUMENTATION = "";
-    public static final String OMSRASTERDIFF_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
+    public static final String OMSRASTERDIFF_DESCRIPTION = "Subtracts a raster from another, cell by cell, as the canopy height model from the surface and the terrain models.";
+    public static final String OMSRASTERDIFF_DOCUMENTATION = """
+            The result is the first raster minus the second one, on the grid of the first: the two \
+            rasters need the same grid. A cell that is novalue in one of them is novalue in the \
+            result. Without the negatives the differences below 0 become 0, as the canopy that \
+            can't be below the ground in a surface model minus a terrain model with some noise. \
+            The threshold then sets to novalue the differences below it, as the low vegetation \
+            and the ground under a canopy height model of 2 m.
+
+            It is a shortcut for the most common Mapcalc expression: Mapcalc is the tool for any \
+            other combination of rasters.
+            """;
+    public static final String OMSRASTERDIFF_KEYWORDS = "Raster, Difference, Subtract, Canopy height model";
     public static final String OMSRASTERDIFF_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERDIFF_NAME = "rdiff";
-    public static final int OMSRASTERDIFF_STATUS = 5;
+    public static final int OMSRASTERDIFF_STATUS = 40;
     public static final String OMSRASTERDIFF_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTERDIFF_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERDIFF_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERDIFF_IN_RASTER1_DESCRIPTION = "The input raster.";
-    public static final String OMSRASTERDIFF_IN_RASTER2_DESCRIPTION = "The raster to subtract.";
-    public static final String OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION = "The threshold, under which to set novalue.";
-    public static final String OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION = "Allow negative values.";
-    public static final String OMSRASTERDIFF_OUT_RASTER_DESCRIPTION = "The output raster.";
+    public static final String OMSRASTERDIFF_IN_RASTER1_DESCRIPTION = "The raster to subtract from.";
+    public static final String OMSRASTERDIFF_IN_RASTER2_DESCRIPTION = "The raster to subtract, on the grid of the first one.";
+    public static final String OMSRASTERDIFF_P_THRESHOLD_DESCRIPTION = "An optional threshold: the differences below it become novalue.";
+    public static final String OMSRASTERDIFF_DO_NEGATIVES_DESCRIPTION = "If false, the negative differences become 0.";
+    public static final String OMSRASTERDIFF_OUT_RASTER_DESCRIPTION = "The difference of the rasters.";
 
     @Execute
     public void process() throws Exception {
         checkNull(inRaster1, inRaster2);
 
-        double thres = 0.0;
+        RegionMap regionMap1 = RegionMap.fromGridGeometry(inRaster1.getGridGeometry());
+        RegionMap regionMap2 = RegionMap.fromGridGeometry(inRaster2.getGridGeometry());
+        if (!regionMap1.equalsColsRows(regionMap2)) {
+            throw new ModelsIllegalargumentException("The two rasters need to have the same grid.", this, pm);
+        }
+
+        // the novalues are null for mapcalc, and a null in the expression makes the result null
+        StringBuilder script = new StringBuilder("images{r1=read; r2=read; diff=write;} d = r1 - r2;");
+        if (!doNegatives) {
+            script.append(" d = d < 0 ? 0 : d;");
+        }
         if (pThreshold != null) {
-            thres = pThreshold;
+            script.append(" d = d < ").append(pThreshold.toString()).append(" ? null : d;");
         }
+        script.append(" diff = d;");
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster1);
-        int cols = regionMap.getCols();
-        int rows = regionMap.getRows();
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.pm = pm;
+        mapcalc.inRasters = Arrays.asList(mapcalcRaster("r1", inRaster1, regionMap1),
+                mapcalcRaster("r2", inRaster2, regionMap1));
+        mapcalc.pFunction = script.toString();
+        mapcalc.process();
+        outRaster = mapcalc.outRaster;
+    }
 
-        RandomIter r1Iter = CoverageUtilities.getRandomIterator(inRaster1);
-        RandomIter r2Iter = CoverageUtilities.getRandomIterator(inRaster2);
-
-        double r1Nv = HMConstants.getNovalue(inRaster1);
-        double r2Nv = HMConstants.getNovalue(inRaster2);
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, r1Nv);
-        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
-
-        pm.beginTask("Subtracting raster...", cols);
-        for( int r = 0; r < rows; r++ ) {
-            for( int c = 0; c < cols; c++ ) {
-                double r1 = r1Iter.getSampleDouble(c, r, 0);
-                double r2 = r2Iter.getSampleDouble(c, r, 0);
-                double diff;
-                if (isNovalue(r1, r1Nv) && isNovalue(r2, r2Nv)) {
-                    continue;
-                } else if (isNovalue(r1, r1Nv)) {
-                    diff = r2;
-                } else if (isNovalue(r2, r2Nv)) {
-                    diff = r1;
-                } else {
-                    diff = r1 - r2;
-                }
-                if (!doNegatives && diff < 0) {
-                    diff = 0.0;
-//                    diff = doubleNovalue;
-                }
-                if (pThreshold != null && diff < thres) {
-                    diff = r1Nv;
-                }
-                outIter.setSample(c, r, 0, diff);
-            }
-            pm.worked(1);
-        }
-        pm.done();
-
-        r1Iter.done();
-        r2Iter.done();
-        outIter.done();
-
-        outRaster = CoverageUtilities.buildCoverageWithNovalue("corrected", outWR, regionMap,
-                inRaster1.getCoordinateReferenceSystem(), r1Nv);
+    /**
+     * The same raster, with the name by which mapcalc knows it.
+     */
+    private GridCoverage2D mapcalcRaster( String name, GridCoverage2D raster, RegionMap regionMap ) {
+        return CoverageUtilities.buildCoverageWithNovalue(name, raster.getRenderedImage(), regionMap,
+                raster.getCoordinateReferenceSystem(), HMConstants.getNovalue(raster));
     }
 
 }

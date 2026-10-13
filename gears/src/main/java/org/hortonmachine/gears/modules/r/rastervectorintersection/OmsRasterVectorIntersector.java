@@ -27,8 +27,6 @@ import org.hortonmachine.gears.libs.exceptions.ModelsRuntimeException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.cutout.OmsCutOut;
 import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 
@@ -70,19 +68,29 @@ public class OmsRasterVectorIntersector extends HMModel {
     @Out
     public GridCoverage2D outRaster;
     
-    public static final String OMSRASTERVECTORINTERSECTOR_DESCRIPTION = "Module for raster with polygon vector intersection.";
-    public static final String OMSRASTERVECTORINTERSECTOR_DOCUMENTATION = "";
-    public static final String OMSRASTERVECTORINTERSECTOR_KEYWORDS = "Raster, Vector, Intersect";
+    public static final String OMSRASTERVECTORINTERSECTOR_DESCRIPTION = "Cuts a raster with polygons: keeps the cells inside them, or with the inverse switch the cells outside.";
+    public static final String OMSRASTERVECTORINTERSECTOR_DOCUMENTATION = """
+            A cell is inside when its center is inside a polygon, as in ScanLineRasterizer, that \
+            makes the mask of the polygons on the grid of the raster; CutOut then keeps the \
+            values under the mask, or the ones outside of it with the inverse switch. The other \
+            cells become novalue, the grid doesn't change: to also shrink the grid to the \
+            polygons, RasterResizer is the tool.
+
+            It is the one step version of ScanLineRasterizer with the raster as grid, followed by \
+            CutOut, for example to keep the elevation of a basin from its polygon, or to blank \
+            the lakes of an elevation model.
+            """;
+    public static final String OMSRASTERVECTORINTERSECTOR_KEYWORDS = "Raster, Vector, Intersect, Clip, Mask";
     public static final String OMSRASTERVECTORINTERSECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERVECTORINTERSECTOR_NAME = "rvintersector";
-    public static final int OMSRASTERVECTORINTERSECTOR_STATUS = 5;
+    public static final int OMSRASTERVECTORINTERSECTOR_STATUS = 40;
     public static final String OMSRASTERVECTORINTERSECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTERVECTORINTERSECTOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION = "The polygon vector to use for the intersection.";
-    public static final String OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION = "The raster to use for the intersection.";
-    public static final String OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION = "Flag to use to invert the result (default is false = keep data inside vector)";
-    public static final String OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION = "The output raster.";
+    public static final String OMSRASTERVECTORINTERSECTOR_IN_VECTOR_DESCRIPTION = "The polygons to cut the raster with.";
+    public static final String OMSRASTERVECTORINTERSECTOR_IN_RASTER_DESCRIPTION = "The raster to cut.";
+    public static final String OMSRASTERVECTORINTERSECTOR_DO_INVERSE_DESCRIPTION = "If true, keeps the cells outside of the polygons instead of the ones inside.";
+    public static final String OMSRASTERVECTORINTERSECTOR_OUT_RASTER_DESCRIPTION = "The cut raster.";
 
 
     @Execute
@@ -94,15 +102,11 @@ public class OmsRasterVectorIntersector extends HMModel {
             throw new ModelsRuntimeException("The module works only with polygon vectors.", this);
         }
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
+        // the mask of the polygons, on the grid of the raster
         OmsScanLineRasterizer raster = new OmsScanLineRasterizer();
+        raster.pm = pm;
         raster.inVector = inVector;
-        raster.pCols = regionMap.getCols();
-        raster.pRows = regionMap.getRows();
-        raster.pNorth = regionMap.getNorth();
-        raster.pSouth = regionMap.getSouth();
-        raster.pEast = regionMap.getEast();
-        raster.pWest = regionMap.getWest();
+        raster.inRaster = inRaster;
         raster.pValue = 1.0;
         raster.process();
         GridCoverage2D rasterizedVector = raster.outRaster;

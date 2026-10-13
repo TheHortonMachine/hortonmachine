@@ -1,47 +1,47 @@
 /*
- * JGrass - Free Open Source Java GIS http://www.jgrass.org 
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * JGrass - Free Open Source Java GIS http://www.jgrass.org
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Library General Public License as published by the Free
  * Software Foundation; either version 2 of the License, or (at your option) any
  * later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
  * FOR A PARTICULAR PURPOSE. See the GNU Library General Public License for more
  * details.
- * 
+ *
  * You should have received a copy of the GNU Library General Public License
  * along with this library; if not, write to the Free Foundation, Inc., 59
  * Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSRASTERTRANSFORMER_STATUS;
-import static org.hortonmachine.gears.libs.modules.Variables.BICUBIC;
 import static org.hortonmachine.gears.libs.modules.Variables.BILINEAR;
 import static org.hortonmachine.gears.libs.modules.Variables.NEAREST_NEIGHTBOUR;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_LABEL;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_LICENSE;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_NAME;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer.OMSRASTERTRANSFORMER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -49,6 +49,7 @@ import org.hortonmachine.gears.modules.r.transformer.OmsRasterTransformer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -60,6 +61,7 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSRASTERTRANSFORMER_DESCRIPTION)
+@Documentation(OMSRASTERTRANSFORMER_DOCUMENTATION)
 @Author(name = OMSRASTERTRANSFORMER_AUTHORNAMES, contact = OMSRASTERTRANSFORMER_AUTHORCONTACTS)
 @Keywords(OMSRASTERTRANSFORMER_KEYWORDS)
 @Label(OMSRASTERTRANSFORMER_LABEL)
@@ -73,7 +75,7 @@ public class RasterTransformer extends HMModel {
     public String inRaster;
 
     @Description(OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION)
-    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR + "," + BICUBIC)
+    @UI("combo:" + NEAREST_NEIGHTBOUR + "," + BILINEAR)
     @In
     public String pInterpolation = NEAREST_NEIGHTBOUR;
 
@@ -113,10 +115,10 @@ public class RasterTransformer extends HMModel {
     @In
     public Double pEast;
 
-//    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
-//    @Unit("degrees")
-//    @In
-//    public Double pAngle;
+    @Description(OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION)
+    @Unit("degrees")
+    @In
+    public Double pAngle;
 
     @Description(OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -141,7 +143,7 @@ public class RasterTransformer extends HMModel {
         rastertransformer.doFlipVertical = doFlipVertical;
         rastertransformer.pNorth = pNorth;
         rastertransformer.pEast = pEast;
-//        rastertransformer.pAngle = pAngle;
+        rastertransformer.pAngle = pAngle;
         rastertransformer.pm = pm;
         rastertransformer.doProcess = doProcess;
         rastertransformer.doReset = doReset;

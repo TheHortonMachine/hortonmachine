@@ -25,6 +25,7 @@ import org.hortonmachine.gears.modules.r.rastervectorintersection.OmsRasterVecto
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -35,6 +36,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSRASTERVECTORINTERSECTOR_DESCRIPTION)
+@Documentation(OMSRASTERVECTORINTERSECTOR_DOCUMENTATION)
 @Author(name = OMSRASTERVECTORINTERSECTOR_AUTHORNAMES, contact = OMSRASTERVECTORINTERSECTOR_AUTHORCONTACTS)
 @Keywords(OMSRASTERVECTORINTERSECTOR_KEYWORDS)
 @Label(OMSRASTERVECTORINTERSECTOR_LABEL)

@@ -12,7 +12,8 @@
 # The raster can be - for a module without a map: its script is only run.
 # The colortable is one of the HortonMachine ones (EColorTables), rainbow if it is not.
 # Options: positive (draw only values above 0), classes (legend with the distinct values
-# of the raster, at most 30, not a bar: for integer classes and codes),
+# of the raster, at most 30, not a bar: for integer classes and codes), categorical (with classes, the
+# colors evenly spaced by the order of the classes, for codes far apart as 1, 2 and 10001),
 # nolegend (no legend, for example for a single class), clip (colors from the 2nd to the
 # 98th percentile, for rasters with a few extreme values), base=elevation.tif (the elevation of
 # the hillshade, and with vectors of the extent, instead of dtm_flanginec.tif), field=name (with
@@ -177,3 +178,14 @@ RasterSubsampler | ../examples/hm/rastersubsampler.groovy | belts_100m.tif      
 RasterValueRounder | ../examples/hm/rastervaluerounder.groovy | -                 | -
 RasterCompare  | ../examples/hm/rastercompare.groovy  | -                           | -
 ImageMosaicCreator | ../examples/hm/imagemosaiccreator.groovy | dtm_tiles/dtm_tiles.shp | reds
+RasterDiff     | ../examples/hm/rasterdiff.groovy     | chm_777.tif                 | greens   | base=dtm_777.tif
+Labeler        | ../examples/hm/labeler.groovy        | belt_middle_patches.tif     | rainbow  | classes
+LinesRasterizer | ../examples/hm/linesrasterizer.groovy | net_strahler.tif         | rainbow  | classes
+PointsRasterizer | ../examples/hm/pointsrasterizer.groovy | centroids_avgelev.tif  | elev
+RasterGenerator | ../examples/hm/rastergenerator.groovy | synthetic_terrain.tif    | elev     | base=synthetic_terrain.tif
+RasterTransformer | ../examples/hm/rastertransformer.groovy | dtm_rotated.tif      | elev     | base=dtm_rotated.tif
+RasterTransitionClasses | ../examples/hm/rastertransitionclasses.groovy | belts_transitions.tif | contrasting | classes,categorical | 1=middle to lower belt;2=upper to middle belt;10001=lower belt unchanged;10002=middle belt unchanged;10003=upper belt unchanged
+RasterConverter | ../examples/hm/rasterconverter.groovy | -                        | -
+RasterCorrector | ../examples/hm/rastercorrector.groovy | -                        | -
+RasterVectorIntersector | ../examples/hm/rastervectorintersector.groovy | dtm_high_cells.tif | elev
+RasterVectorIntersector | -                     | dtm_not_high_cells.tif      | elev

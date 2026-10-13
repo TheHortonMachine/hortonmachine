@@ -25,9 +25,19 @@ import static org.hortonmachine.gears.i18n.GearsMessages.GENERIC_P_SOUTH_DESCRIP
 import static org.hortonmachine.gears.i18n.GearsMessages.GENERIC_P_WEST_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.GENERIC_P_X_RES_DESCRIPTION;
 import static org.hortonmachine.gears.i18n.GearsMessages.GENERIC_P_Y_RES_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_LABEL;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_LICENSE;
+import static org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter.OMSRASTERCONVERTER_STATUS;
+import static org.hortonmachine.gears.libs.modules.Variables.TYPE_BYTE;
 import static org.hortonmachine.gears.libs.modules.Variables.TYPE_DOUBLE;
 import static org.hortonmachine.gears.libs.modules.Variables.TYPE_FLOAT;
 import static org.hortonmachine.gears.libs.modules.Variables.TYPE_INT;
+import static org.hortonmachine.gears.libs.modules.Variables.TYPE_SHORT;
 
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -35,6 +45,7 @@ import org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -44,13 +55,14 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Converts a raster to another type.")
-@Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
-@Keywords("Raster, Conversion, Type")
-@Label(HMConstants.RASTERPROCESSING)
+@Description(OMSRASTERCONVERTER_DESCRIPTION)
+@Documentation(OMSRASTERCONVERTER_DOCUMENTATION)
+@Author(name = OMSRASTERCONVERTER_AUTHORNAMES, contact = OMSRASTERCONVERTER_AUTHORCONTACTS)
+@Keywords(OMSRASTERCONVERTER_KEYWORDS)
+@Label(OMSRASTERCONVERTER_LABEL)
 @Name("rasterconverter")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Status(OMSRASTERCONVERTER_STATUS)
+@License(OMSRASTERCONVERTER_LICENSE)
 public class RasterConverter extends OmsRasterConverter {
 
     @Description(OMSRASTERCONVERTER_IN_RASTER_DESCRIPTION)
@@ -99,7 +111,7 @@ public class RasterConverter extends OmsRasterConverter {
     public Integer pCols = null;
     
     @Description(OMSRASTERCONVERTER_OUT_RASTER_TYPE)
-    @UI("combo:" + TYPE_INT + "," + TYPE_FLOAT + "," + TYPE_DOUBLE)
+    @UI("combo:" + TYPE_BYTE + "," + TYPE_SHORT + "," + TYPE_INT + "," + TYPE_FLOAT + "," + TYPE_DOUBLE)
     @In
     public String pOutType = "";
 
@@ -131,13 +143,5 @@ public class RasterConverter extends OmsRasterConverter {
         rasterconverter.doReset = doReset;
         rasterconverter.process();
         dumpRaster(rasterconverter.outRaster, outRaster);
-    }
-    
-    public static void main( String[] args ) throws Exception {
-        org.hortonmachine.modules.RasterConverter _rasterconverter = new org.hortonmachine.modules.RasterConverter();
-        _rasterconverter.inRaster = "/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all.asc";
-        _rasterconverter.pOutType = "INTEGER";
-        _rasterconverter.outRaster = "/home/hydrologis/TMP/PITFILLE/DTM_calvello/dtm_all_int.tiff";
-        _rasterconverter.process();
     }
 }

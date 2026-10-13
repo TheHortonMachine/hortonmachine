@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,19 +17,25 @@
  */
 package org.hortonmachine.gears.modules.r.rastergenerator;
 
-import static java.lang.Math.round;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
-import java.awt.image.WritableRaster;
 import java.util.Random;
 
-import org.eclipse.imagen.iterator.WritableRandomIter;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
+import org.hortonmachine.gears.utils.RegionMap;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -40,23 +46,13 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-import org.geotools.coverage.grid.GridCoverage2D;
-import org.geotools.coverage.grid.GridGeometry2D;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
-import org.hortonmachine.gears.libs.modules.HMConstants;
-import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-
 @Description(OmsRasterGenerator.DESCRIPTION)
+@Documentation(OmsRasterGenerator.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsRasterGenerator.KEYWORDS)
 @Label(HMConstants.RASTERPROCESSING)
 @Name("_" + OmsRasterGenerator.NAME)
-@Status(OMSHYDRO_DRAFT)
+@Status(OmsRasterGenerator.STATUS)
 @License(OMSHYDRO_LICENSE)
 public class OmsRasterGenerator extends HMModel {
 
@@ -116,67 +112,81 @@ public class OmsRasterGenerator extends HMModel {
     @In
     public double pScale = 1.0;
 
+    @Description(pSeed_DESCRIPTION)
+    @In
+    public Long pSeed = null;
+
     @Description(outRaster_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster;
 
-    public static final String DESCRIPTION = "Generates a raster.";
+    public static final String DESCRIPTION = "Creates a new raster on a grid defined by its bounds, cell size and reference system, with a constant or random value.";
+    public static final String DOCUMENTATION = """
+            It is the module that makes a grid from nothing: Mapcalc, SurfaceInterpolator and the \
+            rasterizers need a raster that gives them the grid, and this one gives it where there \
+            is no data yet, as for a synthetic terrain or the interpolation of points over a new \
+            area. The grid starts at the north-west corner: the number of columns and rows is the \
+            extent divided by the cell size, rounded, and the east and south bounds are moved so \
+            that the cells have exactly the given size.
+
+            The cells get the constant value, or with the random switch a value drawn uniformly \
+            between the offset and the offset plus the scale. The seed makes the random raster \
+            the same at every run; without it, every run gives a different one.
+            """;
     public static final String NAME = "rastergenerator";
-    public static final String KEYWORDS = "generator, raster";
-    public static final String pNorth_DESCRIPTION = "The boundary north coordinate.";
-    public static final String pSouth_DESCRIPTION = "The boundary south coordinate.";
-    public static final String pWest_DESCRIPTION = "The boundary west coordinate.";
-    public static final String pEast_DESCRIPTION = "The boundary east coordinate.";
-    public static final String pXres_DESCRIPTION = "The resolution in x.";
-    public static final String pYres_DESCRIPTION = "The resolution in y.";
-    public static final String pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
+    public static final String KEYWORDS = "Raster, Generator, Grid, Random";
+    public static final int STATUS = 40;
+    public static final String pNorth_DESCRIPTION = "The north bound of the grid.";
+    public static final String pSouth_DESCRIPTION = "The south bound of the grid.";
+    public static final String pWest_DESCRIPTION = "The west bound of the grid.";
+    public static final String pEast_DESCRIPTION = "The east bound of the grid.";
+    public static final String pXres_DESCRIPTION = "The cell size in x.";
+    public static final String pYres_DESCRIPTION = "The cell size in y.";
+    public static final String pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:32632).";
     public static final String pCrs_DESCRIPTION = "The coordinate reference system (in case pCode is not supplied).";
     public static final String outRaster_DESCRIPTION = "The generated raster.";
-    public static final String pScale_DESCRIPTION = "Optional random scale.";
-    public static final String pOffset_DESCRIPTION = "Optional random offset.";
-    public static final String doRandom_DESCRIPTION = "If true, uses a random generator.";
-    public static final String pValue_DESCRIPTION = "The value to set the raster to.";
+    public static final String pScale_DESCRIPTION = "The width of the range of the random values.";
+    public static final String pOffset_DESCRIPTION = "The lowest random value.";
+    public static final String doRandom_DESCRIPTION = "If true, the cells get random values instead of the constant one.";
+    public static final String pSeed_DESCRIPTION = "An optional seed, to get the same random values at every run.";
+    public static final String pValue_DESCRIPTION = "The value of the cells.";
 
     @Execute
     public void process() throws Exception {
         checkNull(pNorth, pSouth, pEast, pWest, pXres, pYres);
         if (pCode == null && inCrs == null) {
-            throw new ModelsIllegalargumentException("At lest one of the CRS definitions are necessary.", this);
+            throw new ModelsIllegalargumentException("A reference system is necessary, as code or as object.", this, pm);
         }
 
         CoordinateReferenceSystem crs = inCrs;
-        if (crs == null)
-            crs = CrsUtilities.getCrsFromEpsg(pCode, null);
-
-        int rows = (int) round((pNorth - pSouth) / pYres);
-        int cols = (int) round((pEast - pWest) / pXres);
-
-        GridGeometry2D gridGeometryFromRegionValues = CoverageUtilities.gridGeometryFromRegionValues(pNorth, pSouth, pEast,
-                pWest, cols, rows, crs);
-        RegionMap regionMap = CoverageUtilities.gridGeometry2RegionParamsMap(gridGeometryFromRegionValues);
-
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, null, null, null);
-        WritableRandomIter outIter = CoverageUtilities.getWritableRandomIterator(outWR);
-
-        Random random = new Random();
-        pm.beginTask("Generating raster...", rows);
-        for( int r = 0; r < rows; r++ ) {
-            if (isCanceled(pm)) {
-                return;
-            }
-            for( int c = 0; c < cols; c++ ) {
-                double value = pValue;
-                if (doRandom) {
-                    value = pOffset + pScale * random.nextDouble();
-                }
-                outIter.setSample(c, r, 0, value);
-            }
-            pm.worked(1);
+        if (crs == null) {
+            crs = HMCrsRegistry.INSTANCE.getCrs(pCode);
         }
-        pm.done();
-        outIter.done();
 
-        outRaster = CoverageUtilities.buildCoverage("generated", outWR, regionMap, crs);
+        // the cells have exactly the given size, the grid is anchored at the north-west corner
+        int cols = (int) Math.max(1, Math.round((pEast - pWest) / pXres));
+        int rows = (int) Math.max(1, Math.round((pNorth - pSouth) / pYres));
+        RegionMap regionMap = RegionMap.fromBoundsAndGrid(pWest, pWest + cols * pXres, pNorth - rows * pYres, pNorth, cols,
+                rows);
+
+        try (HMRaster outData = new HMRasterWritableBuilder().setName("generated").setRegion(regionMap).setCrs(crs)
+                .setNoValue(HMConstants.doubleNovalue).setInitialValue(pValue).build()) {
+            if (doRandom) {
+                Random random = pSeed != null ? new Random(pSeed) : new Random();
+                pm.beginTask("Generating raster...", rows);
+                for( int r = 0; r < rows; r++ ) {
+                    if (pm.isCanceled()) {
+                        return;
+                    }
+                    for( int c = 0; c < cols; c++ ) {
+                        outData.setValue(c, r, pOffset + pScale * random.nextDouble());
+                    }
+                    pm.worked(1);
+                }
+                pm.done();
+            }
+            outRaster = outData.buildCoverage();
+        }
     }
 
 }

@@ -17,8 +17,14 @@
  */
 package org.hortonmachine.gears.modules;
 
+import java.awt.image.DataBuffer;
+import java.awt.image.RenderedImage;
+
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.locationtech.jts.geom.Coordinate;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.Variables;
+import org.hortonmachine.gears.modules.r.rasterconverter.OmsRasterConverter;
 import org.hortonmachine.gears.modules.r.rastercorrector.OmsRasterCorrector;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
@@ -57,6 +63,46 @@ public class TestRasterCorrector extends HMTestCase {
                 {800, 910, 980, 1001, 1150, 1200, 1250, 1300, 1450, 1500}};
 
         checkMatrixEqual(outGeodata.getRenderedImage(), correctedMapData);
+
+        // the same with the coordinates of the cell centers, and corrections outside of the raster left out
+        Coordinate first = CoverageUtilities.coordinateFromColRow(0, 0, inCoverage.getGridGeometry());
+        Coordinate second = CoverageUtilities.coordinateFromColRow(5, 5, inCoverage.getGridGeometry());
+        reprojector = new OmsRasterCorrector();
+        reprojector.pm = pm;
+        reprojector.inRaster = inCoverage;
+        reprojector.doCoordinates = true;
+        reprojector.pCorrections = first.x + "," + first.y + ",1.0, " + second.x + "," + second.y + ", 666, 0, 0, 5";
+        reprojector.process();
+        checkMatrixEqual(reprojector.outRaster.getRenderedImage(), correctedMapData);
+
+        reprojector = new OmsRasterCorrector();
+        reprojector.pm = pm;
+        reprojector.inRaster = inCoverage;
+        reprojector.pCorrections = "0,0,1.0, 5,5, 666, -1,0,5, 10,0,5";
+        reprojector.process();
+        checkMatrixEqual(reprojector.outRaster.getRenderedImage(), correctedMapData);
+    }
+
+    public void testIntegerRasterKeepsType() throws Exception {
+        GridCoverage2D inCoverage = CoverageUtilities.buildCoverage("flow", HMTestMaps.flowData,
+                HMTestMaps.getEnvelopeparams(), HMTestMaps.getCrs(), true);
+        // the int matrix gives a double raster: make it a real integer one
+        OmsRasterConverter converter = new OmsRasterConverter();
+        converter.pm = pm;
+        converter.inRaster = inCoverage;
+        converter.pOutType = Variables.TYPE_INT;
+        converter.process();
+
+        OmsRasterCorrector corrector = new OmsRasterCorrector();
+        corrector.pm = pm;
+        corrector.inRaster = converter.outRaster;
+        corrector.pCorrections = "1,1,8";
+        corrector.process();
+
+        RenderedImage image = corrector.outRaster.getRenderedImage();
+        assertEquals(DataBuffer.TYPE_INT, image.getSampleModel().getDataType());
+        assertEquals(8, image.getData().getSample(1, 1, 0));
+        assertEquals(HMTestMaps.flowData[2][2], image.getData().getSample(2, 2, 0));
     }
 
 }

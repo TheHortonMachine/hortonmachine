@@ -1,10 +1,10 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 0 of the License, or
+ * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
@@ -17,82 +17,95 @@
  */
 package org.hortonmachine.gears.modules;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.rasterdiff.OmsRasterDiff;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * Test for {@link OmsRasterDiff}
- * 
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class TestRasterDiff extends HMTestCase {
-    private double NaN = HMConstants.doubleNovalue;
-    private int intNaN = HMConstants.intNovalue;
-    private GridCoverage2D inRaster1;
-    private GridCoverage2D inRaster2;
+    private static final double NV = HMConstants.doubleNovalue;
+
+    private GridCoverage2D dsm;
+    private GridCoverage2D dtm;
 
     protected void setUp() throws Exception {
-        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        RegionMap region = RegionMap.fromBoundsAndGrid(0, 3, 0, 2, 3, 2);
         CoordinateReferenceSystem crs = HMTestMaps.getCrs();
-
-        int[][] inData = HMTestMaps.flowData;
-        int[][] inDataPlus = new int[inData.length][inData[0].length];
-        for( int i = 0; i < inData.length; i++ ) {
-            for( int j = 0; j < inData[0].length; j++ ) {
-                inDataPlus[i][j] = inData[i][j] + 0;
-            }
-        }
-        inRaster1 = CoverageUtilities.buildCoverageWithNovalue("data", inDataPlus, envelopeParams, crs, true, intNaN);
-
-        inData = HMTestMaps.flowData;
-        inRaster2 = CoverageUtilities.buildCoverageWithNovalue("flow", inData, envelopeParams, crs, true, intNaN);
+        dsm = CoverageUtilities.buildCoverage("surface", new double[][]{//
+                {110, 101, NV}, //
+                {99.5, 103, 104}}, region, crs, true);
+        dtm = CoverageUtilities.buildCoverage("terrain", new double[][]{//
+                {100, 100, 100}, //
+                {100, NV, 100}}, region, crs, true);
     }
 
     public void testDiff() throws Exception {
-        OmsRasterDiff cutout = new OmsRasterDiff();
-        cutout.pm = pm;
-        cutout.inRaster1 = inRaster1;
-        cutout.inRaster2 = inRaster2;
-        cutout.process();
-        GridCoverage2D out = cutout.outRaster;
+        OmsRasterDiff diff = new OmsRasterDiff();
+        diff.pm = pm;
+        diff.inRaster1 = dsm;
+        diff.inRaster2 = dtm;
+        diff.process();
 
-        int[][] expected = new int[][]{//
-                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}, //
-                {intNaN, intNaN, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}};
-        checkMatrixEqual(out.getRenderedImage(), expected, 0);
+        // a novalue in either raster gives a novalue
+        double[][] expected = new double[][]{//
+                {10, 1, NV}, //
+                {-0.5, NV, 4}};
+        checkMatrixEqual(diff.outRaster.getRenderedImage(), expected, 1E-9);
     }
 
-    public void testDiffWithThres() throws Exception {
-        OmsRasterDiff cutout = new OmsRasterDiff();
-        cutout.pm = pm;
-        cutout.inRaster1 = inRaster1;
-        cutout.inRaster2 = inRaster2;
-        cutout.pThreshold = 0.0;
-        cutout.process();
-        GridCoverage2D out = cutout.outRaster;
+    public void testNoNegatives() throws Exception {
+        OmsRasterDiff diff = new OmsRasterDiff();
+        diff.pm = pm;
+        diff.inRaster1 = dsm;
+        diff.inRaster2 = dtm;
+        diff.doNegatives = false;
+        diff.process();
 
-        int[][] expected = new int[][]{//
-                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}, //
-                {intNaN, intNaN, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, 0, 0, 0, 0, 0, 0, 0, 0, intNaN}, //
-                {intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN, intNaN}};
-        checkMatrixEqual(out.getRenderedImage(), expected, 0);
+        double[][] expected = new double[][]{//
+                {10, 1, NV}, //
+                {0, NV, 4}};
+        checkMatrixEqual(diff.outRaster.getRenderedImage(), expected, 1E-9);
+    }
+
+    public void testThreshold() throws Exception {
+        OmsRasterDiff diff = new OmsRasterDiff();
+        diff.pm = pm;
+        diff.inRaster1 = dsm;
+        diff.inRaster2 = dtm;
+        diff.doNegatives = false;
+        diff.pThreshold = 2.0;
+        diff.process();
+
+        // the differences below the threshold become novalue, the clamped negative included
+        double[][] expected = new double[][]{//
+                {10, NV, NV}, //
+                {NV, NV, 4}};
+        checkMatrixEqual(diff.outRaster.getRenderedImage(), expected, 1E-9);
+    }
+
+    public void testDifferentGrids() throws Exception {
+        GridCoverage2D other = CoverageUtilities.buildCoverage("other", new double[][]{{1, 2}},
+                RegionMap.fromBoundsAndGrid(0, 2, 0, 1, 2, 1), HMTestMaps.getCrs(), true);
+        OmsRasterDiff diff = new OmsRasterDiff();
+        diff.pm = pm;
+        diff.inRaster1 = dsm;
+        diff.inRaster2 = other;
+        try {
+            diff.process();
+            fail("Different grids should not be accepted.");
+        } catch (ModelsIllegalargumentException e) {
+            // expected
+        }
     }
 
 }

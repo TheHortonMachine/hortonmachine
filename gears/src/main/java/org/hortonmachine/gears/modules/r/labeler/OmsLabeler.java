@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * 
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,23 +16,27 @@
  */
 package org.hortonmachine.gears.modules.r.labeler;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_LABEL;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_LICENSE;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_NAME;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_STATUS;
 
-import java.awt.image.RenderedImage;
-import java.awt.image.WritableRaster;
-
-import org.eclipse.imagen.iterator.RandomIter;
-import org.eclipse.imagen.iterator.RandomIterFactory;
+import java.util.Arrays;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.modules.utils.BinaryFast;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -42,300 +46,148 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 
-@Description("Connected components labeling operation")
-@Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
-@Keywords("Labeling, Raster")
-@Label(HMConstants.RASTERPROCESSING)
-@Name("omslabeler")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
+@Description(OMSLABELER_DESCRIPTION)
+@Documentation(OMSLABELER_DOCUMENTATION)
+@Author(name = OMSLABELER_AUTHORNAMES, contact = OMSLABELER_AUTHORCONTACTS)
+@Keywords(OMSLABELER_KEYWORDS)
+@Label(OMSLABELER_LABEL)
+@Name(OMSLABELER_NAME)
+@Status(OMSLABELER_STATUS)
+@License(OMSLABELER_LICENSE)
 public class OmsLabeler extends HMModel {
 
-    @Description("The map to label.")
+    @Description(OMSLABELER_IN_MAP_DESCRIPTION)
     @In
     public GridCoverage2D inMap = null;
 
-    @Description("The resulting map.")
+    @Description(OMSLABELER_OUT_MAP_DESCRIPTION)
     @Out
     public GridCoverage2D outMap = null;
+
+    public static final String OMSLABELER_DESCRIPTION = "Labels the connected components of a raster: every group of valid cells that touch each other gets its own number.";
+    public static final String OMSLABELER_DOCUMENTATION = """
+            The cells are connected also by the corners, as in the 8 directions of the flow: a \
+            diagonal line of cells is a single component. The value of the cells doesn't matter, \
+            only if they are valid or novalue, so a raster of classes has to be cut to a class \
+            first, for example with RasterNull and its inverse switch. The components are \
+            numbered from 1, in the order in which their first cell is met reading the raster \
+            from the north-west corner by rows; the novalue cells stay novalue.
+
+            The labels give an identifier to every patch of a mask, as the single tree crowns, \
+            the landslides or the lakes of a map, to count them, to measure their area with \
+            RasterSummary or to vectorize them.
+            """;
+    public static final String OMSLABELER_KEYWORDS = "Labeling, Connected components, Patches, Raster";
+    public static final String OMSLABELER_LABEL = HMConstants.RASTERPROCESSING;
+    public static final String OMSLABELER_NAME = "omslabeler";
+    public static final int OMSLABELER_STATUS = 40;
+    public static final String OMSLABELER_LICENSE = "General Public License Version 3 (GPLv3)";
+    public static final String OMSLABELER_AUTHORNAMES = "Andrea Antonello";
+    public static final String OMSLABELER_AUTHORCONTACTS = "www.hydrologis.com";
+    public static final String OMSLABELER_IN_MAP_DESCRIPTION = "The raster to label: its valid cells are the ones to group.";
+    public static final String OMSLABELER_OUT_MAP_DESCRIPTION = "The raster of the labels, the number of the component of each valid cell.";
+
+    // the neighbours already visited reading by rows: west, north-west, north, north-east
+    private static final int[] VISITED_COLS = {-1, -1, 0, 1};
+    private static final int[] VISITED_ROWS = {0, -1, -1, -1};
 
     @Execute
     public void process() throws Exception {
         if (!concatOr(outMap == null, doReset)) {
             return;
         }
+        checkNull(inMap);
 
-        final RenderedImage renderedImage = inMap.getRenderedImage();
-        int width = renderedImage.getWidth();
-        int height = renderedImage.getHeight();
-        int[] data = new int[width * height];
-        RandomIter iter = RandomIterFactory.create(renderedImage, null);
-        int index = 0;
-        for( int r = 0; r < height; r++ ) {
-            for( int c = 0; c < width; c++ ) {
-                double value = iter.getSampleDouble(c, r, 0);
-                if (isNovalue(value)) {
-                    data[index] = BinaryFast.BACKGROUND;
-                } else {
-                    data[index] = BinaryFast.FOREGROUND;
-                }
-                index++;
-            }
-        }
+        try (HMRaster inRaster = HMRaster.fromGridCoverage(inMap);
+                HMRaster outRaster = new HMRasterWritableBuilder().setName("labeled").setTemplate(inMap).setDoInteger(true)
+                        .setNoValue(HMConstants.intNovalue).setInitialValue(HMConstants.intNovalue).build()) {
+            int cols = inRaster.getCols();
+            int rows = inRaster.getRows();
 
-        int[] labelsArray = doLabel(data, width, height);
-
-        WritableRaster dataWR = CoverageUtilities.createWritableRasterFromArray(width, height, labelsArray);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inMap);
-        outMap = CoverageUtilities.buildCoverage("labeled", dataWR, regionMap, inMap.getCoordinateReferenceSystem()); //$NON-NLS-1$
-    }
-
-    /**
-     * Applies the Labeling algorithm plus offset and scaling
-     * 
-     * <p>The input image is expected to be 8-bit mono 0=black everything else=white
-     * 
-     * @param data The input pixel array
-     * @param width width of the destination image in pixels
-     * @param height height of the destination image in pixels
-     * @return A pixel array containing the labelled image
-     */
-    private int[] doLabel( int[] data, int width, int height ) {
-
-        int nextlabel = 1;
-        int nbs[] = new int[4];
-        int nbls[] = new int[4];
-
-        // Get size of image and make 1d_arrays
-        int d_w = width;
-        int d_h = height;
-
-        int[] dest_1d = new int[d_w * d_h];
-        // the most labels there can be is 1/2 of the points
-        // in checkerboard
-        int[] labels = new int[d_w * d_h / 2];
-
-        int result = 0;
-        // labelsValid = false; // only set to true once we've complete the task
-        // initialise labels
-        for( int i = 0; i < labels.length; i++ )
-            labels[i] = i;
-
-        int count;
-        // now Label the image
-        for( int i = 0; i < data.length; i++ ) {
-
-            int src1rgb = data[i] & 0x000000ff;
-
-            if (src1rgb == 0) {
-                result = 0; // nothing here
-            } else {
-
-                // The 4 visited neighbours
-                nbs[0] = getNeighbours(data, i, -1, 0, d_w, d_h);
-                nbs[1] = getNeighbours(data, i, 0, -1, d_w, d_h);
-                nbs[2] = getNeighbours(data, i, -1, -1, d_w, d_h);
-                nbs[3] = getNeighbours(data, i, 1, -1, d_w, d_h);
-
-                // Their corresponding labels
-                nbls[0] = getNeighbourd(dest_1d, i, -1, 0, d_w, d_h);
-                nbls[1] = getNeighbourd(dest_1d, i, 0, -1, d_w, d_h);
-                nbls[2] = getNeighbourd(dest_1d, i, -1, -1, d_w, d_h);
-                nbls[3] = getNeighbourd(dest_1d, i, 1, -1, d_w, d_h);
-
-                // label the point
-                if ((nbs[0] == nbs[1]) && (nbs[1] == nbs[2]) && (nbs[2] == nbs[3]) && (nbs[0] == 0)) {
-                    // all neighbours are 0 so gives this point a new label
-                    result = nextlabel;
-                    nextlabel++;
-                } else { // one or more neighbours have already got labels
-                    count = 0;
-                    int found = -1;
-                    for( int j = 0; j < 4; j++ ) {
-                        if (nbs[j] != 0) {
-                            count += 1;
-                            found = j;
+            // first pass: provisional labels, with the equivalences of the labels that meet
+            int[] provisional = new int[cols * rows];
+            // the parent of each label in the union-find, label 0 is the background
+            int[] parents = new int[16];
+            int nextLabel = 1;
+            pm.beginTask("Labeling...", rows);
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    if (inRaster.isNovalue(inRaster.getValue(c, r))) {
+                        continue;
+                    }
+                    int label = 0;
+                    for( int i = 0; i < VISITED_COLS.length; i++ ) {
+                        int col = c + VISITED_COLS[i];
+                        int row = r + VISITED_ROWS[i];
+                        if (col < 0 || col >= cols || row < 0) {
+                            continue;
+                        }
+                        int neighbourLabel = provisional[row * cols + col];
+                        if (neighbourLabel == 0) {
+                            continue;
+                        }
+                        if (label == 0) {
+                            label = neighbourLabel;
+                        } else {
+                            union(parents, label, neighbourLabel);
                         }
                     }
-                    if (count == 1) {
-                        // only one neighbour has a label, so assign the same label to this.
-                        result = nbls[found];
-                    } else {
-                        // more than 1 neighbour has a label
-                        result = nbls[found];
-                        // Equivalence the connected points
-                        for( int j = 0; j < 4; j++ ) {
-                            if ((nbls[j] != 0) && (nbls[j] != result)) {
-                                associate(nbls[j], result, labels);
-                            }
+                    if (label == 0) {
+                        if (nextLabel == parents.length) {
+                            parents = Arrays.copyOf(parents, parents.length * 2);
                         }
+                        label = nextLabel++;
+                        parents[label] = label;
                     }
+                    provisional[r * cols + c] = label;
+                }
+                pm.worked(1);
+            }
+            pm.done();
+
+            // the final labels are consecutive, in the order of the first cell of each component
+            int[] finalLabels = new int[nextLabel];
+            int componentsCount = 0;
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    int label = provisional[r * cols + c];
+                    if (label == 0) {
+                        continue;
+                    }
+                    int root = find(parents, label);
+                    if (finalLabels[root] == 0) {
+                        finalLabels[root] = ++componentsCount;
+                    }
+                    outRaster.setValue(c, r, finalLabels[root]);
                 }
             }
-            dest_1d[i] = result;
-        }
+            pm.message("Components found: " + componentsCount);
 
-        // reduce labels ie 76=23=22=3 -> 76=3
-        // done in reverse order to preserve sorting
-        for( int i = labels.length - 1; i > 0; i-- ) {
-            labels[i] = reduce(i, labels);
-        }
-
-        /*now labels will look something like 1=1 2=2 3=2 4=2 5=5.. 76=5 77=5
-          this needs to be condensed down again, so that there is no wasted
-          space eg in the above, the labels 3 and 4 are not used instead it jumps
-          to 5.
-          */
-        int condensed[] = new int[nextlabel]; // cant be more than nextlabel labels
-
-        count = 0;
-        for( int i = 0; i < nextlabel; i++ ) {
-            if (i == labels[i])
-                condensed[i] = count++;
-        }
-        // Record the number of labels
-        int numberOfLabels = count - 1;
-
-        // now run back through our preliminary results, replacing the raw label
-        // with the reduced and condensed one, and do the scaling and offsets too
-
-        // Now generate an array of colours which will be used to label the image
-        int[] labelColors = new int[numberOfLabels + 1];
-
-        // Variable used to check if the color generated is acceptable
-        // boolean acceptColor = false;
-
-        for( int i = 0; i < labelColors.length; i++ ) {
-            // acceptColor = false;
-            // while( !acceptColor ) {
-            // double tmp = Math.random();
-            // labelColors[i] = (int) (tmp * 16777215);
-            // if (((labelColors[i] & 0x000000ff) < 200) && (((labelColors[i] & 0x0000ff00) >> 8) <
-            // 64) && (((labelColors[i] & 0x00ff0000) >> 16) < 64)) {
-            // // Color to be rejected so don't set acceptColor
-            // } else {
-            // acceptColor = true;
-            // }
-            // }
-            // if (i == 0)
-            // labelColors[i] = 0;
-            labelColors[i] = i;
-        }
-
-        for( int i = 0; i < data.length; i++ ) {
-            result = condensed[labels[dest_1d[i]]];
-            // result = (int) ( scale * (float) result + oset );
-            // truncate if necessary
-            // if( result > 255 ) result = 255;
-            // if( result < 0 ) result = 0;
-            // produce grayscale
-            // dest_1d[i] = 0xff000000 | (result + (result << 16) + (result << 8));
-            dest_1d[i] = labelColors[result];// + 0xff000000;
-        }
-
-        // labelsValid = true; // only set to true now we've complete the task
-        return dest_1d;
-    }
-
-    /**
-     * getNeighbours will get the pixel value of i's neighbour that's ox and oy
-     * away from i, if the point is outside the image, then 0 is returned.
-     * This version gets from source image.
-     * @param d_w 
-     * @param d_h 
-     */
-
-    private int getNeighbours( int[] src1d, int i, int ox, int oy, int d_w, int d_h ) {
-        int x, y, result;
-
-        x = (i % d_w) + ox; // d_w and d_h are assumed to be set to the
-        y = (i / d_w) + oy; // width and height of scr1d
-
-        if ((x < 0) || (x >= d_w) || (y < 0) || (y >= d_h)) {
-            result = 0;
-        } else {
-            result = src1d[y * d_w + x] & 0x000000ff;
-        }
-        return result;
-    }
-
-    /**
-     * getNeighbourd will get the pixel value of i's neighbour that's ox and oy
-     * away from i, if the point is outside the image, then 0 is returned.
-     * This version gets from destination image.
-     * @param d_w 
-     * @param d_h 
-     */
-
-    private int getNeighbourd( int[] src1d, int i, int ox, int oy, int d_w, int d_h ) {
-        int x, y, result;
-
-        x = (i % d_w) + ox; // d_w and d_h are assumed to be set to the
-        y = (i / d_w) + oy; // width and height of scr1d
-
-        if ((x < 0) || (x >= d_w) || (y < 0) || (y >= d_h)) {
-            result = 0;
-        } else {
-            result = src1d[y * d_w + x];
-        }
-        return result;
-    }
-
-    /**
-     * Associate(equivalence) a with b.
-     *  a should be less than b to give some ordering (sorting)
-     * if b is already associated with some other value, then propagate
-     * down the list.
-     * @param labels 
-      */
-    private void associate( int a, int b, int[] labels ) {
-
-        if (a > b) {
-            associate(b, a, labels);
-            return;
-        }
-        if ((a == b) || (labels[b] == a))
-            return;
-        if (labels[b] == b) {
-            labels[b] = a;
-        } else {
-            associate(labels[b], a, labels);
-            if (labels[b] > a) { // ***rbf new
-                labels[b] = a;
-            }
-        }
-    }
-    /**
-     * Reduces the number of labels.
-     * @param labels 
-     */
-    private int reduce( int a, int[] labels ) {
-        if (labels[a] == a) {
-            return a;
-        } else {
-            return reduce(labels[a], labels);
+            outMap = outRaster.buildCoverage();
         }
     }
 
-    // /**
-    // *getColours
-    // *@return the number of unique, non zero colours. -1 if not valid
-    // */
-    // private int getColours() {
-    //
-    // if (labelsValid) {
-    //
-    // return numberOfLabels;
-    // } else {
-    // return -1;
-    // }
-    // }
-    //
-    // /**
-    // * Returns the number of labels.
-    // */
-    // private int getNumberOfLabels() {
-    // return numberOfLabels;
-    // }
+    private static int find( int[] parents, int label ) {
+        int root = label;
+        while( parents[root] != root ) {
+            root = parents[root];
+        }
+        // compress the path, so that the next searches are short
+        while( parents[label] != root ) {
+            int next = parents[label];
+            parents[label] = root;
+            label = next;
+        }
+        return root;
+    }
+
+    private static void union( int[] parents, int label1, int label2 ) {
+        int root1 = find(parents, label1);
+        int root2 = find(parents, label2);
+        if (root1 != root2) {
+            // the smaller label is the root
+            parents[Math.max(root1, root2)] = Math.min(root1, root2);
+        }
+    }
 
 }

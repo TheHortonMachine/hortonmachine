@@ -90,6 +90,17 @@ org.hortonmachine.modules.RasterSubsampler
 org.hortonmachine.modules.RasterValueRounder
 org.hortonmachine.modules.RasterCompare
 org.hortonmachine.modules.ImageMosaicCreator
+org.hortonmachine.modules.RasterDiff
+org.hortonmachine.modules.Labeler
+org.hortonmachine.modules.LinesRasterizer
+org.hortonmachine.modules.PointsRasterizer
+org.hortonmachine.modules.RasterGenerator
+org.hortonmachine.modules.RasterTransformer
+org.hortonmachine.modules.RasterTransitionClasses
+org.hortonmachine.modules.RasterConverter
+org.hortonmachine.modules.RasterCorrector
+org.hortonmachine.modules.RasterVectorIntersector
+org.hortonmachine.gears.modules.r.tmsgenerator.TmsWms2Geotiff
 
 # Vector processing
 org.hortonmachine.modules.Vectorizer

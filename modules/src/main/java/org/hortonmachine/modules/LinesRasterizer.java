@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,24 +17,26 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_F_CAT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_IN_VECTOR_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_OUT_RASTER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_CAT_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_COLS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_EAST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_NORTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_ROWS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_SOUTH_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_P_WEST_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESRASTERIZER_STATUS;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_F_CAT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_IN_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_IN_VECTOR_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_LABEL;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_LICENSE;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_NAME;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_OUT_RASTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_CAT_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_COLS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_EAST_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_NORTH_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_ROWS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_SOUTH_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_P_WEST_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer.OMSLINESRASTERIZER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -42,6 +44,7 @@ import org.hortonmachine.gears.modules.r.linesrasterizer.OmsLinesRasterizer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -52,6 +55,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSLINESRASTERIZER_DESCRIPTION)
+@Documentation(OMSLINESRASTERIZER_DOCUMENTATION)
 @Author(name = OMSLINESRASTERIZER_AUTHORNAMES, contact = OMSLINESRASTERIZER_AUTHORCONTACTS)
 @Keywords(OMSLINESRASTERIZER_KEYWORDS)
 @Label(OMSLINESRASTERIZER_LABEL)
@@ -72,6 +76,11 @@ public class LinesRasterizer extends HMModel {
     @Description(OMSLINESRASTERIZER_P_CAT_DESCRIPTION)
     @In
     public double pCat = 1.0;
+
+    @Description(OMSLINESRASTERIZER_IN_RASTER_DESCRIPTION)
+    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @In
+    public String inRaster;
 
     @Description(OMSLINESRASTERIZER_P_NORTH_DESCRIPTION)
     @UI(HMConstants.PROCESS_NORTH_UI_HINT)
@@ -114,6 +123,7 @@ public class LinesRasterizer extends HMModel {
         linesrasterizer.inVector = getVector(inVector);
         linesrasterizer.fCat = fCat;
         linesrasterizer.pCat = pCat;
+        linesrasterizer.inRaster = getRaster(inRaster);
         linesrasterizer.pNorth = pNorth;
         linesrasterizer.pSouth = pSouth;
         linesrasterizer.pWest = pWest;

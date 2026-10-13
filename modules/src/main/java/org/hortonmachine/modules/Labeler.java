@@ -1,6 +1,6 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * 
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,24 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_IN_MAP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_KEYWORDS;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_LABEL;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_LICENSE;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_OUT_MAP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.r.labeler.OmsLabeler.OMSLABELER_STATUS;
+
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.labeler.OmsLabeler;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -30,21 +43,22 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Connected components labeling operation")
-@Author(name = "Simon Horne, Andrea Antonello", contact = "http://homepages.inf.ed.ac.uk/rbf/HIPR2/, www.hydrologis.com")
-@Keywords("Labeling, Raster")
-@Label(HMConstants.RASTERPROCESSING)
+@Description(OMSLABELER_DESCRIPTION)
+@Documentation(OMSLABELER_DOCUMENTATION)
+@Author(name = OMSLABELER_AUTHORNAMES, contact = OMSLABELER_AUTHORCONTACTS)
+@Keywords(OMSLABELER_KEYWORDS)
+@Label(OMSLABELER_LABEL)
 @Name("labeler")
-@Status(Status.DRAFT)
-@License("http://www.gnu.org/licenses/gpl-3.0.html")
-public class Labeler extends OmsLabeler {
+@Status(OMSLABELER_STATUS)
+@License(OMSLABELER_LICENSE)
+public class Labeler extends HMModel {
 
-    @Description("The map to label.")
+    @Description(OMSLABELER_IN_MAP_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inMap = null;
 
-    @Description("The resulting map.")
+    @Description(OMSLABELER_OUT_MAP_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;
@@ -54,6 +68,8 @@ public class Labeler extends OmsLabeler {
         OmsLabeler labeler = new OmsLabeler();
         labeler.inMap = getRaster(inMap);
         labeler.pm = pm;
+        labeler.doProcess = doProcess;
+        labeler.doReset = doReset;
         labeler.process();
         dumpRaster(labeler.outMap, outMap);
     }

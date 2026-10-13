@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-63 of the 199 toolbox modules have no manual page yet.
+50 of the 197 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -89,24 +89,6 @@
 |---|---|---|
 | CannyEdgeDetector |  |  |
 | CurvaturesBivariate |  |  |
-
-## Raster Processing (13)
-
-| Module | Status | Description |
-|---|---|---|
-| Labeler | draft | Connected components labeling operation |
-| LinesRasterizer | experimental | Module to convert vector lines to raster. |
-| Mapurl2MbtilesConverter | draft | Feeds a HortonMachine mapurl enabled TMS folder into a new mbtiles database. |
-| PointsRasterizer | experimental | Module to convert vector points to raster. Currently this does simply put the point in the nearest cell, without check. |
-| RasterConverter | draft | Converts a raster to another type. |
-| RasterCorrector | experimental | Raster corrector module. |
-| RasterDiff | experimental | Raster diff module. |
-| RasterGenerator | draft | Generates a raster. |
-| RasterTransformer | draft | Module for raster tranforms. |
-| RasterTransitionClasses | experimental | Raster transition classes generator. |
-| RasterVectorIntersector | experimental | Module for raster with polygon vector intersection. |
-| TmsWms2Geotiff | draft | Module for the downloading map tiles of a TMS service and convert them to geotiff. |
-| WindowSampler | experimental | Module to do coverage downsampling on defined windows. |
 
 ## Statistics (4)
 

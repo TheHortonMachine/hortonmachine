@@ -31,9 +31,6 @@ import static org.hortonmachine.gears.modules.r.transitionclasses.OmsRasterTrans
 import static org.hortonmachine.gears.modules.r.transitionclasses.OmsRasterTransitionClasses.OMSRASTERTRANSITIONCLASSES_STATUS;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -77,7 +74,7 @@ public class RasterTransitionClasses extends HMModel {
     @In
     public String outRaster;
 
-    @Description("The output csv file of transition classes")
+    @Description("The optional csv table of the transitions: code, previous class, next class and count of cells.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outTransition;
@@ -88,30 +85,13 @@ public class RasterTransitionClasses extends HMModel {
         OmsRasterTransitionClasses r = new OmsRasterTransitionClasses();
         r.inPreviousRaster = getRaster(inPreviousRaster);
         r.inNextRaster = getRaster(inNextRaster);
+        r.pm = pm;
         r.process();
         dumpRaster(r.outRaster, outRaster);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("crossclasscode; fromclass; toclass; count\n");
-
-        Map<Integer, String> newClasses2KeyMap = r.key2NewClassesMap.entrySet().stream()
-                .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
-
-        for( Entry<Integer, Integer> entry : r.newClasses2CountMap.entrySet() ) {
-            Integer newClass = entry.getKey();
-            Integer count = entry.getValue();
-            String transitionStr = newClasses2KeyMap.get(newClass);
-            String[] split = transitionStr.split(" ");
-            String from = split[0];
-            String to = split[1];
-
-            sb.append(newClass).append(";").append(from).append(";").append(to).append(";").append(count).append("\n");
+        if (outTransition != null) {
+            FileUtilities.writeFile(r.getTransitionsTable(), new File(outTransition));
         }
-
-        if(outTransition != null) {
-            FileUtilities.writeFile(sb.toString(), new File(outTransition));
-        }
-
     }
 
 }

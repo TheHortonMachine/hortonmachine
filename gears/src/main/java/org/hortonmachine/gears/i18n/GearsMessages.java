@@ -83,26 +83,6 @@ public class GearsMessages {
     public static final String OMSTIMESERIESITERATORWRITER_T_TIMESTEP_DESCRIPTION = "The timestep. If available time is added as first column.";
     public static final String OMSTIMESERIESITERATORWRITER_FILE_NOVALUE_DESCRIPTION = "The novalue to use in the file (default is -9999.0).";
 
-    public static final String OMSLINESRASTERIZER_DESCRIPTION = "Module to convert vector lines to raster.";
-    public static final String OMSLINESRASTERIZER_DOCUMENTATION = "";
-    public static final String OMSLINESRASTERIZER_KEYWORDS = "Raster, Vector, Lines";
-    public static final String OMSLINESRASTERIZER_LABEL = RASTERPROCESSING;
-    public static final String OMSLINESRASTERIZER_NAME = "rasterizelines";
-    public static final int OMSLINESRASTERIZER_STATUS = 5;
-    public static final String OMSLINESRASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSLINESRASTERIZER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSLINESRASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSLINESRASTERIZER_IN_VECTOR_DESCRIPTION = "The lines vector.";
-    public static final String OMSLINESRASTERIZER_F_CAT_DESCRIPTION = "The optional field of the vector to take the category from.";
-    public static final String OMSLINESRASTERIZER_P_CAT_DESCRIPTION = "The category to use if no field was set.";
-    public static final String OMSLINESRASTERIZER_P_NORTH_DESCRIPTION = "The north bound of the region to consider";
-    public static final String OMSLINESRASTERIZER_P_SOUTH_DESCRIPTION = "The south bound of the region to consider";
-    public static final String OMSLINESRASTERIZER_P_WEST_DESCRIPTION = "The west bound of the region to consider";
-    public static final String OMSLINESRASTERIZER_P_EAST_DESCRIPTION = "The east bound of the region to consider";
-    public static final String OMSLINESRASTERIZER_P_ROWS_DESCRIPTION = "The rows of the region to consider";
-    public static final String OMSLINESRASTERIZER_P_COLS_DESCRIPTION = "The cols of the region to consider";
-    public static final String OMSLINESRASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
-
     public static final String OMSCONTOURLINESLABELER_DESCRIPTION = "Generates a layer of point features with a given label text and angle, following reference lines intersecting them with a layer of countourlines.";
     public static final String OMSCONTOURLINESLABELER_DOCUMENTATION = "";
     public static final String OMSCONTOURLINESLABELER_KEYWORDS = "Contourlines, Vector";
@@ -242,23 +222,6 @@ public class GearsMessages {
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_OUT_ERR_MAX_DESCRIPTION = "outErrmax";
     public static final String OMSGROUNDCONTROLPOINTS2WORLD_OUT_ERR_MIN_DESCRIPTION = "outErrmin";
 
-    public static final String OMSWINDOWSAMPLER_DESCRIPTION = "Module to do coverage downsampling on defined windows.";
-    public static final String OMSWINDOWSAMPLER_DOCUMENTATION = "";
-    public static final String OMSWINDOWSAMPLER_KEYWORDS = "IO, Coverage, Raster, Downsampling, Interpolation";
-    public static final String OMSWINDOWSAMPLER_LABEL = RASTERPROCESSING;
-    public static final String OMSWINDOWSAMPLER_NAME = "winsampler";
-    public static final int OMSWINDOWSAMPLER_STATUS = 5;
-    public static final String OMSWINDOWSAMPLER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSWINDOWSAMPLER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSWINDOWSAMPLER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSWINDOWSAMPLER_IN_GEODATA_DESCRIPTION = "The input coverage.";
-    public static final String OMSWINDOWSAMPLER_P_MODE_DESCRIPTION = "The mode to use: average (0 = default), sum (1), max (2), min (3).";
-    public static final String OMSWINDOWSAMPLER_P_ROWS_DESCRIPTION = "The windows rows to use (default is 3).";
-    public static final String OMSWINDOWSAMPLER_P_COLS_DESCRIPTION = "The window cols to use (default is 3).";
-    public static final String OMSWINDOWSAMPLER_P_MIN_VALID_DESCRIPTION = "Minimum percentage of valid surrounding cells needed to validate the maximum.";
-    public static final String OMSWINDOWSAMPLER_P_X_STEP_DESCRIPTION = "The cols to move the window forward (default is = pCols).";
-    public static final String OMSWINDOWSAMPLER_P_Y_STEP_DESCRIPTION = "The rows to move the window forward (default is = pRows).";
-    public static final String OMSWINDOWSAMPLER_OUT_GEODATA_DESCRIPTION = "The output coverage.";
 
     public static final String OMSGRASSLEGACYWRITER_DESCRIPTION = "Legacy class for writing grass rasters.";
     public static final String OMSGRASSLEGACYWRITER_DOCUMENTATION = "";
@@ -386,19 +349,6 @@ public class GearsMessages {
     public static final String OMSLINESPOLYGONIZER_F_ID_DESCRIPTION = "The field of the points layer containing the id for the polygons (necessary if inPoints is defined).";
     public static final String OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION = "The field of the polygonized layer containing the id (default is 'id').";
     public static final String OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION = "The map of polygons.";
-
-    public static final String OMSRASTERCORRECTOR_DESCRIPTION = "Raster corrector module.";
-    public static final String OMSRASTERCORRECTOR_DOCUMENTATION = "";
-    public static final String OMSRASTERCORRECTOR_KEYWORDS = "IO, Coverage, Raster, Correct, OmsRasterReader";
-    public static final String OMSRASTERCORRECTOR_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERCORRECTOR_NAME = "rcorrect";
-    public static final int OMSRASTERCORRECTOR_STATUS = 5;
-    public static final String OMSRASTERCORRECTOR_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERCORRECTOR_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERCORRECTOR_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERCORRECTOR_IN_RASTER_DESCRIPTION = "The input raster.";
-    public static final String OMSRASTERCORRECTOR_P_CORRECTIONS_DESCRIPTION = "The values to correct as a CSV list of triplets (format is col1,row1,value1,col2,row2,value2...).";
-    public static final String OMSRASTERCORRECTOR_OUT_RASTER_DESCRIPTION = "The output raster.";
 
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION = "Resamples a raster to a new cell size, on the same extent, with the chosen interpolation.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION = "";
@@ -857,28 +807,6 @@ public class GearsMessages {
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_P_THRES_DESCRIPTION = "A threshold on cell number to filter away polygons with cells less than that.";
     public static final String OMSMARCHINGSQUARESVECTORIALIZER_OUT_GEODATA_DESCRIPTION = "The extracted features.";
 
-    public static final String OMSRASTERTRANSFORMER_DESCRIPTION = "Module for raster tranforms.";
-    public static final String OMSRASTERTRANSFORMER_DOCUMENTATION = "";
-    public static final String OMSRASTERTRANSFORMER_KEYWORDS = "Transform, Raster";
-    public static final String OMSRASTERTRANSFORMER_LABEL = RASTERPROCESSING;
-    public static final String OMSRASTERTRANSFORMER_NAME = "rtrans";
-    public static final int OMSRASTERTRANSFORMER_STATUS = 10;
-    public static final String OMSRASTERTRANSFORMER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSRASTERTRANSFORMER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSRASTERTRANSFORMER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSRASTERTRANSFORMER_IN_RASTER_DESCRIPTION = "The raster that has to be transformed.";
-    public static final String OMSRASTERTRANSFORMER_P_INTERPOLATION_DESCRIPTION = "The interpolation type to use";
-    public static final String OMSRASTERTRANSFORMER_P_TRANS_X_DESCRIPTION = "The translation along the X axis.";
-    public static final String OMSRASTERTRANSFORMER_P_TRANS_Y_DESCRIPTION = "The translation along the Y axis.";
-    public static final String OMSRASTERTRANSFORMER_P_SCALE_X_DESCRIPTION = "The scale factor along X axis.";
-    public static final String OMSRASTERTRANSFORMER_P_SCALE_Y_DESCRIPTION = "The scale factor along the Y axis.";
-    public static final String OMSRASTERTRANSFORMER_DO_FLIP_HORIZONTAL_DESCRIPTION = "Flip horizontally.";
-    public static final String OMSRASTERTRANSFORMER_DO_FLIP_VERTICAL_DESCRIPTION = "Flip vertically.";
-    public static final String OMSRASTERTRANSFORMER_P_NORTH_DESCRIPTION = "The northern coordinate of the rotation point.";
-    public static final String OMSRASTERTRANSFORMER_P_EAST_DESCRIPTION = "The eastern coordinate of the rotation point.";
-    public static final String OMSRASTERTRANSFORMER_P_ANGLE_DESCRIPTION = "The rotation angle in degree (rotation is performed before translation).";
-    public static final String OMSRASTERTRANSFORMER_OUT_RASTER_DESCRIPTION = "The transformed raster.";
-    public static final String OMSRASTERTRANSFORMER_OUT_BOUNDS_DESCRIPTION = "The new raster geometry.";
 
     public static final String OMSPOLYGONSMOOTHERJAITOOLS_DESCRIPTION = "The polygon smoother from the jaitools project.";
     public static final String OMSPOLYGONSMOOTHERJAITOOLS_KEYWORDS = "Smoothing, Vector";
@@ -979,19 +907,6 @@ public class GearsMessages {
     public static final String OMSBOBTHEBUILDER_DO_POLYGON_BORDER_DESCRIPTION = "If true, the raster elevations along the border of the polygon are added to the points, to join the artifact to the terrain.";
     public static final String OMSBOBTHEBUILDER_OUT_RASTER_DESCRIPTION = "The elevation model with the artifact.";
 
-    public static final String OMSPOINTSRASTERIZER_DESCRIPTION = "Module to convert vector points to raster. Currently this does simply put the point in the nearest cell, without check.";
-    public static final String OMSPOINTSRASTERIZER_DOCUMENTATION = "";
-    public static final String OMSPOINTSRASTERIZER_KEYWORDS = "Raster, Vector, Points";
-    public static final String OMSPOINTSRASTERIZER_LABEL = RASTERPROCESSING;
-    public static final String OMSPOINTSRASTERIZER_NAME = "rasterizepoints";
-    public static final int OMSPOINTSRASTERIZER_STATUS = 5;
-    public static final String OMSPOINTSRASTERIZER_LICENSE = "General Public License Version 3 (GPLv3)";
-    public static final String OMSPOINTSRASTERIZER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSPOINTSRASTERIZER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSPOINTSRASTERIZER_IN_VECTOR_DESCRIPTION = "The points vector.";
-    public static final String OMSPOINTSRASTERIZER_IN_GRID_DESCRIPTION = "The grid on which to place the values.";
-    public static final String OMSPOINTSRASTERIZER_F_CAT_DESCRIPTION = "The field of the vector to take the category from.";
-    public static final String OMSPOINTSRASTERIZER_OUT_RASTER_DESCRIPTION = "The output raster.";
 
     public static final String OMSTIMESERIESITERATORREADER_DESCRIPTION = "Utility class for reading data from a OMS formatted csv file. The file needs a metadata line containing the id of the station. The table is supposed to have a first column of timestamp and all olther columns of data related to the ids defined.";
     public static final String OMSTIMESERIESITERATORREADER_DOCUMENTATION = "";

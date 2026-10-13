@@ -27,6 +27,8 @@ public interface Variables {
 
     public String PROGRESS_MONITOR_EN = "The progress monitor.";
 
+    public String TYPE_BYTE = "BYTE";
+    public String TYPE_SHORT = "SHORT";
     public String TYPE_INT = "INTEGER";
     public String TYPE_FLOAT = "FLOAT";
     public String TYPE_DOUBLE = "DOUBLE";
