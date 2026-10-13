@@ -28,6 +28,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -37,7 +38,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A module to shift las files by a given distance (given in units of the data crs).")
+@Description("Moves the points of a las file by the given distances along the three axes, in the units of its reference system.")
+@Documentation(LasMover.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, move")
 @Label(HMConstants.LESTO + "/utilities")
@@ -67,9 +69,15 @@ public class LasMover extends HMModel {
     @In
     public String outFile;
 
+    public static final String DOCUMENTATION = """
+            The distances are added to the coordinates of every point, as to correct a shift of the survey or to change between two reference systems that differ by a translation, as two datums of the elevation. The reference system of the file is not changed: a move to another reference system needs the right prj file next to the output.
+
+            The offset of the header moves with the points, so that the points keep the same scaled integers and the same precision, also when moved far from where they were; the scale and the other attributes of the points are kept.
+            """;
+
     @Execute
     public void process() throws Exception {
-        checkNull(inFile);
+        checkNull(inFile, outFile);
 
         File inLas = new File(inFile);
         try (ALasReader reader = ALasReader.getReader(inLas, null)) {
@@ -83,7 +91,8 @@ public class LasMover extends HMModel {
             File outLas = new File(outFile);
             try (ALasWriter writer = ALasWriter.getWriter(outLas, env.getCoordinateReferenceSystem())) {
 
-                writer.setOffset(xyzOffset[0], xyzOffset[1], xyzOffset[2]);
+                // the offset moves with the points, so that their scaled integers stay the same
+                writer.setOffset(xyzOffset[0] + pDeltaX, xyzOffset[1] + pDeltaY, xyzOffset[2] + pDeltaZ);
                 writer.setScales(xyzScale[0], xyzScale[1], xyzScale[2]);
                 writer.setBounds(env.getMinX() + pDeltaX, env.getMaxX() + pDeltaX, env.getMinY() + pDeltaY,
                         env.getMaxY() + pDeltaY, env.getMinZ() + pDeltaZ, env.getMaxZ() + pDeltaZ);

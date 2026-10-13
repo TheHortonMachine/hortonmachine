@@ -128,6 +128,8 @@ import groovy.lang.GroovyShell;
  * elevation, as a satellite tile.</li>
  * <li><b>fill</b>: with polygons, filled with their color, as transparent as the rasters,
  * instead of only their outline, for polygons that cover the map, as the cells of a grid.</li>
+ * <li><b>under=raster.tif:colortable</b>: with vectors, a raster drawn in the colortable over the
+ * hillshade and under the vectors, as the canopy under the tops of the trees.</li>
  * </ul>
  * The optional class names, as <code>1=stable;2=unstable</code>, replace the values in the legend
  * of the classes.
@@ -447,9 +449,25 @@ public class ModuleMapsGenerator {
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, image.getWidth(), image.getHeight());
 
+        // the raster of the option under=raster.tif:colortable, between the hillshade and the features
+        GridCoverage2D underRaster = null;
+        Style underStyle = null;
+        String under = optionValue(spec, "under");
+        if (under != null) {
+            String[] underParts = under.split(":");
+            underRaster = OmsRasterReader.readRaster(path(underParts[0]));
+            double[] underMinMax = minMax(underRaster);
+            String underColortable = underParts.length > 1 ? underParts[1] : EColorTables.rainbow.name();
+            underStyle = RasterStyleUtilities.createStyleForColortable(underColortable, underMinMax[0], underMinMax[1],
+                    OPACITY);
+        }
+
         MapContent content = new MapContent();
         try {
             content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
+            if (underRaster != null) {
+                content.addLayer(new GridCoverageLayer(underRaster, underStyle));
+            }
             for( Map.Entry<Color, DefaultFeatureCollection> group : groups.entrySet() ) {
                 content.addLayer(new FeatureLayer(group.getValue(),
                         vectorStyle(geometryType, group.getKey(), spec.options().contains("fill"))));

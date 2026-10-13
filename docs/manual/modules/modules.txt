@@ -122,6 +122,19 @@ org.hortonmachine.lesto.modules.raster.LasOnRasterMapper
 org.hortonmachine.lesto.modules.raster.Las2RasterInterpolator
 org.hortonmachine.lesto.modules.raster.LasTriangulation2Dsm
 org.hortonmachine.lesto.modules.raster.Las2BivariateRasterMosaic
+org.hortonmachine.modules.RasterMaximaFinder
+org.hortonmachine.modules.GeomorphonMaximaFinder
+org.hortonmachine.lesto.modules.vegetation.PointCloudMaximaFinder
+org.hortonmachine.lesto.modules.vegetation.WatershedAlgorithm
+org.hortonmachine.lesto.modules.utilities.LasInfo
+org.hortonmachine.lesto.modules.utilities.LasElevationHandler
+org.hortonmachine.lesto.modules.utilities.LasMover
+org.hortonmachine.lesto.modules.utilities.LasOverviewCreator
+org.hortonmachine.lesto.modules.utilities.LasPointDensityExtractor
+org.hortonmachine.lesto.modules.utilities.LasSlicer
+org.hortonmachine.lesto.modules.utilities.LasFromFaroTlsXyz
+org.hortonmachine.gears.io.las.index.LasIndexer
+org.hortonmachine.gears.io.las.databases.DatabaseLasWriter
 
 # NetCDF
 org.hortonmachine.modules.NetcdfInfo

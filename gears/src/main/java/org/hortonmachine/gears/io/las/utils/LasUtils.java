@@ -39,6 +39,7 @@ import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.modules.utils.fileiterator.OmsFileIterator;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -133,7 +134,8 @@ public class LasUtils {
      * @return the {@link SimpleFeatureBuilder builder}.
      */
     public static SimpleFeatureBuilder getLasFeatureBuilder( CoordinateReferenceSystem crs ) {
-        if (lasSimpleFeatureBuilder == null) {
+        if (lasSimpleFeatureBuilder == null
+                || !HMCrsRegistry.crsEquals(crs, lasSimpleFeatureBuilder.getFeatureType().getCoordinateReferenceSystem())) {
             SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("lasdata");
             b.setCRS(crs);

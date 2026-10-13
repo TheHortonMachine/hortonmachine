@@ -28,10 +28,13 @@ import static org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFind
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.hmachine.modules.geomorphology.geomorphon.OmsGeomorphon;
 import org.hortonmachine.lesto.modules.vegetation.OmsGeomorphonMaximaFinder;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -43,12 +46,14 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OmsGeomorphonMaximaFinder.DESCRIPTION)
+@Documentation(OmsGeomorphonMaximaFinder.DOCUMENTATION)
 @Author(name = OmsGeomorphonMaximaFinder.AUTHORS, contact = OmsGeomorphonMaximaFinder.CONTACTS)
 @Keywords(OmsGeomorphonMaximaFinder.KEYWORDS)
 @Label(OmsGeomorphonMaximaFinder.LABEL)
 @Name(OmsGeomorphonMaximaFinder.NAME)
 @Status(OmsGeomorphonMaximaFinder.STATUS)
 @License(OmsGeomorphonMaximaFinder.LICENSE)
+@Bibliography(OmsGeomorphon.BIBLIOGRAPHY_JASIEWICZ_STEPINSKI_2013)
 public class GeomorphonMaximaFinder extends HMModel {
     @Description(inDTM_DESC)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)

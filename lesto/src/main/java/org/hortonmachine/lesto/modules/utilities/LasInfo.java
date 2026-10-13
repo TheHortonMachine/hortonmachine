@@ -27,6 +27,7 @@ import java.io.FilenameFilter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -44,7 +45,8 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
-@Description("Print out information of a las file or las data folder.")
+@Description("Prints the header, the reference system and the first points of a las file, or of each las file of a folder.")
+@Documentation(LasInfo.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords("info, lidar, las")
 @Label(HMConstants.LESTO + "/utilities")
@@ -56,6 +58,12 @@ public class LasInfo extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_LAS)
     @In
     public String inLas = null;
+
+    public static final String DOCUMENTATION = """
+            For each file it prints the fields of the header, as the version, the point format, the number of points, the scale, the offset and the bounds, then the reference system, from the prj file next to the las file, and the first three points with all their attributes.
+
+            The output is only printed, to the log of the module. It is a quick check of a survey before using it: the point format tells if the points have times and colors, and the bounds if they are in the expected place and reference system.
+            """;
 
     @Execute
     public void process() throws Exception {

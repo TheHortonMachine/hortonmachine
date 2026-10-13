@@ -18,7 +18,9 @@
 package org.hortonmachine.modules;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -40,12 +42,14 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.lesto.modules.vegetation.rastermaxima.OmsRasterMaximaFinder;
 
 @Description(OmsRasterMaximaFinder.OMSMAXIMAFINDER_DESCRIPTION)
+@Documentation(OmsRasterMaximaFinder.OMSMAXIMAFINDER_DOCUMENTATION)
 @Author(name = GearsMessages.OMSHYDRO_AUTHORNAMES, contact = GearsMessages.OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsRasterMaximaFinder.OMSMAXIMAFINDER_KEYWORDS)
 @Label(OmsRasterMaximaFinder.OMSMAXIMAFINDER_LABEL)
 @Name(OmsRasterMaximaFinder.OMSMAXIMAFINDER_NAME)
 @Status(OmsRasterMaximaFinder.OMSMAXIMAFINDER_STATUS)
 @License(GearsMessages.OMSHYDRO_LICENSE)
+@Bibliography(OmsRasterMaximaFinder.BIBLIOGRAPHY_POPESCU_WYNNE_2004)
 public class RasterMaximaFinder extends HMModel {
 
     @Description(OmsRasterMaximaFinder.inGeodata_DESCRIPTION)
@@ -109,6 +113,7 @@ public class RasterMaximaFinder extends HMModel {
     @Execute
     public void process() throws Exception {
         OmsRasterMaximaFinder maxFinder = new OmsRasterMaximaFinder();
+        maxFinder.pm = pm;
         maxFinder.inDsmDtmDiff = getRaster(inDsmDtmDiff);
         maxFinder.pMode = pMode;
         maxFinder.pThreshold = pThreshold;

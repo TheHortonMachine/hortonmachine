@@ -1,22 +1,17 @@
 package org.hortonmachine.lesto.modules.vegetation;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
-
-import java.awt.image.WritableRaster;
 import java.util.List;
 
-import org.eclipse.imagen.iterator.RandomIterFactory;
-import org.eclipse.imagen.iterator.WritableRandomIter;
-import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedFIFO;
 import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedPixel;
 import org.hortonmachine.lesto.modules.vegetation.watershed.WatershedStructure;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
 import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
@@ -71,43 +66,100 @@ import oms3.annotations.UI;
  *  Taken from: http://rsbweb.nih.gov/ij/plugins/watershed.html
  *  
  **/
-@Description("Calculates the watershed of a 8-bit images. It uses the immersion algorithm written by Vincent and Soille (1991)")
-@Documentation("http://rsbweb.nih.gov/ij/plugins/watershed.html")
+@Description("Divides a raster into the basins of its minima, or of its maxima if inverted, as the crowns of the trees of a canopy height model, with the immersion algorithm of Vincent and Soille (1991).")
+@Documentation(WatershedAlgorithm.DOCUMENTATION)
 @Author(name = "Christopher Mei, Lee Vincent and Pierre Soille 1991, Andrea Antonello (hm port)", contact = "christopher.mei@sophia.inria.fr")
-@Keywords("IMAGE-PROC SKELETON SEGMENTATION GIS")
+@Keywords("watershed, segmentation, crowns, lidar")
 @Label(HMConstants.LESTO + "/vegetation")
 @Name("contourscrowner")
 @Status(Status.EXPERIMENTAL)
 @License("GPL2")
+@Bibliography(WatershedAlgorithm.BIBLIOGRAPHY_VINCENT_SOILLE_1991)
 public class WatershedAlgorithm extends HMModel {
 
-    @Description("An elevation raster")
+    @Description("The raster to divide, as a canopy height model.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inRaster;
 
-    @Description("If true, the borders of the watershed are set, else the content.")
+    @Description("If true, the raster is flooded upside down, from its maxima: the basins are then the crowns around the tops of a canopy height model.")
+    @In
+    public boolean doInvert = false;
+
+    @Description("If true, the output has 1 on the watershed lines between the basins, else the number of the basin of each cell.")
     @In
     public boolean doBorders = true;
 
-    @Description("Watershed raster")
+    @Description("The watershed lines or the basins.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outRaster;
+
+    public static final String BIBLIOGRAPHY_VINCENT_SOILLE_1991 = "Vincent, L., Soille, P. (1991). Watersheds in digital spaces: an efficient algorithm based on immersion simulations. IEEE Transactions on Pattern Analysis and Machine Intelligence, 13(6), 583-598.";
+    public static final String DOCUMENTATION = """
+            The raster is seen as a surface that is flooded from its minima: the water rises level by level, each minimum fills its own basin, and where the waters of two basins meet the cells become watershed lines. The algorithm is the immersion of Vincent and Soille (1991), from the ImageJ plugin of Christopher Mei.
+
+            The algorithm works on 256 levels: the valid values are stretched linearly from their minimum to their maximum on the levels 0 to 254, so that on a canopy height model of 40 m a level is about 16 cm. Cells closer than a level are flat for the algorithm. The cells with no value are left out, they are no basin and no line.
+
+            Inverted, the levels are turned upside down and the flood starts from the maxima: on a canopy height model each basin is then the crown around a top. Every small bump of the surface is a top of its own and makes a basin, so that a raw canopy model, noisy from cell to cell, is split in many small pieces: smoothed, as with a gaussian KernelDensity of a couple of cells, it gives fewer crowns, closer to the trees. The ground and the low vegetation make basins too: setting them to no value first, as with Mapcalc, leaves them out.
+
+            Where the waters of different basins meet on a flat area, the whole area can become watershed line, not only a line one cell wide.
+
+            With the borders, the cells of the watershed lines next to a basin have the value 1. Without, each cell has the number of its basin, from 1, and the watershed lines have no value.
+            """;
 
     @Execute
     public void process() throws Exception {
         checkNull(inRaster, outRaster);
 
-        GridCoverage2D inRasterGC = getRaster(inRaster);
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRasterGC);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
+        int nCols;
+        int nRows;
+        byte[] input;
+        boolean[] valid;
+        HMRaster outHMRaster;
+        try (HMRaster inHMRaster = HMRaster.fromFile(inRaster)) {
+            nCols = inHMRaster.getCols();
+            nRows = inHMRaster.getRows();
 
-        byte[] input = CoverageUtilities.renderedImage2ByteArray(inRasterGC.getRenderedImage(), true);
+            /** The valid values are stretched on the grey levels 0-254, the novalues are left out **/
+            double min = Double.POSITIVE_INFINITY;
+            double max = Double.NEGATIVE_INFINITY;
+            for( int r = 0; r < nRows; r++ ) {
+                for( int c = 0; c < nCols; c++ ) {
+                    double value = inHMRaster.getValue(c, r);
+                    if (!inHMRaster.isNovalue(value)) {
+                        min = Math.min(min, value);
+                        max = Math.max(max, value);
+                    }
+                }
+            }
+            if (min > max) {
+                throw new ModelsIllegalargumentException("The raster has no valid values.", this);
+            }
+            double range = max - min;
+            input = new byte[nCols * nRows];
+            valid = new boolean[nCols * nRows];
+            int index = 0;
+            for( int r = 0; r < nRows; r++ ) {
+                for( int c = 0; c < nCols; c++ ) {
+                    double value = inHMRaster.getValue(c, r);
+                    if (!inHMRaster.isNovalue(value)) {
+                        int level = range > 0 ? (int) Math.round((value - min) / range * 254.0) : 0;
+                        if (doInvert) {
+                            level = 254 - level;
+                        }
+                        input[index] = (byte) level;
+                        valid[index] = true;
+                    }
+                    index++;
+                }
+            }
+            outHMRaster = new HMRaster.HMRasterWritableBuilder().setName("watershed").setTemplate(inHMRaster)
+                    .setNoValue(HMConstants.doubleNovalue).build();
+        }
 
         /** First step : the pixels are sorted according to increasing grey values **/
-        WatershedStructure watershedStructure = new WatershedStructure(input, nCols, nRows, pm);
+        WatershedStructure watershedStructure = new WatershedStructure(input, valid, nCols, nRows, pm);
 
         /** Start flooding **/
         WatershedFIFO queue = new WatershedFIFO();
@@ -221,30 +273,24 @@ public class WatershedAlgorithm extends HMModel {
         }
         /** End of flooding **/
 
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, doubleNovalue);
-        WritableRandomIter outIter = RandomIterFactory.createWritable(outWR, null);
-
-        pm.beginTask("Setting watersheds...", watershedStructure.size());
-
-        for( int pixelIndex = 0; pixelIndex < watershedStructure.size(); pixelIndex++ ) {
-            WatershedPixel p = watershedStructure.get(pixelIndex);
-            int c = p.getX();
-            int r = p.getY();
-            if (p.isLabelWSHED() && !p.allNeighboursAreWSHED()) {
-                if (doBorders)
-                    outIter.setSample(c, r, 0, 1.0);
-            } else {
-                if (!doBorders)
-                    outIter.setSample(c, r, 0, 1.0);
+        try (outHMRaster) {
+            pm.beginTask("Setting watersheds...", watershedStructure.size());
+            for( int pixelIndex = 0; pixelIndex < watershedStructure.size(); pixelIndex++ ) {
+                WatershedPixel p = watershedStructure.get(pixelIndex);
+                int c = p.getX();
+                int r = p.getY();
+                if (doBorders) {
+                    if (p.isLabelWSHED() && !p.allNeighboursAreWSHED())
+                        outHMRaster.setValue(c, r, 1.0);
+                } else {
+                    if (p.getLabel() > 0)
+                        outHMRaster.setValue(c, r, (double) p.getLabel());
+                }
+                pm.worked(1);
             }
-            pm.worked(1);
+            pm.done();
+            outHMRaster.writeToFile(outRaster);
         }
-        pm.done();
-        outIter.done();
-
-        GridCoverage2D outRasterGC = CoverageUtilities.buildCoverage("normalized", outWR, regionMap,
-                inRasterGC.getCoordinateReferenceSystem());
-        dumpRaster(outRasterGC, outRaster);
 
     }
 

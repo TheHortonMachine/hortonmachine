@@ -57,6 +57,7 @@ import org.hortonmachine.gears.utils.StringUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.lesto.modules.vegetation.OmsPointCloudMaximaFinder.DsmDtmDiffHelper;
+import org.hortonmachine.lesto.modules.vegetation.rastermaxima.OmsRasterMaximaFinder;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Geometry;
@@ -64,7 +65,9 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -75,12 +78,14 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(DESCR)
+@Documentation(OmsPointCloudMaximaFinder.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(KEYWORDS)
 @Label(LABEL)
 @Name(NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
+@Bibliography(OmsRasterMaximaFinder.BIBLIOGRAPHY_POPESCU_WYNNE_2004)
 @SuppressWarnings("nls")
 public class PointCloudMaximaFinder extends HMModel {
 
@@ -133,24 +138,22 @@ public class PointCloudMaximaFinder extends HMModel {
 
     @Execute
     public void process() throws Exception {
-        checkNull(inLas);
-
-        if (inRoi == null && inDtm == null) {
-            throw new ModelsIllegalargumentException("At least one of raster or vector roi is necessary.", this);
+        checkNull(inLas, inDtm, outTops);
+        if (!doDynamicRadius && pMaxRadius <= 0) {
+            throw new ModelsIllegalargumentException("Without the dynamic radius, the radius has to be larger than 0.", this);
         }
-        GridCoverage2D inDtmGC = null;
-        CoordinateReferenceSystem crs = null;
+
+        // the dtm gives the heights over the ground, compared to find the maxima
+        GridCoverage2D inDtmGC = getRaster(inDtm);
+        CoordinateReferenceSystem crs = inDtmGC.getCoordinateReferenceSystem();
         List<Geometry> regionGeometries = new ArrayList<Geometry>();
         if (inRoi != null) {
             SimpleFeatureCollection inRoiFC = getVector(inRoi);
             regionGeometries = FeatureUtilities.featureCollectionToGeometriesList(inRoiFC, true, null);
-            crs = inRoiFC.getBounds().getCoordinateReferenceSystem();
         } else {
             // use the dtm bounds
-            inDtmGC = getRaster(inDtm);
             Polygon polygon = CoverageUtilities.getRegionPolygon(inDtmGC);
             regionGeometries.add(polygon);
-            crs = inDtmGC.getCoordinateReferenceSystem();
         }
 
         DsmDtmDiffHelper helper = null;
@@ -165,6 +168,7 @@ public class PointCloudMaximaFinder extends HMModel {
             helper.xres = regionMap.getXres();
             helper.yres = regionMap.getYres();
             helper.dsmDtmDiffIter = CoverageUtilities.getRandomIterator(inDsmDtmDiffGC);
+            helper.novalue = HMConstants.getNovalue(inDsmDtmDiffGC);
         }
 
         try (ALasDataManager lasData = ALasDataManager.getDataManager(new File(inLas), inDtmGC, pThreshold, crs)) {

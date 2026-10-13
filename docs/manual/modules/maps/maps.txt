@@ -21,7 +21,8 @@
 # lines=a;b (with a table, the named columns as lines over the first column, as profiles),
 # over=vector.shp (with vectors, another vector drawn over them in blue),
 # nohillshade (the raster alone, opaque, for data far from the sample elevation, as a satellite tile),
-# fill (with polygons, filled with their color over the hillshade, instead of only their outline)
+# fill (with polygons, filled with their color over the hillshade, instead of only their outline),
+# under=raster.tif:colortable (with vectors, a raster drawn in the colortable under them)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
 
 Pitfiller      | ../examples/hm/pitfiller.groovy      | pit.tif                     | elev
@@ -140,6 +141,18 @@ Las2RasterInterpolator | ../examples/hm/las2rasterinterpolator.groovy | chm_idw.
 LasOnRasterMapper | ../examples/hm/lasonrastermapper.groovy | dsm_max.tif - dtm_777.tif | greens | positive,base=dtm_777.tif
 LasTriangulation2Dsm | ../examples/hm/lastriangulation2dsm.groovy | dsm_triangles.tif | elev | base=dtm_777.tif
 Las2BivariateRasterMosaic | ../examples/hm/las2bivariaterastermosaic.groovy | las_mosaic/tile_0_0.tiff | elev | base=dtm_777.tif,extent=725718:725778.5:5205734.5:5205795.5
+RasterMaximaFinder | ../examples/hm/rastermaximafinder.groovy | tops_raster.shp      | reds     | base=dtm_777.tif,under=chm_idw.tif:greens,over=tops_raster_windows.shp
+GeomorphonMaximaFinder | ../examples/hm/geomorphonmaximafinder.groovy | tops_geomorphon.shp | reds | base=dtm_777.tif,under=chm_idw.tif:greens
+PointCloudMaximaFinder | ../examples/hm/pointcloudmaximafinder.groovy | tops_points.shp | reds   | base=dtm_777.tif,under=chm_idw.tif:greens
+WatershedAlgorithm | ../examples/hm/watershedalgorithm.groovy | crowns.tif           | contrasting | base=dtm_777.tif,nolegend
+LasInfo        | ../examples/hm/lasinfo.groovy        | -                           | -
+LasElevationHandler | ../examples/hm/laselevationhandler.groovy | las_heights.shp     | greens   | base=dtm_777.tif,field=elev
+LasMover       | ../examples/hm/lasmover.groovy       | -                           | -
+LasOverviewCreator | ../examples/hm/lasoverviewcreator.groovy | las_pieces_overview.shp | rainbow | base=dtm_777.tif,field=points,fill
+LasPointDensityExtractor | ../examples/hm/laspointdensityextractor.groovy | las_density.shp | rainbow | base=dtm_777.tif,field=density,fill
+LasSlicer      | ../examples/hm/lasslicer.groovy      | las_slices/slice_15.tif     | reds     | base=dtm_777.tif,nolegend
+LasIndexer     | ../examples/hm/lasindexer.groovy     | -                           | -
+DatabaseLasWriter | ../examples/hm/databaselaswriter.groovy | -                     | -
 RasterToNetcdf | ../examples/hm/rastertonetcdf.groovy | -                           | -
 NetcdfGridDumper | ../examples/hm/netcdfgriddumper_dtm.groovy | dtm_back/dtm_flanginec__elevation.tif | elev
 NetcdfInfo     | ../examples/hm/netcdfinfo.groovy     | -                           | -

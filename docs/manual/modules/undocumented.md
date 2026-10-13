@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-77 of the 200 toolbox modules have no manual page yet.
+63 of the 199 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -66,35 +66,11 @@
 | FlightLinesExtractor | experimental | A module that splits las files in its flightlines |
 | FlightLinesIntensityNormalizer | experimental | A module that normalizes flightlines based on the aircraft position. |
 
-## Lesto › utilities (10)
-
-| Module | Status | Description |
-|---|---|---|
-| DatabaseLasWriter | experimental | Inserts las files into a spatialite database. |
-| LasElevationHandler | experimental | A module that allows to normalize the las over an elevation model (or vice versa). |
-| LasFromFaroTlsXyz | experimental | Converts XYZ data exported from FARO TLS to las. |
-| LasIndexer | experimental | Creates indexes for Las files. |
-| LasInfo | draft | Print out information of a las file or las data folder. |
-| LasMover | experimental | A module to shift las files by a given distance (given in units of the data crs). |
-| LasOverviewCreator | draft | Create an overview shapefile of a folder of las files. |
-| LasPointDensityExtractor | draft | Creates a vector map of the point cloud density over a given grid. |
-| LasSlicer | draft | Creates vertical slices of a las file. The resulting raster will have the slice height value as valid pixel value. |
-| LasTranslator | experimental | A las file translator. |
-
 ## Lesto › vector (1)
 
 | Module | Status | Description |
 |---|---|---|
 | LasShapeVectorizer | draft | Module that creates a vector polygon shape from the las file. |
-
-## Lesto › vegetation (4)
-
-| Module | Status | Description |
-|---|---|---|
-| GeomorphonMaximaFinder | experimental | The Geomorphon method to extract maxima from rasters |
-| PointCloudMaximaFinder | draft | Module that identifies local maxima in point clouds. |
-| RasterMaximaFinder | experimental | Module to find local maxima. |
-| WatershedAlgorithm | experimental | Calculates the watershed of a 8-bit images. It uses the immersion algorithm written by Vincent and Soille (1991) |
 
 ## Mobile (6)
 

@@ -58,16 +58,17 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
-import org.hortonmachine.gears.utils.time.EggClock;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
@@ -78,7 +79,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("Inserts las files into a spatialite database.")
+@Description("Inserts the las files of a folder into a spatialite or H2GIS database, in cells with summaries at coarser levels, for quick reading and viewing of large surveys.")
+@Documentation(DatabaseLasWriter.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, lidar, spatialite")
 @Label(HMConstants.LESTO + "/utilities")
@@ -87,22 +89,22 @@ import oms3.annotations.UI;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class DatabaseLasWriter extends HMModel {
 
-    @Description("The folder containing the las files to index.")
+    @Description("The folder containing the las files to insert.")
     @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 
-    @Description("The output database path.")
+    @Description("The database to write to: it is created if it does not exist, otherwise the files are added to it.")
     @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inDatabasePath;
 
-    @Description("The database to use")
+    @Description("The type of the database.")
     @UI("combo:" + "SPATIALITE" + "," + "H2GIS")
     @In
     public String pDbType = EDb.SPATIALITE.name();
 
-    @Description("The optional image mosaic of ortophoto to take the color from (has to be 3-band).")
+    @Description("The optional image mosaic of orthophotos, by its shapefile index, with 3 bands, to take the colors of the points from.")
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inOrtophoto;
@@ -112,7 +114,7 @@ public class DatabaseLasWriter extends HMModel {
     @In
     public String pCode;
 
-    @Description("The size of the cells into which to split the las file for indexing (in units defined by the projection).")
+    @Description("The size of the cells into which the points are grouped (in units defined by the projection).")
     @In
     public double pCellsize = 3;
 
@@ -120,7 +122,7 @@ public class DatabaseLasWriter extends HMModel {
     @In
     public int pLevels = 2;
 
-    @Description("The size multiplication factor to use for subsequent levels.")
+    @Description("The factor of the size of the squares of the levels: the size of the cells times the factor times the number of the level.")
     @In
     public int pFactor = 5;
 
@@ -135,6 +137,20 @@ public class DatabaseLasWriter extends HMModel {
     @Description("Optional las list names to process only those (inside las folder).")
     @In
     public List<String> inLasNames;
+
+    public static final String DOCUMENTATION = """
+            The database gets three kinds of tables:
+
+            - lassources, with a row per las file: its bounds, name, range of elevations and intensities, and the cell size, levels and factor used;
+            - lascells, the cells of the given size that have points, with their number, the average, lowest and highest elevation and intensity, the times, and all their points, as blobs of coordinates, intensities and classes, returns, times and colors;
+            - laslevels1, laslevels2 and so on, the summaries of the levels: squares with the average, lowest and highest elevation and intensity of the cells, for the first level, or of the squares of the level before, inside them.
+
+            The squares of a level are as large as the cell size times the factor times the number of the level: with cells of 3 m and a factor of 5, 15 m at the first level, 30 m at the second and 45 m at the third. The averages of a square are the averages of the averages of the cells or squares in it, not weighted by their points.
+
+            The files already in the database, by name, are skipped, so a folder can be added to again. The colors come from the points, or, with an image mosaic of orthophotos, from its three bands at each point, white outside of it. The reference system is the given one, or the one of the first prj file of the folder; without either it is set to EPSG:4326, which is right only for data in longitude and latitude.
+
+            The lidar modules read the database in place of a las file, and the 3D viewer shows its levels and cells.
+            """;
 
     private CoordinateReferenceSystem crs;
 
@@ -196,7 +212,7 @@ public class DatabaseLasWriter extends HMModel {
 
             try {
                 if (pCode != null) {
-                    crs = CrsUtilities.getCrsFromEpsg(pCode, null);
+                    crs = HMCrsRegistry.INSTANCE.getCrs(pCode, true);
                 } else {
                     File folderFile = new File(inFolder);
                     File[] prjFiles = folderFile.listFiles(new FilenameFilter(){
@@ -208,7 +224,7 @@ public class DatabaseLasWriter extends HMModel {
 
                     if (prjFiles != null && prjFiles.length > 0) {
                         crs = CrsUtilities.readProjectionFile(prjFiles[0].getAbsolutePath(), null);
-                        pCode = CrsUtilities.getCodeFromCrs(crs);
+                        pCode = HMCrsRegistry.getCodeFromCrs(crs);
                     }
                 }
                 if (pCode != null) {
@@ -597,7 +613,8 @@ public class DatabaseLasWriter extends HMModel {
                 double avgElev = 0.0;
                 double minElev = Double.POSITIVE_INFINITY;
                 double maxElev = Double.NEGATIVE_INFINITY;
-                short avgIntensity = 0;
+                // summed as double: the sum of the intensities overflows a short
+                double avgIntensity = 0;
                 short minIntensity = 30000;
                 short maxIntensity = -1;
 
@@ -625,7 +642,7 @@ public class DatabaseLasWriter extends HMModel {
                 lasLevel.avgElev = avgElev;
                 lasLevel.minElev = minElev;
                 lasLevel.maxElev = maxElev;
-                lasLevel.avgIntensity = avgIntensity;
+                lasLevel.avgIntensity = (short) Math.round(avgIntensity);
                 lasLevel.minIntensity = minIntensity;
                 lasLevel.maxIntensity = maxIntensity;
                 lasLevel.sourceId = sourceID;
@@ -675,7 +692,8 @@ public class DatabaseLasWriter extends HMModel {
                 double avgElev = 0.0;
                 double minElev = Double.POSITIVE_INFINITY;
                 double maxElev = Double.NEGATIVE_INFINITY;
-                short avgIntensity = 0;
+                // summed as double: the sum of the intensities overflows a short
+                double avgIntensity = 0;
                 short minIntensity = 30000;
                 short maxIntensity = -1;
 
@@ -703,7 +721,7 @@ public class DatabaseLasWriter extends HMModel {
                 lasLevel.avgElev = avgElev;
                 lasLevel.minElev = minElev;
                 lasLevel.maxElev = maxElev;
-                lasLevel.avgIntensity = avgIntensity;
+                lasLevel.avgIntensity = (short) Math.round(avgIntensity);
                 lasLevel.minIntensity = minIntensity;
                 lasLevel.maxIntensity = maxIntensity;
                 lasLevel.sourceId = sourceID;
@@ -729,22 +747,6 @@ public class DatabaseLasWriter extends HMModel {
 
     @Finalize
     public void close() throws Exception {
-    }
-
-    public static void main( String[] args ) throws Exception {
-        EggClock egg = new EggClock("DATABASE**************** ", "");
-        egg.startAndPrint(System.out);
-        DatabaseLasWriter w = new DatabaseLasWriter();
-        w = new DatabaseLasWriter();
-        w.pDbType = EDb.SPATIALITE.name();
-        w.pLevels = 4;
-        w.pCellsize = 1;
-        w.inFolder = "/media/hydrologis/Samsung_T3/UNIBZ/monticolo_tls";
-        w.inDatabasePath = "/media/hydrologis/Samsung_T3/UNIBZ/monticolo_tls/monticolo2018_point_cloud_02.sqlite";
-        w.process();
-
-        egg.printTimePassedInSeconds(System.out);
-
     }
 
 }

@@ -32,7 +32,9 @@ import java.util.List;
 import org.eclipse.imagen.iterator.RandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -74,12 +76,14 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.operation.distance.DistanceOp;
 
 @Description(OmsRasterMaximaFinder.OMSMAXIMAFINDER_DESCRIPTION)
+@Documentation(OmsRasterMaximaFinder.OMSMAXIMAFINDER_DOCUMENTATION)
 @Author(name = GearsMessages.OMSHYDRO_AUTHORNAMES, contact = GearsMessages.OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsRasterMaximaFinder.OMSMAXIMAFINDER_KEYWORDS)
 @Label(OmsRasterMaximaFinder.OMSMAXIMAFINDER_LABEL)
 @Name("_" + OmsRasterMaximaFinder.OMSMAXIMAFINDER_NAME)
 @Status(OmsRasterMaximaFinder.OMSMAXIMAFINDER_STATUS)
 @License(GearsMessages.OMSHYDRO_LICENSE)
+@Bibliography(OmsRasterMaximaFinder.BIBLIOGRAPHY_POPESCU_WYNNE_2004)
 public class OmsRasterMaximaFinder extends HMModel {
 
     @Description(inGeodata_DESCRIPTION)
@@ -140,24 +144,38 @@ public class OmsRasterMaximaFinder extends HMModel {
     public SimpleFeatureCollection outBorders;
 
     // PARAMETERS DOCS START
-    public static final String OMSMAXIMAFINDER_DESCRIPTION = "Module to find local maxima.";
-    public static final String OMSMAXIMAFINDER_KEYWORDS = "Raster, Maxima";
+    public static final String OMSMAXIMAFINDER_DESCRIPTION = "Finds the tops of the trees as the local maxima of a canopy height model, in a window of fixed size or as wide as the crowns expected for the height.";
+    public static final String OMSMAXIMAFINDER_KEYWORDS = "Raster, Maxima, Trees, Lidar";
     public static final String OMSMAXIMAFINDER_LABEL = HMConstants.LESTO + "/vegetation";
     public static final String OMSMAXIMAFINDER_NAME = "rastermaximafinder";
     public static final int OMSMAXIMAFINDER_STATUS = 5;
-    public static final String inGeodata_DESCRIPTION = "The input CHM.";
+    public static final String inGeodata_DESCRIPTION = "The canopy height model: the height of the surface over the ground.";
     public static final String pThreshold_DESCRIPTION = "Threshold on maxima. Only maxima higher than the threshold are kept.";
-    public static final String pMode_DESCRIPTION = "Processing mode.";
-    public static final String pPercent_DESCRIPTION = "Percentage to apply to the maxima window to downsize it (default is 60%). This is ignored in CUSTOM mode.";
-    public static final String pMaxRadius_DESCRIPTION = "Maximum radius to use in meters. This is ignored in CUSTOM mode.";
-    public static final String doCircular_DESCRIPTION = "Use circular window.";
-    public static final String doAllowNovalues_DESCRIPTION = "Allow novalues inside the window of the maxima.";
-    public static final String pBorderDistanceThres_DESCRIPTION = "Distance threshold to mark maxima as near a border. If <0 check is ignored.";
-    public static final String pSize_DESCRIPTION = "The windows size in cells to use for custom mode(default is 3).";
-    public static final String outMaxima_DESCRIPTION = "The maxima vector.";
-    public static final String outCircles_DESCRIPTION = "The maxima related areas vector.";
-    public static final String pTopBufferThresCellCount_DESCRIPTION = "Top buffer threshold cell count";
-    public static final String pTopBufferThres_DESCRIPTION = "Top buffer threshold";
+    public static final String pMode_DESCRIPTION = "The window: custom, of the given size in cells, or as wide as the crowns of mixed_pines_and_deciduous_trees, deciduous or conifer trees of the height of the cell.";
+    public static final String pPercent_DESCRIPTION = "The percentage of the crown width used as window (default is 60%). This is ignored in custom mode.";
+    public static final String pMaxRadius_DESCRIPTION = "The maximum radius of the window, in meters. This is ignored in custom mode.";
+    public static final String doCircular_DESCRIPTION = "Use a circular window instead of a square one, for windows larger than 3 cells.";
+    public static final String doAllowNovalues_DESCRIPTION = "If false, a maximum with more than one novalue among its 8 neighbours is discarded.";
+    public static final String pBorderDistanceThres_DESCRIPTION = "If larger than 0, the maxima closer than this to the border of the canopy over the threshold get a note, as near a border, but are kept.";
+    public static final String pSize_DESCRIPTION = "The windows size in cells to use for custom mode (default is 3).";
+    public static final String outMaxima_DESCRIPTION = "The maxima, with an id, their height (elev) and a note.";
+    public static final String outCircles_DESCRIPTION = "The windows of the maxima, as circles, with the id of the maximum (id_maxima) and their area.";
+    public static final String pTopBufferThresCellCount_DESCRIPTION = "The number of neighbours lower than the top buffer threshold that make a maximum a spike, to discard; 0 disables the check.";
+    public static final String pTopBufferThres_DESCRIPTION = "The drop of a neighbour from the maximum over which it counts for the spikes.";
+    public static final String BIBLIOGRAPHY_POPESCU_WYNNE_2004 = "Popescu, S. C., Wynne, R. H. (2004). Seeing the trees in the forest: using lidar and multispectral data fusion with local filtering and variable window size for estimating tree height. Photogrammetric Engineering & Remote Sensing, 70(5), 589-604.";
+    public static final String OMSMAXIMAFINDER_DOCUMENTATION = """
+            A cell of the canopy height model is a maximum when no cell of its window is higher; cells of the same height in the same window are all maxima. The window is square, or circular with doCircular, and at least of 3 x 3 cells.
+
+            In custom mode the window has the given size in cells everywhere. In the other modes it is as wide as the crown expected for a tree of the height of the cell, from the regressions of Popescu and Wynne (2004) of the crown width CW on the height H, in meters:
+
+            - mixed pines and deciduous trees: CW = 2.51503 + 0.00901 H²;
+            - deciduous trees: CW = 3.09632 + 0.00895 H²;
+            - conifers, the pines of the study: CW = 3.75105 + 0.17919 H + 0.01241 H².
+
+            The width is reduced to the given percentage, as the crowns of neighbouring trees overlap, and limited to twice the maximum radius: a 20 m tree of a mixed forest, with a crown of 6.1 m, gets a window of 3.7 m at 60%. A window larger than half the width of the raster stops the module.
+
+            Of the maxima, the ones lower than the threshold are left out, as the ground and the shrubs, and so are those with more than one neighbour without value, unless allowed: the neighbours outside of the raster count as without value, so the cells on its border are never maxima. The spikes are left out too, with at least the given number of neighbours lower than them by more than the top buffer threshold. With the border distance, the remaining maxima near the border of the canopy over the threshold get a note in the output, without being removed.
+            """;
     // PARAMETERS DOCS END
 
     private DecimalFormat formatter = new DecimalFormat("0.0");
@@ -229,7 +247,8 @@ public class OmsRasterMaximaFinder extends HMModel {
                 switch( mode ) {
                 case 1: {
                     /*
-                     * Popescu & Kini 2004 for mixed pines and deciduous trees
+                     * crown widths of Popescu & Wynne 2004: mixed pines and deciduous trees,
+                     * deciduous trees and pines
                      */
                     double windowWidth = 2.51503 + 0.00901 * pow(elevation, 2.0);
                     windowWidth = windowWidth * pPercent / 100.0;

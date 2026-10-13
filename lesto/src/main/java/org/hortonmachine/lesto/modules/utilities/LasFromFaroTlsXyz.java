@@ -27,17 +27,17 @@ import java.util.List;
 
 import org.hortonmachine.gears.io.las.core.ALasWriter;
 import org.hortonmachine.gears.io.las.core.LasRecord;
-import org.hortonmachine.gears.io.las.index.LasIndexer;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,7 +48,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
-@Description("Converts XYZ data exported from FARO TLS to las.")
+@Description("Converts the scan points of a FARO terrestrial laser scanner, exported as xyz text by the SCENE software, to a las file.")
+@Documentation(LasFromFaroTlsXyz.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, tls, convert")
 @Label(HMConstants.LESTO + "/utilities")
@@ -56,20 +57,20 @@ import oms3.annotations.Unit;
 @Status(Status.EXPERIMENTAL)
 @License(HMConstants.GPL3_LICENSE)
 public class LasFromFaroTlsXyz extends HMModel {
-    @Description("The xyz file to convert.")
+    @Description("The xyz file to convert, with the columns row, column, x and y from the scanner, elevation, red, green and blue.")
     @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
     @In
     public String inFile;
 
-    @Description("The reference longitude in a metric projection.")
+    @Description("The easting of the scanner in the projected reference system of the output, added to the x of the points.")
     @In
     public Double pLongitude;
 
-    @Description("The reference latitude in a metric projection.")
+    @Description("The northing of the scanner in the projected reference system of the output, added to the y of the points.")
     @In
     public Double pLatitude;
 
-    @Description("The maximum allowed distance from the center.")
+    @Description("The maximum horizontal distance from the scanner: the farther points are left out.")
     @Unit("m")
     @In
     public Double pMaxDistance;
@@ -84,10 +85,18 @@ public class LasFromFaroTlsXyz extends HMModel {
     @In
     public String outLas;
 
+    public static final String DOCUMENTATION = """
+            The input is the export of the scan points of SCENE, a text file with one point per line and eight columns separated by spaces: the row and column of the point in the scan, its x and y from the scanner in meters, its elevation, and its red, green and blue color from 0 to 255. Any other layout stops the conversion.
+
+            The x and y are relative to the scanner, so they are moved by the easting and northing given for it, in the projected reference system of the output. The elevation is kept as it is, so the scan must be referenced to the right elevation already. With the maximum distance, the points farther than it from the scanner on the plane are left out, as the far points of a scan are sparse and noisy.
+
+            The las file has the point format 3, with the colors of the scan. The scan has no returns, classes, intensities or times: the points are written as single returns, never classified (class 0), with intensity 0 and time 0.
+            """;
+
     @Execute
     public void process() throws Exception {
         checkNull(inFile, outLas, pCode, pLatitude, pLongitude);
-        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode);
+        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs(pCode, true);
 
         double latitude = pLatitude;
         double longitude = pLongitude;
@@ -109,12 +118,8 @@ public class LasFromFaroTlsXyz extends HMModel {
         }
 
         /*
-         * Lines are of type:
-         * -7.41840000 0.39450000 1190.87950000 254 254 254
-         * rownum, colnum, xDeltaMeters, yDeltaMeters, Elev, R, G, B 
-         * 
-         * Export scan points
-         * 
+         * Lines of the export of the scan points, of type:
+         * rownum, colnum, xDeltaMeters, yDeltaMeters, Elev, R, G, B
          */
         int ignoredCount = 0;
         pm.beginTask("Reading xyz and creating bounds...", IHMProgressMonitor.UNKNOWN);
@@ -165,7 +170,13 @@ public class LasFromFaroTlsXyz extends HMModel {
                 dot.y = y;
                 dot.z = elev;
                 dot.color = new short[]{(short) r, (short) g, (short) b};
-                dot.gpsTime = System.currentTimeMillis();
+                // single returns, never classified and with no intensity
+                dot.returnNumber = 1;
+                dot.numberOfReturns = 1;
+                dot.classification = 0;
+                dot.intensity = 0;
+                // the scan points have no acquisition time
+                dot.gpsTime = 0;
                 readRecords.add(dot);
             }
         }
@@ -185,34 +196,5 @@ public class LasFromFaroTlsXyz extends HMModel {
             }
             pm.done();
         }
-    }
-
-    public static void main( String[] args ) throws Exception {
-        // String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_avgres.xyz";
-        // double lon = 681274.363;
-        // double lat = 5127118.3962;
-        // String outFile = "/home/hydrologis/data/rilievo_tls/capriana_avgres.las";
-        // double maxDistance = 15;
-
-        String inFile = "/home/hydrologis/data/rilievo_tls/capriana_punti_scansione_lowres.xyz";
-        double lon = 681269.8905;
-        double lat = 5127117.2439;
-        String outFolder = "/home/hydrologis/data/rilievo_tls/lowres/";
-        String outFile = outFolder + "capriana_lowres.las";
-        double maxDistance = 16;
-
-        LasFromFaroTlsXyz x = new LasFromFaroTlsXyz();
-        x.inFile = inFile;
-        x.pLongitude = lon;
-        x.pLatitude = lat;
-        x.pMaxDistance = maxDistance;
-        x.pCode = "EPSG:32632";
-        x.outLas = outFile;
-        x.process();
-
-        LasIndexer in = new LasIndexer();
-        in.inFolder = outFolder;
-        in.pCellsize = 0.5;
-        in.process();
     }
 }

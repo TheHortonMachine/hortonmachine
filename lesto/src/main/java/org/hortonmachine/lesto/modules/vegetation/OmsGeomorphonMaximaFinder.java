@@ -44,7 +44,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Point;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -56,12 +58,14 @@ import oms3.annotations.Status;
 import oms3.annotations.Unit;
 
 @Description(OmsGeomorphonMaximaFinder.DESCRIPTION)
+@Documentation(OmsGeomorphonMaximaFinder.DOCUMENTATION)
 @Author(name = OmsGeomorphonMaximaFinder.AUTHORS, contact = OmsGeomorphonMaximaFinder.CONTACTS)
 @Keywords(OmsGeomorphonMaximaFinder.KEYWORDS)
 @Label(OmsGeomorphonMaximaFinder.LABEL)
 @Name("_" + OmsGeomorphonMaximaFinder.NAME)
 @Status(OmsGeomorphonMaximaFinder.STATUS)
 @License(OmsGeomorphonMaximaFinder.LICENSE)
+@Bibliography(OmsGeomorphon.BIBLIOGRAPHY_JASIEWICZ_STEPINSKI_2013)
 public class OmsGeomorphonMaximaFinder extends HMModel {
 
     @Description(inDTM_DESC)
@@ -98,26 +102,31 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
     public static final String KEYWORDS = "raster, maxima, geomorphon";
     public static final String CONTACTS = "www.hydrologis.com";
     public static final String AUTHORS = "Andrea Antonello, Silvia Franceschi";
-    public static final String DESCRIPTION = "The Geomorphon method to extract maxima from rasters";
-    public static final String outMaxima_DESC = "Extracted maxima.";
-    public static final String pElevDiff_DESC = "Elevation difference threshold.";
-    public static final String pThreshold_DESC = "Vertical angle threshold.";
-    public static final String pRadius_DESC = "Maximum search radius";
-    public static final String inDSM_DESC = "The DSM.";
-    public static final String inDTM_DESC = "The DTM.";
+    public static final String DESCRIPTION = "Finds the tops of the trees as the peaks of the geomorphons of a surface model.";
+    public static final String outMaxima_DESC = "The tops, with an id and their height over the ground (elev).";
+    public static final String pElevDiff_DESC = "The largest difference of the heights over the ground in the 3 x 3 cells around a top: steeper tops are discarded.";
+    public static final String pThreshold_DESC = "The flatness angle of the geomorphons: the terrain within it from the line of sight is level.";
+    public static final String pRadius_DESC = "The search radius of the geomorphons: about the size of the crowns to recognize.";
+    public static final String inDSM_DESC = "The surface model, as the highest points of each cell.";
+    public static final String inDTM_DESC = "The elevation model of the ground, on the grid of the surface model.";
+    public static final String DOCUMENTATION = """
+            The surface model is classified into geomorphons, as by Geomorphon, with the given radius and flatness angle, and the tops are searched among its peaks:
+
+            1. the cells of a peak that touch each other are one peak, and its top is the cell with the largest height over the ground;
+            2. a peak of a single cell is discarded if it has more than two neighbours without height, or both a pit and a valley among its 8 neighbouring geomorphons;
+            3. the top is discarded if a cell of the 3 x 3 around it has no height, or if their heights span more than the elevation difference threshold.
+
+            The heights over the ground are the difference of the surface and the elevation model, which must have the same grid. The cells on the border of the raster are never tops. The threshold of the elevation difference is to tune with the resolution: in cells of 0.5 m the heights of a crown easily differ by more than a meter around its top, so that a threshold of 1 m keeps only the flattest tops. There is no threshold on the height: the peaks of the ground and of the shrubs are tops too.
+            """;
     public static final String pThreshold_UNIT = "degree";
     public static final String pRadius_UNIT = "m";
     public static final String pElevDiffThres_UNIT = "m";
 
     private int peakCode;
 
-    private int hollowCode;
-
     private int valleyCode;
 
     private int pitCode;
-
-    private int spurCode;
 
     @Execute
     public void process() throws Exception {
@@ -125,7 +134,6 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
 
         GridGeometry2D gridGeometry = inDSM.getGridGeometry();
 
-        DummyProgressMonitor pm = new DummyProgressMonitor();
         OmsGeomorphon g = new OmsGeomorphon();
         g.pm = pm;
         g.inElev = inDSM;
@@ -137,7 +145,7 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
         OmsRasterDiff rasterDiff = new OmsRasterDiff();
         rasterDiff.inRaster1 = inDSM;
         rasterDiff.inRaster2 = inDTM;
-        rasterDiff.pm = pm;
+        rasterDiff.pm = new DummyProgressMonitor();
         rasterDiff.process();
         GridCoverage2D dsmDtmThresDiff = rasterDiff.outRaster;
 
@@ -147,10 +155,8 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
 
         TreeSet<GridNode> topNodes = new TreeSet<GridNode>(new GridNodePositionComparator());
         peakCode = GeomorphonClassification.PEAK.getCode();
-        hollowCode = GeomorphonClassification.HOLLOW.getCode();
         valleyCode = GeomorphonClassification.VALLEY.getCode();
         pitCode = GeomorphonClassification.PIT.getCode();
-        spurCode = GeomorphonClassification.SPUR.getCode();
 
         double geomorphNv = HMConstants.getNovalue(geomorphonGC);
         double elevNv = HMConstants.getNovalue(dsmDtmThresDiff);
@@ -268,45 +274,27 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
         }
     }
 
+    /**
+     * A single peak cell is a maximum unless it has both a pit and a valley around.
+     */
     private boolean analyzeNeighbors( GridNode topNode ) {
-
-        // peak found without other peaks around
-        // double newValue = HMConstants.doubleNovalue;
-        // double newValue = gNode.elevation;
         double[][] window = topNode.getWindow(3, false);
-        // identify the hollows > 1006
-        int counthollow = 0;
-        // identify the valleys > 1008
         int countvalley = 0;
-        // identify the pits > 1009
         int countpit = 0;
-        // identify the spurs > 1004
-        int countspur = 0;
         for( int winRow = 0; winRow < window.length; winRow++ ) {
             for( int winCol = 0; winCol < window[0].length; winCol++ ) {
                 double value = window[winRow][winCol];
                 if (HMConstants.isNovalue(value)) {
                     continue;
                 }
-                if (value == hollowCode) {
-                    counthollow++;
-                } else if (value == valleyCode) {
+                if (value == valleyCode) {
                     countvalley++;
                 } else if (value == pitCode) {
                     countpit++;
-                } else if (value == spurCode) {
-                    countspur++;
                 }
             }
         }
-        if (countpit > 0 && countvalley > 0) {
-            return false;
-        }
-        if (countpit > 0 && countvalley > 0 && countspur > 0 && counthollow > 0) {
-            return false;
-        }
-
-        return true;
+        return !(countpit > 0 && countvalley > 0);
     }
 
     private SimpleFeatureBuilder getOutBuilder() {
@@ -314,7 +302,7 @@ public class OmsGeomorphonMaximaFinder extends HMModel {
         b.setName("geomorphon");
         b.setCRS(inDSM.getCoordinateReferenceSystem());
         b.add("the_geom", Point.class);
-        b.add("id", String.class);
+        b.add("id", Integer.class);
         b.add("elev", Double.class);
         SimpleFeatureType type = b.buildFeatureType();
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);

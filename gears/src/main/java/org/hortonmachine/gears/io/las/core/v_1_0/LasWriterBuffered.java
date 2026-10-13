@@ -68,8 +68,17 @@ public class LasWriterBuffered extends ALasWriter {
     private double zMax = 0;
     private int recordsNum = 0;
 
+    // the bounds of the written points, that replace the ones set at close
+    private double dataXMin = Double.POSITIVE_INFINITY;
+    private double dataYMin = Double.POSITIVE_INFINITY;
+    private double dataZMin = Double.POSITIVE_INFINITY;
+    private double dataXMax = Double.NEGATIVE_INFINITY;
+    private double dataYMax = Double.NEGATIVE_INFINITY;
+    private double dataZMax = Double.NEGATIVE_INFINITY;
+
     private short recordLength = 28;
     private FileChannel fileChannel;
+    private int boundsPosition;
     private int recordsNumPosition;
     private int pointFormatPosition;
     private boolean pointFormatHasBeenSet = true;
@@ -295,6 +304,7 @@ public class LasWriterBuffered extends ALasWriter {
         hLength = hLength + 3 * 8;
 
         // x,y,z - min/max
+        boundsPosition = hLength;
         mainBuffer.putDouble(xMax);
         mainBuffer.putDouble(xMin);
         mainBuffer.putDouble(yMax);
@@ -331,6 +341,15 @@ public class LasWriterBuffered extends ALasWriter {
         mainBuffer.putInt(y);
         mainBuffer.putInt(z);
         length = length + 12;
+        double writtenX = x * xScale + xOffset;
+        double writtenY = y * yScale + yOffset;
+        double writtenZ = z * zScale + zOffset;
+        dataXMin = Math.min(dataXMin, writtenX);
+        dataYMin = Math.min(dataYMin, writtenY);
+        dataZMin = Math.min(dataZMin, writtenZ);
+        dataXMax = Math.max(dataXMax, writtenX);
+        dataYMax = Math.max(dataYMax, writtenY);
+        dataZMax = Math.max(dataZMax, writtenZ);
         mainBuffer.putShort(record.intensity);
         length = length + 2;
 
@@ -445,6 +464,20 @@ public class LasWriterBuffered extends ALasWriter {
         array = shortBb.array();
         fileChannel.position(recordLengthPosition);
         fos.write(array);
+
+        if (recordsNum > 0) {
+            // the header gets the bounds of the written points
+            ByteBuffer boundsBb = ByteBuffer.allocate(6 * 8);
+            boundsBb.order(ByteOrder.LITTLE_ENDIAN);
+            boundsBb.putDouble(dataXMax);
+            boundsBb.putDouble(dataXMin);
+            boundsBb.putDouble(dataYMax);
+            boundsBb.putDouble(dataYMin);
+            boundsBb.putDouble(dataZMax);
+            boundsBb.putDouble(dataZMin);
+            fileChannel.position(boundsPosition);
+            fos.write(boundsBb.array());
+        }
 
         closeFile();
 

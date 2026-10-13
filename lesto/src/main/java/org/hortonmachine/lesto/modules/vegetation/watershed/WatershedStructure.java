@@ -37,6 +37,18 @@ public class WatershedStructure {
     private List<WatershedPixel> watershedStructure;
 
     public WatershedStructure( byte[] pixels, int cols, int rows, IHMProgressMonitor pm ) {
+        this(pixels, null, cols, rows, pm);
+    }
+
+    /**
+     * @param pixels the grey values of the image, by rows.
+     * @param valid if not <code>null</code>, the pixels to use, by rows: the others are left
+     *          out of the structure and are no neighbours.
+     * @param cols the cols of the image.
+     * @param rows the rows of the image.
+     * @param pm the progress monitor.
+     */
+    public WatershedStructure( byte[] pixels, boolean[] valid, int cols, int rows, IHMProgressMonitor pm ) {
         int offset, topOffset, bottomOffset, i;
 
         watershedStructure = new ArrayList<WatershedPixel>(cols * rows);
@@ -97,6 +109,17 @@ public class WatershedStructure {
             pm.worked(1);
         }
         pm.done();
+
+        if (valid != null) {
+            List<WatershedPixel> validPixels = new ArrayList<WatershedPixel>(cols * rows);
+            for( WatershedPixel pixel : watershedStructure ) {
+                if (valid[pixel.getY() * cols + pixel.getX()]) {
+                    pixel.getNeighbours().removeIf(n -> !valid[n.getY() * cols + n.getX()]);
+                    validPixels.add(pixel);
+                }
+            }
+            watershedStructure = validPixels;
+        }
 
         Collections.sort(watershedStructure);
     }

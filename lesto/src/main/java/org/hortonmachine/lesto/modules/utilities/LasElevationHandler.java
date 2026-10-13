@@ -30,6 +30,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -39,7 +40,8 @@ import oms3.annotations.Name;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
 
-@Description("A module that allows to normalize the las over an elevation model (or vice versa).")
+@Description("Normalizes the points of a las file over an elevation model, turning their elevations into heights over the ground, or the other way around.")
+@Documentation(LasElevationHandler.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, dem")
 @Label(HMConstants.LESTO + "/utilities")
@@ -52,7 +54,7 @@ public class LasElevationHandler extends HMModel {
     @In
     public String inFile;
 
-    @Description("A dtm raster to use for the elevation normlization.")
+    @Description("The elevation model of the ground.")
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
     @In
     public String inDtm;
@@ -61,14 +63,22 @@ public class LasElevationHandler extends HMModel {
     @In
     public boolean doAdd = false;
 
-    @Description("The nomalized las file.")
+    @Description("The normalized las file.")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outFile;
 
+    public static final String DOCUMENTATION = """
+            The elevation of the cell of the elevation model that contains each point, without interpolation, is subtracted from the elevation of the point, which becomes its height over the ground, or added to it, to bring the heights of a normalized file back to elevations.
+
+            The points outside of the elevation model, or on its cells without value, are left out, and their number is reported. All the other attributes of the points are kept; the header gets the bounds of the new values.
+
+            A normalized file is the input of the modules that work on the heights over the ground without an elevation model, as a canopy height model interpolated from the points.
+            """;
+
     @Execute
     public void process() throws Exception {
-        checkNull(inFile, inDtm);
+        checkNull(inFile, inDtm, outFile);
 
         GridCoverage2D dtm = getRaster(inDtm);
 
@@ -84,12 +94,16 @@ public class LasElevationHandler extends HMModel {
                 writer.setBounds(header);
                 writer.open();
 
+                int outsideCount = 0;
                 pm.beginTask("Normalizing las...", (int) recordsNum);
                 while( reader.hasNextPoint() ) {
+                    pm.worked(1);
                     LasRecord dot = reader.getNextPoint();
                     double dtmValue = CoverageUtilities.getValue(dtm, dot.x, dot.y);
                     if (HMConstants.isNovalue(dtmValue)) {
-                        dtmValue = 0;
+                        // outside of the dtm or on its novalues: no elevation to use
+                        outsideCount++;
+                        continue;
                     }
                     if (doAdd) {
                         dot.z += dtmValue;
@@ -97,9 +111,11 @@ public class LasElevationHandler extends HMModel {
                         dot.z -= dtmValue;
                     }
                     writer.addPoint(dot);
-                    pm.worked(1);
                 }
                 pm.done();
+                if (outsideCount > 0) {
+                    pm.message("Points left out, with no dtm value: " + outsideCount);
+                }
             }
         }
     }

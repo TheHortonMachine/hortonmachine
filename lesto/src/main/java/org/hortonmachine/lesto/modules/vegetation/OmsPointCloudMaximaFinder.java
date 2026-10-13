@@ -25,7 +25,6 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,13 +34,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.imagen.iterator.RandomIter;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
 import oms3.annotations.Label;
 import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 import org.geotools.coverage.grid.GridCoordinates2D;
@@ -60,23 +62,23 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.lesto.modules.vegetation.rastermaxima.OmsRasterMaximaFinder;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
 
 @Description(OmsPointCloudMaximaFinder.DESCR)
+@Documentation(OmsPointCloudMaximaFinder.DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
 @Keywords(OmsPointCloudMaximaFinder.KEYWORDS)
 @Label(OmsPointCloudMaximaFinder.LABEL)
 @Name("_" + OmsPointCloudMaximaFinder.NAME)
 @Status(OMSHYDRO_DRAFT)
 @License(OMSHYDRO_LICENSE)
+@Bibliography(OmsRasterMaximaFinder.BIBLIOGRAPHY_POPESCU_WYNNE_2004)
 @SuppressWarnings("nls")
 public class OmsPointCloudMaximaFinder extends HMModel {
 
@@ -109,24 +111,35 @@ public class OmsPointCloudMaximaFinder extends HMModel {
     public double pElevDiffThres = 3.5;
 
     @Description(outTops_DESCR)
-    @In
+    @Out
     public SimpleFeatureCollection outTops = null;
 
     // VARS DOCS START
     public static final String outTops_DESCR = "The output local maxima.";
     public static final String pClass_DESCR = "The comma separated list of classes to filter (if empty, all are picked).";
-    public static final String pThreshold_DESCR = "The elevation threshold to apply to the chm.";
-    public static final String pElevDiffThres_DESCR = "Max permitted elevation difference around the maxima.";
+    public static final String pThreshold_DESCR = "The height over the ground up to which the points are left out.";
+    public static final String pElevDiffThres_DESCR = "With the dsm-dtm difference, the largest difference of a top from the cells around it.";
     public static final String doDynamicRadius_DESCR = "Use an adaptive radius based on the height.";
-    public static final String pMaxRadius_DESCR = "Radius for which a point can be local maxima.";
+    public static final String pMaxRadius_DESCR = "The radius within which a point has to be the highest to be a maximum. With the dynamic radius it is its upper limit, ignored if not larger than 0.";
     public static final String inDsmDtmDiff_DESCR = "An optional dsm-dtm difference raster to use to check on the extracted tops.";
     public static final String inRoi_DESCR = "A set of polygons to use as region of interest.";
-    public static final String inDtm_DESCR = "A dtm raster to use for the area of interest and to calculate the elevation threshold.";
-    public static final String inLas_DESCR = "The input las.";
+    public static final String inDtm_DESCR = "The dtm raster that gives the height of the points over the ground, and the area of interest if no roi is given.";
+    public static final String inLas_DESCR = "The lidar data: a las file, the index file of a folder of las files created by LasIndexer or a las database.";
     public static final String NAME = "pointcloudmaximafinder";
     public static final String KEYWORDS = "Local maxima, las, lidar";
-    public static final String DESCR = "Module that identifies local maxima in point clouds.";
+    public static final String DESCR = "Finds the tops of the trees as the points of a lidar survey higher than all the others around them.";
     public static final String LABEL = HMConstants.LESTO + "/vegetation";
+    public static final String DOCUMENTATION = """
+            The points are read with their height over the elevation model: those outside of it, or not higher than the threshold over the ground, are left out, as are those of the classes not listed, if any. A point is a top when no other point within the radius on the plane is higher; points of the same height within the radius are all tops.
+
+            With the dynamic radius, the radius grows with the height H of the point as half the crown width of mixed pines and deciduous trees of Popescu and Wynne (2004), CW = 2.51503 + 0.00901 H², lowered to 70%, as the crowns overlap: about 1 m at 5 m of height and 2.1 m at 20 m, never larger than the given radius if this is larger than 0. Without it the radius is the given one. The points must be denser than the radius: where they are farther apart than it, every point is a top.
+
+            With the regions of interest, each polygon, without its holes, is processed by itself, comparing only its points: a top near its border may have a higher point just outside. Without them the area is the one of the elevation model. Each point is compared with all the others of its area, so the time grows with the square of their number: large surveys are best processed in regions of a few hectares.
+
+            With the difference of the surface and the elevation model, a top is discarded if its cell has no value, is on the border of the raster, or if any of its neighbours differs from it by more than the elevation difference threshold, as the isolated points over the canopy.
+
+            The tops keep the attributes of their point: the height over the ground (elev, rounded to 10 cm), intensity, classification and return.
+            """;
     // VARS DOCS END
 
     private AtomicInteger index = new AtomicInteger();
@@ -138,16 +151,14 @@ public class OmsPointCloudMaximaFinder extends HMModel {
         if (inRoi == null && inDtm == null) {
             throw new ModelsIllegalargumentException("At least one of raster or vector roi is necessary.", this);
         }
+        if (!doDynamicRadius && pMaxRadius <= 0) {
+            throw new ModelsIllegalargumentException("Without the dynamic radius, the radius has to be larger than 0.", this);
+        }
 
         CoordinateReferenceSystem crs = null;
-        List<Geometry> regionGeometries = new ArrayList<Geometry>();
         if (inRoi != null) {
-            regionGeometries = FeatureUtilities.featureCollectionToGeometriesList(inRoi, true, null);
             crs = inRoi.getBounds().getCoordinateReferenceSystem();
         } else {
-            // use the dtm bounds
-            Polygon polygon = CoverageUtilities.getRegionPolygon(inDtm);
-            regionGeometries.add(polygon);
             crs = inDtm.getCoordinateReferenceSystem();
         }
 
@@ -195,18 +206,17 @@ public class OmsPointCloudMaximaFinder extends HMModel {
                     try {
                         // check if it is a local maxima
                         boolean isLocalMaxima = true;
+                        double maxRadius = pMaxRadius;
+                        if (doDynamicRadius) {
+                            // half the crown width of Popescu & Wynne 2004 for mixed pines and
+                            // deciduous trees, lowered to 70%
+                            maxRadius = (2.51503 + 0.00901 * pow(currentDot.groundElevation, 2.0)) / 2.0 * 0.7;
+                            if (pMaxRadius > 0 && maxRadius > pMaxRadius) {
+                                maxRadius = pMaxRadius;
+                            }
+                        }
                         for( LasRecord tmpDot : pointsInTile ) {
                             double distance = LasUtils.distance(currentDot, tmpDot);
-                            double maxRadius = pMaxRadius;
-                            if (doDynamicRadius) {
-                                // use Popescu lowered to 70% (Popescu & Kini 2004 for mixed pines
-                                // and
-                                // deciduous trees)
-                                maxRadius = (2.51503 + 0.00901 * pow(currentDot.groundElevation, 2.0)) / 2.0 * 0.7;
-                                if (maxRadius > pMaxRadius) {
-                                    maxRadius = pMaxRadius;
-                                }
-                            }
                             if (distance > maxRadius) {
                                 continue;
                             }

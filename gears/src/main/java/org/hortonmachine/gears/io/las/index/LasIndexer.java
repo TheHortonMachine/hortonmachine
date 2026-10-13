@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.Finalize;
 import oms3.annotations.In;
@@ -64,6 +65,7 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.utils.fileiterator.OmsFileIterator;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.geotools.api.feature.simple.SimpleFeature;
@@ -79,7 +81,8 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.MultiPoint;
 import org.locationtech.jts.geom.Polygon;
 
-@Description("Creates indexes for Las files.")
+@Description("Indexes a folder of las files, so that the lidar modules read only the points of the area they work on.")
+@Documentation(LasIndexer.DOCUMENTATION)
 @Author(name = "Andrea Antonello", contact = "www.hydrologis.com")
 @Keywords("las, lidar")
 @Label(HMConstants.LESTO + "/utilities")
@@ -88,14 +91,15 @@ import org.locationtech.jts.geom.Polygon;
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class LasIndexer extends HMModel {
 
-    public static final String INDEX_LASFOLDER = "index.lasfolder";
+    public static final String INDEX_EXTENSION = ".lasfolder";
+    public static final String INDEX_LASFOLDER = "index" + INDEX_EXTENSION;
 
     @Description("The folder containing the las files to index.")
     @UI(HMConstants.FOLDERIN_UI_HINT)
     @In
     public String inFolder;
 
-    @Description("The name for the main index file.")
+    @Description("The name for the main index file, written in the folder: the extension .lasfolder is added if missing.")
     @In
     public String pIndexname = INDEX_LASFOLDER;
 
@@ -108,13 +112,21 @@ public class LasIndexer extends HMModel {
     @In
     public double pCellsize = 5;
 
-    @Description("Create overview shapefile (this creates a convexhull of the points).")
+    @Description("If true, also writes a shapefile of the outlines of the files, as the convex hulls of their points, named as the main index.")
     @In
     public boolean doOverview = false;
 
-    @Description("The number of threads to use for the process.")
+    @Description("The number of files indexed at the same time.")
     @In
     public int pThreads = 1;
+
+    public static final String DOCUMENTATION = """
+            Each las file of the folder, without its subfolders, is rewritten with its points sorted by cells of about the given size, as name_indexed.las, next to a name_indexed.lasfix file with the index of the cells: the bounds of each cell, the range of its points in the file and their average elevation and intensity. The size of the cells is adjusted to divide the bounds of the file in equal cells. The main index, in the folder, knows the bounds of all the files, with the reference system in a prj file next to it.
+
+            The modules that read lidar data, as Las2RasterInterpolator, take the main index in place of a las file: for an area they read only the cells of the files that cross it. A folder of files of a few square kilometers can then be used as a single survey, without reading all its points for a small area.
+
+            The files already indexed, with both the indexed las and its index, are left as they are, so that new files can be added to the folder and indexed again; a file with only one of the two is indexed again. The indexed files double the space of the survey: the original files are still needed only to index them again. The reference system is the given one, or the one of the prj file of the first file: without either the module stops.
+            """;
 
     private CoordinateReferenceSystem crs;
     private ConcurrentLinkedQueue<Polygon> envelopesQueue;
@@ -133,7 +145,7 @@ public class LasIndexer extends HMModel {
 
         try {
             if (pCode != null)
-                crs = CrsUtilities.getCrsFromEpsg(pCode, null);
+                crs = HMCrsRegistry.INSTANCE.getCrs(pCode, true);
         } catch (Exception e1) {
             throw new ModelsIllegalargumentException(
                     "An error occurred while reading the projection definition: " + e1.getLocalizedMessage(), this);
@@ -175,7 +187,17 @@ public class LasIndexer extends HMModel {
         }
         pm.done();
 
-        File mainIndex = new File(inFolder, pIndexname);
+        if (filesList.isEmpty()) {
+            throw new ModelsIllegalargumentException("No las files found in: " + inFolder, this);
+        }
+        if (crs == null) {
+            throw new ModelsIllegalargumentException(
+                    "The las files have no prj file: the code of the reference system has to be given.", this);
+        }
+
+        // the extension makes the index readable by the las data managers
+        String indexName = pIndexname.toLowerCase().endsWith(INDEX_EXTENSION) ? pIndexname : pIndexname + INDEX_EXTENSION;
+        File mainIndex = new File(inFolder, indexName);
         byte[] mainIndexBytes = serialize(mainTree);
         dumpBytes(mainIndex, mainIndexBytes);
 
@@ -273,8 +295,8 @@ public class LasIndexer extends HMModel {
             double south = e.getMinY();
             double east = e.getMaxX();
             double west = e.getMinX();
-            int cols = (int) round(e.getWidth() / pCellsize);
-            int rows = (int) round(e.getHeight() / pCellsize);
+            int cols = Math.max(1, (int) round(e.getWidth() / pCellsize));
+            int rows = Math.max(1, (int) round(e.getHeight() / pCellsize));
             double xRes = e.getWidth() / cols;
             double yRes = e.getHeight() / rows;
 
@@ -288,8 +310,8 @@ public class LasIndexer extends HMModel {
             east = east + xRes / 2.0;
             double width = east - west;
             double height = north - south;
-            cols = (int) round(width / pCellsize);
-            rows = (int) round(height / pCellsize);
+            cols = Math.max(1, (int) round(width / pCellsize));
+            rows = Math.max(1, (int) round(height / pCellsize));
             xRes = width / cols;
             yRes = height / rows;
 

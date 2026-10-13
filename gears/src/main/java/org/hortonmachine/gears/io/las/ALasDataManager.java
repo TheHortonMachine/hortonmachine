@@ -75,7 +75,7 @@ public abstract class ALasDataManager implements AutoCloseable {
         String lcName = dataFile.getName().toLowerCase();
         if (lcName.endsWith(".las") || lcName.endsWith(".laz")) {
             return new LasFileDataManager(dataFile, inDem, elevThreshold, inCrs);
-        } else if (lcName.equals(LasIndexer.INDEX_LASFOLDER)) {
+        } else if (lcName.endsWith(LasIndexer.INDEX_EXTENSION)) {
             return new LasFolderIndexDataManager(dataFile, inDem, elevThreshold, inCrs);
         } else {
             try {
@@ -87,7 +87,7 @@ public abstract class ALasDataManager implements AutoCloseable {
                 // ignore, will be handled
             }
 
-            throw new IllegalArgumentException("Can only read .las and " + LasIndexer.INDEX_LASFOLDER + " files.");
+            throw new IllegalArgumentException("Can only read .las, " + LasIndexer.INDEX_EXTENSION + " and database files.");
         }
     }
 
