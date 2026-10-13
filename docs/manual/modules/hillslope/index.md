@@ -5,8 +5,8 @@ The modules that describe the hillslopes: their distance from the channels, the 
 ```{toctree}
 :maxdepth: 1
 
-h2cd
-h2ca
-tc
 downslopeconnectivity
+h2ca
+h2cd
+tc
 ```

@@ -5,10 +5,10 @@ The modules that prepare and cut digital elevation models for the hydro-geomorph
 ```{toctree}
 :maxdepth: 1
 
-pitfiller
 extractbasin
 markoutlets
-wateroutlet
+pitfiller
 pitfillerbarnes
 splitsubbasins
+wateroutlet
 ```

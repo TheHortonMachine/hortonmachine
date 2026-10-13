@@ -9,7 +9,7 @@ The writing example converts the sample elevation model `dtm_flanginec.tif` and 
 ```{toctree}
 :maxdepth: 1
 
-netcdfinfo
 netcdfgriddumper
+netcdfinfo
 rastertonetcdf
 ```

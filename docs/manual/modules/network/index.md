@@ -5,12 +5,12 @@ The modules that extract the river network and its topology.
 ```{toctree}
 :maxdepth: 1
 
-extractnetwork
-netnumbering
 distancetooutlet
+extractnetwork
 hacklength
 magnitudo
-networkattributesbuilder
 netdiff
+netnumbering
 netshape2flow
+networkattributesbuilder
 ```

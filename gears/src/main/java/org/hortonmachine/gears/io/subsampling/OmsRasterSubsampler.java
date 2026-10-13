@@ -144,7 +144,7 @@ public class OmsRasterSubsampler extends HMModel {
                     .setRegion(newRegionMap).setNoValue(novalue).build()) {
                 pm.beginTask("Aggregating cells...", newRows);
                 for( int r = 0; r < newRows; r++ ) {
-                    if (isCanceled(pm)) {
+                    if (pm.isCanceled()) {
                         return;
                     }
                     for( int c = 0; c < newCols; c++ ) {

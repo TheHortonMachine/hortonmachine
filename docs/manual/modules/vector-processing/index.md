@@ -5,22 +5,22 @@ The modules that convert between rasters, vectors and point clouds, and those th
 ```{toctree}
 :maxdepth: 1
 
-vectorizer
 contourextractor
-lasconverter
-dxfconverter
-rastercattofeatureattribute
-gridsgenerator
 delaunaytriangulation
-voronoidiagram
-vectorreshaper
+dxfconverter
+gridsgenerator
+lasconverter
+linesmootherjaitools
+linesmoothermcmaster
+rastercattofeatureattribute
 vectorfieldrounder
-vectortablejoiner
 vectorfilter
+vectorizer
 vectormerger
 vectorreprojector
-vectortransformer
+vectorreshaper
 vectorsimplifier
-linesmoothermcmaster
-linesmootherjaitools
+vectortablejoiner
+vectortransformer
+voronoidiagram
 ```

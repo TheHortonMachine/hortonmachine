@@ -8,11 +8,11 @@ The examples run on the sample lidar survey of the manual, `uni_bz_plot777.las` 
 :maxdepth: 1
 :caption: Filter
 
-lashistogram
-lasthresholder
-lassplitter
-lasmerger
 lasheightdistribution
+lashistogram
+lasmerger
+lassplitter
+lasthresholder
 ```
 
 ```{toctree}
@@ -20,8 +20,8 @@ lasheightdistribution
 :caption: Raster
 
 adaptivetinfilter
-lasonrastermapper
-las2rasterinterpolator
-lastriangulation2dsm
 las2bivariaterastermosaic
+las2rasterinterpolator
+lasonrastermapper
+lastriangulation2dsm
 ```

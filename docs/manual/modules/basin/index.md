@@ -5,7 +5,7 @@ The modules that describe a basin as a whole: how its cells are arranged with re
 ```{toctree}
 :maxdepth: 1
 
-topindex
-rescaleddistance
 basinshape
+rescaleddistance
+topindex
 ```
