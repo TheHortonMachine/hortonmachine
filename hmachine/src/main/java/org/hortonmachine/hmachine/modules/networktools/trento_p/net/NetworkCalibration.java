@@ -53,16 +53,6 @@ import org.joda.time.DateTime;
  */
 public class NetworkCalibration implements Network {
 
-    /**
-     * The initial time, it's the initial time whre to start to search the tp max.
-     * <p>
-     * It's fixed to 15 minutes.
-     * 
-     * </p>
-     * 
-     */
-    public static final Integer INITIAL_TIME = 15;
-
     DateTime first = null;
 
     /*
@@ -149,6 +139,15 @@ public class NetworkCalibration implements Network {
      * Max number of iteration to search the solution.
      */
     private final static int MAX_NUMBER_ITERATION = 1000;
+    /*
+     * The coefficient [mm/h^n] and the exponent of the rainfall curve, if the rain is generated from it.
+     */
+    private final Double curveA;
+    private final Double curveN;
+    /*
+     * The shortest rain time of the search of the tpMax [min].
+     */
+    private final double minRainTime;
 
     /**
         * Builder for the Calibration class.
@@ -201,6 +200,15 @@ public class NetworkCalibration implements Network {
          *  max number of time step.
          */
         private int tMax = (int) DEFAULT_TMAX;
+        /*
+         * The coefficient [mm/h^n] and the exponent of the rainfall curve, if the rain is generated from it.
+         */
+        private Double curveA = null;
+        private Double curveN = null;
+        /*
+         * The shortest rain time of the search of the tpMax [min].
+         */
+        private double minRainTime = DEFAULT_TPMIN;
         /**
          * Initialize the object with the needed parameters
          * 
@@ -256,6 +264,29 @@ public class NetworkCalibration implements Network {
         }
 
         /**
+         * Generate the rain from the rainfall curve h = a t^n: a rain lasting tp has the constant
+         * intensity a tp^(n-1), instead of the intensities of the rain data.
+         *
+         * @param a the coefficient of the curve, in mm/h^n.
+         * @param n the exponent of the curve.
+         */
+        public Builder rainfallCurve( double a, double n ) {
+            this.curveA = a;
+            this.curveN = n;
+            return this;
+        }
+
+        /**
+         * Set the shortest rain time of the search of the rain time that gives the maximum discharge.
+         *
+         * @param minRainTime the time, in minutes.
+         */
+        public Builder minRainTime( double minRainTime ) {
+            this.minRainTime = minRainTime;
+            return this;
+        }
+
+        /**
          * Create a NetworkCalibration Object.
          * 
          * @return 
@@ -280,6 +311,9 @@ public class NetworkCalibration implements Network {
         this.strBuilder = builder.strBuilder;
         this.tpMaxCalibration = builder.tpMaxCalibration;
         this.foundMaxrainTime = builder.foundMaxrainTime;
+        this.curveA = builder.curveA;
+        this.curveN = builder.curveN;
+        this.minRainTime = builder.minRainTime;
         if (builder.networkPipe != null) {
             this.networkPipes = builder.networkPipe;
         } else {
@@ -513,13 +547,11 @@ public class NetworkCalibration implements Network {
         double t = tmin;
         double Q;
         double rain;
-        int maxRain = 0;
-        if (tMax == tpMaxCalibration) {
-            maxRain = rainData.length;
-        } else {
-            maxRain = tp / dt;
-        }
+        // the steps of a rain lasting tp, at most the ones of the rain data
+        int maxRain = Math.min(tp / dt, rainData.length);
         double tMaxApproximate = ModelsEngine.approximate2Multiple(tMax, dt);
+        // the constant intensity [mm/min] of a rain lasting tp, from the rainfall curve
+        double curveIntensity = curveA != null ? curveA * pow(tp / HOUR2MIN, curveN - 1) / HOUR2MIN : 0;
 
         for( t = tmin, j = 0; t <= tMaxApproximate; t += dt, ++j ) {
             Q = 0;
@@ -527,8 +559,8 @@ public class NetworkCalibration implements Network {
             for( int i = 0; i <= maxRain - 1; ++i ) {
 
                 // [ l / s ]
-
-                rain = rainData[i][1] * networkPipes[k].getDrainArea() * networkPipes[k].getRunoffCoefficient()
+                double intensity = curveA != null ? curveIntensity : rainData[i][1];
+                rain = intensity * networkPipes[k].getDrainArea() * networkPipes[k].getRunoffCoefficient()
                         * HAOVERH_TO_METEROVERS;
 
                 if (t <= i * dt) {
@@ -663,19 +695,24 @@ public class NetworkCalibration implements Network {
     @Override
     public void geoSewer() throws Exception {
         if (!foundMaxrainTime) {
+            tpMax = tpMaxCalibration;
             evaluateDischarge(lastTimeDischarge, lastTimeFillDegree, tpMaxCalibration);
         } else {
             /*
-             *  start to evaluate the discharge from 15 minutes,evaluate the nearsted value to 15 minutes.
+             *  start to evaluate the discharge from the minimum rain time, as a multiple of the time step,
+             *  at least one step, or from the maximum rain time, if shorter.
              */
-            int minTime = (int) ModelsEngine.approximate2Multiple(INITIAL_TIME, dt);
+            int minTime = (int) ModelsEngine.approximate2Multiple(minRainTime, dt);
+            minTime = Math.max(minTime, dt);
+            minTime = Math.min(minTime, tpMaxCalibration);
             double qMax = 0;
-            for( int i = minTime; i < tpMaxCalibration; i = i + dt ) {
-                tpMax = i;
+            for( int i = minTime; i <= tpMaxCalibration; i = i + dt ) {
                 double[][] timeDischarge = createMatrix();
                 double[][] timeFillDegree = createMatrix();
                 double q = evaluateDischarge(timeDischarge, timeFillDegree, i);
                 if (q > qMax) {
+                    // the rain time of the results kept
+                    tpMax = i;
                     qMax = q;
                     lastTimeDischarge = timeDischarge;
                     lastTimeFillDegree = timeFillDegree;

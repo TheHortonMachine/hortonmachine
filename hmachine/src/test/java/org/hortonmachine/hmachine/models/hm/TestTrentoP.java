@@ -1,484 +1,398 @@
-//package org.hortonmachine.hmachine.models.hm;
-//
-//import java.io.File;
-//import java.io.IOException;
-//import java.net.URL;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map.Entry;
-//import java.util.Set;
-//
-//import org.geotools.data.simple.SimpleFeatureCollection;
-//import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureReader;
-//import org.hortonmachine.gears.io.timeseries.OmsTimeSeriesReader;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoP;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectOptionalParameterCodes;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectTimeParameterCodes;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
-//import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.DiametersReader;
-//import org.hortonmachine.hmachine.utils.HMTestCase;
-//import org.hortonmachine.hmachine.utils.HMTestMapstrentoP;
-//import org.joda.time.DateTime;
-//
-///**
-// * A test case for the trentoP-java model.
-// * 
-// * @author Daniele Andreis
-// * 
-// */
-//public class TestTrentoP extends HMTestCase {
-//
-//    private final static double TOLL = 0.009;
-//
-//    private final static double[] INTERNAL_PARAMETERS = {1.2, 4, 40, 0.005, 0.15, 1, 30, 0.001, 0.01, 1.0, 4.43, 1.5, 0.38, 0.001,
-//            1, 0.2, 0.4};
-//
-//    private final static double[] INTERNAL_PARAMETERS2 = {1.3, 4, 50, 0.001, 0.20, 1, 40, 0.001, 0.01, 1.0, 4.43, 1.5, 0.38,
-//            0.001, 1, 0.2, 0.4};
-//    /**
-//     * This is a block of parameter that usually are used in the simulation of
-//     * {@link OmsTrentoP}.
-//     */
-//    private static double a = 60.4;
-//    private static double n = 0.61;
-//    private static double tau = 2.5;
-//    private static double g = 0.8;
-//    private static Integer align = 0;
-//
-//    /**
-//     * Test project 1.
-//     * 
-//     * Check the result in the project mode, for the file Mulinu.geo.
-//     * 
-//     * @throws Exception
-//     */
-//    public void testProject1() throws Exception {
-//        double[][] result = null;
-//        double[] globalparameters = INTERNAL_PARAMETERS;
-//
-//        HashMap<String, Number> parametersMap = new HashMap<String, Number>();
-//        parametersMap.put(ProjectOptionalParameterCodes.MIN_DEPTH.getKey(), globalparameters[0]);
-//        parametersMap.put(ProjectOptionalParameterCodes.MAX_JUNCTION.getKey(), globalparameters[1]);
-//        parametersMap.put(ProjectOptionalParameterCodes.JMAX.getKey(), globalparameters[2]);
-//        parametersMap.put(ProjectOptionalParameterCodes.ACCURACY.getKey(), globalparameters[3]);
-//
-//        parametersMap.put(ProjectTimeParameterCodes.STEP.getKey(), globalparameters[4]);
-//        parametersMap.put(ProjectTimeParameterCodes.MINIMUM_TIME.getKey(), globalparameters[5]);
-//        parametersMap.put(ProjectTimeParameterCodes.MAXIMUM_TIME.getKey(), globalparameters[6]);
-//
-//        parametersMap.put(ProjectOptionalParameterCodes.EPS.getKey(), globalparameters[7]);
-//        parametersMap.put(ProjectOptionalParameterCodes.MIN_FILL_DEGREE.getKey(), globalparameters[8]);
-//        parametersMap.put(ProjectOptionalParameterCodes.MIN_DISCHARGE.getKey(), globalparameters[9]);
-//        parametersMap.put(ProjectOptionalParameterCodes.MAX_FILL_DEGREE.getKey(), globalparameters[10]);
-//        parametersMap.put(ProjectOptionalParameterCodes.CELERITY_FACTOR.getKey(), globalparameters[11]);
-//        parametersMap.put(ProjectOptionalParameterCodes.EXPONENT.getKey(), globalparameters[12]);
-//        parametersMap.put(ProjectOptionalParameterCodes.TOLERANCE.getKey(), globalparameters[13]);
-//        parametersMap.put(ProjectOptionalParameterCodes.C.getKey(), globalparameters[14]);
-//        parametersMap.put(ProjectOptionalParameterCodes.GAMMA.getKey(), globalparameters[15]);
-//        parametersMap.put(ProjectOptionalParameterCodes.INFLUX_EXP.getKey(), globalparameters[16]);
-//
-//        parametersMap.put(ProjectNeededParameterCodes.ALIGN.getKey(), align);
-//        parametersMap.put(ProjectNeededParameterCodes.G.getKey(), g);
-//        parametersMap.put(ProjectNeededParameterCodes.TAU.getKey(), tau);
-//        parametersMap.put(ProjectNeededParameterCodes.A.getKey(), a);
-//        parametersMap.put(ProjectNeededParameterCodes.N.getKey(), n);
-//
-//
-//        OmsTrentoPProject trento_P = new OmsTrentoPProject();
-//        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
-//        DiametersReader diametersreader = new DiametersReader();
-//        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
-//        diametersreader.pCols = 2;
-//        diametersreader.pSeparator = "\\s+";
-//        diametersreader.fileNovalue = "-9999.0";
-//        diametersreader.readFile();
-//        List<double[]> pipe = diametersreader.data;
-//        // set parameters;
-////        trento_P.pMode = 0; // project
-////        trento_P.pA = a;
-////        trento_P.pN = n;
-////        trento_P.pTau = tau;
-////        trento_P.pG = g;
-////        trento_P.pAlign = align;
-////        trento_P.pMinimumDepth = globalparameters[0];
-////        trento_P.pMaxJunction = (int) globalparameters[1];
-////        trento_P.pJMax = (int) globalparameters[2];
-////        trento_P.tDTp = globalparameters[4];
-////        trento_P.tpMin = globalparameters[5];
-////        trento_P.tpMax = globalparameters[6];
-////        trento_P.pEpsilon = globalparameters[7];
-////        trento_P.pMinG = globalparameters[8];
-////        trento_P.pMinDischarge = globalparameters[9];
-////        trento_P.pMaxTheta = globalparameters[10];
-////        trento_P.pCelerityFactor = globalparameters[11];
-////        trento_P.pExponent = globalparameters[12];
-////        trento_P.pTolerance = globalparameters[13];
-////        trento_P.pC = globalparameters[14];
-////        trento_P.pGamma = globalparameters[15];
-////        trento_P.pEspInflux = globalparameters[16];
-//        trento_P.inDiameters = pipe;
-//        trento_P.pOutPipe = 16;
-//        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
-//        File netFile = new File(net.toURI());
-//        OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
-//        netReader.file = netFile.getAbsolutePath();
-//        netReader.readFeatureCollection();
-//        SimpleFeatureCollection netFC = netReader.geodata;
-//        // set global parameters
-//        // verify
-//        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-//        trento_P.inPipes = netFC;
-//        trento_P.process();
-//        result = trento_P.getResults();
-//        checkMatrixEqual(result, HMTestMapstrentoP.project1, TOLL);
-//
-//    }
-//
-//    /**
-//    * Test project 1, rectangular.
-//    *
-//    * Check the result in the project mode, for the file Mulinu.geo.
-//    *
-//    * @throws Exception
-//    */
-//    public void testProject1Rect() throws Exception {
-//        double[][] result = null;
-//        double[] globalparameters = INTERNAL_PARAMETERS;
-//        OmsTrentoP trento_P = new OmsTrentoP();
-//        // set parameters;
-//        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
-//        DiametersReader diametersreader = new DiametersReader();
-//        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
-//        diametersreader.pCols = 2;
-//        diametersreader.pSeparator = "\\s+";
-//        diametersreader.fileNovalue = "-9999.0";
-//        diametersreader.readFile();
-//        List<double[]> pipe = diametersreader.data;
-//        trento_P.pMode = 0; // project
-//        trento_P.pA = a;
-//        trento_P.pN = n;
-//        trento_P.pTau = tau;
-//        trento_P.pG = g;
-//        trento_P.pAlign = align;
-//        trento_P.pMinimumDepth = globalparameters[0];
-//        trento_P.pMaxJunction = (int) globalparameters[1];
-//        trento_P.pJMax = (int) globalparameters[2];
-//        trento_P.pAccuracy = globalparameters[3];
-//        trento_P.tDTp = globalparameters[4];
-//        trento_P.tpMin = globalparameters[5];
-//        trento_P.tpMax = globalparameters[6];
-//        trento_P.pEpsilon = globalparameters[7];
-//        trento_P.pMinG = globalparameters[8];
-//        trento_P.pMinDischarge = globalparameters[9];
-//        trento_P.pMaxTheta = globalparameters[10];
-//        trento_P.pCelerityFactor = globalparameters[11];
-//        trento_P.pExponent = globalparameters[12];
-//        trento_P.pTolerance = globalparameters[13];
-//        trento_P.pC = globalparameters[14];
-//        trento_P.pGamma = globalparameters[15];
-//        trento_P.pEspInflux = globalparameters[16];
-//        trento_P.inDiameters = pipe;
-//        trento_P.pOutPipe = 16;
-//        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Rect.shp");
-//        File netFile = new File(net.toURI());
-//        OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
-//        netReader.file = netFile.getAbsolutePath();
-//        netReader.readFeatureCollection();
-//        SimpleFeatureCollection netFC = netReader.geodata;
-//        // set global parameters
-//        // verify
-//        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-//        trento_P.inPipes = netFC;
-//        trento_P.process();
-//        result = trento_P.getResults();
-//        checkMatrixEqual(result, HMTestMapstrentoP.project1Rectangular, TOLL);
-//
-//    }
-//    /**
-//    * Test project 1, rectangular.
-//    *
-//    * Check the result in the project mode, for the file Mulinu.geo.
-//    *
-//    * @throws Exception
-//    */
-//    public void testProject1Trap() throws Exception {
-//        double[][] result = null;
-//        double[] globalparameters = INTERNAL_PARAMETERS;
-//        OmsTrentoP trento_P = new OmsTrentoP();
-//        // set parameters;
-//        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
-//        DiametersReader diametersreader = new DiametersReader();
-//        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
-//        diametersreader.pCols = 2;
-//        diametersreader.pSeparator = "\\s+";
-//        diametersreader.fileNovalue = "-9999.0";
-//        diametersreader.readFile();
-//        List<double[]> pipe = diametersreader.data;
-//        trento_P.pMode = 0; // project
-//        trento_P.pA = a;
-//        trento_P.pN = n;
-//        trento_P.pTau = tau;
-//        trento_P.pG = g;
-//        trento_P.pAlign = align;
-//        trento_P.pMinimumDepth = globalparameters[0];
-//        trento_P.pMaxJunction = (int) globalparameters[1];
-//        trento_P.pJMax = (int) globalparameters[2];
-//        trento_P.pAccuracy = globalparameters[3];
-//        trento_P.tDTp = globalparameters[4];
-//        trento_P.tpMin = globalparameters[5];
-//        trento_P.tpMax = globalparameters[6];
-//        trento_P.pEpsilon = globalparameters[7];
-//        trento_P.pMinG = globalparameters[8];
-//        trento_P.pMinDischarge = globalparameters[9];
-//        trento_P.pMaxTheta = globalparameters[10];
-//        trento_P.pCelerityFactor = globalparameters[11];
-//        trento_P.pExponent = globalparameters[12];
-//        trento_P.pTolerance = globalparameters[13];
-//        trento_P.pC = globalparameters[14];
-//        trento_P.pGamma = globalparameters[15];
-//        trento_P.pEspInflux = globalparameters[16];
-//        trento_P.inDiameters = pipe;
-//        trento_P.pOutPipe = 16;
-//        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Trap.shp");
-//        File netFile = new File(net.toURI());
-//        OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
-//        netReader.file = netFile.getAbsolutePath();
-//        netReader.readFeatureCollection();
-//        SimpleFeatureCollection netFC = netReader.geodata;
-//        // set global parameters
-//        // verify
-//        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-//        trento_P.inPipes = netFC;
-//        trento_P.process();
-//        result = trento_P.getResults();
-//        checkMatrixEqual(result, HMTestMapstrentoP.project1Trapezio, TOLL);
-//
-//    }
-//
-//    /**
-//    * Test project 1 with align set to 1.
-//    *
-//    * Check the result in the project mode, for the file Mulinu.geo.
-//    *
-//    * @throws Exception
-//    */
-//    public void testProject1Align1() throws Exception {
-//        double[][] result = null;
-//        double[] globalparameters = INTERNAL_PARAMETERS;
-//        URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
-//        DiametersReader diametersreader = new DiametersReader();
-//        diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
-//        diametersreader.pCols = 2;
-//        diametersreader.pSeparator = "\\s+";
-//        diametersreader.fileNovalue = "-9999.0";
-//        diametersreader.readFile();
-//        List<double[]> pipe = diametersreader.data;
-//        OmsTrentoP trento_P = new OmsTrentoP();
-//        // set parameters;
-//        trento_P.pMode = 0; // project
-//        trento_P.pA = a;
-//        trento_P.pN = n;
-//        trento_P.pTau = tau;
-//        trento_P.pG = g;
-//        trento_P.pAlign = 1;
-//        trento_P.pMinimumDepth = globalparameters[0];
-//        trento_P.pMaxJunction = (int) globalparameters[1];
-//        trento_P.pJMax = (int) globalparameters[2];
-//        trento_P.pAccuracy = globalparameters[3];
-//        trento_P.tDTp = globalparameters[4];
-//        trento_P.tpMin = globalparameters[5];
-//        trento_P.tpMax = globalparameters[6];
-//        trento_P.pEpsilon = globalparameters[7];
-//        trento_P.pMinG = globalparameters[8];
-//        trento_P.pMinDischarge = globalparameters[9];
-//        trento_P.pMaxTheta = globalparameters[10];
-//        trento_P.pCelerityFactor = globalparameters[11];
-//        trento_P.pExponent = globalparameters[12];
-//        trento_P.pTolerance = globalparameters[13];
-//        trento_P.pC = globalparameters[14];
-//        trento_P.pGamma = globalparameters[15];
-//        trento_P.pEspInflux = globalparameters[16];
-//        trento_P.inDiameters = pipe;
-//        trento_P.pOutPipe = 16;
-//        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1.shp");
-//        File netFile = new File(net.toURI());
-//        OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
-//        netReader.file = netFile.getAbsolutePath();
-//        netReader.readFeatureCollection();
-//        SimpleFeatureCollection netFC = netReader.geodata;
-//        // set global parameters
-//        // verify
-//        // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-//        trento_P.inPipes = netFC;
-//        trento_P.process();
-//        result = trento_P.getResults();
-//        checkMatrixEqual(result, HMTestMapstrentoP.project1align1, TOLL);
-//
-//    }
-//
-//    /**
-//    *
-//    * Check if the models work well in verify mode..
-//    *
-//    * @throws Exception
-//    *
-//    * @throws IOException
-//    */
-//    public void testVerify1() throws Exception {
-//
-//        URL rainUrl = this.getClass().getClassLoader().getResource("rain_trentop.csv"); //$NON-NLS-1$
-//        File rainFile = new File(rainUrl.toURI());
-//
-//        double[][] result = null;
-//        double[] globalparameters = INTERNAL_PARAMETERS;
-//
-//        OmsTrentoP trento_P = new OmsTrentoP();
-//        // set parameters;
-//        trento_P.pMode = 1; // verify
-//        trento_P.pMaxJunction = (int) globalparameters[1];
-//        trento_P.pJMax = (int) globalparameters[2];
-//        trento_P.pAccuracy = globalparameters[3];
-//        trento_P.tpMax = globalparameters[6];
-//        trento_P.pEpsilon = globalparameters[7];
-//        trento_P.pMaxTheta = 6.28;
-//        trento_P.pCelerityFactor = Constants.DEFAULT_CELERITY_FACTOR;
-//        trento_P.pExponent = globalparameters[12];
-//        trento_P.pTolerance = 0.01;
-//        trento_P.pGamma = globalparameters[15];
-//        trento_P.pEspInflux = globalparameters[16];
-//        trento_P.pOutPipe = 16;
-//        OmsTimeSeriesReader rainReader = new OmsTimeSeriesReader();
-//        rainReader.fileNovalue = "-9999";
-//        rainReader.file = rainFile.getAbsolutePath();
-//        rainReader.read();
-//        rainReader.close();
-//        trento_P.inRain = rainReader.outData;
-//        // set global parameters.
-//        URL net = this.getClass().getClassLoader().getResource("TestTrentoP1Verifica.shp");
-//        File netFile = new File(net.toURI());
-//        OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
-//        netReader.file = netFile.getAbsolutePath();
-//        netReader.readFeatureCollection();
-//        SimpleFeatureCollection netFC = netReader.geodata;
-//        // set global parameters
-//        // verify
-//        trento_P.inPipes = netFC;
-//        trento_P.process();
-//        result = hashToMatrix(trento_P.outDischarge, trento_P.inRain, trento_P.getResults().length);
-//        checkMatrixEqual(result, HMTestMapstrentoP.verify1, TOLL);
-//
-//    }
-//
-//    // /**
-//    // * Test project 2.
-//    // *
-//    // * Check the result in the project mode, for the file Mulinu.geo.
-//    // *
-//    // * @throws Exception
-//    // */
-//    // public void testProject2() throws Exception {
-//    // double[][] result = null;
-//    // double[] globalparameters2 = INTERNAL_PARAMETERS2;
-//    // OmsTrentoP trento_P = new OmsTrentoP();
-//    // // set parameters;
-//    // URL diametersUrl = this.getClass().getClassLoader().getResource("diameters.csv");
-//    // DiametersReader diametersreader = new DiametersReader();
-//    // diametersreader.file = new File(diametersUrl.toURI()).getAbsolutePath();
-//    // diametersreader.pCols = 2;
-//    // diametersreader.pSeparator = "\\s+";
-//    // diametersreader.fileNovalue = "-9999.0";
-//    // diametersreader.readFile();
-//    // List<double[]> pipe = diametersreader.data;
-//    // trento_P.pMode = 0; // project
-//    // trento_P.pA = 60.5;
-//    // trento_P.pN = 0.64;
-//    // trento_P.pTau = 2.6;
-//    // trento_P.pG = g;
-//    // trento_P.pAlign = 1;
-//    // trento_P.pMinimumDepth = globalparameters2[0];
-//    // trento_P.pMaxJunction = (int) globalparameters2[1];
-//    // trento_P.pJMax = (int) globalparameters2[2];
-//    // trento_P.pAccuracy = globalparameters2[3];
-//    // trento_P.tDTp = globalparameters2[4];
-//    // trento_P.tpMin = globalparameters2[5];
-//    // trento_P.tpMax = globalparameters2[6];
-//    // trento_P.pEpsilon = globalparameters2[7];
-//    // trento_P.pMinG = globalparameters2[8];
-//    // trento_P.pMinDischarge = globalparameters2[9];
-//    // trento_P.pMaxTheta = globalparameters2[10];
-//    // trento_P.pCelerityFactor = globalparameters2[11];
-//    // trento_P.pExponent = globalparameters2[12];
-//    // trento_P.pTolerance = globalparameters2[13];
-//    // trento_P.pC = globalparameters2[14];
-//    // trento_P.pGamma = globalparameters2[15];
-//    // trento_P.pEspInflux = globalparameters2[16];
-//    // trento_P.inDiameters = pipe;
-//    // trento_P.pOutPipe = 38;
-//    // URL net = this.getClass().getClassLoader().getResource("TestTrentoP2Verifica.shp");
-//    // File netFile = new File(net.toURI());
-//    // OmsShapefileFeatureReader netReader = new OmsShapefileFeatureReader();
-//    // netReader.file = netFile.getAbsolutePath();
-//    // netReader.readFeatureCollection();
-//    // SimpleFeatureCollection netFC = netReader.geodata;
-//    // // set global parameters
-//    // // verify
-//    // // SimpleFeatureCollection netFC=Utility.readShp(netFile);
-//    // trento_P.inPipes = netFC;
-//    // trento_P.process();
-//    // result = trento_P.getResults();
-//    // checkMatrixEqual(result, HMTestMapstrentoP.projectTrentoP2, TOLL);
-//    //
-//    // }
-//    private double[][] hashToMatrix( HashMap<DateTime, HashMap<Integer, double[]>> outDischarge,
-//            HashMap<DateTime, double[]> inRain, int nStation ) {
-//        // create the rains array from the input.
-//        Set<Entry<DateTime, HashMap<Integer, double[]>>> dischargeSet = outDischarge.entrySet();
-//        DateTime first = null;
-//        DateTime second = null;
-//        int l = outDischarge.size();
-//
-//        double[][] rainData = new double[l][nStation + 1];
-//        int index = 0;
-//        int dt = 0;
-//        int n = outDischarge.size() - 1;
-//        for( Entry<DateTime, HashMap<Integer, double[]>> dischargeRecord : dischargeSet ) {
-//
-//            DateTime dateTime = dischargeRecord.getKey();
-//            HashMap<Integer, double[]> values = dischargeRecord.getValue();
-//            if (first == null) {
-//                first = dateTime;
-//                rainData[index][0] = 1;
-//                Set<Integer> tmp = values.keySet();
-//                int i = 0;
-//                for( Integer f : tmp ) {
-//                    rainData[index][i + 1] = values.get(f)[0];
-//                    i++;
-//                }
-//
-//            } else if (second == null) {
-//                second = dateTime;
-//                dt = Math.abs(second.getMinuteOfDay() - first.getMinuteOfDay());
-//                rainData[index][0] = rainData[index - 1][0] + dt;
-//                Set<Integer> tmp = values.keySet();
-//                int i = 0;
-//                for( Integer f : tmp ) {
-//                    rainData[index][i + 1] = values.get(f)[0];
-//                    i++;
-//                }
-//
-//            } else {
-//                rainData[index][0] = rainData[index - 1][0] + dt;
-//                int i = 0;
-//                Set<Integer> tmp = values.keySet();
-//                for( Integer f : tmp ) {
-//                    rainData[index][i + 1] = values.get(f)[0];
-//                    i++;
-//                }
-//            }
-//            index++;
-//        }
-//        return rainData;
-//    }
-//}
+/*
+ * This file is part of HortonMachine (http://www.hortonmachine.org)
+ * (C) Andrea Antonello - https://g-ant.eu
+ *
+ * The HortonMachine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package org.hortonmachine.hmachine.models.hm;
+
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.libs.modules.Variables;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.CalibrationTimeParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectTimeParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPDatabase;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
+import org.hortonmachine.hmachine.utils.HMTestCase;
+import org.joda.time.DateTime;
+import org.locationtech.jts.geom.Geometry;
+
+/**
+ * Test for the {@link OmsTrentoPProject}, {@link OmsTrentoPCalibration} and
+ * {@link OmsTrentoPProjectFilesGenerator} modules, on a small storm sewer network of 25 pipes
+ * draining 2 ha, with its outlet in pipe 31, kept in two GeoPackages.
+ *
+ * @author Andrea Antonello (https://g-ant.eu)
+ */
+public class TestTrentoP extends HMTestCase {
+
+    private static final int OUTLET = 31;
+    private static final double DELTA = 0.0000001;
+
+    private File projectDb;
+    private File calibrationDb;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        projectDb = copyResource("sewer_project.gpkg");
+        calibrationDb = copyResource("sewer_calibration.gpkg");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        projectDb.delete();
+        calibrationDb.delete();
+        super.tearDown();
+    }
+
+    public void testProject() throws Exception {
+        OmsTrentoPProject project = runProject(null, null);
+
+        Map<Integer, SimpleFeature> pipes = byId(project.outPipes);
+        assertEquals(25, pipes.size());
+
+        // the commercial diameters [cm], never smaller downstream
+        Map<Integer, Double> expectedDiameters = Map.ofEntries(Map.entry(1, 20.0), Map.entry(2, 14.0), Map.entry(3, 20.0),
+                Map.entry(4, 14.0), Map.entry(5, 20.0), Map.entry(6, 14.0), Map.entry(7, 14.0), Map.entry(8, 14.0),
+                Map.entry(9, 14.0), Map.entry(10, 14.0), Map.entry(11, 14.0), Map.entry(13, 14.0), Map.entry(14, 14.0),
+                Map.entry(15, 14.0), Map.entry(19, 14.0), Map.entry(20, 14.0), Map.entry(21, 20.0), Map.entry(23, 14.0),
+                Map.entry(24, 14.0), Map.entry(25, 14.0), Map.entry(26, 20.0), Map.entry(27, 31.5), Map.entry(28, 20.0),
+                Map.entry(29, 40.0), Map.entry(31, 40.0));
+        for( Map.Entry<Integer, Double> entry : expectedDiameters.entrySet() ) {
+            assertEquals("pipe " + entry.getKey(), entry.getValue(), value(pipes.get(entry.getKey()), TrentoPFeatureType.DIAMETER_STR),
+                    DELTA);
+        }
+
+        // the topology comes from the geometries, starting at the outlet
+        assertEquals(0, intValue(pipes.get(OUTLET), TrentoPFeatureType.ID_PIPE_WHERE_DRAIN_STR));
+        assertEquals(OUTLET, intValue(pipes.get(29), TrentoPFeatureType.ID_PIPE_WHERE_DRAIN_STR));
+        assertEquals(29, intValue(pipes.get(27), TrentoPFeatureType.ID_PIPE_WHERE_DRAIN_STR));
+        assertEquals(3, intValue(pipes.get(1), TrentoPFeatureType.ID_PIPE_WHERE_DRAIN_STR));
+
+        // at the outlet: the whole area [ha] and the design discharge [l/s]
+        assertEquals(2.006065, value(pipes.get(OUTLET), TrentoPFeatureType.TOTAL_SUB_NET_AREA_STR), 0.000001);
+        assertEquals(285.40, value(pipes.get(OUTLET), TrentoPFeatureType.DISCHARGE_STR), 0.01);
+    }
+
+    public void testProjectDoesNotDependOnTheOrderOfThePipes() throws Exception {
+        OmsTrentoPProject project = runProject(null, null);
+
+        List<SimpleFeature> pipesList = FeatureUtilities.featureCollectionToList(readLayer(projectDb, Constants.NETWORK_PROJECT_LAYER));
+        java.util.Collections.reverse(pipesList);
+        DefaultFeatureCollection reversedPipes = new DefaultFeatureCollection();
+        reversedPipes.addAll(pipesList);
+        OmsTrentoPProject reversedProject = runProject(reversedPipes, null);
+
+        Map<Integer, SimpleFeature> pipes = byId(project.outPipes);
+        Map<Integer, SimpleFeature> reversed = byId(reversedProject.outPipes);
+        for( Integer id : pipes.keySet() ) {
+            assertEquals("pipe " + id, value(pipes.get(id), TrentoPFeatureType.DIAMETER_STR),
+                    value(reversed.get(id), TrentoPFeatureType.DIAMETER_STR), DELTA);
+            assertEquals("pipe " + id, value(pipes.get(id), TrentoPFeatureType.DISCHARGE_STR),
+                    value(reversed.get(id), TrentoPFeatureType.DISCHARGE_STR), 0.001);
+            // and a pipe is never smaller than the ones that drain into it
+            int drain = intValue(pipes.get(id), TrentoPFeatureType.ID_PIPE_WHERE_DRAIN_STR);
+            if (drain != 0) {
+                assertTrue("pipe " + id, value(pipes.get(drain), TrentoPFeatureType.DIAMETER_STR) >= value(pipes.get(id),
+                        TrentoPFeatureType.DIAMETER_STR));
+            }
+        }
+    }
+
+    public void testProjectWithSlopesBelowOnePercent() throws Exception {
+        OmsTrentoPProject project = runProject(null, null);
+
+        // the same network, with all the areas at 0.5 %
+        SimpleFeatureCollection pipes = readLayer(projectDb, Constants.NETWORK_PROJECT_LAYER);
+        DefaultFeatureCollection flatPipes = new DefaultFeatureCollection();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(pipes.getSchema());
+        for( SimpleFeature pipe : FeatureUtilities.featureCollectionToList(pipes) ) {
+            builder.init(pipe);
+            builder.set(TrentoPFeatureType.AVERAGE_SLOPE_STR, 0.5);
+            flatPipes.add(builder.buildFeature(pipe.getID()));
+        }
+        OmsTrentoPProject flatProject = runProject(flatPipes, null);
+
+        // the residence time of the areas grows with s^-gamma, gamma = 0.2
+        double expectedRatio = Math.pow(0.5, -0.2);
+        Map<Integer, SimpleFeature> steep = byId(project.outPipes);
+        Map<Integer, SimpleFeature> flat = byId(flatProject.outPipes);
+        for( Integer id : steep.keySet() ) {
+            double steepTime = value(steep.get(id), TrentoPFeatureType.RESIDENCE_TIME_STR);
+            double flatTime = value(flat.get(id), TrentoPFeatureType.RESIDENCE_TIME_STR);
+            assertTrue("pipe " + id, Double.isFinite(flatTime));
+            assertEquals("pipe " + id, expectedRatio, flatTime / steepTime, 0.0001);
+        }
+    }
+
+    public void testProjectNeedsItsParameters() throws Exception {
+        HashMap<String, Number> parameters = readParameters(projectDb);
+        parameters.remove(ProjectNeededParameterCodes.TAU.getKey());
+        try {
+            runProject(null, parameters);
+            fail("A needed parameter without value has to be refused.");
+        } catch (ModelsIllegalargumentException e) {
+            assertTrue(e.getMessage().contains(ProjectNeededParameterCodes.TAU.getKey()));
+        }
+    }
+
+    public void testCalibrationWithRainfallCurve() throws Exception {
+        // the time step, the duration and the maximum rain duration come from the parameters
+        OmsTrentoPCalibration calibration = calibration(readParameters(calibrationDb));
+        calibration.process();
+
+        // the rain duration that gives the highest discharge, searched from 5 up to 60 minutes: the network is
+        // small and quick, so the shortest rain, the most intense, wins
+        assertEquals(5, calibration.outTpMax.intValue());
+
+        Map<Integer, SimpleFeature> pipes = byId(calibration.outPipes);
+        assertEquals(25, pipes.size());
+        assertEquals(227.044, value(pipes.get(OUTLET), OmsTrentoPCalibration.QMAX_FIELD), 0.001);
+        assertEquals(0.513498, value(pipes.get(1), OmsTrentoPCalibration.FILLMAX_FIELD), 0.000001);
+        // the 24 time steps of 5 minutes of the 120 minutes of simulation
+        assertEquals(24, calibration.outDischarge.size());
+        for( SimpleFeature pipe : pipes.values() ) {
+            assertTrue(value(pipe, OmsTrentoPCalibration.QMAX_FIELD) > 0);
+        }
+    }
+
+    public void testCalibrationWithShortMaximumRain() throws Exception {
+        HashMap<String, Number> parameters = readParameters(calibrationDb);
+        parameters.put(ProjectTimeParameterCodes.MINIMUM_TIME.getKey(), 15);
+        OmsTrentoPCalibration calibration = calibration(parameters);
+        // shorter than the 15 minutes the search starts from: only it is used
+        calibration.tpMaxCalibration = 10;
+        calibration.process();
+
+        assertEquals(10, calibration.outTpMax.intValue());
+        Map<Integer, SimpleFeature> pipes = byId(calibration.outPipes);
+        assertEquals(195.9, value(pipes.get(OUTLET), OmsTrentoPCalibration.QMAX_FIELD), 0.1);
+    }
+
+    public void testCalibrationRainHasTheDepthOfTheRainfallCurve() throws Exception {
+        HashMap<String, Number> parameters = readParameters(calibrationDb);
+        // a single rain of 30 minutes
+        int duration = 30;
+        parameters.put(ProjectTimeParameterCodes.MINIMUM_TIME.getKey(), duration);
+        OmsTrentoPCalibration calibration = calibration(parameters);
+        calibration.tpMaxCalibration = duration;
+        calibration.process();
+        assertEquals(duration, calibration.outTpMax.intValue());
+
+        // the volume out of the outlet [m3], from the discharges [l/s] every 5 minutes
+        double volume = 0;
+        for( HashMap<Integer, double[]> discharges : calibration.outDischarge.values() ) {
+            volume += discharges.get(OUTLET)[0] * 5 * 60 / 1000.0;
+        }
+
+        // the depth of the rainfall curve [mm] on the effective area [ha]: 1 mm on 1 ha is 10 m3
+        double a = parameters.get(ProjectNeededParameterCodes.A.getKey()).doubleValue();
+        double n = parameters.get(ProjectNeededParameterCodes.N.getKey()).doubleValue();
+        double depth = a * Math.pow(duration / 60.0, n);
+        double rainVolume = depth * effectiveArea(calibration) * 10;
+        assertEquals(1.0, volume / rainVolume, 0.02);
+    }
+
+    public void testCalibrationWithRainSeries() throws Exception {
+        HashMap<String, Number> parameters = readParameters(calibrationDb);
+        parameters.remove(ProjectNeededParameterCodes.A.getKey());
+        parameters.remove(ProjectNeededParameterCodes.N.getKey());
+        // without a maximum rain duration the whole rain is used
+        parameters.remove(CalibrationTimeParameterCodes.MAXIMUM_RAIN_TIME.getKey());
+
+        // 0.5 mm/min for 30 minutes, every 5 minutes, then no rain until the end of the simulation
+        double intensity = 0.5;
+        LinkedHashMap<DateTime, double[]> rain = new LinkedHashMap<>();
+        DateTime time = new DateTime(2020, 6, 1, 12, 0);
+        for( int i = 0; i < 24; i++ ) {
+            rain.put(time, new double[]{i < 6 ? intensity : 0.0});
+            time = time.plusMinutes(5);
+        }
+
+        OmsTrentoPCalibration calibration = calibration(parameters);
+        calibration.inRain = rain;
+        calibration.process();
+
+        // the outlet can't get more than the effective rain on the whole network [l/s]
+        Map<Integer, SimpleFeature> pipes = byId(calibration.outPipes);
+        double maxDischarge = intensity * effectiveArea(calibration) * Constants.HAOVERH_TO_METEROVERS;
+        double outletDischarge = value(pipes.get(OUTLET), OmsTrentoPCalibration.QMAX_FIELD);
+        assertTrue(outletDischarge > 0.5 * maxDischarge);
+        assertTrue(outletDischarge <= maxDischarge);
+    }
+
+    public void testCalibrationNeedsBothParametersOfTheCurve() throws Exception {
+        HashMap<String, Number> parameters = readParameters(calibrationDb);
+        parameters.remove(ProjectNeededParameterCodes.N.getKey());
+        try {
+            calibration(parameters).process();
+            fail("The rainfall curve needs both its parameters.");
+        } catch (ModelsIllegalargumentException e) {
+            assertTrue(e.getMessage().contains(ProjectNeededParameterCodes.N.getKey()));
+        }
+    }
+
+    public void testFilesGenerator() throws Exception {
+        File db = File.createTempFile("trentop_generated", ".gpkg");
+        db.delete();
+        try {
+            // a project and a calibration in the same GeoPackage
+            for( String mode : new String[]{Variables.PROJECT, Variables.CALIBRATION} ) {
+                OmsTrentoPProjectFilesGenerator generator = new OmsTrentoPProjectFilesGenerator();
+                generator.pm = pm;
+                generator.outDatabase = db.getAbsolutePath();
+                generator.pMode = mode;
+                generator.pCode = "EPSG:32632";
+                generator.process();
+            }
+
+            try (ASpatialDb sdb = TrentoPDatabase.open(db.getAbsolutePath(), null, null)) {
+                for( String table : new String[]{Constants.NETWORK_PROJECT_LAYER, Constants.NETWORK_CALIBRATION_LAYER,
+                        Constants.AREAS_LAYER, Constants.JUNCTIONS_LAYER, Constants.PARAMETERS_TABLE, Constants.DIAMETERS_TABLE} ) {
+                    assertTrue(table, sdb.hasTable(table));
+                }
+                List<String> junctionColumns = sdb.getTableColumns(SqlName.m(Constants.JUNCTIONS_LAYER)).stream().map(c -> c[0])
+                        .toList();
+                assertTrue(junctionColumns.toString(), junctionColumns.contains(TrentoPFeatureType.ELEVATION_STR));
+                assertEquals(0, TrentoPDatabase.readLayer(sdb, Constants.JUNCTIONS_LAYER).size());
+
+                // the optional parameters have their default, the needed ones no value
+                HashMap<String, Number> parameters = TrentoPDatabase.readParameters(sdb);
+                assertFalse(parameters.containsKey(ProjectNeededParameterCodes.TAU.getKey()));
+                assertEquals(0.25, parameters.get(ProjectTimeParameterCodes.STEP.getKey()).doubleValue(), DELTA);
+                // the calibration added its own parameters to the ones of the project
+                assertEquals(15.0, parameters.get(CalibrationTimeParameterCodes.STEP.getKey()).doubleValue(), DELTA);
+
+                List<double[]> diameters = TrentoPDatabase.readDiameters(sdb);
+                assertEquals(TrentoPDatabase.EXAMPLE_DIAMETERS.length, diameters.size());
+                assertEquals(14.0, diameters.get(0)[0], DELTA);
+            }
+        } finally {
+            db.delete();
+        }
+    }
+
+    public void testOutputLayerIsReplaced() throws Exception {
+        OmsTrentoPProject project = runProject(null, null);
+        try (ASpatialDb db = TrentoPDatabase.open(projectDb.getAbsolutePath(), null, null)) {
+            TrentoPDatabase.writeLayer(db, project.outPipes, Constants.NETWORK_PROJECT_OUTPUT_LAYER, pm);
+            TrentoPDatabase.writeLayer(db, project.outPipes, Constants.NETWORK_PROJECT_OUTPUT_LAYER, pm);
+            assertEquals(25, TrentoPDatabase.readLayer(db, Constants.NETWORK_PROJECT_OUTPUT_LAYER).size());
+        }
+    }
+
+    /**
+     * Run the project on the sample, with other pipes or parameters, if given.
+     */
+    private OmsTrentoPProject runProject( SimpleFeatureCollection pipes, HashMap<String, Number> parameters ) throws Exception {
+        OmsTrentoPProject project = new OmsTrentoPProject();
+        project.pm = pm;
+        project.pOutPipe = OUTLET;
+        try (ASpatialDb db = TrentoPDatabase.open(projectDb.getAbsolutePath(), null, null)) {
+            project.inParameters = parameters != null ? parameters : TrentoPDatabase.readParameters(db);
+            project.inDiameters = TrentoPDatabase.readDiameters(db);
+            project.inPipes = pipes != null ? pipes : TrentoPDatabase.readLayer(db, Constants.NETWORK_PROJECT_LAYER);
+            project.inAreas = TrentoPDatabase.readLayer(db, Constants.AREAS_LAYER);
+            project.inJunctions = TrentoPDatabase.readLayer(db, Constants.JUNCTIONS_LAYER);
+        }
+        project.process();
+        return project;
+    }
+
+    /**
+     * @return the calibration of the sample, with the given parameters, to run.
+     */
+    private OmsTrentoPCalibration calibration( HashMap<String, Number> parameters ) throws Exception {
+        OmsTrentoPCalibration calibration = new OmsTrentoPCalibration();
+        calibration.pm = pm;
+        calibration.pOutPipe = OUTLET;
+        calibration.inParameters = parameters;
+        calibration.inPipes = readLayer(calibrationDb, Constants.NETWORK_CALIBRATION_LAYER);
+        calibration.inAreas = readLayer(calibrationDb, Constants.AREAS_LAYER);
+        calibration.inJunctions = readLayer(calibrationDb, Constants.JUNCTIONS_LAYER);
+        return calibration;
+    }
+
+    /**
+     * @return the sum of the drained areas times their runoff coefficients, in ha.
+     */
+    private static double effectiveArea( OmsTrentoPCalibration calibration ) {
+        Map<Integer, SimpleFeature> pipes = byId(calibration.outPipes);
+        double effectiveArea = 0;
+        for( SimpleFeature area : FeatureUtilities.featureCollectionToList(calibration.inAreas) ) {
+            int id = intValue(area, TrentoPFeatureType.ID_STR);
+            double runoff = value(pipes.get(id), TrentoPFeatureType.RUNOFF_COEFFICIENT_STR);
+            effectiveArea += ((Geometry) area.getDefaultGeometry()).getArea() / 10000.0 * runoff;
+        }
+        return effectiveArea;
+    }
+
+    private static HashMap<String, Number> readParameters( File database ) throws Exception {
+        try (ASpatialDb db = TrentoPDatabase.open(database.getAbsolutePath(), null, null)) {
+            return TrentoPDatabase.readParameters(db);
+        }
+    }
+
+    private static SimpleFeatureCollection readLayer( File database, String layer ) throws Exception {
+        try (ASpatialDb db = TrentoPDatabase.open(database.getAbsolutePath(), null, null)) {
+            return TrentoPDatabase.readLayer(db, layer);
+        }
+    }
+
+    /**
+     * Copy a database of the resources to a temporary file, so that the tests do not change it.
+     */
+    private File copyResource( String name ) throws Exception {
+        File resource = new File(getClass().getClassLoader().getResource("trentop/" + name).toURI());
+        File copy = File.createTempFile("trentop_", "_" + name);
+        Files.copy(resource.toPath(), copy.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        return copy;
+    }
+
+    private static Map<Integer, SimpleFeature> byId( SimpleFeatureCollection pipes ) {
+        Map<Integer, SimpleFeature> map = new HashMap<>();
+        for( SimpleFeature pipe : FeatureUtilities.featureCollectionToList(pipes) ) {
+            map.put(intValue(pipe, TrentoPFeatureType.ID_STR), pipe);
+        }
+        return map;
+    }
+
+    private static double value( SimpleFeature feature, String field ) {
+        return ((Number) feature.getAttribute(field)).doubleValue();
+    }
+
+    private static int intValue( SimpleFeature feature, String field ) {
+        return ((Number) feature.getAttribute(field)).intValue();
+    }
+}

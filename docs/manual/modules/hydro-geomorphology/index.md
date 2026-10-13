@@ -24,4 +24,7 @@ shalstab
 skyview
 stone
 stoneinputs
+trentopcalibration
+trentopproject
+trentopprojectfilesgenerator
 ```

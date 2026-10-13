@@ -1252,9 +1252,9 @@ public class NetworkBuilder implements Network {
          */
         double totalarea = 0;
 
-        // Diametro o altezza massima dei tratti pi� a monte.
+        // Diametro o altezza massima dei tratti pi� a monte: the largest of all the upstream pipes.
 
-        double maxdiam;
+        double maxdiam = 0;
 
         int r = 0;
         int i = 0;
@@ -1264,7 +1264,6 @@ public class NetworkBuilder implements Network {
          * progettando.
          */
         for( int j = 0; j < k; j++ ) {
-            maxdiam = 0;
             /* La portata e valutata all'uscita di ciascun tratto */
             t = 0;
             /*

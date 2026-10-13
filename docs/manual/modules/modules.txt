@@ -57,6 +57,9 @@ org.hortonmachine.modules.DownSlopeConnectivity
 org.hortonmachine.modules.RiverSectionsExtractor
 org.hortonmachine.modules.HecrasInputBuilder
 org.hortonmachine.modules.SaintGeo
+org.hortonmachine.modules.TrentoPProject
+org.hortonmachine.modules.TrentoPCalibration
+org.hortonmachine.modules.TrentoPProjectFilesGenerator
 org.hortonmachine.modules.IntensityClassifierFlood
 org.hortonmachine.modules.IntensityClassifierDebrisFlowTN
 org.hortonmachine.modules.HazardClassifier

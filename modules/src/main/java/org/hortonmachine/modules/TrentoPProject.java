@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,9 +17,11 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_KEYWORDS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_LABEL;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_LICENSE;
@@ -27,22 +29,17 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrento
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_STATUS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_pOutPipe_DESCRIPTION;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
-import org.geotools.data.simple.SimpleFeatureCollection;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPDatabase;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -54,107 +51,59 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSTRENTOP_DESCRIPTION)
+@Documentation(OMSTRENTOP_DOCUMENTATION)
+@Bibliography({BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979})
 @Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
 @Keywords(OMSTRENTOP_KEYWORDS)
-@Label("")
+@Label(OMSTRENTOP_LABEL)
 @Name(OMSTRENTOP_NAME)
 @Status(OMSTRENTOP_STATUS)
 @License(OMSTRENTOP_LICENSE)
 public class TrentoPProject extends HMModel {
+
+    @Description("The database of the network, with the layers network_project, areas and junctions and the tables parameters and diameters: a GeoPackage (.gpkg) or H2GIS (.mv.db) file, or a PostGIS database, as jdbc:postgresql://host:port/database. The designed network is written into it, as the layer network_project_output.")
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
+    @In
+    public String inDatabase = null;
+
+    @Description("The optional user of the database.")
+    @In
+    public String pUser = null;
+
+    @Description("The optional password of the database.")
+    @In
+    public String pPassword = null;
 
     @Description(OMSTRENTOP_pOutPipe_DESCRIPTION)
     @Unit("-")
     @In
     public Integer pOutPipe = null;
 
-    @Description("The TrentoP project data folder.")
-    @UI(HMConstants.FOLDERIN_UI_HINT)
-    @In
-    public String inFolder = null;
-
     private double[][] results;
 
     @Execute
     public void process() throws Exception {
+        checkNull(inDatabase, pOutPipe);
 
-        checkNull(inFolder);
+        try (ASpatialDb db = TrentoPDatabase.open(inDatabase, pUser, pPassword)) {
+            OmsTrentoPProject trento_P = new OmsTrentoPProject();
+            trento_P.pm = pm;
+            trento_P.pOutPipe = pOutPipe;
+            trento_P.inDiameters = TrentoPDatabase.readDiameters(db);
+            trento_P.inParameters = TrentoPDatabase.readParameters(db);
+            trento_P.inPipes = TrentoPDatabase.readLayer(db, Constants.NETWORK_PROJECT_LAYER);
+            trento_P.inAreas = TrentoPDatabase.readLayer(db, Constants.AREAS_LAYER);
+            trento_P.inJunctions = TrentoPDatabase.readLayer(db, Constants.JUNCTIONS_LAYER);
+            trento_P.process();
 
-        File baseFolderFile = new File(inFolder);
-        File pipesFile = new File(baseFolderFile, Constants.NETWORK_PROJECT_NAME_SHP);
-        File pipesOutFile = new File(baseFolderFile, Constants.NETWORK_PROJECT_OUTPUT_NAME_SHP);
-        File areasFile = new File(baseFolderFile, Constants.AREA_NAME_SHP);
-        File junctionsFile = new File(baseFolderFile, Constants.JUNCTIONS_NAME_SHP);
-        File parametersFile = new File(baseFolderFile, Constants.PARAMETERS_CSV);
-        File diametersFile = new File(baseFolderFile, Constants.DIAMETERS_CSV);
+            results = trento_P.getResults();
 
-        checkFileExists(pipesFile.getAbsolutePath(), areasFile.getAbsolutePath(), junctionsFile.getAbsolutePath(),
-                parametersFile.getAbsolutePath(), diametersFile.getAbsolutePath());
-
-        OmsTrentoPProject trento_P = new OmsTrentoPProject();
-        trento_P.pOutPipe = pOutPipe;
-
-        trento_P.inDiameters = getDiameters(diametersFile);
-
-        List<String> paramsList = FileUtilities.readFileToLinesList(parametersFile);
-        paramsList.remove(0);
-        HashMap<String, Number> paramsMap = new HashMap<String, Number>();
-        for( String paramLine : paramsList ) {
-            String[] lineSplit = paramLine.split(";");
-            paramsMap.put(lineSplit[0], Double.parseDouble(lineSplit[1]));
+            TrentoPDatabase.writeLayer(db, trento_P.outPipes, Constants.NETWORK_PROJECT_OUTPUT_LAYER, pm);
         }
-
-        trento_P.inParameters = paramsMap;
-
-        trento_P.inPipes = getVector(pipesFile.getAbsolutePath());
-        trento_P.inAreas = getVector(areasFile.getAbsolutePath());
-        trento_P.inJunctions = getVector(junctionsFile.getAbsolutePath());
-
-        trento_P.process();
-
-        results = trento_P.getResults();
-
-        SimpleFeatureCollection outPipes = trento_P.outPipes;
-        dumpVector(outPipes, pipesOutFile.getAbsolutePath());
-    }
-
-    private List<double[]> getDiameters( File diametersFile ) throws IOException {
-        List<String> linesList = FileUtilities.readFileToLinesList(diametersFile);
-
-        List<double[]> diametersAndThicknessList = new ArrayList<double[]>();
-
-        for( String line : linesList ) {
-            line = line.trim();
-            if (line.startsWith("#")) {
-                continue;
-            }
-            String[] split = line.split(";");
-            if (split.length != 3) {
-                throw new ModelsIllegalargumentException(
-                        "The diameters file has to contain lines with an ID, a diameter and a thickness per line, separated by semicolon.",
-                        this);
-            }
-            double diameterId = Double.parseDouble(split[0]);
-            double diameter = Double.parseDouble(split[1]);
-            double thickness = Double.parseDouble(split[2]);
-
-            diametersAndThicknessList.add(new double[]{diameter, thickness});
-        }
-
-        return diametersAndThicknessList;
     }
 
     public double[][] getResults() {
         return results;
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String outFolder = "D:\\lavori_tmp\\2020_trentoP\\project_03";
-//        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
-        TrentoPProject c = new TrentoPProject();
-        c.pOutPipe = 10;
-        c.inFolder = outFolder;
-        c.process();
-
     }
 
 }

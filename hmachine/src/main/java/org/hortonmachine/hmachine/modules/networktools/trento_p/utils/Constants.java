@@ -230,24 +230,26 @@ public class Constants {
     public final static Double[] MIN_FILL_DEGREE_RANGE = {0.0, 0.1};
     public final static Double[] MIN_DISCHARGE_RANGE = {0.0, null};
     /**
-     * The name of the shp with the network data.
+     * The layers and tables of a TrentoP GeoPackage: the pipes of the project, its designed pipes,
+     * the pipes to verify and the verified ones.
      */
-    public static final String NETWORK_PROJECT_NAME_SHP = "network_project.shp";
-    public static final String NETWORK_PROJECT_OUTPUT_NAME_SHP = "network_project_output.shp";
+    public static final String NETWORK_PROJECT_LAYER = "network_project";
+    public static final String NETWORK_PROJECT_OUTPUT_LAYER = "network_project_output";
+    public static final String NETWORK_CALIBRATION_LAYER = "network_calibration"; //$NON-NLS-1$
+    public static final String NETWORK_CALIBRATION_OUTPUT_LAYER = "network_calibration_output"; //$NON-NLS-1$
     /**
-     * The name of the shp with the network data.
+     * The areas drained by the pipes.
      */
-    public static final String NETWORK_CALIBRATION_NAME_SHP = "network_calibration.shp"; //$NON-NLS-1$
+    public static final String AREAS_LAYER = "areas"; //$NON-NLS-1$
     /**
-     * The name of the shp with the aree.
+     * The junctions at the ends of the pipes.
      */
-    public static final String AREA_NAME_SHP = "areas.shp"; //$NON-NLS-1$
+    public static final String JUNCTIONS_LAYER = "junctions"; //$NON-NLS-1$
     /**
-     * The name of the shp with the wells.
+     * The table of the parameters, by name, and the one of the commercial diameters.
      */
-    public static final String JUNCTIONS_NAME_SHP = "junctions.shp"; //$NON-NLS-1$
-    public static final String PARAMETERS_CSV = "parameters.csv"; //$NON-NLS-1$
-    public static final String DIAMETERS_CSV = "diameters.csv"; //$NON-NLS-1$
+    public static final String PARAMETERS_TABLE = "parameters"; //$NON-NLS-1$
+    public static final String DIAMETERS_TABLE = "diameters"; //$NON-NLS-1$
     /**
      * The ID of the pipe where drain the last pipe of the net.(It doesn't exist).
      */

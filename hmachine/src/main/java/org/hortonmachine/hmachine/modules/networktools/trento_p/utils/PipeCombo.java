@@ -22,9 +22,7 @@ public class PipeCombo {
 
     private double area;
     private double initialJunctionElev; // higher
-    private double initialJunctionDepth;
     private double finalJunctionElev;
-    private double finalJunctionDepth;
 
     private SimpleFeature areaFeature;
 
@@ -33,35 +31,38 @@ public class PipeCombo {
     private SimpleFeature junction2Feature;
 
     public PipeCombo( SimpleFeature pipeFeature, SimpleFeature areaFeature, SimpleFeature junction1Feature,
-            SimpleFeature junction2Feature ) {
+            SimpleFeature junction2Feature ) throws ModelsIOException {
         this.pipeFeature = pipeFeature;
         this.areaFeature = areaFeature;
         this.junction1Feature = junction1Feature;
         this.junction2Feature = junction2Feature;
 
+        if (areaFeature == null) {
+            throw new ModelsIOException("The pipe " + pipeFeature.getAttribute(PipesTrentoP.ID.getAttributeName())
+                    + " has no area with its ID.", "PipeCombo");
+        }
         Geometry areaGeom = (Geometry) areaFeature.getDefaultGeometry();
         area = areaGeom.getArea() / 10000.0;
 
-        double junction1Elev = ((Number) junction1Feature
-                .getAttribute(TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getAttributeName())).doubleValue();
-        double junction1Depth = ((Number) junction1Feature
-                .getAttribute(TrentoPFeatureType.JunctionsTrentoP.DEPTH.getAttributeName())).doubleValue();
-        double junction2Elev = ((Number) junction2Feature
-                .getAttribute(TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getAttributeName())).doubleValue();
-        double junction2Depth = ((Number) junction2Feature
-                .getAttribute(TrentoPFeatureType.JunctionsTrentoP.DEPTH.getAttributeName())).doubleValue();
+        double junction1Elev = elevation(junction1Feature);
+        double junction2Elev = elevation(junction2Feature);
 
         if (junction1Elev > junction2Elev) {
             initialJunctionElev = junction1Elev;
-            initialJunctionDepth = junction1Depth;
             finalJunctionElev = junction2Elev;
-            finalJunctionDepth = junction2Depth;
         } else {
             initialJunctionElev = junction2Elev;
-            initialJunctionDepth = junction2Depth;
             finalJunctionElev = junction1Elev;
-            finalJunctionDepth = junction1Depth;
         }
+    }
+
+    private static double elevation( SimpleFeature junction ) throws ModelsIOException {
+        Object elev = junction.getAttribute(TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getAttributeName());
+        if (!(elev instanceof Number)) {
+            throw new ModelsIOException("The junction " + junction.getAttribute(JunctionsTrentoP.ID.getAttributeName())
+                    + " has no elevation.", "PipeCombo");
+        }
+        return ((Number) elev).doubleValue();
     }
 
     public double getArea() {
@@ -72,16 +73,8 @@ public class PipeCombo {
         return initialJunctionElev;
     }
 
-    public double getInitialJunctionDepth() {
-        return initialJunctionDepth;
-    }
-
     public double getFinalJunctionElev() {
         return finalJunctionElev;
-    }
-
-    public double getFinalJunctionDepth() {
-        return finalJunctionDepth;
     }
 
     public SimpleFeature getPipeFeature() {

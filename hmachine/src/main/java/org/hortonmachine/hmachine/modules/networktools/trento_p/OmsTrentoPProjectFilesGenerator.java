@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,42 +17,50 @@
  */
 package org.hortonmachine.hmachine.modules.networktools.trento_p;
 
-import static org.hortonmachine.gears.libs.modules.HMConstants.OTHER;
+import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
 import static org.hortonmachine.gears.libs.modules.Variables.CALIBRATION;
 import static org.hortonmachine.gears.libs.modules.Variables.PROJECT;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_LABEL;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_LICENSE;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_NAME;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProjectFilesGenerator.OMSTRENTOPPROJECTFILESGENERATOR_STATUS;
 
-import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
-import org.hortonmachine.gears.io.shapefile.OmsShapefileFeatureWriter;
+import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.libs.modules.Variables;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.CalibrationOptionalParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.CalibrationTimeParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.IParametersCode;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectOptionalParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectTimeParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
-import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.ITrentoPType;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPDatabase;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.AreasTrentoP;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.JunctionsTrentoP;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType.PipesTrentoP;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -63,6 +71,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION)
+@Documentation(OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION)
 @Author(name = OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES, contact = OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS)
 @Keywords(OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS)
 @Label(OMSTRENTOPPROJECTFILESGENERATOR_LABEL)
@@ -71,9 +80,18 @@ import oms3.annotations.UI;
 @License(OMSTRENTOPPROJECTFILESGENERATOR_LICENSE)
 public class OmsTrentoPProjectFilesGenerator extends HMModel {
 
-    @Description(OMSTRENTOPPROJECTFILESGENERATOR_inFolder_DESCRIPTION)
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_outDatabase_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
-    public String inFolder = null;
+    public String outDatabase = null;
+
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pUser_DESCRIPTION)
+    @In
+    public String pUser = null;
+
+    @Description(OMSTRENTOPPROJECTFILESGENERATOR_pPassword_DESCRIPTION)
+    @In
+    public String pPassword = null;
 
     @Description(OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION)
     @UI("combo:" + PROJECT + "," + CALIBRATION)
@@ -85,208 +103,88 @@ public class OmsTrentoPProjectFilesGenerator extends HMModel {
     @In
     public String pCode;
 
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION = "Generates the input shapefiles for a OmsTrentoP simulation.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION = "OmsTrentoPProjectFilesGenerator.html";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS = "OmsTrentoP";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_LABEL = OTHER;
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_DESCRIPTION = "Creates the spatial database of a TrentoP sewer network, with its empty layers and its tables of parameters and diameters.";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_DOCUMENTATION = """
+            The database can be a GeoPackage or H2GIS file, or a PostGIS database. For a project, it gets the \
+            layers network_project, areas and junctions, the table parameters, with the parameters of the design, and the \
+            table diameters, with an example series of PVC pipes to check and change. For a calibration, the layer \
+            network_calibration, areas, junctions and the parameters of the verification.
+
+            The optional parameters get their default as value, while the needed ones are left without value. An existing \
+            database is completed: only the layers, tables and parameters it does not have yet are added, so that the \
+            project and the calibration of a network can share one database.
+            """;
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_KEYWORDS = "Sewer network, TrentoP, GeoPackage, PostGIS";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_NAME = "";
     public static final int OMSTRENTOPPROJECTFILESGENERATOR_STATUS = 10;
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_AUTHORNAMES = "Antonello Andrea, Silvia Franceschi, Daniele Andreis";
     public static final String OMSTRENTOPPROJECTFILESGENERATOR_AUTHORCONTACTS = "";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_inFolder_DESCRIPTION = "The folder into which to create the base files.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION = "Select the file type: project (default mode) or calibration.";
-    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code defining the coordinate reference system, composed by authority and code number (ex. EPSG:4328).";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_outDatabase_DESCRIPTION = "The database to create, or to complete if it exists: a GeoPackage (.gpkg) or H2GIS (.mv.db) file, or a PostGIS database, as jdbc:postgresql://host:port/database.";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pUser_DESCRIPTION = "The optional user of the database.";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pPassword_DESCRIPTION = "The optional password of the database.";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pMode_DESCRIPTION = "The layers and parameters to create: for a project (the design of a new network) or a calibration (the verification of an existing one).";
+    public static final String OMSTRENTOPPROJECTFILESGENERATOR_pCode_DESCRIPTION = "The code of the projected reference system of the layers, in meters (ex. EPSG:32632).";
 
     @Execute
     public void process() throws Exception {
-        checkNull(inFolder, pCode, pMode);
-
+        checkNull(outDatabase, pCode, pMode);
         boolean isProject = pMode.equals(PROJECT);
+        CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs(pCode);
 
-        CoordinateReferenceSystem crs = CrsUtilities.getCrsFromEpsg(pCode, null);
-        if (isProject) {
-            pm.beginTask("Generating project files...", 3);
-            String networkPath = new File(inFolder, Constants.NETWORK_PROJECT_NAME_SHP).getAbsolutePath();
-            OmsShapefileFeatureWriter.writeEmptyShapefile(networkPath, getProjectFeatureType(crs), pm);
+        pm.beginTask("Creating the TrentoP database...", isProject ? 5 : 4);
+        try (ASpatialDb db = TrentoPDatabase.open(outDatabase, pUser, pPassword)) {
+            TrentoPDatabase.addCrs(db, crs);
+
+            List<IParametersCode> parameters = new ArrayList<>();
+            if (isProject) {
+                createLayer(db, Constants.NETWORK_PROJECT_LAYER, LineString.class, crs, PipesTrentoP.ID, PipesTrentoP.RUNOFF_COEFFICIENT,
+                        PipesTrentoP.AVERAGE_RESIDENCE_TIME, PipesTrentoP.KS, PipesTrentoP.MINIMUM_PIPE_SLOPE,
+                        PipesTrentoP.PIPE_SECTION_TYPE, PipesTrentoP.AVERAGE_SLOPE);
+                parameters.addAll(Arrays.asList(ProjectNeededParameterCodes.values()));
+                parameters.addAll(Arrays.asList(ProjectTimeParameterCodes.values()));
+                parameters.addAll(Arrays.asList(ProjectOptionalParameterCodes.values()));
+            } else {
+                createLayer(db, Constants.NETWORK_CALIBRATION_LAYER, LineString.class, crs, PipesTrentoP.ID,
+                        PipesTrentoP.RUNOFF_COEFFICIENT, PipesTrentoP.AVERAGE_RESIDENCE_TIME, PipesTrentoP.KS,
+                        PipesTrentoP.AVERAGE_SLOPE, PipesTrentoP.DIAMETER);
+                parameters.addAll(Arrays.asList(CalibrationTimeParameterCodes.values()));
+                parameters.add(ProjectTimeParameterCodes.MINIMUM_TIME);
+                parameters.addAll(Arrays.asList(CalibrationOptionalParameterCodes.values()));
+            }
             pm.worked(1);
-        } else {
-            pm.beginTask("Generating calibration files...", 3);
-            String networkPath = new File(inFolder, Constants.NETWORK_CALIBRATION_NAME_SHP).getAbsolutePath();
-            OmsShapefileFeatureWriter.writeEmptyShapefile(networkPath, getCalibrationFeatureType(crs), pm);
+            createLayer(db, Constants.AREAS_LAYER, Polygon.class, crs, AreasTrentoP.ID);
             pm.worked(1);
-        }
-        String areasPath = new File(inFolder, Constants.AREA_NAME_SHP).getAbsolutePath();
-        OmsShapefileFeatureWriter.writeEmptyShapefile(areasPath, getAreasFeatureType(crs), pm);
-        pm.worked(1);
-
-        String pozzettiPath = new File(inFolder, Constants.JUNCTIONS_NAME_SHP).getAbsolutePath();
-        OmsShapefileFeatureWriter.writeEmptyShapefile(pozzettiPath, getJunctionsFeatureType(crs), pm);
-        pm.worked(1);
-
-        StringBuilder parametersSb = new StringBuilder();
-        parametersSb.append("parameter;value;default;unit;min;max\n");
-        if (isProject) {
-            ProjectNeededParameterCodes[] projectsNeeded = ProjectNeededParameterCodes.values();
-            for( ProjectNeededParameterCodes code : projectsNeeded ) {
-                parametersSb.append(code.getKey()).append(";");
-                parametersSb.append("TODO").append(";");
-                parametersSb.append(nc(code.getDefaultValue())).append(";");
-                parametersSb.append(nc(code.getUnit())).append(";");
-                parametersSb.append(nc(code.getMinRange())).append(";");
-                parametersSb.append(nc(code.getMaxRange())).append("\n");
-            }
-            ProjectTimeParameterCodes[] projectsTime = ProjectTimeParameterCodes.values();
-            for( ProjectTimeParameterCodes code : projectsTime ) {
-                parametersSb.append(code.getKey()).append(";");
-                parametersSb.append("TODO").append(";");
-                parametersSb.append(nc(code.getDefaultValue())).append(";");
-                parametersSb.append(nc(code.getUnit())).append(";");
-                parametersSb.append(nc(code.getMinRange())).append(";");
-                parametersSb.append(nc(code.getMaxRange())).append("\n");
-            }
-            ProjectOptionalParameterCodes[] projectsOptional = ProjectOptionalParameterCodes.values();
-            for( ProjectOptionalParameterCodes code : projectsOptional ) {
-                parametersSb.append(code.getKey()).append(";");
-                parametersSb.append("TODO").append(";");
-                parametersSb.append(nc(code.getDefaultValue())).append(";");
-                parametersSb.append(nc(code.getUnit())).append(";");
-                parametersSb.append(nc(code.getMinRange())).append(";");
-                parametersSb.append(nc(code.getMaxRange())).append("\n");
-            }
-        } else {
-            CalibrationTimeParameterCodes[] calibrationsTime = CalibrationTimeParameterCodes.values();
-            for( CalibrationTimeParameterCodes code : calibrationsTime ) {
-                parametersSb.append(code.getKey()).append(";");
-                parametersSb.append("TODO").append(";");
-                parametersSb.append(nc(code.getDefaultValue())).append(";");
-                parametersSb.append(nc(code.getUnit())).append(";");
-                parametersSb.append(nc(code.getMinRange())).append(";");
-                parametersSb.append(nc(code.getMaxRange())).append("\n");
-            }
-            CalibrationOptionalParameterCodes[] calibrationsOptional = CalibrationOptionalParameterCodes.values();
-            for( CalibrationOptionalParameterCodes code : calibrationsOptional ) {
-                parametersSb.append(code.getKey()).append(";");
-                parametersSb.append("TODO").append(";");
-                parametersSb.append(nc(code.getDefaultValue())).append(";");
-                parametersSb.append(nc(code.getUnit())).append(";");
-                parametersSb.append(nc(code.getMinRange())).append(";");
-                parametersSb.append(nc(code.getMaxRange())).append("\n");
+            createLayer(db, Constants.JUNCTIONS_LAYER, Point.class, crs, JunctionsTrentoP.ID, JunctionsTrentoP.ELEVATION);
+            pm.worked(1);
+            TrentoPDatabase.addParameters(db, parameters);
+            pm.worked(1);
+            if (isProject) {
+                TrentoPDatabase.addDiameters(db, TrentoPDatabase.EXAMPLE_DIAMETERS);
+                pm.worked(1);
             }
         }
-        File paramsFile = new File(inFolder, Constants.PARAMETERS_CSV);
-        FileUtilities.writeFile(parametersSb.toString(), paramsFile);
-
-        StringBuilder diametersSb = new StringBuilder();
-        diametersSb.append("id;ext diameter [cm];thickness [cm]\n");
-        File diametersFile = new File(inFolder, Constants.DIAMETERS_CSV);
-        FileUtilities.writeFile(diametersSb.toString(), diametersFile);
-
-        pm.worked(1);
         pm.done();
     }
 
-    private String nc( Object value ) {
-        if (value == null) {
-            value = "";
+    /**
+     * Create an empty layer with the given fields, if it is not in the database.
+     */
+    private void createLayer( ASpatialDb db, String name, Class< ? > geometryClass, CoordinateReferenceSystem crs,
+            ITrentoPType... fields ) throws Exception {
+        if (db.hasTable(SqlName.m(name))) {
+            pm.message("The layer " + name + " exists already, it is left as it is.");
+            return;
         }
-        return value.toString();
-    }
-
-    /**
-     * Build the Calibration Type.
-     * 
-     * @param crs
-     * @return the type for the calibration shp.
-     */
-    private SimpleFeatureType getCalibrationFeatureType( CoordinateReferenceSystem crs ) {
         SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("pipes");
+        b.setName(name);
         b.setCRS(crs);
-        b.add("the_geom", LineString.class);
-        b.add(TrentoPFeatureType.PipesTrentoP.ID.getAttributeName(), TrentoPFeatureType.PipesTrentoP.ID.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.PER_AREA.getAttributeName(), TrentoPFeatureType.PipesTrentoP.PER_AREA.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.RUNOFF_COEFFICIENT.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.AVERAGE_RESIDENCE_TIME.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.KS.getAttributeName(), TrentoPFeatureType.PipesTrentoP.KS.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.AVERAGE_SLOPE.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.AVERAGE_SLOPE.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.DIAMETER.getAttributeName(), TrentoPFeatureType.PipesTrentoP.DIAMETER.getClazz());
-        return b.buildFeatureType();
-    }
-
-    /**
-     * Build the Project Type.
-     * 
-     * @param crs
-     * @return the type for the calibration shp.
-     */
-    private SimpleFeatureType getProjectFeatureType( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("pipes");
-        b.setCRS(crs);
-        b.add("the_geom", LineString.class);
-        b.add(TrentoPFeatureType.PipesTrentoP.ID.getAttributeName(), TrentoPFeatureType.PipesTrentoP.ID.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.PER_AREA.getAttributeName(), TrentoPFeatureType.PipesTrentoP.PER_AREA.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.RUNOFF_COEFFICIENT.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.RUNOFF_COEFFICIENT.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.AVERAGE_RESIDENCE_TIME.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.KS.getAttributeName(), TrentoPFeatureType.PipesTrentoP.KS.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.MINIMUM_PIPE_SLOPE.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.MINIMUM_PIPE_SLOPE.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.PIPE_SECTION_TYPE.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.PIPE_SECTION_TYPE.getClazz());
-        b.add(TrentoPFeatureType.PipesTrentoP.AVERAGE_SLOPE.getAttributeName(),
-                TrentoPFeatureType.PipesTrentoP.AVERAGE_SLOPE.getClazz());
-        return b.buildFeatureType();
-    }
-
-    /**
-     * Build the areas Type.
-     * 
-     * @param crs
-     * @return the type for the areas shp.
-     */
-    private SimpleFeatureType getAreasFeatureType( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("areas");
-        b.setCRS(crs);
-        b.add("the_geom", Polygon.class);
-        b.add(TrentoPFeatureType.AreasTrentoP.ID.getAttributeName(), TrentoPFeatureType.AreasTrentoP.ID.getClazz());
-        b.add(TrentoPFeatureType.AreasTrentoP.FORCEAREA.getAttributeName(), TrentoPFeatureType.AreasTrentoP.FORCEAREA.getClazz());
-
-        return b.buildFeatureType();
-    }
-
-    /**
-     * Build the wells Type.
-     * 
-     * @param crs
-     * @return the type for the wells shp.
-     */
-    private SimpleFeatureType getJunctionsFeatureType( CoordinateReferenceSystem crs ) {
-        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
-        b.setName("junctions");
-        b.setCRS(crs);
-        b.add("the_geom", Point.class);
-        b.add(TrentoPFeatureType.JunctionsTrentoP.ID.getAttributeName(), TrentoPFeatureType.JunctionsTrentoP.ID.getClazz());
-        b.add(TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getAttributeName(), TrentoPFeatureType.JunctionsTrentoP.ELEVATION.getClazz());
-        b.add(TrentoPFeatureType.JunctionsTrentoP.DEPTH.getAttributeName(), TrentoPFeatureType.JunctionsTrentoP.DEPTH.getClazz());
-
-        return b.buildFeatureType();
-    }
-
-    public static void main( String[] args ) throws Exception {
-        OmsTrentoPProjectFilesGenerator gen = new OmsTrentoPProjectFilesGenerator();
-        gen.inFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\file_vuoti_check\\project";
-        gen.pMode = Variables.PROJECT;
-//        gen.inFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/file_vuoti_check/calibration";
-//        gen.pMode = Variables.CALIBRATION;
-        gen.pCode = "EPSG:32632";
-        gen.process();
+        b.add("the_geom", geometryClass);
+        for( ITrentoPType field : fields ) {
+            b.add(field.getAttributeName(), field.getClazz());
+        }
+        SpatialDbsImportUtils.createTableFromSchema(db, b.buildFeatureType(), SqlName.m(name), null, false);
     }
 
 }

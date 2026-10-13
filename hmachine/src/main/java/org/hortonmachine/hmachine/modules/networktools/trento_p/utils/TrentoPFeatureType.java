@@ -50,16 +50,6 @@ public class TrentoPFeatureType {
     public final static String ELEVATION_STR = "elev";
     
     /**
-     * The field of the depth of the junction.
-     */
-    public final static String DEPTH_STR = "depth";
-
-    /**
-     * The field of the forced area of the areas.
-     */
-    public final static String FORCEAREA_STR = "forcearea";
-    
-    /**
      * The field of the runoff coefficent in the inPipes featureCollections.
      */
 
@@ -235,8 +225,7 @@ public class TrentoPFeatureType {
      */
     public static enum JunctionsTrentoP implements ITrentoPType {
         ID(ID_STR, Integer.class), //
-        ELEVATION(ELEVATION_STR, Double.class), //
-        DEPTH(DEPTH_STR, Double.class); //
+        ELEVATION(ELEVATION_STR, Double.class); //
         
         private Class< ? > clazz;
         
@@ -265,8 +254,7 @@ public class TrentoPFeatureType {
      * The areas attributes and classes.
      */
     public static enum AreasTrentoP implements ITrentoPType {
-        ID(ID_STR, Integer.class), //
-        FORCEAREA(FORCEAREA_STR, Double.class); //
+        ID(ID_STR, Integer.class); //
         
         private Class< ? > clazz;
         

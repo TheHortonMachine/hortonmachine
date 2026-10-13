@@ -6,8 +6,9 @@
 # The scripts run in this order, each on the outputs of the previous ones. The image is
 # Module_raster.png: a module with several outputs has one line each, with the script
 # only in the first one and - in the others.
-# The raster can be the difference of two rasters: a.tif - b.tif, or a vector of lines (.shp),
-# drawn in the strongest color of the colortable.
+# The raster can be the difference of two rasters: a.tif - b.tif, or a vector of lines (.shp, or a
+# layer of a GeoPackage: file.gpkg#layer, the map named after the layer), drawn in the strongest
+# color of the colortable.
 # The raster can be - for a module without a map: its script is only run.
 # The colortable is one of the HortonMachine ones (EColorTables), rainbow if it is not.
 # Options: positive (draw only values above 0), classes (legend with the distinct values
@@ -120,6 +121,10 @@ SaintGeo       | -                                    | river_net.shp           
 SaintGeo       | ../examples/hm/saintgeo_sections.groovy | river_sections.shp       | reds     | base=river.tif,over=river_main_smooth.shp
 SaintGeo       | ../examples/hm/saintgeo.groovy       | flood_levels.csv            | -        | lines=bottom;start_level;max_level
 SaintGeo       | -                                    | flood_discharge.csv         | -        | lines=head;outlet
+TrentoPProjectFilesGenerator | ../examples/hm/trentopprojectfilesgenerator.groovy | - | -
+TrentoPProject | ../examples/hm/trentopproject.groovy | sewer_project.gpkg#network_project_output | rainbow | classes,base=dtm_sewer.tif,field=diameter
+TrentoPCalibration | ../examples/hm/trentopcalibration.groovy | sewer_calibration.gpkg#network_calibration_output | rainbow | base=dtm_sewer.tif,field=fillmax
+TrentoPCalibration | -                                | sewer_discharge.csv         | -        | lines=31;27;1
 IntensityClassifierFlood | ../examples/hm/intensityclassifierflood.groovy | intensity_tr200.tif | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 1=low;2=medium;3=high
 HazardClassifier | ../examples/hm/hazardclassifier.groovy | hazard_ip1.tif          | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 2=low;3=medium;4=high
 HazardClassifier | -                                  | hazard_ip2.tif              | contrasting | classes,base=river.tif,extent=1638300:1639500:5112400:5113600 | 2=low;3=medium;4=high

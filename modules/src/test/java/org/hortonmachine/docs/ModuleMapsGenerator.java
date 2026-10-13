@@ -98,7 +98,8 @@ import groovy.lang.GroovyShell;
  *
  * <p>
  * The raster can be the difference of two rasters, written as <code>a.tif - b.tif</code>, or a
- * vector of lines (<code>.shp</code>), drawn in the strongest color of the colortable, without
+ * vector of lines (<code>.shp</code>, or a layer of a GeoPackage, <code>file.gpkg#layer</code>, whose map is
+ * named after the layer), drawn in the strongest color of the colortable, without
  * legend, or a table (<code>.csv</code>) written by the script, drawn as a histogram: the first
  * column is the value of each bar, colored with the colortable, the second its height.
  * The colortable is one of {@link EColorTables}: <b>rainbow</b> is used if it is not.
@@ -228,9 +229,13 @@ public class ModuleMapsGenerator {
         String separator = "_";
         // a difference of two rasters is named after both: a-b
         for( String raster : spec.raster().split(" - ") ) {
-            // a raster in a subfolder of the outputs is named after its file only
+            // a raster in a subfolder of the outputs is named after its file only, a layer of a GeoPackage after the layer
             String rasterName = new File(raster.trim()).getName();
-            name.append(separator).append(rasterName.replaceFirst("\\.[^.]+$", ""));
+            if (rasterName.contains("#")) {
+                name.append(separator).append(rasterName.substring(rasterName.indexOf('#') + 1));
+            } else {
+                name.append(separator).append(rasterName.replaceFirst("\\.[^.]+$", ""));
+            }
             separator = "-";
         }
         // a vector colored by a field is also named after it
@@ -248,8 +253,21 @@ public class ModuleMapsGenerator {
         }
         workFolder.mkdirs();
         File dataFolder = new File(specFile.getParentFile(), "data");
-        for( File file : dataFolder.listFiles() ) {
-            Files.copy(file.toPath(), new File(workFolder, file.getName()).toPath());
+        copyFolder(dataFolder, workFolder);
+    }
+
+    /**
+     * Copy the content of a folder, with its subfolders, as the input folders of the sewer modules.
+     */
+    private static void copyFolder( File fromFolder, File toFolder ) throws Exception {
+        for( File file : fromFolder.listFiles() ) {
+            File toFile = new File(toFolder, file.getName());
+            if (file.isDirectory()) {
+                toFile.mkdirs();
+                copyFolder(file, toFile);
+            } else {
+                Files.copy(file.toPath(), toFile.toPath());
+            }
         }
     }
 
@@ -269,7 +287,7 @@ public class ModuleMapsGenerator {
     }
 
     private BufferedImage drawMap( MapSpec spec ) throws Exception {
-        if (spec.raster().endsWith(".shp")) {
+        if (spec.raster().endsWith(".shp") || spec.raster().contains(".gpkg#")) {
             return drawVectorMap(spec);
         }
         if (spec.raster().endsWith(".csv")) {

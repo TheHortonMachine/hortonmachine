@@ -18,15 +18,17 @@
 package org.hortonmachine.hmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
-import static org.hortonmachine.gears.libs.modules.HMConstants.OTHER;
+import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_KEYWORDS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_LABEL;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_LICENSE;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_NAME;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_STATUS;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TMAX;
 
 import java.util.ArrayList;
@@ -34,21 +36,29 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.sorting.QuickSortAlgorithm;
 import org.hortonmachine.hmachine.i18n.HortonMessageHandler;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.net.Network;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.net.NetworkBuilder;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.net.NetworkCalibration;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.net.Pipe;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.CalibrationTimeParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.IParametersCode;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectNeededParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectOptionalParameterCodes;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.parameters.ProjectTimeParameterCodes;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.PipeCombo;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPFeatureType;
@@ -58,7 +68,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -71,6 +83,8 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSTRENTOP_DESCRIPTION)
+@Documentation(OMSTRENTOP_DOCUMENTATION)
+@Bibliography({BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979})
 @Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
 @Keywords(OMSTRENTOP_KEYWORDS)
 @Label(OMSTRENTOP_LABEL)
@@ -79,30 +93,48 @@ import oms3.annotations.Unit;
 @License(OMSTRENTOP_LICENSE)
 public class OmsTrentoPCalibration extends HMModel {
 
-    public static final String OMSTRENTOP_DESCRIPTION = "Module to verify the discharge for each pipe.";
-    public static final String OMSTRENTOP_DOCUMENTATION = "OmsTrentoP.html";
-    public static final String OMSTRENTOP_KEYWORDS = "Sewer network";
-    public static final String OMSTRENTOP_LABEL = OTHER;
+    public static final String OMSTRENTOP_DESCRIPTION = "Verifies an existing storm sewer network: the discharge and the fill degree of each pipe in time, for a given rain.";
+    public static final String OMSTRENTOP_DOCUMENTATION = """
+            The calibration (verification) mode of TrentoP: the diameters of the pipes are known, and the module computes \
+            the hydrographs of the network for a rain, with the same geomorphological model as TrentoPProject.
+
+            The rain is either a time series of intensities, in mm/min, or it is generated from the rainfall curve, when the \
+            `Coefficient of the pluviometric curve` and `Exponent of the pluviometric curve` are in the parameters file. \
+            A generated rain lasting tp has the constant intensity a·tp^(n-1), so that it brings the depth a·tp^n of the \
+            curve. With a maximum rain duration, the durations from the `Minimum Rain Time step` up to it, in steps of the \
+            time step, are tried, and the one that gives the highest discharge is kept. Without it, a single rain lasting the \
+            whole simulation is used.
+
+            The pipe slopes are the slopes between the elevations of the junctions at their ends. When a pipe fills up \
+            completely, the simulation stops with a warning: the pipes downstream of it, not yet computed, keep a discharge \
+            of 0.
+            """;
+    public static final String OMSTRENTOP_KEYWORDS = "Sewer network, Storm water, Urban hydrology";
+    public static final String OMSTRENTOP_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSTRENTOP_NAME = "";
     public static final int OMSTRENTOP_STATUS = 10;
     public static final String OMSTRENTOP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSTRENTOP_AUTHORNAMES = "Daniele Andreis, Rigon Riccardo, David tamanini, Andrea Antonello, Silvia Franceschi";
     public static final String OMSTRENTOP_AUTHORCONTACTS = "";
 
-    public static final String OMSTRENTOP_tMax_DESCRIPTION = "Max number of time step.";
-    public static final String OMSTRENTOP_tpMaxCalibration_DESCRIPTION = "Maximum Rain Time step to evaluate the Rain.";
-    public static final String OMSTRENTOP_dt_DESCRIPTION = "Time step used to calculate the discharge. If not set the rain time step is used.";
+    public static final String OMSTRENTOP_tMax_DESCRIPTION = "The duration of the simulation (default: the Maximum simulation time step of the parameters, or 120).";
+    public static final String OMSTRENTOP_tpMaxCalibration_DESCRIPTION = "The maximum rain duration (default: the Maximum Rain Time step of the parameters). With the rainfall curve, the rain durations from the Minimum Rain Time step up to it are tried, with a rain file only the rain up to it is used.";
+    public static final String OMSTRENTOP_dt_DESCRIPTION = "The time step of the generated rain and of the results (default: the Hydraulic time step of the parameters). With a rain file, the time step of the file is used.";
 
-    public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The outlet, the last pipe of the network.";
-    public static final String OMSTRENTOP_inParameters_DESCRIPTION = "Execution parameters.";
-    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The input pipes network geomtries.";
-    public static final String OMSTRENTOP_inJunctions_DESCRIPTION = "The input junctions geomtries.";
-    public static final String OMSTRENTOP_inAreas_DESCRIPTION = "The input areas geomtries.";
-    public static final String OMSTRENTOP_inRain_DESCRIPTION = "rain data.";
-    public static final String OMSTRENTOP_outPipes_DESCRIPTION = "The output feature collection which contains the net with all hydraulics value.";
-    public static final String OMSTRENTOP_outDischarge_DESCRIPTION = "The discharge for each pipes at several time.";
-    public static final String OMSTRENTOP_outFillDegree_DESCRIPTION = "The fill degree for each pipes at several time.";
-    public static final String OMSTRENTOP_outTpMax_DESCRIPTION = "The time which give the maximum discharge.";
+    public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The ID of the outlet, the last pipe of the network.";
+    public static final String OMSTRENTOP_inParameters_DESCRIPTION = "The parameters, by name.";
+    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The pipes of the network.";
+    public static final String OMSTRENTOP_inJunctions_DESCRIPTION = "The junctions at the ends of the pipes.";
+    public static final String OMSTRENTOP_inAreas_DESCRIPTION = "The areas drained by the pipes.";
+    public static final String OMSTRENTOP_inRain_DESCRIPTION = "The rain intensities, in mm/min, used when the rainfall curve is not in the parameters.";
+    public static final String OMSTRENTOP_outPipes_DESCRIPTION = "The pipes, with the maximum discharge (qmax, l/s), its time (t_qmax, minutes) and the maximum fill degree (fillmax).";
+    public static final String OMSTRENTOP_outDischarge_DESCRIPTION = "The discharge of each pipe in time, in l/s.";
+    public static final String OMSTRENTOP_outFillDegree_DESCRIPTION = "The fill degree of each pipe in time.";
+    public static final String OMSTRENTOP_outTpMax_DESCRIPTION = "The duration of the rain of the results: the one that gives the maximum discharge, when it is searched.";
+
+    public static final String QMAX_FIELD = "qmax";
+    public static final String T_QMAX_FIELD = "t_qmax";
+    public static final String FILLMAX_FIELD = "fillmax";
 
     @Description(OMSTRENTOP_pOutPipe_DESCRIPTION)
     @Unit("-")
@@ -115,9 +147,9 @@ public class OmsTrentoPCalibration extends HMModel {
     public Integer dt;
 
     @Description(OMSTRENTOP_tMax_DESCRIPTION)
-    @Unit("-")
+    @Unit("minutes")
     @In
-    public int tMax = (int) DEFAULT_TMAX;
+    public Integer tMax = null;
 
     @Description(OMSTRENTOP_tpMaxCalibration_DESCRIPTION)
     @Unit("minutes")
@@ -145,6 +177,10 @@ public class OmsTrentoPCalibration extends HMModel {
     @Description(OMSTRENTOP_inAreas_DESCRIPTION)
     @In
     public SimpleFeatureCollection inAreas = null;
+
+    @Description(OMSTRENTOP_outPipes_DESCRIPTION)
+    @Out
+    public SimpleFeatureCollection outPipes = null;
 
     @Description(OMSTRENTOP_outDischarge_DESCRIPTION)
     @UI("outfile")
@@ -243,6 +279,24 @@ public class OmsTrentoPCalibration extends HMModel {
 
         pA = getParameterDouble(ProjectNeededParameterCodes.A);
         pN = getParameterDouble(ProjectNeededParameterCodes.N);
+        if ((pA == null) != (pN == null)) {
+            throw new ModelsIllegalargumentException("The rainfall curve needs both the parameters '"
+                    + ProjectNeededParameterCodes.A.getKey() + "' and '" + ProjectNeededParameterCodes.N.getKey() + "'.", this, pm);
+        }
+
+        // the time arguments not given are taken from the parameters
+        if (dt == null) {
+            dt = getParameterInteger(CalibrationTimeParameterCodes.STEP);
+        }
+        if (tMax == null) {
+            tMax = getParameterInteger(CalibrationTimeParameterCodes.MAXIMUM_TIME);
+            if (tMax == null) {
+                tMax = (int) DEFAULT_TMAX;
+            }
+        }
+        if (tpMaxCalibration == null) {
+            tpMaxCalibration = getParameterInteger(CalibrationTimeParameterCodes.MAXIMUM_RAIN_TIME);
+        }
 
         /*
          * verify the parameter in input (these method, when the OMS annotation
@@ -267,11 +321,17 @@ public class OmsTrentoPCalibration extends HMModel {
          * create a network object. It can be a NetworkCalibration if the mode
          * (pTest==1) verify otherwise is a NetworkBuilder.
          */
-        Network network = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge, outFillDegree, warningBuilder,
-                tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax).build();
+        NetworkCalibration.Builder builder = new NetworkCalibration.Builder(pm, networkPipes, dt, inRain, outDischarge,
+                outFillDegree, warningBuilder, tpMaxCalibration, foundTp).celerityFactor(pCelerityFactor).tMax(tMax);
+        if (pA != null && pN != null) {
+            builder.rainfallCurve(pA, pN);
+        }
+        builder.minRainTime(getParameterDouble(ProjectTimeParameterCodes.MINIMUM_TIME));
+        Network network = builder.build();
         network.geoSewer();
         outTpMax = ((NetworkCalibration) network).getTpMax();
-        
+        outPipes = createOutPipes();
+
         pm.message("Network topology used:");
         for( Pipe pipe : networkPipes ) {
            String pmsg = "\tPipe " + pipe.getId() + " -> " + pipe.getIdPipeWhereDrain();
@@ -294,6 +354,58 @@ public class OmsTrentoPCalibration extends HMModel {
             return null;
         }
         return value.doubleValue();
+    }
+
+    /**
+     * @return the value of the parameter, only if it is in the parameters, else <code>null</code>.
+     */
+    private Integer getParameterInteger( IParametersCode codes ) {
+        Number value = inParameters.get(codes.getKey());
+        if (value == null) {
+            return null;
+        }
+        return value.intValue();
+    }
+
+    /**
+     * Add to the input pipes the maximum discharge, its time and the maximum fill degree.
+     */
+    private SimpleFeatureCollection createOutPipes() {
+        SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
+        typeBuilder.init(inPipes.getSchema());
+        typeBuilder.add(QMAX_FIELD, Double.class);
+        typeBuilder.add(T_QMAX_FIELD, Double.class);
+        typeBuilder.add(FILLMAX_FIELD, Double.class);
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(typeBuilder.buildFeatureType());
+
+        DefaultFeatureCollection outFC = new DefaultFeatureCollection();
+        for( SimpleFeature pipe : FeatureUtilities.featureCollectionToList(inPipes) ) {
+            int id = ((Number) pipe.getAttribute(TrentoPFeatureType.ID_STR)).intValue();
+            double qMax = 0;
+            double tQMax = 0;
+            double fillMax = 0;
+            DateTime first = null;
+            for( Entry<DateTime, HashMap<Integer, double[]>> entry : outDischarge.entrySet() ) {
+                if (first == null) {
+                    first = entry.getKey();
+                }
+                double[] q = entry.getValue().get(id);
+                if (q != null && q[0] > qMax) {
+                    qMax = q[0];
+                    tQMax = (entry.getKey().getMillis() - first.getMillis()) / 60000.0;
+                }
+                double[] fill = outFillDegree.get(entry.getKey()).get(id);
+                if (fill != null && fill[0] > fillMax) {
+                    fillMax = fill[0];
+                }
+            }
+            builder.addAll(pipe.getAttributes());
+            builder.add(qMax);
+            builder.add(tQMax);
+            builder.add(fillMax);
+            outFC.add(builder.buildFeature(null));
+        }
+        return outFC;
     }
 
     /*
@@ -404,24 +516,23 @@ public class OmsTrentoPCalibration extends HMModel {
             int iRainMax = (int) (Math.floor((double) tpMaxCalibration / (double) dt));
             DateTime startTime = new DateTime(System.currentTimeMillis());
             inRain = new LinkedHashMap<DateTime, double[]>();
-            double tp = ((double) dt) / 2;
+            // the constant intensity [mm/min] of the longest rain: NetworkCalibration takes the one of each rain
+            // duration from the curve, the series gives the time steps
+            double intensity = pA * pow(tpMaxCalibration / Constants.HOUR2MIN, pN - 1) / Constants.HOUR2MIN;
             DateTime newDate = startTime;
             for( int i = 0; i <= iMax; i++ ) {
                 newDate = newDate.plusMinutes(dt);
-                double hourTime = tp / Constants.HOUR2MIN;
-                double value;
-                if (i < iRainMax) {
-                    value = pA * pow(hourTime, pN - 1) / Constants.HOUR2MIN;
-                } else {
-                    value = 0.0;
-                }
+                double value = i < iRainMax ? intensity : 0.0;
                 inRain.put(newDate, new double[]{value});
-                tp = tp + dt;
             }
 
         } else {
             // force the time steep to null in order to read it to the file.
             dt = null;
+            // use the whole rain
+            if (tpMaxCalibration == null) {
+                tpMaxCalibration = tMax;
+            }
         }
         if (inRain == null) {
             pm.errorMessage(msg.message("trentoP.error.inputRainMatrix") + " rain file");

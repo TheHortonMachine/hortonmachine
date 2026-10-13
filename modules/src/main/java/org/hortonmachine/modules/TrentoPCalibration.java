@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_KEYWORDS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_LABEL;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_LICENSE;
@@ -29,29 +30,31 @@ import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrento
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_inRain_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_outDischarge_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_outFillDegree_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_outPipes_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_outTpMax_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_pOutPipe_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_tMax_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration.OMSTRENTOP_tpMaxCalibration_DESCRIPTION;
-import static org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants.DEFAULT_TMAX;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979;
 
 import java.io.File;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.gears.io.timeseries.OmsTimeSeriesReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPCalibration;
 import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
+import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.TrentoPDatabase;
 import org.joda.time.DateTime;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -64,13 +67,28 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSTRENTOP_DESCRIPTION)
+@Documentation(OMSTRENTOP_DOCUMENTATION)
+@Bibliography({BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979})
 @Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
 @Keywords(OMSTRENTOP_KEYWORDS)
-@Label("")
+@Label(OMSTRENTOP_LABEL)
 @Name(OMSTRENTOP_NAME)
 @Status(OMSTRENTOP_STATUS)
 @License(OMSTRENTOP_LICENSE)
 public class TrentoPCalibration extends HMModel {
+
+    @Description("The database of the network, with the layers network_calibration, areas and junctions and the table parameters: a GeoPackage (.gpkg) or H2GIS (.mv.db) file, or a PostGIS database, as jdbc:postgresql://host:port/database. The verified network is written into it, as the layer network_calibration_output, with the maximum discharge (qmax, l/s), its time (t_qmax, minutes) and the maximum fill degree (fillmax) of each pipe.")
+    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
+    @In
+    public String inDatabase = null;
+
+    @Description("The optional user of the database.")
+    @In
+    public String pUser = null;
+
+    @Description("The optional password of the database.")
+    @In
+    public String pPassword = null;
 
     @Description(OMSTRENTOP_pOutPipe_DESCRIPTION)
     @Unit("-")
@@ -80,34 +98,22 @@ public class TrentoPCalibration extends HMModel {
     @Description(OMSTRENTOP_dt_DESCRIPTION)
     @Unit("minutes")
     @In
-    public Integer dt;
+    public Integer dt = null;
 
     @Description(OMSTRENTOP_tMax_DESCRIPTION)
-    @Unit("-")
+    @Unit("minutes")
     @In
-    //maximum duration of the current calibration simulation
-    public int tMax = (int) DEFAULT_TMAX;
+    public Integer tMax = null;
 
     @Description(OMSTRENTOP_tpMaxCalibration_DESCRIPTION)
     @Unit("minutes")
     @In
-    //overall duration of the rainfall used for the calibration if statistical model is used 
     public Integer tpMaxCalibration = null;
 
     @Description(OMSTRENTOP_inRain_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_CSV)
     @In
     public String inRain = null;
-
-    @Description("The TrentoP project data folder.")
-    @UI(HMConstants.FOLDERIN_UI_HINT)
-    @In
-    public String inFolder = null;
-
-    @Description(OMSTRENTOP_outPipes_DESCRIPTION)
-    @UI(HMConstants.FILEOUT_UI_HINT)
-    @In
-    public String outPipes = null;
 
     @Description(OMSTRENTOP_outDischarge_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -129,17 +135,10 @@ public class TrentoPCalibration extends HMModel {
     @Execute
     public void process() throws Exception {
 
-        checkNull(inFolder);
+        checkNull(inDatabase, pOutPipe);
 
-        File baseFolderFile = new File(inFolder);
-        File pipesFile = new File(baseFolderFile, Constants.NETWORK_CALIBRATION_NAME_SHP);
-        File areasFile = new File(baseFolderFile, Constants.AREA_NAME_SHP);
-        File junctionsFile = new File(baseFolderFile, Constants.JUNCTIONS_NAME_SHP);
-        File parametersFile = new File(baseFolderFile, Constants.PARAMETERS_CSV);
-
-        checkFileExists(pipesFile.getAbsolutePath(), areasFile.getAbsolutePath(), junctionsFile.getAbsolutePath(),
-                parametersFile.getAbsolutePath());
         OmsTrentoPCalibration trento_P = new OmsTrentoPCalibration();
+        trento_P.pm = pm;
         trento_P.pOutPipe = pOutPipe;
         if (inRain != null) {
             OmsTimeSeriesReader rainReader = new OmsTimeSeriesReader();
@@ -150,28 +149,22 @@ public class TrentoPCalibration extends HMModel {
             trento_P.inRain = rainReader.outData;
         }
 
-        List<String> paramsList = FileUtilities.readFileToLinesList(parametersFile);
-        paramsList.remove(0);
-        HashMap<String, Number> paramsMap = new HashMap<String, Number>();
-        for( String paramLine : paramsList ) {
-            String[] lineSplit = paramLine.split(";");
-            paramsMap.put(lineSplit[0], Double.parseDouble(lineSplit[1]));
+        try (ASpatialDb db = TrentoPDatabase.open(inDatabase, pUser, pPassword)) {
+            trento_P.inParameters = TrentoPDatabase.readParameters(db);
+            trento_P.inPipes = TrentoPDatabase.readLayer(db, Constants.NETWORK_CALIBRATION_LAYER);
+            trento_P.inAreas = TrentoPDatabase.readLayer(db, Constants.AREAS_LAYER);
+            trento_P.inJunctions = TrentoPDatabase.readLayer(db, Constants.JUNCTIONS_LAYER);
+
+            trento_P.dt = dt;
+            trento_P.tMax = tMax;
+            trento_P.tpMaxCalibration = tpMaxCalibration;
+            trento_P.process();
+
+            TrentoPDatabase.writeLayer(db, trento_P.outPipes, Constants.NETWORK_CALIBRATION_OUTPUT_LAYER, pm);
         }
 
-        trento_P.inParameters = paramsMap;
-
-        trento_P.inPipes = getVector(pipesFile.getAbsolutePath());
-        trento_P.inAreas = getVector(areasFile.getAbsolutePath());
-        trento_P.inJunctions = getVector(junctionsFile.getAbsolutePath());
-
-        trento_P.dt = dt;
-        trento_P.tMax = tMax;
-        trento_P.tpMaxCalibration = tpMaxCalibration;
-        
-        
-        trento_P.process();
-
         results = trento_P.getResults();
+        outTpMax = trento_P.outTpMax;
 
         if (outDischarge != null && trento_P.outDischarge != null) {
             double[][] outDisch = hashToMatrix(trento_P.outDischarge, results.length);
@@ -196,15 +189,17 @@ public class TrentoPCalibration extends HMModel {
         int rows = matrix.length;
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
-                if(r==0) {
-                    if(c==0) {
-                        sb.append("TIME, ");
-                    }else {
-                        sb.append((int)matrix[r][c]).append(", ");
-                    }
-                }else {
-                    sb.append(matrix[r][c]);
+                if (c > 0) {
                     sb.append(", ");
+                }
+                if (r == 0) {
+                    if (c == 0) {
+                        sb.append("TIME");
+                    } else {
+                        sb.append((int) matrix[r][c]);
+                    }
+                } else {
+                    sb.append(matrix[r][c]);
                 }
             }
             sb.append("\n");
@@ -268,21 +263,6 @@ public class TrentoPCalibration extends HMModel {
             index++;
         }
         return rainData;
-    }
-
-    public static void main( String[] args ) throws Exception {
-        String outFolder = "D:\\Dropbox\\hydrologis\\lavori\\2020_10_trentop\\test_soraga\\new2\\";
-//        String outFolder = "/Users/hydrologis/Dropbox/hydrologis/lavori/2020_10_trentop/test_soraga/new/";
-        TrentoPCalibration c = new TrentoPCalibration();
-        c.pOutPipe = 10;
-        c.dt = 5;
-        c.tMax = 90;
-        c.tpMaxCalibration = 60;
-        c.inFolder = outFolder;
-        c.outDischarge = outFolder + "outdischarge.csv";
-        c.outFillDegree = outFolder + "outfilldegree.csv";
-        c.process();
-
     }
 
 }

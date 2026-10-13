@@ -530,7 +530,7 @@ public class Pipe {
                 throw new IllegalArgumentException(msg.message("trentoP.error.ks" + this.id));
 
             }
-            this.averageSlope = getAttribute(pipeFeature, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()).intValue();;
+            this.averageSlope = getAttribute(pipeFeature, PipesTrentoP.AVERAGE_SLOPE.getAttributeName()).doubleValue();
 
             tmp = getAttribute(pipeFeature, PipesTrentoP.AVERAGE_RESIDENCE_TIME.getAttributeName()).doubleValue();;
 

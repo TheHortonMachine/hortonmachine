@@ -18,10 +18,12 @@
 package org.hortonmachine.hmachine.modules.networktools.trento_p;
 
 import static java.lang.Math.pow;
-import static org.hortonmachine.gears.libs.modules.HMConstants.OTHER;
+import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_AUTHORCONTACTS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_AUTHORNAMES;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_DOCUMENTATION;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_KEYWORDS;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_LABEL;
 import static org.hortonmachine.hmachine.modules.networktools.trento_p.OmsTrentoPProject.OMSTRENTOP_LICENSE;
@@ -52,7 +54,9 @@ import org.locationtech.jts.geom.Coordinate;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -65,6 +69,8 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OMSTRENTOP_DESCRIPTION)
+@Documentation(OMSTRENTOP_DOCUMENTATION)
+@Bibliography({BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979})
 @Author(name = OMSTRENTOP_AUTHORNAMES, contact = OMSTRENTOP_AUTHORCONTACTS)
 @Keywords(OMSTRENTOP_KEYWORDS)
 @Label(OMSTRENTOP_LABEL)
@@ -73,24 +79,40 @@ import oms3.annotations.Unit;
 @License(OMSTRENTOP_LICENSE)
 public class OmsTrentoPProject extends HMModel {
 
-    public static final String OMSTRENTOP_DESCRIPTION = "Calculates the diameters of a sewer net.";
-    public static final String OMSTRENTOP_DOCUMENTATION = "OmsTrentoP.html";
-    public static final String OMSTRENTOP_KEYWORDS = "Sewer network";
-    public static final String OMSTRENTOP_LABEL = OTHER;
+    public static final String OMSTRENTOP_DESCRIPTION = "Designs a storm sewer network: the design discharge, diameter, slope and depth of each pipe.";
+    public static final String OMSTRENTOP_DOCUMENTATION = """
+            The project (design) mode of TrentoP, a geomorphological model of urban storm drainage. The pipes are designed \
+            from the head pipes down to the outlet, each for the peak discharge of the rain duration that maximizes it.
+
+            Each drained area is a linear reservoir, with residence time k = 60·c·(A/100)^α / (φ^b·s^γ) minutes, where c is \
+            the AveResT field, A the drained area in ha, φ the runoff coefficient and s the average slope of the area in %, \
+            while α, b and γ are the parameters `Exponent of the basin extension`, `Exponent of the influx coefficent` and \
+            `Exponent of the average ponderal slope`. The inflow is distributed along the pipe, and the water travels in the \
+            pipes with a delay L/u, where u is the mean velocity in the pipe times the `Celerity factor`, found iteratively. \
+            The rain comes from the rainfall curve h = a·t^n, with h in mm and t in hours.
+
+            A circular pipe gets the smallest commercial diameter that carries the discharge at the design `Fill degree` with \
+            a bottom shear stress of at least the `Tangential bottom stress`, which keeps it self-cleaning. Where the ground, \
+            or the pipe minimum slope, is steeper than the slope this needs, the pipe follows it and the diameter is designed \
+            again. Downstream, the diameters never get smaller. The excavation starts at the ground elevation of the upstream \
+            junction, minus the `Minimum excavation depth` and the outer diameter.
+            """;
+    public static final String BIBLIOGRAPHY_RODRIGUEZ_ITURBE_VALDES_1979 = "Rodríguez-Iturbe, I., Valdés, J. B. (1979). The geomorphologic structure of hydrologic response. Water Resources Research, 15(6), 1409-1420.";
+    public static final String OMSTRENTOP_KEYWORDS = "Sewer network, Storm water, Urban hydrology";
+    public static final String OMSTRENTOP_LABEL = HYDROGEOMORPHOLOGY;
     public static final String OMSTRENTOP_NAME = "";
     public static final int OMSTRENTOP_STATUS = 10;
     public static final String OMSTRENTOP_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSTRENTOP_AUTHORNAMES = "Daniele Andreis, Rigon Riccardo, David tamanini, Andrea Antonello, Silvia Franceschi";
     public static final String OMSTRENTOP_AUTHORCONTACTS = "";
-    public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "Matrix which contains the commercial diameters [cm] of the pipes.";
-    public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The outlet, the last pipe of the network.";
-    public static final String OMSTRENTOP_inRain_DESCRIPTION = "rain data.";
-    public static final String OMSTRENTOP_inParameters_DESCRIPTION = "Execution parameters.";
-    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The input pipes network geomtries.";
-    public static final String OMSTRENTOP_inJunctions_DESCRIPTION = "The input junctions geomtries.";
-    public static final String OMSTRENTOP_inAreas_DESCRIPTION = "The input areas geomtries.";
+    public static final String OMSTRENTOP_inDiameters_DESCRIPTION = "The commercial diameters and thicknesses of the pipes, in cm.";
+    public static final String OMSTRENTOP_pOutPipe_DESCRIPTION = "The ID of the outlet, the last pipe of the network.";
+    public static final String OMSTRENTOP_inParameters_DESCRIPTION = "The parameters, by name.";
+    public static final String OMSTRENTOP_inPipes_DESCRIPTION = "The pipes of the network.";
+    public static final String OMSTRENTOP_inJunctions_DESCRIPTION = "The junctions at the ends of the pipes.";
+    public static final String OMSTRENTOP_inAreas_DESCRIPTION = "The areas drained by the pipes.";
 
-    public static final String OMSTRENTOP_outPipes_DESCRIPTION = "The output feature collection which contains the net with all hydraulics value.";
+    public static final String OMSTRENTOP_outPipes_DESCRIPTION = "The designed pipes, with their discharge, diameter, slope, depths and the other hydraulic values.";
 
     @Description(OMSTRENTOP_pOutPipe_DESCRIPTION)
     @Unit("-")
@@ -190,6 +212,12 @@ public class OmsTrentoPProject extends HMModel {
          */
         // begin the process.
         pm.message(msg.message("trentoP.firstMessage"));
+
+        for( ProjectNeededParameterCodes code : ProjectNeededParameterCodes.values() ) {
+            if (inParameters.get(code.getKey()) == null) {
+                throw new ModelsIllegalargumentException("The parameter '" + code.getKey() + "' has no value.", this, pm);
+            }
+        }
 
         pAccuracy = getParameterDouble(ProjectOptionalParameterCodes.ACCURACY);
         pMinimumDepth = getParameterDouble(ProjectOptionalParameterCodes.MIN_DEPTH);
