@@ -1,6 +1,6 @@
 # LasConverter
 
-Converts the points of a LAS lidar file into a vector of points, with their elevation, intensity, classification and return number, or into a csv file, or into a new LAS file with a selection of the points. The points can be filtered by area, with a bounding box or polygons, and by classes, as 2 for the ground, returns, as 1 for the first ones, and intensity. It can also just print the header of the file and information about its points.
+Converts the points of a LAS lidar file into a vector of points, with their elevation, intensity, classification and return number, or into a csv file, or into a new LAS file with a selection of the points. The points can be filtered by area, with a bounding box or polygons, by classes, as 2 for the ground, by returns, as 1 for the first ones or last for the last one of each pulse, and by ranges of intensity and elevation. It can also just print the header of the file and information about its points. The vector can be a shapefile or a layer of a GeoPackage, as `points.gpkg#points`.
 
 ## Example
 

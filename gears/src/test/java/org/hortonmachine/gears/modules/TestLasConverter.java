@@ -20,13 +20,19 @@ package org.hortonmachine.gears.modules;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.hortonmachine.gears.io.las.core.ALasReader;
 import org.hortonmachine.gears.io.las.core.ALasWriter;
 import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.io.las.core.v_1_0.LasReaderBuffered;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
+import org.hortonmachine.gears.utils.features.FeatureUtilities;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 @SuppressWarnings("nls")
 public class TestLasConverter extends HMTestCase {
@@ -91,5 +97,99 @@ public class TestLasConverter extends HMTestCase {
 
         tmpFile.delete();
 
+    }
+
+    /**
+     * Pulses of 1 to 3 returns on a line of 10 m: the filters are combined, last keeps the last
+     * return of each pulse, the box excludes the points outside of it.
+     */
+    public void testFilters() throws Exception {
+        CoordinateReferenceSystem crs = HMTestMaps.getCrs();
+        File folder = File.createTempFile("hm_lasconverter_", "");
+        folder.delete();
+        folder.mkdirs();
+        try {
+            List<LasRecord> points = new ArrayList<LasRecord>();
+            for( int i = 0; i < 10; i++ ) {
+                int returns = i % 3 + 1;
+                for( int ret = 1; ret <= returns; ret++ ) {
+                    LasRecord point = new LasRecord();
+                    point.x = 700000 + i + 0.5;
+                    point.y = 5200000.5;
+                    point.z = 100.0 + 10 * (returns - ret);
+                    point.intensity = (short) (10 * i);
+                    point.returnNumber = (short) ret;
+                    point.numberOfReturns = (short) returns;
+                    point.classification = (short) (ret == returns ? 2 : 5);
+                    points.add(point);
+                }
+            }
+            // 4 pulses of 1 return, 3 of 2 and 3 of 3: 19 points
+            File las = new File(folder, "pulses.las");
+            try (ALasWriter w = ALasWriter.getWriter(las, crs)) {
+                w.setBounds(700000, 700010, 5200000, 5200001, 100, 120);
+                w.open();
+                for( LasRecord point : points ) {
+                    w.addPoint(point);
+                }
+            }
+
+            assertEquals(19, convert(las, folder, c -> {
+            }));
+            // a last return for each pulse
+            assertEquals(10, convert(las, folder, c -> c.pImpulses = OmsLasConverter.LAST_RETURN));
+            // the first of the 6 pulses with more returns, and the last of every pulse
+            assertEquals(16, convert(las, folder, c -> c.pImpulses = "1, last"));
+            assertEquals(10, convert(las, folder, c -> c.pClasses = "2"));
+            // the points 10 and 20 m over the ground
+            assertEquals(9, convert(las, folder, c -> c.pElevrange = "105,120"));
+            // from 3 to 5 m: pulses 3, 4 and 5 with 1, 2 and 3 returns
+            assertEquals(6, convert(las, folder, c -> {
+                c.pWest = 700003.0;
+                c.pEast = 700006.0;
+                c.pSouth = 5200000.0;
+                c.pNorth = 5200001.0;
+            }));
+            // all combined: the last returns of pulses 3, 4 and 5 over 0 intensity
+            assertEquals(3, convert(las, folder, c -> {
+                c.pImpulses = "last";
+                c.pIntensityrange = "1,1000";
+                c.pWest = 700003.0;
+                c.pEast = 700006.0;
+                c.pSouth = 5200000.0;
+                c.pNorth = 5200001.0;
+            }));
+
+            // the vector in a geopackage, with the classification
+            OmsLasConverter converter = new OmsLasConverter();
+            converter.inFile = las.getAbsolutePath();
+            converter.pClasses = "5";
+            converter.outFile = new File(folder, "points.gpkg").getAbsolutePath() + "#points";
+            converter.process();
+            List<SimpleFeature> features = FeatureUtilities
+                    .featureCollectionToList(OmsVectorReader.readVector(converter.outFile));
+            assertEquals(9, features.size());
+            for( SimpleFeature feature : features ) {
+                assertEquals(5, ((Number) feature.getAttribute("classification")).intValue());
+            }
+        } finally {
+            FileUtilities.deleteFileOrDir(folder);
+        }
+    }
+
+    private static long convert( File las, File folder, Consumer<OmsLasConverter> setup ) throws Exception {
+        OmsLasConverter converter = new OmsLasConverter();
+        converter.inFile = las.getAbsolutePath();
+        setup.accept(converter);
+        File out = new File(folder, "filtered.las");
+        converter.outFile = out.getAbsolutePath();
+        converter.process();
+        long count;
+        try (ALasReader reader = ALasReader.getReader(out, null)) {
+            reader.open();
+            count = reader.getHeader().getRecordsCount();
+        }
+        FileUtilities.deleteFileOrDir(out);
+        return count;
     }
 }

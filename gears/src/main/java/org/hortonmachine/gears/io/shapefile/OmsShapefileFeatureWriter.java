@@ -34,7 +34,9 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSSHAPEFILEFEATUREWRIT
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.geotools.api.data.DataStore;
@@ -42,10 +44,16 @@ import org.geotools.api.data.FileDataStoreFactorySpi;
 import org.geotools.api.data.FileDataStoreFinder;
 import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.data.Transaction;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
+import org.geotools.api.feature.type.AttributeDescriptor;
+import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.data.DefaultTransaction;
+import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -132,7 +140,7 @@ public class OmsShapefileFeatureWriter extends HMModel {
             if (geodata == null) {
                 featureStore.addFeatures(new DefaultFeatureCollection());
             } else {
-                featureStore.addFeatures(geodata);
+                featureStore.addFeatures(toStoreSchema(geodata, featureStore.getSchema()));
             }
             transaction.commit();
         } catch (Exception problem) {
@@ -144,6 +152,52 @@ public class OmsShapefileFeatureWriter extends HMModel {
         }
 
         hasWritten = true;
+    }
+
+    /**
+     * The shapefile cuts the names of the fields to 10 characters, and the store copies the values
+     * by name: the values of the renamed fields would get lost. In that case the features are
+     * copied to the schema of the store by the order of the fields, the geometry to the geometry.
+     */
+    private SimpleFeatureCollection toStoreSchema( SimpleFeatureCollection features, SimpleFeatureType storeType ) {
+        SimpleFeatureType type = features.getSchema();
+        List<String> names = new ArrayList<>();
+        List<String> storeNames = new ArrayList<>();
+        for( AttributeDescriptor descriptor : type.getAttributeDescriptors() ) {
+            if (!(descriptor instanceof GeometryDescriptor)) {
+                names.add(descriptor.getLocalName());
+            }
+        }
+        for( AttributeDescriptor descriptor : storeType.getAttributeDescriptors() ) {
+            if (!(descriptor instanceof GeometryDescriptor)) {
+                storeNames.add(descriptor.getLocalName());
+            }
+        }
+        if (names.equals(storeNames)) {
+            return features;
+        }
+        List<String> renamed = new ArrayList<>();
+        for( int i = 0; i < names.size(); i++ ) {
+            if (!names.get(i).equals(storeNames.get(i))) {
+                renamed.add(names.get(i) + " -> " + storeNames.get(i));
+            }
+        }
+        pm.message("The shapefile renamed the fields: " + String.join(", ", renamed));
+
+        ListFeatureCollection storeFeatures = new ListFeatureCollection(storeType);
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(storeType);
+        String storeGeometryName = storeType.getGeometryDescriptor().getLocalName();
+        try (SimpleFeatureIterator iterator = features.features()) {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                builder.set(storeGeometryName, feature.getDefaultGeometry());
+                for( int i = 0; i < names.size(); i++ ) {
+                    builder.set(storeNames.get(i), feature.getAttribute(names.get(i)));
+                }
+                storeFeatures.add(builder.buildFeature(feature.getID()));
+            }
+        }
+        return storeFeatures;
     }
 
     public static void writeShapefile( String path, SimpleFeatureCollection featureCollection, IHMProgressMonitor pm )

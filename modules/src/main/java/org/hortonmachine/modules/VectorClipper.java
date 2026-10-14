@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,18 +17,18 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_IN_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSVECTORCLIPPER_STATUS;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_IN_MAP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_LABEL;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_LICENSE;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_NAME;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper.OMSVECTORCLIPPER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -36,6 +36,7 @@ import org.hortonmachine.gears.modules.v.vectorclipper.OmsVectorClipper;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -46,6 +47,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSVECTORCLIPPER_DESCRIPTION)
+@Documentation(OMSVECTORCLIPPER_DOCUMENTATION)
 @Author(name = OMSVECTORCLIPPER_AUTHORNAMES, contact = OMSVECTORCLIPPER_AUTHORCONTACTS)
 @Keywords(OMSVECTORCLIPPER_KEYWORDS)
 @Label(OMSVECTORCLIPPER_LABEL)
@@ -64,10 +66,6 @@ public class VectorClipper extends HMModel {
     @In
     public String inClipper = null;
 
-    @Description(OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION)
-    @In
-    public int pMaxThreads = getDefaultThreadsNum();
-
     @Description(OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
@@ -78,7 +76,6 @@ public class VectorClipper extends HMModel {
         OmsVectorClipper vectorclipper = new OmsVectorClipper();
         vectorclipper.inMap = getVector(inMap);
         vectorclipper.inClipper = getVector(inClipper);
-        vectorclipper.pMaxThreads = pMaxThreads;
         vectorclipper.pm = pm;
         vectorclipper.doProcess = doProcess;
         vectorclipper.doReset = doReset;

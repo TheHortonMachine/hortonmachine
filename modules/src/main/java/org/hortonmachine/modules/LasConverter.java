@@ -20,6 +20,7 @@ package org.hortonmachine.modules;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_AUTHORCONTACTS;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_AUTHORNAMES;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_DOCUMENTATION;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_KEYWORDS;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_LABEL;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_LICENSE;
@@ -33,6 +34,7 @@ import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_outFile_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pClasses_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pEast_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pElevrange_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pImpulses_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pIntensityrange_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter.OMSLASCONVERTER_pNorth_DESCRIPTION;
@@ -45,6 +47,7 @@ import org.hortonmachine.gears.modules.v.vectorconverter.OmsLasConverter;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -55,6 +58,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSLASCONVERTER_DESCRIPTION)
+@Documentation(OMSLASCONVERTER_DOCUMENTATION)
 @Author(name = OMSLASCONVERTER_AUTHORNAMES, contact = OMSLASCONVERTER_AUTHORCONTACTS)
 @Keywords(OMSLASCONVERTER_KEYWORDS)
 @Label(OMSLASCONVERTER_LABEL)
@@ -76,6 +80,10 @@ public class LasConverter extends HMModel {
     @Description(OMSLASCONVERTER_pIntensityrange_DESCRIPTION)
     @In
     public String pIntensityrange;
+
+    @Description(OMSLASCONVERTER_pElevrange_DESCRIPTION)
+    @In
+    public String pElevrange;
 
     @Description(OMSLASCONVERTER_pImpulses_DESCRIPTION)
     @In
@@ -133,6 +141,7 @@ public class LasConverter extends HMModel {
         lasconverter.inFile = inFile;
         lasconverter.inPolygons = getVector(inPolygons);
         lasconverter.pIntensityrange = pIntensityrange;
+        lasconverter.pElevrange = pElevrange;
         lasconverter.pImpulses = pImpulses;
         lasconverter.pClasses = pClasses;
         // lasconverter.pIndexrange = pIndexrange;

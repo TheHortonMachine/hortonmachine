@@ -335,20 +335,6 @@ public class GearsMessages {
     public static final String VEGETATIONLIBRARYREADER_FILE_DESCRIPTION = "The csv file to read from.";
     public static final String VEGETATIONLIBRARYREADER_DATA_DESCRIPTION = "The list of arrays representing the values in the rows.";
 
-    public static final String OMSLINESPOLYGONIZER_DESCRIPTION = "Polygonizes a layer of lines.";
-    public static final String OMSLINESPOLYGONIZER_DOCUMENTATION = "";
-    public static final String OMSLINESPOLYGONIZER_KEYWORDS = "Vector, Polygonize";
-    public static final String OMSLINESPOLYGONIZER_LABEL = VECTORPROCESSING;
-    public static final String OMSLINESPOLYGONIZER_NAME = "linespolygonizer";
-    public static final int OMSLINESPOLYGONIZER_STATUS = 10;
-    public static final String OMSLINESPOLYGONIZER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSLINESPOLYGONIZER_AUTHORNAMES = "Antonio Falciano, Andrea Antonello";
-    public static final String OMSLINESPOLYGONIZER_AUTHORCONTACTS = "afalciano@yahoo.it, http://blog.spaziogis.it/, http://www.hydrologis.com";
-    public static final String OMSLINESPOLYGONIZER_IN_MAP_DESCRIPTION = "The map of lines to polygonize.";
-    public static final String OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION = "The map of points containing the id to put in the polygons attributes (optional).";
-    public static final String OMSLINESPOLYGONIZER_F_ID_DESCRIPTION = "The field of the points layer containing the id for the polygons (necessary if inPoints is defined).";
-    public static final String OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION = "The field of the polygonized layer containing the id (default is 'id').";
-    public static final String OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION = "The map of polygons.";
 
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DESCRIPTION = "Resamples a raster to a new cell size, on the same extent, with the chosen interpolation.";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_DOCUMENTATION = "";
@@ -605,20 +591,6 @@ public class GearsMessages {
     public static final String OMSPLAINID2VALUEREADER_FILE_NOVALUE_DESCRIPTION = "The file novalue.";
     public static final String OMSPLAINID2VALUEREADER_NOVALUE_DESCRIPTION = "The novalue wanted in the coverage.";
     public static final String OMSPLAINID2VALUEREADER_DATA_DESCRIPTION = "The read map of ids and values.";
-
-    public static final String OMSVECTORCLIPPER_DESCRIPTION = "A vector clipping module.";
-    public static final String OMSVECTORCLIPPER_DOCUMENTATION = "";
-    public static final String OMSVECTORCLIPPER_KEYWORDS = "JTS, Clip, Vector";
-    public static final String OMSVECTORCLIPPER_LABEL = VECTORPROCESSING;
-    public static final String OMSVECTORCLIPPER_NAME = "clipper";
-    public static final int OMSVECTORCLIPPER_STATUS = 5;
-    public static final String OMSVECTORCLIPPER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSVECTORCLIPPER_AUTHORNAMES = "Andrea Antonello";
-    public static final String OMSVECTORCLIPPER_AUTHORCONTACTS = "www.hydrologis.com";
-    public static final String OMSVECTORCLIPPER_IN_MAP_DESCRIPTION = "The vector map to be clipped.";
-    public static final String OMSVECTORCLIPPER_IN_CLIPPER_DESCRIPTION = "The clipping vector map.";
-    public static final String OMSVECTORCLIPPER_P_MAX_THREADS_DESCRIPTION = "Max threads to use (default 1)";
-    public static final String OMSVECTORCLIPPER_OUT_MAP_DESCRIPTION = "The resulting vector map.";
 
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DESCRIPTION = "Utility class for converting from 'id1 value1[]' to 'id1 value1' by averaging.";
     public static final String IDVALUESARRAY2IDVALUESCONVERTER_DOCUMENTATION = "";

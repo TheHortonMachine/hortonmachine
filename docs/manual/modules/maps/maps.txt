@@ -171,6 +171,9 @@ DelaunayTriangulation | ../examples/hm/delaunaytriangulation.groovy | triangles.
 VoronoiDiagram | ../examples/hm/voronoidiagram.groovy | voronoi.shp                 | elev     | field=avgelev,fill,over=subbasins_centroids.shp,extent=1638500:1640500:5112400:5114300
 VectorTableJoiner | ../examples/hm/vectortablejoiner.groovy | -                   | -
 DxfConverter   | ../examples/hm/dxfconverter.groovy   | dxf_lines.shp               | reds     | over=dxf_polygons.shp,extent=1638500:1640500:5112400:5114300
+VectorClipper  | ../examples/hm/vectorclipper.groovy  | contours_basin.shp          | elev     | field=value,over=basin.shp,extent=1638500:1640500:5112400:5114300
+VectorIntersector | ../examples/hm/vectorintersector.groovy | net_cells.shp       | elev     | field=elev_avg,over=grid.shp,extent=1638500:1640500:5112400:5114300
+LinesPolygonizer | ../examples/hm/linespolygonizer.groovy | basin_belts.shp       | rainbow  | field=belt,classes,fill,over=basin_lines.shp,extent=1638500:1640500:5112400:5114300
 RasterNull     | ../examples/hm/rasternull.groovy     | belt_middle.tif             | blues    | nolegend
 RasterMissingValuesFiller | ../examples/hm/rastermissingvaluesfiller.groovy | dtm_holes.tif | elev
 RasterMissingValuesFiller | -                         | dtm_filled.tif              | elev

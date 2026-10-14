@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-50 of the 197 toolbox modules have no manual page yet.
+46 of the 196 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -99,18 +99,14 @@
 | Kriging | experimental | Ordinary kriging algorithm. |
 | TheoreticalVariogram | certified | Teorethical semivariogram models. |
 
-## Vector Processing (10)
+## Vector Processing (6)
 
 | Module | Status | Description |
 |---|---|---|
 | Buffer | experimental | A module that performs a buffer operation on a vector layer. |
 | DwgConverter | experimental | Module to convert dxf files to geotools vecotors. |
 | IntersectionFinder | draft | Finds intersection geometries in feature collections |
-| LasFilter | experimental | Filter and/or modify a las file. |
-| LinesPolygonizer | draft | Polygonizes a layer of lines. |
 | PointsVectorizer | experimental | Module that creates a points vector layer from raster values. |
 | Shp2DxfConverter | draft | Shapefiles to dxf converter (Based on work of Michael Michaud) |
-| VectorClipper | experimental | A vector clipping module. |
-| VectorIntersector | draft | Vector layer intersector with maintaining of attributes. |
 | VectorOverlayOperators | experimental | A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables. |
 

@@ -121,6 +121,9 @@ org.hortonmachine.modules.VectorReprojector
 org.hortonmachine.modules.VectorTransformer
 org.hortonmachine.modules.LineSmootherMcMaster
 org.hortonmachine.modules.LineSmootherJaitools
+org.hortonmachine.modules.VectorClipper
+org.hortonmachine.modules.VectorIntersector
+org.hortonmachine.modules.LinesPolygonizer
 
 # Lesto
 org.hortonmachine.lesto.modules.filter.LasHistogram

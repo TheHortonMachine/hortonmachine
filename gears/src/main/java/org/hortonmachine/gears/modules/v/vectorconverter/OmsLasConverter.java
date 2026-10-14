@@ -23,6 +23,7 @@ import static org.hortonmachine.gears.utils.math.NumericsUtilities.dEq;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.geotools.api.feature.simple.SimpleFeature;
@@ -90,6 +91,10 @@ public class OmsLasConverter extends HMModel {
     @In
     public String pIntensityrange;
 
+    @Description(OMSLASCONVERTER_pElevrange_DESCRIPTION)
+    @In
+    public String pElevrange;
+
     @Description(OMSLASCONVERTER_pImpulses_DESCRIPTION)
     @In
     public String pImpulses;
@@ -137,18 +142,30 @@ public class OmsLasConverter extends HMModel {
 
     // VARS DOCS START
     public static final String OMSLASCONVERTER_DESCRIPTION = "Converts the points of a LAS lidar file into a vector of points, with their elevation, intensity, classification and return number, or into a csv or a new LAS file. The points can be filtered by area, classes, returns and intensity.";
-    public static final String OMSLASCONVERTER_DOCUMENTATION = "";
+    public static final String OMSLASCONVERTER_DOCUMENTATION = """
+            The filters are combined: a point is kept only if it passes all the given ones. The \
+            ranges include their limits. The area of the bounding box is used only if all its four \
+            boundaries are given.
+
+            In the list of the returns, last keeps the last return of each pulse, also when it is \
+            the only one: 1,last keeps the first and the last returns, the outline of the canopy and \
+            what is under it. The returns of a pulse are numbered from 1, the first that comes back \
+            to the sensor, the highest.
+
+            A LAS output keeps the records of the points as they are, with the crs of the input.
+            """;
     public static final String OMSLASCONVERTER_KEYWORDS = "Lidar, LAS, Points, Conversion";
     public static final String OMSLASCONVERTER_LABEL = VECTORPROCESSING;
     public static final String OMSLASCONVERTER_NAME = "lasconverter";
-    public static final int OMSLASCONVERTER_STATUS = 5;
+    public static final int OMSLASCONVERTER_STATUS = 40;
     public static final String OMSLASCONVERTER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSLASCONVERTER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSLASCONVERTER_AUTHORCONTACTS = "www.hydrologis.com";
     public static final String OMSLASCONVERTER_inFile_DESCRIPTION = "The LAS file.";
     public static final String OMSLASCONVERTER_inPolygons_DESCRIPTION = "An optional vector of polygons: only the points inside them are kept.";
     public static final String OMSLASCONVERTER_pIntensityrange_DESCRIPTION = "The range of the intensity of the points to keep, as min,max.";
-    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of the returns to keep, as 1 for the first returns.";
+    public static final String OMSLASCONVERTER_pElevrange_DESCRIPTION = "The range of the elevation of the points to keep, as min,max.";
+    public static final String OMSLASCONVERTER_pImpulses_DESCRIPTION = "The comma separated list of the returns to keep, as 1 for the first returns, or last for the last return of each pulse.";
     public static final String OMSLASCONVERTER_pClasses_DESCRIPTION = "The comma separated list of the classes to keep, as 2 for the ground.";
     public static final String OMSLASCONVERTER_pIndexrange_DESCRIPTION = "The min,max index of data to consider (useful to split in different files). Note that filters are applied after this for performance reasons, so resulting data might be less than expected.";
     public static final String OMSLASCONVERTER_pNorth_DESCRIPTION = "The optional north boundary of the area to keep.";
@@ -158,12 +175,16 @@ public class OmsLasConverter extends HMModel {
     public static final String OMSLASCONVERTER_doHeader_DESCRIPTION = "Only print the header of the file.";
     public static final String OMSLASCONVERTER_doInfo_DESCRIPTION = "Only print information about the points of the file.";
     public static final String OMSLASCONVERTER_doBbox_DESCRIPTION = "Write the bounding box of the points as a polygon, instead of the points.";
-    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file: a vector of points, a csv or a LAS file.";
+    public static final String OMSLASCONVERTER_outFile_DESCRIPTION = "The output file: a LAS file (.las), a csv (.csv) or a vector of points (as .shp or .gpkg#layer).";
     // VARS DOCS END
 
+    public static final String LAST_RETURN = "last";
+
     private double[] intensityRange = null;
+    private double[] elevRange = null;
     // private long[] indexRange = null;
     private double[] impulses = null;
+    private boolean doLastReturn = false;
     private int[] classes = null;
 
     private ALasReader lasReader;
@@ -184,16 +205,18 @@ public class OmsLasConverter extends HMModel {
             filterPolygons = PreparedGeometryFactory.prepare(polygonUnion);
         }
 
-        boolean doShapefile = false;
+        // anything that is not a las or a csv is a vector, as a shapefile or a geopackage layer
+        boolean doVector = false;
         boolean doCsv = false;
         boolean doLas = false;
         if (outFile != null) {
-            if (outFile.endsWith(".shp")) {
-                doShapefile = true;
-            } else if (outFile.endsWith(".las")) {
+            String lowerCase = outFile.toLowerCase();
+            if (lowerCase.endsWith(".las")) {
                 doLas = true;
-            } else if (outFile.endsWith(".csv")) {
+            } else if (lowerCase.endsWith(".csv")) {
                 doCsv = true;
+            } else {
+                doVector = true;
             }
         }
 
@@ -205,32 +228,27 @@ public class OmsLasConverter extends HMModel {
         ILasHeader header = lasReader.getHeader();
         CoordinateReferenceSystem crs = header.getCrs();
         if (crs == null) {
+            lasReader.close();
             throw new ModelsIllegalargumentException("No CRS infromation available for the input data.", this);
         }
 
         if (doHeader) {
             final String headerString = header.toString();
             pm.message(headerString);
-            if (!doInfo)
+            if (!doInfo) {
+                lasReader.close();
                 return;
+            }
         }
 
-        if (doBbox && doShapefile) {
+        if (doBbox && doVector) {
             createBboxGeometry(crs, lasFile, outGeodata);
+            lasReader.close();
             return;
         }
 
-        if (pIntensityrange != null) {
-            final String[] split = pIntensityrange.split(","); //$NON-NLS-1$
-            if (split.length != 2) {
-                throw new ModelsIllegalargumentException("Intensity range has to be of the form: min,max", this, pm);
-            }
-            try {
-                intensityRange = new double[]{Double.parseDouble(split[0]), Double.parseDouble(split[1])};
-            } catch (final Exception e) {
-                throw new ModelsIllegalargumentException("Problem in converting min and max to numbers.", this, pm);
-            }
-        }
+        intensityRange = parseRange(pIntensityrange, "Intensity");
+        elevRange = parseRange(pElevrange, "Elevation");
 
         // if (pIndexrange != null) {
         //            final String[] split = pIndexrange.split(","); //$NON-NLS-1$
@@ -248,15 +266,21 @@ public class OmsLasConverter extends HMModel {
         // }
 
         if (pImpulses != null) {
-            final String[] split = pImpulses.split(","); //$NON-NLS-1$
-            try {
-                impulses = new double[split.length];
-                for( int i = 0; i < split.length; i++ ) {
-                    impulses[i] = Double.parseDouble(split[i]);
+            List<Double> impulsesList = new ArrayList<>();
+            for( String impulseString : pImpulses.split(",") ) { //$NON-NLS-1$
+                impulseString = impulseString.trim();
+                if (impulseString.equalsIgnoreCase(LAST_RETURN)) {
+                    doLastReturn = true;
+                    continue;
                 }
-            } catch (final Exception e) {
-                throw new ModelsIllegalargumentException("Problem in converting impulses values to numbers.", this, pm);
+                try {
+                    impulsesList.add(Double.parseDouble(impulseString));
+                } catch (final Exception e) {
+                    throw new ModelsIllegalargumentException(
+                            "The returns can be numbers or " + LAST_RETURN + ", not: " + impulseString, this, pm);
+                }
             }
+            impulses = impulsesList.stream().mapToDouble(Double::doubleValue).toArray();
         }
 
         if (pClasses != null) {
@@ -277,7 +301,7 @@ public class OmsLasConverter extends HMModel {
         }
 
         SimpleFeatureType type = null;
-        if (doShapefile) {
+        if (doVector) {
             final SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
             b.setName("lasdata");
             b.setCRS(crs);
@@ -342,8 +366,8 @@ public class OmsLasConverter extends HMModel {
 
             boolean takeIt = true;
 
-            if (envelope != null && envelope.contains(tmp)) {
-                takeIt = true;
+            if (envelope != null && !envelope.contains(tmp)) {
+                takeIt = false;
             }
             if (takeIt && intensityRange != null) {
                 takeIt = false;
@@ -351,8 +375,11 @@ public class OmsLasConverter extends HMModel {
                     takeIt = true;
                 }
             }
+            if (takeIt && elevRange != null) {
+                takeIt = z >= elevRange[0] && z <= elevRange[1];
+            }
             if (takeIt && impulses != null) {
-                takeIt = false;
+                takeIt = doLastReturn && dEq(impulse, impulseNumber);
                 for( final double imp : impulses ) {
                     if (dEq(impulse, imp)) {
                         takeIt = true;
@@ -384,7 +411,7 @@ public class OmsLasConverter extends HMModel {
                 } else if (doLas) {
                     lasWriter.addPoint(lasDot);
                     addedFeatures++;
-                } else if (doShapefile) {
+                } else if (doVector) {
                     final SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
                     final Point point = gf.createPoint(tmp);
                     final Object[] values = new Object[]{point, z, intensity, classification, impulse, impulseNumber};
@@ -430,12 +457,31 @@ public class OmsLasConverter extends HMModel {
         if (doLas) {
             lasWriter.close();
         }
-        if (doShapefile) {
+        if (doVector) {
             OmsVectorWriter.writeVector(outFile, outGeodata);
         }
 
         if (lasReader != null)
             lasReader.close();
+    }
+
+    /**
+     * @return the min and max of a range given as min,max, or <code>null</code> if not given.
+     */
+    private double[] parseRange( String range, String what ) {
+        if (range == null || range.isBlank()) {
+            return null;
+        }
+        final String[] split = range.split(","); //$NON-NLS-1$
+        if (split.length != 2) {
+            throw new ModelsIllegalargumentException(what + " range has to be of the form: min,max", this, pm);
+        }
+        try {
+            return new double[]{Double.parseDouble(split[0].trim()), Double.parseDouble(split[1].trim())};
+        } catch (final Exception e) {
+            throw new ModelsIllegalargumentException("Problem in converting the " + what.toLowerCase()
+                    + " min and max to numbers: " + range, this, pm);
+        }
     }
 
     private void createBboxGeometry( CoordinateReferenceSystem crs, File lasFile, SimpleFeatureCollection outGeodata )

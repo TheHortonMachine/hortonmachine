@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,19 +17,24 @@
  */
 package org.hortonmachine.modules;
 
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_AUTHORCONTACTS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_F_ID_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_IN_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_KEYWORDS;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_LABEL;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_LICENSE;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_NAME;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSLINESPOLYGONIZER_STATUS;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.MODE_FACES;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.MODE_JOIN;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_AUTHORCONTACTS;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_AUTHORNAMES;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_DOCUMENTATION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_F_GROUP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_F_ID_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_F_NEW_ID_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_IN_MAP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_KEYWORDS;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_LABEL;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_LICENSE;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_NAME;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_OUT_MAP_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_P_MODE_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer.OMSLINESPOLYGONIZER_STATUS;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -37,6 +42,7 @@ import org.hortonmachine.gears.modules.v.polygonize.OmsLinesPolygonizer;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -47,6 +53,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OMSLINESPOLYGONIZER_DESCRIPTION)
+@Documentation(OMSLINESPOLYGONIZER_DOCUMENTATION)
 @Author(name = OMSLINESPOLYGONIZER_AUTHORNAMES, contact = OMSLINESPOLYGONIZER_AUTHORCONTACTS)
 @Keywords(OMSLINESPOLYGONIZER_KEYWORDS)
 @Label(OMSLINESPOLYGONIZER_LABEL)
@@ -59,6 +66,15 @@ public class LinesPolygonizer extends HMModel {
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
     @In
     public String inMap = null;
+
+    @Description(OMSLINESPOLYGONIZER_P_MODE_DESCRIPTION)
+    @UI("combo:" + MODE_FACES + "," + MODE_JOIN)
+    @In
+    public String pMode = MODE_FACES;
+
+    @Description(OMSLINESPOLYGONIZER_F_GROUP_DESCRIPTION)
+    @In
+    public String fGroup = null;
 
     @Description(OMSLINESPOLYGONIZER_IN_POINTS_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_VECTOR)
@@ -82,6 +98,8 @@ public class LinesPolygonizer extends HMModel {
     public void process() throws Exception {
         OmsLinesPolygonizer omslinespolygonizer = new OmsLinesPolygonizer();
         omslinespolygonizer.inMap = getVector(inMap);
+        omslinespolygonizer.pMode = pMode;
+        omslinespolygonizer.fGroup = fGroup;
         omslinespolygonizer.inPoints = getVector(inPoints);
         omslinespolygonizer.fId = fId;
         omslinespolygonizer.fNewId = fNewId;

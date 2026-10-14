@@ -12,9 +12,12 @@ gridsgenerator
 lasconverter
 linesmootherjaitools
 linesmoothermcmaster
+linespolygonizer
 rastercattofeatureattribute
+vectorclipper
 vectorfieldrounder
 vectorfilter
+vectorintersector
 vectorizer
 vectormerger
 vectorreprojector

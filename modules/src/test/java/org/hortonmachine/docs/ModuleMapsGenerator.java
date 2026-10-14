@@ -388,7 +388,11 @@ public class ModuleMapsGenerator {
         String colortable = Arrays.stream(EColorTables.values()).anyMatch(t -> t.name().equals(spec.colortable()))
                 ? spec.colortable()
                 : EColorTables.rainbow.name();
-        SimpleFeatureCollection features = OmsVectorReader.readVector(path(spec.raster()));
+        // in memory: iterating the shapefile more times can fail on its file locks
+        SimpleFeatureCollection read = OmsVectorReader.readVector(path(spec.raster()));
+        DefaultFeatureCollection inMemory = new DefaultFeatureCollection(null, read.getSchema());
+        inMemory.addAll(read);
+        SimpleFeatureCollection features = inMemory;
         Class< ? > geometryType = features.getSchema().getGeometryDescriptor().getType().getBinding();
         String field = optionValue(spec, "field");
 

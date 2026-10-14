@@ -3,7 +3,7 @@
 Converts the points of a LAS lidar file into a vector of points, with their elevation, intensity, classification and return number, or into a csv or a new LAS file. The points can be filtered by area, classes, returns and intensity.
 
 **Toolbox folder:** Vector Processing<br>
-**Status:** Experimental<br>
+**Status:** Certified<br>
 **Keywords:** Lidar, LAS, Points, Conversion<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.LasConverter`
@@ -15,7 +15,8 @@ Converts the points of a LAS lidar file into a vector of points, with their elev
 | `inFile` | LAS file |  |  | The LAS file. |
 | `inPolygons` | vector file |  |  | An optional vector of polygons: only the points inside them are kept. |
 | `pIntensityrange` | String |  |  | The range of the intensity of the points to keep, as min,max. |
-| `pImpulses` | String |  |  | The comma separated list of the returns to keep, as 1 for the first returns. |
+| `pElevrange` | String |  |  | The range of the elevation of the points to keep, as min,max. |
+| `pImpulses` | String |  |  | The comma separated list of the returns to keep, as 1 for the first returns, or last for the last return of each pulse. |
 | `pClasses` | String |  |  | The comma separated list of the classes to keep, as 2 for the ground. |
 | `pNorth` | Double |  |  | The optional north boundary of the area to keep. |
 | `pSouth` | Double |  |  | The optional south boundary of the area to keep. |
@@ -29,5 +30,13 @@ Converts the points of a LAS lidar file into a vector of points, with their elev
 
 | Parameter | Type | Unit | Description |
 |---|---|---|---|
-| `outFile` | output file |  | The output file: a vector of points, a csv or a LAS file. |
+| `outFile` | output file |  | The output file: a LAS file (.las), a csv (.csv) or a vector of points (as .shp or .gpkg#layer). |
+
+**Notes**
+
+The filters are combined: a point is kept only if it passes all the given ones. The ranges include their limits. The area of the bounding box is used only if all its four boundaries are given.
+
+In the list of the returns, last keeps the last return of each pulse, also when it is the only one: 1,last keeps the first and the last returns, the outline of the canopy and what is under it. The returns of a pulse are numbered from 1, the first that comes back to the sensor, the highest.
+
+A LAS output keeps the records of the points as they are, with the crs of the input.
 
