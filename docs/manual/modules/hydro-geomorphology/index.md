@@ -24,6 +24,7 @@ shalstab
 skyview
 stone
 stoneinputs
+swy/index
 trentopcalibration
 trentopproject
 trentopprojectfilesgenerator

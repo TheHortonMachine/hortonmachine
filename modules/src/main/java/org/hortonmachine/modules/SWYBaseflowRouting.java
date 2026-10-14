@@ -23,8 +23,11 @@ import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYBaseflowRouting;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYQuickflow;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -37,6 +40,8 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description(OmsSWYBaseflowRouting.DESCRIPTION)
+@Documentation(OmsSWYBaseflowRouting.DOCUMENTATION)
+@Bibliography({OmsSWYQuickflow.BIBLIOGRAPHY_INVEST_SWY, OmsSWYQuickflow.BIBLIOGRAPHY_HAMEL_ET_AL_2020})
 @Author(name = OmsSWYBaseflowRouting.AUTHORNAMES, contact = OmsSWYBaseflowRouting.AUTHORCONTACTS)
 @Keywords(OmsSWYBaseflowRouting.KEYWORDS)
 @Label(OmsSWYBaseflowRouting.LABEL)

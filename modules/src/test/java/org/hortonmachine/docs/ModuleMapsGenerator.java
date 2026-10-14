@@ -967,7 +967,8 @@ public class ModuleMapsGenerator {
      *         and would draw a black frame.
      */
     private GridCoverage2D readHillshade( String base ) throws Exception {
-        File hillshadeFile = new File(workFolder, "hillshade_" + base);
+        // the base can be in a subfolder of the data, the hillshade is in the work folder
+        File hillshadeFile = new File(workFolder, "hillshade_" + base.replace('/', '_'));
         if (!hillshadeFile.exists()) {
             Hillshade hillshade = new Hillshade();
             hillshade.inElev = path(base);

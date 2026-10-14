@@ -16,6 +16,10 @@ org.hortonmachine.modules.Peakflow
 org.hortonmachine.modules.Shalstab
 org.hortonmachine.modules.StoneInputs
 org.hortonmachine.modules.Stone
+org.hortonmachine.modules.PotentialEvapotranspiredWaterVolume
+org.hortonmachine.modules.SWYQuickflow
+org.hortonmachine.modules.SWYRechargeRouting
+org.hortonmachine.modules.SWYBaseflowRouting
 org.hortonmachine.modules.Markoutlets
 org.hortonmachine.modules.Gradient
 org.hortonmachine.modules.Slope

@@ -192,3 +192,14 @@ RasterConverter | ../examples/hm/rasterconverter.groovy | -                     
 RasterCorrector | ../examples/hm/rastercorrector.groovy | -                        | -
 RasterVectorIntersector | ../examples/hm/rastervectorintersector.groovy | dtm_high_cells.tif | elev
 RasterVectorIntersector | -                     | dtm_not_high_cells.tif      | elev
+
+# Seasonal Water Yield, on the Gura sample of InVEST (data/gura)
+Swy            | ../examples/swy/01_preparation.groovy | gura/cn.tif               | rainbow  | base=gura/DEM_gura.tif
+Swy            | -                                     | gura/net.tif              | net      | nolegend,base=gura/DEM_gura.tif
+Swy            | -                                     | gura/monthly/prcp_4.tif   | rainbow  | base=gura/DEM_gura.tif
+PotentialEvapotranspiredWaterVolume | ../examples/swy/02_pet.groovy | gura/monthly/pet_1.tif | rainbow | base=gura/DEM_gura.tif
+SWYQuickflow   | ../examples/swy/03_quickflow.groovy   | gura/monthly/qf_4.tif     | rainbow  | base=gura/DEM_gura.tif
+SWYRechargeRouting | ../examples/swy/04_recharge.groovy | gura/aet.tif             | rainbow  | base=gura/DEM_gura.tif
+SWYRechargeRouting | -                                 | gura/l.tif                | rainbow  | clip,base=gura/DEM_gura.tif
+SWYBaseflowRouting | ../examples/swy/05_baseflow.groovy | gura/l_sum.tif           | logarithmic | base=gura/DEM_gura.tif
+SWYBaseflowRouting | -                                 | gura/b.tif                | rainbow  | clip,base=gura/DEM_gura.tif

@@ -25,12 +25,16 @@ import static org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPoten
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPotentialEvapotranspiredWaterVolume.inReferenceEtp_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPotentialEvapotranspiredWaterVolume.inSolarRadiation_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPotentialEvapotranspiredWaterVolume.outputPet_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPotentialEvapotranspiredWaterVolume.pDaysInTimestep_DESCRIPTION;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.etp.OmsPotentialEvapotranspiredWaterVolume;
+import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYQuickflow;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -43,6 +47,8 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OmsPotentialEvapotranspiredWaterVolume.DESCRIPTION)
+@Documentation(OmsPotentialEvapotranspiredWaterVolume.DOCUMENTATION)
+@Bibliography({OmsPotentialEvapotranspiredWaterVolume.BIBLIOGRAPHY_DROOGERS_ALLEN_2002, OmsSWYQuickflow.BIBLIOGRAPHY_INVEST_SWY})
 @Author(name = OmsPotentialEvapotranspiredWaterVolume.AUTHORNAMES, contact = OmsPotentialEvapotranspiredWaterVolume.AUTHORCONTACTS)
 @Keywords(OmsPotentialEvapotranspiredWaterVolume.KEYWORDS)
 @Label(OmsPotentialEvapotranspiredWaterVolume.LABEL)
@@ -75,7 +81,7 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
 
     @Description(inSolarRadiation_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
-    @Unit("MJ/m2")
+    @Unit("MJ/m2/day")
     @In
     public String inSolarRadiation = null;
 
@@ -90,6 +96,10 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
     @Unit("mm")
     @In
     public String inReferenceEtp = null;
+
+    @Description(pDaysInTimestep_DESCRIPTION)
+    @In
+    public Double pDaysInTimestep = null;
 
     @Description(outputPet_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
@@ -107,6 +117,7 @@ public class PotentialEvapotranspiredWaterVolume extends HMModel {
         pet.inRainfall = getRaster(inRainfall);
         pet.inSolarRadiation = getRaster(inSolarRadiation);
         pet.inReferenceEtp = getRaster(inReferenceEtp);
+        pet.pDaysInTimestep = pDaysInTimestep;
         pet.pm = pm;
         pet.process();
 

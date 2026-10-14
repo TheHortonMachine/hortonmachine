@@ -20,7 +20,9 @@ package org.hortonmachine.hmachine.modules.hydrogeomorphology.swy;
 import static org.hortonmachine.gears.libs.modules.HMConstants.HYDROGEOMORPHOLOGY;
 
 import java.awt.image.WritableRaster;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,7 +39,9 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -48,6 +52,8 @@ import oms3.annotations.Out;
 import oms3.annotations.Status;
 
 @Description(OmsSWYBaseflowRouting.DESCRIPTION)
+@Documentation(OmsSWYBaseflowRouting.DOCUMENTATION)
+@Bibliography({OmsSWYQuickflow.BIBLIOGRAPHY_INVEST_SWY, OmsSWYQuickflow.BIBLIOGRAPHY_HAMEL_ET_AL_2020})
 @Author(name = OmsSWYBaseflowRouting.AUTHORNAMES, contact = OmsSWYBaseflowRouting.AUTHORCONTACTS)
 @Keywords(OmsSWYBaseflowRouting.KEYWORDS)
 @Label(OmsSWYBaseflowRouting.LABEL)
@@ -96,31 +102,50 @@ public class OmsSWYBaseflowRouting extends HMModel {
     public GridCoverage2D outBaseflow = null;
 
     // VARS DOC START
-    public static final String DESCRIPTION = "The Baseflow Watervolume model (from INVEST).";
-    public static final String DOCUMENTATION = "";
+    public static final String DESCRIPTION = "The baseflow of the InVEST Seasonal Water Yield model: the contribution of the local recharge of each cell to the baseflow of the streams, and its share of the total recharge.";
+    public static final String DOCUMENTATION = """
+            The recharge of the upslope cells is accumulated along the flowdirections (L_sum). Walking up from the \
+            streams, each cell gets the part of the accumulated recharge that reaches the streams as baseflow \
+            (B_sum, InVEST equation 11): all of it for the cells that drain directly into a stream or out of the \
+            map, a part scaled by what the downslope cells evapotranspire for the others. The baseflow of the cell \
+            itself (B) is its share of B_sum, proportional to its local recharge, and never negative.
+
+            The values index of each cell (VRI) is its local recharge divided by the total recharge of the map: \
+            it tells which cells matter most for the baseflow. It is defined only where the total recharge is positive.
+
+            The results have the time span of the recharge: with the recharge of a year, as in InVEST, the \
+            baseflow is annual. The rasters are in mm; a volume is the value times 0.001 times the cell area.
+            """;
     public static final String KEYWORDS = "baseflow";
     public static final String LABEL = HYDROGEOMORPHOLOGY;
-    public static final String NAME = "BaseflowWaterVolume";
+    public static final String NAME = "SWYBaseflowRouting";
     public static final int STATUS = 5;
     public static final String LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String AUTHORNAMES = "The klab team.";
     public static final String AUTHORCONTACTS = "www.integratedmodelling.org";
 
     public static final String inFlowdirections_DESCRIPTION = "The map of flowdirections (D8).";
-    public static final String inNet_DESCRIPTION = "The map of net.";
-    public static final String outBaseflow_DESCRIPTION = "The map of cumulative baseflow routed through each cell.";
-    public static final String outB_DESCRIPTION = "The map of local baseflow contribution per cell.";
-    public static final String outVri_DESCRIPTION = "The map of fractional contribution of local recharge in cell to baseflow.";
-    public static final String outLsum_DESCRIPTION = "The map of upslope subsidy (cumulative recharge routed to each cell).";
-    public static final String outQb_DESCRIPTION = "Basin-total recharge (sum of local recharge over valid cells).";
-    public static final String outVriSum_DESCRIPTION = "The sum of VRI across the basin (sanity ~ 1).";
-    public static final String inAvailableRecharge_DESCRIPTION = "The map of routed, cumulative recharge from upstream cells (the “upslope subsidy”) that is available for baseflow generation.";
-    public static final String inRecharge_DESCRIPTION = "The map of local recharge remaining after AET and quickflow are removed from precipitation.";
+    public static final String inNet_DESCRIPTION = "The map of the stream network.";
+    public static final String outBaseflow_DESCRIPTION = "The map of the cumulative baseflow (B_sum), the part of the accumulated recharge of each cell that reaches the streams.";
+    public static final String outB_DESCRIPTION = "The map of the baseflow contribution of each cell (B).";
+    public static final String outVri_DESCRIPTION = "The map of the values index (VRI), the local recharge of each cell divided by the total recharge.";
+    public static final String outLsum_DESCRIPTION = "The map of the accumulated recharge (L_sum), of the cell and of all the cells upslope.";
+    public static final String outQb_DESCRIPTION = "The total recharge, the sum of the local recharge of all the cells, in mm: divided by the number of cells it is the mean recharge (qb of InVEST).";
+    public static final String outVriSum_DESCRIPTION = "The sum of the values index of all the cells, 1 as a check.";
+    public static final String inAvailableRecharge_DESCRIPTION = "The map of the part of the local recharge that is available to downslope cells (L_avail).";
+    public static final String inRecharge_DESCRIPTION = "The map of the local recharge (L).";
 
 
     // VARS DOC END
 
+    /**
+     * Recharge values [mm] below this are considered zero when used as divisors.
+     */
+    private static final double ZERO_TOLERANCE = 1E-6;
+
     private double infNv;
+
+    private double netInfNv;
 
     private double netNv;
 
@@ -130,7 +155,7 @@ public class OmsSWYBaseflowRouting extends HMModel {
     public void process() throws Exception {
         checkNull(inRecharge, inAvailableRecharge, inFlowdirections, inNet);
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inFlowdirections);
+        RegionMap regionMap = RegionMap.fromGridGeometry(inFlowdirections.getGridGeometry());
         int rows = regionMap.getRows();
         int cols = regionMap.getCols();
 
@@ -148,7 +173,7 @@ public class OmsSWYBaseflowRouting extends HMModel {
         RandomIter flowIter = CoverageUtilities.getRandomIterator(inFlowdirections);
         int flowNv = HMConstants.getIntNovalue(inFlowdirections);
         RandomIter netInfiltrationIter = CoverageUtilities.getRandomIterator(inAvailableRecharge);
-        double netInfNv = HMConstants.getNovalue(inAvailableRecharge);
+        netInfNv = HMConstants.getNovalue(inAvailableRecharge);
         RandomIter infiltrationIter = CoverageUtilities.getRandomIterator(inRecharge);
         infNv = HMConstants.getNovalue(inRecharge);
         RandomIter netIter = CoverageUtilities.getRandomIterator(inNet);
@@ -163,13 +188,10 @@ public class OmsSWYBaseflowRouting extends HMModel {
                     return;
                 }
                 for( int c = 0; c < cols; c++ ) {
-                    if(r==1&&c==959) {
-                        System.out.println();
-                    }
                     FlowNode node = new FlowNode(flowIter, cols, rows, c, r, flowNv);
 
-                    // get exit cells
-                    if (node.isHeadingOutside()) {
+                    // get exit cells, i.e. valid cells without a valid downstream cell
+                    if (node.isValid() && node.goDownstream() == null) {
                         exitCells.add(node);
                     }
                     // and source cells on network
@@ -204,20 +226,17 @@ public class OmsSWYBaseflowRouting extends HMModel {
             pm.done();
 
             double qb = 0;
-            int count = 0;
             pm.beginTask("Calculate total baseflow...", rows);
             for( int row = 0; row < rows; row++ ) {
                 for( int col = 0; col < cols; col++ ) {
                     double li = infiltrationIter.getSampleDouble(col, row, 0);
-                    if (!HMConstants.isNovalue(li, infNv)) {
+                    if (!HMConstants.isNovalue(li, infNv) && !Double.isInfinite(li)) {
                         qb += li;
-                        count++;
                     }
                 }
                 pm.worked(1);
             }
-            double qbTmp = qb; // / count;
-            outQb = qbTmp;
+            outQb = qb;
             pm.done();
 
             pm.beginTask("Calculate Vri...", rows);
@@ -229,12 +248,17 @@ public class OmsSWYBaseflowRouting extends HMModel {
                     double lSum = lSumMatrix[row][col];
 
                     if (!HMConstants.isNovalue(li, infNv)) {
-                        double vri = li / qb; //(qbTmp * count);
-                        vriSum += vri;
-                        outVriIter.setSample(col, row, 0, vri);
+                        // as in InVEST, vri is only defined if the basin recharge is positive
+                        if (qb > 0) {
+                            double vri = li / qb;
+                            vriSum += vri;
+                            outVriIter.setSample(col, row, 0, vri);
+                        }
 
-                        double bi = Math.max(bSum * li / lSum, 0);
-                        outBIter.setSample(col, row, 0, bi);
+                        if (!HMConstants.isNovalue(bSum, outNv)) {
+                            double bi = lSum != 0 ? Math.max(bSum * li / lSum, 0) : 0;
+                            outBIter.setSample(col, row, 0, bi);
+                        }
                     }
                 }
                 pm.worked(1);
@@ -250,7 +274,7 @@ public class OmsSWYBaseflowRouting extends HMModel {
             outB = CoverageUtilities.buildCoverageWithNovalue("b", outBWR, regionMap,
                     inFlowdirections.getCoordinateReferenceSystem(), outNv);
             outVri = CoverageUtilities.buildCoverageWithNovalue("vri", outVriWR, regionMap,
-                    inFlowdirections.getCoordinateReferenceSystem(), lsumNv);
+                    inFlowdirections.getCoordinateReferenceSystem(), outNv);
         } finally {
             flowIter.done();
             netInfiltrationIter.done();
@@ -356,42 +380,62 @@ public class OmsSWYBaseflowRouting extends HMModel {
         return canProcess;
     }
 
-    private void walkUpAndProcess( FlowNode cell, double[][] bSumMatrix, double[][] lSumMatrix, WritableRandomIter baseflowIter,
-            RandomIter netIter, RandomIter infiltrationIter, RandomIter netInfiltrationIter ) {
-        // process current cell
-        double net = cell.getDoubleValueFromMap(netIter);
-        boolean isStream = !HMConstants.isNovalue(net, netNv) && net != 0.0;
+    /**
+     * Calculate the cumulative baseflow (InVEST equation 11), walking upstream from an exit cell.
+     *
+     * <p>An explicit stack is used, since the recursion depth would be the length of the
+     * longest flow path.</p>
+     */
+    private void walkUpAndProcess( FlowNode exitCell, double[][] bSumMatrix, double[][] lSumMatrix,
+            WritableRandomIter baseflowIter, RandomIter netIter, RandomIter infiltrationIter, RandomIter netInfiltrationIter ) {
+        Deque<FlowNode> stack = new ArrayDeque<>();
+        stack.push(exitCell);
+        while( !stack.isEmpty() ) {
+            FlowNode cell = stack.pop();
+            int x = cell.col;
+            int y = cell.row;
 
-        double bSum = 0.0;
-        int x = cell.col;
-        int y = cell.row;
-
-        FlowNode downCell = cell.goDownstream();
-        if (downCell == null || isStream) {
-            // if it is an outlet or on the stream
-            bSum = lSumMatrix[y][x];
-        } else {
-            int downY = downCell.row;
-            int downX = downCell.col;
-            double downBSum = bSumMatrix[downY][downX];
-            double downLSum = lSumMatrix[downY][downX];
-            double downLi = downCell.getDoubleValueFromMap(infiltrationIter);
-            double downLAvailable = downCell.getDoubleValueFromMap(netInfiltrationIter);
-
-            if (downLSum != 0 && downLSum - downLi != 0) {
-                bSum = lSumMatrix[y][x] * (1 - downLAvailable / downLSum) * downBSum / (downLSum - downLi);
-            } else {
+            double bSum;
+            FlowNode downCell = cell.goDownstream();
+            if (downCell == null || isStream(downCell, netIter)) {
+                // if it is an outlet or it drains into the stream
                 bSum = lSumMatrix[y][x];
+            } else {
+                int downY = downCell.row;
+                int downX = downCell.col;
+                double downBSum = bSumMatrix[downY][downX];
+                double downLSum = lSumMatrix[downY][downX];
+                double downLi = valueOrZero(downCell.getDoubleValueFromMap(infiltrationIter), infNv);
+                double downLAvailable = valueOrZero(downCell.getDoubleValueFromMap(netInfiltrationIter), netInfNv);
+
+                // a tolerance is needed, since the cumulated recharge can cancel out to a value that is
+                // zero only up to rounding, which would then be used as divisor
+                if (Math.abs(downLSum) > ZERO_TOLERANCE && Math.abs(downLSum - downLi) > ZERO_TOLERANCE) {
+                    bSum = lSumMatrix[y][x] * (1 - downLAvailable / downLSum) * downBSum / (downLSum - downLi);
+                } else {
+                    bSum = lSumMatrix[y][x];
+                }
+            }
+            bSumMatrix[y][x] = bSum;
+            cell.setDoubleValueInMap(baseflowIter, bSum);
+
+            // the upstream cells can be processed now that this one is done
+            for( FlowNode upCell : cell.getEnteringNodes() ) {
+                stack.push(upCell);
             }
         }
-        bSumMatrix[y][x] = bSum;
-        cell.setDoubleValueInMap(baseflowIter, bSum);
+    }
 
-        // recursively move to upstream cells
-        List<FlowNode> upstreamCells = cell.getEnteringNodes();
-        for( FlowNode upCell : upstreamCells ) {
-            walkUpAndProcess(upCell, bSumMatrix, lSumMatrix, baseflowIter, netIter, infiltrationIter, netInfiltrationIter);
+    private boolean isStream( FlowNode cell, RandomIter netIter ) {
+        double net = cell.getDoubleValueFromMap(netIter);
+        return !HMConstants.isNovalue(net, netNv) && net != 0.0;
+    }
+
+    private static double valueOrZero( double value, double novalue ) {
+        if (HMConstants.isNovalue(value, novalue)) {
+            return 0;
         }
+        return value;
     }
 
 }

@@ -24,6 +24,8 @@ import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.swy.OmsSWYQuickflow;
 
 import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
+import oms3.annotations.Documentation;
 import oms3.annotations.Description;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
@@ -36,6 +38,8 @@ import oms3.annotations.UI;
 import oms3.annotations.Unit;
 
 @Description(OmsSWYQuickflow.DESCRIPTION)
+@Documentation(OmsSWYQuickflow.DOCUMENTATION)
+@Bibliography({OmsSWYQuickflow.BIBLIOGRAPHY_INVEST_SWY, OmsSWYQuickflow.BIBLIOGRAPHY_HAMEL_ET_AL_2020})
 @Author(name = OmsSWYQuickflow.AUTHORNAMES, contact = OmsSWYQuickflow.AUTHORCONTACTS)
 @Keywords(OmsSWYQuickflow.KEYWORDS)
 @Label(OmsSWYQuickflow.LABEL)

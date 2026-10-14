@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-46 of the 196 toolbox modules have no manual page yet.
+42 of the 196 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -26,15 +26,11 @@
 |---|---|---|
 | ErmFastDataPreparator | certified | First step of the ERM/GeoFrame water budget workflow: from the DTM it derives the drainage directions, the river network and the basin of the outlet, splits the basin into sub-basins (the hydrological response units) and stores them, with their topology and the stream gauges, in the GeoFrame database. |
 
-## Hydro-Geomorphology (5)
+## Hydro-Geomorphology (1)
 
 | Module | Status | Description |
 |---|---|---|
 | EnergyIndexCalculator | experimental | The Adige model. |
-| PotentialEvapotranspiredWaterVolume | experimental | The Potential Evapotranspired Watervolume model (from INVEST). |
-| SWYBaseflowRouting | experimental | The Baseflow Watervolume model (from INVEST). |
-| SWYQuickflow | experimental | The surface quickflow component of the Seasonal Water Yield model, estimated using a CN-based empirical relationship. |
-| SWYRechargeRouting | experimental | Implements recharge and evapotranspiration routing from the InVEST Seasonal Water Yield (SWY) model. |
 
 ## Hydro-Geomorphology › LWRecruitment (12)
 
