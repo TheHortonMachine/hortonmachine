@@ -348,6 +348,20 @@ public class TestHMRasterTiles extends HMTestCase {
         }
     }
 
+    public void testByteRasterDefaultNovalue() throws Exception {
+        RegionMap region = RegionMap.fromBoundsAndGrid(500000, 500003, 5000000, 5000002, 3, 2);
+        try (HMRaster raster = new HMRaster.HMRasterWritableBuilder().setName("byte").setRegion(region)
+                .setCrs(HMTestMaps.getCrs()).setDoByte(true).build()) {
+            raster.setValue(0, 0, 254.0);
+            assertEquals(255.0, raster.getNovalue(), 0.0);
+            assertEquals(254.0, raster.getValue(0, 0), 0.0);
+            assertEquals(255.0, raster.getValue(1, 0), 0.0);
+            assertTrue(raster.isNovalue(raster.getValue(1, 0)));
+            assertFalse(raster.isNovalue(raster.getValue(0, 0)));
+            assertEquals(255.0, CoverageUtilities.getNovalue(raster.buildCoverage()), 0.0);
+        }
+    }
+
     /**
      * Cell reads and writes from many threads on a raster of several tiles: the image iterators
      * keep the current tile, so a shared one returns values of other cells or fails.

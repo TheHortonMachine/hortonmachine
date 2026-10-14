@@ -158,9 +158,14 @@ public class HMConstants {
     public static final short shortNovalue = -9999;
     
 	/**
-	 * The default byte novalue.
+	 * The default byte novalue, 255.
+	 *
+	 * <p>
+	 * Byte rasters, as in GeoTIFF, are unsigned (0-255), so a negative novalue
+	 * can't be stored: 255 keeps 0-254 for the data.
+	 * </p>
 	 */
-	public static byte byteNovalue = -99;
+	public static final byte byteNovalue = (byte) 255;
 
     /**
      * Checker for default int novalue.

@@ -223,12 +223,14 @@ public class TestLasIO extends HMTestCase {
         assertEquals(header.getRecordsCount(), tmpHeader.getRecordsCount());
         ReferencedEnvelope3D lasEnv = header.getDataEnvelope();
         ReferencedEnvelope3D tmpLasEnv = tmpHeader.getDataEnvelope();
-        assertEquals(lasEnv.getMinX(), tmpLasEnv.getMinX(), DELTA);
-        assertEquals(lasEnv.getMinY(), tmpLasEnv.getMinY(), DELTA);
-        assertEquals(lasEnv.getMinZ(), tmpLasEnv.getMinZ(), DELTA);
-        assertEquals(lasEnv.getMaxX(), tmpLasEnv.getMaxX(), DELTA);
-        assertEquals(lasEnv.getMaxY(), tmpLasEnv.getMaxY(), DELTA);
-        assertEquals(lasEnv.getMaxZ(), tmpLasEnv.getMaxZ(), DELTA);
+        // the writer stores the bounds of the written points, which are quantized to the scale
+        double[] scale = tmpHeader.getXYZScale();
+        assertEquals(lasEnv.getMinX(), tmpLasEnv.getMinX(), scale[0]);
+        assertEquals(lasEnv.getMinY(), tmpLasEnv.getMinY(), scale[1]);
+        assertEquals(lasEnv.getMinZ(), tmpLasEnv.getMinZ(), scale[2]);
+        assertEquals(lasEnv.getMaxX(), tmpLasEnv.getMaxX(), scale[0]);
+        assertEquals(lasEnv.getMaxY(), tmpLasEnv.getMaxY(), scale[1]);
+        assertEquals(lasEnv.getMaxZ(), tmpLasEnv.getMaxZ(), scale[2]);
     }
 
 }

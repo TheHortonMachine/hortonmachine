@@ -1902,9 +1902,16 @@ public class HMRaster implements AutoCloseable {
                 hmRaster.cols = hmRaster.regionMap.getCols();
                 hmRaster.xRes = hmRaster.regionMap.getXres();
                 hmRaster.yRes = hmRaster.regionMap.getYres();
-                hmRaster.novalue = noValue != null ? noValue : HMConstants.doubleNovalue;
+                if (noValue != null) {
+                    hmRaster.novalue = noValue;
+                } else if (doByte) {
+                    hmRaster.novalue = Byte.toUnsignedInt(HMConstants.byteNovalue);
+                } else {
+                    hmRaster.novalue = HMConstants.doubleNovalue;
+                }
                 hmRaster.intNovalue = noValue != null ? noValue.intValue() : HMConstants.intNovalue;
                 hmRaster.shortNovalue = noValue != null ? noValue.shortValue() : HMConstants.shortNovalue;
+                hmRaster.byteNovalue = noValue != null ? noValue.byteValue() : HMConstants.byteNovalue;
 
                 if (doInteger) {
                     hmRaster.writableImage = CoverageUtilities.createWritableImage(hmRaster.cols, hmRaster.rows, Integer.class,
@@ -1914,7 +1921,7 @@ public class HMRaster implements AutoCloseable {
                             initialShortValue != null ? initialShortValue : hmRaster.shortNovalue);
                 } else if (doByte) {
                     hmRaster.writableImage = CoverageUtilities.createWritableImage(hmRaster.cols, hmRaster.rows, Byte.class,
-                            initialValue != null ? initialValue.byteValue() : (byte) hmRaster.novalue);
+                            initialValue != null ? initialValue.byteValue() : hmRaster.byteNovalue);
                 } else {
                     hmRaster.writableImage = CoverageUtilities.createWritableImage(hmRaster.cols, hmRaster.rows, Double.class,
                             initialValue != null ? initialValue : hmRaster.novalue);
