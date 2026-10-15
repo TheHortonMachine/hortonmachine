@@ -57,6 +57,8 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.util.GeometryFixer;
 import org.locationtech.jts.geom.util.LinearComponentExtracter;
 import org.locationtech.jts.index.strtree.STRtree;
+import org.locationtech.jts.operation.overlayng.OverlayNG;
+import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
 import org.locationtech.jts.operation.buffer.BufferOp;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
@@ -98,6 +100,14 @@ public class OmsVectorCleaner extends HMModel {
     @Description(OMSVECTORCLEANER_P_MIN_SLIVER_LENGTH_DESCRIPTION)
     @In
     public double pMinSliverLength = 30.0;
+
+    @Description(OMSVECTORCLEANER_DO_FILL_NOTCHES_DESCRIPTION)
+    @In
+    public boolean doFillNotches = true;
+
+    @Description(OMSVECTORCLEANER_DO_FILL_GAPS_DESCRIPTION)
+    @In
+    public boolean doFillGaps = true;
 
     @Description(OMSVECTORCLEANER_P_PRECISION_DESCRIPTION)
     @UI("combo:" + PRECISION_MM + "," + PRECISION_CM + "," + PRECISION_DM + "," + PRECISION_M)
@@ -146,6 +156,8 @@ public class OmsVectorCleaner extends HMModel {
     public static final String TYPE_CUT = "cut";
     /** A narrow notch or gap of the outline that was filled. */
     public static final String TYPE_FILL = "fill";
+    /** A narrow gap between two parts of a feature that was filled, joining them. */
+    public static final String TYPE_GAP = "gap";
     /** The part shared by two features, with the ids of both. */
     public static final String TYPE_OVERLAP = "overlap";
 
@@ -162,7 +174,9 @@ public class OmsVectorCleaner extends HMModel {
             narrow spikes are cut and the narrow notches and gaps between parts filled, if they are \
             longer than the min sliver length, so that the sharp corners stay. The width is the \
             diameter of the biggest circle that fits in the piece, the length half its perimeter, \
-            which works also for bent slivers. Only the pieces to clean are touched, the rest of the \
+            which works also for bent slivers. A notch is in the outline of a single polygon, a gap \
+            is between two or more parts of the feature, which filling it joins: the filling of each \
+            can be switched off. Only the pieces to clean are touched, the rest of the \
             outline keeps its vertices. A feature that is itself a sliver is removed. Each feature is \
             cleaned on its own: in a vector of adjacent polygons, a filled hole or notch can overlap \
             a neighbor.
@@ -180,7 +194,7 @@ public class OmsVectorCleaner extends HMModel {
 
             The changes vector marks where the cleaning happened, with the outlines of the invalid \
             geometries before they were fixed, of the filled holes, of the cut spikes, of the \
-            filled notches and of the overlaps, each with the id of its feature (of both, for an \
+            filled notches and gaps and of the overlaps, each with the id of its feature (of both, for an \
             overlap), the kind of change and its area.
             """;
     public static final String OMSVECTORCLEANER_KEYWORDS = "JTS, Clean, Invalid, Holes, Slivers, Vector";
@@ -194,7 +208,9 @@ public class OmsVectorCleaner extends HMModel {
     public static final String OMSVECTORCLEANER_P_MAX_HOLE_AREA_DESCRIPTION = "The max area of the holes to fill. 0 fills none.";
     public static final String OMSVECTORCLEANER_P_MIN_WIDTH_DESCRIPTION = "The min width of holes and of spikes and notches of the outline: narrower ones are cleaned. 0 cleans none.";
     public static final String OMSVECTORCLEANER_P_MIN_SLIVER_LENGTH_DESCRIPTION = "The min length of a narrow spike or notch of the outline to be cleaned, to keep the sharp corners.";
-    public static final String OMSVECTORCLEANER_P_PRECISION_DESCRIPTION = "The precision of the overlays: mm, cm, dm or m.";
+    public static final String OMSVECTORCLEANER_DO_FILL_NOTCHES_DESCRIPTION = "Fill the narrow notches of the outline.";
+    public static final String OMSVECTORCLEANER_DO_FILL_GAPS_DESCRIPTION = "Fill the narrow gaps between the parts of a feature, joining them.";
+    public static final String OMSVECTORCLEANER_P_PRECISION_DESCRIPTION ="The precision of the overlays: mm, cm, dm or m.";
     public static final String OMSVECTORCLEANER_P_OVERLAPS_DESCRIPTION = "What to do with the overlaps between polygons: none (not looked for), mark (only added to the changes), largest (kept by the larger feature) or first (kept by the feature that comes first).";
     public static final String OMSVECTORCLEANER_OUT_MAP_DESCRIPTION = "The cleaned features, with their attributes.";
     public static final String OMSVECTORCLEANER_OUT_CHANGES_DESCRIPTION = "The outlines of what was fixed or cleaned, as lines.";
@@ -211,6 +227,7 @@ public class OmsVectorCleaner extends HMModel {
     private double filledHolesArea = 0;
     private double cutArea = 0;
     private double filledArea = 0;
+    private double filledGapsArea = 0;
     private int overlapsCount = 0;
     private double overlapsArea = 0;
 
@@ -242,8 +259,13 @@ public class OmsVectorCleaner extends HMModel {
         bufferParameters = new BufferParameters();
         bufferParameters.setJoinStyle(BufferParameters.JOIN_MITRE);
         bufferParameters.setMitreLimit(5.0);
-        // pieces below this are the numerical noise of the buffers
-        noiseArea = Math.pow(pMinWidth / 10.0, 2);
+        // no simplification of the input, which by default moves the outline by up to 1% of the
+        // distance: the opening and closing would then give long thin strips along the borders
+        // that are not there, cut or filled as slivers
+        bufferParameters.setSimplifyFactor(0.0);
+        // pieces below a cell of the grid are the noise of the rounding, while a hairline gap of a
+        // mm along hundreds of meters is a real sliver
+        noiseArea = Math.pow(precision.getGridSize(), 2);
         boolean doCleanPolygons = dimension == 2 && (pMaxHoleArea > 0 || pMinWidth > 0);
 
         FeatureGeometrySubstitutor substitutor = new FeatureGeometrySubstitutor(inMap.getSchema(), multiClass(dimension));
@@ -321,6 +343,7 @@ public class OmsVectorCleaner extends HMModel {
             pm.message(String.format("Holes filled: %d, with an area of %,.2f", filledHoles, filledHolesArea));
             pm.message(String.format("Area of the spikes cut: %,.2f", cutArea));
             pm.message(String.format("Area of the notches filled: %,.2f", filledArea));
+            pm.message(String.format("Area of the gaps between parts filled: %,.2f", filledGapsArea));
             if (!overlapsMode.equals(OVERLAPS_NONE)) {
                 pm.message(String.format("Overlaps found: %d, with an area of %,.2f", overlapsCount, overlapsArea));
             }
@@ -382,7 +405,7 @@ public class OmsVectorCleaner extends HMModel {
             // drop the narrow holes and the narrow tails of the bigger ones
             List<Geometry> parts = new ArrayList<>();
             double partsArea = 0;
-            for( Geometry part : pieces(opening(hole)) ) {
+            for( Geometry part : pieces(opening(hole, true)) ) {
                 double partArea = part.getArea();
                 if (partArea > pMaxHoleArea && partArea > noiseArea) {
                     parts.add(part);
@@ -398,7 +421,10 @@ public class OmsVectorCleaner extends HMModel {
                 keptParts.addAll(parts);
                 filledHoles++;
                 filledHolesArea += holeArea - partsArea;
-                Geometry filled = polygonal(precision.difference(hole, precision.union(parts)));
+                // with the floating point overlay, as the hairlines of the hole, that the rounding
+                // collapses, are filled too and must be traced
+                Geometry filled = polygonal(
+                        OverlayNGRobust.overlay(hole, OverlayNGRobust.union(gf.buildGeometry(parts)), OverlayNG.DIFFERENCE));
                 for( Geometry piece : pieces(filled) ) {
                     if (piece.getArea() > noiseArea) {
                         addChange(id, TYPE_HOLE, piece);
@@ -429,17 +455,44 @@ public class OmsVectorCleaner extends HMModel {
         if (result == null) {
             return null;
         }
+        if (!doFillNotches && !doFillGaps) {
+            return result;
+        }
         // narrow notches and gaps between parts -> fill
-        List<Geometry> toFill = slivers(precision.difference(closing(result), result));
-        if (!toFill.isEmpty()) {
-            Geometry fill = polygonal(precision.union(toFill));
-            filledArea += fill.getArea();
-            for( Geometry piece : toFill ) {
-                addChange(id, TYPE_FILL, piece);
+        List<Geometry> toFill = new ArrayList<>();
+        for( Geometry piece : slivers(precision.difference(closing(result), result)) ) {
+            boolean isGap = isGap(piece, result);
+            if (isGap ? doFillGaps : doFillNotches) {
+                toFill.add(piece);
+                if (isGap) {
+                    filledGapsArea += piece.getArea();
+                } else {
+                    filledArea += piece.getArea();
+                }
+                addChange(id, isGap ? TYPE_GAP : TYPE_FILL, piece);
             }
-            result = polygonal(precision.union(result, fill));
+        }
+        if (!toFill.isEmpty()) {
+            result = polygonal(precision.union(result, precision.union(toFill)));
         }
         return result;
+    }
+
+    /**
+     * @return <code>true</code> if the piece touches two or more separate polygons of the
+     *         geometry, as a gap between them, <code>false</code> if only one, as a notch.
+     */
+    private boolean isGap( Geometry piece, Geometry geometry ) {
+        int touched = 0;
+        for( Geometry part : pieces(geometry) ) {
+            if (piece.distance(part) <= precision.getGridSize()) {
+                touched++;
+                if (touched > 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
@@ -552,12 +605,25 @@ public class OmsVectorCleaner extends HMModel {
      * Morphological opening: removes every part of the geometry narrower than the min width.
      */
     private Geometry opening( Geometry geometry ) {
+        return opening(geometry, false);
+    }
+
+    /**
+     * @param floating if <code>true</code>, the result is cut with the floating point overlay,
+     *        so that its edges along the geometry are exactly those of the geometry, as needed to
+     *        compute what the opening removed, also the hairlines narrower than the precision.
+     */
+    private Geometry opening( Geometry geometry, boolean floating ) {
         double half = pMinWidth / 2.0;
         Geometry shrunk = BufferOp.bufferOp(geometry, -half, bufferParameters);
         if (shrunk.isEmpty()) {
             return gf.createMultiPolygon();
         }
-        return polygonal(precision.intersection(BufferOp.bufferOp(shrunk, half, bufferParameters), geometry));
+        Geometry grown = BufferOp.bufferOp(shrunk, half, bufferParameters);
+        if (floating) {
+            return polygonal(OverlayNGRobust.overlay(grown, geometry, OverlayNG.INTERSECTION));
+        }
+        return polygonal(precision.intersection(grown, geometry));
     }
 
     /**

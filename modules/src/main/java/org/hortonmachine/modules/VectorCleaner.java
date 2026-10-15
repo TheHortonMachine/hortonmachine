@@ -33,6 +33,8 @@ import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.O
 import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OMSVECTORCLEANER_P_MIN_WIDTH_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OMSVECTORCLEANER_P_OVERLAPS_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OMSVECTORCLEANER_P_PRECISION_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OMSVECTORCLEANER_DO_FILL_GAPS_DESCRIPTION;
+import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OMSVECTORCLEANER_DO_FILL_NOTCHES_DESCRIPTION;
 import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OMSVECTORCLEANER_STATUS;
 import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OVERLAPS_FIRST;
 import static org.hortonmachine.gears.modules.v.vectorcleaner.OmsVectorCleaner.OVERLAPS_LARGEST;
@@ -86,6 +88,14 @@ public class VectorCleaner extends HMModel {
     @In
     public double pMinSliverLength = 30.0;
 
+    @Description(OMSVECTORCLEANER_DO_FILL_NOTCHES_DESCRIPTION)
+    @In
+    public boolean doFillNotches = true;
+
+    @Description(OMSVECTORCLEANER_DO_FILL_GAPS_DESCRIPTION)
+    @In
+    public boolean doFillGaps = true;
+
     @Description(OMSVECTORCLEANER_P_PRECISION_DESCRIPTION)
     @UI("combo:" + PRECISION_MM + "," + PRECISION_CM + "," + PRECISION_DM + "," + PRECISION_M)
     @In
@@ -113,6 +123,8 @@ public class VectorCleaner extends HMModel {
         vectorcleaner.pMaxHoleArea = pMaxHoleArea;
         vectorcleaner.pMinWidth = pMinWidth;
         vectorcleaner.pMinSliverLength = pMinSliverLength;
+        vectorcleaner.doFillNotches = doFillNotches;
+        vectorcleaner.doFillGaps = doFillGaps;
         vectorcleaner.pPrecision = pPrecision;
         vectorcleaner.pOverlaps = pOverlaps;
         vectorcleaner.pm = pm;

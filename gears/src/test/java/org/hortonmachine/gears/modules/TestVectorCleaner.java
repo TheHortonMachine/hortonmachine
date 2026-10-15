@@ -124,6 +124,7 @@ public class TestVectorCleaner extends HMTestCase {
         cleaner = new OmsVectorCleaner();
         cleaner.inMap = polygons;
         cleaner.pMaxHoleArea = 150;
+        cleaner.pMinWidth = 0;
         cleaner.process();
         polygon = (Polygon) ((Geometry) FeatureUtilities.featureCollectionToList(cleaner.outMap).get(0).getDefaultGeometry())
                 .getGeometryN(0);
@@ -131,6 +132,32 @@ public class TestVectorCleaner extends HMTestCase {
         Polygon original = (Polygon) byId(polygons).get(1).getDefaultGeometry();
         assertTrue(polygon.getInteriorRingN(0).equalsExact(original.getInteriorRingN(1)));
         assertEquals(1, cleaner.outChanges.size());
+    }
+
+    /**
+     * A hole with a hairline tail, narrower than the precision: the tail is filled and must also
+     * be in the changes, while the rounding would collapse it.
+     */
+    public void testHairlineHoleTailTraced() throws Exception {
+        SimpleFeatureCollection polygons = vector(Polygon.class, new String[]{"id"}, //
+                "POLYGON ((0 0, 100 0, 100 60, 0 60, 0 0), "
+                        + "(20 20, 40 20, 40 30, 90 30, 90 30.0004, 40 30.0004, 40 40, 20 40, 20 20))",
+                1);
+        OmsVectorCleaner cleaner = new OmsVectorCleaner();
+        cleaner.inMap = polygons;
+        cleaner.pMaxHoleArea = 0;
+        cleaner.pMinWidth = 5;
+        cleaner.process();
+
+        Polygon polygon = (Polygon) ((Geometry) FeatureUtilities.featureCollectionToList(cleaner.outMap).get(0)
+                .getDefaultGeometry()).getGeometryN(0);
+        assertEquals(1, polygon.getNumInteriorRing());
+        assertEquals(6000 - 400, polygon.getArea(), AREA_DELTA);
+
+        List<SimpleFeature> changes = FeatureUtilities.featureCollectionToList(cleaner.outChanges);
+        assertEquals(1, changes.size());
+        assertEquals(TYPE_HOLE, changes.get(0).getAttribute(FIELD_TYPE));
+        assertEquals(50 * 0.0004, (Double) changes.get(0).getAttribute(FIELD_AREA), 1E-6);
     }
 
     public void testOuterSlivers() throws Exception {
@@ -171,8 +198,37 @@ public class TestVectorCleaner extends HMTestCase {
         // the spike and the sliver feature
         assertEquals(Integer.valueOf(2), typesCount.get(TYPE_CUT));
         // the notch and the gap
-        assertEquals(Integer.valueOf(2), typesCount.get(TYPE_FILL));
-        assertEquals(2, typesCount.size());
+        assertEquals(Integer.valueOf(1), typesCount.get(TYPE_FILL));
+        assertEquals(Integer.valueOf(1), typesCount.get(OmsVectorCleaner.TYPE_GAP));
+        assertEquals(3, typesCount.size());
+    }
+
+    public void testFillSwitches() throws Exception {
+        SimpleFeatureCollection polygons = vector(MultiPolygon.class, new String[]{"id"}, //
+                "MULTIPOLYGON (((0 0, 50 0, 50 20, 10 20, 10 21, 50 21, 50 50, 0 50, 0 0)))", 1, // a notch
+                "MULTIPOLYGON (((0 0, 50 0, 50 50, 0 50, 0 0)), ((51 0, 101 0, 101 50, 51 50, 51 0)))", 2); // a gap
+
+        OmsVectorCleaner cleaner = new OmsVectorCleaner();
+        cleaner.inMap = polygons;
+        cleaner.pMaxHoleArea = 0;
+        cleaner.pMinWidth = 5;
+        cleaner.doFillGaps = false;
+        cleaner.process();
+        Map<Integer, SimpleFeature> byId = byId(cleaner.outMap);
+        assertEquals(2500, area(byId.get(1)), AREA_DELTA);
+        assertEquals(2, ((Geometry) byId.get(2).getDefaultGeometry()).getNumGeometries());
+        assertEquals(5000, area(byId.get(2)), AREA_DELTA);
+
+        cleaner = new OmsVectorCleaner();
+        cleaner.inMap = polygons;
+        cleaner.pMaxHoleArea = 0;
+        cleaner.pMinWidth = 5;
+        cleaner.doFillNotches = false;
+        cleaner.process();
+        byId = byId(cleaner.outMap);
+        assertEquals(2500 - 40, area(byId.get(1)), AREA_DELTA);
+        assertEquals(1, ((Geometry) byId.get(2).getDefaultGeometry()).getNumGeometries());
+        assertEquals(5050, area(byId.get(2)), AREA_DELTA);
     }
 
     /**
@@ -246,6 +302,30 @@ public class TestVectorCleaner extends HMTestCase {
         cleaner.process();
         assertEquals(4, cleaner.outMap.size());
         assertEquals(0, cleaner.outChanges.size());
+    }
+
+    /**
+     * A finely digitized curved border, as a field along a river, with nothing to clean, is left as
+     * it is: the buffers of the cleaning must not simplify it into thin strips that are then cut.
+     */
+    public void testCurvedBorderUntouched() throws Exception {
+        StringBuilder wkt = new StringBuilder("POLYGON ((");
+        int count = 2000;
+        for( int i = 0; i <= count; i++ ) {
+            double angle = 2 * Math.PI * (i % count) / count;
+            wkt.append(i > 0 ? ", " : "").append(5000 * Math.cos(angle)).append(" ").append(5000 * Math.sin(angle));
+        }
+        wkt.append("))");
+        SimpleFeatureCollection polygons = vector(Polygon.class, new String[]{"id"}, wkt.toString(), 1);
+        OmsVectorCleaner cleaner = new OmsVectorCleaner();
+        cleaner.inMap = polygons;
+        cleaner.pMaxHoleArea = 300;
+        cleaner.pMinWidth = 10;
+        cleaner.process();
+
+        assertEquals(0, cleaner.outChanges.size());
+        Geometry cleaned = (Geometry) FeatureUtilities.featureCollectionToList(cleaner.outMap).get(0).getDefaultGeometry();
+        assertTrue(cleaned.getGeometryN(0).equalsExact((Geometry) byId(polygons).get(1).getDefaultGeometry()));
     }
 
     public void testLinesAndPoints() throws Exception {
