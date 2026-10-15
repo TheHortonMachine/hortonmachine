@@ -2509,7 +2509,7 @@ public class HM {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(url))
-                .header("User-Agent", "Hortonmachine/geotools (info@hortonmachine.org)")
+                .header("User-Agent", Version.USER_AGENT)
                 .header("Accept", "application/json")
                 .GET()
                 .build();

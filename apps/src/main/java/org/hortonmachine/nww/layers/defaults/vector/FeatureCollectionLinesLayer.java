@@ -30,6 +30,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.shapes.FeatureLine;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
+import org.hortonmachine.nww.shapes.FeatureSurfacePolyline;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
@@ -116,6 +117,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
             mNormalShapeAttributes = new BasicShapeAttributes();
         mNormalShapeAttributes.setOutlineMaterial(mStrokeMaterial);
         mNormalShapeAttributes.setOutlineWidth(mStrokeWidth);
+        mNormalShapeAttributes.setDrawOutline(mStrokeWidth > 0);
     }
 
     @Override
@@ -218,16 +220,32 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
                         verticesList.add(Position.fromDegrees(c.y, c.x, h));
                     }
                 }
-                FeatureLine path = new FeatureLine(verticesList, featureStoreInfo);
-                path.setFeature(lineFeature);
-                path.setAltitudeMode(mElevationMode);
-                path.setAttributes(mNormalShapeAttributes);
-                path.setHighlightAttributes(highlightAttrs);
-                path.setExtrude(doExtrude);
-
-                addRenderable(path);
+                if (!doExtrude && isDrapedOnTerrain()) {
+                    FeatureSurfacePolyline surfaceLine = new FeatureSurfacePolyline(verticesList, featureStoreInfo);
+                    surfaceLine.setFeature(lineFeature);
+                    surfaceLine.setAttributes(mNormalShapeAttributes);
+                    surfaceLine.setHighlightAttributes(highlightAttrs);
+                    addRenderable(surfaceLine);
+                } else {
+                    FeatureLine path = new FeatureLine(verticesList, featureStoreInfo);
+                    path.setFeature(lineFeature);
+                    path.setAltitudeMode(mElevationMode);
+                    path.setAttributes(mNormalShapeAttributes);
+                    path.setHighlightAttributes(highlightAttrs);
+                    path.setExtrude(doExtrude);
+                    addRenderable(path);
+                }
             }
         }
+    }
+
+    /**
+     * Non extruded lines that have no own heights are draped on the terrain as surface shapes.
+     *
+     * <p>3D lines are straight between their vertices, so the terrain cuts through them.</p>
+     */
+    private boolean isDrapedOnTerrain() {
+        return mElevationMode != WorldWind.ABSOLUTE && mHeightFieldName == null;
     }
 
     @Override

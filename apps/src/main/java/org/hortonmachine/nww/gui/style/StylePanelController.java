@@ -15,6 +15,7 @@ import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
 import org.hortonmachine.style.SimpleStyle;
 
+import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 
 public class StylePanelController extends StylePanelView {
@@ -22,17 +23,23 @@ public class StylePanelController extends StylePanelView {
     private static final String[] TYPES = new String[] { "SPHERE", "CUBE", "CONE" };
 
     private static String[] opacities =
-        new String[] { "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0", };
+        new String[] { "0.0", "0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1.0", };
 
     private NwwVectorLayer layer;
+    private WorldWindow wwd;
 
     private DecimalFormat oneFormat = new DecimalFormat("0.0");
     private SimpleStyle style;
 
     private HashMap<String, String> shapeMap;
 
-    public StylePanelController(NwwVectorLayer layer) {
+    /**
+     * @param layer the layer to style.
+     * @param wwd the window to redraw once the style is applied.
+     */
+    public StylePanelController(NwwVectorLayer layer, WorldWindow wwd) {
         this.layer = layer;
+        this.wwd = wwd;
 
         init();
     }
@@ -48,6 +55,8 @@ public class StylePanelController extends StylePanelView {
         inverseShapeMap.put(BasicMarkerShape.CONE, TYPES[2]);
 
         style = layer.getStyle();
+        _fillOpacityCombo.setToolTipText("0.0 draws no fill");
+        _strokeWidthText.setToolTipText("0 draws no border");
         GEOMTYPE geomType = layer.getType();
         switch (geomType) {
         case POINT:
@@ -199,6 +208,10 @@ public class StylePanelController extends StylePanelView {
         }
 
         layer.setStyle(style);
+        // the shapes share the changed attributes, but the globe repaints only when asked
+        if (wwd != null) {
+            wwd.redraw();
+        }
     }
 
 }

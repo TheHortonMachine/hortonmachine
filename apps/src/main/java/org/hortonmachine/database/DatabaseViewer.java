@@ -17,9 +17,8 @@
  */
 package org.hortonmachine.database;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -27,17 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.Action;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 
 import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
@@ -47,6 +46,7 @@ import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.log.LogDb;
+import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.postgis.PGDb;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.SqlName;
@@ -64,15 +64,11 @@ import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.SimpleNwwViewer;
-import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
-import org.hortonmachine.nww.gui.ViewControlsLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 
-import gov.nasa.worldwind.avlist.AVKey;
-import gov.nasa.worldwind.util.Logging;
-import gov.nasa.worldwind.util.WWUtil;
+import gov.nasa.worldwind.geom.Sector;
 
 /**
  * The database viewer.
@@ -148,6 +144,7 @@ public class DatabaseViewer extends DatabaseController {
                     title = "QueryLayer";
                 }
                 toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
+                zoomNwwTo(fc.getBounds());
                 addQueryToHistoryCombo(sqlText);
             }
 
@@ -169,9 +166,9 @@ public class DatabaseViewer extends DatabaseController {
         }
         try {
             pm.beginTask("Run query: " + sqlText, IHMProgressMonitor.UNKNOWN);
+            // no reprojection needed, the map reprojects the layers to its CRS while rendering
             DefaultFeatureCollection fc = DbsHelper.runRawSqlToFeatureCollection(tableName,
                     (ASpatialDb) currentConnectedSqlDatabase, sqlText, null);
-            ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
 
             Style[] styles = null;
             if (isTableQuery && tableName != null) {
@@ -185,7 +182,7 @@ public class DatabaseViewer extends DatabaseController {
                 }
             }
 
-            showInMapFrame(true, new SimpleFeatureCollection[]{rfc}, styles);
+            showInMapFrame(true, new SimpleFeatureCollection[]{fc}, styles);
 
             addQueryToHistoryCombo(sqlText);
 
@@ -199,84 +196,79 @@ public class DatabaseViewer extends DatabaseController {
         return hasError;
     }
 
-    private void openNww() {
-        String appName = "HortonMachine Database Viewer";
+    @Override
+    protected boolean canShowGeometriesIn3D() {
+        return true;
+    }
+
+    @Override
+    protected void showGeometriesIn3D( String title, List<SimpleFeatureCollection> fcs ) throws Exception {
+        if (toolsPanelController == null) {
+            openNww();
+        }
+        if (toolsPanelController == null) {
+            return;
+        }
+        ReferencedEnvelope bounds = null;
+        for( SimpleFeatureCollection fc : fcs ) {
+            ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
+            toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
+            ReferencedEnvelope fcBounds = fc.getBounds().transform(NwwUtilities.GPS_CRS, true);
+            if (bounds == null) {
+                bounds = fcBounds;
+            } else {
+                bounds.expandToInclude(fcBounds);
+            }
+        }
+        zoomNwwTo(bounds);
+    }
+
+    /**
+     * Zoom the 3D view to the given bounds.
+     *
+     * <p>The bounds are transformed from the source collections: the bounds of a reprojecting
+     * collection iterate the features, which is not safe while the layer is loading them in
+     * its own thread.</p>
+     */
+    private void zoomNwwTo( ReferencedEnvelope bounds ) {
+        if (toolsPanelController == null || bounds == null || bounds.isEmpty()) {
+            return;
+        }
         try {
-            Class<SimpleNwwViewer> class1 = SimpleNwwViewer.class;
-            ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-
-            Component nwwComponent = NwwPanel.createNwwPanel(true);
-            NwwPanel wwjPanel = null;
-            LayersPanelController layerPanel = null;
-
-            if (nwwComponent instanceof NwwPanel) {
-                wwjPanel = (NwwPanel) nwwComponent;
-                wwjPanel.addOsmLayer();
-                ViewControlsLayer viewControls = wwjPanel.addViewControls();
-                viewControls.setScale(1.5);
-
-                layerPanel = new LayersPanelController(wwjPanel);
-                toolsPanelController = new ToolsPanelController(wwjPanel, layerPanel);
-            }
-
-            final JFrame nwwFrame = new JFrame();
-            nwwFrame.setTitle(appName + ": map view");
-            nwwFrame.setIconImage(icon.getImage());
-            nwwFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            java.awt.EventQueue.invokeLater(() -> nwwFrame.setVisible(true));
-            JPanel mapPanel = new JPanel(new BorderLayout());
-            mapPanel.add(nwwComponent, BorderLayout.CENTER);
-            nwwFrame.getContentPane().add(mapPanel, BorderLayout.CENTER);
-            nwwFrame.setResizable(true);
-            nwwFrame.setPreferredSize(new Dimension(800, 800));
-            nwwFrame.pack();
-            WWUtil.alignComponent(null, nwwFrame, AVKey.CENTER);
-
-            JFrame layersFrame = null;
-            JFrame toolsFrame = null;
-            if (wwjPanel != null) {
-                layersFrame = new JFrame();
-                layersFrame.setTitle(appName + ": layers view");
-                layersFrame.setIconImage(icon.getImage());
-                layersFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                JFrame _layersFrame = layersFrame;
-                java.awt.EventQueue.invokeLater(() -> _layersFrame.setVisible(true));
-                layersFrame.getContentPane().add(layerPanel, BorderLayout.CENTER);
-                layersFrame.setResizable(true);
-                layersFrame.setPreferredSize(new Dimension(400, 500));
-                layersFrame.setLocation(0, 0);
-                layersFrame.pack();
-                toolsFrame = new JFrame();
-                toolsFrame.setTitle(appName + ": tools view");
-                toolsFrame.setIconImage(icon.getImage());
-                toolsFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                JFrame _toolsFrame = toolsFrame;
-                java.awt.EventQueue.invokeLater(() -> _toolsFrame.setVisible(true));
-                toolsFrame.getContentPane().add(toolsPanelController, BorderLayout.CENTER);
-                toolsFrame.setResizable(true);
-                toolsFrame.setPreferredSize(new Dimension(400, 400));
-                toolsFrame.setLocation(0, 510);
-                toolsFrame.pack();
-            }
-            JFrame _toolsFrame = toolsFrame;
-            JFrame _layersFrame = layersFrame;
-            nwwFrame.addWindowListener(new WindowAdapter(){
-                public void windowClosed( java.awt.event.WindowEvent e ) {
-                    toolsPanelController = null;
-                    if (_toolsFrame != null) {
-                        _toolsFrame.setVisible(false);
-                        _toolsFrame.dispose();
-                    }
-                    if (_layersFrame != null) {
-                        _layersFrame.setVisible(false);
-                        _layersFrame.dispose();
-                    }
-
-                };
-            });
+            ReferencedEnvelope llBounds = bounds.transform(NwwUtilities.GPS_CRS, true);
+            // keep a minimum size, a single point would otherwise zoom to the ground
+            double minHalfSize = 0.001;
+            double halfWidth = Math.max(llBounds.getWidth() / 2.0, minHalfSize);
+            double halfHeight = Math.max(llBounds.getHeight() / 2.0, minHalfSize);
+            double centerX = llBounds.getMedian(0);
+            double centerY = llBounds.getMedian(1);
+            Sector sector = Sector.fromDegrees(centerY - halfHeight, centerY + halfHeight, centerX - halfWidth,
+                    centerX + halfWidth);
+            NwwPanel wwjPanel = toolsPanelController.getWwjPanel();
+            // after a new window has been shown
+            SwingUtilities.invokeLater(() -> wwjPanel.goTo(sector, true));
         } catch (Exception e) {
-            Logging.logger().log(java.util.logging.Level.SEVERE, "Exception at application start", e);
-            throw e;
+            Logger.INSTANCE.insertError("", "Unable to zoom to the geometries", e);
+        }
+    }
+
+    /**
+     * Open the 3D viewer as the NWW viewer application does: a single window with layers
+     * and tools panels and the background maps to switch between.
+     */
+    private void openNww() {
+        toolsPanelController = SimpleNwwViewer.openNww("HortonMachine Database Viewer", JFrame.DISPOSE_ON_CLOSE);
+        if (toolsPanelController == null) {
+            return;
+        }
+        Window nwwWindow = SwingUtilities.getWindowAncestor(toolsPanelController);
+        if (nwwWindow != null) {
+            nwwWindow.addWindowListener(new WindowAdapter(){
+                @Override
+                public void windowClosed( WindowEvent e ) {
+                    toolsPanelController = null;
+                }
+            });
         }
     }
 

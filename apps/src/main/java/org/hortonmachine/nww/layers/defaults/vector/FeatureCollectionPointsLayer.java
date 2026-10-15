@@ -149,7 +149,9 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
     public SimpleStyle getStyle() {
         SimpleStyle simpleStyle = new SimpleStyle();
         simpleStyle.fillColor = basicMarkerAttributes.getLabelMaterial().getDiffuse();
+        simpleStyle.fillOpacity = mFillOpacity;
         simpleStyle.shapeSize = basicMarkerAttributes.getScale();
+        simpleStyle.shapeType = mShapeType;
         return simpleStyle;
     }
 

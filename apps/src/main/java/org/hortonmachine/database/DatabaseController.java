@@ -42,6 +42,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
@@ -87,6 +88,8 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.GeographicCRS;
 import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
@@ -102,6 +105,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.HMQueryContext;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
@@ -124,6 +128,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.PreferencesHandler;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
@@ -138,8 +143,7 @@ import org.joda.time.DateTime;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryCollection;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
@@ -201,6 +205,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private List<String> oldSqlCommands = new ArrayList<String>();
     protected SqlTemplatesAndActions sqlTemplatesAndActions;
     private HMMapframe mapFrame;
+    /**
+     * The last EPSG code inserted by the user for geometries of unknown CRS.
+     */
+    private String lastAskedSrid = "";
 
     /**
      * The {@link IDbViewerActionProvider}s (built-in or contributed by downstream projects
@@ -1592,120 +1600,46 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         private static final long serialVersionUID = 1L;
                         @Override
                         public void actionPerformed( ActionEvent e ) {
-
-                            WKTReader wktReader = new WKTReader();
-                            List<Geometry> geomsList = new ArrayList<>();
-                            for( int r : selectedRows ) {
-                                try {
-                                    String valueAt = table.getValueAt(r, selectedCols[0]).toString();
-                                    valueAt = removeSrid(valueAt);
-                                    Geometry geometry = wktReader.read(valueAt);
-                                    if (geometry instanceof GeometryCollection) {
-                                        int numGeometries = geometry.getNumGeometries();
-                                        for( int j = 0; j < numGeometries; j++ ) {
-                                            Geometry geometryN = geometry.getGeometryN(j);
-                                            geomsList.add(geometryN);
-                                        }
-                                    } else {
-                                        geomsList.add(geometry);
-                                    }
-                                } catch (ParseException e1) {
-                                    Logger.INSTANCE.insertError("", "ERROR", e1);
-                                }
-                            }
-
-                            if (geomsList.size() > 0) {
-                                List<SimpleFeatureCollection> fcs = FeatureUtilities.featureCollectionsFromGeometry(null,
-                                        geomsList.toArray(new Geometry[0]));
-                                showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]), null);
-                            }
-
+                            viewSelectedGeometries(table, selectedRows, selectedCols[0], false, false);
                         }
-
                     });
                     item1.setHorizontalTextPosition(JMenuItem.RIGHT);
                     popupMenu.add(item1);
-                    JMenuItem item2 = new JMenuItem(new AbstractAction("Plot geometry"){
-                        private static final long serialVersionUID = 1L;
-                        @Override
-                        public void actionPerformed( ActionEvent e ) {
-
-                            WKTReader wktReader = new WKTReader();
-                            List<Geometry> geomsList = new ArrayList<>();
-                            for( int r : selectedRows ) {
-                                try {
-                                    String valueAt = table.getValueAt(r, selectedCols[0]).toString();
-                                    valueAt = removeSrid(valueAt);
-                                    Geometry geometry = wktReader.read(valueAt);
-                                    if (geometry instanceof GeometryCollection) {
-                                        int numGeometries = geometry.getNumGeometries();
-                                        for( int j = 0; j < numGeometries; j++ ) {
-                                            Geometry geometryN = geometry.getGeometryN(j);
-                                            geomsList.add(geometryN);
-                                        }
-                                    } else {
-                                        geomsList.add(geometry);
-                                    }
-                                } catch (ParseException e1) {
-                                    Logger.INSTANCE.insertError("", "ERROR", e1);
-                                }
-                            }
-
-                            if (geomsList.size() > 0) {
-                                HM.plotJtsGeometries(null, geomsList);
-                            }
-
-                        }
-
-                    });
-                    item2.setHorizontalTextPosition(JMenuItem.RIGHT);
-                    popupMenu.add(item2);
                     if (geomType != null && !geomType.isPoint()) {
                         JMenuItem item3 = new JMenuItem(new AbstractAction("View geometry with directions hint"){
                             private static final long serialVersionUID = 1L;
                             @Override
                             public void actionPerformed( ActionEvent e ) {
-
-                                WKTReader wktReader = new WKTReader();
-                                List<Geometry> geomsList = new ArrayList<>();
-                                for( int r : selectedRows ) {
-                                    try {
-                                        String valueAt = table.getValueAt(r, selectedCols[0]).toString();
-                                        valueAt = removeSrid(valueAt);
-                                        Geometry geometry = wktReader.read(valueAt);
-                                        if (geometry instanceof GeometryCollection) {
-                                            int numGeometries = geometry.getNumGeometries();
-                                            for( int j = 0; j < numGeometries; j++ ) {
-                                                Geometry geometryN = geometry.getGeometryN(j);
-                                                List<Polygon> simpleDirectionArrows = GeometryUtilities
-                                                        .createSimpleDirectionArrow(geometryN);
-                                                geomsList.add(geometryN);
-                                                geomsList.addAll(simpleDirectionArrows);
-                                            }
-                                        } else {
-                                            List<Polygon> simpleDirectionArrows = GeometryUtilities
-                                                    .createSimpleDirectionArrow(geometry);
-                                            geomsList.add(geometry);
-                                            geomsList.addAll(simpleDirectionArrows);
-                                        }
-
-                                    } catch (ParseException e1) {
-                                        Logger.INSTANCE.insertError("", "ERROR", e1);
-                                    }
-                                }
-
-                                if (geomsList.size() > 0) {
-                                    List<SimpleFeatureCollection> fcs = FeatureUtilities.featureCollectionsFromGeometry(null,
-                                            geomsList.toArray(new Geometry[0]));
-                                    showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]), null);
-                                }
-
+                                viewSelectedGeometries(table, selectedRows, selectedCols[0], true, false);
                             }
-
                         });
                         item3.setHorizontalTextPosition(JMenuItem.RIGHT);
                         popupMenu.add(item3);
                     }
+                    if (canShowGeometriesIn3D()) {
+                        JMenuItem item4 = new JMenuItem(new AbstractAction("View geometry in 3D"){
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public void actionPerformed( ActionEvent e ) {
+                                viewSelectedGeometries(table, selectedRows, selectedCols[0], false, true);
+                            }
+                        });
+                        item4.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        popupMenu.add(item4);
+                    }
+                    JMenuItem item2 = new JMenuItem(new AbstractAction("Plot geometry vertices"){
+                        private static final long serialVersionUID = 1L;
+                        @Override
+                        public void actionPerformed( ActionEvent e ) {
+                            List<Geometry> geomsList = new ArrayList<>();
+                            readSelectedGeometries(table, selectedRows, selectedCols[0]).values().forEach(geomsList::addAll);
+                            if (geomsList.size() > 0) {
+                                HM.plotJtsGeometries(null, geomsList);
+                            }
+                        }
+                    });
+                    item2.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(item2);
                 }
             }
 
@@ -2961,6 +2895,191 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         } 
     }
 
+    /**
+     * The geometries of the selected cells that share the same CRS.
+     */
+    private static class CrsGeometries {
+        private final CoordinateReferenceSystem crs;
+        private final String crsLabel;
+        private final List<Geometry> geometries;
+
+        private CrsGeometries( CoordinateReferenceSystem crs, String crsLabel, List<Geometry> geometries ) {
+            this.crs = crs;
+            this.crsLabel = crsLabel;
+            this.geometries = geometries;
+        }
+    }
+
+    /**
+     * Show the geometries of the selected cells in the map viewer (on top of OSM) or in the 3D viewer.
+     *
+     * @param withDirections if <code>true</code>, direction arrows are added to the geometries.
+     * @param in3D if <code>true</code>, the 3D viewer is used.
+     */
+    private void viewSelectedGeometries( JTable table, int[] rows, int col, boolean withDirections, boolean in3D ) {
+        Map<Integer, List<Geometry>> srid2Geoms = readSelectedGeometries(table, rows, col);
+        if (srid2Geoms.isEmpty()) {
+            return;
+        }
+        try {
+            List<CrsGeometries> crsGeomsList = resolveCrs(table, srid2Geoms);
+            if (crsGeomsList == null) {
+                return;
+            }
+            List<SimpleFeatureCollection> fcs = new ArrayList<>();
+            List<String> crsLabels = new ArrayList<>();
+            for( CrsGeometries crsGeoms : crsGeomsList ) {
+                List<Geometry> geomsList = crsGeoms.geometries;
+                if (withDirections) {
+                    geomsList = new ArrayList<>();
+                    for( Geometry geometry : crsGeoms.geometries ) {
+                        geomsList.add(geometry);
+                        geomsList.addAll(GeometryUtilities.createSimpleDirectionArrow(geometry));
+                    }
+                }
+                fcs.addAll(FeatureUtilities.featureCollectionsFromGeometry(crsGeoms.crs, geomsList.toArray(new Geometry[0])));
+                crsLabels.add(crsGeoms.crsLabel);
+            }
+            String title = "Geometries " + String.join(", ", crsLabels);
+            if (in3D) {
+                showGeometriesIn3D(title, fcs);
+            } else {
+                showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]), null);
+                mapFrame.setTitle(title);
+            }
+        } catch (Exception e) {
+            Logger.INSTANCE.insertError("", "Error viewing geometries", e);
+            GuiUtilities.showErrorMessage(this, e.getMessage());
+        }
+    }
+
+    /**
+     * Read the geometries of the selected cells, exploding collections into their parts.
+     *
+     * @return the geometries grouped by their SRID, 0 if unknown.
+     */
+    private Map<Integer, List<Geometry>> readSelectedGeometries( JTable table, int[] rows, int col ) {
+        WKTReader wktReader = new WKTReader();
+        Map<Integer, List<Geometry>> srid2Geoms = new LinkedHashMap<>();
+        for( int r : rows ) {
+            Object value = table.getValueAt(r, col);
+            try {
+                Geometry geometry;
+                int srid = 0;
+                if (value instanceof Geometry) {
+                    geometry = (Geometry) value;
+                    srid = geometry.getSRID();
+                } else {
+                    // WKT or EWKT, i.e. SRID=4326;POINT (...)
+                    String valueAt = value.toString();
+                    if (valueAt.startsWith("SRID=")) {
+                        String[] split = valueAt.split(";", 2);
+                        srid = Integer.parseInt(split[0].substring(5).trim());
+                        valueAt = split[1];
+                    }
+                    geometry = wktReader.read(valueAt);
+                }
+                List<Geometry> geomsList = srid2Geoms.computeIfAbsent(Math.max(srid, 0), k -> new ArrayList<>());
+                for( int j = 0; j < geometry.getNumGeometries(); j++ ) {
+                    geomsList.add(geometry.getGeometryN(j));
+                }
+            } catch (ParseException | NumberFormatException e1) {
+                Logger.INSTANCE.insertError("", "ERROR", e1);
+            }
+        }
+        return srid2Geoms;
+    }
+
+    /**
+     * Find the CRS of the geometries. If the SRID is unknown, it is taken from the table shown
+     * in the data viewer, guessed from lon/lat bounds, or asked to the user.
+     *
+     * @return the geometries with their CRS or <code>null</code> if the user cancelled.
+     */
+    private List<CrsGeometries> resolveCrs( JTable table, Map<Integer, List<Geometry>> srid2Geoms ) throws Exception {
+        List<CrsGeometries> crsGeomsList = new ArrayList<>();
+        for( Entry<Integer, List<Geometry>> entry : srid2Geoms.entrySet() ) {
+            List<Geometry> geomsList = entry.getValue();
+            String crsCode;
+            String crsLabel;
+            if (entry.getKey() > 0) {
+                crsCode = "EPSG:" + entry.getKey();
+                crsLabel = crsCode;
+            } else {
+                crsCode = getDataTableCrsCode(table);
+                crsLabel = crsCode + " (from table)";
+                if (crsCode == null && isLonLat(geomsList)) {
+                    crsCode = "EPSG:4326";
+                    crsLabel = crsCode + " (guessed)";
+                }
+                if (crsCode == null) {
+                    String srid = GuiUtilities.showInputDialog(this,
+                            "The CRS of the geometries could not be detected, please insert its EPSG code.", lastAskedSrid);
+                    if (srid == null || srid.trim().isEmpty()) {
+                        return null;
+                    }
+                    lastAskedSrid = srid.trim();
+                    crsCode = "EPSG:" + lastAskedSrid;
+                    crsLabel = crsCode;
+                }
+            }
+            CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs(crsCode, true);
+            crsGeomsList.add(new CrsGeometries(crs, crsLabel, geomsList));
+        }
+        return crsGeomsList;
+    }
+
+    /**
+     * @return the CRS code of the geometry column of the table shown in the data viewer, if available.
+     */
+    private String getDataTableCrsCode( JTable table ) {
+        if (table != currentDataTable || !(currentConnectedSqlDatabase instanceof ASpatialDb)) {
+            return null;
+        }
+        SqlName tableName = null;
+        if (currentDataTableLevel != null) {
+            tableName = currentDataTableLevel.tableName.toSqlName();
+        } else if (currentDataTableName != null) {
+            tableName = SqlName.m(currentDataTableName);
+        }
+        if (tableName == null) {
+            return null;
+        }
+        try {
+            GeometryColumn gCol = ((ASpatialDb) currentConnectedSqlDatabase).getGeometryColumnsForTable(tableName);
+            if (gCol != null && gCol.srid > 0) {
+                return gCol.getCrsCode();
+            }
+        } catch (Exception e) {
+            // not a spatial table, the CRS has to be guessed
+        }
+        return null;
+    }
+
+    private static boolean isLonLat( List<Geometry> geomsList ) {
+        Envelope env = new Envelope();
+        for( Geometry geometry : geomsList ) {
+            env.expandToInclude(geometry.getEnvelopeInternal());
+        }
+        return env.getMinX() >= -180 && env.getMaxX() <= 180 && env.getMinY() >= -90 && env.getMaxY() <= 90;
+    }
+
+    /**
+     * @return <code>true</code> if {@link #showGeometriesIn3D(String, List)} is supported.
+     */
+    protected boolean canShowGeometriesIn3D() {
+        return false;
+    }
+
+    /**
+     * Show feature collections in the 3D viewer, zooming to their extent.
+     *
+     * @param title the layer title.
+     * @param fcs the feature collections, with their CRS set.
+     */
+    protected void showGeometriesIn3D( String title, List<SimpleFeatureCollection> fcs ) throws Exception {
+    }
+
     protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection[] fcs, Style[] styles ) {
         if (mapFrame == null || !mapFrame.isVisible()) {
             Class<DatabaseController> class1 = DatabaseController.class;
@@ -2978,26 +3097,47 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 mapFrame.setSize(600, 600);
             }
             mapFrame.setVisible(true);
-
+            // the OSM background also switches the map CRS, the layers are reprojected to it while rendering
+            mapFrame.addOsmToolbarButton();
         }
-        ReferencedEnvelope renv = null;
         for( int i = 0; i < fcs.length; i++ ) {
-            SimpleFeatureCollection fc = fcs[i];
             if (styles != null) {
-                mapFrame.addLayer(fc, styles[i]);
+                mapFrame.addLayer(fcs[i], styles[i]);
             } else {
-                mapFrame.addLayer(fc);
+                mapFrame.addLayer(fcs[i]);
             }
+        }
+        // the map takes the CRS of the first layer, if not set by the OSM background
+        CoordinateReferenceSystem mapCrs = mapFrame.getMapContent().getCoordinateReferenceSystem();
+
+        ReferencedEnvelope renv = null;
+        for( SimpleFeatureCollection fc : fcs ) {
             ReferencedEnvelope bounds = fc.getBounds();
+            if (bounds.getCoordinateReferenceSystem() != null && mapCrs != null) {
+                try {
+                    bounds = bounds.transform(mapCrs, true);
+                } catch (Exception e) {
+                    Logger.INSTANCE.insertError("", "Unable to transform bounds to the map CRS", e);
+                    continue;
+                }
+            }
             if (renv == null) {
                 renv = bounds;
             } else {
                 renv.expandToInclude(bounds);
             }
         }
-        mapFrame.addOsmBackground();
 
-        mapFrame.getMapPane().setDisplayArea(renv);
+        if (renv != null) {
+            // a bit of margin, also to zoom on single points
+            double buffer = Math.max(renv.getWidth(), renv.getHeight()) * 0.1;
+            if (buffer == 0) {
+                // about 100 meters
+                buffer = mapCrs instanceof GeographicCRS ? 0.001 : 100;
+            }
+            renv.expandBy(buffer);
+            mapFrame.getMapPane().setDisplayArea(renv);
+        }
     }
 
     @Override

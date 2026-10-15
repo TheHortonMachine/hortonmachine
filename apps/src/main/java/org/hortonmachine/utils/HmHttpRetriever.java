@@ -1,5 +1,7 @@
 package org.hortonmachine.utils;
 
+import org.hortonmachine.Version;
+
 import gov.nasa.worldwind.retrieve.RetrievalPostProcessor;
 import gov.nasa.worldwind.retrieve.URLRetriever;
 
@@ -23,7 +25,7 @@ public class HmHttpRetriever extends URLRetriever {
 
         // Add your User-Agent (and any other headers) here:
         if (conn instanceof HttpURLConnection) {
-            conn.setRequestProperty("User-Agent", "HortonMachine-NWW/1.0 (info@hortonmachine.org)");
+            conn.setRequestProperty("User-Agent", Version.USER_AGENT);
             // Optionally:
             // conn.setRequestProperty("Referer", "https://your.app/");
             // conn.setRequestProperty("From", "contact@example.com");

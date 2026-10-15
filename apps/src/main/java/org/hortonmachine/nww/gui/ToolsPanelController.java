@@ -68,7 +68,6 @@ import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.dbs.utils.TableName;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.PreferencesHandler;
@@ -97,7 +96,6 @@ import org.hortonmachine.nww.layers.defaults.spatialite.SpatialitePolygonLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
-import org.hortonmachine.nww.layers.defaults.vector.GeopackageVectorLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
 import org.hortonmachine.nww.layers.defaults.vector.ShapefilesFolderLayer;
@@ -644,35 +642,21 @@ public class ToolsPanelController extends ToolsPanelView {
                     layerEventsListener.onLayerAdded(gpkgTilesLayer);
                 }
 
-                if (_useRasterizedCheckbox.isSelected()) {
-                    for( String tableName : featureTables ) {
-                        SimpleFeatureCollection readFC = OmsVectorReader
-                                .readVector(selectedFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
-                        String sldString = null;
-                        try (GeopackageCommonDb db = new GeopackageDb()) {
-                            db.open(selectedFile.getAbsolutePath());
-                            sldString = db.getSldString(SqlName.m(tableName));
-                        }
-                        Style style;
+                // the tables are loaded as the other vectors, reprojected from their CRS
+                // and styled with the table's style, if available
+                for( String tableName : featureTables ) {
+                    SimpleFeatureCollection readFC = NwwUtilities
+                            .readAndReproject(selectedFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
+                    Style sldStyle = null;
+                    try (GeopackageCommonDb db = new GeopackageDb()) {
+                        db.open(selectedFile.getAbsolutePath());
+                        String sldString = db.getSldString(SqlName.m(tableName));
                         if (sldString != null) {
-                            style = SldUtilities.getStyleFromSldString(sldString);
-                        } else {
-                            style = SLD.createSimpleStyle(readFC.getSchema(), Color.BLUE);
+                            sldStyle = SldUtilities.getStyleFromSldString(sldString);
                         }
-                        String n = selectedFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
-                        RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(n, readFC, style,
-                                null, true);
-
-                        wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
-                        layerEventsListener.onLayerAdded(collectionLayer);
                     }
-                } else {
-                    for( String tableName : featureTables ) {
-                        GeopackageVectorLayer gpkgVectorLayer = new GeopackageVectorLayer(selectedFile.getAbsolutePath(),
-                                tableName);
-                        wwjPanel.getWwd().getModel().getLayers().add(gpkgVectorLayer);
-                        layerEventsListener.onLayerAdded(gpkgVectorLayer);
-                    }
+                    String layerName = selectedFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
+                    loadFeatureCollection(null, layerName, null, readFC, null, sldStyle);
                 }
 
             } else if (selectedFile.getName().endsWith(".map")) {
@@ -765,9 +749,26 @@ public class ToolsPanelController extends ToolsPanelView {
      */
     public void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
             SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap ) throws Exception {
+        loadFeatureCollection(selectedFile, name, featureStore, readFC, field2ValuesMap, null);
+    }
+
+    /**
+     * Load a feature collection to layer.
+     *
+     * @param selectedFile can be null, used for the style.
+     * @param name name of the layer.
+     * @param featureStore can be null, used for editing attributes.
+     * @param readFC the feature collection to load, in WGS84 lon/lat.
+     * @param field2ValuesMap can be null.
+     * @param sldStyle an optional style to use instead of the one of the file, as for example
+     *          the one stored in a geopackage table.
+     * @throws Exception
+     */
+    public void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
+            SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap, Style sldStyle ) throws Exception {
         if (_useRasterizedCheckbox.isSelected()) {
-            Style style = null;
-            if (selectedFile != null)
+            Style style = sldStyle;
+            if (style == null && selectedFile != null)
                 style = SldUtilities.getStyleFromFile(selectedFile);
             if (style == null)
                 style = SLD.createSimpleStyle(readFC.getSchema(), Color.BLUE);
@@ -788,7 +789,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, EGeometryType.POLYGON.name());
+                SimpleStyle style = getSimpleStyle(sldStyle, absolutePath, EGeometryType.POLYGON.name());
                 if (style != null) {
                     featureCollectionPolygonLayer.setStyle(style);
                 }
@@ -800,7 +801,7 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, EGeometryType.LINESTRING.name());
+                SimpleStyle style = getSimpleStyle(sldStyle, absolutePath, EGeometryType.LINESTRING.name());
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }
@@ -819,7 +820,7 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
                         featureStore, field2ValuesMap, imagePath);
-                SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, EGeometryType.POINT.name());
+                SimpleStyle style = getSimpleStyle(sldStyle, absolutePath, EGeometryType.POINT.name());
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);
                 }
@@ -831,6 +832,19 @@ public class ToolsPanelController extends ToolsPanelView {
                 System.err.println("?????");
             }
         }
+    }
+
+    /**
+     * @return the style from the given sld style, if available, else the one of the file.
+     */
+    private SimpleStyle getSimpleStyle( Style sldStyle, String absolutePath, String geomTypeName ) throws Exception {
+        if (sldStyle != null) {
+            SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(sldStyle, geomTypeName);
+            if (style != null) {
+                return style;
+            }
+        }
+        return SimpleStyleUtilities.getSimpleStyle(absolutePath, geomTypeName);
     }
 
 

@@ -31,6 +31,7 @@ import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.shapes.FeatureExtrudedPolygon;
 import org.hortonmachine.nww.shapes.FeaturePolygon;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
+import org.hortonmachine.nww.shapes.FeatureSurfacePolygon;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
@@ -109,11 +110,15 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         mNormalShapeAttributes.setInteriorOpacity(mFillOpacity);
         mNormalShapeAttributes.setOutlineMaterial(mStrokeMaterial);
         mNormalShapeAttributes.setOutlineWidth(mStrokeWidth);
+        // a zero opacity fill and a zero width border are not drawn at all
+        mNormalShapeAttributes.setDrawInterior(mFillOpacity > 0);
+        mNormalShapeAttributes.setDrawOutline(mStrokeWidth > 0);
 
         if (mSideShapeAttributes == null)
             mSideShapeAttributes = new BasicShapeAttributes();
         mSideShapeAttributes.setInteriorMaterial(mSideFillMaterial);
         mSideShapeAttributes.setInteriorOpacity(mFillOpacity);
+        mSideShapeAttributes.setDrawInterior(mFillOpacity > 0);
     }
 
     @Override
@@ -289,9 +294,6 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
             if (geometryN instanceof org.locationtech.jts.geom.Polygon) {
                 org.locationtech.jts.geom.Polygon poly = (org.locationtech.jts.geom.Polygon) geometryN;
 
-                FeaturePolygon polygon = new FeaturePolygon(featureStoreInfo);
-                polygon.setFeature(polygonAreaFeature);
-
                 Coordinate[] extCoords = poly.getExteriorRing().getCoordinates();
                 int extSize = extCoords.length;
                 List<Position> verticesList = new ArrayList<>(extSize);
@@ -305,8 +307,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                     }
                 }
                 verticesList.add(verticesList.get(0));
-                polygon.setOuterBoundary(verticesList);
 
+                List<List<Position>> innerVerticesLists = new ArrayList<>();
                 int numInteriorRings = poly.getNumInteriorRing();
                 for( int k = 0; k < numInteriorRings; k++ ) {
                     LineString interiorRing = poly.getInteriorRingN(k);
@@ -322,15 +324,40 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                             internalVerticesList.add(Position.fromDegrees(c.y, c.x, h));
                         }
                     }
-                    polygon.addInnerBoundary(internalVerticesList);
+                    innerVerticesLists.add(internalVerticesList);
                 }
 
-                polygon.setAltitudeMode(mElevationMode);
-                polygon.setAttributes(mNormalShapeAttributes);
-
-                addRenderable(polygon);
+                if (isDrapedOnTerrain()) {
+                    FeatureSurfacePolygon polygon = new FeatureSurfacePolygon(featureStoreInfo);
+                    polygon.setFeature(polygonAreaFeature);
+                    polygon.setOuterBoundary(verticesList);
+                    for( List<Position> innerVerticesList : innerVerticesLists ) {
+                        polygon.addInnerBoundary(innerVerticesList);
+                    }
+                    polygon.setAttributes(mNormalShapeAttributes);
+                    addRenderable(polygon);
+                } else {
+                    FeaturePolygon polygon = new FeaturePolygon(featureStoreInfo);
+                    polygon.setFeature(polygonAreaFeature);
+                    polygon.setOuterBoundary(verticesList);
+                    for( List<Position> innerVerticesList : innerVerticesLists ) {
+                        polygon.addInnerBoundary(innerVerticesList);
+                    }
+                    polygon.setAltitudeMode(mElevationMode);
+                    polygon.setAttributes(mNormalShapeAttributes);
+                    addRenderable(polygon);
+                }
             }
         }
+    }
+
+    /**
+     * Non extruded polygons that have no own heights are draped on the terrain as surface shapes.
+     *
+     * <p>3D shapes are planar between their vertices, so the terrain cuts through them.</p>
+     */
+    private boolean isDrapedOnTerrain() {
+        return mElevationMode != WorldWind.ABSOLUTE && mHeightFieldName == null;
     }
 
     private SimpleFeatureCollection getfeatureCollection() throws Exception {

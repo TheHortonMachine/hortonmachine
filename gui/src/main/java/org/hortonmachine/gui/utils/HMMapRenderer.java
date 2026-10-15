@@ -43,8 +43,8 @@ import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.geotools.swing.JMapFrame;
 import org.geotools.tile.TileService;
-import org.geotools.tile.impl.osm.OSMService;
 import org.geotools.tile.util.TileLayer;
+import org.hortonmachine.gears.io.tiles.HMOsmTileService;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
@@ -168,8 +168,7 @@ public class HMMapRenderer {
         content.setTitle(title != null ? title : "MapRenderer");
         
         if (addOsm) {
-    		String baseURL = "http://tile.openstreetmap.org/";
-    		TileService service = new OSMService("OpenStreetMap", baseURL);
+    		TileService service = new HMOsmTileService("OpenStreetMap", HMOsmTileService.OSM_BASE_URL);
     		TileLayer layer = new TileLayer(service);
     		layer.setTitle("OpenStreetMap");
     		content.addLayer(layer);

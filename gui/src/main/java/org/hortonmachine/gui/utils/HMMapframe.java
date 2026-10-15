@@ -31,9 +31,9 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.style.Style;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -45,13 +45,14 @@ import org.geotools.map.MapLayerListEvent;
 import org.geotools.styling.SLD;
 import org.geotools.swing.JMapFrame;
 import org.geotools.tile.TileService;
-import org.geotools.tile.impl.osm.OSMService;
 import org.geotools.tile.util.TileLayer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.tiles.HMOsmTileService;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gui.settings.SettingsController;
@@ -63,6 +64,12 @@ import org.hortonmachine.gui.settings.SettingsController;
  */
 @SuppressWarnings("serial")
 public class HMMapframe extends JMapFrame {
+
+    /**
+     * The CRS of the OpenStreetMap tiles.
+     */
+    public static final String OSM_CRS_CODE = "EPSG:3857";
+    private static final String OSM_LAYER_TITLE = "OpenStreetMap";
 
     private MapContent content;
 
@@ -99,13 +106,43 @@ public class HMMapframe extends JMapFrame {
         content.addLayer(layer);
     }
     
+    /**
+     * Add the OpenStreetMap tiles as bottom layer, if not already there.
+     *
+     * <p>The tiles are drawn axis aligned into the map, so they match the other layers only
+     * if the map is in their native Web Mercator. The map CRS is therefore switched to
+     * {@link #OSM_CRS_CODE}, the feature layers are reprojected on the fly by the renderer.</p>
+     */
     public void addOsmBackground() {
-		String baseURL = "http://tile.openstreetmap.org/";
-		TileService service = new OSMService("OpenStreetMap", baseURL);
-		TileLayer layer = new TileLayer(service);
-		layer.setTitle("OpenStreetMap");
-		addLayerBottom(layer);
-	}
+        for( Layer layer : content.layers() ) {
+            if (layer instanceof TileLayer && OSM_LAYER_TITLE.equals(layer.getTitle())) {
+                return;
+            }
+        }
+        try {
+            content.getViewport().setCoordinateReferenceSystem(HMCrsRegistry.INSTANCE.getCrs(OSM_CRS_CODE));
+        } catch (FactoryException e) {
+            e.printStackTrace();
+        }
+        TileService service = new HMOsmTileService(OSM_LAYER_TITLE, HMOsmTileService.OSM_BASE_URL);
+        TileLayer layer = new TileLayer(service);
+        layer.setTitle(OSM_LAYER_TITLE);
+        addLayerBottom(layer);
+    }
+
+    /**
+     * Add a button to the toolbar that adds the OSM background, see {@link #addOsmBackground()}.
+     *
+     * <p>To be called once the frame is visible, i.e. the toolbar exists.</p>
+     */
+    public void addOsmToolbarButton() {
+        getToolBar().add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                addOsmBackground();
+            }
+        });
+    }
 
     public void removeLayer( Layer layer ) {
         if (layer != null) {
@@ -344,13 +381,7 @@ public class HMMapframe extends JMapFrame {
         }
         mapFrame.setVisible(true);
 
-        JToolBar toolBar = mapFrame.getToolBar();
-        toolBar.add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                mapFrame.addOsmBackground();
-            }
-        });
+        mapFrame.addOsmToolbarButton();
 
         Consumer<File[]> filesConsumer = files -> {
             List<File> rasterFiles = new ArrayList<>();

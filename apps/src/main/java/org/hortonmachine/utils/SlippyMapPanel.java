@@ -58,6 +58,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
+import org.hortonmachine.Version;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -80,7 +81,6 @@ import org.locationtech.jts.geom.Polygon;
 @SuppressWarnings("serial")
 public class SlippyMapPanel extends JPanel {
     private static final String TILE_URL = "https://tile.openstreetmap.org/%d/%d/%d.png";
-    private static final String USER_AGENT = "HortonMachine/1.0 (https://github.com/moovida/hortonmachine)";
     private static final int TILE_SIZE = 256;
     private static final int MIN_ZOOM = 1;
     private static final int MAX_ZOOM = 18;
@@ -711,7 +711,7 @@ public class SlippyMapPanel extends JPanel {
                     if (z != zoom) // skip tiles of zoom levels no longer shown
                         return;
                     HttpRequest request = HttpRequest.newBuilder(URI.create(String.format(TILE_URL, z, x, y)))
-                            .header("User-Agent", USER_AGENT).timeout(Duration.ofSeconds(20)).GET().build();
+                            .header("User-Agent", Version.USER_AGENT).timeout(Duration.ofSeconds(20)).GET().build();
                     HttpResponse<InputStream> response = http.send(request, HttpResponse.BodyHandlers.ofInputStream());
                     try (InputStream is = response.body()) {
                         if (response.statusCode() == 200) {
