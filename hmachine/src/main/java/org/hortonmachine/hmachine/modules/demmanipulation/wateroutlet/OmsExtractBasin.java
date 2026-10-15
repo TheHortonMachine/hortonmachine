@@ -246,6 +246,8 @@ public class OmsExtractBasin extends HMModel {
                         return;
                     }
 
+                    // counted here, not in the parallel loop, where the increments of the threads would get lost
+                    outArea += enteringNodes.size();
                     ConcurrentLinkedQueue<FlowNode> newEnteringNodes = new ConcurrentLinkedQueue<>();
                     enteringNodes.parallelStream().forEach(flowNode -> {
                         if (pm.isCanceled()) {
@@ -258,7 +260,6 @@ public class OmsExtractBasin extends HMModel {
                             alreadyWarned = true;
                         }
                         flowNode.setIntValueInMap(basinIter, 1);
-                        outArea++;
 
                         List<FlowNode> newEntering = flowNode.getEnteringNodes();
                         newEnteringNodes.addAll(newEntering);
@@ -285,10 +286,10 @@ public class OmsExtractBasin extends HMModel {
                     currentNode.col, currentNode.row));
             alreadyWarned = true;
         }
-        outArea++;
         List<FlowNode> enteringNodes = currentNode.getEnteringNodes();
         for( FlowNode flowNode : enteringNodes ) {
             allNodes.add(flowNode);
+            outArea++;
             collectNodes(flowNode, allNodes);
         }
     }

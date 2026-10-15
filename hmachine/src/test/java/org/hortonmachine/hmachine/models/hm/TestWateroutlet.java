@@ -72,10 +72,33 @@ public class TestWateroutlet extends HMTestCase {
 
         GridCoverage2D basinCoverage = extractBasin.outBasin;
 
-        // System.out.println(extractBasin.outArea);
         // PrintUtilities.printCoverageData(basinCoverage);
 
         checkMatrixEqual(basinCoverage.getRenderedImage(), HMTestMaps.basinWateroutletData, 0);
+        assertEquals(expectedBasinArea(envelopeParams), extractBasin.outArea, 1E-6);
+
+        extractBasin = new OmsExtractBasin();
+        extractBasin.pm = pm;
+        extractBasin.inFlow = flowCoverage;
+        extractBasin.pNorth = 5139885.0;
+        extractBasin.pEast = 1640724.0;
+        extractBasin.doHighSpeed = true;
+        extractBasin.process();
+
+        checkMatrixEqual(extractBasin.outBasin.getRenderedImage(), HMTestMaps.basinWateroutletData, 0);
+        assertEquals(expectedBasinArea(envelopeParams), extractBasin.outArea, 1E-6);
+    }
+
+    private double expectedBasinArea( RegionMap region ) {
+        int cells = 0;
+        for( double[] row : HMTestMaps.basinWateroutletData ) {
+            for( double value : row ) {
+                if (value == 1) {
+                    cells++;
+                }
+            }
+        }
+        return cells * region.getXres() * region.getYres();
     }
 
 }

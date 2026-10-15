@@ -13,6 +13,7 @@ The modules run in order, from the monthly climate and the maps of the watershed
 | 3 | [SWYQuickflow](swyquickflow.md) | the quickflow of each month |
 | 4 | [SWYRechargeRouting](swyrechargerouting.md) | the actual evapotranspiration and the local recharge of the year |
 | 5 | [SWYBaseflowRouting](swybaseflowrouting.md) | the baseflow of each cell and its share of the total recharge |
+| 6 | optional, with other modules | [the water at an outlet](#the-water-at-an-outlet): the volumes of the year in the basin of a closure point |
 
 The modules can be run from the [Spatial Toolbox](../../../apps/spatialtoolbox.md), in the Hydro-Geomorphology folder, or with scripts in the [Geoscript Console](../../../apps/geoscript.md). The page of each module has the script of its step: together they are a complete run on the sample data of InVEST, and only the `folder` at the top of each script needs to be changed to run them on other data.
 
@@ -72,6 +73,104 @@ On the sample data the sum of the recharge of the 12 single months is about 50% 
 
 Use the annual balance to compare with InVEST or with its applications, and for annual water budgets. Use the single intervals only where the future intervals are not known, and compare their results only among themselves, not with those of InVEST.
 :::
+
+## The water at an outlet
+
+The modules don't give the discharge in a point of the network, but their maps can be summed over the basin of a closure point, to get the water of the year that leaves it there.
+
+**The units.** The maps of the modules are of two kinds:
+
+- the precipitation, the quickflow, the actual evapotranspiration, the local recharge and the baseflow are depths, in mm over the cell, as the measure of a rain gauge: the water of the year of the cell, or of the month for the quickflow. A depth times the area of the cell is a volume: on the cells of 15 m of the example, 1 mm is 0.001 × 225 = 0.225 m³. The volume of a basin is the sum of its cells times the same factor, and the mean depth over the basin is the sum divided by the number of cells.
+- the accumulated recharge {math}`L_{sum}` and {math}`B_{sum}` are sums of the depths of the cells upslope: their unit is mm summed over the cells, not a depth. A value of 5 million is not 5 km of water, it is 5 million × 0.225 = 1.1 million m³ of the year from upslope. Divided by the number of cells upslope it is their mean depth.
+
+**The water balance.** Over the year the water of each cell goes to the quickflow, the evapotranspiration or the recharge, {math}`P = QF + AET + L`, which the definition of L in [the model](#the-model) keeps exactly. What is not evapotranspired, the water yield {math}`QF + L = P - AET`, leaves the basin at its outlet, if nothing is stored from one year to the next and no water leaves through a deep aquifer or the ground to another basin. Summed over the basin of the outlet and divided by the seconds of the year, it is the mean discharge of the year.
+
+The baseflow B is not part of this balance. With γ = 1, as in the example, it is the recharge of the cells where it is positive, {math}`B = \max(L, 0)`, and it leaves out the negative recharge of the streams and of the other cells that evapotranspire more than their own water. Summed over the basin, it is more than the recharge. Use it to see where the baseflow comes from, and the recharge for the balance at the outlet.
+
+**Volumes and discharge.** A volume of the year divided by the seconds of the year, 31.5 million, is the mean discharge of the year in m³/s: the constant discharge that would carry the same volume in a year, the mean annual discharge given for the gauges of the rivers. It is not the discharge of any day: the real one is higher in the rainy seasons and lower in the dry ones. In the same way the quickflow of a month divided by the seconds of the month is its mean discharge in that month.
+
+**The script.** It runs on the results of the steps before:
+
+- [ExtractBasin](../../dem-manipulation/extractbasin.md) gives the basin of the outlet from the flowdirections. The outlet must be a cell of the flowdirections, here the cell where the Gura leaves the map at its northern border;
+- [Mapcalc](../../raster-processing/mapcalc.md) sums the precipitation of the months into the one of the year;
+- [CutOut](../../raster-processing/cutout.md) cuts each map to the basin, in the folder `basin`, and the [RasterSummary](../../raster-processing/rastersummary.md) of the cut maps gives their sums;
+- the sums give the mean depths over the basin, the volumes and the mean discharge, of the year and of the quickflow of each month.
+
+```{literalinclude} ../../examples/swy/06_outlet.groovy
+:language: groovy
+```
+
+On the sample data, the basin of the outlet has 473114 cells, 106.45 km², all the map but the cells at the border that drain out of it elsewhere:
+
+| | depth, mm in the year | volume, million m³ in the year | mean discharge of the year, m³/s |
+|---|---|---|---|
+| precipitation P | 1570.5 | 167.18 | 5.30 |
+| quickflow QF | 89.6 | 9.54 | 0.30 |
+| actual evapotranspiration AET | 1108.4 | 117.99 | 3.74 |
+| local recharge L | 372.4 | 39.65 | 1.26 |
+| **water yield QF + L = P - AET** | **462.0** | **49.18** | **1.56** |
+| baseflow B | 387.6 | 41.26 | 1.31 |
+
+:::{figure} ../../../images/modules/Swy_p_year-aet.png
+:alt: The water yield of the year of each cell of the basin, P - AET, in mm.
+
+The water yield of the year of each cell of the basin, {math}`P - AET = QF + L`, in mm: what each cell gives to the outlet, at the north-eastern tip of the map. The yield is high in the wet west and low in the east. It is highest on the network, about 850 mm on average, and on the unpaved roads and urban areas, which evapotranspire little.
+:::
+
+The precipitation less the quickflow, the evapotranspiration and the recharge is 0.000 mm, a check of the run. About 70% of the precipitation is evapotranspired, and of the water that leaves the basin about a fifth is quickflow and four fifths are recharge. The baseflow is 15.2 mm more than the recharge: it is the sum of the positive recharge, and leaves out the negative one, 13.5 mm of which are the evapotranspiration of the 8979 cells of the network.
+
+The quickflow of the months follows the two rainy seasons of the Gura:
+
+| month | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| depth, mm in the month | 3.1 | 2.6 | 6.1 | 26.5 | 18.3 | 2.2 | 1.6 | 1.7 | 2.0 | 12.5 | 9.4 | 3.7 |
+| mean discharge of the month, m³/s | 0.12 | 0.12 | 0.24 | 1.09 | 0.73 | 0.09 | 0.06 | 0.07 | 0.08 | 0.50 | 0.39 | 0.15 |
+
+:::{warning}
+**These are the volumes of a water budget, not the discharge of a river.** Before using them, keep in mind that:
+
+- **there is no time in them.** The model has no routing and no storage: the recharge and the baseflow are of the year only, and the model doesn't say in which months they reach the outlet. The quickflow of a month is its mean over the month, with no peaks and no floods. The quickflow of a month plus a twelfth of the recharge is not the discharge of that month;
+- **it is the year of the climate given.** With monthly means of many years, as in the sample data, it is a mean year, not a real one, and it assumes that nothing is stored or released from one year to the next;
+- **the recharge reaches the outlet only if it stays in the basin.** The balance assumes that all the recharge comes out in the streams of the basin. With γ less than 1, or where the water goes to a deep aquifer or to other basins through the ground, less water reaches the outlet;
+- **the baseflow is not a volume at the outlet.** Its sum over the basin leaves out the water evapotranspired by the streams, and is more than what can leave the basin;
+- **the coefficients are not calibrated.** The curve numbers and the crop coefficients of the sample data are global means. InVEST itself suggests the model mostly to compare scenarios and to find the areas that matter, not for absolute volumes. The absolute values are an order of magnitude, until they are compared with the measures of a gauge;
+- **only the annual balance gives them.** The single intervals give about 50% more recharge, see above;
+- **the outlet is a cell of the D8 flowdirections.** The basin is the one of the flowdirections of the model, which can differ from the real one on flat areas and at the borders of the map.
+:::
+
+### How the values compare with measures
+
+The values of the [sample data](#the-sample-data) of InVEST, used in the examples, are of the right order for the highlands of Kenya, but they are not measures of the Gura. Over the basin they change mostly with the elevation, from the east, at about 1700 m, to the Aberdare range in the west, above 2800 m:
+
+| elevation, m | 1600-1800 | 1800-2000 | 2000-2200 | 2200-2400 | 2400-2600 | 2600-2800 | above 2800 |
+|---|---|---|---|---|---|---|---|
+| cells | 55649 | 157462 | 101001 | 60333 | 40436 | 34864 | 23369 |
+| precipitation P, mm | 1345 | 1473 | 1608 | 1672 | 1714 | 1764 | 1803 |
+| reference evapotranspiration ET0, mm | 1346 | 1309 | 1257 | 1216 | 1177 | 1128 | 1091 |
+| quickflow QF, mm | 115 | 116 | 108 | 52 | 40 | 46 | 22 |
+| actual evapotranspiration AET, mm | 1077 | 1094 | 1112 | 1159 | 1145 | 1106 | 1076 |
+| local recharge L, mm | 154 | 263 | 388 | 462 | 530 | 612 | 705 |
+| water yield (QF + L) / P | 20% | 26% | 31% | 31% | 33% | 37% | 40% |
+
+- **The precipitation**, from the CHELSA climatology of the sample data, grows with the elevation, from about 1150 to 1870 mm, with the peaks of the two rainy seasons in April and November. The precipitation of the Aberdare range goes from about 1000 mm on its drier north-western slopes to 3000 mm in the south-east (BirdLife International): the values of the sample data are inside this range.
+- **The reference evapotranspiration**, from the modified Hargreaves method, goes from about 1350 mm in the east to 1090 mm on the highest cells. At the synoptic station of Nyeri, at the eastern foot of the Aberdare range, the Penman-Monteith method gives 1488 ± 52 mm in the year (Musyimi et al., 2022): the values of the lowest cells of the sample data, at a similar elevation, are about 10% less. Less reference evapotranspiration gives more recharge.
+- **The actual evapotranspiration, the water yield and the quickflow** can be compared with the long measures of the Lagan catchment near Kericho, a montane rain forest at 2200 m in the west of Kenya (Blackie, 1972). In 11 years it had 2050 mm of rain, 721 mm of streamflow and about 1300 mm of evapotranspiration, with a surface runoff of about 1% of the rain. The forest cells of the sample data, at 2515 m on average, have similar shares:
+
+| | precipitation, mm | evapotranspiration, mm | water yield, mm | quickflow / precipitation |
+|---|---|---|---|---|
+| Lagan, measured | 2050 | about 1300 (63%) | 721 (35%) | about 1% |
+| forest cells of the sample data | 1719 | 1136 (66%) | 584 (34%) | 2.6% |
+| whole basin of the sample data | 1570 | 1108 (71%) | 462 (29%) | 5.7% |
+
+The share of the water yield of the forest is the measured one. The quickflow of the curve numbers is two to three times the measured surface runoff of the forest, and it is higher on the agriculture (15% of the precipitation), on the unpaved roads (24%) and on the urban areas (19%), where the crop coefficient of 0.4 also gives little evapotranspiration and a water yield of about 65% of the precipitation. The basin has more coffee and tea in its lower, drier part, with a water yield of 14% and 26% of the precipitation.
+
+The mean discharge of 1.56 m³/s at the outlet is not compared with measures here: the sample data don't come with the discharges of the Gura. Before using the absolute values of a basin, compare them with the records of a gauge of the basin.
+
+**References**
+
+- BirdLife International. Important Bird Area factsheet: Aberdare mountains, Kenya. https://datazone.birdlife.org/site/factsheet/aberdare-mountains-iba-kenya
+- Blackie, J. R. (1972). Hydrological effects of a change in land use from rain forest to tea plantation in Kenya. In Symposium on the Results of Research on Representative and Experimental Basins, Wellington, IAHS Publication 97, 312-329. https://iahs.info/uploads/dms/3652.312-329-97-Blackie-opt.pdf
+- Musyimi, P. K., Székely, B., Weidinger, T. (2022). Reference evapotranspiration estimation and influence of coffee on real evapotranspiration in humid climatic regions of Kenya. EGU General Assembly 2022, EGU22-388. https://meetingorganizer.copernicus.org/EGU22/EGU22-388.html
 
 ## Comparison with InVEST
 

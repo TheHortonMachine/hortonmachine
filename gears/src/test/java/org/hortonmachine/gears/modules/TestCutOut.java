@@ -18,6 +18,7 @@
 package org.hortonmachine.gears.modules;
 
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.cutout.OmsCutOut;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
@@ -96,6 +97,54 @@ public class TestCutOut extends HMTestCase {
                 expected[r][c] = value < 800 || value > 1400 ? Double.NaN : value;
             }
         }
+        checkMatrixEqual(out.getRenderedImage(), expected, 0);
+    }
+
+    /**
+     * The input with a novalue other than the one of the output: the cut cells and the novalues of
+     * the input must be novalues of the output, not the novalue of the input as a value.
+     */
+    public void testCutoutWithOtherNovalue() throws Exception {
+        double[][] inData = HMTestMaps.mapData;
+        double[][] maskData = HMTestMaps.extractNet0Data;
+        double inNovalue = -1;
+        double[][] data = new double[inData.length][inData[0].length];
+        for( int r = 0; r < inData.length; r++ ) {
+            for( int c = 0; c < inData[0].length; c++ ) {
+                data[r][c] = Double.isNaN(inData[r][c]) ? inNovalue : inData[r][c];
+            }
+        }
+        // a novalue of the input inside the mask
+        int nvRow = -1;
+        int nvCol = -1;
+        for( int r = 0; r < data.length && nvRow < 0; r++ ) {
+            for( int c = 0; c < data[0].length; c++ ) {
+                if (!HMConstants.isNovalue(maskData[r][c]) && data[r][c] != inNovalue) {
+                    data[r][c] = inNovalue;
+                    nvRow = r;
+                    nvCol = c;
+                    break;
+                }
+            }
+        }
+        GridCoverage2D in = CoverageUtilities.buildCoverageWithNovalue("data", data, HMTestMaps.getEnvelopeparams(),
+                HMTestMaps.getCrs(), true, inNovalue);
+
+        OmsCutOut cutout = new OmsCutOut();
+        cutout.pm = pm;
+        cutout.inRaster = in;
+        cutout.inMask = inMask;
+        cutout.process();
+        GridCoverage2D out = cutout.outRaster;
+
+        double[][] expected = new double[data.length][data[0].length];
+        for( int r = 0; r < data.length; r++ ) {
+            for( int c = 0; c < data[0].length; c++ ) {
+                boolean cut = HMConstants.isNovalue(maskData[r][c]) || data[r][c] == inNovalue;
+                expected[r][c] = cut ? Double.NaN : data[r][c];
+            }
+        }
+        assertTrue(Double.isNaN(expected[nvRow][nvCol]));
         checkMatrixEqual(out.getRenderedImage(), expected, 0);
     }
 

@@ -115,7 +115,6 @@ public class OmsCutOut extends HMModel {
         HMRaster geodataRaster = HMRaster.fromGridCoverage(inRaster);
         int nCols = geodataRaster.getCols();
         int nRows = geodataRaster.getRows();
-        double outNV = geodataRaster .getNovalue();
 
         if (inMask != null) {
             maskRaster = HMRaster.fromGridCoverage(inMask);
@@ -126,6 +125,8 @@ public class OmsCutOut extends HMModel {
 
         // the output has the grid of the mask, if any
         HMRaster outHMRaster = HMRaster.fromGridCoverageWritable(inMask != null ? inMask : inRaster);
+        // the novalue of the output, which with a mask is not the one of the input
+        double outNV = outHMRaster.getNovalue();
 
         try {
             pm.beginTask("Processing map...", nRows * nCols);
@@ -156,6 +157,10 @@ public class OmsCutOut extends HMModel {
                     	}
                     }
                     double value = geodataRaster.getValue(coord);
+                    if (geodataRaster.isNovalue(value)) {
+                        outHMRaster.setValue(c, r, outNV);
+                        continue;
+                    }
                     if (doMax && value > max) {
                         outHMRaster.setValue(c, r, outNV);
                         continue;

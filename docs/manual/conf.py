@@ -1,5 +1,10 @@
 """Sphinx configuration for the HortonMachine user manual (hosted on Read the Docs)."""
 
+import copy
+
+from pygments.lexers.jvm import GroovyLexer
+from pygments.token import String
+
 project = "HortonMachine"
 copyright = "2008-2026, Andrea Antonello - manual content licensed under CC BY 4.0"
 author = "Andrea Antonello"
@@ -45,3 +50,26 @@ html_theme_options = {
     },
     "sidebar_hide_name": False,
 }
+
+
+def _groovy_tokens():
+    """
+    The tokens of the Pygments Groovy lexer, with a stricter slashy string: the lexer takes
+    any / as the start of a /string/ up to the next /, also on the following lines, so a
+    division as "a / b" colors the script as a string up to the next division. Here a
+    slashy string can't start with a space, / , * or =, and ends on its line.
+    """
+    tokens = copy.deepcopy(GroovyLexer.tokens)
+    for rules in tokens.values():
+        for i, rule in enumerate(rules):
+            if isinstance(rule, tuple) and rule[0] == r'/(\\\\|\\[^\\]|[^/\\])*/':
+                rules[i] = (r'/(?![\s/*=])(\\\\|\\[^\\\n]|[^/\\\n])*/', String)
+    return tokens
+
+
+class ManualGroovyLexer(GroovyLexer):
+    tokens = _groovy_tokens()
+
+
+def setup(app):
+    app.add_lexer("groovy", ManualGroovyLexer)

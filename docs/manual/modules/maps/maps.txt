@@ -206,3 +206,4 @@ SWYRechargeRouting | ../examples/swy/04_recharge.groovy | gura/aet.tif          
 SWYRechargeRouting | -                                 | gura/l.tif                | rainbow  | clip,base=gura/DEM_gura.tif
 SWYBaseflowRouting | ../examples/swy/05_baseflow.groovy | gura/l_sum.tif           | logarithmic | base=gura/DEM_gura.tif
 SWYBaseflowRouting | -                                 | gura/b.tif                | rainbow  | clip,base=gura/DEM_gura.tif
+Swy            | ../examples/swy/06_outlet.groovy      | gura/basin/p_year.tif - gura/basin/aet.tif | rainbow | clip,base=gura/DEM_gura.tif
