@@ -32,11 +32,3 @@ Converts the points of a LAS lidar file into a vector of points, with their elev
 |---|---|---|---|
 | `outFile` | output file |  | The output file: a LAS file (.las), a csv (.csv) or a vector of points (as .shp or .gpkg#layer). |
 
-**Notes**
-
-The filters are combined: a point is kept only if it passes all the given ones. The ranges include their limits. The area of the bounding box is used only if all its four boundaries are given.
-
-In the list of the returns, last keeps the last return of each pulse, also when it is the only one: 1,last keeps the first and the last returns, the outline of the canopy and what is under it. The returns of a pulse are numbered from 1, the first that comes back to the sensor, the highest.
-
-A LAS output keeps the records of the points as they are, with the crs of the input.
-

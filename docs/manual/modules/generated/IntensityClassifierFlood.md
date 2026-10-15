@@ -25,15 +25,3 @@ Classifies the intensity of a flood, from the maps of its water depth and veloci
 |---|---|---|---|
 | `outIntensity` | output file |  | The map of the flood intensity: 1 low, 2 medium, 3 high. |
 
-**Notes**
-
-The intensity of each cell is given by its water depth h and by the product of the depth and the velocity v·h, the specific discharge:
-
-- high (3), where h or v·h is over its upper threshold;
-- medium (2), where h or v·h is over its lower threshold, and none over the upper one;
-- low (1), where both are within their lower thresholds.
-
-The two maps have to cover the same cells: the cells where only one of them has a value are skipped, with a warning. The cells with a depth of 0 are classified as low intensity: to keep the dry cells out of the map, set them to novalue in the maps of depth and velocity.
-
-The intensity maps of the floods of different return periods are the input of HazardClassifier.
-

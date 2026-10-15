@@ -29,14 +29,6 @@ Verifies an existing storm sewer network: the discharge and the fill degree of e
 | `outFillDegree` | output file |  | The fill degree of each pipe in time. |
 | `outTpMax` | Integer | minutes | The duration of the rain of the results: the one that gives the maximum discharge, when it is searched. |
 
-**Notes**
-
-The calibration (verification) mode of TrentoP: the diameters of the pipes are known, and the module computes the hydrographs of the network for a rain, with the same geomorphological model as TrentoPProject.
-
-The rain is either a time series of intensities, in mm/min, or it is generated from the rainfall curve, when the `Coefficient of the pluviometric curve` and `Exponent of the pluviometric curve` are in the parameters file. A generated rain lasting tp has the constant intensity a·tp^(n-1), so that it brings the depth a·tp^n of the curve. With a maximum rain duration, the durations from the `Minimum Rain Time step` up to it, in steps of the time step, are tried, and the one that gives the highest discharge is kept. Without it, a single rain lasting the whole simulation is used.
-
-The pipe slopes are the slopes between the elevations of the junctions at their ends. When a pipe fills up completely, the simulation stops with a warning: the pipes downstream of it, not yet computed, keep a discharge of 0.
-
 **References**
 
 - Rodríguez-Iturbe, I., Valdés, J. B. (1979). The geomorphologic structure of hydrologic response. Water Resources Research, 15(6), 1409-1420.

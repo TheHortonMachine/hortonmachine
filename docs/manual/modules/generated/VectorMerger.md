@@ -21,7 +21,3 @@ Merges vectors with the same fields into a single one.
 |---|---|---|---|
 | `outVector` | output file |  | The output vector. |
 
-**Notes**
-
-The vectors must have the same geometry type and the same fields, with the same names, types and order, and the same crs: a vector with more or fewer fields stops the merge, as one in another crs, which would need VectorReprojector first. The features are copied as they are, the ones of the first vector first, without joining the geometries that touch or overlap: the merge of two maps of adjacent areas has both the features along their border.
-

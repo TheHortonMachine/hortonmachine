@@ -16,6 +16,13 @@ Format,yyyy-MM-dd HH:mm,
 
 The `ID` row holds the station ids, the following rows the timestamp and the value of each station; missing values are `-9999`.
 
+## Parameters
+
+```{include} ../../generated/ErmStationDataImporter.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/erm/02_station_data_importer.groovy
 :language: groovy
 ```
@@ -27,6 +34,3 @@ The imported data can be checked in the [Database Viewer](../../../apps/dbviewer
 
 The data of a meteo station: the measured precipitation and temperature.
 :::
-
-```{include} ../../generated/ErmStationDataImporter.md
-```

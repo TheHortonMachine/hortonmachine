@@ -4,6 +4,16 @@ Calculates the histogram of a raster: its values are split in intervals, and for
 
 With a second map, the histogram is coupled: for the cells of each interval of the first map it also gives the mean and the moments of the second map, as the variance. It answers questions as how the slope changes with the elevation, or the soil moisture with the topographic index.
 
+## Details
+
+```{include} ../generated/Cb_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Cb.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -73,8 +83,3 @@ Above, the mean slope of each elevation interval in the band of one standard dev
 :::
 
 The mean alone says that the slope hardly depends on the elevation: it stays around 0.5 to 0.6, about 27 to 31 degrees, from the valley to the top. The other moments show what the mean hides: between 1750 and 1950 m the band of the standard deviation widens and the skewness jumps to 3 or 4, so most of those cells have ordinary slopes but a few are much steeper, as rock walls. At the top the skewness goes back to 0 and the slopes are again homogeneous.
-
-## Reference
-
-```{include} ../generated/Cb.md
-```

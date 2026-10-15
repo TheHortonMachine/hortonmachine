@@ -28,14 +28,6 @@ The baseflow of the InVEST Seasonal Water Yield model: the contribution of the l
 | `outVriSum` | Double |  | The sum of the values index of all the cells, 1 as a check. |
 | `outBaseflow` | output file |  | The map of the cumulative baseflow (B_sum), the part of the accumulated recharge of each cell that reaches the streams. |
 
-**Notes**
-
-The recharge of the upslope cells is accumulated along the flowdirections (L_sum). Walking up from the streams, each cell gets the part of the accumulated recharge that reaches the streams as baseflow (B_sum, InVEST equation 11): all of it for the cells that drain directly into a stream or out of the map, a part scaled by what the downslope cells evapotranspire for the others. The baseflow of the cell itself (B) is its share of B_sum, proportional to its local recharge, and never negative.
-
-The values index of each cell (VRI) is its local recharge divided by the total recharge of the map: it tells which cells matter most for the baseflow. It is defined only where the total recharge is positive.
-
-The results have the time span of the recharge: with the recharge of a year, as in InVEST, the baseflow is annual. The rasters are in mm; a volume is the value times 0.001 times the cell area.
-
 **References**
 
 - Natural Capital Project. InVEST User's Guide, Seasonal Water Yield. Stanford University, University of Minnesota, Chinese Academy of Sciences, The Nature Conservancy, World Wildlife Fund, Stockholm Resilience Centre and the Royal Swedish Academy of Sciences. https://releases.naturalcapitalproject.org/invest-userguide/latest/

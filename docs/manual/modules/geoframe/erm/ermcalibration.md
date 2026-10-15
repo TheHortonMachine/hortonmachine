@@ -27,6 +27,13 @@ At the end, the best parameters and their KGE are reported in the log. These are
 | 17 | coefficient of the non-linear groundwater reservoir | - | 0.0000005 – 2 |
 | 18 | exponent of the non-linear groundwater reservoir | - | 0.95 – 1 |
 
+## Parameters
+
+```{include} ../../generated/ErmCalibration.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/erm/06_calibration.groovy
 :language: groovy
 ```
@@ -36,6 +43,3 @@ At the end, the best parameters and their KGE are reported in the log. These are
 
 The calibration run in the [Geoscript Console](../../../apps/geoscript.md): the log shows the best cost of the swarm at each iteration and, at the end, the best parameters found. They can be copied into the simulation script.
 :::
-
-```{include} ../../generated/ErmCalibration.md
-```

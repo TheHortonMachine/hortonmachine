@@ -8,6 +8,11 @@ The weight is the impedance to the sediment flow, from 0 to 1. Cavalli et al. de
 
 The full index also has an upslope component, the mean slope and weight of the area that drains into the cell, which this module does not compute.
 
+## Parameters
+
+```{include} ../generated/DownSlopeConnectivity.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -21,8 +26,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The downslope connectivity of the sample area, with a constant weight: low values near the channels and on the steep slopes, high values on the gentle terrain far from the network. The cells whose path leaves the map before reaching the network have no value.
 :::
-
-## Reference
-
-```{include} ../generated/DownSlopeConnectivity.md
-```

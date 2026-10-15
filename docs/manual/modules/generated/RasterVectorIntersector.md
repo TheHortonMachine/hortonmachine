@@ -22,9 +22,3 @@ Cuts a raster with polygons: keeps the cells inside them, or with the inverse sw
 |---|---|---|---|
 | `outRaster` | output file |  | The cut raster. |
 
-**Notes**
-
-A cell is inside when its center is inside a polygon, as in ScanLineRasterizer, that makes the mask of the polygons on the grid of the raster; CutOut then keeps the values under the mask, or the ones outside of it with the inverse switch. The other cells become novalue, the grid doesn't change: to also shrink the grid to the polygons, RasterResizer is the tool.
-
-It is the one step version of ScanLineRasterizer with the raster as grid, followed by CutOut, for example to keep the elevation of a basin from its polygon, or to blank the lakes of an elevation model.
-

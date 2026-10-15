@@ -26,11 +26,3 @@ Cuts a point cloud in horizontal slices, at regular elevations or heights over t
 |---|---|---|---|
 | `outFolder` | output folder |  | The folder into which the slices are written, one file each, named after the center of the slice. |
 
-**Notes**
-
-The slices are horizontal layers of the given thickness, with their centers on the multiples of the interval between the lowest and the highest point: with an interval of 1 m, at 1, 2, 3 m and so on. Without the dtm the values are the elevations of the points, with it their heights over the ground, so that each slice follows the terrain, as a layer of the forest at a given height.
-
-A slice keeps the points with a value over its lower bound and up to its upper bound. With a thickness smaller than the interval there are gaps between the slices, with a larger one the slices overlap and a point can be in two of them.
-
-In raster mode each slice is a GeoTIFF, `slice_<center>.tif`, on a grid of the given resolution over the bounds of the data: the cells with at least one point of the slice have the center of the slice as value, the others no value. In chart mode each slice is a png image, `slice_<center>.png`, with the points of the slice in plan view. The slices with no points are not written.
-

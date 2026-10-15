@@ -2,6 +2,16 @@
 
 LasHistogram counts the points of a LAS file by their intensity, elevation or classification, in bins of equal width between the minimum and the maximum. The histogram is printed, shown in a chart window and written to a csv file. It is the first look at a survey: the intensity to choose the thresholds of [LasThresholder](lasthresholder.md), the elevation to see the layers of the vegetation.
 
+## Details
+
+```{include} ../generated/LasHistogram_details.md
+```
+
+## Parameters
+
+```{include} ../generated/LasHistogram.md
+```
+
 ## Example
 
 The histogram of the intensity of the sample survey, in 30 bins, written to a table:
@@ -15,8 +25,3 @@ The histogram of the intensity of the sample survey, in 30 bins, written to a ta
 
 The histogram of the intensity of the sample survey: most points between 0 and 220, with a peak around 170, and very few brighter points up to 420.
 :::
-
-## Reference
-
-```{include} ../generated/LasHistogram.md
-```

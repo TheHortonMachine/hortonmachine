@@ -2,6 +2,16 @@
 
 Prints what a NetCDF file, or any other file or url that netcdf-java opens, contains: its variables, the coordinate systems with their axes and projections, and its grids, with the extent of each one and its time axis. It is the first module to run on a new dataset, to find the names of the grids to give to [NetcdfGridDumper](netcdfgriddumper.md) and to check their projection, units and fill values.
 
+## Details
+
+```{include} ../generated/NetcdfInfo_details.md
+```
+
+## Parameters
+
+```{include} ../generated/NetcdfInfo.md
+```
+
 ## Example
 
 The example prints the content of the sample MODIS tile:
@@ -31,8 +41,3 @@ The file is an HDF-EOS file with 12 grids: the daytime and nighttime temperature
 ```
 
 The name to use is the full one, with the groups of the HDF file. The temperature is stored as integers to multiply by the scale factor of 0.02 to get kelvin, and 0 marks the cells without data, as the sea and the clouds. The grid is 1200 x 1200 cells on the sinusoidal projection of MODIS, with the axes in kilometers; the tile has no time axis, its date, 19 July 2024, is in the global attribute `_MODIS_Date`.
-
-## Reference
-
-```{include} ../generated/NetcdfInfo.md
-```

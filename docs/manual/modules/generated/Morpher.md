@@ -24,11 +24,3 @@ Morphological operations on rasters, where the valid cells are the objects and t
 |---|---|---|---|
 | `outMap` | output file |  | The morphed map: the values of the objects for dilate, erode, open and close, 1 for the other operations. |
 
-**Notes**
-
-The dilation gives to the novalue cells next to an object the largest value of their neighbours within the kernel, so the objects grow by one ring of cells. The erosion sets to novalue the cells of an object that have a novalue within the kernel, and gives the others the smallest value of their neighbours, so the objects shrink by one ring. The opening, an erosion followed by a dilation, removes the small objects and the thin parts; the closing, a dilation followed by an erosion, fills the small holes and gaps. The kernel is a square of 0 and 1, by default the 3x3 of all 1.
-
-The other operations work on the shapes only, all the valid cells being 1. The skeletonize ones thin the objects to lines of one cell, with four variants of the thinning kernels; the pruning removes from the lines the branches shorter than the number of iterations. The line endings and junctions give 1 on the cells where the lines end and where they meet, as the sources and the confluences of a network of channels.
-
-The operations are the ones of the Hypermedia Image Processing Reference (HIPR2), ported from the work of Simon Horne.
-

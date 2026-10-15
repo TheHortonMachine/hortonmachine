@@ -24,7 +24,8 @@ This creates a local virtualenv (`.venv/`, git-ignored) on first run, installs `
 | `modules/<folder>/<module>.md` | one page per module, in the folder of its `@Label` |
 | `modules/geoframe/<model>/` | the GeoFrame models, like `erm/`, each with its workflow page (`index.md`) and the pages of its modules |
 | `modules/modules.txt` | the list of the documented module classes |
-| `modules/generated/<Module>.md` | the module references, generated from the annotations: do not edit |
+| `modules/generated/<Module>.md` | the module parameters, generated from the annotations: do not edit |
+| `modules/generated/<Module>_details.md` | the module details, generated from `@Documentation`, only for the modules that have it: do not edit |
 | `modules/undocumented.md` | the toolbox modules not in `modules.txt` yet, generated: not part of the manual |
 | `modules/examples/` | the example scripts included in the pages |
 | `modules/maps/maps.txt` | the maps of the module pages: script, raster, colortable |
@@ -36,6 +37,14 @@ The modules are documented in the `modules/` section, with their screenshots in 
 ## Module references
 
 The description, parameters and references of each module are generated from its OMS annotations (`@Description`, `@Label`, `@Keywords`, `@Status`, `@UI`, `@Unit`, `@In`, `@Out`, `@Documentation`, `@Bibliography`) by `ModuleDocsGenerator` in the `modules` project, for the classes listed in `modules/modules.txt`. The pages include them with `{include}`. Always document the module classes without the `Oms` prefix.
+
+Each module has two fragments: `<Module>_details.md` with the text of its `@Documentation`, if it has one, and `<Module>.md` with the description, the facts, the parameters and the references. A page is laid out as:
+
+1. the title and the introduction, written for the page;
+2. `## Details`, with the include of `<Module>_details.md`, only if it exists;
+3. the sections of the page that explain more, as how it works or how to prepare the data, if any;
+4. `## Parameters`, with the include of `<Module>.md`;
+5. `## Example`, with the example script and its maps, and the sections that discuss the results.
 
 To change a module reference, change the annotations and regenerate the fragments. The same run regenerates `modules/undocumented.md`, the list of the toolbox modules that have no page yet, by toolbox folder. From the repository root:
 

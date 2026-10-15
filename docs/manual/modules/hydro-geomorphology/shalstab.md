@@ -27,6 +27,11 @@ The second map gives, in classes, the critical effective precipitation that make
 
 The slope comes from the [Gradient](../geomorphology/gradient.md) or [Slope](../geomorphology/slope.md) modules, as the tangent of the slope angle, and the contributing area per unit contour length from the [Ab](../geomorphology/ab.md) module. The properties of the soil can be maps, with the soil depth for example from a geological survey, or constants, as in the Spatial Toolbox.
 
+## Parameters
+
+```{include} ../generated/Shalstab.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -40,8 +45,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The stability classes of the sample area, with a soil 1 m deep, without cohesion, with a friction angle of 35° and an effective precipitation of 100 mm/day.
 :::
-
-## Reference
-
-```{include} ../generated/Shalstab.md
-```

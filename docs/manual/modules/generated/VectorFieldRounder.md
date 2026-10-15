@@ -22,9 +22,3 @@ Rounds the values of a numeric field of a vector to the decimals of a pattern.
 |---|---|---|---|
 | `outVector` | output file |  | The modified vector. |
 
-**Notes**
-
-The pattern is a Java DecimalFormat pattern, with the dot as decimal separator whatever the language of the system: 0.00 rounds to two decimals, # to the integer. The values are rounded half up, so 2.5 becomes 3 and 2.25 with 0.0 becomes 2.3. The values that are not numbers, as the empty ones, are left as they are.
-
-The field keeps its type, and a shapefile stores the values with the number of decimals that the field has in its table.
-

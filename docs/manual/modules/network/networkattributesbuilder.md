@@ -9,6 +9,11 @@ NetworkAttributesBuilder converts the raster network into a vector of its links,
 
 It can also write the map of the Hack orders, the input of [SplitSubbasins](../dem-manipulation/splitsubbasins.md). The drainage directions must have the outlet marked with the value 10, for example with [MarkOutlets](../dem-manipulation/markoutlets.md).
 
+## Parameters
+
+```{include} ../generated/NetworkAttributesBuilder.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -28,8 +33,3 @@ The vector of the network of the basin of ExtractBasin, colored by the Hack orde
 
 The same network colored by the Strahler order of the links: the order grows by one where two links of the same order meet.
 :::
-
-## Reference
-
-```{include} ../generated/NetworkAttributesBuilder.md
-```

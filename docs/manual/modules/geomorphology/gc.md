@@ -4,6 +4,16 @@ Classifies the cells of a basin by their geomorphological role, combining three 
 
 The input maps come from [Slope](slope.md), [ExtractNetwork](../network/extractnetwork.md) and the 9 classes of Tc. The steepness threshold is a tangent of the slope, as in the output of Slope: 1 is 45 degrees.
 
+## Details
+
+```{include} ../generated/Gc_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Gc.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The aggregated geomorphological classes of the sample elevation model: mostly planar sites, crossed by hillslopes, valleys and channels.
 :::
-
-## Reference
-
-```{include} ../generated/Gc.md
-```

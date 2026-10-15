@@ -23,9 +23,3 @@ Collection of vector simplification algorithms.
 |---|---|---|---|
 | `outVector` | output file |  | The simplified vector. |
 
-**Notes**
-
-TopologyPreservingSimplifier keeps the result valid, with the same dimension and number of parts, also with large tolerances; Douglas Peucker is faster but can produce invalid or collapsed geometries. Both drop the vertices that are closer than the tolerance, in map units, to the simplified line. The precision reduction instead rounds the coordinates to a grid of 1/scale: with a scale of 1000, to the third decimal.
-
-Each part of a multi geometry is simplified on its own, so the topology between the parts is not preserved, and the parts are returned as a geometry collection.
-

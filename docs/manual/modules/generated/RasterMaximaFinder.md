@@ -31,20 +31,6 @@ Finds the tops of the trees as the local maxima of a canopy height model, in a w
 | `outMaxima` | output file |  | The maxima, with an id, their height (elev) and a note. |
 | `outCircles` | output file |  | The windows of the maxima, as circles, with the id of the maximum (id_maxima) and their area. |
 
-**Notes**
-
-A cell of the canopy height model is a maximum when no cell of its window is higher; cells of the same height in the same window are all maxima. The window is square, or circular with doCircular, and at least of 3 x 3 cells.
-
-In custom mode the window has the given size in cells everywhere. In the other modes it is as wide as the crown expected for a tree of the height of the cell, from the regressions of Popescu and Wynne (2004) of the crown width CW on the height H, in meters:
-
-- mixed pines and deciduous trees: CW = 2.51503 + 0.00901 H²;
-- deciduous trees: CW = 3.09632 + 0.00895 H²;
-- conifers, the pines of the study: CW = 3.75105 + 0.17919 H + 0.01241 H².
-
-The width is reduced to the given percentage, as the crowns of neighbouring trees overlap, and limited to twice the maximum radius: a 20 m tree of a mixed forest, with a crown of 6.1 m, gets a window of 3.7 m at 60%. A window larger than half the width of the raster stops the module.
-
-Of the maxima, the ones lower than the threshold are left out, as the ground and the shrubs, and so are those with more than one neighbour without value, unless allowed: the neighbours outside of the raster count as without value, so the cells on its border are never maxima. The spikes are left out too, with at least the given number of neighbours lower than them by more than the top buffer threshold. With the border distance, the remaining maxima near the border of the canopy over the threshold get a note in the output, without being removed.
-
 **References**
 
 - Popescu, S. C., Wynne, R. H. (2004). Seeing the trees in the forest: using lidar and multispectral data fusion with local filtering and variable window size for estimating tree height. Photogrammetric Engineering & Remote Sensing, 70(5), 589-604.

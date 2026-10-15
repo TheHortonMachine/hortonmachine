@@ -46,6 +46,11 @@ code,friction,nrest,trest
 
 Where the lithology map has no value, or a code that is not in the table, and everywhere if no lithology map is given, the coefficients of the default class of the built-in table are used (`pDefaultLithology`). Uniform coefficients from a single class are only a first screening: they ignore, for example, the soft deposits of the valleys that stop the boulders sooner.
 
+## Parameters
+
+```{include} ../generated/StoneInputs.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -59,8 +64,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The sources of the sample area: the cells steeper than 45 degrees, each throwing 10 boulders.
 :::
-
-## Reference
-
-```{include} ../generated/StoneInputs.md
-```

@@ -22,9 +22,3 @@ Compares two rasters of classes of different times, as two land covers, and give
 | `outRaster` | output file |  | The raster of the codes of the transitions. |
 | `outTransition` | output file |  | The optional csv table of the transitions: code, previous class, next class and count of cells. |
 
-**Notes**
-
-Each pair of a previous and a next class found in the same cell is a transition, and gets a code in the order in which it is first met, reading the rasters from the north-west corner by rows: the transitions between different classes get the codes from 1, the cells whose class didn't change the codes from 10001, and the cells that are novalue only in one of the rasters, the classes that appear or disappear, the negative codes from -1. The cells novalue in both rasters stay novalue.
-
-The codes of a run depend on the data, so the table of the transitions, written by the toolbox module, tells for each code its previous and next class and its count of cells: the counts times the cell area give the area of each change, as for a transition matrix of the land cover. The two rasters need the same grid.
-

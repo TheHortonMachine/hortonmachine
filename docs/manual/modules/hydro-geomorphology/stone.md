@@ -31,6 +31,11 @@ The boulders are moved and their positions recorded about every **step** meters 
 - The maximum velocity and height are real numbers, r.stone truncates them to integers.
 - The random numbers differ, so the single trajectories differ: the results are equivalent in their statistics, as the results of two runs of r.stone with different random numbers.
 
+## Parameters
+
+```{include} ../generated/Stone.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -62,8 +67,3 @@ The maximum height of the trajectories over the ground in each cell, in m.
 
 A sample of 300 trajectories, colored by the maximum velocity of their boulder, in m/s.
 :::
-
-## Reference
-
-```{include} ../generated/Stone.md
-```

@@ -13,6 +13,13 @@ In the workflow, the inputs come from the GeoFrame database: the net radiation o
 
 The soil heat flux is used only with hourly time steps.
 
+## Parameters
+
+```{include} ../../generated/ErmPrestleyEt.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/erm/05_evapotranspiration.groovy
 :language: groovy
 ```
@@ -24,6 +31,3 @@ With this step the input data of the sub-basins are complete, and they can be ch
 
 The input data of a sub-basin: the potential evapotranspiration of this step, the net radiation of [ErmRadiation](ermradiation.md), the precipitation and temperature of [ErmKriging](ermkriging.md).
 :::
-
-```{include} ../../generated/ErmPrestleyEt.md
-```

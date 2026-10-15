@@ -2,6 +2,13 @@
 
 Runs the water budget model over a period with a fixed set of parameters, usually the ones found by the calibration, and shows a chart of the simulated against the observed discharge, with their KGE. Running it on a period different from the calibration one validates the calibrated parameters.
 
+## Parameters
+
+```{include} ../../generated/ErmSimulation.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/erm/07_simulation.groovy
 :language: groovy
 ```
@@ -25,6 +32,3 @@ The GeoFrame database in the Database Viewer, recognized by the GeoFrame icon, a
 :::
 
 In the same way, **Open Station Data Chart** on the `station_data` table and **Open Basin Data Chart** on the `basin_data` table chart the measured data of the stations and the input data of the sub-basins: see [ErmStationDataImporter](ermstationdataimporter.md) and [ErmPrestleyEt](ermprestleyet.md).
-
-```{include} ../../generated/ErmSimulation.md
-```

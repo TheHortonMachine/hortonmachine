@@ -25,7 +25,3 @@ Moves the geometries of a vector by a translation and rotates them around the ce
 |---|---|---|---|
 | `outVector` | output file |  | The transformed feature collection. |
 
-**Notes**
-
-The rotation, if given, comes first: all the geometries rotate together, clockwise by the angle, around the same point, so the vector keeps its shape. The point is the given center or, without it, the center of the bounds of the whole vector, which changes with the features that the vector has: give the center to rotate around a known point, as a survey around its station. The translation then moves them by the given amounts, in the units of the crs, east and north for positive values. The crs doesn't change: the module moves the geometries, as to put in place a survey in local coordinates or a design to try in another position, it doesn't reproject them.
-

@@ -8,6 +8,11 @@ It measures how rugged a basin is: small, steep basins have high values. It is u
 
 The polygons must be the basins draining into the fans, not the fans. The result is a table of the id of each polygon and its Melton number, also written in the log.
 
+## Parameters
+
+```{include} ../generated/MeltonNumber.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 ```
 
 For the basin of ExtractBasin, of 1.9 km² and with a relief of 774 m, the Melton number is 0.56.
-
-## Reference
-
-```{include} ../generated/MeltonNumber.md
-```

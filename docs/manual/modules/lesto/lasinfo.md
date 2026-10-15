@@ -2,6 +2,16 @@
 
 LasInfo prints what a LAS file contains: the fields of its header, its reference system and its first three points. It is the quick check of a survey before using it, as of its point format, its number of points and its bounds. Given a folder, it prints the same for each LAS file in it.
 
+## Details
+
+```{include} ../generated/LasInfo_details.md
+```
+
+## Parameters
+
+```{include} ../generated/LasInfo.md
+```
+
 ## Example
 
 The information of the sample survey:
@@ -39,9 +49,4 @@ Dot (
 	classification = 2
 	gpsTime = 204505.164429716
  )
-```
-
-## Reference
-
-```{include} ../generated/LasInfo.md
 ```

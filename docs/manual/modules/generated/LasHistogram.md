@@ -23,9 +23,3 @@ Creates the histogram of the intensity, elevation or classification of the point
 |---|---|---|---|
 | `outCsv` | output file |  | The optional output csv file of the histogram: the center of each bin and its count of points. |
 
-**Notes**
-
-The file is read twice: first for the range of the value, then to count the points in each bin. The bins and their counts are printed, shown in a chart window and, if the output file is given, written to a csv file with the center of each bin and its count of points.
-
-The histogram of the intensity helps to choose the thresholds of LasThresholder, the one of the elevation shows the vertical structure of the survey, as the layers of a forest. The classification has only a few values, as 1 unclassified, 2 ground and 3 low vegetation: use as many bins as the classes.
-

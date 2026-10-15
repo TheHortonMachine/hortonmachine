@@ -4,6 +4,16 @@ Rasterizes a river network drawn as lines into the drainage directions of its ce
 
 Besides the flow map, it writes the rasterized network, with the id of each reach, and the points where the lines need to be corrected.
 
+## Details
+
+```{include} ../generated/Netshape2Flow_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Netshape2Flow.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. Here the network of [NetworkAttributesBuilder](networkattributesbuilder.md), extracted from the same elevation model, stands in for a digitized one:
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The drainage directions of the network lines of NetworkAttributesBuilder, rasterized on the grid of the elevation model.
 :::
-
-## Reference
-
-```{include} ../generated/Netshape2Flow.md
-```

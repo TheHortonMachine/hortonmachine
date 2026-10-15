@@ -2,6 +2,11 @@
 
 Defines the river network as the cells draining a large enough area. The threshold sets how far upstream the channels begin: lower values give a denser network. It is best chosen comparing the result with the channels visible in maps or imagery.
 
+## Parameters
+
+```{include} ../generated/ExtractNetwork.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -15,8 +20,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The network of the sample area, extracted with a threshold of 100 cells: 1 ha, with cells of 10 m.
 :::
-
-## Reference
-
-```{include} ../generated/ExtractNetwork.md
-```

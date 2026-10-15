@@ -4,6 +4,18 @@ The last step of the [Seasonal Water Yield](index.md) workflow: the accumulated 
 
 The module also gives the total recharge `outQb`, the sum of the recharge of all the cells in mm: divided by the number of cells it is the mean recharge `qb` of InVEST, times the cell area a volume. The sum of the values index `outVriSum` is 1, a check of the run.
 
+## Details
+
+```{include} ../../generated/SWYBaseflowRouting_details.md
+```
+
+## Parameters
+
+```{include} ../../generated/SWYBaseflowRouting.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/swy/05_baseflow.groovy
 :language: groovy
 ```
@@ -32,6 +44,3 @@ With the flowdirections and the network of the [preparation step](index.md#the-s
 | mean baseflow | 387.7 mm | 379.5 mm |
 
 The curve number, the precipitation, the reference evapotranspiration and the crop coefficients are the same in every cell, and the quickflow differs only on the 5131 cells where the network of the HortonMachine and the streams of InVEST are not the same. The flowdirections of the HortonMachine leave out the cells at the border of the elevation model, which drain out of it. The total recharge differs by 1%.
-
-```{include} ../../generated/SWYBaseflowRouting.md
-```

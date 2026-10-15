@@ -4,6 +4,16 @@ Subtracts a raster from another, cell by cell. The typical use is the canopy hei
 
 It is a shortcut for the most common expression of [Mapcalc](mapcalc.md), which it runs inside: Mapcalc is the tool for any other combination of rasters.
 
+## Details
+
+```{include} ../generated/RasterDiff_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterDiff.md
+```
+
 ## Example
 
 The example runs on the sample data of the manual, in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. It takes the surface of the lidar plot interpolated by [SurfaceInterpolator](surfaceinterpolator.md) minus the terrain model of the plot:
@@ -17,8 +27,3 @@ The example runs on the sample data of the manual, in `docs/manual/modules/maps/
 
 The canopy height model of the lidar plot: the crowns of the trees above 2 m, the ground and the low vegetation left out.
 :::
-
-## Reference
-
-```{include} ../generated/RasterDiff.md
-```

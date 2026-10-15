@@ -8,6 +8,11 @@ The gradient is the steepest slope of the terrain in each cell, in any direction
 
 Horn and Evans smooth the noise of the elevation better than the finite differences. The gradient differs from the [Slope](slope.md), which is measured along the drainage direction.
 
+## Parameters
+
+```{include} ../generated/Gradient.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -21,8 +26,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The gradient of the sample area, with the method of Horn, as the tangent of the slope angle.
 :::
-
-## Reference
-
-```{include} ../generated/Gradient.md
-```

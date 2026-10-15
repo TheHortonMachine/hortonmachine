@@ -24,13 +24,3 @@ Reprojects a vector to another coordinate reference system.
 |---|---|---|---|
 | `outVector` | output file |  | The output reprojected vector. |
 
-**Notes**
-
-The vertices are transformed one by one, so a long straight segment stays straight in the new crs, where it should become a curve: the long lines need more vertices first if their shape matters, as the vertex spacing of GridsGenerator gives to its grids. The attributes don't change: the lengths and the areas stored in the fields keep the values of the original crs.
-
-A vector without crs, or with a wrong one, as a shapefile without its prj, can be given its crs with the force code, before the reprojection. The force code doesn't move the geometries.
-
-Between crs on different datums the transformation needs the datum shift parameters (TOWGS84, Bursa-Wolf), that the EPSG database has for most of the national datums. When they are missing, the lenient mode reprojects anyway ignoring the datum shift, with errors that can reach some hundred meters; without it, the reprojection stops.
-
-A lat/long output has the longitude as first axis, as x, the order of the shapefiles and of most GIS. Setting the longitude first switch to false gives instead the order of the EPSG definition, the latitude first for EPSG:4326, as some standards require.
-

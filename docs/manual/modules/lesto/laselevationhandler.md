@@ -2,6 +2,16 @@
 
 LasElevationHandler normalizes a LAS file over an elevation model: the elevation of the ground under each point is subtracted from it, and the points get their height over the ground instead of their elevation. With `doAdd` it does the opposite, bringing the heights of a normalized file back to elevations.
 
+## Details
+
+```{include} ../generated/LasElevationHandler_details.md
+```
+
+## Parameters
+
+```{include} ../generated/LasElevationHandler.md
+```
+
 ## Example
 
 The heights over the ground of the points of the sample survey, converted to a vector by [LasConverter](../vector-processing/lasconverter.md) to see them on a map:
@@ -17,8 +27,3 @@ The normalized points colored by their height over the ground, from -0.3 m, the 
 :::
 
 The 8 points just outside of the elevation model are left out.
-
-## Reference
-
-```{include} ../generated/LasElevationHandler.md
-```

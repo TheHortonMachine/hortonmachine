@@ -24,9 +24,3 @@ Subdivides the sites of a basin in 11 topographic classes.
 | `outClasses` | output file |  | The map with the geomorphological classes |
 | `outAggregateClasses` | output file |  | The map with the geomorphological classes |
 
-**Notes**
-
-Each cell gets, in this order: 110 if its slope reaches the threshold (steep sites), 100 if it is a network cell (value 2 in the network map, as from ExtractNetwork), otherwise its class from Tc (10 to 90).
-
-The aggregated map groups them in 15 non-channelled valleys (classes 30, 70, 90), 25 planar sites (10), 35 channels (100), 45 hillslopes (20, 40, 50, 60, 80) and 55 steep sites (110).
-

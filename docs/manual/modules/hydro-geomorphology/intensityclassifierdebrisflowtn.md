@@ -4,6 +4,16 @@ IntensityClassifierDebrisFlowTN classifies the intensity of a debris flow in thr
 
 The default thresholds are 0.5 and 1 m for the depth and the deposits, 0.5 and 1 m/s for the velocity, 0.5 and 2 m for the erosion. The intensity maps of the events of 30, 100 and 200 years of return period are the input of [HazardClassifier](hazardclassifier.md).
 
+## Details
+
+```{include} ../generated/IntensityClassifierDebrisFlowTN_details.md
+```
+
+## Parameters
+
+```{include} ../generated/IntensityClassifierDebrisFlowTN.md
+```
+
 ## Example
 
 The example makes up the four maps of a debris flow on a fan of 500 m at the end of the main channel of the sample area, as a model of debris flows would give them: deep and fast at the apex, stopping at the edge, with the deposits thickest in the middle and the erosion only near the apex.
@@ -17,8 +27,3 @@ The example makes up the four maps of a debris flow on a fan of 500 m at the end
 
 The intensity of the made up debris flow: high near the apex, where the flow is deep and fast, medium in the middle of the fan, low at its edge.
 :::
-
-## Reference
-
-```{include} ../generated/IntensityClassifierDebrisFlowTN.md
-```

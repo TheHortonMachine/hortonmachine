@@ -23,11 +23,3 @@ Reads the points, lines and polygons of an ASCII DXF file of a CAD into three ve
 | `lineVector` | output file |  | The output lines vector. |
 | `polygonVector` | output file |  | The output polygons vector. |
 
-**Notes**
-
-The entities read are POINT and TEXT, as points, LINE and the open POLYLINE and LWPOLYLINE, as lines, and the closed POLYLINE and LWPOLYLINE, as polygons. The other entities, as CIRCLE, ARC, SPLINE, HATCH, MTEXT and the INSERT of the blocks, are ignored. The entities inside the definitions of the blocks are read where they are defined, in the coordinates of the block, not where the blocks are inserted in the drawing.
-
-The features have the fields of the DXF entity: LAYER, LTYPE (the line type), ELEVATION, THICKNESS, COLOR (the AutoCAD color index), and for the texts TEXT, TEXT_HEIGHT and TEXT_STYLE. A filter on LAYER, with VectorFilter, separates the layers of the drawing.
-
-The DXF has no crs: it is taken from a prj file with the same name next to the DXF or, without it, from the given code. Only the ASCII DXF is read, not the binary one.
-

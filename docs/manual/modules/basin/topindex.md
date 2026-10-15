@@ -6,6 +6,11 @@ Here the contributing area is the total contributing area in cells, from [DrainD
 
 Where the slope is 0, the index is not defined and the cell is left as no-data. These cells, with a very gentle slope, are the most prone to saturate: in models like [Peakflow](../hydro-geomorphology/peakflow.md) they are usually set to the highest value of the map, with the [Map Calculator](../../apps/mapcalc.md).
 
+## Parameters
+
+```{include} ../generated/TopIndex.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -19,8 +24,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The topographic index of the sample area: the highest values are along the network, where the soil saturates first.
 :::
-
-## Reference
-
-```{include} ../generated/TopIndex.md
-```

@@ -23,9 +23,3 @@ Moves the points of a las file by the given distances along the three axes, in t
 |---|---|---|---|
 | `outFile` | output file |  | The moved las file. |
 
-**Notes**
-
-The distances are added to the coordinates of every point, as to correct a shift of the survey or to change between two reference systems that differ by a translation, as two datums of the elevation. The reference system of the file is not changed: a move to another reference system needs the right prj file next to the output.
-
-The offset of the header moves with the points, so that the points keep the same scaled integers and the same precision, also when moved far from where they were; the scale and the other attributes of the points are kept.
-

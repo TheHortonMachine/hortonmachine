@@ -4,6 +4,11 @@ Calculates the viewshed of one or more viewpoints: the cells of the elevation mo
 
 It answers questions as what a planned building or antenna would be seen from, or which areas a set of observation points covers.
 
+## Parameters
+
+```{include} ../generated/Viewshed.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The cells visible from the outlet of the basin of ExtractBasin, 2 m above the ground: the valley up to the ridges, and the slopes in front.
 :::
-
-## Reference
-
-```{include} ../generated/Viewshed.md
-```

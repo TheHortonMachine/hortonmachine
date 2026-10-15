@@ -12,6 +12,11 @@ The paths stop at the first cell without lower neighbours, so the elevation shou
 The module is experimental. The random paths change at every run, so the results differ slightly each time, and the probability can slightly exceed 1.
 :::
 
+## Parameters
+
+```{include} ../generated/DebrisFlow.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -31,8 +36,3 @@ The probability of a debris flow of 50000 m³ starting where a channel opens int
 
 The deposit thickness of the same debris flow, in meters.
 :::
-
-## Reference
-
-```{include} ../generated/DebrisFlow.md
-```

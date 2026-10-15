@@ -10,6 +10,16 @@ Computes where the water of each cell flows. The directions are coded with the n
 
 The D8 method allows only these eight directions, which on smooth slopes leads to straight parallel flow paths that deviate from the real direction of steepest descent: [DrainDir](draindir.md) corrects them.
 
+## Details
+
+```{include} ../generated/FlowDirections_details.md
+```
+
+## Parameters
+
+```{include} ../generated/FlowDirections.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -23,8 +33,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The D8 drainage directions of the sample area, with the codes of the HortonMachine.
 :::
-
-## Reference
-
-```{include} ../generated/FlowDirections.md
-```

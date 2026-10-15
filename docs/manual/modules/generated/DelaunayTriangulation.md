@@ -21,9 +21,3 @@ Creates the Delaunay triangulation of a set of points: the triangles that join t
 |---|---|---|---|
 | `outMap` | output file |  | The output triangles map. |
 
-**Notes**
-
-The triangles are those of a Delaunay triangulation: the circle through the three vertices of a triangle contains no other point. Of all the triangulations of the points, it is the one with the largest smallest angle, so the triangles are as little slivered as the points allow, which makes it the usual base of a TIN (triangulated irregular network). The triangulation covers the convex hull of the points. Points in the same position are used once.
-
-With an elevation, from the field fElev or else from the z of the points, the vertices of the triangles have it as z, and each triangle gets the lowest and the highest elevation of its vertices in the fields minelev and maxelev. The output has only these fields: the triangles don't belong to a single point, so the other attributes of the points are not kept.
-

@@ -26,9 +26,3 @@ Interpolates the points of a lidar survey over the ground into a raster, with in
 |---|---|---|---|
 | `outRaster` | output file |  | The interpolated raster. |
 
-**Notes**
-
-Only the points higher than the threshold over the elevation model are interpolated: with the default threshold of 0, the points over the ground. Each cell gets the average of the points within 10 m of it, weighted by the inverse of their distance. With the first returns and the normalization, the raster is a model of the height of the canopy, with its elevation a model of its surface.
-
-The points on the ground are, with their errors, half over and half under the elevation model: in the open areas, the raster is interpolated from the few ground points over it and from the canopy around. Use a threshold of some decimeters to keep only the vegetation.
-

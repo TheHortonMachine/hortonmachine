@@ -21,11 +21,3 @@ Creates a vector of squares over a las file, with the number of points of each r
 |---|---|---|---|
 | `outFile` | output file |  | The output squares of the grid that have points, with the count of the points of each return (imp1 to imp5), their total and their density in points per square unit. |
 
-**Notes**
-
-The squares start from the south-west corner of the bounds of the file and cover them all: the last column and row can stick out of the data, and their density, on the whole area of the square, is lower than the true one. The points on the borders between squares go to the square on their north-east, the ones on the north and east bounds of the data to the last squares.
-
-The returns from 1 to 5 are counted each in its field; points with a return number out of this range count only in the total. The squares without points are not written.
-
-The density shows where a survey is dense enough for a given use, as an elevation model of a given resolution, and where the flight lines overlap. The first returns are the first surface hit, the canopy where there is forest, and the following ones come from under it: their counts show how much the laser goes through the vegetation.
-

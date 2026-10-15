@@ -6,6 +6,16 @@ As every second derivative, the nabla amplifies the noise of the elevation: on d
 
 With a threshold, the module gives a mask of the clearly convex sites instead, with 1 where the nabla is lower than minus the threshold.
 
+## Details
+
+```{include} ../generated/Nabla_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Nabla.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -19,8 +29,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The nabla of the sample area: positive, in red, in the channels and the hollows, negative on the ridges. The colors span from the 2nd to the 98th percentile of the values.
 :::
-
-## Reference
-
-```{include} ../generated/Nabla.md
-```

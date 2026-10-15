@@ -23,9 +23,3 @@ Creates the spatial database of a TrentoP sewer network, with its empty layers a
 |---|---|---|---|
 | `outDatabase` | output file |  | The database to create, or to complete if it exists: a GeoPackage (.gpkg) or H2GIS (.mv.db) file, or a PostGIS database, as jdbc:postgresql://host:port/database. |
 
-**Notes**
-
-The database can be a GeoPackage or H2GIS file, or a PostGIS database. For a project, it gets the layers network_project, areas and junctions, the table parameters, with the parameters of the design, and the table diameters, with an example series of PVC pipes to check and change. For a calibration, the layer network_calibration, areas, junctions and the parameters of the verification.
-
-The optional parameters get their default as value, while the needed ones are left without value. An existing database is completed: only the layers, tables and parameters it does not have yet are added, so that the project and the calibration of a network can share one database.
-

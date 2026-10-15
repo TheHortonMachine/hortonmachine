@@ -21,9 +21,3 @@ Rounds the values of a raster to a number of decimals.
 |---|---|---|---|
 | `outRaster` | output file |  | The rounded raster. |
 
-**Notes**
-
-The pattern is a Java DecimalFormat pattern, with the dot as decimal separator whatever the language of the system: 0.00 rounds to two decimals, # to the integer. The values are rounded half up, so 2.5 becomes 3 and 2.25 with 0.0 becomes 2.3. The novalues stay novalue.
-
-The rounded values are doubles, nearest to the rounded decimals: 6.35 is not exact in binary. The rounding removes the noise of the last decimals, as in the output of an interpolation, and makes the files compress better; to round to steps that are not decimals, as to the half meter, Mapcalc does it with round(value * 2) / 2.
-

@@ -37,14 +37,6 @@ The local recharge and actual evapotranspiration of the InVEST Seasonal Water Yi
 | `outUpslopeSubsidy` | output file | mm | The map of the upslope subsidy (the recharge available from upstream cells, L_sum_avail). |
 | `outAvailableRecharge` | output file | mm | The map of the part of the local recharge that is available to downslope cells (L_avail = min(gamma * L, L)). |
 
-**Notes**
-
-Each cell evapotranspires its precipitation minus quickflow, plus a part of the recharge of the upslope cells, up to the potential evapotranspiration. What is left is the local recharge, negative where the upslope water is evapotranspired, as on the streams, where all the precipitation is quickflow. The fraction gamma of the recharge is available to the downslope cells, of which the fraction beta can be evapotranspired, divided among the intervals by alpha.
-
-The module has two modes. With the lists (or folders) of the intervals, the recharge is the one of the whole period, as in InVEST, where the 12 months of a year make an annual recharge, and alpha is by default 1/12. With the single interval inputs, the recharge of the interval is routed by itself, without water carried over from the other intervals: the results then differ from those of InVEST, even if summed over the year.
-
-Novalues in the precipitation, quickflow and potential evapotranspiration are considered as 0.
-
 **References**
 
 - Natural Capital Project. InVEST User's Guide, Seasonal Water Yield. Stanford University, University of Minnesota, Chinese Academy of Sciences, The Nature Conservancy, World Wildlife Fund, Stockholm Resilience Centre and the Royal Swedish Academy of Sciences. https://releases.naturalcapitalproject.org/invest-userguide/latest/

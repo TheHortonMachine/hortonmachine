@@ -23,9 +23,3 @@ Subtracts a raster from another, cell by cell, as the canopy height model from t
 |---|---|---|---|
 | `outRaster` | output file |  | The difference of the rasters. |
 
-**Notes**
-
-The result is the first raster minus the second one, on the grid of the first: the two rasters need the same grid. A cell that is novalue in one of them is novalue in the result. Without the negatives the differences below 0 become 0, as the canopy that can't be below the ground in a surface model minus a terrain model with some noise. The threshold then sets to novalue the differences below it, as the low vegetation and the ground under a canopy height model of 2 m.
-
-It is a shortcut for the most common Mapcalc expression: Mapcalc is the tool for any other combination of rasters.
-

@@ -2,6 +2,16 @@
 
 Creates the Delaunay triangulation of a set of points: the triangles that join them without crossing, as close to equilateral as possible, the base of a TIN surface from surveyed points. The triangles get the lowest and highest elevation of their vertices.
 
+## Details
+
+```{include} ../generated/DelaunayTriangulation_details.md
+```
+
+## Parameters
+
+```{include} ../generated/DelaunayTriangulation.md
+```
+
 ## Example
 
 The example triangulates the centroids of the sub-basins of [BasinShape](../basin/basinshape.md), made by [VectorReshaper](vectorreshaper.md), with their mean elevation:
@@ -14,9 +24,4 @@ The 99 centroids give 184 triangles, which cover their convex hull. The triangle
 
 ```{image} ../../images/modules/DelaunayTriangulation_triangles_maxelev.png
 :alt: The Delaunay triangles between the centroids of the sub-basins, colored by their highest elevation
-```
-
-## Reference
-
-```{include} ../generated/DelaunayTriangulation.md
 ```

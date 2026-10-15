@@ -21,11 +21,3 @@ Cuts the features of a vector to the area of the polygons of another vector, kee
 |---|---|---|---|
 | `outMap` | output file |  | The clipped features, with their attributes. |
 
-**Notes**
-
-The clipping polygons are merged before the cut, so a feature comes out once, with its part inside any of them, also when it crosses several. Only the attributes of the clipped vector are kept: to also get those of the polygons, with a piece of the feature for each polygon, use VectorIntersector.
-
-The result has the multi geometry type of the clipped vector, as MultiLineString for lines. The parts of the cut of a lower dimension are left out, as the point where a line touches a polygon, and so are the features that only touch the polygons along their border.
-
-The two vectors must have the same coordinate reference system.
-

@@ -25,18 +25,3 @@ Maps the vertical structure of a forest from the height distribution of the lida
 |---|---|---|---|
 | `outCats` | output file |  | The raster of the categories of the forest: 0 no forest, 1 single layer, 2 single layer of variable height, 3 double layer. |
 
-**Notes**
-
-In each tile, the heights over the ground of the points higher than the threshold are counted in bins of 0.5 m. The counts are smoothed with a gaussian kernel of a radius of 12 bins, 6 m, and the ranges of heights where their second derivative is negative, the peaks of the distribution, are the layers of the vegetation of the tile.
-
-Each cell of the elevation model is then classified by the layers that have points in it:
-
-| Category | Cell |
-|---|---|
-| 0 no forest | no points in any layer |
-| 1 single layer | points in one layer |
-| 2 single layer of variable height | points in more layers, in a tile whose layers are side by side, as trees of different heights |
-| 3 double layer | points in more layers, in a tile where two consecutive layers overlap, as trees over a lower layer: the cells with points in both are more than the given percentage of the cells of one of them |
-
-The tiles are snapped on the cells of the elevation model, so that each cell belongs to a single tile. The cells must be large enough to contain enough points of each layer: with a few points per square meter, use an elevation model of 2 m or more, resampling it if needed. The tiles must be large enough to have a meaningful height distribution, as some tens of meters.
-

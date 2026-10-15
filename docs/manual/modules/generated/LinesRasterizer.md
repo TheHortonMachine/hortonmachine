@@ -29,9 +29,3 @@ Converts lines to a raster: the cells crossed by a line get its value, the other
 |---|---|---|---|
 | `outRaster` | output file |  | The rasterized lines. |
 
-**Notes**
-
-Every segment of the lines becomes the chain of cells that joins the cells of its two vertices, with the Bresenham algorithm: the chain is 8-connected, one cell wide, as a path of the flow directions, so a rasterized network can be used where the network extracted from the elevation would be. A segment that touches a cell only on a corner can leave it out. Where lines cross, the cell keeps the largest value, as the higher order of two streams that join. The parts of the lines outside of the grid are left out.
-
-The value of the cells is the one of the numeric field of the line, or the constant category without a field. The grid is the one of the optional raster, or the one of the bounds, rows and columns.
-

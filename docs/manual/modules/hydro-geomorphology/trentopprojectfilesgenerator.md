@@ -8,6 +8,16 @@ An existing database is completed, not replaced: only the layers, tables and par
 
 Once created, open the database in a GIS, as QGIS, draw the pipes, areas and junctions and fill their fields and the parameters, as described in [preparing the data](trentopproject.md#preparing-the-data).
 
+## Details
+
+```{include} ../generated/TrentoPProjectFilesGenerator_details.md
+```
+
+## Parameters
+
+```{include} ../generated/TrentoPProjectFilesGenerator.md
+```
+
 ## Example
 
 The example creates a GeoPackage for both the project and the calibration of a network:
@@ -17,8 +27,3 @@ The example creates a GeoPackage for both the project and the calibration of a n
 ```
 
 The GeoPackage has the layers `network_project`, `network_calibration`, `areas` and `junctions`, and the tables `parameters` and `diameters`.
-
-## Reference
-
-```{include} ../generated/TrentoPProjectFilesGenerator.md
-```

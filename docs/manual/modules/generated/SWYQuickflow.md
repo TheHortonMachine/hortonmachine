@@ -23,12 +23,6 @@ The quickflow of an interval (ex. a month) of the InVEST Seasonal Water Yield mo
 |---|---|---|---|
 | `outQuickflow` | output file | mm | The map of the quickflow of the interval. |
 
-**Notes**
-
-The quickflow is the expected value of the SCS curve number runoff of the rain events of the interval, with the depth of the events exponentially distributed around their mean (InVEST equation 1). The curve number gives the potential retention S = 1000/CN - 10, in inches.
-
-The special cases are those of InVEST: without precipitation or rain events the quickflow is 0; on the stream cells, and where the curve number is 100, all the precipitation becomes quickflow; where the retention is more than 100 times the mean depth of an event (also with curve number 0) the quickflow is 0. Where the curve number is novalue, the stream cells still get all the precipitation and the other cells are novalue. Where the number of events is not given, 10 events are used.
-
 **References**
 
 - Natural Capital Project. InVEST User's Guide, Seasonal Water Yield. Stanford University, University of Minnesota, Chinese Academy of Sciences, The Nature Conservancy, World Wildlife Fund, Stockholm Resilience Centre and the Royal Swedish Academy of Sciences. https://releases.naturalcapitalproject.org/invest-userguide/latest/

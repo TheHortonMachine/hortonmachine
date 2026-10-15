@@ -4,6 +4,16 @@ Converts points into a raster: the cell that contains each point gets its value,
 
 The grid is given by its bounds, cell size and reference system, or it is taken from a raster, which must have the coordinate reference system of the points. To interpolate the values of the points on all the cells, use [SurfaceInterpolator](surfaceinterpolator.md).
 
+## Details
+
+```{include} ../generated/PointsRasterizer_details.md
+```
+
+## Parameters
+
+```{include} ../generated/PointsRasterizer.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. It places the centroids of the subbasins of the [DelaunayTriangulation](../vector-processing/delaunaytriangulation.md) example, with their mean elevation, on the cells of 100 m of [RasterSubsampler](rastersubsampler.md):
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The cells of 100 m that contain the centroids of the subbasins, with the mean elevation of each subbasin.
 :::
-
-## Reference
-
-```{include} ../generated/PointsRasterizer.md
-```

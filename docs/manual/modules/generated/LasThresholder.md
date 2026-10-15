@@ -23,9 +23,3 @@ Keeps the points of a las file with an intensity or elevation between two thresh
 |---|---|---|---|
 | `outLas` | output file |  | The las file of the kept points. |
 
-**Notes**
-
-The points with a value equal to a threshold are kept. The kept points are written with the header, the precision and the crs of the input file.
-
-The intensity of a return depends on the surface that reflected it, as bare soil, leaves or roads, but also on the distance from the sensor and on the angle of incidence: its values change between surveys and between the flight lines of the same survey. Look at their histogram with LasHistogram before choosing the thresholds.
-

@@ -2,6 +2,16 @@
 
 Adds to the features of a vector the values of a raster below them. The points and the lines take the value of a cell, as the elevation of the wells or the land use at the start of the roads; the polygons take the minimum, maximum, mean and sum of the cells inside them, as the mean elevation of the sub-basins or the rain volume on a municipality.
 
+## Details
+
+```{include} ../generated/RasterCatToFeatureAttribute_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterCatToFeatureAttribute.md
+```
+
 ## Example
 
 The example adds the elevation statistics of the sample elevation model to the cells of [GridsGenerator](gridsgenerator.md):
@@ -23,9 +33,4 @@ The cells colored by their mean elevation:
 
 ```{image} ../../images/modules/RasterCatToFeatureAttribute_grid_elev_elev_avg.png
 :alt: The cells of the grid colored by their mean elevation
-```
-
-## Reference
-
-```{include} ../generated/RasterCatToFeatureAttribute.md
 ```

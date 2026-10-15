@@ -30,11 +30,3 @@ Generates a regular grid of polygons, lines or points, on the bounds of a vector
 |---|---|---|---|
 | `outMap` | output file |  | The grid. |
 
-**Notes**
-
-The grid has pRows x pCols cells, and its place is taken, in order, from a vector, a raster or the coordinates. With a vector, its bounds are divided in the cells. With a raster, its bounds are divided in the cells as well or, if the cell width and height are given, the cells of that size start from its lower left corner, so the grid can be smaller or larger than the raster. Without maps, the grid starts from the lower left corner pLon, pLat, which are the easting and northing in the crs pCode, not necessarily a longitude and a latitude.
-
-The polygons are the cells. The lines are their borders, pRows + 1 horizontal and pCols + 1 vertical lines, each across the whole grid, the horizontal ones first. The points are the corners of the cells, (pRows + 1) x (pCols + 1). Each feature has an id, starting from 0.
-
-The vertex spacing adds vertices along the sides of the cells and along the lines, so that they keep their shape when they are reprojected, as a grid of a projected crs drawn in lat/long.
-

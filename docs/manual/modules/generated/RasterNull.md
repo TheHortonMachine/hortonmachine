@@ -23,9 +23,3 @@ Sets the cells of a given value of a raster to novalue, or all the other cells.
 |---|---|---|---|
 | `outRaster` | output file |  | The new raster. |
 
-**Notes**
-
-The typical use is a value that means no data but isn't declared as novalue, as the 0 of the frame of an orthophoto or the -32768 of some elevation models. The inverse switch keeps only the cells of the value and sets all the others to novalue, which gives the mask of a class from a raster of classes.
-
-The value is compared at float precision, so 1.1 finds also the cells of a float raster, that stores it as 1.100000023841858: the values nearer than about one ten millionth of the value are taken as equal. To null a range of values RangeLookup or Mapcalc are the tools. The cells that are novalue in the input stay novalue. A null value given sets the nulled cells to that value instead of the novalue, for example 0 to make a 1/0 raster with the inverse.
-

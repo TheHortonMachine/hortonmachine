@@ -30,11 +30,3 @@ Converts polygons to a raster: the cells whose center is inside a polygon get a 
 |---|---|---|---|
 | `outRaster` | output file |  | The rasterized polygons. |
 
-**Notes**
-
-The polygons are intersected with a line through the centers of each row of cells, the scanline, and the cells between the intersections are filled. The grid is given by its bounds and number of rows and columns, or taken from a raster, which must have the CRS of the polygons.
-
-The value of the cells is the constant value if given, else the value of the field of each polygon. With a raster and neither of them, the cells take the values of the raster: the result is the raster cut with the polygons.
-
-Only polygons are supported. Where they overlap, the cells take the value of one of them. If the scanline fails on complex geometries, the point in polygon mode checks the center of each cell against the union of the polygons instead: it is slower, needs a raster for the grid, and uses only the constant value.
-

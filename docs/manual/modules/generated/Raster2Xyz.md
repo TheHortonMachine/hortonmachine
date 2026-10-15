@@ -21,7 +21,3 @@ Converts a raster to a text file of XYZ triplets: a line for each cell, with the
 |---|---|---|---|
 | `outFile` | output file |  | The output text file of the triplets. |
 
-**Notes**
-
-The cells are written row by row, from the north west corner. The novalues are left out, unless they are asked for, in which case they are written as -9999. The file can be read back into a raster with Xyz2Raster.
-

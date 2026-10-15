@@ -8,6 +8,11 @@ DebrisVandre traces the runout path of a debris flow from each trigger point, fo
 
 The modified criteria move on from 8 degrees and have no lower limit. The paths end at the outlets, which must be marked with the value 10 in the drainage directions, for example with [MarkOutlets](../dem-manipulation/markoutlets.md), or at the optional obstacles. With a map of the soil depth, the soil mobilized along the paths can also be cumulated.
 
+## Parameters
+
+```{include} ../generated/DebrisVandre.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -21,8 +26,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The runout paths from the trigger points of DebrisTriggerCnr in the sample area.
 :::
-
-## Reference
-
-```{include} ../generated/DebrisVandre.md
-```

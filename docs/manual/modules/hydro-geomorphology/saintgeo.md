@@ -10,6 +10,16 @@ The length of the steps is set by the model, for the stability of the scheme, fr
 The model is meant for the subcritical flow of lowland rivers. In steep streams, where the flow is supercritical, the scheme diverges, or gives velocities without physical meaning: the mountain stream of the sample area is far too steep for it. The model stops with an error when the levels are no longer numbers, but check that the results make sense. The module is experimental.
 :::
 
+## Details
+
+```{include} ../generated/SaintGeo_details.md
+```
+
+## Parameters
+
+```{include} ../generated/SaintGeo.md
+```
+
 ## Example
 
 The example builds a lowland river on the grid of the sample area, and follows all the steps from the elevation model to the flood: the network, the main channel, its sections and the simulation.
@@ -63,8 +73,3 @@ Along the river: the bottom of the sections, the level of the steady flow of 50 
 
 The discharge at the head and at the end of the river, at each step of the model: the wave arrives later and lower, spread by the storage of the floodplain. The steps are not of a fixed time, so the shape of the waves is distorted where the velocities change.
 :::
-
-## Reference
-
-```{include} ../generated/SaintGeo.md
-```

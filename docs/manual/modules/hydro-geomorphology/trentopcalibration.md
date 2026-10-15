@@ -8,6 +8,11 @@ The rain is either a time series of measured intensities, or a rain generated fr
 When a pipe fills up completely, the simulation stops, with a warning that names the pipe. The pipes downstream of it, which were not computed yet, keep a discharge of 0: check the warnings, and a fill degree that reaches its maximum, before reading the results.
 :::
 
+## Details
+
+```{include} ../generated/TrentoPCalibration_details.md
+```
+
 ## Preparing the data
 
 The database holds the layers `network_calibration`, `areas` and `junctions` and the table `parameters`, prepared as described for [TrentoPProject](trentopproject.md#preparing-the-data), and created with [TrentoPProjectFilesGenerator](trentopprojectfilesgenerator.md) in Calibration mode. To verify a designed network, copy its `network_project_output` layer to `network_calibration`: it has all the fields needed. The pipes have the field `diameter`, the inner diameter of the existing pipes in cm, instead of `MinSlope` and `Section`.
@@ -45,6 +50,11 @@ DateFormat,yyyy-MM-dd HH:mm
 ,2020-06-01 12:10,0.4
 ```
 
+## Parameters
+
+```{include} ../generated/TrentoPCalibration.md
+```
+
 ## Example
 
 The example verifies an existing network of 25 pipes, from 12 to 40 cm, which drain 2 ha to the outlet pipe 31. Its data are in the GeoPackage `docs/manual/modules/maps/data/sewer_calibration.gpkg`, and all the times are in its parameters: a time step of 5 minutes, 120 minutes of simulation and rains from 5 to 60 minutes:
@@ -68,8 +78,3 @@ The discharge of each pipe in time is written to `outDischarge`, a table with th
 
 The discharge, in l/s, of the outlet pipe 31, of the collector pipe 27 and of the head pipe 1, for the critical rain of 5 minutes: the peak at the outlet, 227 l/s, comes right after the end of the rain, and the network empties in about half an hour.
 :::
-
-## Reference
-
-```{include} ../generated/TrentoPCalibration.md
-```

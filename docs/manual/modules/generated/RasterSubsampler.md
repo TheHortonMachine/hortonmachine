@@ -22,9 +22,3 @@ Aggregates a raster to a coarser one, of cells of factor x factor input cells.
 |---|---|---|---|
 | `outRaster` | output file |  | The aggregated raster. |
 
-**Notes**
-
-Every output cell covers a block of factor x factor input cells and gets the average, the min, the max, the sum or the most frequent value of its valid cells: the novalues are left out, and a block without valid cells is novalue. The resolution is exactly the input one times the factor and the grid starts at the north-west corner of the input: the last columns and rows that don't fill a whole block are left out, so the east and south borders can move inwards by less than one output cell.
-
-The average suits the continuous variables, as an elevation model taken to a coarser resolution, the sum the counts and the amounts per cell, the most frequent value (on ties the smallest) the classes, as a land cover. On a block with novalues the sum is of the valid cells only. The nearest mode takes the value of the input cell at the center of the block (for an even factor, the one south-east of the center), novalue included: it is the nearest neighbour resampling of RasterResolutionResampler, on the grid of the blocks.
-

@@ -2,6 +2,16 @@
 
 Smooths lines with cubic Bezier curves through all their vertices: the lines keep their vertices and get round turns between them. It suits lines with few vertices, as the simplified ones, drawn with corners.
 
+## Details
+
+```{include} ../generated/LineSmootherJaitools_details.md
+```
+
+## Parameters
+
+```{include} ../generated/LineSmootherJaitools.md
+```
+
 ## Example
 
 The example smooths the contour lines simplified by [VectorSimplifier](vectorsimplifier.md), with a tolerance of 25 m:
@@ -17,8 +27,3 @@ A detail of the smoothed lines in red, over the original contours of [ContourExt
 ```
 
 The [LineSmootherMcMaster](linesmoothermcmaster.md) smooths instead by averaging the vertices.
-
-## Reference
-
-```{include} ../generated/LineSmootherJaitools.md
-```

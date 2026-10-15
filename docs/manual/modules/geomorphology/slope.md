@@ -4,6 +4,11 @@ The slope of each cell along its drainage direction: the drop to the downstream 
 
 The drainage directions should come from the same depitted elevation map, with [FlowDirections](flowdirections.md) or [DrainDir](draindir.md): otherwise the downstream cell can be higher, and the slope negative.
 
+## Parameters
+
+```{include} ../generated/Slope.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The slope of the sample area along the drainage directions of DrainDir, as the tangent of the slope angle.
 :::
-
-## Reference
-
-```{include} ../generated/Slope.md
-```

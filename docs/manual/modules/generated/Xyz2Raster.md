@@ -23,9 +23,3 @@ Converts a text file of XYZ triplets on a regular grid, as the ones of the lidar
 |---|---|---|---|
 | `outRaster` | output file |  | The generated raster. |
 
-**Notes**
-
-The points must be the centers of the cells of a regular grid with the given resolution, as written by Raster2Xyz: the bounds of the raster are the ones of the points, enlarged by half a cell. It is not an interpolation: the cells without a point are novalue, and the points that are not on the grid end up in the cell they fall in. To make a raster from scattered points, use SurfaceInterpolator.
-
-The lines that are not three numbers, as a header, are skipped. The values are separated by spaces or tabs, or by the given separator.
-

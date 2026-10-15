@@ -21,7 +21,3 @@ Creates a Feature collection of the subbasins created with the netnumbering modu
 |---|---|---|---|
 | `outBasins` | output file |  | The extracted basins vector map. |
 
-**Notes**
-
-Each basin of the input map becomes a polygon with the attributes `netnum`, the basin number; `area` and `perimeter`, in the units of the map CRS; `maxelev`, `minelev` and `avgelev`, the statistics of the elevation of its cells; `height`, the elevation at the centroid of the polygon, -1 where the centroid is not on a valid cell.
-

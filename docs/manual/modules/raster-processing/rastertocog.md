@@ -6,15 +6,20 @@ The module writes the COG in pure Java, as the COG driver of GDAL does, with a l
 
 A COG is still a GeoTIFF, readable by any GIS: converting the rasters to publish, as on a [STAC](../../apps/stacbrowser.md) catalog, makes them usable from the web.
 
+## Details
+
+```{include} ../generated/RasterToCog_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterToCog.md
+```
+
 ## Example
 
 The example converts the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, with the default settings:
 
 ```{literalinclude} ../examples/hm/rastertocog.groovy
 :language: groovy
-```
-
-## Reference
-
-```{include} ../generated/RasterToCog.md
 ```

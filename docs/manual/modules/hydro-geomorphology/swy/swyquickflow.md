@@ -4,6 +4,18 @@ The third step of the [Seasonal Water Yield](index.md) workflow: the quickflow o
 
 The number of rain events is a map, so that it can change in space: a single value for the whole watershed, as in the example, or one value for each climate zone. On the cells of the network all the precipitation becomes quickflow, also where the curve number is not defined, as in InVEST.
 
+## Details
+
+```{include} ../../generated/SWYQuickflow_details.md
+```
+
+## Parameters
+
+```{include} ../../generated/SWYQuickflow.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/swy/03_quickflow.groovy
 :language: groovy
 ```
@@ -13,6 +25,3 @@ The number of rain events is a map, so that it can change in space: a single val
 
 The quickflow of April, in mm: the highest on the network, which gets all the precipitation, and on the soils with a high curve number of the east.
 :::
-
-```{include} ../../generated/SWYQuickflow.md
-```

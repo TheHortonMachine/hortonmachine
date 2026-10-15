@@ -4,6 +4,16 @@ The magnitude of a cell is the number of sources upstream of it, the sources bei
 
 On the drainage directions of the whole terrain, the sources are the cells on the divides, and the magnitude grows with the contributing area.
 
+## Details
+
+```{include} ../generated/Magnitudo_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Magnitudo.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The Shreve magnitude of the network of the basin of ExtractBasin, from 1 at the channel heads to 24 at the outlet.
 :::
-
-## Reference
-
-```{include} ../generated/Magnitudo.md
-```

@@ -21,6 +21,11 @@ The 9 classes are their combinations, and the 3 classes group them by the effect
 
 The thresholds decide how much of the terrain is planar: with 0, almost nothing. The curvatures are noisy on detailed elevation models, so the classes are noisy too. The 9 classes are the input of [MultiTca](../geomorphology/multitca.md).
 
+## Parameters
+
+```{include} ../generated/Tc.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -40,8 +45,3 @@ The 9 topographic classes of the sample area, with thresholds of 0.01 1/m for bo
 
 The 3 topographic classes of the sample area: the channels and the hollows are concave.
 :::
-
-## Reference
-
-```{include} ../generated/Tc.md
-```

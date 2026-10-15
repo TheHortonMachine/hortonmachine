@@ -7,6 +7,11 @@ Interpolates the values of a vector of points, as elevations or measurements, on
 
 The buffer must contain enough points for each cell: where there are none, the cell stays empty. With dense and irregular points, as those of a lidar survey, TPS can become unstable and give absurd values: IDW is the safer choice.
 
+## Parameters
+
+```{include} ../generated/SurfaceInterpolator.md
+```
+
 ## Example
 
 The example runs on the sample lidar survey of the manual, `uni_bz_plot777.las` in `docs/manual/modules/maps/data`, a forest plot of 60 x 60 m with its elevation model `dtm_777.tif`:
@@ -26,8 +31,3 @@ The surface of the lidar points of the sample plot, interpolated with IDW on the
 
 The same surface minus the elevation model of the ground: the height of the trees, in meters, with the crowns up to about 20 m.
 :::
-
-## Reference
-
-```{include} ../generated/SurfaceInterpolator.md
-```

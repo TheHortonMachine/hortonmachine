@@ -4,6 +4,16 @@ Writes rasters to a NetCDF file that follows the CF conventions: a single raster
 
 For a time series, the rasters are the ones of a folder, in the order of their file names, and the timestamps are given one per line in the same order, as `2024-07-01 00:00`, in UTC. The rasters are written one at a time, so a long series doesn't need to fit in memory.
 
+## Details
+
+```{include} ../generated/RasterToNetcdf_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterToNetcdf.md
+```
+
 ## Example
 
 The example writes the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, as a single raster without time:
@@ -29,8 +39,3 @@ The example writes the sample elevation model of the manual, `dtm_flanginec.tif`
 ```
 
 The second example of [NetcdfGridDumper](netcdfgriddumper.md) reads the file back to the same elevation model.
-
-## Reference
-
-```{include} ../generated/RasterToNetcdf.md
-```

@@ -30,13 +30,3 @@ Extracts the cross sections of a river from an elevation model, along the line o
 | `outSectionPoints` | output file |  | The points of the sections, with their elevation. |
 | `outRiverPoints` | output file |  | The points of the river between the sections, with their elevation. |
 
-**Notes**
-
-The line of the river has to be drawn from upstream to downstream, along the bottom of its channel. If it is made of several lines, they are merged: when they do not form a single line, the longest one is used.
-
-The sections are perpendicular to the line, at the given interval along it, and reach the given distance from it on each side. Their points are taken from the elevation model, one for each cell crossed. As they are perpendicular to the local direction of the line, a line that follows the cells, as the networks extracted from an elevation model, gives sections turned by 45 degrees back and forth: smooth it first. The sections must not cross each other: in the bends, they can reach at most the radius of the bend.
-
-Instead of the interval, the sections can be placed at given river points, with their ids and Gauckler-Strickler coefficients (in the fields of the large wood modules). Bridges, given as points with their width in a field, add a section on the bridge and one just upstream and downstream of it. Sections created before by this module can also be given, to take their points from a new elevation model.
-
-The three outputs describe the river for the hydraulic models: the section lines, with their id, progressive distance along the river and Gauckler-Strickler coefficient (30 if not given); the points of the sections, with their elevation; the points of the river between the sections, with their elevation.
-

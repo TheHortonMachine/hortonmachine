@@ -25,15 +25,3 @@ Writes rasters to a CF NetCDF file: a single raster, or a time series of rasters
 |---|---|---|---|
 | `outNetcdf` | output file |  | The NetCDF file to write. |
 
-**Notes**
-
-The file is a NetCDF 3 classic file following the CF 1.8 conventions, written in pure Java, readable by GDAL, and so QGIS, by netcdf-java and by the other CF readers. The values are written as 32 bit floats, with the novalue of the raster as fill value; the classic format limits a variable to about 2 GB.
-
-A raster in lat/long WGS84 gets `lat` and `lon` axes in degrees, a projected one `x` and `y` axes in the units of its crs. The axes hold the cell centers, with the rows from south to north, as most CF files have them.
-
-The crs is described in the grid mapping variable `crs`: as WKT in the attributes `crs_wkt` (CF) and `spatial_ref` (GDAL), with its EPSG code in `epsg_code` when it has one, and with the ellipsoid. For the transverse Mercator projections, as UTM and the Gauss-Boaga zones, also the CF projection parameters are written, which other CF readers, as netcdf-java, use.
-
-A time series has an unlimited time axis in seconds since 1970-01-01 UTC, and the rasters are written one at a time, so long series don't need to fit in memory. All its rasters must have the same grid and crs. Without timestamp the file has no time axis and holds a single raster.
-
-NetcdfGridDumper reads the files back with their crs and grid unchanged.
-

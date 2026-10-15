@@ -12,9 +12,13 @@ The data preparation runs, on the digital elevation model, the chain of hydro-ge
 
 All the rasters are written to an `outputs` folder next to the DTM, each with a QGIS style, so they can be checked in QGIS. Rasters already present are reused, unless `doOverwrite` is set.
 
-```{literalinclude} ../../examples/erm/01_data_preparation.groovy
-:language: groovy
-```
+## Parameters
 
 ```{include} ../../generated/ErmDataPreparator.md
+```
+
+## Example
+
+```{literalinclude} ../../examples/erm/01_data_preparation.groovy
+:language: groovy
 ```

@@ -28,18 +28,6 @@ Finds the tops of the trees as the points of a lidar survey higher than all the 
 |---|---|---|---|
 | `outTops` | output file |  | The output local maxima. |
 
-**Notes**
-
-The points are read with their height over the elevation model: those outside of it, or not higher than the threshold over the ground, are left out, as are those of the classes not listed, if any. A point is a top when no other point within the radius on the plane is higher; points of the same height within the radius are all tops.
-
-With the dynamic radius, the radius grows with the height H of the point as half the crown width of mixed pines and deciduous trees of Popescu and Wynne (2004), CW = 2.51503 + 0.00901 H², lowered to 70%, as the crowns overlap: about 1 m at 5 m of height and 2.1 m at 20 m, never larger than the given radius if this is larger than 0. Without it the radius is the given one. The points must be denser than the radius: where they are farther apart than it, every point is a top.
-
-With the regions of interest, each polygon, without its holes, is processed by itself, comparing only its points: a top near its border may have a higher point just outside. Without them the area is the one of the elevation model. Each point is compared with all the others of its area, so the time grows with the square of their number: large surveys are best processed in regions of a few hectares.
-
-With the difference of the surface and the elevation model, a top is discarded if its cell has no value, is on the border of the raster, or if any of its neighbours differs from it by more than the elevation difference threshold, as the isolated points over the canopy.
-
-The tops keep the attributes of their point: the height over the ground (elev, rounded to 10 cm), intensity, classification and return.
-
 **References**
 
 - Popescu, S. C., Wynne, R. H. (2004). Seeing the trees in the forest: using lidar and multispectral data fusion with local filtering and variable window size for estimating tree height. Photogrammetric Engineering & Remote Sensing, 70(5), 589-604.

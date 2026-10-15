@@ -2,6 +2,16 @@
 
 Smooths lines with the sliding averaging of McMaster: each vertex moves towards the mean position of the vertices around it. It removes the small wiggles of the lines, as those of the contours or of the borders extracted from a raster, keeping their general course and their ends.
 
+## Details
+
+```{include} ../generated/LineSmootherMcMaster_details.md
+```
+
+## Parameters
+
+```{include} ../generated/LineSmootherMcMaster.md
+```
+
 ## Example
 
 The example smooths the contour lines of [ContourExtractor](contourextractor.md), extracted from the sample elevation model, on a window of about 80 m:
@@ -17,8 +27,3 @@ A detail of the smoothed lines in red, under the original ones in blue: the smal
 ```
 
 The [LineSmootherJaitools](linesmootherjaitools.md) smooths instead with curves through the vertices.
-
-## Reference
-
-```{include} ../generated/LineSmootherMcMaster.md
-```

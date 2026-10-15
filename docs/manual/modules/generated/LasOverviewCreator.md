@@ -20,9 +20,3 @@ Creates a vector of the extents of the las files of a folder, with their names, 
 |---|---|---|---|
 | `outOverview` | output file |  | The overview: a rectangle per file, with its name (file), number of points (points) and lowest and highest elevation (minelev, maxelev). |
 
-**Notes**
-
-The rectangles are the bounds written in the headers of the files, and the number of points and the elevations come from the headers too: the points are not read, so the overview of a large folder is quick. The reference system is the one of the prj file of the first las file.
-
-Only the files ending in .las are read, without the subfolders. The overview shows how a survey is divided in files, and where a file is, before opening it.
-

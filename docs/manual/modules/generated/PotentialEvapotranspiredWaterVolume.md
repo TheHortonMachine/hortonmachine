@@ -27,14 +27,6 @@ The potential evapotranspiration of a crop or land cover, as crop coefficient ti
 |---|---|---|---|
 | `outputPet` | output file | mm | The potential evapotranspiration of the timestep. |
 
-**Notes**
-
-The potential evapotranspiration of each cell is its crop coefficient (Kc) times the reference evapotranspiration. The reference evapotranspiration can be given as a map, or calculated with the modified Hargreaves equation of Droogers and Allen (2002), as suggested by InVEST when only temperatures and precipitation are available:
-
-ET0 = 0.0013 · 0.408 · RA · (Tavg + 17) · (Tmax - Tmin - 0.0123 · P)^0.76 · days
-
-with RA the mean daily extraterrestrial radiation in MJ/m2/day (0.408 converts it to mm of water), the mean daily temperatures in °C, P the precipitation of the timestep in mm and days the days of the timestep. In wet timesteps with a small temperature range, where the precipitation term exceeds the range, the reference evapotranspiration is 0.
-
 **References**
 
 - Droogers, P., Allen, R. G. (2002). Estimating reference evapotranspiration under inaccurate data conditions. Irrigation and Drainage Systems, 16(1), 33-45.

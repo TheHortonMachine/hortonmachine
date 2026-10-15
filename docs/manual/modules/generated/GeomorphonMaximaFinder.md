@@ -24,16 +24,6 @@ Finds the tops of the trees as the peaks of the geomorphons of a surface model.
 |---|---|---|---|
 | `outMaxima` | output file |  | The tops, with an id and their height over the ground (elev). |
 
-**Notes**
-
-The surface model is classified into geomorphons, as by Geomorphon, with the given radius and flatness angle, and the tops are searched among its peaks:
-
-1. the cells of a peak that touch each other are one peak, and its top is the cell with the largest height over the ground;
-2. a peak of a single cell is discarded if it has more than two neighbours without height, or both a pit and a valley among its 8 neighbouring geomorphons;
-3. the top is discarded if a cell of the 3 x 3 around it has no height, or if their heights span more than the elevation difference threshold.
-
-The heights over the ground are the difference of the surface and the elevation model, which must have the same grid. The cells on the border of the raster are never tops. The threshold of the elevation difference is to tune with the resolution: in cells of 0.5 m the heights of a crown easily differ by more than a meter around its top, so that a threshold of 1 m keeps only the flattest tops. There is no threshold on the height: the peaks of the ground and of the shrubs are tops too.
-
 **References**
 
 - Jasiewicz, J., Stepinski, T. F. (2013). Geomorphons - a pattern recognition approach to classification and mapping of landforms. Geomorphology, 182, 147-156.

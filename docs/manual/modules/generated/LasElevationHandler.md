@@ -22,11 +22,3 @@ Normalizes the points of a las file over an elevation model, turning their eleva
 |---|---|---|---|
 | `outFile` | output file |  | The normalized las file. |
 
-**Notes**
-
-The elevation of the cell of the elevation model that contains each point, without interpolation, is subtracted from the elevation of the point, which becomes its height over the ground, or added to it, to bring the heights of a normalized file back to elevations.
-
-The points outside of the elevation model, or on its cells without value, are left out, and their number is reported. All the other attributes of the points are kept; the header gets the bounds of the new values.
-
-A normalized file is the input of the modules that work on the heights over the ground without an elevation model, as a canopy height model interpolated from the points.
-

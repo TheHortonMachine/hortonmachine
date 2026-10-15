@@ -28,15 +28,3 @@ Fixes invalid geometries, removes the empty ones and cleans polygons of small ho
 | `outMap` | output file |  | The cleaned features, with their attributes. |
 | `outChanges` | output file |  | The outlines of what was fixed or cleaned, as lines. |
 
-**Notes**
-
-Invalid geometries, as polygons that cross themselves, are fixed, keeping as much as possible of their shape and only their parts of the same dimension, and the features without a geometry or with an empty one are removed. This is done for points, lines and polygons.
-
-Polygons can also be cleaned. Holes with an area up to the max hole area are filled. Holes, or the parts of holes, narrower than the min width are filled too, as the gap between two parcels digitized not exactly on top of each other. On the outline, the narrow spikes are cut and the narrow notches and gaps between parts filled, if they are longer than the min sliver length, so that the sharp corners stay. The width is the diameter of the biggest circle that fits in the piece, the length half its perimeter, which works also for bent slivers. A notch is in the outline of a single polygon, a gap is between two or more parts of the feature, which filling it joins: the filling of each can be switched off. Only the pieces to clean are touched, the rest of the outline keeps its vertices. A feature that is itself a sliver is removed. Each feature is cleaned on its own: in a vector of adjacent polygons, a filled hole or notch can overlap a neighbor.
-
-The overlaps between polygons, also those made by the cleaning, can then be marked in the changes, or resolved: the overlap is kept by the larger of the two features, or by the one that comes first in the vector, as by priority, and removed from the other, which is cleaned again of the slivers it is left with. A feature can be removed this way, if it is all inside others.
-
-The overlays round the coordinates of the pieces they create to a grid of the precision, which makes them robust against the floating point arithmetic. In degrees, as for EPSG:4326, the precision is taken at the equator. Areas, widths and lengths are in the units of the coordinate reference system: better use a projected one.
-
-The changes vector marks where the cleaning happened, with the outlines of the invalid geometries before they were fixed, of the filled holes, of the cut spikes, of the filled notches and gaps and of the overlaps, each with the id of its feature (of both, for an overlap), the kind of change and its area.
-

@@ -10,6 +10,16 @@ The grid of the raster is given by its bounds and its number of rows and columns
 
 The module crosses the polygons with a line through the centers of each row of cells, the scanline, and fills the cells between the crossings, in parallel for the polygons. On geometries where this fails, the point in polygon mode checks the center of each cell instead: it is slower, needs a raster for the grid and uses only a constant value.
 
+## Details
+
+```{include} ../generated/ScanLineRasterizer_details.md
+```
+
+## Parameters
+
+```{include} ../generated/ScanLineRasterizer.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. It rasterizes the subbasins of [BasinShape](../basin/basinshape.md) with their mean elevation:
@@ -23,8 +33,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The subbasins rasterized with their mean elevation: each subbasin is a single value, from the low ones near the outlet to the high ones near the ridges.
 :::
-
-## Reference
-
-```{include} ../generated/ScanLineRasterizer.md
-```

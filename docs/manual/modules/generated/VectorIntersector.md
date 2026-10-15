@@ -21,11 +21,3 @@ Intersects the features of a vector with the polygons of another vector, keeping
 |---|---|---|---|
 | `outMap` | output file |  | The pieces of the features, with the attributes of the features and of the polygons. |
 
-**Notes**
-
-Each feature is cut by each polygon it overlaps, and every piece becomes a feature with the attributes of the feature and of the polygon: a river crossing three municipalities gives three pieces, each with the name of its municipality. A field of the polygons with the name of a field of the features, ignoring the case, gets the suffix _2. Where the polygons overlap, the pieces overlap too. To cut the features to the area of the polygons, without their attributes and with a single piece per feature, use VectorClipper.
-
-The result has the multi geometry type of the first vector, as MultiLineString for lines. The parts of the cut of a lower dimension are left out, as the point where a line touches a polygon.
-
-The two vectors must have the same coordinate reference system.
-

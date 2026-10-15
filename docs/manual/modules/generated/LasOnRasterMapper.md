@@ -25,9 +25,3 @@ Creates a raster with the highest, or lowest, elevation of the lidar points in e
 | `outRaster` | output file |  | The raster of the elevation of the points. |
 | `outDtm` | output file |  | The optional output of the elevation model on the grid of the raster, to compare them cell by cell. |
 
-**Notes**
-
-Each cell gets the elevation of its highest point, or lowest, but never less than the elevation model under the point: a point under the ground, as an error of the survey, takes the elevation of the ground. The cells without points stay empty: choose a resolution with a few points per cell, or fill the holes afterwards.
-
-With the highest points, the raster is a model of the surface, of the canopy and the roofs; minus the elevation model, a model of their height. The elevation model can be written also on the grid of the raster, resampled with the value of the nearest cell, for that difference.
-

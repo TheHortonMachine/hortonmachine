@@ -20,9 +20,3 @@ Creates the Voronoi diagram, or Thiessen polygons, of a set of points: around ea
 |---|---|---|---|
 | `outMap` | output file |  | The output voronoi map, with the attributes of the points. |
 
-**Notes**
-
-Each cell takes the attributes of its point, so the diagram gives the area of influence of each point, as in the Thiessen method for the mean rainfall from the rain gauges. The cells are the dual of the Delaunay triangulation: their borders are the axes of the sides of the triangles.
-
-The outer cells are open on one side, so the diagram is cut on a rectangle larger than the points: their bounds, enlarged on each side by their diagonal. Points in the same position get one cell, with the attributes of the first of them.
-

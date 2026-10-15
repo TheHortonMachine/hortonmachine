@@ -51,6 +51,12 @@ public class TestModuleDocs {
             String committed = Files.readString(fragment.toPath(), StandardCharsets.UTF_8);
             assertEquals("Outdated fragment, regenerate the module docs: " + fragment, entry.getValue(), committed);
         }
+        // the details of modules that have none anymore
+        for( File file : generatedFolder.listFiles() ) {
+            if (file.getName().endsWith(ModuleDocsGenerator.DETAILS_SUFFIX)) {
+                assertTrue("Stale details fragment, regenerate the module docs: " + file, expected.containsKey(file.getName()));
+            }
+        }
     }
 
     @Test

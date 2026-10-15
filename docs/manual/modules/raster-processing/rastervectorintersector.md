@@ -4,6 +4,16 @@ Cuts a raster with polygons: it keeps the values of the cells inside the polygon
 
 It does in one step what [ScanLineRasterizer](scanlinerasterizer.md), with the raster as grid, and [CutOut](cutout.md) do in two. To also shrink the grid to the polygons, use [RasterResizer](rasterresizer.md).
 
+## Details
+
+```{include} ../generated/RasterVectorIntersector_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterVectorIntersector.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. It cuts the elevation with the high cells of the [VectorFilter](../vector-processing/vectorfilter.md) example, and with its inverse:
@@ -23,8 +33,3 @@ The elevation inside the high cells.
 
 The elevation outside of them, with the inverse switch.
 :::
-
-## Reference
-
-```{include} ../generated/RasterVectorIntersector.md
-```

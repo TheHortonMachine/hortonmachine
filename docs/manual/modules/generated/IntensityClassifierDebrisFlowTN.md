@@ -31,15 +31,3 @@ Classifies the intensity of a debris flow, from the maps of its depth, velocity,
 |---|---|---|---|
 | `outIntensity` | output file |  | The map of the debris flow intensity: 1 low, 2 medium, 3 high. |
 
-**Notes**
-
-The intensity of each cell is given by four quantities, each with a lower and an upper threshold: the depth of the flow, its velocity outside of the river bed, the thickness of the deposits and the depth of the erosion. The intensity is:
-
-- high (3), where any of them is over its upper threshold;
-- medium (2), where any of them is over its lower threshold, and none over the upper one;
-- low (1), where all are within their lower thresholds.
-
-The four maps have to cover the same cells: the cells where only some of them have a value are skipped, with a warning. The cells with all values 0 are classified as low intensity: to keep the cells not reached by the flow out of the map, set them to novalue.
-
-The intensity maps of the events of different return periods are the input of HazardClassifier.
-

@@ -24,17 +24,3 @@ Inserts the las files of a folder into a spatialite or H2GIS database, in cells 
 | `doAvoidIndex` | boolean |  | `false` | Flag to define if the spatial index creation should be ignored (will not create levels). |
 | `inLasNames` | List |  |  | Optional las list names to process only those (inside las folder). |
 
-**Notes**
-
-The database gets three kinds of tables:
-
-- lassources, with a row per las file: its bounds, name, range of elevations and intensities, and the cell size, levels and factor used;
-- lascells, the cells of the given size that have points, with their number, the average, lowest and highest elevation and intensity, the times, and all their points, as blobs of coordinates, intensities and classes, returns, times and colors;
-- laslevels1, laslevels2 and so on, the summaries of the levels: squares with the average, lowest and highest elevation and intensity of the cells, for the first level, or of the squares of the level before, inside them.
-
-The squares of a level are as large as the cell size times the factor times the number of the level: with cells of 3 m and a factor of 5, 15 m at the first level, 30 m at the second and 45 m at the third. The averages of a square are the averages of the averages of the cells or squares in it, not weighted by their points.
-
-The files already in the database, by name, are skipped, so a folder can be added to again. The colors come from the points, or, with an image mosaic of orthophotos, from its three bands at each point, white outside of it. The reference system is the given one, or the one of the first prj file of the folder; without either it is set to EPSG:4326, which is right only for data in longitude and latitude.
-
-The lidar modules read the database in place of a las file, and the 3D viewer shows its levels and cells.
-

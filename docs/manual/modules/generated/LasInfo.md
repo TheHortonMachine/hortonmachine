@@ -14,9 +14,3 @@ Prints the header, the reference system and the first points of a las file, or o
 |---|---|---|---|---|
 | `inLas` | LAS file |  |  | Las file or folder path. |
 
-**Notes**
-
-For each file it prints the fields of the header, as the version, the point format, the number of points, the scale, the offset and the bounds, then the reference system, from the prj file next to the las file, and the first three points with all their attributes.
-
-The output is only printed, to the log of the module. It is a quick check of a survey before using it: the point format tells if the points have times and colors, and the bounds if they are in the expected place and reference system.
-

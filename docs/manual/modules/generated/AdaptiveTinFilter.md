@@ -32,19 +32,6 @@ Extracts the ground from lidar points with the adaptive tin filter of Axelsson, 
 | `outTiles` | output file |  | The optional output of the squares of the support grid. |
 | `outDem` | output file |  | The elevation model of the ground, interpolated from the tin on the grid of the template. |
 
-**Notes**
-
-The filter grows a tin of the ground from below, as in Axelsson (2000):
-
-1. the area of the template is divided in squares of the given size, and the lowest point of each is a seed of the first tin: the squares must be larger than the largest object over the ground, as buildings, or their roofs become seeds;
-2. a first pass over the points in the triangles computes the thresholds: the distance of each point from the nearest vertex of its triangle, and the angle between the triangle and the line from that vertex to the point, of which the medians are the thresholds;
-3. at each iteration, in each triangle the point nearest to its center within both thresholds is added to the tin, the others are left for the next iteration. The thresholds are computed again on the added points, the distance never below its minimum, and a point is added also if its angle is below the given angle threshold;
-4. the iterations stop when no point is added, or at the maximum number.
-
-The elevation model has, in each cell, the elevation of the triangle of the final tin that contains its center. The tin covers the convex hull of the seeds, that are inside the squares: the cells between the outer seeds and the border of the template stay empty. To cover a whole area, use a template larger than it, with points around it.
-
-The points left out of the tin are the non ground points, except those closer than the cleanup distance to the tin, that are removed from them at the end without being added to the ground.
-
 **References**
 
 - Axelsson, P. (2000). DEM generation from laser scanner data using adaptive TIN models. International Archives of Photogrammetry and Remote Sensing, 33(B4), 110-117.

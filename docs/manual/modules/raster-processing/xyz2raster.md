@@ -6,15 +6,20 @@ The points must be on a regular grid, whose resolution has to be given, together
 
 The values can be separated by spaces, tabs or by a given separator; the lines that are not three numbers, as a header, are skipped.
 
+## Details
+
+```{include} ../generated/Xyz2Raster_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Xyz2Raster.md
+```
+
 ## Example
 
 The example reads back into a raster the triplets of the sample elevation model of the manual written by [Raster2Xyz](raster2xyz.md):
 
 ```{literalinclude} ../examples/hm/raster2xyz.groovy
 :language: groovy
-```
-
-## Reference
-
-```{include} ../generated/Xyz2Raster.md
 ```

@@ -23,9 +23,3 @@ Joins the fields of a table to the features of a vector with the same value in a
 |---|---|---|---|
 | `outVector` | output file |  | The joined vector. |
 
-**Notes**
-
-Each feature takes the joined fields of the first row of the table with the same value of the common field, which can have different names in the vector and in the table, as basin_id,id. The values are matched as text, so a whole number matches also when it is stored as an integer in one source and as a decimal number or a text in the other, as 12, 12.0 and "12"; texts are matched without the spaces at their ends. Each joined field takes the type of its first value in the table.
-
-It is an inner join: the features without a matching row are left out, and their number is reported. The joined fields are added to the ones of the vector, so they must have names that the vector doesn't have yet. In a shapefile the names are cut to 10 characters.
-

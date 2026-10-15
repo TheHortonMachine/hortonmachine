@@ -4,15 +4,20 @@ Sets single cells of a raster to new values, or to novalue. It is meant for a fe
 
 To change many cells, use [Mapcalc](mapcalc.md) or [RasterNull](rasternull.md).
 
+## Details
+
+```{include} ../generated/RasterCorrector_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterCorrector.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`:
 
 ```{literalinclude} ../examples/hm/rastercorrector.groovy
 :language: groovy
-```
-
-## Reference
-
-```{include} ../generated/RasterCorrector.md
 ```

@@ -2,6 +2,16 @@
 
 Fixes the invalid geometries of a vector, as polygons that cross themselves, and removes the features without a geometry. For polygons, as parcels digitized by hand, it also fills the small holes, cuts the narrow spikes, fills the narrow notches and gaps of the outline and finds or resolves the overlaps between neighbors. A second vector of lines shows where it changed something, to check the cleaning.
 
+## Details
+
+```{include} ../generated/VectorCleaner_details.md
+```
+
+## Parameters
+
+```{include} ../generated/VectorCleaner.md
+```
+
 ## Example
 
 The example writes some parcels with the usual errors of digitizing, then cleans them of the holes up to 50 m², of what is narrower than 5 m and of the overlaps, which the larger parcel keeps:
@@ -23,8 +33,3 @@ After the cleaning, with the changes outlined in blue, the bow-tie is made of tw
 ```
 
 The module prints the counts and the areas of what it changed, as the total area before and after the cleaning.
-
-## Reference
-
-```{include} ../generated/VectorCleaner.md
-```

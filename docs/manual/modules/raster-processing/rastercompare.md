@@ -2,6 +2,16 @@
 
 Compares two rasters: their coordinate reference systems and grids, and, on the same grid, their values cell by cell. It checks that a computation repeated with other settings or another version of a module gives the same result, and where and by how much two rasters differ.
 
+## Details
+
+```{include} ../generated/RasterCompare_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterCompare.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -32,8 +42,3 @@ First different cells (raster 1 - raster 2):
 ```
 
 The rounding moves the values by 2.5 cm on average and by 5 cm at most, as it should.
-
-## Reference
-
-```{include} ../generated/RasterCompare.md
-```

@@ -2,6 +2,11 @@
 
 Cuts a raster to a smaller area, without resampling it: the cells keep their size and position.
 
+## Parameters
+
+```{include} ../generated/RasterResizer.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -15,8 +20,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The elevation of the sample area, cut to the extent of the basin of ExtractBasin.
 :::
-
-## Reference
-
-```{include} ../generated/RasterResizer.md
-```

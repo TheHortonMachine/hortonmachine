@@ -30,9 +30,3 @@ Converts points to a raster: the cell of each point gets its value, the others a
 |---|---|---|---|
 | `outRaster` | output file |  | The rasterized points. |
 
-**Notes**
-
-Each point gives its value to the cell that contains it; the points on the border of two cells go to the one east or south of it, the ones on the east or south border of the grid to its last column or row, and the ones outside of the grid are left out. When more points fall in the same cell, the cell keeps the largest value. The rasterized points, as 1 where there is a point, give their density through KernelDensity; to interpolate the values of the points on all the cells, SurfaceInterpolator is the tool.
-
-The value of the cells is the one of the numeric field of the point, or the constant category without a field. The grid is the one of the optional raster, or the one of the bounds, resolution and reference system.
-

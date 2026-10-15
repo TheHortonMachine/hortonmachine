@@ -7,9 +7,13 @@ Computes the net radiation at the centroid of each sub-basin, as the balance of:
 
 With daily data, `pDailySubSamples` sets how many positions of the sun are averaged over the day: 24 is the most accurate, 1 the fastest. `downscaleFactor` computes the radiation on a coarser DTM, much faster on large basins.
 
-```{literalinclude} ../../examples/erm/04_radiation.groovy
-:language: groovy
-```
+## Parameters
 
 ```{include} ../../generated/ErmRadiation.md
+```
+
+## Example
+
+```{literalinclude} ../../examples/erm/04_radiation.groovy
+:language: groovy
 ```

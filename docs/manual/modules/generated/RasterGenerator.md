@@ -31,9 +31,3 @@ Creates a new raster on a grid defined by its bounds, cell size and reference sy
 |---|---|---|---|
 | `outRaster` | output file |  | The generated raster. |
 
-**Notes**
-
-It is the module that makes a grid from nothing: Mapcalc, SurfaceInterpolator and the rasterizers need a raster that gives them the grid, and this one gives it where there is no data yet, as for a synthetic terrain or the interpolation of points over a new area. The grid starts at the north-west corner: the number of columns and rows is the extent divided by the cell size, rounded, and the east and south bounds are moved so that the cells have exactly the given size.
-
-The cells get the constant value, or with the random switch a value drawn uniformly between the offset and the offset plus the scale. The seed makes the random raster the same at every run; without it, every run gives a different one.
-

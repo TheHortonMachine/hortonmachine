@@ -6,6 +6,16 @@ Adding is the extrusion of the name: with the heights of the buildings, an eleva
 
 Unlike [BobTheBuilder](bobthebuilder.md), which interpolates the elevations of the artifact from points, the extruded polygon follows the shape of the terrain under it, raised by the same height everywhere.
 
+## Details
+
+```{include} ../generated/RasterExtruder_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterExtruder.md
+```
+
 ## Example
 
 The example raises the polygon of the dam of [BobTheBuilder](bobthebuilder.md), `dam.geojson` in `docs/manual/modules/maps/data`, by its field `height`, 20 m, over the sample elevation model of the manual:
@@ -19,8 +29,3 @@ The example raises the polygon of the dam of [BobTheBuilder](bobthebuilder.md), 
 
 The difference between the extruded and the original elevation model: the polygon of the dam is 20 m higher everywhere, also on the slopes, where BobTheBuilder left the terrain unchanged.
 :::
-
-## Reference
-
-```{include} ../generated/RasterExtruder.md
-```

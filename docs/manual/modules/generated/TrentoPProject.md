@@ -17,14 +17,6 @@ Designs a storm sewer network: the design discharge, diameter, slope and depth o
 | `pPassword` | String |  |  | The optional password of the database. |
 | `pOutPipe` | Integer | - |  | The ID of the outlet, the last pipe of the network. |
 
-**Notes**
-
-The project (design) mode of TrentoP, a geomorphological model of urban storm drainage. The pipes are designed from the head pipes down to the outlet, each for the peak discharge of the rain duration that maximizes it.
-
-Each drained area is a linear reservoir, with residence time k = 60·c·(A/100)^α / (φ^b·s^γ) minutes, where c is the AveResT field, A the drained area in ha, φ the runoff coefficient and s the average slope of the area in %, while α, b and γ are the parameters `Exponent of the basin extension`, `Exponent of the influx coefficent` and `Exponent of the average ponderal slope`. The inflow is distributed along the pipe, and the water travels in the pipes with a delay L/u, where u is the mean velocity in the pipe times the `Celerity factor`, found iteratively. The rain comes from the rainfall curve h = a·t^n, with h in mm and t in hours.
-
-A circular pipe gets the smallest commercial diameter that carries the discharge at the design `Fill degree` with a bottom shear stress of at least the `Tangential bottom stress`, which keeps it self-cleaning. Where the ground, or the pipe minimum slope, is steeper than the slope this needs, the pipe follows it and the diameter is designed again. Downstream, the diameters never get smaller. The excavation starts at the ground elevation of the upstream junction, minus the `Minimum excavation depth` and the outer diameter.
-
 **References**
 
 - Rodríguez-Iturbe, I., Valdés, J. B. (1979). The geomorphologic structure of hydrologic response. Water Resources Research, 15(6), 1409-1420.

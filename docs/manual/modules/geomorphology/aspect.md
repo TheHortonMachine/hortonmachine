@@ -4,6 +4,11 @@ The aspect is the direction a slope faces, clockwise from north: 0 for the slope
 
 The aspect is computed from the differences of elevation of the four neighbours of each cell. It is not defined on flat cells, and the cells at the border of the map, without all the neighbours, are left as no-data.
 
+## Parameters
+
+```{include} ../generated/Aspect.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The aspect of the sample area, clockwise from north, with the cyclic colortable of the aspect: north (0 and 360) is light, south (180) dark.
 :::
-
-## Reference
-
-```{include} ../generated/Aspect.md
-```

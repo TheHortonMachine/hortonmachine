@@ -26,9 +26,3 @@ Carves lines and polygons into an elevation model, lowering the cells they cover
 |---|---|---|---|
 | `outRaster` | output file |  | The carved elevation model. |
 
-**Notes**
-
-The lines and the polygons are rasterized on the grid of the elevation model, and the cells they cover are lowered by their depth, from a field of the vector or a single value. The other cells are not changed. Where a polygon and a line overlap, the depth of the polygon is used.
-
-The depth is the same for the whole feature: the bottom of a carved channel follows the terrain, lowered by the depth, it is not leveled.
-

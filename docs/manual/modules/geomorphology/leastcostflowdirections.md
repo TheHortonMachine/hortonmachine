@@ -4,6 +4,11 @@ LeastCostFlowDirections computes the drainage directions on the elevation model 
 
 The elevation model is not changed, which matters where the depressions are real or where filling them would flatten large areas, and a single module gives the drainage directions, the contributing areas, the slope and the aspect.
 
+## Parameters
+
+```{include} ../generated/LeastCostFlowDirections.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The total contributing area of the least cost drainage directions of the sample area, in cells, computed on the elevation not depitted.
 :::
-
-## Reference
-
-```{include} ../generated/LeastCostFlowDirections.md
-```

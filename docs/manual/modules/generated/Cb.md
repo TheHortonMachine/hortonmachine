@@ -24,9 +24,3 @@ Calculates the histogram of a set of data contained in a matrix with respect to 
 |---|---|---|---|
 | `outCb` | double[][] |  | A matrix containing 1) the mean value of the data in abscissa; 2) the number of elements in each interval; 3) the mean value of the data in ordinate; n+2) the n-esimal moment of the data in ordinate. |
 
-**Notes**
-
-The cells are sorted by the value of the first map and split in bins. For each bin the output row has the mean of the first map, the number of cells, the mean of the second map and its moments from the first to the last order requested; the first order is the mean, already in the third column, and is skipped. The moments from the second order on are centered on the mean of the bin: the second is the variance, the third divided by the cube of the standard deviation is the skewness. Without the second map, the first is used for both.
-
-Both maps are loaded in memory as arrays and sorted, so large maps need a lot of memory.
-

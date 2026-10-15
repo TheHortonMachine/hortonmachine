@@ -28,9 +28,3 @@ Converts lidar points into a mosaic of raster tiles, each cell from the quadrati
 |---|---|---|---|
 | `outFolder` | output folder |  | The folder of the tiles and of the mosaic. |
 
-**Notes**
-
-The area is divided in square tiles of the given size, each written as a GeoTIFF named tile_column_row.tiff in the output folder; a tile with 100 points or less is not written, and an existing tile is not overwritten. The folder then gets the files of an image mosaic of all the tiles, that GIS can open as a single raster, and a style with a color table between the minimum and maximum value.
-
-The value of each cell comes from the points within the buffer of cells around it, the cell included: a bivariate quadratic surface z = a x² + b y² + c xy + d x + e y + f is fitted to them with least squares, and evaluated at the center of the cell. The surface needs at least 6 points, as many as its parameters; the value is limited between the minimum and the maximum of the points read. Fitting a surface instead of averaging the points keeps the slopes and the shape of the crowns, and fills the cells without points.
-

@@ -23,11 +23,3 @@ Writes the sections of RiverSectionsExtractor as a geometry file for the GIS imp
 |---|---|---|---|
 | `outHecras` | output file |  | The output file for HEC-RAS (.sdf). |
 
-**Notes**
-
-The file follows the spatial data format of the GIS import of HEC-RAS (the .sdf files of HEC-GeoRAS): a single reach, with its centerline and its cross sections, in metric units.
-
-The river stations of the sections are numbers that grow upstream, the reach lengths are the distances between the sections along the river and along their ends. The whole section is the main channel, between the bank positions 0 and 1, with a Manning coefficient of 0.0333 (a Gauckler-Strickler coefficient of 30). Two levees are written at the ends of each section, with the length of the section as their elevation: they have no effect where the terrain is higher than that, but have to be removed or corrected in HEC-RAS elsewhere.
-
-The banks, the levees and the roughness are meant to be refined in HEC-RAS after the import.
-

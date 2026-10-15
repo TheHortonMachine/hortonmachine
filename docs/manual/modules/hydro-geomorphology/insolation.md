@@ -4,6 +4,11 @@ Insolation computes the direct solar radiation that reaches the terrain on a per
 
 The values in kW/m² of each half hour are summed: half of the sum is the energy in kWh/m². The diffuse radiation is not considered, so the slopes in the shadow get nothing. Only the day of the year of the dates is used, so the period can't cross the end of a year.
 
+## Parameters
+
+```{include} ../generated/Insolation.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The direct radiation of the summer solstice on the sample area, as the sum of the half hours in kW/m²: about 8.5 kWh/m² on the slopes facing the sun, much less in the narrow valleys and on the slopes facing north.
 :::
-
-## Reference
-
-```{include} ../generated/Insolation.md
-```

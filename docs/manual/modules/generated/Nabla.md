@@ -21,11 +21,3 @@ Calculates the nabla, or laplacian, of the elevation in each cell: the sum of it
 |---|---|---|---|
 | `outNabla` | output file |  | The map of the nabla, in 1/m, or the mask of the convex sites if a threshold is set. |
 
-**Notes**
-
-The laplacian is the mean of two estimates from the 3x3 window around the cell: one with the four neighbours along the rows and the columns, one with the four diagonal neighbours. Its unit is 1/m, the inverse of the length unit of the map.
-
-The cells of the border of the map have no value. The cells next to a novalue get the mean nabla of their neighbours.
-
-With a threshold, the output is a mask: 1 where the nabla is lower than minus the threshold, the clearly convex sites, and in the cells next to a novalue; 0 in the rest, planar and concave sites.
-

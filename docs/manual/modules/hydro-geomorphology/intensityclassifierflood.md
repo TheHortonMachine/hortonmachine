@@ -6,6 +6,16 @@ The intensity maps of the floods of 30, 100 and 200 years of return period are t
 
 Cells with a depth of 0 are classified as low intensity: set the dry cells to novalue in the maps of depth and velocity, to keep them out of the map.
 
+## Details
+
+```{include} ../generated/IntensityClassifierFlood_details.md
+```
+
+## Parameters
+
+```{include} ../generated/IntensityClassifierFlood.md
+```
+
 ## Example
 
 The example makes up the three floods on the synthetic river of the example of [SaintGeo](saintgeo.md), `river.tif`: water surfaces parallel to the bottom of the valley, 5, 15 and 25 cm over the edge of the floodplain, and the velocity of a uniform flow of each depth. A real study would take the depth and the velocity from a hydraulic model:
@@ -19,8 +29,3 @@ The example makes up the three floods on the synthetic river of the example of [
 
 The intensity of the flood of 200 years over the river: high in the channel, deep and fast, a thin band of medium at its edges, low over the shallow water of the floodplain.
 :::
-
-## Reference
-
-```{include} ../generated/IntensityClassifierFlood.md
-```

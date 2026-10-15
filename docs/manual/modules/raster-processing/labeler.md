@@ -4,6 +4,16 @@ Gives a number to every group of valid cells that touch each other, the connecte
 
 The labels turn a mask into separate objects, as the single landslides, lakes or tree crowns of a map, that can then be counted, measured with [RasterSummary](rastersummary.md) or vectorized.
 
+## Details
+
+```{include} ../generated/Labeler_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Labeler.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. It labels the patches of the middle elevation belt cut by [RasterNull](rasternull.md):
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The separate patches of the middle elevation belt, each with its own number and color.
 :::
-
-## Reference
-
-```{include} ../generated/Labeler.md
-```

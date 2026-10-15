@@ -22,7 +22,3 @@ Calculates the difference between the value of a quantity in one point and the v
 |---|---|---|---|
 | `outDiff` | output file |  | The map of difference. |
 
-**Notes**
-
-The stream map splits the network in stretches of cells with the same value, for example the Strahler order or the link numbers of NetNumbering. Every cell of a stretch gets the absolute difference of the input map between the first, most upstream, and the last cell of the stretch: with the elevation and the Strahler order, the drop along each Strahler branch; with the link numbers, the drop of each link. The cells outside the network are no-data.
-

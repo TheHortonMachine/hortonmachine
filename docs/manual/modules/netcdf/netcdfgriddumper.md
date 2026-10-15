@@ -4,6 +4,16 @@ Dumps a grid of a NetCDF file to GeoTIFFs, one for every timestep of a range, fo
 
 The grids whose crs is written in the file, as those of GDAL and of [RasterToNetcdf](rastertonetcdf.md), keep their projection and cells unchanged. All the others are resampled to lat/long WGS84 with the nearest cell, as the lat/long grids of most climate data and the grids whose projection has no EPSG code, as the sinusoidal tiles of MODIS.
 
+## Details
+
+```{include} ../generated/NetcdfGridDumper_details.md
+```
+
+## Parameters
+
+```{include} ../generated/NetcdfGridDumper.md
+```
+
 ## Example
 
 The example dumps the daytime land surface temperature of the sample MODIS tile, with the grid name printed by [NetcdfInfo](netcdfinfo.md):
@@ -28,9 +38,4 @@ The second example reads back the NetCDF of the sample elevation model written b
 
 ```{image} ../../images/modules/NetcdfGridDumper_dtm_flanginec__elevation.png
 :alt: The elevation model read back from its NetCDF file
-```
-
-## Reference
-
-```{include} ../generated/NetcdfGridDumper.md
 ```

@@ -8,6 +8,18 @@ The routing visits the cells along the flow paths, so the module reads the preci
 
 The network of the old versions of the module is no longer needed: the cells of the streams follow the same balance as all the others. It is ignored, with a warning.
 
+## Details
+
+```{include} ../../generated/SWYRechargeRouting_details.md
+```
+
+## Parameters
+
+```{include} ../../generated/SWYRechargeRouting.md
+```
+
+## Example
+
 ```{literalinclude} ../../examples/swy/04_recharge.groovy
 :language: groovy
 ```
@@ -23,6 +35,3 @@ The actual evapotranspiration of the year, in mm.
 
 The local recharge of the year, in mm: high in the wet west, low in the east, and negative on the streams, which evapotranspire the water from upslope.
 :::
-
-```{include} ../../generated/SWYRechargeRouting.md
-```

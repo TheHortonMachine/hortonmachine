@@ -24,9 +24,3 @@ Creates a surface model from the triangulation of the lidar points, without the 
 |---|---|---|---|
 | `outRaster` | output file |  | The surface model. |
 
-**Notes**
-
-All the points in the area are triangulated, with a Delaunay triangulation, and each cell gets the elevation of the triangle under its center. The triangles that join points at very different elevations, as the edge of a roof and the ground under it, would draw walls slanted over the cells around: they are removed, and the cells under them stay empty.
-
-The threshold decides what is kept. A small one keeps the smooth surfaces, as the ground, the roofs and the roads, and leaves holes along their edges; on the rough crowns of the trees, it leaves holes everywhere. A larger one keeps the crowns and draws more slanted walls.
-

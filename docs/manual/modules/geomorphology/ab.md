@@ -4,6 +4,16 @@ The contributing area per unit contour length, a/b, is the area that drains thro
 
 The contour length b is estimated from the planar curvature of the cell, from the [Curvatures](curvatures.md) module: it is longer on divergent, convex cells, and shorter on convergent, concave ones, between 0.1 and 1.9 times the cell size; on planar cells it is the cell size.
 
+## Details
+
+```{include} ../generated/Ab_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Ab.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The contributing area per unit contour length of the sample area, in m.
 :::
-
-## Reference
-
-```{include} ../generated/Ab.md
-```

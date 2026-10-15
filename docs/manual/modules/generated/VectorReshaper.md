@@ -22,15 +22,3 @@ Module to reshape a vector.
 |---|---|---|---|
 | `outVector` | output file |  | The new reshaped vector. |
 
-**Notes**
-
-The expressions are written one per line, as `name=expression` in ECQL. An expression with the name of an existing field replaces it, a new name adds a field; the other fields are kept, except the ones listed to be removed. The type of each field is taken from its value on the first feature.
-
-Some examples, for a layer whose geometry field is `the_geom`, as in shapefiles:
-
-- `the_geom=centroid(the_geom)`: the centroids of the polygons.
-- `the_geom=buffer(the_geom, 20.0)`: a buffer of 20 map units.
-- `the_geom=convexHull(the_geom)`: the convex hulls.
-- `area=area(the_geom)` and `length=geomLength(the_geom)`: new fields with the area and the perimeter.
-- `newfield=-1`: a new field with a constant value.
-

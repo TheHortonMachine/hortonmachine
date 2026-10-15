@@ -19,9 +19,13 @@ A few things to consider:
 
 The data are downloaded with the Copernicus API token and kept in the download folder set in the [Settings](../../../apps/settings.md#copernicus): the data of each day and variable are downloaded only once, as a global file, and then read from the folder. The first run on a long period has to download three files per day, each one a job of the Climate Data Store, and can take long.
 
-```{literalinclude} ../../examples/erm/03_copernicus_importer.groovy
-:language: groovy
-```
+## Parameters
 
 ```{include} ../../generated/ErmCopernicusImporter.md
+```
+
+## Example
+
+```{literalinclude} ../../examples/erm/03_copernicus_importer.groovy
+:language: groovy
 ```

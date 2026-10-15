@@ -12,6 +12,11 @@ Geomorphons (Jasiewicz and Stepinski, 2013) classify the landforms by the way th
 
 The search radius sets the scale of the landforms: a small radius finds the small channels and ridges, a large one the main valleys and mountain ridges. The angle threshold sets when the terrain is level: larger values give more flat areas.
 
+## Parameters
+
+```{include} ../generated/Geomorphon.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -25,8 +30,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The landforms of the sample area, with a search radius of 300 m: the valleys follow the network, the ridges the divides, hollows and spurs are the concave and convex parts of the slopes.
 :::
-
-## Reference
-
-```{include} ../generated/Geomorphon.md
-```

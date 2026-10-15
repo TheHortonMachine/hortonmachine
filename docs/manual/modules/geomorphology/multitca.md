@@ -7,6 +7,11 @@ With a single drainage direction per cell, as with [DrainDir](draindir.md), all 
 
 The contributing areas spread smoothly on the slopes, and concentrate in the channels as with a single direction.
 
+## Parameters
+
+```{include} ../generated/MultiTca.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -20,8 +25,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The total contributing area of the sample area, in cells, with multiple directions on the divergent cells: on the slopes the areas spread, in the channels they concentrate as with DrainDir.
 :::
-
-## Reference
-
-```{include} ../generated/MultiTca.md
-```

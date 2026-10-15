@@ -22,9 +22,3 @@ Splits a las file into a grid of smaller files.
 |---|---|---|---|
 | `outFolder` | output folder |  | The optional folder of the pieces, named as the input file with a number. If not supplied, the folder of the input file is used. |
 
-**Notes**
-
-The bounds of the points are divided into a grid of equal pieces, and each point is written to the piece that contains it. The pieces are named as the input file with a number, from 1 at the south-west corner, going north first and then east: with 2 x 2 pieces, 1 is the south-west one, 2 the north-west, 3 the south-east and 4 the north-east.
-
-The pieces keep the scale, the offset and the crs of the input file. A piece without points is written all the same, empty. LasMerger merges the pieces back into a single file.
-

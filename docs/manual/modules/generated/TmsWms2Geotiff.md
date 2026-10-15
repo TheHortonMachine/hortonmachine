@@ -24,9 +24,3 @@ Downloads the map tiles of an online service over a region and joins them into a
 |---|---|---|---|
 | `outRaster` | output file |  | The output GeoTIFF path. |
 
-**Notes**
-
-The service is a tile service (TMS, XYZ or WMTS with the indexes in the url) or a WMS. The url of a tile service has the placeholders ZZZ, XXX and YYY, replaced by the zoom level and the column and row of each tile, as https://tile.example.org/ZZZ/XXX/YYY.png. The rows are numbered from the north, as in most of the web maps (the Google schema, also called XYZ), or from the south (the OGC TMS schema). The url of a WMS has the placeholders WWW, SSS, EEE and NNN, replaced by the bounds of each tile in longitude and latitude: it has to ask for images of 256x256 pixels in EPSG:4326.
-
-The tiles of the zoom level that cover the bounds of the region of interest are joined in an RGB image in Web Mercator (EPSG:3857) with the extent of the whole tiles, so a bit larger than the region. Each zoom level halves the size of the cells: at zoom 18 they are about 0.6 m at the equator, and the tiles of a large region quickly become millions, too many for a single image. A tile that can't be downloaded stays black, with an error message. The terms of use of the services usually limit the bulk downloads of tiles.
-

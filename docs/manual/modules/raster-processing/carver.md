@@ -7,6 +7,16 @@ Carves lines and polygons into an elevation model: the cells they cover are lowe
 
 The depth is subtracted from the elevation of each cell, so the bottom of a carved channel keeps the slope of the terrain, a few meters lower: it is not leveled. Where a polygon and a line overlap, the depth of the polygon is used.
 
+## Details
+
+```{include} ../generated/Carver_details.md
+```
+
+## Parameters
+
+```{include} ../generated/Carver.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. It burns the network of the basin, extracted by [NetworkAttributesBuilder](../network/networkattributesbuilder.md), 3 m into the terrain:
@@ -20,8 +30,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The difference between the original and the carved elevation model: the cells of the channels of the basin, lowered by 3 m.
 :::
-
-## Reference
-
-```{include} ../generated/Carver.md
-```

@@ -297,6 +297,11 @@ The terrain can go through the usual hydrological chain, as a real elevation mod
 The network of the fractal terrain, with a threshold of 200 cells. A random terrain has many closed depressions, unlike the real ones shaped by erosion: Pitfiller turns them into flat areas, which the drainage directions cross with straight parallel paths.
 :::
 
+## Parameters
+
+```{include} ../generated/Mapcalc.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -310,8 +315,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The depth of the depressions of the sample area filled by Pitfiller, in meters: the depitted elevation minus the elevation, where it is above 0.
 :::
-
-## Reference
-
-```{include} ../generated/Mapcalc.md
-```

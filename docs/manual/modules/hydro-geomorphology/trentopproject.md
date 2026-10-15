@@ -4,6 +4,11 @@ TrentoPProject designs a storm sewer network. It takes the layout of the pipes, 
 
 The model is the geomorphological model of TrentoP. Each drained area is a linear reservoir, and the water travels through the pipes with the delay of a kinematic wave. The pipes are designed one after the other, from the head pipes down to the outlet. Each pipe gets the peak discharge of the rain from the rainfall curve whose duration maximizes it, and the smallest commercial diameter that carries that discharge at the design fill degree while staying self-cleaning. The formulas are in the notes of the reference below.
 
+## Details
+
+```{include} ../generated/TrentoPProject_details.md
+```
+
 ## Preparing the data
 
 Both modules read a spatial database, given in `inDatabase`: a GeoPackage (`.gpkg`) or H2GIS (`.mv.db`) file, or a PostGIS database, as `jdbc:postgresql://host:port/database`, with `pUser` and `pPassword`. It holds layers and tables with fixed names, in a projected reference system in meters:
@@ -91,6 +96,11 @@ The other parameters, which usually keep their default:
 
 The table `diameters` lists the commercial diameters of circular pipes, one per row, with their `diameter` and `thickness`, both in cm. The generator fills it with an example series of PVC pipes, from 14 to 100 cm: change it to the pipes that will be used. The diameter is the inner one, used for the hydraulics; the thickness adds to the excavation. Check the unit: a list in mm is read as cm, and gives pipes ten times too large.
 
+## Parameters
+
+```{include} ../generated/TrentoPProject.md
+```
+
 ## Example
 
 The example designs a small network of 25 pipes, which drain 2 ha to the outlet pipe 31. Its data are in the GeoPackage `docs/manual/modules/maps/data/sewer_project.gpkg`, with the elevation model of the area, `dtm_sewer.tif`, at 1 m:
@@ -122,8 +132,3 @@ The design discharge at the outlet is 285 l/s. The output layer `network_project
 | `DoFreeSurf`, `UpFreeSurf` | the elevation of the free surface, in m, likewise at the upstream and downstream end |
 | `totArea` | the area drained by the pipe and all the pipes upstream, in ha |
 | `totlength`, `meanlength`, `varLength` | the total length of the network upstream, the mean length of its pipes, in m, and its variance |
-
-## Reference
-
-```{include} ../generated/TrentoPProject.md
-```

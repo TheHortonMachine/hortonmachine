@@ -31,9 +31,3 @@ Flips, rotates, scales and translates a raster.
 | `outRaster` | output file |  | The transformed raster. |
 | `outBounds` | output file |  | The outline of the transformed raster. |
 
-**Notes**
-
-The transformations are applied in this order: the flips, the rotation, the scale, the translation. The flips mirror the columns (horizontal) or the rows (vertical) on the same grid. The rotation, counterclockwise in degrees, turns the raster around the pivot, which is the given point or else the center of the raster: the result covers the whole rotated raster, on cells of the same size, and the cells outside of it are novalue. Their values come from the nearest input cell, or are interpolated between the four nearest cell centers with the bilinear interpolation, that suits the continuous values but not the classes. The other transformations don't touch the values.
-
-The scale multiplies the size of the cells around the same pivot, and the translation moves the raster, in the units of its reference system: they change only where the raster lies, as to fix a raster with a wrong georeference or a scan placed by hand. The bounds output is the outline of the transformed raster, rotated with it.
-

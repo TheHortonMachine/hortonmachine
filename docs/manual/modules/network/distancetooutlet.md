@@ -4,6 +4,11 @@ Calculates the distance of each cell from the outlet, along the path the water f
 
 The outlet must be marked with the value 10 in the drainage directions, for example with [MarkOutlets](../dem-manipulation/markoutlets.md): the paths that leave the map elsewhere get 0. [RescaledDistance](../basin/rescaleddistance.md) computes the same distance, with the hillslopes slowed down.
 
+## Parameters
+
+```{include} ../generated/DistanceToOutlet.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The distance from the outlet of the basin of ExtractBasin, in meters, measured in 3D.
 :::
-
-## Reference
-
-```{include} ../generated/DistanceToOutlet.md
-```

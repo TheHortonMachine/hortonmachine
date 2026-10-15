@@ -4,6 +4,11 @@ Splits a basin into the subbasins of its streams, up to a Hack order: with order
 
 The Hack orders come from [NetworkAttributesBuilder](../network/networkattributesbuilder.md).
 
+## Parameters
+
+```{include} ../generated/SplitSubbasins.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The subbasins of the streams up to Hack order 2 of the basin of ExtractBasin.
 :::
-
-## Reference
-
-```{include} ../generated/SplitSubbasins.md
-```

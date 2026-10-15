@@ -23,9 +23,3 @@ Puts the values of a field of polygons into a raster: the cells inside the polyg
 |---|---|---|---|
 | `outRaster` | output file |  | The modified raster. |
 
-**Notes**
-
-The polygons are rasterized on the grid of the raster with ScanLineRasterizer: the cells whose center is inside a polygon are changed, the others are kept. The field must be numeric, and the polygons in the CRS of the raster.
-
-By default the value of the field replaces the one of the cell, as to set the elevation of a lake or of a flat area. With the add option, it is added to it: with the heights of the buildings, an elevation model of the terrain becomes one of the surface with the buildings extruded, for the analyses of visibility, shadows or flooding in urban areas. The novalues of the raster stay novalue.
-

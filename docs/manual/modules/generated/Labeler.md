@@ -20,9 +20,3 @@ Labels the connected components of a raster: every group of valid cells that tou
 |---|---|---|---|
 | `outMap` | output file |  | The raster of the labels, the number of the component of each valid cell. |
 
-**Notes**
-
-The cells are connected also by the corners, as in the 8 directions of the flow: a diagonal line of cells is a single component. The value of the cells doesn't matter, only if they are valid or novalue, so a raster of classes has to be cut to a class first, for example with RasterNull and its inverse switch. The components are numbered from 1, in the order in which their first cell is met reading the raster from the north-west corner by rows; the novalue cells stay novalue.
-
-The labels give an identifier to every patch of a mask, as the single tree crowns, the landslides or the lakes of a map, to count them, to measure their area with RasterSummary or to vectorize them.
-

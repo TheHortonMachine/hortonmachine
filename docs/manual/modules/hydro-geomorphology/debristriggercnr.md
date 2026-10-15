@@ -8,6 +8,11 @@ with A the contributing area in km², so that the channels draining larger areas
 
 The triggers are the input of the runout models, as [DebrisVandre](debrisvandre.md).
 
+## Parameters
+
+```{include} ../generated/DebrisTriggerCnr.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -21,8 +26,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The trigger points of the sample area, with the value of their threshold gradient. The cells at the border of the map, where the gradient is not reliable, also appear as triggers.
 :::
-
-## Reference
-
-```{include} ../generated/DebrisTriggerCnr.md
-```

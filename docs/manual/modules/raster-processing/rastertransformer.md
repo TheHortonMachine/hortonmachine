@@ -4,6 +4,16 @@ Flips, rotates, scales and translates a raster. The flips and the rotation move 
 
 The rotation needs new values for the cells of the rotated grid: the nearest cell suits the classes, the bilinear interpolation the continuous values, as the elevation. To change the reference system of a raster, use [RasterReprojector](rasterreprojector.md).
 
+## Details
+
+```{include} ../generated/RasterTransformer_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RasterTransformer.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`. It rotates the elevation model by 30 degrees counterclockwise:
@@ -17,8 +27,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The elevation model rotated by 30 degrees: the grid covers the whole rotated raster, the corners outside of it are novalue.
 :::
-
-## Reference
-
-```{include} ../generated/RasterTransformer.md
-```

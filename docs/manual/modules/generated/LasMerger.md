@@ -20,9 +20,3 @@ Merges all the las files of a folder into a single file.
 |---|---|---|---|
 | `outLas` | output file |  | The merged las file. |
 
-**Notes**
-
-All the files with the .las extension of the folder are merged, the compressed .laz files are ignored. The merged file covers the bounds of all of them and gets the crs of the first one that has a prj file.
-
-The merged file is written with a precision of 1 cm for the coordinates and 1 mm for the elevation, the default of the writer, whatever the precision of the merged files. Write it outside of the merged folder: if it is in it, it is merged too the next time.
-

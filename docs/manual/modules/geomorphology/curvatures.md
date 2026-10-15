@@ -10,6 +10,11 @@ The curvatures are computed from the first and second derivatives of the elevati
 
 The planar curvature is the input of [Ab](ab.md), which estimates from it the contour length of each cell.
 
+## Parameters
+
+```{include} ../generated/Curvatures.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -35,8 +40,3 @@ The profile curvature of the sample area: positive where the slope decreases dow
 
 The tangential curvature of the sample area: the planar curvature weighted by the sine of the slope angle, with smaller values than the planar one, about half, on these steep slopes. The colors span from the 2nd to the 98th percentile of the values.
 :::
-
-## Reference
-
-```{include} ../generated/Curvatures.md
-```

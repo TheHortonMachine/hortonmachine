@@ -6,6 +6,16 @@ The sections are perpendicular to the line, at a given interval along it, and re
 
 The line has to be drawn from upstream to downstream, along the bottom of the channel. A network extracted from the elevation model, as the one of [NetworkAttributesBuilder](../network/networkattributesbuilder.md), works, but it follows the cells in steps of 45 degrees, and the sections, perpendicular to its local direction, would turn back and forth. Smooth it first, and simplify it, so that the sections follow the direction of the valley. The sections must not cross each other: in the bends they can reach at most as far as the radius of the bend.
 
+## Details
+
+```{include} ../generated/RiverSectionsExtractor_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RiverSectionsExtractor.md
+```
+
 ## Example
 
 The example takes the main channel of the network of the sample area, from the reaches of Hack order 1 of the example of [NetworkAttributesBuilder](../network/networkattributesbuilder.md), smooths it and extracts a section every 50 m:
@@ -21,8 +31,3 @@ The sections, in red, across the main valley of the sample area, perpendicular t
 :::
 
 The valley is a steep mountain stream: the sections are fine for HEC-RAS, but not for [SaintGeo](saintgeo.md), which needs a lowland river. Its page builds the sections of a synthetic river, with the same steps.
-
-## Reference
-
-```{include} ../generated/RiverSectionsExtractor.md
-```

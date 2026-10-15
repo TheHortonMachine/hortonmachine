@@ -4,6 +4,16 @@ HazardClassifier combines the intensity maps of the events of 30, 100 and 200 ye
 
 A cell without a value in an intensity map is not reached by that event.
 
+## Details
+
+```{include} ../generated/HazardClassifier_details.md
+```
+
+## Parameters
+
+```{include} ../generated/HazardClassifier.md
+```
+
 ## Example
 
 The example combines the three floods of the example of [IntensityClassifierFlood](intensityclassifierflood.md):
@@ -23,8 +33,3 @@ The hazard IP1: high in the channel, medium where the floods of 30 or 100 years 
 
 The hazard IP2 of the same floods: the low intensities of the floods of 100 and 200 years are a low hazard, so the floodplain is medium only where the flood of 30 years reaches it.
 :::
-
-## Reference
-
-```{include} ../generated/HazardClassifier.md
-```

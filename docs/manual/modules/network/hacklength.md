@@ -4,6 +4,11 @@ The Hack length of a cell is the length of the main stream upstream of it, from 
 
 The lengths are measured along the drainage directions, also in 3D with the elevation. The outlet must be marked with the value 10, for example with [MarkOutlets](../dem-manipulation/markoutlets.md).
 
+## Parameters
+
+```{include} ../generated/HackLength.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The Hack length of the basin of ExtractBasin, in meters: it grows along the main streams, up to the length of the longest path at the outlet.
 :::
-
-## Reference
-
-```{include} ../generated/HackLength.md
-```

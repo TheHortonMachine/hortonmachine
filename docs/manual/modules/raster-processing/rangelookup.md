@@ -2,6 +2,16 @@
 
 Reclassifies a raster by ranges of values: each cell gets the class of the range its value falls in. It turns continuous maps into classes, as elevation belts, slope classes for a hazard map or the bins of a legend, and the classes can then be combined with [Mapcalc](mapcalc.md) or converted into polygons with [Vectorizer](../vector-processing/vectorizer.md).
 
+## Details
+
+```{include} ../generated/RangeLookup_details.md
+```
+
+## Parameters
+
+```{include} ../generated/RangeLookup.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -15,8 +25,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The three elevation belts of the sample elevation model.
 :::
-
-## Reference
-
-```{include} ../generated/RangeLookup.md
-```

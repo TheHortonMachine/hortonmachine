@@ -4,6 +4,11 @@ The hillslope to channel distance is the length of the path the water follows on
 
 The distance is measured along the drainage directions, in number of cells or in meters, also in 3D with the elevation. The network cells get 0, as the cells whose path leaves the map without reaching the network.
 
+## Parameters
+
+```{include} ../generated/H2cd.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones:
@@ -17,8 +22,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The hillslope to channel distance of the sample area, in meters, measured in 3D, with the network of ExtractNetwork.
 :::
-
-## Reference
-
-```{include} ../generated/H2cd.md
-```

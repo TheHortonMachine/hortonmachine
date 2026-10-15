@@ -25,11 +25,3 @@ Transforms the network shape to a flow map.
 | `outNet` | output file |  | The output network map. |
 | `outProblems` | output file |  | The problems features points. |
 
-**Notes**
-
-The network lines must be drawn from upstream to downstream: the order of their vertices gives the flow direction. The cells of a reach get the D8 direction to the next cell, its last cell the outlet value 10, unless another reach already passes there, as at a confluence. The flow map can be used to force the drainage directions along a known network, as the network flow input of DrainDir.
-
-The reach id comes from the id field or, without it, from the feature id. With the active field, the reaches whose value starts with n (as no) are skipped, empty values count as active.
-
-The cells where a reach runs into another one already rasterized, before its last segment, are written to the problem points, to correct the network lines.
-

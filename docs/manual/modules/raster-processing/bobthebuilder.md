@@ -6,6 +6,16 @@ By default the artifact is only added: where the terrain is higher than the arti
 
 The modified elevation model is the input of the hydrological analyses of the scenario with the artifact: the flow directions and the basins with a dam, the areas protected by a levee.
 
+## Details
+
+```{include} ../generated/BobTheBuilder_details.md
+```
+
+## Parameters
+
+```{include} ../generated/BobTheBuilder.md
+```
+
 ## Example
 
 The example builds a dam across a valley of the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`. The polygon of the dam, `dam.geojson`, is 30 m thick and crosses the valley into its slopes; the points of its crest, `dam_crest.geojson`, are all at 1310 m:
@@ -37,8 +47,3 @@ The elevation model with the dam in 3D, in the [NWW Viewer](../../apps/nwwviewer
 
 The height of the dam over the terrain: highest over the bottom of the valley, zero on the slopes higher than the crest.
 :::
-
-## Reference
-
-```{include} ../generated/BobTheBuilder.md
-```

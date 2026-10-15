@@ -8,6 +8,16 @@ The river stations of the sections are numbers that grow upstream, and the reach
 Each section gets two levees at its ends, with the length of the section as their elevation: in a mountain valley they are far below the terrain and have no effect, but where the terrain is lower than the length of the sections in meters they act as walls. Remove or correct them in HEC-RAS.
 :::
 
+## Details
+
+```{include} ../generated/HecrasInputBuilder_details.md
+```
+
+## Parameters
+
+```{include} ../generated/HecrasInputBuilder.md
+```
+
 ## Example
 
 The example writes the sections of the example of [RiverSectionsExtractor](riversectionsextractor.md), on the main valley of the sample area:
@@ -73,9 +83,4 @@ SURFACE LINE:
 1640033.0,	5113739.0,	1960.803955078125
 1640025.0,	5113745.0,	1957.1629638671875
 ...
-```
-
-## Reference
-
-```{include} ../generated/HecrasInputBuilder.md
 ```

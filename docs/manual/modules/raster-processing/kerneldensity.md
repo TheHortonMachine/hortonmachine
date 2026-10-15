@@ -6,6 +6,16 @@ The kernels are the ones of the Jaitools project, and the Epanechnikov one is th
 
 The cells that have no value in the input have no value in the output, as the ones closer to the border than the radius. For a density everywhere, the cells without presence must be 0, not novalue, as in the example.
 
+## Details
+
+```{include} ../generated/KernelDensity_details.md
+```
+
+## Parameters
+
+```{include} ../generated/KernelDensity.md
+```
+
 ## Example
 
 The example runs on the sample elevation model of the manual, `dtm_flanginec.tif` in `docs/manual/modules/maps/data`, each module on the outputs of the previous ones. [Mapcalc](mapcalc.md) turns the network of [ExtractNetwork](../network/extractnetwork.md) into presences, then the module sums them within 100 m:
@@ -19,8 +29,3 @@ The example runs on the sample elevation model of the manual, `dtm_flanginec.tif
 
 The density of the channels within 100 m: highest where many channels converge, as on the fan in the north east. The cells with no channel within 100 m are zero and not colored; the band of 100 m along the border has no value.
 :::
-
-## Reference
-
-```{include} ../generated/KernelDensity.md
-```

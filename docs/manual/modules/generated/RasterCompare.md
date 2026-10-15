@@ -25,9 +25,3 @@ Compares two rasters, their grids and their values cell by cell.
 | `outDifferent` | Long |  | The number of cells with different values, novalue in one raster only included. |
 | `outMaxDifference` | Double |  | The max absolute difference of the cells valid in both rasters. |
 
-**Notes**
-
-The report lists the differences of the coordinate reference systems, of the bounds, of the resolutions and of the columns and rows. If the two grids are the same, the values are compared cell by cell: it counts the cells with equal values, with different values, and the cells that are novalue in only one of the rasters, which count as different. Of the values that differ it gives the max and the mean absolute difference, and the first different cells, with their column, row and values.
-
-The tolerance sets when two values are equal: with 0 they need to be exactly the same, with 0.01 the differences up to one centimeter of two elevation models are not counted. The outputs carry the result to a script, as a test that a computation still gives the reference raster.
-

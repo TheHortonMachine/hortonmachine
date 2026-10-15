@@ -22,9 +22,3 @@ Sets single cells of a raster to new values, given by their column and row or by
 |---|---|---|---|
 | `outRaster` | output file |  | The corrected raster. |
 
-**Notes**
-
-The corrections are a comma separated list of triplets, as col1,row1,value1,col2,row2,value2: the column and row start from 0 at the north-west corner, the row 0 being the northern one. With the coordinates switch the triplets are east,north,value instead, in the reference system of the raster, as read off a map: each one corrects the cell that contains the point. The cells outside of the raster are left out with a warning. A value equal to the novalue of the raster removes the cell. The byte, short and integer rasters keep their type, the others become double.
-
-It is meant for a few manual fixes, as a spike in an elevation model or the outlet cell that a network extraction needs to be a channel: to change many cells, Mapcalc or RasterNull are the tools.
-
