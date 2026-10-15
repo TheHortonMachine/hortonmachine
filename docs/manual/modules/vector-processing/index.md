@@ -14,6 +14,7 @@ linesmootherjaitools
 linesmoothermcmaster
 linespolygonizer
 rastercattofeatureattribute
+vectorcleaner
 vectorclipper
 vectorfieldrounder
 vectorfilter

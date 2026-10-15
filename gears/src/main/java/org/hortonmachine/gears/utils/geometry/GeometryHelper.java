@@ -30,8 +30,11 @@ import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
  * - removing self-intersections
  * - removing micro polygons
  * - snapping the vetrices to a given grid
- * 
+ *
+ * @deprecated for overlays that are robust against the floating point arithmetic use {@link HMPrecision},
+ *             to fix invalid geometries {@link org.locationtech.jts.geom.util.GeometryFixer}.
  */
+@Deprecated
 public class GeometryHelper {
     private Geometry newGeometry;
 

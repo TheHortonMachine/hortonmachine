@@ -112,6 +112,24 @@ public class TestGeopackage extends HMTestCase {
 		}
 	}
 
+	/**
+	 * A table name with dashes, as the layers exported by many tools, must be quoted in the inserts.
+	 */
+	public void testTableNameWithDashes() throws Exception {
+		var geoms = new Geometry[] { g("POINT(1 1)"), g("POINT(2 2)") };
+		SimpleFeatureCollection fc = FeatureUtilities.featureCollectionFromGeometry(HMCrsRegistry.INSTANCE.getCrs("4326"),
+				geoms);
+		File gpkgFile = TestUtilities.createTmpFile(".gpkg");
+		gpkgFile.delete();
+		try {
+			String path = gpkgFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + "ranch-boundaries-full";
+			OmsVectorWriter.writeVector(path, fc);
+			assertEquals(2, OmsVectorReader.readVector(path).size());
+		} finally {
+			gpkgFile.delete();
+		}
+	}
+
 	private Geometry g(String wkt) throws ParseException {
 		WKTReader wktReader = new WKTReader();
 		Geometry geometry = wktReader.read(wkt);

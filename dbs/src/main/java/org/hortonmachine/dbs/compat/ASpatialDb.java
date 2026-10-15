@@ -205,7 +205,7 @@ public abstract class ASpatialDb extends ADb {
         }
 
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
-        String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (ST_GeomFromText(?, " + epsgStr + "))";
+        String sql = "INSERT INTO " + tableName.fixedDoubleName + " (" + gc.geometryColumnName + ") VALUES (ST_GeomFromText(?, " + epsgStr + "))";
         if(where != null) {
             sql += " WHERE " + where;
         }

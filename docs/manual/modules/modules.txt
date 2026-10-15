@@ -128,6 +128,7 @@ org.hortonmachine.modules.LineSmootherJaitools
 org.hortonmachine.modules.VectorClipper
 org.hortonmachine.modules.VectorIntersector
 org.hortonmachine.modules.LinesPolygonizer
+org.hortonmachine.modules.VectorCleaner
 
 # Lesto
 org.hortonmachine.lesto.modules.filter.LasHistogram

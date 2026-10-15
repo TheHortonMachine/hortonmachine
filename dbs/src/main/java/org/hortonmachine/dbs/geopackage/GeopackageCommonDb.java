@@ -1118,7 +1118,7 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         geometry.setSRID(epsg);
         Object obj = gp.toSqlObject(geometry);
         GeometryColumn gc = getGeometryColumnsForTable(tableName);
-        String sql = "INSERT INTO " + tableName + " (" + gc.geometryColumnName + ") VALUES (?)";
+        String sql = "INSERT INTO " + tableName.fixedDoubleName + " (" + gc.geometryColumnName + ") VALUES (?)";
         if (where != null) {
             sql = "UPDATE " + tableName + " SET " + gc.geometryColumnName + "=? WHERE " + where;
         }

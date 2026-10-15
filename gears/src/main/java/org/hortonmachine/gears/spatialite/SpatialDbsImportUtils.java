@@ -341,7 +341,7 @@ public class SpatialDbsImportUtils {
             valueNames = valueNames.substring(1);
             qMarks = qMarks.substring(1);
         }
-        String sql = "INSERT INTO " + tableName + " (" + valueNames + ") VALUES (" + qMarks + ")";
+        String sql = "INSERT INTO " + tableName.fixedDoubleName + " (" + valueNames + ") VALUES (" + qMarks + ")";
 
         IGeometryParser gp = db.getType().getGeometryParser();
 

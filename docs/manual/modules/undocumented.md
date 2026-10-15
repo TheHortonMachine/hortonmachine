@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-42 of the 196 toolbox modules have no manual page yet.
+42 of the 197 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 

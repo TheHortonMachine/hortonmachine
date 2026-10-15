@@ -127,7 +127,7 @@ import groovy.lang.GroovyShell;
  * <li><b>over=vector.shp</b>: with vectors, another vector drawn over them in blue, as the river
  * under its sections.</li>
  * <li><b>nohillshade</b>: the raster alone, opaque, without hillshade, for data far from the sample
- * elevation, as a satellite tile.</li>
+ * elevation, as a satellite tile; with vectors, they are drawn on white, as synthetic examples.</li>
  * <li><b>fill</b>: with polygons, filled with their color, as transparent as the rasters,
  * instead of only their outline, for polygons that cover the map, as the cells of a grid.</li>
  * <li><b>under=raster.tif:colortable</b>: with vectors, a raster drawn in the colortable over the
@@ -473,7 +473,9 @@ public class ModuleMapsGenerator {
 
         MapContent content = new MapContent();
         try {
-            content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
+            if (!spec.options().contains("nohillshade")) {
+                content.addLayer(new GridCoverageLayer(hillshade, hillStyle));
+            }
             if (underRaster != null) {
                 content.addLayer(new GridCoverageLayer(underRaster, underStyle));
             }

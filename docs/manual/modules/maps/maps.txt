@@ -21,7 +21,8 @@
 # extent=west:east:south:north (the map shows only this part of the data, to zoom on small features),
 # lines=a;b (with a table, the named columns as lines over the first column, as profiles),
 # over=vector.shp (with vectors, another vector drawn over them in blue),
-# nohillshade (the raster alone, opaque, for data far from the sample elevation, as a satellite tile),
+# nohillshade (the raster alone, opaque, for data far from the sample elevation, as a satellite tile;
+# with vectors, drawn on white, as synthetic examples),
 # fill (with polygons, filled with their color over the hillshade, instead of only their outline),
 # under=raster.tif:colortable (with vectors, a raster drawn in the colortable under them)
 # The class names, as 1=stable;2=unstable, replace the values in the legend of the classes.
@@ -174,6 +175,8 @@ DxfConverter   | ../examples/hm/dxfconverter.groovy   | dxf_lines.shp           
 VectorClipper  | ../examples/hm/vectorclipper.groovy  | contours_basin.shp          | elev     | field=value,over=basin.shp,extent=1638500:1640500:5112400:5114300
 VectorIntersector | ../examples/hm/vectorintersector.groovy | net_cells.shp       | elev     | field=elev_avg,over=grid.shp,extent=1638500:1640500:5112400:5114300
 LinesPolygonizer | ../examples/hm/linespolygonizer.groovy | basin_belts.shp       | rainbow  | field=belt,classes,fill,over=basin_lines.shp,extent=1638500:1640500:5112400:5114300
+VectorCleaner  | ../examples/hm/vectorcleaner.groovy  | parcels.gpkg#parcels        | rainbow  | field=userdata,classes,fill,nohillshade,extent=1638490:1638910:5112490:5112910
+VectorCleaner  | -                                    | parcels.gpkg#parcels_cleaned | rainbow | field=userdata,classes,fill,nohillshade,over=parcels.gpkg#parcels_changes,extent=1638490:1638910:5112490:5112910
 RasterNull     | ../examples/hm/rasternull.groovy     | belt_middle.tif             | blues    | nolegend
 RasterMissingValuesFiller | ../examples/hm/rastermissingvaluesfiller.groovy | dtm_holes.tif | elev
 RasterMissingValuesFiller | -                         | dtm_filled.tif              | elev
