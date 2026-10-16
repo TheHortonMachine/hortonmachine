@@ -20,15 +20,14 @@ package org.hortonmachine.server;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.server.db.ServerDb;
+import org.hortonmachine.server.users.Role;
+import org.hortonmachine.server.users.User;
 
 import junit.framework.TestCase;
 
@@ -97,22 +96,73 @@ public class TestHmServer extends TestCase {
         }
     }
 
-    public void testStartAndStop() throws Exception {
+    public void testCreateAdmin() throws Exception {
+        ServerConfig config = new ServerConfig();
+        config.workspace = workspace;
+        config.createAdmin = "Boss";
+        PrintStream out = new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8);
+        assertEquals(HmServer.EXIT_OK, HmServer.createAdmin(config, "boss-password".toCharArray(), out, out));
+        // the name is taken now
+        assertEquals(HmServer.EXIT_USAGE, HmServer.createAdmin(config, "boss-password".toCharArray(), out, out));
+        assertEquals(HmServer.EXIT_USAGE, HmServer.createAdmin(config, "short".toCharArray(), out, out));
+    }
+
+    public void testLogin() throws Exception {
         ServerConfig config = new ServerConfig();
         config.port = 0;
         config.workspace = workspace;
         HmServer server = new HmServer(config);
         server.start();
         try {
-            assertTrue(workspace.isDirectory());
             assertTrue(new File(workspace, ServerDb.SQLITE_FILE).exists());
-            assertTrue(server.getPort() > 0);
+            assertTrue(new File(workspace, WorkspacePaths.DATA).isDirectory());
+            server.getUserManager().createUser("jane", "jane-password".toCharArray(), Role.USER);
+            server.getUserManager().createUser("boss", "boss-password".toCharArray(), Role.ADMIN);
 
-            HttpResponse<String> response = HttpClient.newHttpClient().send(
-                    HttpRequest.newBuilder(URI.create("http://localhost:" + server.getPort() + "/")).build(),
-                    HttpResponse.BodyHandlers.ofString());
+            Browser browser = new Browser(server.getPort());
+            // the pages need a login
+            HttpResponse<String> response = browser.get("/");
+            assertEquals(302, response.statusCode());
+            assertEquals("/login", response.headers().firstValue("Location").orElse(""));
+            assertTrue(response.headers().firstValue("Content-Security-Policy").orElse("").contains("default-src 'none'"));
+
+            response = browser.get("/login");
             assertEquals(200, response.statusCode());
-            assertTrue(response.body().contains("HortonMachine server"));
+            String cookie = response.headers().firstValue("Set-Cookie").orElse("");
+            assertTrue(cookie, cookie.contains("HttpOnly"));
+            assertTrue(cookie, cookie.contains("SameSite=Strict"));
+
+            // forms without the token are refused
+            assertEquals(403, browser.post("/login", "username", "jane", "password", "jane-password").statusCode());
+            assertEquals(401, browser.login("jane", "wrong-password").statusCode());
+
+            String sessionBefore = browser.sessionId();
+            response = browser.login("jane", "jane-password");
+            assertEquals(302, response.statusCode());
+            assertFalse(sessionBefore.equals(browser.sessionId()));
+            assertEquals("/modules", browser.get("/").headers().firstValue("Location").orElse(""));
+            response = browser.get("/modules");
+            assertEquals(200, response.statusCode());
+            assertTrue(response.body().contains(">jane<"));
+            // no administration for users
+            assertFalse(response.body().contains("/admin/users"));
+            assertEquals(403, browser.get("/admin/users").statusCode());
+
+            // log out
+            String csrf = Browser.csrf(response);
+            assertEquals(302, browser.post("/logout", "csrf", csrf).statusCode());
+            assertEquals("/login", browser.get("/modules").headers().firstValue("Location").orElse(""));
+
+            // an administrator gets further, to a page that doesn't exist yet
+            assertEquals(302, browser.login("boss", "boss-password").statusCode());
+            assertTrue(browser.get("/modules").body().contains("/admin/users"));
+            assertEquals(404, browser.get("/admin/nothing").statusCode());
+
+            // a disabled user is logged out at the next request
+            User boss = server.getUserManager().listUsers().get(0);
+            server.getUserManager().createUser("boss2", "boss-password".toCharArray(), Role.ADMIN);
+            server.getUserManager().updateUser(boss.id, Role.ADMIN, true);
+            assertEquals("/login", browser.get("/modules").headers().firstValue("Location").orElse(""));
         } finally {
             server.stop();
         }

@@ -38,14 +38,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.hortonmachine.cli.CliProgressMonitor;
 import org.hortonmachine.cli.HmCli;
 import org.hortonmachine.cli.ModuleDescriptor;
+import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 import org.hortonmachine.gears.libs.modules.HMModel;
+import org.hortonmachine.gears.libs.modules.HMParameterKind;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.db.ServerDb;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,6 +77,7 @@ public class JobManager implements AutoCloseable {
     private static final String ERROR_PREFIX = "Error: ";
 
     private final ServerDb db;
+    private final WorkspacePaths paths;
     private final File jobsFolder;
     private final String jobMemory;
     private final int ttlDays;
@@ -96,14 +101,15 @@ public class JobManager implements AutoCloseable {
 
     /**
      * @param db the database.
-     * @param jobsFolder the folder of the job folders, created if missing.
+     * @param paths the folders of the workspace, the jobs folder is created if missing.
      * @param slots the number of jobs running at the same time.
      * @param jobMemory the maximum memory of each job, as for the -Xmx option of java.
      * @param ttlDays the days the finished jobs are kept, 0 to keep them forever.
      */
-    public JobManager( ServerDb db, File jobsFolder, int slots, String jobMemory, int ttlDays ) {
+    public JobManager( ServerDb db, WorkspacePaths paths, int slots, String jobMemory, int ttlDays ) {
         this.db = db;
-        this.jobsFolder = jobsFolder;
+        this.paths = paths;
+        this.jobsFolder = paths.getJobsFolder();
         this.jobMemory = jobMemory;
         this.ttlDays = ttlDays;
         executor = Executors.newFixedThreadPool(slots);
@@ -131,27 +137,62 @@ public class JobManager implements AutoCloseable {
      * Queue a job.
      *
      * @param userId the user launching it, or <code>null</code>.
+     * @param isAdmin if the user is an administrator, who can use the outputs of the jobs of all users.
      * @param moduleName the name of the module.
-     * @param values the values of the parameters by name, as for {@link ModuleDescriptor#check(Map)}.
+     * @param values the values of the parameters by name, as for {@link ModuleDescriptor#check(Map)},
+     *          with the paths in the workspace as described in {@link WorkspacePaths}.
      * @return the queued job.
-     * @throws IllegalArgumentException if the module doesn't exist or a value is not valid.
+     * @throws JobValidationException if a value is not valid.
+     * @throws IllegalArgumentException if the module doesn't exist.
      */
-    public Job submit( String userId, String moduleName, Map<String, String> values ) throws Exception {
+    public Job submit( String userId, boolean isAdmin, String moduleName, Map<String, String> values ) throws Exception {
         Class< ? extends HMModel> moduleClass = ModuleDescriptor.getAvailableModules().get(moduleName);
         if (moduleClass == null) {
             throw new IllegalArgumentException("Unknown module: " + moduleName);
         }
-        Map<String, String> errors = ModuleDescriptor.of(moduleClass).check(values);
+        ModuleDescriptor module = ModuleDescriptor.of(moduleClass);
+        String jobId = UUID.randomUUID().toString();
+        File jobFolder = getJobFolder(jobId);
+        Predicate<String> canReadJob = otherJobId -> canRead(userId, isAdmin, otherJobId);
+
+        // the paths of the user become real paths
+        Map<String, String> resolved = new LinkedHashMap<>();
+        Map<String, String> errors = new LinkedHashMap<>();
+        for( Map.Entry<String, String> entry : values.entrySet() ) {
+            Parameter parameter = module.getParameter(entry.getKey());
+            String value = entry.getValue();
+            if (parameter != null && parameter.isPath() && !value.isBlank()) {
+                try {
+                    value = paths.resolve(parameter, value, userId, jobId, canReadJob);
+                } catch (IllegalArgumentException e) {
+                    errors.put(entry.getKey(), e.getMessage());
+                }
+            }
+            resolved.put(entry.getKey(), value);
+        }
+        if (errors.isEmpty()) {
+            for( Map.Entry<String, String> entry : resolved.entrySet() ) {
+                Parameter parameter = module.getParameter(entry.getKey());
+                if (parameter != null && parameter.isPath() && parameter.kind == HMParameterKind.OUTPUT
+                        && !entry.getValue().isBlank()) {
+                    File parent = new File(entry.getValue()).getParentFile();
+                    if (!parent.isDirectory() && !parent.mkdirs()) {
+                        throw new IllegalStateException("The job folder can't be created: " + parent);
+                    }
+                }
+            }
+            errors.putAll(module.check(resolved));
+        }
         if (!errors.isEmpty()) {
-            throw new IllegalArgumentException(String.join(" ", errors.values()));
+            FileUtilities.deleteFileOrDir(jobFolder);
+            throw new JobValidationException(errors);
         }
 
-        Job job = new Job(UUID.randomUUID().toString(), userId, moduleName, values, System.currentTimeMillis());
-        File jobFolder = getJobFolder(job.id);
-        if (!jobFolder.mkdirs()) {
+        Job job = new Job(jobId, userId, moduleName, values, System.currentTimeMillis());
+        if (!jobFolder.isDirectory() && !jobFolder.mkdirs()) {
             throw new IllegalStateException("The job folder can't be created: " + jobFolder.getAbsolutePath());
         }
-        new ObjectMapper().writeValue(new File(jobFolder, PARAMS_FILE), values);
+        new ObjectMapper().writeValue(new File(jobFolder, PARAMS_FILE), resolved);
         db.insertJob(job);
 
         ActiveJob activeJob = new ActiveJob(job);
@@ -160,6 +201,21 @@ public class JobManager implements AutoCloseable {
             activeJob.future = executor.submit(() -> run(activeJob));
         }
         return job;
+    }
+
+    /**
+     * Check if a user can see a job and use its outputs: the jobs of the user or, for an administrator, all jobs.
+     *
+     * @return <code>false</code> also if the job doesn't exist.
+     */
+    public boolean canRead( String userId, boolean isAdmin, String jobId ) {
+        try {
+            Job job = getJob(jobId);
+            return job != null && (isAdmin || (userId != null && userId.equals(job.userId)));
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The job " + jobId + " can't be read.", e);
+            return false;
+        }
     }
 
     /**
@@ -230,7 +286,7 @@ public class JobManager implements AutoCloseable {
      * @return the folder of a job.
      */
     public File getJobFolder( String jobId ) {
-        return new File(jobsFolder, jobId);
+        return paths.getJobFolder(jobId);
     }
 
     private void run( ActiveJob activeJob ) {
@@ -329,7 +385,10 @@ public class JobManager implements AutoCloseable {
                     String output = line.substring(HmCli.OUTPUT_PREFIX.length());
                     int equalsIndex = output.indexOf(" = ");
                     if (equalsIndex > 0) {
-                        outputs.put(output.substring(0, equalsIndex), output.substring(equalsIndex + 3));
+                        // the users see the paths in the workspace, not the real ones
+                        String value = output.substring(equalsIndex + 3);
+                        String workspacePath = paths.toWorkspacePath(value);
+                        outputs.put(output.substring(0, equalsIndex), workspacePath != null ? workspacePath : value);
                         job.setOutputs(outputs);
                     }
                 } else if (line.startsWith(ERROR_PREFIX)) {

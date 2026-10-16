@@ -17,13 +17,22 @@
  */
 package org.hortonmachine.server;
 
-import java.io.File;
+import java.io.Console;
+import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.hortonmachine.Version;
 import org.hortonmachine.server.db.ServerDb;
 import org.hortonmachine.server.jobs.JobManager;
+import org.hortonmachine.server.users.Role;
+import org.hortonmachine.server.users.User;
+import org.hortonmachine.server.users.UserManager;
+import org.hortonmachine.server.web.Auth;
+import org.hortonmachine.server.web.FileSuggestions;
+import org.hortonmachine.server.web.JobPages;
+import org.hortonmachine.server.web.ModulePages;
 
 import io.javalin.Javalin;
 
@@ -42,12 +51,10 @@ public class HmServer {
     public static final int EXIT_FAILURE = 1;
     public static final int EXIT_USAGE = 2;
 
-    /** The folder of the jobs, in the workspace. */
-    public static final String JOBS_FOLDER = "jobs";
-
     private final ServerConfig config;
     private ServerDb db;
     private JobManager jobManager;
+    private UserManager userManager;
     private Javalin app;
 
     public HmServer( ServerConfig config ) {
@@ -68,6 +75,11 @@ public class HmServer {
             System.exit(EXIT_OK);
             return;
         }
+        if (config.createAdmin != null) {
+            char[] password = readAdminPassword();
+            System.exit(password != null ? createAdmin(config, password, System.out, System.err) : EXIT_USAGE);
+            return;
+        }
         HmServer server = new HmServer(config);
         try {
             server.start();
@@ -80,6 +92,60 @@ public class HmServer {
         Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
         System.out.println("HortonMachine server " + Version.getVersion() + " listening on port " + server.getPort()
                 + ", workspace " + config.workspace.getAbsolutePath());
+        try {
+            if (!server.userManager.hasUsers()) {
+                System.out.println("There are no users yet: create the first administrator with --create-admin=name.");
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The users can't be read.", e);
+        }
+    }
+
+    /**
+     * Read the password of the administrator to create, from the environment or the console.
+     *
+     * @return the password, or <code>null</code> if it can't be read or the two typed differ.
+     */
+    private static char[] readAdminPassword() {
+        String fromEnvironment = System.getenv(ServerConfig.ADMIN_PASSWORD_ENV);
+        if (fromEnvironment != null && !fromEnvironment.isEmpty()) {
+            return fromEnvironment.toCharArray();
+        }
+        Console console = System.console();
+        if (console == null) {
+            System.err.println("Error: there is no console to type the password: set the " + ServerConfig.ADMIN_PASSWORD_ENV
+                    + " variable.");
+            return null;
+        }
+        char[] password = console.readPassword("Password: ");
+        char[] again = console.readPassword("Password again: ");
+        if (password == null || !Arrays.equals(password, again)) {
+            System.err.println("Error: the passwords differ.");
+            return null;
+        }
+        return password;
+    }
+
+    /**
+     * Create an administrator in the workspace of the configuration.
+     *
+     * @return the exit code.
+     */
+    static int createAdmin( ServerConfig config, char[] password, PrintStream out, PrintStream err ) {
+        new WorkspacePaths(config.workspace).createFolders();
+        try (ServerDb db = ServerDb.open(config)) {
+            User user = new UserManager(db).createUser(config.createAdmin, password, Role.ADMIN);
+            out.println("The administrator " + user.username + " was created.");
+            return EXIT_OK;
+        } catch (IllegalArgumentException e) {
+            err.println("Error: " + e.getMessage());
+            return EXIT_USAGE;
+        } catch (Exception e) {
+            err.println("Error: the administrator can't be created: " + e.getMessage());
+            return EXIT_FAILURE;
+        } finally {
+            Arrays.fill(password, '\0');
+        }
     }
 
     /**
@@ -88,20 +154,23 @@ public class HmServer {
      * @throws Exception if the workspace or the database can't be opened or the port is not available.
      */
     public void start() throws Exception {
-        File workspace = config.workspace;
-        if (!workspace.isDirectory() && !workspace.mkdirs()) {
-            throw new IllegalStateException("The workspace folder can't be created: " + workspace.getAbsolutePath());
-        }
+        WorkspacePaths paths = new WorkspacePaths(config.workspace);
+        paths.createFolders();
         db = ServerDb.open(config);
-        jobManager = new JobManager(db, new File(workspace, JOBS_FOLDER), config.slots, config.jobMemory, config.jobTtlDays);
+        jobManager = new JobManager(db, paths, config.slots, config.jobMemory, config.jobTtlDays);
         jobManager.start();
+        userManager = new UserManager(db);
+        Auth auth = new Auth(userManager);
+        ModulePages modulePages = new ModulePages(jobManager, new FileSuggestions(paths, jobManager));
+        JobPages jobPages = new JobPages(jobManager, userManager);
 
         app = Javalin.create(javalinConfig -> {
             javalinConfig.startup.showJavalinBanner = false;
             javalinConfig.startup.showOldJavalinVersionWarning = false;
-            javalinConfig.routes.get("/",
-                    ctx -> ctx.html("<!doctype html><html><head><meta charset=\"utf-8\"><title>HortonMachine</title>"
-                            + "</head><body><h1>HortonMachine server " + Version.getVersion() + "</h1></body></html>"));
+            auth.register(javalinConfig);
+            javalinConfig.routes.get("/", ctx -> ctx.redirect("/modules"));
+            modulePages.register(javalinConfig);
+            jobPages.register(javalinConfig);
         }).start(config.port);
     }
 
@@ -143,5 +212,12 @@ public class HmServer {
      */
     public JobManager getJobManager() {
         return jobManager;
+    }
+
+    /**
+     * @return the users, once started.
+     */
+    public UserManager getUserManager() {
+        return userManager;
     }
 }

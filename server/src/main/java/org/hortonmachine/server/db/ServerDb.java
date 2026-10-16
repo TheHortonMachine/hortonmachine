@@ -31,6 +31,8 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.server.ServerConfig;
 import org.hortonmachine.server.jobs.Job;
 import org.hortonmachine.server.jobs.JobState;
+import org.hortonmachine.server.users.Role;
+import org.hortonmachine.server.users.User;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,6 +54,7 @@ public class ServerDb implements AutoCloseable {
 
     private static final String JOB_COLUMNS = "id, user_id, module, parameters, state, progress, task, message, outputs, "
             + "created, started, finished, exit_code";
+    private static final String USER_COLUMNS = "id, username, role, created, disabled";
 
     private static final TypeReference<Map<String, String>> MAP_TYPE = new TypeReference<Map<String, String>>(){
     };
@@ -109,6 +112,10 @@ public class ServerDb implements AutoCloseable {
                     + "message TEXT, outputs TEXT, created BIGINT NOT NULL, started BIGINT, finished BIGINT, exit_code INTEGER)");
             execute("CREATE INDEX jobs_user_id ON jobs (user_id)");
             execute("CREATE INDEX jobs_state ON jobs (state)");
+        }
+        if (!db.hasTable("users")) {
+            execute("CREATE TABLE users (id VARCHAR(36) PRIMARY KEY, username VARCHAR(64) NOT NULL UNIQUE, "
+                    + "password_hash TEXT NOT NULL, role VARCHAR(16) NOT NULL, created BIGINT NOT NULL, disabled INTEGER NOT NULL)");
         }
     }
 
@@ -250,6 +257,84 @@ public class ServerDb implements AutoCloseable {
 
     public synchronized void deleteJob( String id ) throws Exception {
         update("DELETE FROM jobs WHERE id = ?", id);
+    }
+
+    private List<User> queryUsers( String where, Object... values ) throws Exception {
+        String sql = "SELECT " + USER_COLUMNS + " FROM users " + where;
+        return db.execOnConnection(connection -> {
+            List<User> users = new ArrayList<>();
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                setValues(statement, values);
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    while( resultSet.next() ) {
+                        users.add(new User(resultSet.getString(1), resultSet.getString(2), Role.valueOf(resultSet.getString(3)),
+                                resultSet.getLong(4), resultSet.getInt(5) != 0));
+                    }
+                }
+            }
+            return users;
+        });
+    }
+
+    /**
+     * Add a new user.
+     *
+     * @param user the user.
+     * @param passwordHash the hash of the password.
+     */
+    public synchronized void insertUser( User user, String passwordHash ) throws Exception {
+        update("INSERT INTO users (" + USER_COLUMNS + ", password_hash) VALUES (?, ?, ?, ?, ?, ?)", user.id, user.username,
+                user.role.name(), user.created, user.disabled ? 1 : 0, passwordHash);
+    }
+
+    /**
+     * @return the user, or <code>null</code> if it doesn't exist.
+     */
+    public synchronized User getUser( String id ) throws Exception {
+        List<User> users = queryUsers("WHERE id = ?", id);
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    /**
+     * @return the user with the given name, or <code>null</code> if it doesn't exist.
+     */
+    public synchronized User getUserByName( String username ) throws Exception {
+        List<User> users = queryUsers("WHERE username = ?", username);
+        return users.isEmpty() ? null : users.get(0);
+    }
+
+    /**
+     * @return the users, by name.
+     */
+    public synchronized List<User> listUsers() throws Exception {
+        return queryUsers("ORDER BY username");
+    }
+
+    /**
+     * @return the hash of the password of the user, or <code>null</code> if it doesn't exist.
+     */
+    public synchronized String getPasswordHash( String userId ) throws Exception {
+        String sql = "SELECT password_hash FROM users WHERE id = ?";
+        return db.execOnConnection(connection -> {
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                statement.setString(1, userId);
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    return resultSet.next() ? resultSet.getString(1) : null;
+                }
+            }
+        });
+    }
+
+    public synchronized void updatePasswordHash( String userId, String passwordHash ) throws Exception {
+        update("UPDATE users SET password_hash = ? WHERE id = ?", passwordHash, userId);
+    }
+
+    public synchronized void updateUser( User user ) throws Exception {
+        update("UPDATE users SET role = ?, disabled = ? WHERE id = ?", user.role.name(), user.disabled ? 1 : 0, user.id);
+    }
+
+    public synchronized void deleteUser( String id ) throws Exception {
+        update("DELETE FROM users WHERE id = ?", id);
     }
 
     @Override

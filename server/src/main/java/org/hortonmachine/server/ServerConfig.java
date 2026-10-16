@@ -36,6 +36,8 @@ public class ServerConfig {
 
     /** The environment variable with the password of the database. */
     public static final String DB_PASSWORD_ENV = "HM_SERVER_DB_PASSWORD";
+    /** The environment variable with the password of the administrator to create, when there is no console. */
+    public static final String ADMIN_PASSWORD_ENV = "HM_SERVER_ADMIN_PASSWORD";
 
     /** The prefix of the PostgreSQL databases in the --db option. */
     public static final String POSTGRESQL_PREFIX = "postgresql:";
@@ -54,6 +56,8 @@ public class ServerConfig {
     public String db;
     /** The user of the PostgreSQL database. */
     public String dbUser;
+    /** The name of an administrator to create, instead of starting the server, or <code>null</code>. */
+    public String createAdmin;
 
     /**
      * Read the configuration from the command line arguments.
@@ -110,6 +114,12 @@ public class ServerConfig {
             case "db-user":
                 config.dbUser = value;
                 break;
+            case "create-admin":
+                if (value.isEmpty()) {
+                    throw new IllegalArgumentException("The name of the administrator is missing.");
+                }
+                config.createAdmin = value;
+                break;
             default:
                 throw new IllegalArgumentException("Unknown option: --" + name);
             }
@@ -144,6 +154,8 @@ public class ServerConfig {
         out.println("                          use a PostgreSQL database instead of SQLite in the workspace;");
         out.println("                          its password is read from the " + DB_PASSWORD_ENV + " variable");
         out.println("  --db-user=user          the user of the PostgreSQL database");
+        out.println("  --create-admin=name     create an administrator in the workspace and exit, without starting;");
+        out.println("                          the password is asked, or read from the " + ADMIN_PASSWORD_ENV + " variable");
         out.println("  --version               show the version");
     }
 }
