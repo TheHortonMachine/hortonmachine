@@ -18,147 +18,112 @@
 package org.hortonmachine.server;
 
 import java.io.File;
-import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.hortonmachine.Version;
+import org.hortonmachine.server.db.ServerDb;
+import org.hortonmachine.server.jobs.JobManager;
 
 import io.javalin.Javalin;
 
 /**
  * The HortonMachine web server: runs the modules for the users of a browser.
  *
- * <pre>
- * hm-server [--port=8080] [--workspace=folder]
- * </pre>
- *
- * <p>The workspace folder holds the data, the users, the jobs and the uploads of the server.
+ * <p>The options are described in {@link ServerConfig}; the workspace folder holds the data,
+ * the database, the jobs and the uploads of the server.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class HmServer {
-    public static final int DEFAULT_PORT = 8080;
-    public static final String DEFAULT_WORKSPACE = "hm-server-workspace";
+    private static final Logger LOGGER = Logger.getLogger(HmServer.class.getName());
 
     public static final int EXIT_OK = 0;
+    public static final int EXIT_FAILURE = 1;
     public static final int EXIT_USAGE = 2;
 
-    private final int port;
-    private final File workspace;
+    /** The folder of the jobs, in the workspace. */
+    public static final String JOBS_FOLDER = "jobs";
+
+    private final ServerConfig config;
+    private ServerDb db;
+    private JobManager jobManager;
     private Javalin app;
 
-    /**
-     * @param port the port to listen on, 0 for any free port.
-     * @param workspace the workspace folder, created if missing.
-     */
-    public HmServer( int port, File workspace ) {
-        this.port = port;
-        this.workspace = workspace;
+    public HmServer( ServerConfig config ) {
+        this.config = config;
     }
 
     public static void main( String[] args ) {
-        HmServer server;
+        ServerConfig config;
         try {
-            server = fromArguments(args, System.out);
+            config = ServerConfig.fromArguments(args, System.out);
         } catch (IllegalArgumentException e) {
             System.err.println("Error: " + e.getMessage());
             System.err.println("Run 'hm-server --help' for the usage.");
             System.exit(EXIT_USAGE);
             return;
         }
-        if (server == null) {
+        if (config == null) {
             System.exit(EXIT_OK);
             return;
         }
-        server.start();
+        HmServer server = new HmServer(config);
+        try {
+            server.start();
+        } catch (Exception e) {
+            System.err.println("Error: the server can't start: " + e.getMessage());
+            server.stop();
+            System.exit(EXIT_FAILURE);
+            return;
+        }
         Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
         System.out.println("HortonMachine server " + Version.getVersion() + " listening on port " + server.getPort()
-                + ", workspace " + server.workspace.getAbsolutePath());
-    }
-
-    /**
-     * Create the server from the command line arguments.
-     *
-     * @param args the arguments, as --name=value.
-     * @param out where to print the usage and the version.
-     * @return the server, or <code>null</code> if only the usage or the version was asked.
-     * @throws IllegalArgumentException for a wrong argument.
-     */
-    static HmServer fromArguments( String[] args, PrintStream out ) {
-        int port = DEFAULT_PORT;
-        File workspace = new File(DEFAULT_WORKSPACE);
-        for( String argument : args ) {
-            if (argument.equals("--help") || argument.equals("-h")) {
-                printUsage(out);
-                return null;
-            } else if (argument.equals("--version") || argument.equals("version")) {
-                out.println("HortonMachine server " + Version.getVersion());
-                return null;
-            }
-            int equalsIndex = argument.indexOf('=');
-            if (!argument.startsWith("--") || equalsIndex < 0) {
-                throw new IllegalArgumentException("Unexpected argument: " + argument + ". Options are given as --option=value.");
-            }
-            String name = argument.substring(2, equalsIndex);
-            String value = argument.substring(equalsIndex + 1);
-            switch( name ) {
-            case "port":
-                try {
-                    port = Integer.parseInt(value.trim());
-                } catch (NumberFormatException e) {
-                    throw new IllegalArgumentException("The port must be a number: " + value);
-                }
-                if (port < 0 || port > 65535) {
-                    throw new IllegalArgumentException("The port must be between 0 and 65535: " + value);
-                }
-                break;
-            case "workspace":
-                if (value.isBlank()) {
-                    throw new IllegalArgumentException("The workspace folder is missing.");
-                }
-                workspace = new File(value);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown option: --" + name);
-            }
-        }
-        return new HmServer(port, workspace);
-    }
-
-    private static void printUsage( PrintStream out ) {
-        out.println("HortonMachine server " + Version.getVersion());
-        out.println();
-        out.println("Usage:");
-        out.println("  hm-server [--port=" + DEFAULT_PORT + "] [--workspace=" + DEFAULT_WORKSPACE + "]");
-        out.println();
-        out.println("  --port        the port to listen on");
-        out.println("  --workspace   the folder of the data, users, jobs and uploads, created if missing");
-        out.println("  --version     show the version");
+                + ", workspace " + config.workspace.getAbsolutePath());
     }
 
     /**
      * Start the server.
      *
-     * @throws IllegalStateException if the workspace can't be created or the port is not available.
+     * @throws Exception if the workspace or the database can't be opened or the port is not available.
      */
-    public void start() {
+    public void start() throws Exception {
+        File workspace = config.workspace;
         if (!workspace.isDirectory() && !workspace.mkdirs()) {
             throw new IllegalStateException("The workspace folder can't be created: " + workspace.getAbsolutePath());
         }
-        app = Javalin.create(config -> {
-            config.startup.showJavalinBanner = false;
-            config.startup.showOldJavalinVersionWarning = false;
-            config.routes.get("/", ctx -> ctx.html("<!doctype html><html><head><meta charset=\"utf-8\"><title>HortonMachine</title>"
-                    + "</head><body><h1>HortonMachine server " + Version.getVersion() + "</h1></body></html>"));
-        }).start(port);
+        db = ServerDb.open(config);
+        jobManager = new JobManager(db, new File(workspace, JOBS_FOLDER), config.slots, config.jobMemory, config.jobTtlDays);
+        jobManager.start();
+
+        app = Javalin.create(javalinConfig -> {
+            javalinConfig.startup.showJavalinBanner = false;
+            javalinConfig.startup.showOldJavalinVersionWarning = false;
+            javalinConfig.routes.get("/",
+                    ctx -> ctx.html("<!doctype html><html><head><meta charset=\"utf-8\"><title>HortonMachine</title>"
+                            + "</head><body><h1>HortonMachine server " + Version.getVersion() + "</h1></body></html>"));
+        }).start(config.port);
     }
 
     /**
-     * Stop the server, if started.
+     * Stop the server, killing the running jobs.
      */
-    public void stop() {
+    public synchronized void stop() {
         if (app != null) {
             app.stop();
             app = null;
+        }
+        try {
+            if (jobManager != null) {
+                jobManager.close();
+                jobManager = null;
+            }
+            if (db != null) {
+                db.close();
+                db = null;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The server didn't stop cleanly.", e);
         }
     }
 
@@ -166,10 +131,17 @@ public class HmServer {
      * @return the port the server listens on, once started.
      */
     public int getPort() {
-        return app != null ? app.port() : port;
+        return app != null ? app.port() : config.port;
     }
 
-    public File getWorkspace() {
-        return workspace;
+    public ServerConfig getConfig() {
+        return config;
+    }
+
+    /**
+     * @return the jobs, once started.
+     */
+    public JobManager getJobManager() {
+        return jobManager;
     }
 }

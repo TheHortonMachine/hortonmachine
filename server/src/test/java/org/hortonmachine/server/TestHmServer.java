@@ -27,52 +27,70 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.server.db.ServerDb;
+
 import junit.framework.TestCase;
 
 /**
- * Tests of the web server.
+ * Tests of the web server and its configuration.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestHmServer extends TestCase {
 
+    private File tmpFolder;
     private File workspace;
 
     @Override
     protected void setUp() throws Exception {
-        workspace = new File(Files.createTempDirectory("hm-server-test").toFile(), "workspace");
+        tmpFolder = Files.createTempDirectory("hm-server-test").toFile();
+        workspace = new File(tmpFolder, "workspace");
     }
 
     @Override
     protected void tearDown() throws Exception {
-        workspace.delete();
-        workspace.getParentFile().delete();
+        FileUtilities.deleteFileOrDir(tmpFolder);
     }
 
     public void testArguments() {
         PrintStream out = new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8);
 
-        HmServer server = HmServer.fromArguments(new String[0], out);
-        assertEquals(HmServer.DEFAULT_PORT, server.getPort());
-        assertEquals(HmServer.DEFAULT_WORKSPACE, server.getWorkspace().getPath());
+        ServerConfig config = ServerConfig.fromArguments(new String[0], out);
+        assertEquals(ServerConfig.DEFAULT_PORT, config.port);
+        assertEquals(ServerConfig.DEFAULT_WORKSPACE, config.workspace.getPath());
+        assertEquals(ServerConfig.DEFAULT_SLOTS, config.slots);
+        assertEquals(ServerConfig.DEFAULT_JOB_MEMORY, config.jobMemory);
+        assertEquals(ServerConfig.DEFAULT_JOB_TTL_DAYS, config.jobTtlDays);
+        assertNull(config.db);
 
-        server = HmServer.fromArguments(new String[]{"--port=9090", "--workspace=" + workspace.getPath()}, out);
-        assertEquals(9090, server.getPort());
-        assertEquals(workspace, server.getWorkspace());
+        config = ServerConfig.fromArguments(new String[]{"--port=9090", "--workspace=" + workspace.getPath(), "--slots=4",
+                "--job-memory=512m", "--job-ttl-days=0", "--db=postgresql://localhost:5432/hm", "--db-user=hm"}, out);
+        assertEquals(9090, config.port);
+        assertEquals(workspace, config.workspace);
+        assertEquals(4, config.slots);
+        assertEquals("512m", config.jobMemory);
+        assertEquals(0, config.jobTtlDays);
+        assertEquals("postgresql://localhost:5432/hm", config.db);
+        assertEquals("hm", config.dbUser);
 
-        assertNull(HmServer.fromArguments(new String[]{"--help"}, out));
-        assertNull(HmServer.fromArguments(new String[]{"--version"}, out));
+        assertNull(ServerConfig.fromArguments(new String[]{"--help"}, out));
+        assertNull(ServerConfig.fromArguments(new String[]{"--version"}, out));
 
         assertWrongArguments("--port=abc");
         assertWrongArguments("--port=70000");
         assertWrongArguments("--workspace=");
+        assertWrongArguments("--slots=0");
+        assertWrongArguments("--job-memory=lots");
+        assertWrongArguments("--job-ttl-days=-1");
+        assertWrongArguments("--db=jdbc:postgresql://localhost/hm");
         assertWrongArguments("--foo=1");
         assertWrongArguments("port");
     }
 
     private void assertWrongArguments( String... args ) {
         try {
-            HmServer.fromArguments(args, new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
+            ServerConfig.fromArguments(args, new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8));
             fail("Accepted: " + String.join(" ", args));
         } catch (IllegalArgumentException e) {
             // expected
@@ -80,10 +98,14 @@ public class TestHmServer extends TestCase {
     }
 
     public void testStartAndStop() throws Exception {
-        HmServer server = new HmServer(0, workspace);
+        ServerConfig config = new ServerConfig();
+        config.port = 0;
+        config.workspace = workspace;
+        HmServer server = new HmServer(config);
         server.start();
         try {
             assertTrue(workspace.isDirectory());
+            assertTrue(new File(workspace, ServerDb.SQLITE_FILE).exists());
             assertTrue(server.getPort() > 0);
 
             HttpResponse<String> response = HttpClient.newHttpClient().send(
