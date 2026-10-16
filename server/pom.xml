@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.hortonmachine</groupId>
+		<artifactId>hortonmachine</artifactId>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>hm-server</artifactId>
+	<packaging>jar</packaging>
+	<name>HM Web Server</name>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-modules</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>io.javalin</groupId>
+			<artifactId>javalin</artifactId>
+		</dependency>
+		<dependency>
+			<!-- Jetty and Javalin log through java.util.logging, as the rest of HM -->
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-jdk14</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+</project>
