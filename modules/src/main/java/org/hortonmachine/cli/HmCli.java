@@ -21,8 +21,6 @@ import java.io.File;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -38,8 +36,6 @@ import org.hortonmachine.gears.libs.modules.HMParameterKind;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-
-import oms3.annotations.Execute;
 
 /**
  * The HortonMachine command line: lists, describes and runs the modules.
@@ -258,8 +254,8 @@ public class HmCli {
             sb.append(" Unit: ").append(parameter.unit).append(".");
         }
         if (parameter.min != null || parameter.max != null) {
-            sb.append(" Range: ").append(parameter.min != null ? format(parameter.min) : "").append(" to ")
-                    .append(parameter.max != null ? format(parameter.max) : "").append(".");
+            sb.append(" Range: ").append(parameter.min != null ? ModuleDescriptor.formatNumber(parameter.min) : "").append(" to ")
+                    .append(parameter.max != null ? ModuleDescriptor.formatNumber(parameter.max) : "").append(".");
         }
         if (parameter.dataType == DataType.NUMBERS) {
             sb.append(" A list of numbers separated by commas.");
@@ -341,46 +337,24 @@ public class HmCli {
         boolean debug = arguments.remove("--debug");
         Map<String, String> values = parseArguments(arguments, module);
 
-        HMModel instance = moduleClass.getDeclaredConstructor().newInstance();
-        for( Map.Entry<String, String> entry : values.entrySet() ) {
-            Parameter parameter = module.getParameter(entry.getKey());
-            parameter.field.set(instance, convert(parameter, entry.getValue()));
-        }
-        instance.pm = new CliProgressMonitor(out, err);
-
-        Method executeMethod = null;
-        for( Method method : moduleClass.getMethods() ) {
-            if (method.isAnnotationPresent(Execute.class) && method.getParameterCount() == 0) {
-                executeMethod = method;
-                break;
-            }
-        }
-        if (executeMethod == null) {
-            throw new IllegalStateException("The module " + module.getName() + " has no method to execute.");
-        }
-
         long start = System.currentTimeMillis();
+        Map<String, Object> outputs;
         try {
-            executeMethod.invoke(instance);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause() != null ? e.getCause() : e;
-            err.println("Error: the module " + module.getName() + " failed: " + cause.getMessage());
+            outputs = new ModuleRunner(module).run(values, new CliProgressMonitor(out, err));
+        } catch (Throwable e) {
+            err.println("Error: the module " + module.getName() + " failed: " + e.getMessage());
             if (debug) {
-                cause.printStackTrace(err);
+                e.printStackTrace(err);
             } else {
                 err.println("Run again with --debug to see the full error trace.");
             }
             return EXIT_FAILURE;
         }
 
-        for( Parameter parameter : module.getParameters() ) {
-            if (parameter.isComputed) {
-                Object value = parameter.field.get(instance);
-                if (value != null && (!value.getClass().isArray() || Array.getLength(value) < 1000)) {
-                    out.println(OUTPUT_PREFIX + parameter.name + " = " + valueToString(value));
-                }
-            } else if (parameter.kind == HMParameterKind.OUTPUT && values.containsKey(parameter.name)) {
-                out.println(OUTPUT_PREFIX + parameter.name + " = " + values.get(parameter.name));
+        for( Map.Entry<String, Object> entry : outputs.entrySet() ) {
+            Object value = entry.getValue();
+            if (!value.getClass().isArray() || Array.getLength(value) < 1000) {
+                out.println(OUTPUT_PREFIX + entry.getKey() + " = " + ModuleRunner.valueToString(value));
             }
         }
         out.println(String.format(Locale.ROOT, "Done in %.1f s.", (System.currentTimeMillis() - start) / 1000.0));
@@ -425,8 +399,9 @@ public class HmCli {
             values.put(name, value);
         }
 
-        for( Map.Entry<String, String> entry : values.entrySet() ) {
-            checkValue(module, entry.getKey(), entry.getValue());
+        Map<String, String> errors = module.check(values);
+        if (!errors.isEmpty()) {
+            throw new UsageException(String.join(System.lineSeparator() + "Error: ", errors.values()));
         }
         return values;
     }
@@ -453,129 +428,6 @@ public class HmCli {
         return values;
     }
 
-    private void checkValue( ModuleDescriptor module, String name, String value ) throws UsageException {
-        Parameter parameter = module.getParameter(name);
-        if (parameter == null) {
-            List<String> names = new ArrayList<>();
-            for( Parameter p : module.getParameters() ) {
-                if (!p.isComputed) {
-                    names.add(p.name);
-                }
-            }
-            throw new UsageException("The module " + module.getName() + " has no parameter " + name + ". Its parameters are: "
-                    + String.join(", ", names) + ".");
-        }
-        if (parameter.isComputed) {
-            throw new UsageException("The parameter " + name + " is computed by the module and can't be set.");
-        }
-        if (parameter.dataType == DataType.OTHER) {
-            throw new UsageException("The parameter " + name + " is of a type not supported by the command line: "
-                    + parameter.field.getType().getSimpleName() + ".");
-        }
-        if (!parameter.choices.isEmpty() && !parameter.choices.contains(value)) {
-            throw new UsageException("The value of " + name + " must be one of: " + String.join(", ", parameter.choices) + ".");
-        }
-        Object converted;
-        try {
-            converted = convert(parameter, value);
-        } catch (IllegalArgumentException e) {
-            throw new UsageException("The value of " + name + " is not valid: " + e.getMessage());
-        }
-        if (converted instanceof Number) {
-            double number = ((Number) converted).doubleValue();
-            if ((parameter.min != null && number < parameter.min) || (parameter.max != null && number > parameter.max)) {
-                throw new UsageException("The value of " + name + " must be in the range " + (parameter.min != null ? format(parameter.min) : "")
-                        + " to " + (parameter.max != null ? format(parameter.max) : "") + ".");
-            }
-        }
-        if (parameter.isPath() && !value.isBlank()) {
-            File file = new File(value);
-            if (parameter.kind == HMParameterKind.INPUT && !file.exists()) {
-                throw new UsageException("The input of " + name + " doesn't exist: " + value);
-            }
-            File parent = file.getAbsoluteFile().getParentFile();
-            if (parameter.kind == HMParameterKind.OUTPUT && parent != null && !parent.isDirectory()) {
-                throw new UsageException("The folder of the output " + name + " doesn't exist: " + parent);
-            }
-        }
-    }
-
-    /**
-     * Convert a value to the type of the field of a parameter.
-     *
-     * @throws IllegalArgumentException if the value can't be converted.
-     */
-    private static Object convert( Parameter parameter, String value ) {
-        Class< ? > type = parameter.field.getType();
-        String trimmed = value.trim();
-        if (type == String.class) {
-            return value;
-        } else if (type.isEnum()) {
-            for( Object constant : type.getEnumConstants() ) {
-                if (((Enum< ? >) constant).name().equals(trimmed)) {
-                    return constant;
-                }
-            }
-            throw new IllegalArgumentException("'" + value + "' is not one of " + parameter.choices + ".");
-        } else if (parameter.dataType == DataType.NUMBERS) {
-            return toNumbers(type.getComponentType(), trimmed);
-        } else if (type == boolean.class || type == Boolean.class) {
-            if (trimmed.equalsIgnoreCase("true")) {
-                return true;
-            } else if (trimmed.equalsIgnoreCase("false")) {
-                return false;
-            }
-            throw new IllegalArgumentException("'" + value + "' is not true or false.");
-        }
-        try {
-            if (type == double.class || type == Double.class) {
-                return Double.valueOf(trimmed);
-            } else if (type == float.class || type == Float.class) {
-                return Float.valueOf(trimmed);
-            } else if (type == int.class || type == Integer.class) {
-                return Integer.valueOf(trimmed);
-            } else if (type == long.class || type == Long.class) {
-                return Long.valueOf(trimmed);
-            } else if (type == short.class || type == Short.class) {
-                return Short.valueOf(trimmed);
-            }
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("'" + value + "' is not a valid " + type.getSimpleName() + ".");
-        }
-        throw new IllegalArgumentException("the type " + type.getSimpleName() + " is not supported.");
-    }
-
-    /**
-     * Convert a list of numbers, separated by commas or spaces and optionally in square brackets 
-     * (as printed by the modules), to an array of the given type.
-     */
-    private static Object toNumbers( Class< ? > componentType, String value ) {
-        String list = value.replaceAll("^\\[|\\]$", "").trim();
-        String[] parts = list.isEmpty() ? new String[0] : list.split("[,\\s]+");
-        Object array = Array.newInstance(componentType, parts.length);
-        for( int i = 0; i < parts.length; i++ ) {
-            String part = parts[i];
-            try {
-                if (componentType == double.class || componentType == Double.class) {
-                    Array.set(array, i, Double.valueOf(part));
-                } else if (componentType == float.class || componentType == Float.class) {
-                    Array.set(array, i, Float.valueOf(part));
-                } else if (componentType == int.class || componentType == Integer.class) {
-                    Array.set(array, i, Integer.valueOf(part));
-                } else if (componentType == long.class || componentType == Long.class) {
-                    Array.set(array, i, Long.valueOf(part));
-                } else if (componentType == short.class || componentType == Short.class) {
-                    Array.set(array, i, Short.valueOf(part));
-                } else {
-                    throw new IllegalArgumentException("lists of " + componentType.getSimpleName() + " are not supported.");
-                }
-            } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("'" + part + "' is not a valid " + componentType.getSimpleName() + ".");
-            }
-        }
-        return array;
-    }
-
     private Class< ? extends HMModel> findModule( String name ) throws UsageException {
         Map<String, Class< ? extends HMModel>> modules = ModuleDescriptor.getAvailableModules();
         Class< ? extends HMModel> moduleClass = modules.get(name);
@@ -593,28 +445,6 @@ public class HmCli {
         }
         throw new UsageException("Unknown module: " + name
                 + (similar.isEmpty() ? ". Run 'hm-cli list' to see the modules." : ". Did you mean: " + String.join(", ", similar) + "?"));
-    }
-
-    private static String valueToString( Object value ) {
-        if (value.getClass().isArray()) {
-            StringBuilder sb = new StringBuilder("[");
-            for( int i = 0; i < Array.getLength(value); i++ ) {
-                if (i > 0) {
-                    sb.append(", ");
-                }
-                Object element = Array.get(value, i);
-                sb.append(element != null && element.getClass().isArray() ? valueToString(element) : element);
-            }
-            return sb.append("]").toString();
-        }
-        return value.toString();
-    }
-
-    private static String format( double value ) {
-        if (value == Math.rint(value) && Math.abs(value) < 1E15) {
-            return String.valueOf((long) value);
-        }
-        return String.valueOf(value);
     }
 
     private static String pad( String text, int width ) {

@@ -22,10 +22,13 @@ import java.io.File;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.modules.HMTestCase;
 import org.hortonmachine.modules.HMTestMaps;
@@ -237,16 +240,14 @@ public class TestHmCli extends HMTestCase {
         assertEquals(ModuleDescriptor.DataType.NUMBERS, inParams.dataType);
 
         // the list printed by the calibration is accepted as it is
-        java.lang.reflect.Method convert = HmCli.class.getDeclaredMethod("convert", ModuleDescriptor.Parameter.class, String.class);
-        convert.setAccessible(true);
-        double[] values = (double[]) convert.invoke(null, inParams, "[0.5, 1.0, 2.5E-4]");
+        double[] values = (double[]) inParams.convert("[0.5, 1.0, 2.5E-4]");
         assertEquals(3, values.length);
         assertEquals(2.5E-4, values[2], 0.0);
-        values = (double[]) convert.invoke(null, inParams, "0.5,1 2");
+        values = (double[]) inParams.convert("0.5,1 2");
         assertEquals(3, values.length);
 
         ModuleDescriptor calibration = ModuleDescriptor.of(org.hortonmachine.hmachine.geoframe.ermworkflow.ErmCalibration.class);
-        Object cost = convert.invoke(null, calibration.getParameter("pCostFunction"), "KGE");
+        Object cost = calibration.getParameter("pCostFunction").convert("KGE");
         assertEquals(org.hortonmachine.gears.utils.optimizers.CostFunctions.KGE, cost);
 
         // wrong values are usage errors
@@ -254,6 +255,60 @@ public class TestHmCli extends HMTestCase {
         assertTrue(err().contains("'x' is not a valid double"));
         assertEquals(HmCli.EXIT_USAGE, cli("run", "ErmCalibration", "--pCostFunction=NSE"));
         assertTrue(err().contains("must be one of: KGE"));
+    }
+
+    public void testCheckValues() throws Exception {
+        File elevationFile = writeElevation();
+        ModuleDescriptor gradient = ModuleDescriptor.of(org.hortonmachine.modules.Gradient.class);
+
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put("inElev", elevationFile.getAbsolutePath());
+        values.put("pMode", "Horn");
+        values.put("doDegrees", "true");
+        values.put("outSlope", new File(tmpFolder, "slope.tif").getAbsolutePath());
+        assertTrue(gradient.check(values).isEmpty());
+
+        // all the errors are reported, by parameter name
+        values.put("pMode", "foo");
+        values.put("doDegrees", "maybe");
+        values.put("inElevv", "x");
+        Map<String, String> errors = gradient.check(values);
+        assertEquals(3, errors.size());
+        assertTrue(errors.get("pMode").contains("must be one of"));
+        assertTrue(errors.get("doDegrees").contains("not true or false"));
+        assertTrue(errors.get("inElevv").contains("has no parameter inElevv"));
+
+        assertNull(gradient.getParameter("doDegrees").check("false"));
+        assertTrue(gradient.getParameter("inElev").check(new File(tmpFolder, "missing.tif").getPath()).contains("doesn't exist"));
+
+        // the command line reports them all too
+        assertEquals(HmCli.EXIT_USAGE, cli("run", "Gradient", "--pMode=foo", "--doDegrees=maybe"));
+        assertTrue(err().contains("must be one of"));
+        assertTrue(err().contains("not true or false"));
+    }
+
+    public void testModuleRunner() throws Exception {
+        File elevationFile = writeElevation();
+        File pitFile = new File(tmpFolder, "pit_runner.tif");
+        ModuleRunner runner = new ModuleRunner(ModuleDescriptor.of(org.hortonmachine.modules.Pitfiller.class));
+
+        Map<String, String> values = new LinkedHashMap<>();
+        values.put("inElev", elevationFile.getAbsolutePath());
+        values.put("outPit", pitFile.getAbsolutePath());
+        Map<String, Object> outputs = runner.run(values, new DummyProgressMonitor());
+        assertEquals(pitFile.getAbsolutePath(), outputs.get("outPit"));
+        assertTrue(pitFile.exists());
+
+        // wrong values are not run
+        values.put("outPit", new File(tmpFolder, "nofolder/out.tif").getAbsolutePath());
+        try {
+            runner.run(values, new DummyProgressMonitor());
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("The folder of the output"));
+        }
+
+        assertEquals("[1, 2, 3]", ModuleRunner.valueToString(new int[]{1, 2, 3}));
     }
 
     public void testModuleFailure() throws Exception {

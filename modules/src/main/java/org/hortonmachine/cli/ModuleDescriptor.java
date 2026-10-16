@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.cli;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -147,6 +148,128 @@ public class ModuleDescriptor {
             default:
                 return false;
             }
+        }
+
+        /**
+         * Convert a value to the type of the field of the parameter.
+         *
+         * @param value the value as text, numbers lists separated by commas or spaces.
+         * @return the converted value.
+         * @throws IllegalArgumentException if the value can't be converted.
+         */
+        public Object convert( String value ) {
+            Class< ? > type = field.getType();
+            String trimmed = value.trim();
+            if (type == String.class) {
+                return value;
+            } else if (type.isEnum()) {
+                for( Object constant : type.getEnumConstants() ) {
+                    if (((Enum< ? >) constant).name().equals(trimmed)) {
+                        return constant;
+                    }
+                }
+                throw new IllegalArgumentException("'" + value + "' is not one of " + choices + ".");
+            } else if (dataType == DataType.NUMBERS) {
+                return toNumbers(type.getComponentType(), trimmed);
+            } else if (type == boolean.class || type == Boolean.class) {
+                if (trimmed.equalsIgnoreCase("true")) {
+                    return true;
+                } else if (trimmed.equalsIgnoreCase("false")) {
+                    return false;
+                }
+                throw new IllegalArgumentException("'" + value + "' is not true or false.");
+            }
+            try {
+                if (type == double.class || type == Double.class) {
+                    return Double.valueOf(trimmed);
+                } else if (type == float.class || type == Float.class) {
+                    return Float.valueOf(trimmed);
+                } else if (type == int.class || type == Integer.class) {
+                    return Integer.valueOf(trimmed);
+                } else if (type == long.class || type == Long.class) {
+                    return Long.valueOf(trimmed);
+                } else if (type == short.class || type == Short.class) {
+                    return Short.valueOf(trimmed);
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("'" + value + "' is not a valid " + type.getSimpleName() + ".");
+            }
+            throw new IllegalArgumentException("the type " + type.getSimpleName() + " is not supported.");
+        }
+
+        /**
+         * Check a value given by the user: the parameter can be set, the value is one of the choices,
+         * can be converted and is in range, an input file exists and the folder of an output file exists.
+         *
+         * @param value the value as text.
+         * @return the error message, or <code>null</code> if the value is fine.
+         */
+        public String check( String value ) {
+            if (isComputed) {
+                return "The parameter " + name + " is computed by the module and can't be set.";
+            }
+            if (dataType == DataType.OTHER) {
+                return "The parameter " + name + " is of a type not supported by the command line: " + field.getType().getSimpleName()
+                        + ".";
+            }
+            if (!choices.isEmpty() && !choices.contains(value)) {
+                return "The value of " + name + " must be one of: " + String.join(", ", choices) + ".";
+            }
+            Object converted;
+            try {
+                converted = convert(value);
+            } catch (IllegalArgumentException e) {
+                return "The value of " + name + " is not valid: " + e.getMessage();
+            }
+            if (converted instanceof Number) {
+                double number = ((Number) converted).doubleValue();
+                if ((min != null && number < min) || (max != null && number > max)) {
+                    return "The value of " + name + " must be in the range " + (min != null ? formatNumber(min) : "") + " to "
+                            + (max != null ? formatNumber(max) : "") + ".";
+                }
+            }
+            if (isPath() && !value.isBlank()) {
+                File file = new File(value);
+                if (kind == HMParameterKind.INPUT && !file.exists()) {
+                    return "The input of " + name + " doesn't exist: " + value;
+                }
+                File parent = file.getAbsoluteFile().getParentFile();
+                if (kind == HMParameterKind.OUTPUT && parent != null && !parent.isDirectory()) {
+                    return "The folder of the output " + name + " doesn't exist: " + parent;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Convert a list of numbers, separated by commas or spaces and optionally in square brackets
+         * (as printed by the modules), to an array of the given type.
+         */
+        private static Object toNumbers( Class< ? > componentType, String value ) {
+            String list = value.replaceAll("^\\[|\\]$", "").trim();
+            String[] parts = list.isEmpty() ? new String[0] : list.split("[,\\s]+");
+            Object array = Array.newInstance(componentType, parts.length);
+            for( int i = 0; i < parts.length; i++ ) {
+                String part = parts[i];
+                try {
+                    if (componentType == double.class || componentType == Double.class) {
+                        Array.set(array, i, Double.valueOf(part));
+                    } else if (componentType == float.class || componentType == Float.class) {
+                        Array.set(array, i, Float.valueOf(part));
+                    } else if (componentType == int.class || componentType == Integer.class) {
+                        Array.set(array, i, Integer.valueOf(part));
+                    } else if (componentType == long.class || componentType == Long.class) {
+                        Array.set(array, i, Long.valueOf(part));
+                    } else if (componentType == short.class || componentType == Short.class) {
+                        Array.set(array, i, Short.valueOf(part));
+                    } else {
+                        throw new IllegalArgumentException("lists of " + componentType.getSimpleName() + " are not supported.");
+                    }
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException("'" + part + "' is not a valid " + componentType.getSimpleName() + ".");
+                }
+            }
+            return array;
         }
     }
 
@@ -366,6 +489,48 @@ public class ModuleDescriptor {
             }
         }
         return null;
+    }
+
+    /**
+     * Check the values given by the user, as with {@link Parameter#check(String)},
+     * also reporting the names that are not parameters of the module.
+     *
+     * @param values the values by parameter name.
+     * @return the error messages by parameter name, in the order of the values; empty if all values are fine.
+     */
+    public Map<String, String> check( Map<String, String> values ) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        for( Map.Entry<String, String> entry : values.entrySet() ) {
+            String name = entry.getKey();
+            Parameter parameter = getParameter(name);
+            String error;
+            if (parameter == null) {
+                List<String> names = new ArrayList<>();
+                for( Parameter p : parameters ) {
+                    if (!p.isComputed) {
+                        names.add(p.name);
+                    }
+                }
+                error = "The module " + getName() + " has no parameter " + name + ". Its parameters are: " + String.join(", ", names)
+                        + ".";
+            } else {
+                error = parameter.check(entry.getValue());
+            }
+            if (error != null) {
+                errors.put(name, error);
+            }
+        }
+        return errors;
+    }
+
+    /**
+     * Format a number without decimals if it is an integer value.
+     */
+    static String formatNumber( double value ) {
+        if (value == Math.rint(value) && Math.abs(value) < 1E15) {
+            return String.valueOf((long) value);
+        }
+        return String.valueOf(value);
     }
 
     /**
