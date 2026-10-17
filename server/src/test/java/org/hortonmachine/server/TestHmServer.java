@@ -23,8 +23,12 @@ import java.io.PrintStream;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.server.ServerConfig.Setting;
 import org.hortonmachine.server.db.ServerDb;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
@@ -50,6 +54,37 @@ public class TestHmServer extends TestCase {
     @Override
     protected void tearDown() throws Exception {
         FileUtilities.deleteFileOrDir(tmpFolder);
+    }
+
+    public void testSettingsFile() throws Exception {
+        PrintStream out = new PrintStream(new ByteArrayOutputStream(), true, StandardCharsets.UTF_8);
+        assertTrue(workspace.mkdirs());
+        Map<String, String> settings = new LinkedHashMap<>();
+        settings.put("slots", "3");
+        settings.put("job-memory", "1g");
+        settings.put("unknown", "ignored");
+        // only on the command line
+        settings.put("db", "postgresql://localhost:5432/hm");
+        settings.put("port", "9999");
+        ServerConfig.writeSettingsFile(workspace, settings);
+
+        // the command line wins over the file, the file over the defaults
+        ServerConfig config = ServerConfig.fromArguments(new String[]{"--workspace=" + workspace.getPath(), "--slots=1"}, out);
+        config.applySettingsFile();
+        assertEquals(1, config.slots);
+        assertEquals("1g", config.jobMemory);
+        assertEquals(ServerConfig.DEFAULT_PORT, config.port);
+        assertNull(config.db);
+        assertEquals(Set.of(Setting.SLOTS), config.fromCommandLine);
+
+        settings.put("job-ttl-days", "-3");
+        ServerConfig.writeSettingsFile(workspace, settings);
+        try {
+            config.applySettingsFile();
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().startsWith(ServerConfig.SETTINGS_FILE));
+        }
     }
 
     public void testArguments() {

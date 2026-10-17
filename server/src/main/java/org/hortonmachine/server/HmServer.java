@@ -26,15 +26,23 @@ import java.util.logging.Logger;
 import org.hortonmachine.Version;
 import org.hortonmachine.server.db.ServerDb;
 import org.hortonmachine.server.jobs.JobManager;
+import org.hortonmachine.server.uploads.UploadManager;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
 import org.hortonmachine.server.users.UserManager;
+import org.hortonmachine.server.web.AccountPages;
+import org.hortonmachine.server.web.AdminPages;
 import org.hortonmachine.server.web.Auth;
 import org.hortonmachine.server.web.FileSuggestions;
 import org.hortonmachine.server.web.JobPages;
 import org.hortonmachine.server.web.ModulePages;
+import org.hortonmachine.server.web.UploadPages;
+
+import org.hortonmachine.server.ServerConfig.Setting;
 
 import io.javalin.Javalin;
+import io.javalin.config.MultipartConfig;
+import io.javalin.config.SizeUnit;
 
 /**
  * The HortonMachine web server: runs the modules for the users of a browser.
@@ -51,10 +59,17 @@ public class HmServer {
     public static final int EXIT_FAILURE = 1;
     public static final int EXIT_USAGE = 2;
 
+    private static final long MB = 1024L * 1024L;
+    /** The unpacked files of a zip file can be this many times larger than the largest upload. */
+    private static final int UNPACKED_FACTOR = 10;
+
     private final ServerConfig config;
     private ServerDb db;
     private JobManager jobManager;
     private UserManager userManager;
+    private UploadManager uploadManager;
+    private UploadPages uploadPages;
+    private MultipartConfig multipartConfig;
     private Javalin app;
 
     public HmServer( ServerConfig config ) {
@@ -154,24 +169,64 @@ public class HmServer {
      * @throws Exception if the workspace or the database can't be opened or the port is not available.
      */
     public void start() throws Exception {
+        long startTime = System.currentTimeMillis();
         WorkspacePaths paths = new WorkspacePaths(config.workspace);
         paths.createFolders();
+        config.applySettingsFile();
         db = ServerDb.open(config);
         jobManager = new JobManager(db, paths, config.slots, config.jobMemory, config.jobTtlDays);
         jobManager.start();
         userManager = new UserManager(db);
+        uploadManager = new UploadManager(paths, config.userQuotaMb * MB, config.maxUploadMb * MB * UNPACKED_FACTOR);
+        uploadManager.cleanTmpFolder();
         Auth auth = new Auth(userManager);
         ModulePages modulePages = new ModulePages(jobManager, new FileSuggestions(paths, jobManager));
         JobPages jobPages = new JobPages(jobManager, userManager);
+        uploadPages = new UploadPages(uploadManager, config.maxUploadMb);
+        AccountPages accountPages = new AccountPages(userManager);
+        AdminPages adminPages = new AdminPages(config, paths, userManager, jobManager, uploadManager, startTime,
+                this::applyLiveSettings);
 
         app = Javalin.create(javalinConfig -> {
             javalinConfig.startup.showJavalinBanner = false;
             javalinConfig.startup.showOldJavalinVersionWarning = false;
+            // the uploaded files are written on disk, next to the uploads, not kept in memory
+            multipartConfig = javalinConfig.jetty.multipartConfig;
+            multipartConfig.cacheDirectory(paths.getTmpFolder().getAbsolutePath());
+            multipartConfig.maxInMemoryFileSize(1, SizeUnit.MB);
+            setMultipartLimits(config.maxUploadMb);
+            uploadPages.registerSizeCheck(javalinConfig);
             auth.register(javalinConfig);
             javalinConfig.routes.get("/", ctx -> ctx.redirect("/modules"));
             modulePages.register(javalinConfig);
             jobPages.register(javalinConfig);
+            uploadPages.register(javalinConfig);
+            accountPages.register(javalinConfig);
+            adminPages.register(javalinConfig);
         }).start(config.port);
+    }
+
+    private void setMultipartLimits( int maxUploadMb ) {
+        // read by Javalin at every upload
+        multipartConfig.maxFileSize(maxUploadMb, SizeUnit.MB);
+        multipartConfig.maxTotalRequestSize(maxUploadMb, SizeUnit.MB);
+    }
+
+    /**
+     * Apply the settings of the settings page to the running server, and keep them in its configuration.
+     *
+     * @param settings the new settings.
+     */
+    private synchronized void applyLiveSettings( ServerConfig settings ) {
+        jobManager.setSlots(settings.slots);
+        jobManager.setJobMemory(settings.jobMemory);
+        jobManager.setTtlDays(settings.jobTtlDays);
+        uploadManager.setLimits(settings.userQuotaMb * MB, settings.maxUploadMb * MB * UNPACKED_FACTOR);
+        uploadPages.setMaxUploadMb(settings.maxUploadMb);
+        setMultipartLimits(settings.maxUploadMb);
+        for( Setting setting : Setting.values() ) {
+            config.set(setting, settings.get(setting));
+        }
     }
 
     /**
@@ -219,5 +274,12 @@ public class HmServer {
      */
     public UserManager getUserManager() {
         return userManager;
+    }
+
+    /**
+     * @return the uploads, once started.
+     */
+    public UploadManager getUploadManager() {
+        return uploadManager;
     }
 }

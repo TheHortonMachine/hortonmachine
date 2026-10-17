@@ -20,6 +20,7 @@ package org.hortonmachine.server.db;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -233,6 +234,40 @@ public class ServerDb implements AutoCloseable {
             return queryJobs("ORDER BY created DESC LIMIT " + limit);
         }
         return queryJobs("WHERE user_id = ? ORDER BY created DESC LIMIT " + limit, userId);
+    }
+
+    /**
+     * @return the jobs queued or running, oldest first.
+     */
+    public synchronized List<Job> listUnfinishedJobs() throws Exception {
+        return queryJobs("WHERE state IN (?, ?) ORDER BY created", JobState.QUEUED.name(), JobState.RUNNING.name());
+    }
+
+    /**
+     * @param userId the user whose jobs to get, or <code>null</code> for the jobs of all users.
+     * @return the jobs not queued or running.
+     */
+    public synchronized List<Job> listFinishedJobs( String userId ) throws Exception {
+        if (userId == null) {
+            return queryJobs("WHERE state NOT IN (?, ?)", JobState.QUEUED.name(), JobState.RUNNING.name());
+        }
+        return queryJobs("WHERE state NOT IN (?, ?) AND user_id = ?", JobState.QUEUED.name(), JobState.RUNNING.name(), userId);
+    }
+
+    /**
+     * @return the number of jobs in each state, without the states that have none.
+     */
+    public synchronized Map<JobState, Integer> countJobsByState() throws Exception {
+        return db.execOnConnection(connection -> {
+            Map<JobState, Integer> counts = new EnumMap<>(JobState.class);
+            try (IHMStatement statement = connection.createStatement();
+                    IHMResultSet resultSet = statement.executeQuery("SELECT state, COUNT(*) FROM jobs GROUP BY state")) {
+                while( resultSet.next() ) {
+                    counts.put(JobState.valueOf(resultSet.getString(1)), resultSet.getInt(2));
+                }
+            }
+            return counts;
+        });
     }
 
     /**

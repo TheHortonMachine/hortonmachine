@@ -19,8 +19,6 @@ package org.hortonmachine.server.web;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -42,6 +40,8 @@ import org.hortonmachine.server.users.UserManager;
 
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
+import io.javalin.http.ForbiddenResponse;
+import io.javalin.http.HttpStatus;
 import io.javalin.http.NotFoundResponse;
 
 /**
@@ -57,6 +57,8 @@ public class JobPages {
     public static final int LIST_LIMIT = 200;
     /** The seconds between reloads of the pages of active jobs. */
     public static final int REFRESH_SECONDS = 5;
+    /** The page to delete all the finished jobs; out of /jobs/, not to be taken for a job id. */
+    public static final String CLEANUP_PATH = "/jobs-cleanup";
     /** The bytes of the end of the log shown in the page of a job. */
     private static final int LOG_TAIL_BYTES = 64 * 1024;
 
@@ -72,6 +74,9 @@ public class JobPages {
         config.routes.get("/jobs", this::listPage);
         config.routes.get("/jobs/{id}", this::jobPage);
         config.routes.post("/jobs/{id}/kill", this::kill);
+        config.routes.post("/jobs/{id}/delete", this::delete);
+        config.routes.get(CLEANUP_PATH, this::cleanupPage);
+        config.routes.post(CLEANUP_PATH, this::cleanup);
         config.routes.get("/jobs/{id}/files/<path>", this::download);
         config.routes.get("/jobs/{id}/zip", this::downloadZip);
     }
@@ -119,6 +124,11 @@ public class JobPages {
                 + "<button type=\"submit\">Kill</button></form>";
     }
 
+    private static String deleteButton( Job job, String csrfToken, boolean asLink ) {
+        return "<form class=\"inline\" method=\"post\" action=\"/jobs/" + Html.escape(job.id) + "/delete\">" + Html.csrfField(csrfToken)
+                + "<button" + (asLink ? " class=\"link\"" : "") + " type=\"submit\">Delete</button></form>";
+    }
+
     private void listPage( Context ctx ) throws Exception {
         User user = Auth.user(ctx);
         String csrfToken = Auth.csrfToken(ctx);
@@ -132,6 +142,13 @@ public class JobPages {
 
         boolean active = false;
         StringBuilder body = new StringBuilder("<h1>Jobs</h1>");
+        String message = Auth.takeFlash(ctx);
+        if (message != null) {
+            body.append("<p class=\"ok\">").append(Html.escape(message)).append("</p>");
+        }
+        if (jobs.stream().anyMatch(job -> job.getState().isFinished())) {
+            body.append("<p><a href=\"").append(CLEANUP_PATH).append("\">Delete your finished jobs</a></p>");
+        }
         if (jobs.isEmpty()) {
             body.append("<p class=\"muted\">No jobs yet: start one from the <a href=\"/modules\">modules</a>.</p>");
         } else {
@@ -152,6 +169,8 @@ public class JobPages {
                 if (!job.getState().isFinished()) {
                     active = true;
                     body.append(killButton(job, csrfToken, "/jobs"));
+                } else {
+                    body.append(deleteButton(job, csrfToken, true));
                 }
                 body.append("</td></tr>");
             }
@@ -175,6 +194,8 @@ public class JobPages {
         body.append("<div class=\"actions\">");
         if (!job.getState().isFinished()) {
             body.append(killButton(job, csrfToken, "/jobs/" + job.id));
+        } else {
+            body.append(deleteButton(job, csrfToken, false));
         }
         body.append("<a href=\"/modules/").append(Html.escape(job.module)).append("?from=").append(Html.escape(job.id))
                 .append("\">Run again</a>");
@@ -277,7 +298,63 @@ public class JobPages {
         Job job = getJob(ctx);
         jobManager.kill(job.id);
         String back = ctx.formParam("back");
-        ctx.redirect(back != null && back.matches("/jobs(/[A-Za-z0-9_-]+)?") ? back : "/jobs");
+        ctx.redirect(back != null && back.matches("/jobs(/[A-Za-z0-9_-]+)?|/admin/status") ? back : "/jobs");
+    }
+
+    private void delete( Context ctx ) throws Exception {
+        Job job = getJob(ctx);
+        try {
+            jobManager.delete(job.id);
+        } catch (IllegalArgumentException e) {
+            String body = "<h1>" + Html.escape(job.module) + "</h1><p class=\"error\">The job can't be deleted: "
+                    + Html.escape(e.getMessage()) + "</p><p><a href=\"/jobs/" + Html.escape(job.id) + "\">Back to the job</a></p>";
+            ctx.status(HttpStatus.CONFLICT).html(Html.page(job.module, Auth.user(ctx), Auth.csrfToken(ctx), body, null));
+            return;
+        }
+        Auth.flash(ctx, "The job " + job.module + " of " + Html.formatTime(job.created) + " was deleted.");
+        ctx.redirect("/jobs");
+    }
+
+    /**
+     * @return <code>true</code> if the cleanup is of the jobs of all users.
+     * @throws ForbiddenResponse if it is asked by a user who is not an administrator.
+     */
+    private static boolean isCleanupOfAll( Context ctx, String all ) {
+        if (all == null) {
+            return false;
+        }
+        if (!Auth.user(ctx).isAdmin()) {
+            throw new ForbiddenResponse("Only for administrators.");
+        }
+        return true;
+    }
+
+    private void cleanupPage( Context ctx ) throws Exception {
+        User user = Auth.user(ctx);
+        String csrfToken = Auth.csrfToken(ctx);
+        boolean all = isCleanupOfAll(ctx, ctx.queryParam("all"));
+        int count = jobManager.listFinishedJobs(all ? null : user.id).size();
+        StringBuilder body = new StringBuilder("<h1>Delete the finished jobs</h1>");
+        if (count == 0) {
+            body.append("<p class=\"muted\">There are no finished jobs.</p><p><a href=\"/jobs\">Back to the jobs</a></p>");
+        } else {
+            body.append("<p>Delete ").append(count).append(" finished job(s) of ").append(all ? "all users" : "yours")
+                    .append(", with their files? The jobs whose outputs are inputs of jobs still queued or running are kept.</p>");
+            body.append("<form method=\"post\" action=\"").append(CLEANUP_PATH).append("\" class=\"actions\">").append(Html.csrfField(csrfToken));
+            if (all) {
+                body.append("<input type=\"hidden\" name=\"all\" value=\"1\">");
+            }
+            body.append("<button type=\"submit\">Delete</button><a href=\"").append(all ? "/admin/status" : "/jobs")
+                    .append("\">Cancel</a></form>");
+        }
+        ctx.html(Html.page("Delete the finished jobs", user, csrfToken, body.toString(), null));
+    }
+
+    private void cleanup( Context ctx ) throws Exception {
+        boolean all = isCleanupOfAll(ctx, ctx.formParam("all"));
+        int count = jobManager.deleteFinished(all ? null : Auth.user(ctx).id);
+        Auth.flash(ctx, count + " finished job(s) deleted.");
+        ctx.redirect("/jobs");
     }
 
     private void download( Context ctx ) throws Exception {
@@ -289,13 +366,7 @@ public class JobPages {
                 || file.getFileName().toString().equals(JobManager.PARAMS_FILE)) {
             throw new NotFoundResponse("The file doesn't exist.");
         }
-        String name = file.getFileName().toString();
-        ctx.contentType(name.equals(JobManager.LOG_FILE) ? "text/plain; charset=utf-8" : "application/octet-stream");
-        ctx.header("Content-Disposition", contentDisposition(name, !name.equals(JobManager.LOG_FILE)));
-        ctx.header("Content-Length", String.valueOf(Files.size(file)));
-        try (InputStream input = Files.newInputStream(file); OutputStream output = ctx.outputStream()) {
-            input.transferTo(output);
-        }
+        Downloads.send(ctx, file, file.getFileName().toString().equals(JobManager.LOG_FILE));
     }
 
     private void downloadZip( Context ctx ) throws Exception {
@@ -304,7 +375,7 @@ public class JobPages {
         List<Path> files = listFiles(root.toFile());
         String name = job.module.toLowerCase() + "-" + job.id.substring(0, 8) + ".zip";
         ctx.contentType("application/zip");
-        ctx.header("Content-Disposition", contentDisposition(name, true));
+        ctx.header("Content-Disposition", Downloads.contentDisposition(name, true));
         try (ZipOutputStream zip = new ZipOutputStream(ctx.outputStream())) {
             for( Path file : files ) {
                 zip.putNextEntry(new ZipEntry(root.relativize(file).toString().replace('\\', '/')));
@@ -312,11 +383,5 @@ public class JobPages {
                 zip.closeEntry();
             }
         }
-    }
-
-    private static String contentDisposition( String name, boolean attachment ) {
-        // the names are of the workspace, but keep the header safe anyway
-        String safe = name.replaceAll("[^A-Za-z0-9._-]", "_");
-        return (attachment ? "attachment" : "inline") + "; filename=\"" + safe + "\"";
     }
 }

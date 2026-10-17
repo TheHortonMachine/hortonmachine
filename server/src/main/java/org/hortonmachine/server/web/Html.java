@@ -75,6 +75,9 @@ public class Html {
               overflow-x: auto; font-size: 0.85em; max-height: 480px; }
             .state-DONE { color: var(--ok); } .state-FAILED, .state-KILLED { color: var(--error); }
             .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 12px 0; }
+            label.inline { display: inline; font-weight: normal; }
+            td form.inline select, td form.inline input { width: auto; }
+            .num { text-align: right; white-space: nowrap; }
             .box { max-width: 380px; margin: 40px auto; padding: 20px; border: 1px solid var(--line);
               border-radius: 8px; background: var(--panel); }
             """;
@@ -203,11 +206,12 @@ public class Html {
         sb.append("<style>").append(CSS).append("</style></head><body>");
         sb.append("<header><span class=\"brand\">HortonMachine</span>");
         if (user != null) {
-            sb.append("<nav><a href=\"/modules\">Modules</a><a href=\"/jobs\">Jobs</a>");
+            sb.append("<nav><a href=\"/modules\">Modules</a><a href=\"/jobs\">Jobs</a><a href=\"/uploads\">Uploads</a>");
             if (user.isAdmin()) {
-                sb.append("<a href=\"/admin/users\">Users</a>");
+                sb.append("<a href=\"/admin/users\">Users</a><a href=\"/admin/status\">Status</a>")
+                        .append("<a href=\"/admin/settings\">Settings</a>");
             }
-            sb.append("<span class=\"muted\">").append(escape(user.username)).append("</span>");
+            sb.append("<a class=\"muted\" href=\"/account\">").append(escape(user.username)).append("</a>");
             sb.append("<form class=\"inline\" method=\"post\" action=\"/logout\">").append(csrfField(csrfToken));
             sb.append("<button class=\"link\" type=\"submit\">Log out</button></form></nav>");
         }

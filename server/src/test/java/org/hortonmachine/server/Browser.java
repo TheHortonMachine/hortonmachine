@@ -19,6 +19,7 @@ package org.hortonmachine.server;
 
 import static junit.framework.TestCase.assertTrue;
 
+import java.io.ByteArrayOutputStream;
 import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.URI;
@@ -27,6 +28,8 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -71,6 +74,35 @@ public class Browser {
         HttpRequest request = HttpRequest.newBuilder(URI.create(base + path))
                 .header("Content-Type", "application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString(form.toString()))
                 .build();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * Post a multipart form, as the upload forms.
+     *
+     * @param path the path.
+     * @param fields the names and values of the text fields.
+     * @param fileField the name of the files field.
+     * @param files the names and contents of the files.
+     */
+    public HttpResponse<String> postMultipart( String path, Map<String, String> fields, String fileField, Map<String, byte[]> files )
+            throws Exception {
+        String boundary = "----hm-test-" + UUID.randomUUID();
+        ByteArrayOutputStream body = new ByteArrayOutputStream();
+        for( Map.Entry<String, String> field : fields.entrySet() ) {
+            body.write(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + field.getKey() + "\"\r\n\r\n"
+                    + field.getValue() + "\r\n").getBytes(StandardCharsets.UTF_8));
+        }
+        for( Map.Entry<String, byte[]> file : files.entrySet() ) {
+            body.write(("--" + boundary + "\r\nContent-Disposition: form-data; name=\"" + fileField + "\"; filename=\"" + file.getKey()
+                    + "\"\r\nContent-Type: application/octet-stream\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+            body.write(file.getValue());
+            body.write("\r\n".getBytes(StandardCharsets.UTF_8));
+        }
+        body.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+        HttpRequest request = HttpRequest.newBuilder(URI.create(base + path))
+                .header("Content-Type", "multipart/form-data; boundary=" + boundary)
+                .POST(HttpRequest.BodyPublishers.ofByteArray(body.toByteArray())).build();
         return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 

@@ -33,10 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -79,9 +80,10 @@ public class JobManager implements AutoCloseable {
     private final ServerDb db;
     private final WorkspacePaths paths;
     private final File jobsFolder;
-    private final String jobMemory;
-    private final int ttlDays;
-    private final ExecutorService executor;
+    // changed by the settings page while running
+    private volatile String jobMemory;
+    private volatile int ttlDays;
+    private final ThreadPoolExecutor executor;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Map<String, ActiveJob> activeJobs = new ConcurrentHashMap<>();
 
@@ -112,7 +114,7 @@ public class JobManager implements AutoCloseable {
         this.jobsFolder = paths.getJobsFolder();
         this.jobMemory = jobMemory;
         this.ttlDays = ttlDays;
-        executor = Executors.newFixedThreadPool(slots);
+        executor = new ThreadPoolExecutor(slots, slots, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
     }
 
     /**
@@ -128,9 +130,8 @@ public class JobManager implements AutoCloseable {
         FileUtilities.writeFile("-cp\n\"" + classpath + "\"\n", new File(jobsFolder, ARGS_FILE));
 
         db.failUnfinishedJobs("The server stopped while the job was queued or running.", System.currentTimeMillis());
-        if (ttlDays > 0) {
-            scheduler.scheduleWithFixedDelay(this::removeOldJobs, 0, 1, TimeUnit.HOURS);
-        }
+        // also without days to keep the jobs, since they can be set later
+        scheduler.scheduleWithFixedDelay(this::removeOldJobs, 0, 1, TimeUnit.HOURS);
     }
 
     /**
@@ -145,7 +146,7 @@ public class JobManager implements AutoCloseable {
      * @throws JobValidationException if a value is not valid.
      * @throws IllegalArgumentException if the module doesn't exist.
      */
-    public Job submit( String userId, boolean isAdmin, String moduleName, Map<String, String> values ) throws Exception {
+    public synchronized Job submit( String userId, boolean isAdmin, String moduleName, Map<String, String> values ) throws Exception {
         Class< ? extends HMModel> moduleClass = ModuleDescriptor.getAvailableModules().get(moduleName);
         if (moduleClass == null) {
             throw new IllegalArgumentException("Unknown module: " + moduleName);
@@ -280,6 +281,64 @@ public class JobManager implements AutoCloseable {
             jobs.add(activeJob != null ? activeJob.job : job);
         }
         return jobs;
+    }
+
+    /**
+     * @return the jobs queued or running, oldest first, with their current state.
+     */
+    public List<Job> listUnfinishedJobs() throws Exception {
+        List<Job> jobs = new ArrayList<>();
+        for( Job job : db.listUnfinishedJobs() ) {
+            ActiveJob activeJob = activeJobs.get(job.id);
+            jobs.add(activeJob != null ? activeJob.job : job);
+        }
+        return jobs;
+    }
+
+    /**
+     * @return the number of jobs in each state, as saved: the running jobs can already be finished.
+     */
+    public Map<JobState, Integer> countJobsByState() throws Exception {
+        return db.countJobsByState();
+    }
+
+    /**
+     * @return the number of jobs running at the same time.
+     */
+    public int getSlots() {
+        return executor.getMaximumPoolSize();
+    }
+
+    /**
+     * Change the number of jobs running at the same time. With less, the running jobs end normally
+     * and the queued wait longer.
+     */
+    public synchronized void setSlots( int slots ) {
+        if (slots > executor.getMaximumPoolSize()) {
+            executor.setMaximumPoolSize(slots);
+            executor.setCorePoolSize(slots);
+        } else {
+            executor.setCorePoolSize(slots);
+            executor.setMaximumPoolSize(slots);
+        }
+    }
+
+    /**
+     * Change the maximum memory of the jobs started from now on.
+     *
+     * @param jobMemory the memory, as for the -Xmx option of java.
+     */
+    public void setJobMemory( String jobMemory ) {
+        this.jobMemory = jobMemory;
+    }
+
+    /**
+     * Change the days the finished jobs are kept, from the next hourly removal on.
+     *
+     * @param ttlDays the days, 0 to keep them forever.
+     */
+    public void setTtlDays( int ttlDays ) {
+        this.ttlDays = ttlDays;
     }
 
     /**
@@ -418,14 +477,102 @@ public class JobManager implements AutoCloseable {
     }
 
     /**
+     * Delete a finished job with its folder.
+     *
+     * @param jobId the id of the job.
+     * @return <code>false</code> if the job doesn't exist.
+     * @throws IllegalArgumentException if the job is queued or running, or a job queued or running
+     *         reads its outputs.
+     */
+    public synchronized boolean delete( String jobId ) throws Exception {
+        if (activeJobs.containsKey(jobId)) {
+            throw new IllegalArgumentException("The job is queued or running: kill it first.");
+        }
+        if (db.getJob(jobId) == null) {
+            return false;
+        }
+        String readerId = findActiveReader(jobId);
+        if (readerId != null) {
+            throw new IllegalArgumentException(
+                    "The outputs of the job are inputs of the job " + readerId + ", which is queued or running.");
+        }
+        File jobFolder = getJobFolder(jobId);
+        // the result of deleteFileOrDir is false for the folders it deleted
+        FileUtilities.deleteFileOrDir(jobFolder);
+        if (jobFolder.exists()) {
+            throw new IllegalStateException("The folder of the job can't be deleted: " + jobFolder);
+        }
+        db.deleteJob(jobId);
+        return true;
+    }
+
+    /**
+     * @param userId the user whose jobs to get, or <code>null</code> for the jobs of all users.
+     * @return the jobs not queued or running.
+     */
+    public List<Job> listFinishedJobs( String userId ) throws Exception {
+        return db.listFinishedJobs(userId);
+    }
+
+    /**
+     * Delete the finished jobs, but those whose outputs are read by a job queued or running.
+     *
+     * @param userId the user whose jobs to delete, or <code>null</code> for the jobs of all users.
+     * @return the number of jobs deleted.
+     */
+    public synchronized int deleteFinished( String userId ) throws Exception {
+        int count = 0;
+        for( Job job : db.listFinishedJobs(userId) ) {
+            if (!activeJobs.containsKey(job.id) && findActiveReader(job.id) == null && delete(job.id)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * @return the id of a job queued or running that has a path into the folder of the given job, or <code>null</code>.
+     */
+    private String findActiveReader( String jobId ) {
+        String folder = WorkspacePaths.JOBS + "/" + jobId;
+        for( ActiveJob activeJob : activeJobs.values() ) {
+            for( String value : activeJob.job.parameters.values() ) {
+                String path = value.trim().replace('\\', '/');
+                if (path.equals(folder) || path.startsWith(folder + "/")) {
+                    return activeJob.job.id;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return the bytes used by the folders of the jobs of a user.
+     */
+    public long getUsedBytes( String userId ) throws Exception {
+        long size = 0;
+        for( Job job : db.listJobs(userId, Integer.MAX_VALUE) ) {
+            size += WorkspacePaths.folderSize(getJobFolder(job.id).toPath());
+        }
+        return size;
+    }
+
+    /**
      * Remove the jobs finished since longer than the days to keep them, with their folders.
+     * The jobs whose outputs are read by a running job wait for the next time.
      */
     private void removeOldJobs() {
+        if (ttlDays <= 0) {
+            return;
+        }
         try {
             long limit = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(ttlDays);
             for( Job job : db.listJobsFinishedBefore(limit) ) {
-                FileUtilities.deleteFileOrDir(getJobFolder(job.id));
-                db.deleteJob(job.id);
+                try {
+                    delete(job.id);
+                } catch (IllegalArgumentException e) {
+                    // still in use
+                }
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "The old jobs can't be removed.", e);

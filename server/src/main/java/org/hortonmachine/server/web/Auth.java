@@ -57,7 +57,9 @@ public class Auth {
     public static final int SESSION_HOURS = 8;
 
     private static final String SESSION_USER_ID = "hm.userId";
+    private static final String SESSION_LOGIN_TIME = "hm.loginTime";
     private static final String SESSION_CSRF = "hm.csrf";
+    private static final String SESSION_FLASH = "hm.flash";
     private static final String ATTRIBUTE_USER = "hm.user";
 
     private static final Set<String> PUBLIC_PATHS = Set.of("/login");
@@ -110,6 +112,26 @@ public class Auth {
         return token;
     }
 
+    /**
+     * Keep a message for the next page of the session, as after the redirect of a form.
+     */
+    public static void flash( Context ctx, String message ) {
+        ctx.sessionAttribute(SESSION_FLASH, message);
+    }
+
+    /**
+     * @return the message kept for this page, removed from the session, or <code>null</code>.
+     */
+    public static String takeFlash( Context ctx ) {
+        HttpSession session = ctx.req().getSession(false);
+        if (session == null) {
+            return null;
+        }
+        String message = (String) session.getAttribute(SESSION_FLASH);
+        session.removeAttribute(SESSION_FLASH);
+        return message;
+    }
+
     private static String newToken() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
@@ -135,7 +157,8 @@ public class Auth {
         HttpSession session = ctx.req().getSession(false);
         String userId = session != null ? (String) session.getAttribute(SESSION_USER_ID) : null;
         User user = userId != null ? users.getUser(userId) : null;
-        if (user != null && user.disabled) {
+        if (userId != null && (user == null || user.disabled || loginTime(session) < users.getSessionsValidFrom(userId))) {
+            // deleted, disabled or the password changed since the login
             session.invalidate();
             user = null;
         }
@@ -196,11 +219,25 @@ public class Auth {
             ctx.status(HttpStatus.UNAUTHORIZED).html(loginHtml(ctx, "Wrong user name or password.", username));
             return;
         }
-        // a new session id at login, so that an id known before can't be used
+        startSession(ctx, user, System.currentTimeMillis());
+        ctx.redirect("/");
+    }
+
+    /**
+     * Start the session of a user, with a new id, so that an id known before can't be used.
+     *
+     * @param loginTime the time of the login: the session ends if the password changes after it.
+     */
+    static void startSession( Context ctx, User user, long loginTime ) {
         ctx.req().changeSessionId();
         ctx.sessionAttribute(SESSION_USER_ID, user.id);
+        ctx.sessionAttribute(SESSION_LOGIN_TIME, loginTime);
         ctx.sessionAttribute(SESSION_CSRF, newToken());
-        ctx.redirect("/");
+    }
+
+    private static long loginTime( HttpSession session ) {
+        Object time = session.getAttribute(SESSION_LOGIN_TIME);
+        return time instanceof Long ? (Long) time : 0L;
     }
 
     private void logout( Context ctx ) {

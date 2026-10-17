@@ -18,7 +18,12 @@
 package org.hortonmachine.server;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.Predicate;
 
 import org.hortonmachine.cli.ModuleDescriptor.Parameter;
@@ -42,24 +47,28 @@ public class WorkspacePaths {
     public static final String DATA = "data";
     public static final String UPLOADS = "uploads";
     public static final String JOBS = "jobs";
+    /** The folder of the files being uploaded, never given to the users. */
+    public static final String TMP = "tmp";
 
     private final Path workspace;
     private final Path dataFolder;
     private final Path uploadsFolder;
     private final Path jobsFolder;
+    private final Path tmpFolder;
 
     public WorkspacePaths( File workspace ) {
         this.workspace = workspace.toPath().toAbsolutePath().normalize();
         dataFolder = this.workspace.resolve(DATA);
         uploadsFolder = this.workspace.resolve(UPLOADS);
         jobsFolder = this.workspace.resolve(JOBS);
+        tmpFolder = this.workspace.resolve(TMP);
     }
 
     /**
      * Create the folders of the workspace, if missing.
      */
     public void createFolders() {
-        for( Path folder : new Path[]{workspace, dataFolder, uploadsFolder, jobsFolder} ) {
+        for( Path folder : new Path[]{workspace, dataFolder, uploadsFolder, jobsFolder, tmpFolder} ) {
             File file = folder.toFile();
             if (!file.isDirectory() && !file.mkdirs()) {
                 throw new IllegalStateException("The folder can't be created: " + file);
@@ -85,12 +94,50 @@ public class WorkspacePaths {
         return uploadsFolder.resolve(checkId(userId)).toFile();
     }
 
+    /**
+     * @return the folder that holds the folders of the uploads of the users.
+     */
+    public File getAllUploadsFolder() {
+        return uploadsFolder.toFile();
+    }
+
     public File getJobsFolder() {
         return jobsFolder.toFile();
     }
 
+    /**
+     * @return the folder of the files being uploaded and unpacked, on the same disk as the uploads.
+     */
+    public File getTmpFolder() {
+        return tmpFolder.toFile();
+    }
+
     public File getJobFolder( String jobId ) {
         return jobsFolder.resolve(checkId(jobId)).toFile();
+    }
+
+    /**
+     * @return the bytes of the files of a folder and its subfolders, without following links; 0 if missing.
+     */
+    public static long folderSize( Path folder ) throws IOException {
+        if (!Files.isDirectory(folder)) {
+            return 0;
+        }
+        long[] size = {0};
+        Files.walkFileTree(folder, new SimpleFileVisitor<Path>(){
+            @Override
+            public FileVisitResult visitFile( Path file, BasicFileAttributes attributes ) {
+                size[0] += attributes.size();
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed( Path file, IOException e ) {
+                // removed meanwhile or not readable
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        return size[0];
     }
 
     private static String checkId( String id ) {

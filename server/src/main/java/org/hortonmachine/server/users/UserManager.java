@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.hortonmachine.server.db.ServerDb;
@@ -49,6 +50,7 @@ public class UserManager {
 
     private final ServerDb db;
     private final Map<String, Deque<Long>> failedLogins = new HashMap<>();
+    private final Map<String, Long> sessionsValidFrom = new ConcurrentHashMap<>();
 
     public UserManager( ServerDb db ) {
         this.db = db;
@@ -162,13 +164,25 @@ public class UserManager {
     }
 
     /**
-     * Change the password of a user.
+     * Change the password of a user. The sessions of the user logged in before end.
      *
+     * @return the time of the change: the sessions logged in before it are not valid anymore.
      * @throws IllegalArgumentException if the password is not valid.
      */
-    public void changePassword( String userId, char[] password ) throws Exception {
+    public long changePassword( String userId, char[] password ) throws Exception {
         checkPassword(password);
         db.updatePasswordHash(userId, PasswordHasher.hash(password));
+        long now = System.currentTimeMillis();
+        sessionsValidFrom.put(userId, now);
+        return now;
+    }
+
+    /**
+     * @return the time from which the sessions of a user are valid, 0 for all. Kept in memory only,
+     *         as the sessions.
+     */
+    public long getSessionsValidFrom( String userId ) {
+        return sessionsValidFrom.getOrDefault(userId, 0L);
     }
 
     /**

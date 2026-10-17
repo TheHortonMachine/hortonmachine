@@ -101,6 +101,42 @@ public class TestJobManager extends TestCase {
         assertEquals(FileUtilities.readFile(log), JobState.DONE, job.getState());
     }
 
+    public void testDelete() throws Exception {
+        startJobManager(1, 0);
+        writeElevation();
+        Job first = waitFinished(jobManager, jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif")).id);
+        assertDone(first);
+        assertTrue(jobManager.getUsedBytes("user1") > 0);
+
+        // with one slot the third job waits behind the second, and reads the outputs of the first
+        Job second = jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif"));
+        Job third = jobManager.submit("user1", false, "Pitfiller",
+                pitValues(WorkspacePaths.JOBS + "/" + first.id + "/pit.tif", "pit2.tif"));
+        try {
+            jobManager.delete(first.id);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains(third.id));
+        }
+        try {
+            jobManager.delete(third.id);
+            fail();
+        } catch (IllegalArgumentException e) {
+            assertTrue(e.getMessage().contains("kill it first"));
+        }
+        assertEquals(0, jobManager.deleteFinished("user1"));
+        waitFinished(jobManager, second.id);
+        assertDone(waitFinished(jobManager, third.id));
+
+        assertTrue(jobManager.delete(first.id));
+        assertFalse(jobManager.getJobFolder(first.id).exists());
+        assertNull(db.getJob(first.id));
+        assertFalse(jobManager.delete(first.id));
+        assertEquals(2, jobManager.deleteFinished("user1"));
+        assertTrue(jobManager.listJobs("user1", 10).isEmpty());
+        assertEquals(0, jobManager.getUsedBytes("user1"));
+    }
+
     public void testRunJob() throws Exception {
         startJobManager(1, 0);
         writeElevation();
