@@ -17,7 +17,11 @@
  */
 package org.hortonmachine.server.users;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
 import java.util.ArrayDeque;
+import java.util.Base64;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +45,11 @@ public class UserManager {
     public static final int MIN_PASSWORD_LENGTH = 8;
     public static final int MAX_FAILED_LOGINS = 5;
     public static final int LOCK_MINUTES = 15;
+    /** The start of the secrets of the tokens of the api, to recognize them. */
+    public static final String TOKEN_PREFIX = "hm_";
+    public static final int MAX_TOKEN_NAME_LENGTH = 100;
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private static final String USERNAME_PATTERN = "[a-z0-9._-]{3,64}";
     private static final int MAX_TRACKED_NAMES = 1000;
@@ -211,7 +220,94 @@ public class UserManager {
         if (isLastAdmin(user)) {
             throw new IllegalArgumentException("The last administrator can't be deleted.");
         }
+        db.deleteTokensOfUser(userId);
         db.deleteUser(userId);
+    }
+
+    /**
+     * Create a token of the api for a user.
+     *
+     * @param userId the user.
+     * @param name a name to recognize the token, as "qgis".
+     * @return the secret of the token, to give to the user: it is not kept and can't be shown again.
+     * @throws IllegalArgumentException if the name is empty or too long.
+     */
+    public String createToken( String userId, String name ) throws Exception {
+        String cleanName = name == null ? "" : name.trim();
+        if (cleanName.isEmpty() || cleanName.length() > MAX_TOKEN_NAME_LENGTH) {
+            throw new IllegalArgumentException("The name of the token must have 1 to " + MAX_TOKEN_NAME_LENGTH + " characters.");
+        }
+        getExistingUser(userId);
+        byte[] bytes = new byte[32];
+        RANDOM.nextBytes(bytes);
+        String secret = TOKEN_PREFIX + Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        db.insertToken(new ApiToken(UUID.randomUUID().toString(), userId, cleanName, System.currentTimeMillis(), null),
+                hashToken(secret));
+        return secret;
+    }
+
+    /**
+     * Find a token of the api by its secret.
+     *
+     * @param secret the secret of the token, as sent by the client.
+     * @return the token, or <code>null</code> if it doesn't exist or its user is disabled.
+     */
+    public ApiToken authenticateToken( String secret ) throws Exception {
+        if (secret == null || !secret.startsWith(TOKEN_PREFIX)) {
+            return null;
+        }
+        return usableToken(db.getTokenByHash(hashToken(secret)));
+    }
+
+    /**
+     * Find a token of the api by its id, as in a signed link.
+     *
+     * @param tokenId the id of the token.
+     * @return the token, or <code>null</code> if it doesn't exist (anymore) or its user is disabled.
+     */
+    public ApiToken authenticateTokenId( String tokenId ) throws Exception {
+        return tokenId != null ? usableToken(db.getToken(tokenId)) : null;
+    }
+
+    private ApiToken usableToken( ApiToken token ) throws Exception {
+        if (token == null) {
+            return null;
+        }
+        User user = db.getUser(token.userId);
+        if (user == null || user.disabled) {
+            return null;
+        }
+        long now = System.currentTimeMillis();
+        if (token.lastUsed == null || now - token.lastUsed > TimeUnit.MINUTES.toMillis(1)) {
+            // not at every request
+            db.updateTokenLastUsed(token.id, now);
+        }
+        return token;
+    }
+
+    /**
+     * @return the tokens of a user, newest first.
+     */
+    public List<ApiToken> listTokens( String userId ) throws Exception {
+        return db.listTokens(userId);
+    }
+
+    /**
+     * Revoke a token of a user.
+     *
+     * @return <code>false</code> if the user has no such token.
+     */
+    public boolean revokeToken( String userId, String tokenId ) throws Exception {
+        return db.deleteToken(userId, tokenId);
+    }
+
+    private static String hashToken( String secret ) throws Exception {
+        byte[] hash = MessageDigest.getInstance("SHA-256").digest(secret.getBytes(StandardCharsets.UTF_8));
+        StringBuilder hex = new StringBuilder();
+        for( byte b : hash ) {
+            hex.append(String.format(Locale.ROOT, "%02x", b));
+        }
+        return hex.toString();
     }
 
     private User getExistingUser( String userId ) throws Exception {

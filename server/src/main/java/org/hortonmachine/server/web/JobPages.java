@@ -64,10 +64,12 @@ public class JobPages {
 
     private final JobManager jobManager;
     private final UserManager userManager;
+    private final Templates templates;
 
-    public JobPages( JobManager jobManager, UserManager userManager ) {
+    public JobPages( JobManager jobManager, UserManager userManager, Templates templates ) {
         this.jobManager = jobManager;
         this.userManager = userManager;
+        this.templates = templates;
     }
 
     public void register( JavalinConfig config ) {
@@ -78,6 +80,7 @@ public class JobPages {
         config.routes.get(CLEANUP_PATH, this::cleanupPage);
         config.routes.post(CLEANUP_PATH, this::cleanup);
         config.routes.get("/jobs/{id}/files/<path>", this::download);
+        config.routes.head("/jobs/{id}/files/<path>", this::download);
         config.routes.get("/jobs/{id}/zip", this::downloadZip);
     }
 
@@ -94,20 +97,14 @@ public class JobPages {
         return jobManager.getJob(jobId);
     }
 
-    private static String refresh() {
-        return "<meta http-equiv=\"refresh\" content=\"" + REFRESH_SECONDS + "\">";
-    }
-
-    private static String stateHtml( Job job ) {
-        StringBuilder sb = new StringBuilder("<span class=\"state-").append(job.getState().name()).append("\">")
-                .append(job.getState().name().toLowerCase()).append("</span>");
-        if (job.getState() == JobState.RUNNING) {
-            sb.append(" ").append(job.getProgress()).append("%");
-            if (job.getTask() != null) {
-                sb.append(" <span class=\"muted\">").append(Html.escape(job.getTask())).append("</span>");
-            }
-        }
-        return sb.toString();
+    /**
+     * @return the values of a job shown in the lists and in its page, as for the job-state.html template.
+     */
+    static Model jobModel( Job job ) {
+        return Model.of("id", job.id, "module", job.module, "created", Html.formatTime(job.created), //
+                "stateName", job.getState().name(), "stateLabel", job.getState().name().toLowerCase(), //
+                "isRunning", job.getState() == JobState.RUNNING, "progress", job.getProgress(), "task", job.getTask(), //
+                "isActive", !job.getState().isFinished(), "duration", duration(job));
     }
 
     private static String duration( Job job ) {
@@ -118,20 +115,8 @@ public class JobPages {
         return Html.formatDuration(end - job.getStarted());
     }
 
-    private static String killButton( Job job, String csrfToken, String back ) {
-        return "<form class=\"inline\" method=\"post\" action=\"/jobs/" + Html.escape(job.id) + "/kill\">" + Html.csrfField(csrfToken)
-                + "<input type=\"hidden\" name=\"back\" value=\"" + Html.escape(back) + "\">"
-                + "<button type=\"submit\">Kill</button></form>";
-    }
-
-    private static String deleteButton( Job job, String csrfToken, boolean asLink ) {
-        return "<form class=\"inline\" method=\"post\" action=\"/jobs/" + Html.escape(job.id) + "/delete\">" + Html.csrfField(csrfToken)
-                + "<button" + (asLink ? " class=\"link\"" : "") + " type=\"submit\">Delete</button></form>";
-    }
-
     private void listPage( Context ctx ) throws Exception {
         User user = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
         List<Job> jobs = jobManager.listJobs(user.isAdmin() ? null : user.id, LIST_LIMIT);
         Map<String, String> usernames = new HashMap<>();
         if (user.isAdmin()) {
@@ -141,130 +126,62 @@ public class JobPages {
         }
 
         boolean active = false;
-        StringBuilder body = new StringBuilder("<h1>Jobs</h1>");
-        String message = Auth.takeFlash(ctx);
-        if (message != null) {
-            body.append("<p class=\"ok\">").append(Html.escape(message)).append("</p>");
+        boolean finished = false;
+        List<Model> jobModels = new ArrayList<>();
+        for( Job job : jobs ) {
+            active |= !job.getState().isFinished();
+            finished |= job.getState().isFinished();
+            jobModels.add(jobModel(job).with("username",
+                    job.userId != null ? usernames.getOrDefault(job.userId, "(deleted)") : ""));
         }
-        if (jobs.stream().anyMatch(job -> job.getState().isFinished())) {
-            body.append("<p><a href=\"").append(CLEANUP_PATH).append("\">Delete your finished jobs</a></p>");
-        }
-        if (jobs.isEmpty()) {
-            body.append("<p class=\"muted\">No jobs yet: start one from the <a href=\"/modules\">modules</a>.</p>");
-        } else {
-            body.append("<div class=\"scroll\"><table><tr><th>Created</th><th>Module</th>");
-            if (user.isAdmin()) {
-                body.append("<th>User</th>");
-            }
-            body.append("<th>State</th><th>Duration</th><th></th></tr>");
-            for( Job job : jobs ) {
-                body.append("<tr><td>").append(Html.formatTime(job.created)).append("</td>");
-                body.append("<td><a href=\"/jobs/").append(Html.escape(job.id)).append("\">").append(Html.escape(job.module))
-                        .append("</a></td>");
-                if (user.isAdmin()) {
-                    String username = job.userId != null ? usernames.getOrDefault(job.userId, "(deleted)") : "";
-                    body.append("<td>").append(Html.escape(username)).append("</td>");
-                }
-                body.append("<td>").append(stateHtml(job)).append("</td><td>").append(duration(job)).append("</td><td>");
-                if (!job.getState().isFinished()) {
-                    active = true;
-                    body.append(killButton(job, csrfToken, "/jobs"));
-                } else {
-                    body.append(deleteButton(job, csrfToken, true));
-                }
-                body.append("</td></tr>");
-            }
-            body.append("</table></div>");
-            if (jobs.size() == LIST_LIMIT) {
-                body.append("<p class=\"muted\">The latest ").append(LIST_LIMIT).append(" jobs.</p>");
-            }
-        }
-        ctx.html(Html.page("Jobs", user, csrfToken, body.toString(), active ? refresh() : null));
+        Model model = Model.of("message", Auth.takeFlash(ctx), "hasFinished", finished, "cleanupPath", CLEANUP_PATH, //
+                "jobs", jobModels, "hasJobs", !jobs.isEmpty(), "showUsers", user.isAdmin(), //
+                "isLimited", jobs.size() == LIST_LIMIT, "limit", LIST_LIMIT);
+        ctx.html(templates.page(ctx, "jobs.html", "Jobs", model, active ? REFRESH_SECONDS : null));
     }
 
     private void jobPage( Context ctx ) throws Exception {
         Job job = getJob(ctx);
-        User user = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
-        String jobPath = "/jobs/" + Html.escape(job.id);
+        String jobPath = "/jobs/" + job.id;
+        Model model = jobModel(job).with("started", Html.formatTime(job.getStarted()))
+                .with("finished", Html.formatTime(job.getFinished())).with("jobError", job.getMessage());
 
-        StringBuilder body = new StringBuilder();
-        body.append("<p><a href=\"/jobs\">Jobs</a></p>");
-        body.append("<h1>").append(Html.escape(job.module)).append(": ").append(stateHtml(job)).append("</h1>");
-        body.append("<div class=\"actions\">");
-        if (!job.getState().isFinished()) {
-            body.append(killButton(job, csrfToken, "/jobs/" + job.id));
-        } else {
-            body.append(deleteButton(job, csrfToken, false));
-        }
-        body.append("<a href=\"/modules/").append(Html.escape(job.module)).append("?from=").append(Html.escape(job.id))
-                .append("\">Run again</a>");
-        body.append("</div>");
-
-        body.append("<table>");
-        appendRow(body, "Created", Html.formatTime(job.created));
-        appendRow(body, "Started", Html.formatTime(job.getStarted()));
-        appendRow(body, "Finished", Html.formatTime(job.getFinished()));
-        appendRow(body, "Duration", duration(job));
-        body.append("</table>");
-        if (job.getMessage() != null) {
-            body.append("<pre class=\"error\">").append(Html.escape(job.getMessage())).append("</pre>");
-        }
-
-        body.append("<h2>Parameters</h2><div class=\"scroll\"><table>");
+        List<Model> parameters = new ArrayList<>();
         for( Map.Entry<String, String> entry : job.parameters.entrySet() ) {
-            body.append("<tr><th>").append(Html.escape(entry.getKey())).append("</th><td>").append(Html.escape(entry.getValue()))
-                    .append("</td></tr>");
+            parameters.add(Model.of("name", entry.getKey(), "value", entry.getValue()));
         }
-        body.append("</table></div>");
+        model.with("parameters", parameters);
 
-        if (!job.getOutputs().isEmpty()) {
-            String ownFolder = WorkspacePaths.JOBS + "/" + job.id + "/";
-            body.append("<h2>Outputs</h2><div class=\"scroll\"><table>");
-            for( Map.Entry<String, String> entry : job.getOutputs().entrySet() ) {
-                String value = entry.getValue();
-                body.append("<tr><th>").append(Html.escape(entry.getKey())).append("</th><td>");
-                if (value.startsWith(ownFolder)) {
-                    body.append("<a href=\"").append(jobPath).append("/files/")
-                            .append(Html.escape(Html.urlPath(value.substring(ownFolder.length())))).append("\">")
-                            .append(Html.escape(value)).append("</a>");
-                } else {
-                    body.append(Html.escape(value));
-                }
-                body.append("</td></tr>");
+        String ownFolder = WorkspacePaths.JOBS + "/" + job.id + "/";
+        List<Model> outputs = new ArrayList<>();
+        for( Map.Entry<String, String> entry : job.getOutputs().entrySet() ) {
+            String value = entry.getValue();
+            boolean isFile = value.startsWith(ownFolder);
+            outputs.add(Model.of("name", entry.getKey(), "value", value, "isFile", isFile, "href",
+                    isFile ? jobPath + "/files/" + Html.urlPath(WorkspacePaths.filePath(value.substring(ownFolder.length()))) : ""));
+        }
+        model.with("outputs", outputs).with("hasOutputs", !outputs.isEmpty());
+
+        Path root = jobManager.getJobFolder(job.id).toPath();
+        List<Model> files = new ArrayList<>();
+        for( Path file : listFiles(root.toFile()) ) {
+            long size;
+            try {
+                size = Files.size(file);
+            } catch (IOException e) {
+                // a temporary file of the running job, gone meanwhile
+                continue;
             }
-            body.append("</table></div>");
+            String relative = root.relativize(file).toString().replace('\\', '/');
+            files.add(Model.of("path", relative, "href", jobPath + "/files/" + Html.urlPath(relative), "size", Html.formatSize(size)));
         }
+        model.with("files", files).with("hasFiles", !files.isEmpty());
 
-        List<Path> files = listFiles(jobManager.getJobFolder(job.id));
-        if (!files.isEmpty()) {
-            Path root = jobManager.getJobFolder(job.id).toPath();
-            body.append("<h2>Files</h2><p><a href=\"").append(jobPath).append("/zip\">Download all as zip</a></p>");
-            body.append("<div class=\"scroll\"><table>");
-            for( Path file : files ) {
-                String relative = root.relativize(file).toString().replace('\\', '/');
-                body.append("<tr><td><a href=\"").append(jobPath).append("/files/").append(Html.escape(Html.urlPath(relative)))
-                        .append("\">")
-                        .append(Html.escape(relative)).append("</a></td><td>").append(Html.formatSize(Files.size(file)))
-                        .append("</td></tr>");
-            }
-            body.append("</table></div>");
-        }
-
-        File log = new File(jobManager.getJobFolder(job.id), JobManager.LOG_FILE);
-        if (log.isFile()) {
-            body.append("<h2>Log</h2>");
-            if (log.length() > LOG_TAIL_BYTES) {
-                body.append("<p class=\"muted\">The end of the log: <a href=\"").append(jobPath).append("/files/")
-                        .append(JobManager.LOG_FILE).append("\">download it all</a>.</p>");
-            }
-            body.append("<pre>").append(Html.escape(readTail(log))).append("</pre>");
-        }
-        ctx.html(Html.page(job.module, user, csrfToken, body.toString(), job.getState().isFinished() ? null : refresh()));
-    }
-
-    private static void appendRow( StringBuilder body, String name, String value ) {
-        body.append("<tr><th>").append(name).append("</th><td>").append(value).append("</td></tr>");
+        File log = new File(root.toFile(), JobManager.LOG_FILE);
+        model.with("hasLog", log.isFile()).with("logCut", log.length() > LOG_TAIL_BYTES)
+                .with("logHref", jobPath + "/files/" + JobManager.LOG_FILE).with("log", log.isFile() ? readTail(log) : "");
+        ctx.html(templates.page(ctx, "job.html", job.module, Model.of("job", model),
+                job.getState().isFinished() ? null : REFRESH_SECONDS));
     }
 
     private static List<Path> listFiles( File folder ) throws IOException {
@@ -306,9 +223,8 @@ public class JobPages {
         try {
             jobManager.delete(job.id);
         } catch (IllegalArgumentException e) {
-            String body = "<h1>" + Html.escape(job.module) + "</h1><p class=\"error\">The job can't be deleted: "
-                    + Html.escape(e.getMessage()) + "</p><p><a href=\"/jobs/" + Html.escape(job.id) + "\">Back to the job</a></p>";
-            ctx.status(HttpStatus.CONFLICT).html(Html.page(job.module, Auth.user(ctx), Auth.csrfToken(ctx), body, null));
+            ctx.status(HttpStatus.CONFLICT).html(templates.messagePage(ctx, job.module, "The job can't be deleted: " + e.getMessage(),
+                    "/jobs/" + job.id, "Back to the job"));
             return;
         }
         Auth.flash(ctx, "The job " + job.module + " of " + Html.formatTime(job.created) + " was deleted.");
@@ -331,23 +247,11 @@ public class JobPages {
 
     private void cleanupPage( Context ctx ) throws Exception {
         User user = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
         boolean all = isCleanupOfAll(ctx, ctx.queryParam("all"));
         int count = jobManager.listFinishedJobs(all ? null : user.id).size();
-        StringBuilder body = new StringBuilder("<h1>Delete the finished jobs</h1>");
-        if (count == 0) {
-            body.append("<p class=\"muted\">There are no finished jobs.</p><p><a href=\"/jobs\">Back to the jobs</a></p>");
-        } else {
-            body.append("<p>Delete ").append(count).append(" finished job(s) of ").append(all ? "all users" : "yours")
-                    .append(", with their files? The jobs whose outputs are inputs of jobs still queued or running are kept.</p>");
-            body.append("<form method=\"post\" action=\"").append(CLEANUP_PATH).append("\" class=\"actions\">").append(Html.csrfField(csrfToken));
-            if (all) {
-                body.append("<input type=\"hidden\" name=\"all\" value=\"1\">");
-            }
-            body.append("<button type=\"submit\">Delete</button><a href=\"").append(all ? "/admin/status" : "/jobs")
-                    .append("\">Cancel</a></form>");
-        }
-        ctx.html(Html.page("Delete the finished jobs", user, csrfToken, body.toString(), null));
+        Model model = Model.of("count", count, "hasJobs", count > 0, "whose", all ? "all users" : "yours", "all", all, //
+                "cleanupPath", CLEANUP_PATH, "cancelHref", all ? "/admin/status" : "/jobs");
+        ctx.html(templates.page(ctx, "jobs-cleanup.html", "Delete the finished jobs", model));
     }
 
     private void cleanup( Context ctx ) throws Exception {
@@ -359,14 +263,28 @@ public class JobPages {
 
     private void download( Context ctx ) throws Exception {
         Job job = getJob(ctx);
-        Path root = jobManager.getJobFolder(job.id).toPath().toAbsolutePath().normalize();
-        String relative = ctx.pathParam("path").replace('\\', '/');
-        Path file = root.resolve(relative).normalize();
-        if (List.of(relative.split("/")).contains("..") || !file.startsWith(root) || !Files.isRegularFile(file)
-                || file.getFileName().toString().equals(JobManager.PARAMS_FILE)) {
+        Path file = resolveJobFile(jobManager, job.id, ctx.pathParam("path"));
+        if (file == null) {
             throw new NotFoundResponse("The file doesn't exist.");
         }
         Downloads.send(ctx, file, file.getFileName().toString().equals(JobManager.LOG_FILE));
+    }
+
+    /**
+     * Find a file of a job that can be downloaded: in its folder, not the file of its parameters.
+     *
+     * @param relative the path in the folder of the job.
+     * @return the file, or <code>null</code> if it is not one.
+     */
+    static Path resolveJobFile( JobManager jobManager, String jobId, String relative ) {
+        Path root = jobManager.getJobFolder(jobId).toPath().toAbsolutePath().normalize();
+        String clean = relative.replace('\\', '/');
+        Path file = root.resolve(clean).normalize();
+        if (List.of(clean.split("/")).contains("..") || !file.startsWith(root) || !Files.isRegularFile(file)
+                || file.getFileName().toString().equals(JobManager.PARAMS_FILE)) {
+            return null;
+        }
+        return file;
     }
 
     private void downloadZip( Context ctx ) throws Exception {

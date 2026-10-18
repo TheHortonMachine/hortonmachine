@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{title}} - HortonMachine</title>
+  {{#refresh}}<meta http-equiv="refresh" content="{{refresh}}">{{/refresh}}
+  <link rel="stylesheet" href="/static/hm.css">
+</head>
+<body>
+  <header>
+    <span class="brand">HortonMachine</span>
+    {{#user}}
+    <nav>
+      <a href="/modules">Modules</a>
+      <a href="/jobs">Jobs</a>
+      <a href="/uploads">Uploads</a>
+      <a href="/api/docs">API</a>
+      {{#isAdmin}}
+      <a href="/admin/users">Users</a>
+      <a href="/admin/status">Status</a>
+      <a href="/admin/settings">Settings</a>
+      {{/isAdmin}}
+      <a class="muted" href="/account">{{username}}</a>
+      <form class="inline" method="post" action="/logout">
+        <input type="hidden" name="csrf" value="{{csrf}}">
+        <button class="link" type="submit">Log out</button>
+      </form>
+    </nav>
+    {{/user}}
+  </header>
+  <main>
+{{{content}}}
+  </main>
+  <footer>
+    <main class="muted">HortonMachine {{version}}</main>
+  </footer>
+</body>
+</html>

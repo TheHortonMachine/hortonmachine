@@ -18,6 +18,7 @@
 package org.hortonmachine.server.web;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -25,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.hortonmachine.Version;
 import org.hortonmachine.server.ServerConfig;
 import org.hortonmachine.server.ServerConfig.Setting;
 import org.hortonmachine.server.WorkspacePaths;
@@ -57,23 +57,27 @@ public class AdminPages {
     private final UserManager users;
     private final JobManager jobManager;
     private final UploadManager uploads;
+    private final UrlSigner signer;
     private final long startTime;
     private final Consumer<ServerConfig> applyLiveSettings;
+    private final Templates templates;
 
     /**
      * @param config the configuration the server runs with.
      * @param startTime the time the server started.
-     * @param applyLiveSettings applies to the running server the settings that don't need a restart.
+     * @param applyLiveSettings applies the settings of the settings page to the running server.
      */
     public AdminPages( ServerConfig config, WorkspacePaths paths, UserManager users, JobManager jobManager, UploadManager uploads,
-            long startTime, Consumer<ServerConfig> applyLiveSettings ) {
+            UrlSigner signer, long startTime, Consumer<ServerConfig> applyLiveSettings, Templates templates ) {
         this.config = config;
         this.paths = paths;
         this.users = users;
         this.jobManager = jobManager;
         this.uploads = uploads;
+        this.signer = signer;
         this.startTime = startTime;
         this.applyLiveSettings = applyLiveSettings;
+        this.templates = templates;
     }
 
     public void register( JavalinConfig config ) {
@@ -86,6 +90,13 @@ public class AdminPages {
         config.routes.get("/admin/status", this::statusPage);
         config.routes.get("/admin/settings", ctx -> ctx.html(settingsHtml(ctx, currentValues(), Map.of(), Auth.takeFlash(ctx))));
         config.routes.post("/admin/settings", this::saveSettings);
+        config.routes.post("/admin/settings/signing-key", this::renewSigningKey);
+    }
+
+    private void renewSigningKey( Context ctx ) throws Exception {
+        signer.renewKey();
+        Auth.flash(ctx, "The signing key was renewed: the signed links given until now don't work anymore.");
+        ctx.redirect("/admin/settings");
     }
 
     /**
@@ -99,61 +110,21 @@ public class AdminPages {
         return values;
     }
 
-    private static void appendCommandLineField( StringBuilder body, String label, String value, String help ) {
-        body.append("<div class=\"field\"><label>").append(label).append("</label><input type=\"text\" disabled value=\"")
-                .append(Html.escape(value)).append("\"><p class=\"help muted\">").append(help).append("</p></div>");
-    }
-
     private String settingsHtml( Context ctx, Map<Setting, String> values, Map<Setting, String> errors, String message ) {
-        User admin = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
-        StringBuilder body = new StringBuilder("<h1>Settings</h1>");
-        if (message != null) {
-            body.append("<p class=\"ok\">").append(Html.escape(message)).append("</p>");
-        }
-        if (!errors.isEmpty()) {
-            body.append("<p class=\"error\">Nothing was saved: correct the values in red.</p>");
-        }
-        body.append("<p class=\"muted\">They apply at once and are saved in the ").append(ServerConfig.SETTINGS_FILE)
-                .append(" file of the workspace. The options given on the command line win over this page.</p>");
-        body.append("<form method=\"post\" action=\"/admin/settings\">").append(Html.csrfField(csrfToken));
-
+        List<Model> settings = new ArrayList<>();
         for( Setting setting : Setting.values() ) {
-            String id = "s-" + setting.option;
-            boolean locked = config.fromCommandLine.contains(setting);
-            String value = values.get(setting);
-            body.append("<div class=\"field\"><label for=\"").append(id).append("\"");
-            if (errors.containsKey(setting)) {
-                body.append(" class=\"error\"");
-            }
-            body.append(">").append(Html.escape(setting.label)).append("</label>");
-            body.append("<input type=\"text\" id=\"").append(id).append("\" name=\"").append(setting.option).append("\" value=\"")
-                    .append(Html.escape(value)).append("\"").append(locked ? " disabled" : "").append(">");
-            if (errors.containsKey(setting)) {
-                body.append("<p class=\"help error\">").append(Html.escape(errors.get(setting))).append("</p>");
-            }
-            body.append("<p class=\"help muted\">").append(Html.escape(setting.description));
-            if (locked) {
-                body.append(" <b>Given on the command line as --").append(setting.option).append("=")
-                        .append(Html.escape(config.get(setting))).append(": remove it there to set it here.</b>");
-            }
-            body.append("</p></div>");
+            settings.add(Model.of("id", "s-" + setting.option, "option", setting.option, "label", setting.label, //
+                    "description", setting.description, "value", values.get(setting), //
+                    "locked", config.fromCommandLine.contains(setting), "commandLineValue", config.get(setting), //
+                    "hasError", errors.containsKey(setting), "settingError", errors.get(setting)));
         }
-        body.append("<p><button type=\"submit\">Save</button></p></form>");
-
-        body.append("<fieldset><legend>Only on the command line</legend>");
-        body.append("<p class=\"help muted\">They change with a restart of the server with other options.</p>");
-        appendCommandLineField(body, "Port", String.valueOf(config.port), "The port to listen on, given with --port.");
-        appendCommandLineField(body, "Workspace", paths.getWorkspace().getAbsolutePath(),
-                "The folder of the data, the jobs and the uploads, given with --workspace: it holds the settings file.");
-        appendCommandLineField(body, "Database",
-                config.db == null ? "SQLite in the workspace" : config.db + (config.dbUser != null ? ", user " + config.dbUser : ""),
-                "Given with --db=postgresql://host:port/database and --db-user, without them SQLite in the workspace. "
-                        + "The password is read from the " + ServerConfig.DB_PASSWORD_ENV
-                        + " variable of the environment of the server, which is "
-                        + (System.getenv(ServerConfig.DB_PASSWORD_ENV) != null ? "set" : "not set") + ".");
-        body.append("</fieldset>");
-        return Html.page("Settings", admin, csrfToken, body.toString(), null);
+        Model model = Model.of("message", message, "hasErrors", !errors.isEmpty(), "settingsFile", ServerConfig.SETTINGS_FILE, //
+                "signingKeyFile", UrlSigner.KEY_FILE, //
+                "settings", settings, "port", String.valueOf(config.port), "workspace", paths.getWorkspace().getAbsolutePath(), //
+                "database", config.db == null ? "SQLite in the workspace" : config.db + (config.dbUser != null ? ", user " + config.dbUser : ""), //
+                "passwordVariable", ServerConfig.DB_PASSWORD_ENV, //
+                "passwordState", System.getenv(ServerConfig.DB_PASSWORD_ENV) != null ? "set" : "not set");
+        return templates.page(ctx, "admin-settings.html", "Settings", model);
     }
 
     private synchronized void saveSettings( Context ctx ) throws Exception {
@@ -190,71 +161,27 @@ public class AdminPages {
 
     private String usersHtml( Context ctx, String message, String error ) throws Exception {
         User admin = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
-        StringBuilder body = new StringBuilder("<h1>Users</h1>");
-        if (message != null) {
-            body.append("<p class=\"ok\">").append(Html.escape(message)).append("</p>");
-        }
-        if (error != null) {
-            body.append("<p class=\"error\">").append(Html.escape(error)).append("</p>");
-        }
-
-        body.append("<div class=\"scroll\"><table><tr><th>Name</th><th>Created</th><th>Role and state</th><th>Password</th>")
-                .append("<th class=\"num\">Uploads</th><th class=\"num\">Jobs</th><th></th></tr>");
+        List<Model> userModels = new ArrayList<>();
         for( User user : users.listUsers() ) {
-            String action = "/admin/users/" + Html.escape(user.id);
-            body.append("<tr><td>").append(Html.escape(user.username));
-            if (user.disabled) {
-                body.append(" <span class=\"error\">disabled</span>");
-            }
-            body.append("</td><td>").append(Html.formatTime(user.created)).append("</td><td>");
-            boolean self = user.id.equals(admin.id);
-            if (self) {
-                body.append(user.role.name().toLowerCase()).append(" <span class=\"muted\">(you)</span></td><td>")
-                        .append("<a href=\"/account\">change</a></td>");
-            } else {
-                body.append("<form class=\"inline\" method=\"post\" action=\"").append(action).append("\">").append(Html.csrfField(csrfToken));
-                body.append("<select name=\"role\" aria-label=\"Role\">");
-                for( Role role : Role.values() ) {
-                    body.append("<option value=\"").append(role.name()).append("\"").append(role == user.role ? " selected" : "")
-                            .append(">").append(role.name().toLowerCase()).append("</option>");
-                }
-                body.append("</select> <label class=\"inline\"><input type=\"checkbox\" name=\"disabled\"")
-                        .append(user.disabled ? " checked" : "").append("> disabled</label> ");
-                body.append("<button class=\"link\" type=\"submit\">Save</button></form></td><td>");
-                body.append("<form class=\"inline\" method=\"post\" action=\"").append(action).append("/password\">")
-                        .append(Html.csrfField(csrfToken));
-                body.append("<input type=\"password\" name=\"password\" autocomplete=\"new-password\" aria-label=\"New password\" ")
-                        .append("placeholder=\"new password\" required minlength=\"").append(UserManager.MIN_PASSWORD_LENGTH).append("\"> ");
-                body.append("<button class=\"link\" type=\"submit\">Set</button></form></td>");
-            }
-            body.append("<td class=\"num\">").append(Html.formatSize(uploads.getUsedBytes(user.id))).append("</td>");
-            body.append("<td class=\"num\">").append(Html.formatSize(jobManager.getUsedBytes(user.id))).append("</td><td>");
-            if (!self) {
-                body.append("<form class=\"inline\" method=\"post\" action=\"").append(action).append("/delete\">")
-                        .append(Html.csrfField(csrfToken));
-                body.append("<button class=\"link\" type=\"submit\">Delete</button></form>");
-            }
-            body.append("</td></tr>");
+            userModels.add(Model.of("id", user.id, "username", user.username, "created", Html.formatTime(user.created), //
+                    "disabled", user.disabled, "isSelf", user.id.equals(admin.id), "roleLabel", user.role.name().toLowerCase(), //
+                    "roles", roleModels(user.role), "uploadsSize", Html.formatSize(uploads.getUsedBytes(user.id)), //
+                    "jobsSize", Html.formatSize(jobManager.getUsedBytes(user.id))));
         }
-        body.append("</table></div>");
-        body.append("<p class=\"muted\">Deleting a user deletes the uploads too; the jobs stay until they expire.</p>");
+        Model model = Model.of("message", message, "error", error, "users", userModels, "newUserRoles", roleModels(Role.USER), //
+                "minLength", UserManager.MIN_PASSWORD_LENGTH);
+        return templates.page(ctx, "admin-users.html", "Users", model);
+    }
 
-        body.append("<fieldset><legend>New user</legend>");
-        body.append("<form method=\"post\" action=\"/admin/users\">").append(Html.csrfField(csrfToken));
-        body.append("<label for=\"username\">User name</label>");
-        body.append("<input type=\"text\" id=\"username\" name=\"username\" autocomplete=\"off\" required>");
-        body.append("<p class=\"help muted\">3 to 64 letters, digits, dots, dashes or underscores.</p>");
-        body.append("<label for=\"password\">Password</label>");
-        body.append("<input type=\"password\" id=\"password\" name=\"password\" autocomplete=\"new-password\" required minlength=\"")
-                .append(UserManager.MIN_PASSWORD_LENGTH).append("\">");
-        body.append("<label for=\"role\">Role</label><select id=\"role\" name=\"role\">");
+    /**
+     * @return the roles for a choice, with the given one selected.
+     */
+    private static List<Model> roleModels( Role selected ) {
+        List<Model> roles = new ArrayList<>();
         for( Role role : Role.values() ) {
-            body.append("<option value=\"").append(role.name()).append("\"").append(role == Role.USER ? " selected" : "").append(">")
-                    .append(role.name().toLowerCase()).append("</option>");
+            roles.add(Model.of("name", role.name(), "label", role.name().toLowerCase(), "selected", role == selected));
         }
-        body.append("</select><p><button type=\"submit\">Create</button></p></form></fieldset>");
-        return Html.page("Users", admin, csrfToken, body.toString(), null);
+        return roles;
     }
 
     /**
@@ -340,71 +267,41 @@ public class AdminPages {
     }
 
     private void statusPage( Context ctx ) throws Exception {
-        User admin = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
-        long now = System.currentTimeMillis();
-        StringBuilder body = new StringBuilder("<h1>Status</h1>");
-
-        body.append("<h2>Server</h2><table>");
-        appendRow(body, "Version", Html.escape(Version.getVersion()));
-        appendRow(body, "Started", Html.formatTime(startTime) + " <span class=\"muted\">(" + Html.formatDuration(now - startTime)
-                + " ago)</span>");
-        appendRow(body, "Workspace", Html.escape(paths.getWorkspace().getAbsolutePath()));
-        appendRow(body, "Database", config.db == null ? "SQLite in the workspace" : "PostgreSQL " + Html.escape(config.db));
         Runtime runtime = Runtime.getRuntime();
-        appendRow(body, "Memory", Html.formatSize(runtime.totalMemory() - runtime.freeMemory()) + " used of "
-                + Html.formatSize(runtime.maxMemory()) + ", " + runtime.availableProcessors() + " processors");
-        appendRow(body, "Jobs", jobManager.getSlots() + " at the same time, " + Html.escape(config.jobMemory) + " of memory each, kept "
-                + (config.jobTtlDays > 0 ? config.jobTtlDays + " days" : "for ever"));
-        appendRow(body, "Uploads", "at most " + config.maxUploadMb + " MB at a time, "
-                + (config.userQuotaMb > 0 ? config.userQuotaMb + " MB per user" : "no limit per user"));
-        body.append("</table>");
+        File workspace = paths.getWorkspace();
+        Model model = Model.of("started", Html.formatTime(startTime), //
+                "uptime", Html.formatDuration(System.currentTimeMillis() - startTime), //
+                "workspace", workspace.getAbsolutePath(), //
+                "database", config.db == null ? "SQLite in the workspace" : "PostgreSQL " + config.db, //
+                "memoryUsed", Html.formatSize(runtime.totalMemory() - runtime.freeMemory()), //
+                "memoryMax", Html.formatSize(runtime.maxMemory()), "processors", runtime.availableProcessors(), //
+                "slots", jobManager.getSlots(), "jobMemory", config.jobMemory, //
+                "jobsKept", config.jobTtlDays > 0 ? config.jobTtlDays + " days" : "for ever", //
+                "maxUploadMb", config.maxUploadMb, //
+                "quota", config.userQuotaMb > 0 ? config.userQuotaMb + " MB per user" : "no limit per user", //
+                "diskFree", Html.formatSize(workspace.getUsableSpace()), "diskTotal", Html.formatSize(workspace.getTotalSpace()), //
+                "dataSize", Html.formatSize(WorkspacePaths.folderSize(paths.getDataFolder().toPath())), //
+                "uploadsSize", Html.formatSize(WorkspacePaths.folderSize(paths.getAllUploadsFolder().toPath())), //
+                "jobsSize", Html.formatSize(WorkspacePaths.folderSize(paths.getJobsFolder().toPath())), //
+                "cleanupPath", JobPages.CLEANUP_PATH);
 
         Map<JobState, Integer> counts = jobManager.countJobsByState();
-        body.append("<h2>Jobs</h2><p>");
+        List<Model> stateCounts = new ArrayList<>();
         for( JobState state : JobState.values() ) {
-            body.append("<span class=\"state-").append(state.name()).append("\">").append(state.name().toLowerCase()).append("</span> ")
-                    .append(counts.getOrDefault(state, 0)).append(" &nbsp; ");
+            stateCounts.add(Model.of("state", state.name(), "label", state.name().toLowerCase(), "count", counts.getOrDefault(state, 0)));
         }
-        body.append("</p>");
-        List<Job> active = jobManager.listUnfinishedJobs();
-        if (active.isEmpty()) {
-            body.append("<p class=\"muted\">No job is queued or running.</p>");
-        } else {
-            Map<String, String> usernames = new HashMap<>();
-            for( User user : users.listUsers() ) {
-                usernames.put(user.id, user.username);
-            }
-            body.append("<div class=\"scroll\"><table><tr><th>Created</th><th>Module</th><th>User</th><th>State</th><th></th></tr>");
-            for( Job job : active ) {
-                body.append("<tr><td>").append(Html.formatTime(job.created)).append("</td><td><a href=\"/jobs/").append(Html.escape(job.id))
-                        .append("\">").append(Html.escape(job.module)).append("</a></td><td>")
-                        .append(Html.escape(job.userId != null ? usernames.getOrDefault(job.userId, "(deleted)") : ""))
-                        .append("</td><td class=\"state-").append(job.getState().name()).append("\">")
-                        .append(job.getState().name().toLowerCase());
-                if (job.getState() == JobState.RUNNING) {
-                    body.append(" ").append(job.getProgress()).append("%");
-                }
-                body.append("</td><td><form class=\"inline\" method=\"post\" action=\"/jobs/").append(Html.escape(job.id))
-                        .append("/kill\">").append(Html.csrfField(csrfToken))
-                        .append("<input type=\"hidden\" name=\"back\" value=\"/admin/status\">")
-                        .append("<button class=\"link\" type=\"submit\">Kill</button></form></td></tr>");
-            }
-            body.append("</table></div>");
+        model.with("stateCounts", stateCounts);
+
+        Map<String, String> usernames = new HashMap<>();
+        for( User user : users.listUsers() ) {
+            usernames.put(user.id, user.username);
         }
-
-        File workspace = paths.getWorkspace();
-        body.append("<h2>Disk</h2><table>");
-        appendRow(body, "Free", Html.formatSize(workspace.getUsableSpace()) + " of " + Html.formatSize(workspace.getTotalSpace()));
-        appendRow(body, "Data", Html.formatSize(WorkspacePaths.folderSize(paths.getDataFolder().toPath())));
-        appendRow(body, "Uploads", Html.formatSize(WorkspacePaths.folderSize(paths.getAllUploadsFolder().toPath())));
-        appendRow(body, "Jobs", Html.formatSize(WorkspacePaths.folderSize(paths.getJobsFolder().toPath()))
-                + " &nbsp; <a href=\"" + JobPages.CLEANUP_PATH + "?all=1\">delete the finished jobs of all users</a>");
-        body.append("</table><p class=\"muted\">The disk used by each user is in the <a href=\"/admin/users\">users</a> page.</p>");
-        ctx.html(Html.page("Status", admin, csrfToken, body.toString(), null));
-    }
-
-    private static void appendRow( StringBuilder body, String name, String valueHtml ) {
-        body.append("<tr><th>").append(name).append("</th><td>").append(valueHtml).append("</td></tr>");
+        List<Model> active = new ArrayList<>();
+        for( Job job : jobManager.listUnfinishedJobs() ) {
+            active.add(JobPages.jobModel(job).with("username",
+                    job.userId != null ? usernames.getOrDefault(job.userId, "(deleted)") : ""));
+        }
+        model.with("active", active).with("hasActive", !active.isEmpty());
+        ctx.html(templates.page(ctx, "admin-status.html", "Status", model));
     }
 }

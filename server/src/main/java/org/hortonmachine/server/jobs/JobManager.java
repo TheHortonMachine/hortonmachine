@@ -27,6 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -86,6 +87,7 @@ public class JobManager implements AutoCloseable {
     private final ThreadPoolExecutor executor;
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Map<String, ActiveJob> activeJobs = new ConcurrentHashMap<>();
+    private volatile JobListener listener;
 
     /**
      * A job queued or running.
@@ -115,6 +117,13 @@ public class JobManager implements AutoCloseable {
         this.jobMemory = jobMemory;
         this.ttlDays = ttlDays;
         executor = new ThreadPoolExecutor(slots, slots, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+    }
+
+    /**
+     * @param listener told of the ends and deletions of the jobs, or <code>null</code>.
+     */
+    public void setListener( JobListener listener ) {
+        this.listener = listener;
     }
 
     /**
@@ -388,6 +397,18 @@ public class JobManager implements AutoCloseable {
             synchronized (activeJob) {
                 state = activeJob.killed ? JobState.KILLED : exitCode == HmCli.EXIT_OK ? JobState.DONE : JobState.FAILED;
             }
+            if (state == JobState.DONE && listener != null) {
+                afterRun(activeJob, jobFolder);
+                synchronized (activeJob) {
+                    if (activeJob.killed) {
+                        state = JobState.KILLED;
+                    }
+                }
+                if (state == JobState.KILLED) {
+                    // killed while its outputs were prepared: not in the catalog
+                    listener.deleted(job.id);
+                }
+            }
             finish(activeJob, state, null);
         } catch (Exception e) {
             synchronized (activeJob) {
@@ -403,6 +424,35 @@ public class JobManager implements AutoCloseable {
             LOGGER.log(Level.WARNING, "The job " + job.id + " failed to run.", e);
             finish(activeJob, JobState.FAILED, "The job failed to run: " + e.getMessage());
         }
+    }
+
+    /**
+     * Let the listener work on the outputs of a successful job, as the job, writing its problems to the log of the job.
+     */
+    private void afterRun( ActiveJob activeJob, File jobFolder ) {
+        Job job = activeJob.job;
+        long endTime = System.currentTimeMillis();
+        try {
+            listener.afterRun(job, jobFolder, endTime, task -> {
+                job.setTask(task);
+                job.setProgress(0);
+                try {
+                    db.updateJob(job);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "The task of the job " + job.id + " can't be saved.", e);
+                }
+            });
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The end of the job " + job.id + " had problems.", e);
+            // the log is a file of the job: appended as the lines of the module, which are not text of the server
+            try (Writer log = Files.newBufferedWriter(new File(jobFolder, LOG_FILE).toPath(), StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+                log.write(e.getMessage() + "\n");
+            } catch (Exception logException) {
+                LOGGER.log(Level.WARNING, "The log of the job " + job.id + " can't be written.", logException);
+            }
+        }
+        job.setTask(null);
     }
 
     private static void copyProperty( List<String> command, String name ) {
@@ -503,6 +553,9 @@ public class JobManager implements AutoCloseable {
             throw new IllegalStateException("The folder of the job can't be deleted: " + jobFolder);
         }
         db.deleteJob(jobId);
+        if (listener != null) {
+            listener.deleted(jobId);
+        }
         return true;
     }
 

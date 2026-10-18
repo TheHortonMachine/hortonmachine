@@ -49,6 +49,10 @@ public class ServerConfig {
     public static final int DEFAULT_JOB_TTL_DAYS = 7;
     public static final int DEFAULT_MAX_UPLOAD_MB = 500;
     public static final int DEFAULT_USER_QUOTA_MB = 5120;
+    public static final int DEFAULT_MAX_SUGGESTIONS = 500;
+    public static final int DEFAULT_SIGNED_URL_MINUTES = 60;
+    public static final boolean DEFAULT_COG_OUTPUTS = true;
+    public static final int DEFAULT_STAC_RESCAN_MINUTES = 10;
 
     /** The file of the settings, in the workspace. */
     public static final String SETTINGS_FILE = "hm-server-settings.json";
@@ -73,7 +77,19 @@ public class ServerConfig {
         JOB_TTL_DAYS("job-ttl-days", "Days to keep the jobs",
                 "The days the finished jobs are kept, with their files, 0 to keep them for ever. Checked every hour."), //
         MAX_UPLOAD_MB("max-upload-mb", "Largest upload (MB)", "The maximum size of an upload, all its files together."), //
-        USER_QUOTA_MB("user-quota-mb", "Uploads of a user (MB)", "The maximum size of the uploads of each user, 0 for no limit.");
+        USER_QUOTA_MB("user-quota-mb", "Uploads of a user (MB)", "The maximum size of the uploads of each user, 0 for no limit."), //
+        MAX_SUGGESTIONS("max-suggestions", "Files offered for an input",
+                "The maximum number of files offered for an input of a module: the outputs of the jobs first, newest first, "
+                        + "then the uploads and the shared data, each with its share."), //
+        SIGNED_URL_MINUTES("signed-url-minutes", "Signed links (minutes)",
+                "The minutes the links to the files given by the api, as the results of the jobs, work without the token, "
+                        + "for GDAL or QGIS. 0 gives links that need the token and ends those given before."), //
+        COG_OUTPUTS("cog-outputs", "COG outputs",
+                "true to convert the GeoTIFF outputs of the successful jobs to Cloud Optimized GeoTIFFs, which GDAL and QGIS "
+                        + "read in parts from the api, false to keep them as the modules write them."), //
+        STAC_RESCAN_MINUTES("stac-rescan-minutes", "Catalog check (minutes)",
+                "The changes of the data folder are seen at once, but folders on the network send no events: every these "
+                        + "minutes all the files are compared with the catalog of the api, 0 to compare them only at the start.");
 
         /** The name, as in the command line option --name=value and in the settings file. */
         public final String option;
@@ -110,6 +126,14 @@ public class ServerConfig {
     public int maxUploadMb = DEFAULT_MAX_UPLOAD_MB;
     /** The maximum size of the uploads of each user in MB, 0 for no limit. */
     public int userQuotaMb = DEFAULT_USER_QUOTA_MB;
+    /** The maximum number of files offered for an input of a module. */
+    public int maxSuggestions = DEFAULT_MAX_SUGGESTIONS;
+    /** The minutes the signed links to the files of the api work, 0 for no signed links. */
+    public int signedUrlMinutes = DEFAULT_SIGNED_URL_MINUTES;
+    /** If the GeoTIFF outputs of the jobs are converted to COG. */
+    public boolean cogOutputs = DEFAULT_COG_OUTPUTS;
+    /** The minutes between the comparisons of all the files with the catalog, 0 for only at the start. */
+    public int stacRescanMinutes = DEFAULT_STAC_RESCAN_MINUTES;
     /** The PostgreSQL database, as postgresql://host:port/database, or <code>null</code> for SQLite in the workspace. */
     public String db;
     /** The user of the PostgreSQL database. */
@@ -210,6 +234,21 @@ public class ServerConfig {
         case USER_QUOTA_MB:
             userQuotaMb = toInt(name, value, 0, 100000000);
             break;
+        case MAX_SUGGESTIONS:
+            maxSuggestions = toInt(name, value, 10, 100000);
+            break;
+        case SIGNED_URL_MINUTES:
+            signedUrlMinutes = toInt(name, value, 0, 10080);
+            break;
+        case COG_OUTPUTS:
+            if (!value.equals("true") && !value.equals("false")) {
+                throw new IllegalArgumentException("The value of --" + name + " must be true or false: " + value);
+            }
+            cogOutputs = Boolean.parseBoolean(value);
+            break;
+        case STAC_RESCAN_MINUTES:
+            stacRescanMinutes = toInt(name, value, 0, 1440);
+            break;
         default:
             throw new IllegalArgumentException("Unknown setting: " + name);
         }
@@ -230,6 +269,14 @@ public class ServerConfig {
             return String.valueOf(maxUploadMb);
         case USER_QUOTA_MB:
             return String.valueOf(userQuotaMb);
+        case MAX_SUGGESTIONS:
+            return String.valueOf(maxSuggestions);
+        case SIGNED_URL_MINUTES:
+            return String.valueOf(signedUrlMinutes);
+        case COG_OUTPUTS:
+            return String.valueOf(cogOutputs);
+        case STAC_RESCAN_MINUTES:
+            return String.valueOf(stacRescanMinutes);
         default:
             throw new IllegalArgumentException("Unknown setting: " + setting);
         }
@@ -299,6 +346,12 @@ public class ServerConfig {
         out.println("  --job-ttl-days=" + DEFAULT_JOB_TTL_DAYS + "          the days the finished jobs are kept, 0 for ever");
         out.println("  --max-upload-mb=" + DEFAULT_MAX_UPLOAD_MB + "       the maximum size of an upload");
         out.println("  --user-quota-mb=" + DEFAULT_USER_QUOTA_MB + "      the maximum size of the uploads of each user, 0 for no limit");
+        out.println("  --max-suggestions=" + DEFAULT_MAX_SUGGESTIONS + "     the maximum number of files offered for an input of a module");
+        out.println("  --signed-url-minutes=" + DEFAULT_SIGNED_URL_MINUTES + "  the minutes the links to the files of the api work without");
+        out.println("                          the token, max 10080 (7 days), 0 for none");
+        out.println("  --cog-outputs=" + DEFAULT_COG_OUTPUTS + "       convert the GeoTIFF outputs of the jobs to COG");
+        out.println("  --stac-rescan-minutes=" + DEFAULT_STAC_RESCAN_MINUTES + " compare all the files with the catalog every these");
+        out.println("                          minutes, 0 for only at the start");
         out.println("  --db=postgresql://host:port/database");
         out.println("                          use a PostgreSQL database instead of SQLite in the workspace;");
         out.println("                          its password is read from the " + DB_PASSWORD_ENV + " variable");

@@ -1,0 +1,48 @@
+<h1>Status</h1>
+
+<h2>Server</h2>
+<table>
+  <tr><th>Version</th><td>{{version}}</td></tr>
+  <tr><th>Started</th><td>{{started}} <span class="muted">({{uptime}} ago)</span></td></tr>
+  <tr><th>Workspace</th><td>{{workspace}}</td></tr>
+  <tr><th>Database</th><td>{{database}}</td></tr>
+  <tr><th>Memory</th><td>{{memoryUsed}} used of {{memoryMax}}, {{processors}} processors</td></tr>
+  <tr><th>Jobs</th><td>{{slots}} at the same time, {{jobMemory}} of memory each, kept {{jobsKept}}</td></tr>
+  <tr><th>Uploads</th><td>at most {{maxUploadMb}} MB at a time, {{quota}}</td></tr>
+</table>
+<p><a href="/admin/settings">Change the settings</a></p>
+
+<h2>Jobs</h2>
+<p>{{#stateCounts}}<span class="state-{{state}}">{{label}}</span> {{count}} &nbsp; {{/stateCounts}}</p>
+{{^active}}<p class="muted">No job is queued or running.</p>{{/active}}
+{{#hasActive}}
+<div class="scroll">
+  <table>
+    <tr><th>Created</th><th>Module</th><th>User</th><th>State</th><th></th></tr>
+    {{#active}}
+    <tr>
+      <td>{{created}}</td>
+      <td><a href="/jobs/{{id}}">{{module}}</a></td>
+      <td>{{username}}</td>
+      <td>{{> job-state}}</td>
+      <td>
+        <form class="inline" method="post" action="/jobs/{{id}}/kill">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <input type="hidden" name="back" value="/admin/status">
+          <button class="link" type="submit">Kill</button>
+        </form>
+      </td>
+    </tr>
+    {{/active}}
+  </table>
+</div>
+{{/hasActive}}
+
+<h2>Disk</h2>
+<table>
+  <tr><th>Free</th><td>{{diskFree}} of {{diskTotal}}</td></tr>
+  <tr><th>Data</th><td>{{dataSize}}</td></tr>
+  <tr><th>Uploads</th><td>{{uploadsSize}}</td></tr>
+  <tr><th>Jobs</th><td>{{jobsSize}} &nbsp; <a href="{{cleanupPath}}?all=1">delete the finished jobs of all users</a></td></tr>
+</table>
+<p class="muted">The disk used by each user is in the <a href="/admin/users">users</a> page.</p>

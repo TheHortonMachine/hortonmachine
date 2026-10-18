@@ -55,6 +55,7 @@ public class TestWebPages extends TestCase {
         config.jobMemory = "512m";
         config.maxUploadMb = 1;
         config.userQuotaMb = 2;
+        config.maxSuggestions = 10;
         // as if given on the command line
         config.fromCommandLine.add(Setting.JOB_TTL_DAYS);
         server = new HmServer(config);
@@ -101,6 +102,7 @@ public class TestWebPages extends TestCase {
         long end = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(120);
         while( System.currentTimeMillis() < end ) {
             HttpResponse<String> page = browser.get("/jobs/" + jobId);
+            assertEquals(page.body(), 200, page.statusCode());
             if (!page.body().contains("http-equiv=\"refresh\"")) {
                 return page;
             }
@@ -118,6 +120,14 @@ public class TestWebPages extends TestCase {
         String found = jane.get("/modules?q=pitfill").body();
         assertTrue(found.contains("href=\"/modules/Pitfiller\""));
         assertFalse(found.contains("href=\"/modules/Gradient\""));
+        // grouped by folder, or alphabetic keeping the search
+        assertTrue(found.contains("<b>by folder</b>"));
+        assertTrue(found, found.contains("href=\"/modules?view&#61;list&amp;q&#61;pitfill\""));
+        String alphabetic = jane.get("/modules?view=list&q=pitfill").body();
+        assertTrue(alphabetic.contains("<b>alphabetic</b>"));
+        assertTrue(alphabetic.contains("name=\"view\" value=\"list\""));
+        assertTrue(alphabetic.contains("href=\"/modules/Pitfiller\""));
+        assertFalse(alphabetic.contains("<h2>"));
 
         String form = jane.get("/modules/Pitfiller").body();
         // the data is suggested for the input, the single output has a name
@@ -155,8 +165,14 @@ public class TestWebPages extends TestCase {
 
         assertTrue(jane.get("/jobs").body().contains("href=\"/jobs/" + jobId + "\""));
 
-        // the output is suggested for the next jobs, and the job can run again
-        assertTrue(jane.get("/modules/Pitfiller").body().contains("<option value=\"jobs/" + jobId + "/pit.tif\">"));
+        // the output is suggested for the next jobs, with its module, also with much data
+        for( int i = 0; i < 20; i++ ) {
+            Files.write(new File(workspace, "data/a" + i + ".tif").toPath(), new byte[1]);
+        }
+        String form = jane.get("/modules/Pitfiller").body();
+        assertTrue(form, form.contains("<option value=\"jobs/" + jobId + "/pit.tif\" label=\"Pitfiller, "));
+        assertTrue(form.contains("<option value=\"data/a0.tif\">"));
+        // the job can run again
         String again = jane.get("/modules/Pitfiller?from=" + jobId).body();
         assertTrue(again.contains("value=\"" + SampleData.ELEVATION + "\""));
 
@@ -179,7 +195,7 @@ public class TestWebPages extends TestCase {
         Browser jane = login("jane");
         String first = jobId(runPitfiller(jane, SampleData.ELEVATION, "pit.tif"));
         String page = waitFinished(jane, first).body();
-        assertTrue(page.contains("action=\"/jobs/" + first + "/delete\""));
+        assertTrue(page, page.contains("action=\"/jobs/" + first + "/delete\""));
 
         // only by the owner or an administrator
         Browser john = login("john");

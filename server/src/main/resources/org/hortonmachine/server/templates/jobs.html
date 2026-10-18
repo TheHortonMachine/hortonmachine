@@ -1,0 +1,37 @@
+<h1>Jobs</h1>
+{{> messages}}
+{{#hasFinished}}<p><a href="{{cleanupPath}}">Delete your finished jobs</a></p>{{/hasFinished}}
+
+{{^jobs}}<p class="muted">No jobs yet: start one from the <a href="/modules">modules</a>.</p>{{/jobs}}
+{{#hasJobs}}
+<div class="scroll">
+  <table>
+    <tr><th>Created</th><th>Module</th>{{#showUsers}}<th>User</th>{{/showUsers}}<th>State</th><th>Duration</th><th></th></tr>
+    {{#jobs}}
+    <tr>
+      <td>{{created}}</td>
+      <td><a href="/jobs/{{id}}">{{module}}</a></td>
+      {{#showUsers}}<td>{{username}}</td>{{/showUsers}}
+      <td>{{> job-state}}</td>
+      <td>{{duration}}</td>
+      <td>
+        {{#isActive}}
+        <form class="inline" method="post" action="/jobs/{{id}}/kill">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <input type="hidden" name="back" value="/jobs">
+          <button type="submit">Kill</button>
+        </form>
+        {{/isActive}}
+        {{^isActive}}
+        <form class="inline" method="post" action="/jobs/{{id}}/delete">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <button class="link" type="submit">Delete</button>
+        </form>
+        {{/isActive}}
+      </td>
+    </tr>
+    {{/jobs}}
+  </table>
+</div>
+{{#isLimited}}<p class="muted">The latest {{limit}} jobs.</p>{{/isLimited}}
+{{/hasJobs}}

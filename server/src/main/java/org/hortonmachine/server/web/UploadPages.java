@@ -46,6 +46,7 @@ public class UploadPages {
     public static final String FILES_FIELD = "files";
 
     private final UploadManager uploads;
+    private final Templates templates;
     // changed by the settings page while running
     private volatile int maxUploadMb;
 
@@ -53,9 +54,10 @@ public class UploadPages {
      * @param uploads the uploads.
      * @param maxUploadMb the maximum size of an upload, shown in the form.
      */
-    public UploadPages( UploadManager uploads, int maxUploadMb ) {
+    public UploadPages( UploadManager uploads, int maxUploadMb, Templates templates ) {
         this.uploads = uploads;
         this.maxUploadMb = maxUploadMb;
+        this.templates = templates;
     }
 
     /**
@@ -77,6 +79,7 @@ public class UploadPages {
         config.routes.post("/uploads", this::upload);
         config.routes.post("/uploads/delete", this::delete);
         config.routes.get("/uploads/files/<path>", this::download);
+        config.routes.head("/uploads/files/<path>", this::download);
     }
 
     /**
@@ -86,9 +89,8 @@ public class UploadPages {
     private void checkSize( Context ctx ) {
         long maxBytes = maxUploadMb * 1024L * 1024L;
         if (ctx.method() == HandlerType.POST && ctx.isMultipartFormData() && ctx.req().getContentLengthLong() > maxBytes) {
-            String body = "<h1>Upload</h1><p class=\"error\">The upload is larger than " + maxUploadMb
-                    + " MB: send fewer files at a time.</p><p><a href=\"/uploads\">Back to the uploads</a></p>";
-            ctx.status(HttpStatus.CONTENT_TOO_LARGE).html(Html.page("Upload", null, null, body, null));
+            ctx.status(HttpStatus.CONTENT_TOO_LARGE).html(templates.messagePage(ctx, "Upload",
+                    "The upload is larger than " + maxUploadMb + " MB: send fewer files at a time.", "/uploads", "Back to the uploads"));
             ctx.skipRemainingHandlers();
         }
     }
@@ -99,56 +101,16 @@ public class UploadPages {
 
     private String listHtml( Context ctx, String message, String error, String folder ) throws Exception {
         User user = Auth.user(ctx);
-        String csrfToken = Auth.csrfToken(ctx);
-        List<Upload> list = uploads.list(user.id);
-        long used = uploads.getUsedBytes(user.id);
-
-        StringBuilder body = new StringBuilder("<h1>Uploads</h1>");
-        body.append("<p class=\"muted\">Your files, for the inputs of the modules as <code>uploads/...</code>. ");
-        body.append("In use ").append(Html.formatSize(used));
-        if (uploads.getQuotaBytes() > 0) {
-            body.append(" of ").append(Html.formatSize(uploads.getQuotaBytes()));
+        List<Model> list = new ArrayList<>();
+        for( Upload upload : uploads.list(user.id) ) {
+            list.add(Model.of("path", upload.path, "workspacePath", upload.getWorkspacePath(), "isFolder", upload.isFolder, //
+                    "href", "/uploads/files/" + Html.urlPath(upload.path), "size", upload.isFolder ? "" : Html.formatSize(upload.size)));
         }
-        body.append(".</p>");
-        if (message != null) {
-            body.append("<p class=\"ok\">").append(Html.escape(message)).append("</p>");
-        }
-        if (error != null) {
-            body.append("<p class=\"error\">").append(Html.escape(error)).append("</p>");
-        }
-
-        body.append("<fieldset><legend>Upload</legend>");
-        body.append("<form method=\"post\" action=\"/uploads\" enctype=\"multipart/form-data\">").append(Html.csrfField(csrfToken));
-        body.append("<label for=\"files\">Files</label>");
-        body.append("<input type=\"file\" id=\"files\" name=\"").append(FILES_FIELD).append("\" multiple required>");
-        body.append("<p class=\"help muted\">At most ").append(maxUploadMb)
-                .append(" MB at a time. A shapefile needs all its files, or a zip file with them.</p>");
-        body.append("<label for=\"folder\">Folder</label>");
-        body.append("<input type=\"text\" id=\"folder\" name=\"folder\" placeholder=\"optional, as dtm/2024\" value=\"")
-                .append(Html.escape(folder)).append("\">");
-        body.append("<p><label class=\"inline\"><input type=\"checkbox\" name=\"unzip\" checked> Unpack the zip files</label></p>");
-        body.append("<p><button type=\"submit\">Upload</button></p></form></fieldset>");
-
-        if (list.isEmpty()) {
-            body.append("<p class=\"muted\">No uploads yet.</p>");
-        } else {
-            body.append("<div class=\"scroll\"><table><tr><th>Path</th><th class=\"num\">Size</th><th></th></tr>");
-            for( Upload upload : list ) {
-                body.append("<tr><td>");
-                if (upload.isFolder) {
-                    body.append(Html.escape(upload.getWorkspacePath())).append("/");
-                } else {
-                    body.append("<a href=\"/uploads/files/").append(Html.escape(Html.urlPath(upload.path))).append("\">")
-                            .append(Html.escape(upload.getWorkspacePath())).append("</a>");
-                }
-                body.append("</td><td class=\"num\">").append(upload.isFolder ? "" : Html.formatSize(upload.size)).append("</td><td>");
-                body.append("<form class=\"inline\" method=\"post\" action=\"/uploads/delete\">").append(Html.csrfField(csrfToken));
-                body.append("<input type=\"hidden\" name=\"path\" value=\"").append(Html.escape(upload.path)).append("\">");
-                body.append("<button class=\"link\" type=\"submit\">Delete</button></form></td></tr>");
-            }
-            body.append("</table></div>");
-        }
-        return Html.page("Uploads", user, csrfToken, body.toString(), null);
+        Model model = Model.of("used", Html.formatSize(uploads.getUsedBytes(user.id)), "hasQuota", uploads.getQuotaBytes() > 0, //
+                "quota", Html.formatSize(uploads.getQuotaBytes()), "message", message, "error", error, //
+                "filesField", FILES_FIELD, "maxUploadMb", maxUploadMb, "folder", folder, //
+                "uploads", list, "hasUploads", !list.isEmpty());
+        return templates.page(ctx, "uploads.html", "Uploads", model);
     }
 
     private void upload( Context ctx ) throws Exception {

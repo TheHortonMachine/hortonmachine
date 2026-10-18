@@ -1,0 +1,96 @@
+<h1>API</h1>
+<p>Programs can use the server through two standard APIs, both under <code>{{base}}/api</code>:</p>
+<ul>
+  <li><a href="#processes">OGC API - Processes</a> to run the modules: every module is a process, every run a job;</li>
+  <li><a href="#stac">STAC API</a> to find and read the files: the shared data, your uploads and the outputs of your jobs.</li>
+</ul>
+
+<h2 id="access">Access</h2>
+<p>Create a token in your <a href="/account">account</a> page and send it with every request, as the header
+  <code>Authorization: Bearer hm_...</code>. A token acts as its user: it sees only the jobs and uploads of the user, as the
+  pages do. Revoke the tokens you don't use anymore.</p>
+<p>The links to the files given by the API, as the results of the jobs and the assets of the catalog, are signed: for a while
+  they work without the header, so that GDAL, QGIS or a browser can open them, as
+  <code>/vsicurl/{{base}}/api/jobs/&lt;id&gt;/files/pit.tif?expires=...</code>. Treat them as the token: they stop working
+  when they expire, when the token is revoked or when the administrators renew the signing key. A signed link opens one file
+  only: for a shapefile, whose parts are separate files, send the header instead, as GDAL does with
+  <code>GDAL_HTTP_HEADERS="Authorization: Bearer hm_..."</code>, or prefer GeoPackage.</p>
+<p>The files can be read in parts with the <code>Range</code> header, as <code>Range: bytes=0-16383</code>, one range per
+  request, and their size is given by <code>HEAD</code>. The GeoTIFF outputs of the jobs are Cloud Optimized GeoTIFFs, so
+  that a map of a large raster reads only what it shows.</p>
+
+<h2 id="processes">Processes</h2>
+<p><a href="https://docs.ogc.org/is/18-062r2/18-062r2.html">OGC API - Processes - Part 1: Core</a>, always asynchronous.</p>
+<table>
+  <tr><th>GET /api</th><td>the landing page, without token</td></tr>
+  <tr><th>GET /api/conformance</th><td>the conformance classes, without token</td></tr>
+  <tr><th>GET /api/processes</th><td>the processes</td></tr>
+  <tr><th>GET /api/processes/{id}</th><td>the inputs and outputs of a process</td></tr>
+  <tr><th>POST /api/processes/{id}/execution</th><td>run a process: answers 201 with the job, its address in the Location header</td></tr>
+  <tr><th>GET /api/jobs</th><td>your jobs, filtered by <code>processID</code>, <code>status</code>, <code>limit</code></td></tr>
+  <tr><th>GET /api/jobs/{id}</th><td>the status of a job: accepted, running, successful, failed, dismissed</td></tr>
+  <tr><th>GET /api/jobs/{id}/results</th><td>the results of a successful job: the files as hrefs, the computed values inline</td></tr>
+  <tr><th>GET /api/jobs/{id}/files/{path}</th><td>a file of a job</td></tr>
+  <tr><th>DELETE /api/jobs/{id}</th><td>kill a queued or running job, or delete a finished one with its files</td></tr>
+</table>
+
+<h3>Inputs and outputs</h3>
+<p>The files are paths in the workspace: <code>data/...</code> for the shared data, <code>uploads/...</code> for your uploads,
+  <code>jobs/&lt;id&gt;/...</code> for the outputs of your jobs; the result of a job can also be given as it is,
+  <code>{"href": "{{base}}/api/jobs/&lt;id&gt;/files/pit.tif"}</code>, and the items of the catalog give the path of their
+  file as <code>hm:path</code>. A table of a GeoPackage follows its path after a <code>#</code>, as
+  <code>data/roads.gpkg#roads</code>. The outputs get default names, as <code>pit.tif</code> or
+  <code>vector.gpkg#vector</code>; <code>outputs</code> chooses which ones are written, all if missing.</p>
+
+<h2 id="stac">Catalog</h2>
+<p><a href="https://github.com/radiantearth/stac-api-spec">STAC API 1.0</a> at <code>{{base}}/api/stac</code>, which the STAC
+  browser of QGIS (Data Source Manager, STAC, with the token as the Authorization header of the connection) and
+  <code>pystac-client</code> read. It is always up to date with the files: the uploads and the jobs at once, the shared
+  data a few seconds after a file stopped changing.</p>
+<table>
+  <tr><th>GET /api/stac</th><td>the catalog, with a link to each collection</td></tr>
+  <tr><th>GET /api/stac/conformance</th><td>the conformance classes</td></tr>
+  <tr><th>GET /api/stac/collections</th><td>the collections you see, with their extents</td></tr>
+  <tr><th>GET /api/stac/collections/{id}</th><td>a collection</td></tr>
+  <tr><th>GET /api/stac/collections/{id}/items</th><td>its items, filtered by <code>bbox</code>, <code>datetime</code>, paged by <code>limit</code> and the <code>next</code> link</td></tr>
+  <tr><th>GET /api/stac/collections/{id}/items/{itemId}</th><td>an item, checked against its files</td></tr>
+  <tr><th>GET, POST /api/stac/search</th><td>the items of all the collections, filtered by <code>collections</code>, <code>ids</code>, <code>bbox</code>, <code>datetime</code></td></tr>
+  <tr><th>GET /api/data/files/{path}</th><td>a file of the shared data</td></tr>
+  <tr><th>GET /api/uploads/{userId}/files/{path}</th><td>a file of your uploads</td></tr>
+</table>
+<p>The collections:</p>
+<ul>
+  <li><code>data</code>: the shared data, one item per file, seen by all the users;</li>
+  <li><code>uploads</code>: your uploads, one item per file;</li>
+  <li><code>jobs-&lt;module&gt;</code>, as <code>jobs-Pitfiller</code>: your successful jobs of a module, one item per job with its
+    output files as assets, the module and its parameters, and when the job is removed (<code>expires</code>).</li>
+</ul>
+<p>The administrators see the uploads and jobs of all the users. The files that belong to another one, as the parts of a
+  shapefile or the statistics and styles of a raster, are further assets of its item. The rasters and vectors have their
+  footprint in WGS84, their projection (<code>proj:code</code>) and the rasters their bands with statistics
+  (<code>raster:bands</code>); the other files have no geometry. <code>datetime</code> is the time of the last change of a file,
+  or the end of a job, with its start in <code>start_datetime</code>.</p>
+
+<h2 id="examples">Examples</h2>
+<pre>TOKEN=hm_...
+
+curl -H "Authorization: Bearer $TOKEN" {{base}}/api/processes/Pitfiller
+
+curl -i -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"inputs": {"inElev": "data/elevation.tif"}}' \
+  {{base}}/api/processes/Pitfiller/execution
+
+curl -H "Authorization: Bearer $TOKEN" {{base}}/api/jobs/&lt;id&gt;
+curl -H "Authorization: Bearer $TOKEN" {{base}}/api/jobs/&lt;id&gt;/results
+curl -O -H "Authorization: Bearer $TOKEN" {{base}}/api/jobs/&lt;id&gt;/files/pit.tif
+
+curl -H "Authorization: Bearer $TOKEN" "{{base}}/api/stac/search?bbox=10.5,46.0,11.0,46.5&amp;datetime=2026-10-01T00:00:00Z/.."
+curl -H "Authorization: Bearer $TOKEN" {{base}}/api/stac/collections/jobs-Pitfiller/items</pre>
+
+<pre>from pystac_client import Client
+
+catalog = Client.open("{{base}}/api/stac", headers={"Authorization": "Bearer hm_..."})
+for item in catalog.search(collections=["data"], bbox=[10.5, 46.0, 11.0, 46.5]).items():
+    print(item.id, item.properties["hm:path"], item.assets["data"].href)</pre>
+
+<p>The errors are answered as <code>application/problem+json</code>, with the errors of each input in <code>errors</code>.</p>

@@ -1,0 +1,62 @@
+{{#job}}
+<p><a href="/jobs">Jobs</a></p>
+<h1>{{module}}: {{> job-state}}</h1>
+<div class="actions">
+  {{#isActive}}
+  <form class="inline" method="post" action="/jobs/{{id}}/kill">
+    <input type="hidden" name="csrf" value="{{csrf}}">
+    <input type="hidden" name="back" value="/jobs/{{id}}">
+    <button type="submit">Kill</button>
+  </form>
+  {{/isActive}}
+  {{^isActive}}
+  <form class="inline" method="post" action="/jobs/{{id}}/delete">
+    <input type="hidden" name="csrf" value="{{csrf}}">
+    <button type="submit">Delete</button>
+  </form>
+  {{/isActive}}
+  <a href="/modules/{{module}}?from={{id}}">Run again</a>
+</div>
+
+<table>
+  <tr><th>Created</th><td>{{created}}</td></tr>
+  <tr><th>Started</th><td>{{started}}</td></tr>
+  <tr><th>Finished</th><td>{{finished}}</td></tr>
+  <tr><th>Duration</th><td>{{duration}}</td></tr>
+</table>
+{{#jobError}}<pre class="error">{{jobError}}</pre>{{/jobError}}
+
+<h2>Parameters</h2>
+<div class="scroll">
+  <table>
+    {{#parameters}}<tr><th>{{name}}</th><td>{{value}}</td></tr>{{/parameters}}
+  </table>
+</div>
+
+{{#hasOutputs}}
+<h2>Outputs</h2>
+<div class="scroll">
+  <table>
+    {{#outputs}}
+    <tr><th>{{name}}</th><td>{{#isFile}}<a href="{{href}}">{{value}}</a>{{/isFile}}{{^isFile}}{{value}}{{/isFile}}</td></tr>
+    {{/outputs}}
+  </table>
+</div>
+{{/hasOutputs}}
+
+{{#hasFiles}}
+<h2>Files</h2>
+<p><a href="/jobs/{{id}}/zip">Download all as zip</a></p>
+<div class="scroll">
+  <table>
+    {{#files}}<tr><td><a href="{{href}}">{{path}}</a></td><td>{{size}}</td></tr>{{/files}}
+  </table>
+</div>
+{{/hasFiles}}
+
+{{#hasLog}}
+<h2>Log</h2>
+{{#logCut}}<p class="muted">The end of the log: <a href="{{logHref}}">download it all</a>.</p>{{/logCut}}
+<pre>{{log}}</pre>
+{{/hasLog}}
+{{/job}}

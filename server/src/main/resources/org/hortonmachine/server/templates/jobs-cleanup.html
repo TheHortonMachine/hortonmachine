@@ -1,0 +1,15 @@
+<h1>Delete the finished jobs</h1>
+{{^hasJobs}}
+<p class="muted">There are no finished jobs.</p>
+<p><a href="/jobs">Back to the jobs</a></p>
+{{/hasJobs}}
+{{#hasJobs}}
+<p>Delete {{count}} finished job(s) of {{whose}}, with their files?
+  The jobs whose outputs are inputs of jobs still queued or running are kept.</p>
+<form method="post" action="{{cleanupPath}}" class="actions">
+  <input type="hidden" name="csrf" value="{{csrf}}">
+  {{#all}}<input type="hidden" name="all" value="1">{{/all}}
+  <button type="submit">Delete</button>
+  <a href="{{cancelHref}}">Cancel</a>
+</form>
+{{/hasJobs}}

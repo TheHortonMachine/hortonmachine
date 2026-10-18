@@ -1,0 +1,54 @@
+<p><a href="/modules">Modules</a> / {{folder}}</p>
+<h1>{{name}}</h1>
+<p>{{description}}</p>
+{{#authors}}<p class="muted">Authors: {{authors}}</p>{{/authors}}
+<p class="muted">Inputs are paths in the workspace: <code>data/…</code> for the shared data,
+  <code>uploads/…</code> for your uploads, <code>jobs/&lt;id&gt;/…</code> for the outputs of your jobs.
+  Outputs are file names, written in the folder of the job. Empty fields use the default.</p>
+{{> messages}}
+{{#otherErrors}}<p class="error">{{.}}</p>{{/otherErrors}}
+
+<form method="post" action="/modules/{{name}}">
+  <input type="hidden" name="csrf" value="{{csrf}}">
+  {{#groups}}
+  <fieldset>
+    <legend>{{title}}</legend>
+    {{#fields}}
+    <div class="field">
+      {{#isBoolean}}
+      <label><input type="hidden" name="{{name}}" value="false"><input type="checkbox" id="{{id}}" name="{{name}}" value="true"{{#checked}} checked{{/checked}}> {{name}}</label>
+      {{/isBoolean}}
+      {{^isBoolean}}
+      <label for="{{id}}">{{name}}</label>
+      {{#isChoice}}
+      <select id="{{id}}" name="{{name}}">
+        {{#noSelection}}<option value="">(choose)</option>{{/noSelection}}
+        {{#choices}}<option{{#selected}} selected{{/selected}}>{{label}}</option>{{/choices}}
+      </select>
+      {{/isChoice}}
+      {{#isNumber}}
+      <input type="number" id="{{id}}" name="{{name}}" step="{{step}}"{{#hasMin}} min="{{min}}"{{/hasMin}}{{#hasMax}} max="{{max}}"{{/hasMax}} placeholder="{{placeholder}}"{{#hasValue}} value="{{value}}"{{/hasValue}}>
+      {{/isNumber}}
+      {{#isText}}
+      <textarea id="{{id}}" name="{{name}}" rows="4" placeholder="{{placeholder}}">{{value}}</textarea>
+      {{/isText}}
+      {{#isUnsupported}}
+      <input type="text" id="{{id}}" disabled placeholder="not supported on the server">
+      {{/isUnsupported}}
+      {{#isPlain}}
+      {{#hasSuggestions}}
+      <datalist id="{{listId}}">
+        {{#suggestions}}<option value="{{value}}"{{#label}} label="{{label}}"{{/label}}>{{/suggestions}}
+      </datalist>
+      {{/hasSuggestions}}
+      <input type="text" id="{{id}}" name="{{name}}"{{#hasSuggestions}} list="{{listId}}"{{/hasSuggestions}} placeholder="{{placeholder}}"{{#hasValue}} value="{{value}}"{{/hasValue}}>
+      {{/isPlain}}
+      {{/isBoolean}}
+      {{#fieldError}}<p class="error help">{{fieldError}}</p>{{/fieldError}}
+      <p class="help muted">{{help}}</p>
+    </div>
+    {{/fields}}
+  </fieldset>
+  {{/groups}}
+  <p><button type="submit">Run</button></p>
+</form>

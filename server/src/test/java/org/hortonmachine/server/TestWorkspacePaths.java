@@ -123,6 +123,15 @@ public class TestWorkspacePaths extends TestCase {
         }
     }
 
+    public void testGeopackageTables() {
+        assertEquals("jobs/job1/roads.gpkg", WorkspacePaths.filePath("jobs/job1/roads.gpkg#roads"));
+        assertEquals("roads", WorkspacePaths.tableOf("jobs/job1/roads.gpkg#roads"));
+        assertEquals("ROADS.GPKG", WorkspacePaths.filePath("ROADS.GPKG#r"));
+        assertEquals("slope.tif", WorkspacePaths.filePath("slope.tif"));
+        assertNull(WorkspacePaths.tableOf("slope.tif"));
+        assertNull(WorkspacePaths.tableOf("notes#1.txt"));
+    }
+
     public void testToWorkspacePath() {
         File workspace = paths.getWorkspace();
         assertEquals("jobs/job1/slope.tif", paths.toWorkspacePath(new File(workspace, "jobs/job1/slope.tif").getPath()));

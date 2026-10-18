@@ -1,0 +1,47 @@
+<h1>Settings</h1>
+{{> messages}}
+{{#hasErrors}}<p class="error">Nothing was saved: correct the values in red.</p>{{/hasErrors}}
+<p class="muted">They apply at once and are saved in the {{settingsFile}} file of the workspace.
+  The options given on the command line win over this page.</p>
+
+<form method="post" action="/admin/settings">
+  <input type="hidden" name="csrf" value="{{csrf}}">
+  {{#settings}}
+  <div class="field">
+    <label for="{{id}}"{{#hasError}} class="error"{{/hasError}}>{{label}}</label>
+    <input type="text" id="{{id}}" name="{{option}}" value="{{value}}"{{#locked}} disabled{{/locked}}>
+    {{#hasError}}<p class="help error">{{settingError}}</p>{{/hasError}}
+    <p class="help muted">{{description}}{{#locked}} <b>Given on the command line as --{{option}}={{commandLineValue}}: remove it there to set it here.</b>{{/locked}}</p>
+  </div>
+  {{/settings}}
+  <p><button type="submit">Save</button></p>
+</form>
+
+<form method="post" action="/admin/settings/signing-key">
+  <input type="hidden" name="csrf" value="{{csrf}}">
+  <p><button type="submit">Renew signing key</button></p>
+  <p class="help muted">The signed links to the files given by the api stop working at once, as when a link was shared by mistake.
+    The key is kept in the {{signingKeyFile}} file of the workspace.</p>
+</form>
+
+<fieldset>
+  <legend>Only on the command line</legend>
+  <p class="help muted">They change with a restart of the server with other options.</p>
+  <div class="field">
+    <label>Port</label>
+    <input type="text" disabled value="{{port}}">
+    <p class="help muted">The port to listen on, given with --port.</p>
+  </div>
+  <div class="field">
+    <label>Workspace</label>
+    <input type="text" disabled value="{{workspace}}">
+    <p class="help muted">The folder of the data, the jobs and the uploads, given with --workspace: it holds the settings file
+      and the templates folder, whose files replace the built-in pages.</p>
+  </div>
+  <div class="field">
+    <label>Database</label>
+    <input type="text" disabled value="{{database}}">
+    <p class="help muted">Given with --db=postgresql://host:port/database and --db-user, without them SQLite in the workspace.
+      The password is read from the {{passwordVariable}} variable of the environment of the server, which is {{passwordState}}.</p>
+  </div>
+</fieldset>

@@ -67,6 +67,7 @@
 		<!-- the Kotlin runtime of Javalin, also used by okhttp: one version in the libs folder -->
 		<kotlin.version>2.2.20</kotlin.version>
 		<javalin.version>7.2.3</javalin.version>
+		<mustache.version>0.9.14</mustache.version>
 
 
 		<postgis.version>2.5.0</postgis.version>
@@ -221,6 +222,12 @@
 				<groupId>io.javalin</groupId>
 				<artifactId>javalin</artifactId>
 				<version>${javalin.version}</version>
+			</dependency>
+			<dependency>
+				<!-- the templates of the pages of the server -->
+				<groupId>com.github.spullara.mustache.java</groupId>
+				<artifactId>compiler</artifactId>
+				<version>${mustache.version}</version>
 			</dependency>
 
 			<dependency>

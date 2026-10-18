@@ -28,6 +28,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -64,6 +65,7 @@ public class UploadManager {
     // changed by the settings page while running
     private volatile long quotaBytes;
     private volatile long maxUnpackedBytes;
+    private volatile Consumer<String> changeListener;
 
     /**
      * A file or folder of the uploads of a user.
@@ -270,7 +272,22 @@ public class UploadManager {
         } finally {
             Files.deleteIfExists(tmp);
         }
+        changed(userId);
         return path;
+    }
+
+    /**
+     * @param listener told of the user whose uploads changed, after each change, or <code>null</code>.
+     */
+    public void setChangeListener( Consumer<String> listener ) {
+        this.changeListener = listener;
+    }
+
+    private void changed( String userId ) {
+        Consumer<String> listener = changeListener;
+        if (listener != null) {
+            listener.accept(userId);
+        }
     }
 
     private String quotaMessage( String path ) {
@@ -404,6 +421,8 @@ public class UploadManager {
             }
         } finally {
             FileUtilities.deleteFileOrDir(tmp.toFile());
+            // also after a failure, some files may have been moved
+            changed(userId);
         }
         return files;
     }
@@ -421,6 +440,7 @@ public class UploadManager {
         }
         // the result of deleteFileOrDir is false for the folders it deleted
         FileUtilities.deleteFileOrDir(file);
+        changed(userId);
         if (file.exists()) {
             throw new IOException("The file can't be deleted: " + path);
         }
@@ -433,6 +453,7 @@ public class UploadManager {
     public void deleteAll( String userId ) throws IOException {
         File folder = paths.getUploadsFolder(userId);
         FileUtilities.deleteFileOrDir(folder);
+        changed(userId);
         if (folder.exists()) {
             throw new IOException("The uploads can't be deleted: " + folder);
         }

@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.EDb;
@@ -32,6 +33,10 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.server.ServerConfig;
 import org.hortonmachine.server.jobs.Job;
 import org.hortonmachine.server.jobs.JobState;
+import org.hortonmachine.server.stac.StacIndexer;
+import org.hortonmachine.server.stac.StacRecord;
+import org.hortonmachine.server.stac.StacSearch;
+import org.hortonmachine.server.users.ApiToken;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
 
@@ -49,13 +54,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ServerDb implements AutoCloseable {
     /** The version of the tables, to upgrade them when they change. */
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 3;
 
     public static final String SQLITE_FILE = "hm-server.sqlite";
 
     private static final String JOB_COLUMNS = "id, user_id, module, parameters, state, progress, task, message, outputs, "
             + "created, started, finished, exit_code";
     private static final String USER_COLUMNS = "id, username, role, created, disabled";
+    private static final String STAC_COLUMNS = "id, collection, owner_id, path, size, modified, min_lon, min_lat, max_lon, max_lat, "
+            + "start_time, end_time, item";
 
     private static final TypeReference<Map<String, String>> MAP_TYPE = new TypeReference<Map<String, String>>(){
     };
@@ -118,6 +125,24 @@ public class ServerDb implements AutoCloseable {
             execute("CREATE TABLE users (id VARCHAR(36) PRIMARY KEY, username VARCHAR(64) NOT NULL UNIQUE, "
                     + "password_hash TEXT NOT NULL, role VARCHAR(16) NOT NULL, created BIGINT NOT NULL, disabled INTEGER NOT NULL)");
         }
+        // version 2: the tokens of the api
+        if (!db.hasTable("api_tokens")) {
+            execute("CREATE TABLE api_tokens (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36) NOT NULL, name VARCHAR(100) NOT NULL, "
+                    + "token_hash VARCHAR(64) NOT NULL UNIQUE, created BIGINT NOT NULL, last_used BIGINT)");
+            execute("CREATE INDEX api_tokens_user_id ON api_tokens (user_id)");
+        }
+        // version 3: the index of the STAC catalog
+        if (!db.hasTable("stac_items")) {
+            execute("CREATE TABLE stac_items (id VARCHAR(255) PRIMARY KEY, collection VARCHAR(255) NOT NULL, owner_id VARCHAR(36), "
+                    + "path TEXT NOT NULL, size BIGINT NOT NULL, modified BIGINT NOT NULL, min_lon DOUBLE PRECISION, "
+                    + "min_lat DOUBLE PRECISION, max_lon DOUBLE PRECISION, max_lat DOUBLE PRECISION, start_time BIGINT, "
+                    + "end_time BIGINT, item TEXT NOT NULL)");
+            execute("CREATE INDEX stac_items_collection ON stac_items (collection)");
+            execute("CREATE INDEX stac_items_owner_id ON stac_items (owner_id)");
+        }
+        if (version < SCHEMA_VERSION) {
+            execute("UPDATE schema_version SET version = " + SCHEMA_VERSION);
+        }
     }
 
     private void execute( String sql ) throws Exception {
@@ -163,6 +188,8 @@ public class ServerDb implements AutoCloseable {
                 statement.setLong(i + 1, (Long) value);
             } else if (value instanceof Integer) {
                 statement.setInt(i + 1, (Integer) value);
+            } else if (value instanceof Double) {
+                statement.setDouble(i + 1, (Double) value);
             } else {
                 statement.setObject(i + 1, value);
             }
@@ -370,6 +397,251 @@ public class ServerDb implements AutoCloseable {
 
     public synchronized void deleteUser( String id ) throws Exception {
         update("DELETE FROM users WHERE id = ?", id);
+    }
+
+    private List<ApiToken> queryTokens( String where, Object... values ) throws Exception {
+        String sql = "SELECT id, user_id, name, created, last_used FROM api_tokens " + where;
+        return db.execOnConnection(connection -> {
+            List<ApiToken> tokens = new ArrayList<>();
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                setValues(statement, values);
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    while( resultSet.next() ) {
+                        tokens.add(new ApiToken(resultSet.getString(1), resultSet.getString(2), resultSet.getString(3),
+                                resultSet.getLong(4), toLong(resultSet.getObject(5))));
+                    }
+                }
+            }
+            return tokens;
+        });
+    }
+
+    /**
+     * Add a token of the api.
+     *
+     * @param token the token.
+     * @param tokenHash the hash of the secret of the token.
+     */
+    public synchronized void insertToken( ApiToken token, String tokenHash ) throws Exception {
+        update("INSERT INTO api_tokens (id, user_id, name, token_hash, created, last_used) VALUES (?, ?, ?, ?, ?, ?)", token.id,
+                token.userId, token.name, tokenHash, token.created, token.lastUsed);
+    }
+
+    /**
+     * @return the tokens of a user, newest first.
+     */
+    public synchronized List<ApiToken> listTokens( String userId ) throws Exception {
+        return queryTokens("WHERE user_id = ? ORDER BY created DESC", userId);
+    }
+
+    /**
+     * @return the token with the given hash of its secret, or <code>null</code>.
+     */
+    public synchronized ApiToken getTokenByHash( String tokenHash ) throws Exception {
+        List<ApiToken> tokens = queryTokens("WHERE token_hash = ?", tokenHash);
+        return tokens.isEmpty() ? null : tokens.get(0);
+    }
+
+    /**
+     * @return the token with the given id, or <code>null</code>.
+     */
+    public synchronized ApiToken getToken( String tokenId ) throws Exception {
+        List<ApiToken> tokens = queryTokens("WHERE id = ?", tokenId);
+        return tokens.isEmpty() ? null : tokens.get(0);
+    }
+
+    public synchronized void updateTokenLastUsed( String tokenId, long lastUsed ) throws Exception {
+        update("UPDATE api_tokens SET last_used = ? WHERE id = ?", lastUsed, tokenId);
+    }
+
+    /**
+     * Delete a token of a user.
+     *
+     * @return <code>false</code> if the user has no such token.
+     */
+    public synchronized boolean deleteToken( String userId, String tokenId ) throws Exception {
+        return update("DELETE FROM api_tokens WHERE id = ? AND user_id = ?", tokenId, userId) > 0;
+    }
+
+    public synchronized void deleteTokensOfUser( String userId ) throws Exception {
+        update("DELETE FROM api_tokens WHERE user_id = ?", userId);
+    }
+
+    /**
+     * Add an item of the STAC catalog, or replace the one with the same id.
+     */
+    public synchronized void putStacItem( StacRecord item ) throws Exception {
+        update("DELETE FROM stac_items WHERE id = ?", item.id);
+        update("INSERT INTO stac_items (" + STAC_COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", item.id,
+                item.collection, item.ownerId, item.path, item.size, item.modified, item.minLon, item.minLat, item.maxLon,
+                item.maxLat, item.startTime, item.endTime, item.json);
+    }
+
+    /**
+     * @return the item of the STAC catalog with the given id, or <code>null</code>.
+     */
+    public synchronized StacRecord getStacItem( String id ) throws Exception {
+        List<StacRecord> items = queryStacItems("WHERE id = ?", id);
+        return items.isEmpty() ? null : items.get(0);
+    }
+
+    /**
+     * @return the items of a collection of the STAC catalog, by id.
+     */
+    public synchronized List<StacRecord> listStacItems( String collection ) throws Exception {
+        return queryStacItems("WHERE collection = ? ORDER BY id", collection);
+    }
+
+    /**
+     * Delete an item of the STAC catalog.
+     *
+     * @return <code>false</code> if there is no such item.
+     */
+    public synchronized boolean deleteStacItem( String id ) throws Exception {
+        return update("DELETE FROM stac_items WHERE id = ?", id) > 0;
+    }
+
+    /**
+     * @return the items of the STAC catalog whose path is the given one or is under it, as data/dem for data/dem/dtm.tif.
+     */
+    public synchronized List<StacRecord> listStacItemsUnder( String collection, String path ) throws Exception {
+        String escaped = path.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        return queryStacItems("WHERE collection = ? AND (path = ? OR path LIKE ? ESCAPE '!') ORDER BY id", collection, path,
+                escaped + "/%");
+    }
+
+    /**
+     * Build the conditions of a search, without paging.
+     *
+     * @param values filled with the values of the conditions.
+     */
+    private static String searchWhere( StacSearch search, List<Object> values ) {
+        StringBuilder where = new StringBuilder("WHERE 1 = 1");
+        if (!search.isAdmin) {
+            // the shared data and the own uploads and jobs
+            where.append(" AND (collection = ? OR owner_id = ?)");
+            values.add(StacIndexer.DATA_COLLECTION);
+            values.add(search.userId);
+        }
+        appendIn(where, values, "collection", search.collections);
+        appendIn(where, values, "id", search.ids);
+        if (search.bbox != null) {
+            where.append(" AND min_lon IS NOT NULL AND max_lon >= ? AND min_lon <= ? AND max_lat >= ? AND min_lat <= ?");
+            values.add(search.bbox[0]);
+            values.add(search.bbox[2]);
+            values.add(search.bbox[1]);
+            values.add(search.bbox[3]);
+        }
+        if (search.start != null) {
+            where.append(" AND end_time >= ?");
+            values.add(search.start);
+        }
+        if (search.end != null) {
+            where.append(" AND start_time <= ?");
+            values.add(search.end);
+        }
+        return where.toString();
+    }
+
+    private static void appendIn( StringBuilder where, List<Object> values, String column, Set<String> wanted ) {
+        if (wanted.isEmpty()) {
+            return;
+        }
+        where.append(" AND ").append(column).append(" IN (");
+        where.append(String.join(", ", Collections.nCopies(wanted.size(), "?"))).append(")");
+        values.addAll(wanted);
+    }
+
+    /**
+     * @return the items of the STAC catalog found by a search, by collection and id.
+     */
+    public synchronized List<StacRecord> searchStacItems( StacSearch search ) throws Exception {
+        List<Object> values = new ArrayList<>();
+        String where = searchWhere(search, values);
+        return queryStacItems(where + " ORDER BY collection, id LIMIT " + search.limit + " OFFSET " + search.offset,
+                values.toArray());
+    }
+
+    /**
+     * @return the number of the items found by a search, without paging.
+     */
+    public synchronized long countStacItems( StacSearch search ) throws Exception {
+        List<Object> values = new ArrayList<>();
+        String sql = "SELECT COUNT(*) FROM stac_items " + searchWhere(search, values);
+        return db.execOnConnection(connection -> {
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                setValues(statement, values.toArray());
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    return resultSet.next() ? resultSet.getLong(1) : 0L;
+                }
+            }
+        });
+    }
+
+    /**
+     * The extent of a collection of the STAC catalog, as seen by a requester.
+     */
+    public static class StacCollectionExtent {
+        public final String collection;
+        public final long count;
+        /** The bounds, <code>null</code> if no item has a geometry. */
+        public final double[] bbox;
+        public final Long start;
+        public final Long end;
+
+        StacCollectionExtent( String collection, long count, double[] bbox, Long start, Long end ) {
+            this.collection = collection;
+            this.count = count;
+            this.bbox = bbox;
+            this.start = start;
+            this.end = end;
+        }
+    }
+
+    /**
+     * @return the collections that have items found by the search, ignoring its paging, with their extents, by id.
+     */
+    public synchronized List<StacCollectionExtent> listStacCollections( StacSearch search ) throws Exception {
+        List<Object> values = new ArrayList<>();
+        String sql = "SELECT collection, COUNT(*), MIN(min_lon), MIN(min_lat), MAX(max_lon), MAX(max_lat), MIN(start_time), "
+                + "MAX(end_time) FROM stac_items " + searchWhere(search, values) + " GROUP BY collection ORDER BY collection";
+        return db.execOnConnection(connection -> {
+            List<StacCollectionExtent> extents = new ArrayList<>();
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                setValues(statement, values.toArray());
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    while( resultSet.next() ) {
+                        Object minLon = resultSet.getObject(3);
+                        double[] bbox = minLon instanceof Number ? new double[]{((Number) minLon).doubleValue(),
+                                resultSet.getDouble(4), resultSet.getDouble(5), resultSet.getDouble(6)} : null;
+                        extents.add(new StacCollectionExtent(resultSet.getString(1), resultSet.getLong(2), bbox,
+                                toLong(resultSet.getObject(7)), toLong(resultSet.getObject(8))));
+                    }
+                }
+            }
+            return extents;
+        });
+    }
+
+    private List<StacRecord> queryStacItems( String where, Object... values ) throws Exception {
+        String sql = "SELECT " + STAC_COLUMNS + " FROM stac_items " + where;
+        return db.execOnConnection(connection -> {
+            List<StacRecord> items = new ArrayList<>();
+            try (IHMPreparedStatement statement = connection.prepareStatement(sql)) {
+                setValues(statement, values);
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    while( resultSet.next() ) {
+                        Object minLon = resultSet.getObject(7);
+                        double[] bbox = minLon instanceof Number ? new double[]{((Number) minLon).doubleValue(),
+                                resultSet.getDouble(8), resultSet.getDouble(9), resultSet.getDouble(10)} : null;
+                        items.add(new StacRecord(resultSet.getString(1), resultSet.getString(2), resultSet.getString(3),
+                                resultSet.getString(4), resultSet.getLong(5), resultSet.getLong(6), bbox,
+                                toLong(resultSet.getObject(11)), toLong(resultSet.getObject(12)), resultSet.getString(13)));
+                    }
+                }
+            }
+            return items;
+        });
     }
 
     @Override

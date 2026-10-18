@@ -1,0 +1,65 @@
+<h1>Users</h1>
+{{> messages}}
+
+<div class="scroll">
+  <table>
+    <tr><th>Name</th><th>Created</th><th>Role and state</th><th>Password</th><th class="num">Uploads</th><th class="num">Jobs</th><th></th></tr>
+    {{#users}}
+    <tr>
+      <td>{{username}}{{#disabled}} <span class="error">disabled</span>{{/disabled}}</td>
+      <td>{{created}}</td>
+      {{#isSelf}}
+      <td>{{roleLabel}} <span class="muted">(you)</span></td>
+      <td><a href="/account">change</a></td>
+      {{/isSelf}}
+      {{^isSelf}}
+      <td>
+        <form class="inline" method="post" action="/admin/users/{{id}}">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <select name="role" aria-label="Role">
+            {{#roles}}<option value="{{name}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/roles}}
+          </select>
+          <label class="inline"><input type="checkbox" name="disabled"{{#disabled}} checked{{/disabled}}> disabled</label>
+          <button class="link" type="submit">Save</button>
+        </form>
+      </td>
+      <td>
+        <form class="inline" method="post" action="/admin/users/{{id}}/password">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <input type="password" name="password" autocomplete="new-password" aria-label="New password" placeholder="new password" required minlength="{{minLength}}">
+          <button class="link" type="submit">Set</button>
+        </form>
+      </td>
+      {{/isSelf}}
+      <td class="num">{{uploadsSize}}</td>
+      <td class="num">{{jobsSize}}</td>
+      <td>
+        {{^isSelf}}
+        <form class="inline" method="post" action="/admin/users/{{id}}/delete">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <button class="link" type="submit">Delete</button>
+        </form>
+        {{/isSelf}}
+      </td>
+    </tr>
+    {{/users}}
+  </table>
+</div>
+<p class="muted">Deleting a user deletes the uploads too; the jobs stay until they expire.</p>
+
+<fieldset>
+  <legend>New user</legend>
+  <form method="post" action="/admin/users">
+    <input type="hidden" name="csrf" value="{{csrf}}">
+    <label for="username">User name</label>
+    <input type="text" id="username" name="username" autocomplete="off" required>
+    <p class="help muted">3 to 64 letters, digits, dots, dashes or underscores.</p>
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="{{minLength}}">
+    <label for="role">Role</label>
+    <select id="role" name="role">
+      {{#newUserRoles}}<option value="{{name}}"{{#selected}} selected{{/selected}}>{{label}}</option>{{/newUserRoles}}
+    </select>
+    <p><button type="submit">Create</button></p>
+  </form>
+</fieldset>

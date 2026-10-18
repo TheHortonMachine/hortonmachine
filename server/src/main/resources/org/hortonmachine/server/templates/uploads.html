@@ -1,0 +1,40 @@
+<h1>Uploads</h1>
+<p class="muted">Your files, for the inputs of the modules as <code>uploads/...</code>.
+  In use {{used}}{{#hasQuota}} of {{quota}}{{/hasQuota}}.</p>
+{{> messages}}
+
+<fieldset>
+  <legend>Upload</legend>
+  <form method="post" action="/uploads" enctype="multipart/form-data">
+    <input type="hidden" name="csrf" value="{{csrf}}">
+    <label for="files">Files</label>
+    <input type="file" id="files" name="{{filesField}}" multiple required>
+    <p class="help muted">At most {{maxUploadMb}} MB at a time. A shapefile needs all its files, or a zip file with them.</p>
+    <label for="folder">Folder</label>
+    <input type="text" id="folder" name="folder" placeholder="optional, as dtm/2024" value="{{folder}}">
+    <p><label class="inline"><input type="checkbox" name="unzip" checked> Unpack the zip files</label></p>
+    <p><button type="submit">Upload</button></p>
+  </form>
+</fieldset>
+
+{{^uploads}}<p class="muted">No uploads yet.</p>{{/uploads}}
+{{#hasUploads}}
+<div class="scroll">
+  <table>
+    <tr><th>Path</th><th class="num">Size</th><th></th></tr>
+    {{#uploads}}
+    <tr>
+      <td>{{#isFolder}}{{workspacePath}}/{{/isFolder}}{{^isFolder}}<a href="{{href}}">{{workspacePath}}</a>{{/isFolder}}</td>
+      <td class="num">{{size}}</td>
+      <td>
+        <form class="inline" method="post" action="/uploads/delete">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <input type="hidden" name="path" value="{{path}}">
+          <button class="link" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{/uploads}}
+  </table>
+</div>
+{{/hasUploads}}

@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 import org.hortonmachine.gears.libs.modules.HMParameterKind;
@@ -49,6 +51,9 @@ public class WorkspacePaths {
     public static final String JOBS = "jobs";
     /** The folder of the files being uploaded, never given to the users. */
     public static final String TMP = "tmp";
+
+    /** A geopackage path with its table, as the modules want them: roads.gpkg#roads. */
+    private static final Pattern GEOPACKAGE_TABLE = Pattern.compile("(?i)(.*\\.gpkg)#(.*)");
 
     private final Path workspace;
     private final Path dataFolder;
@@ -211,6 +216,24 @@ public class WorkspacePaths {
             throw new IllegalArgumentException("The path of " + parameter.name + " is not allowed: " + value);
         }
         return resolved.toString();
+    }
+
+    /**
+     * @return the path of the file of a path, without the table of a geopackage: <code>roads.gpkg</code> for
+     *         <code>roads.gpkg#roads</code>; the path itself for the other files.
+     */
+    public static String filePath( String path ) {
+        Matcher matcher = GEOPACKAGE_TABLE.matcher(path);
+        return matcher.matches() ? matcher.group(1) : path;
+    }
+
+    /**
+     * @return the table of a geopackage path, <code>roads</code> for <code>roads.gpkg#roads</code>, or
+     *         <code>null</code>.
+     */
+    public static String tableOf( String path ) {
+        Matcher matcher = GEOPACKAGE_TABLE.matcher(path);
+        return matcher.matches() ? matcher.group(2) : null;
     }
 
     /**

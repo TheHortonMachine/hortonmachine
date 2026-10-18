@@ -26,6 +26,8 @@ import java.util.logging.Logger;
 import org.hortonmachine.Version;
 import org.hortonmachine.server.db.ServerDb;
 import org.hortonmachine.server.jobs.JobManager;
+import org.hortonmachine.server.stac.StacIndexer;
+import org.hortonmachine.server.stac.StacJobs;
 import org.hortonmachine.server.uploads.UploadManager;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
@@ -36,7 +38,11 @@ import org.hortonmachine.server.web.Auth;
 import org.hortonmachine.server.web.FileSuggestions;
 import org.hortonmachine.server.web.JobPages;
 import org.hortonmachine.server.web.ModulePages;
+import org.hortonmachine.server.web.OgcApi;
+import org.hortonmachine.server.web.StacApi;
+import org.hortonmachine.server.web.Templates;
 import org.hortonmachine.server.web.UploadPages;
+import org.hortonmachine.server.web.UrlSigner;
 
 import org.hortonmachine.server.ServerConfig.Setting;
 
@@ -69,6 +75,9 @@ public class HmServer {
     private UserManager userManager;
     private UploadManager uploadManager;
     private UploadPages uploadPages;
+    private FileSuggestions fileSuggestions;
+    private UrlSigner urlSigner;
+    private StacIndexer stacIndexer;
     private MultipartConfig multipartConfig;
     private Javalin app;
 
@@ -175,17 +184,28 @@ public class HmServer {
         config.applySettingsFile();
         db = ServerDb.open(config);
         jobManager = new JobManager(db, paths, config.slots, config.jobMemory, config.jobTtlDays);
+        jobManager.setListener(new StacJobs(db, config));
         jobManager.start();
         userManager = new UserManager(db);
         uploadManager = new UploadManager(paths, config.userQuotaMb * MB, config.maxUploadMb * MB * UNPACKED_FACTOR);
         uploadManager.cleanTmpFolder();
-        Auth auth = new Auth(userManager);
-        ModulePages modulePages = new ModulePages(jobManager, new FileSuggestions(paths, jobManager));
-        JobPages jobPages = new JobPages(jobManager, userManager);
-        uploadPages = new UploadPages(uploadManager, config.maxUploadMb);
-        AccountPages accountPages = new AccountPages(userManager);
-        AdminPages adminPages = new AdminPages(config, paths, userManager, jobManager, uploadManager, startTime,
-                this::applyLiveSettings);
+        stacIndexer = new StacIndexer(db, paths);
+        // the catalog of the uploads follows them at once
+        uploadManager.setChangeListener(stacIndexer::syncUploads);
+        stacIndexer.start(config.stacRescanMinutes);
+        Templates templates = new Templates(config.workspace);
+        urlSigner = new UrlSigner(config.workspace, config.signedUrlMinutes);
+        Auth auth = new Auth(userManager, urlSigner, templates);
+        fileSuggestions = new FileSuggestions(paths, jobManager);
+        fileSuggestions.setMaxSuggestions(config.maxSuggestions);
+        ModulePages modulePages = new ModulePages(jobManager, fileSuggestions, templates);
+        JobPages jobPages = new JobPages(jobManager, userManager, templates);
+        uploadPages = new UploadPages(uploadManager, config.maxUploadMb, templates);
+        AccountPages accountPages = new AccountPages(userManager, templates);
+        AdminPages adminPages = new AdminPages(config, paths, userManager, jobManager, uploadManager, urlSigner, startTime,
+                this::applyLiveSettings, templates);
+        OgcApi ogcApi = new OgcApi(jobManager, urlSigner, templates);
+        StacApi stacApi = new StacApi(db, stacIndexer, paths, uploadManager, urlSigner, config);
 
         app = Javalin.create(javalinConfig -> {
             javalinConfig.startup.showJavalinBanner = false;
@@ -197,12 +217,15 @@ public class HmServer {
             setMultipartLimits(config.maxUploadMb);
             uploadPages.registerSizeCheck(javalinConfig);
             auth.register(javalinConfig);
+            templates.register(javalinConfig);
             javalinConfig.routes.get("/", ctx -> ctx.redirect("/modules"));
             modulePages.register(javalinConfig);
             jobPages.register(javalinConfig);
             uploadPages.register(javalinConfig);
             accountPages.register(javalinConfig);
             adminPages.register(javalinConfig);
+            ogcApi.register(javalinConfig);
+            stacApi.register(javalinConfig);
         }).start(config.port);
     }
 
@@ -224,6 +247,9 @@ public class HmServer {
         uploadManager.setLimits(settings.userQuotaMb * MB, settings.maxUploadMb * MB * UNPACKED_FACTOR);
         uploadPages.setMaxUploadMb(settings.maxUploadMb);
         setMultipartLimits(settings.maxUploadMb);
+        fileSuggestions.setMaxSuggestions(settings.maxSuggestions);
+        urlSigner.setMinutes(settings.signedUrlMinutes);
+        stacIndexer.setRescanMinutes(settings.stacRescanMinutes);
         for( Setting setting : Setting.values() ) {
             config.set(setting, settings.get(setting));
         }
@@ -238,6 +264,10 @@ public class HmServer {
             app = null;
         }
         try {
+            if (stacIndexer != null) {
+                stacIndexer.close();
+                stacIndexer = null;
+            }
             if (jobManager != null) {
                 jobManager.close();
                 jobManager = null;
@@ -267,6 +297,13 @@ public class HmServer {
      */
     public JobManager getJobManager() {
         return jobManager;
+    }
+
+    /**
+     * @return the database, once started.
+     */
+    public ServerDb getDb() {
+        return db;
     }
 
     /**

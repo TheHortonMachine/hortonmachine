@@ -1,0 +1,42 @@
+<h1>Modules</h1>
+<form method="get" action="/modules" class="actions">
+  <input type="text" name="q" placeholder="Search name, folder or keyword" value="{{query}}" aria-label="Search">
+  {{#isList}}<input type="hidden" name="view" value="list">{{/isList}}
+  <button type="submit">Search</button>
+  <span class="view-switch">View:
+    {{#isList}}<a href="{{groupsHref}}">by folder</a> · <b>alphabetic</b>{{/isList}}
+    {{^isList}}<b>by folder</b> · <a href="{{listHref}}">alphabetic</a>{{/isList}}
+  </span>
+</form>
+
+{{^hasModules}}<p class="muted">No module matches.</p>{{/hasModules}}
+
+{{#isList}}
+<div class="scroll">
+  <table>
+    {{#modules}}
+    <tr>
+      <td><a href="/modules/{{name}}">{{name}}</a>{{#experimental}} <span class="muted">experimental</span>{{/experimental}}</td>
+      <td class="muted">{{folder}}</td>
+      <td class="muted">{{description}}</td>
+    </tr>
+    {{/modules}}
+  </table>
+</div>
+{{/isList}}
+
+{{^isList}}
+{{#folders}}
+<h2>{{name}}</h2>
+<div class="scroll">
+  <table>
+    {{#modules}}
+    <tr>
+      <td><a href="/modules/{{name}}">{{name}}</a>{{#experimental}} <span class="muted">experimental</span>{{/experimental}}</td>
+      <td class="muted">{{description}}</td>
+    </tr>
+    {{/modules}}
+  </table>
+</div>
+{{/folders}}
+{{/isList}}

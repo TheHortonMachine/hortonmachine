@@ -1,0 +1,57 @@
+<h1>Account</h1>
+<table>
+  <tr><th>User name</th><td>{{username}}</td></tr>
+  <tr><th>Role</th><td>{{role}}</td></tr>
+  <tr><th>Created</th><td>{{created}}</td></tr>
+</table>
+{{> messages}}
+
+<fieldset>
+  <legend>Change the password</legend>
+  <form method="post" action="/account/password">
+    <input type="hidden" name="csrf" value="{{csrf}}">
+    <label for="current">Current password</label>
+    <input type="password" id="current" name="current" autocomplete="current-password" required>
+    <label for="password">New password</label>
+    <input type="password" id="password" name="password" autocomplete="new-password" required minlength="{{minLength}}">
+    <label for="again">New password again</label>
+    <input type="password" id="again" name="again" autocomplete="new-password" required>
+    <p class="help muted">At least {{minLength}} characters. Your other sessions end.</p>
+    <p><button type="submit">Change</button></p>
+  </form>
+</fieldset>
+
+<fieldset>
+  <legend>API tokens</legend>
+  <p class="help muted">For the programs that use the <a href="/api/docs">API</a>: a token acts as you and sees only your jobs.
+    Its secret is shown once, when created.</p>
+  {{#newToken}}
+  <p class="ok">The new token, copy it now: it is not shown again.</p>
+  <pre>{{newToken}}</pre>
+  {{/newToken}}
+  {{#hasTokens}}
+  <div class="scroll">
+    <table>
+      <tr><th>Name</th><th>Created</th><th>Last used</th><th></th></tr>
+      {{#tokens}}
+      <tr>
+        <td>{{name}}</td>
+        <td>{{created}}</td>
+        <td>{{lastUsed}}</td>
+        <td>
+          <form class="inline" method="post" action="/account/tokens/{{id}}/delete">
+            <input type="hidden" name="csrf" value="{{csrf}}">
+            <button class="link" type="submit">Revoke</button>
+          </form>
+        </td>
+      </tr>
+      {{/tokens}}
+    </table>
+  </div>
+  {{/hasTokens}}
+  <form method="post" action="/account/tokens" class="actions">
+    <input type="hidden" name="csrf" value="{{csrf}}">
+    <input type="text" name="name" placeholder="name, as qgis or laptop" aria-label="Name of the token" required maxlength="{{maxTokenName}}">
+    <button type="submit">Create a token</button>
+  </form>
+</fieldset>
