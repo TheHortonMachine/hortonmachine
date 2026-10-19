@@ -60,11 +60,13 @@ import io.javalin.http.Handler;
  * <p>Each module is a process, executed always asynchronously as a job of the user of the token, with the same
  * rules as the pages:
  * <ul>
- * <li>the inputs that are files are paths in the workspace (<code>data/...</code>, <code>uploads/...</code>,
- *     <code>jobs/&lt;id&gt;/...</code>) or the hrefs of the results of the jobs of this server, as
- *     <code>{"href": ".../api/jobs/&lt;id&gt;/files/pit.tif"}</code>, to chain the jobs;</li>
+ * <li>the inputs that are files are paths in the data (<code>data/shared/...</code>, <code>data/&lt;username&gt;/...</code>)
+ *     or the hrefs of the files of this server, as the results of the jobs,
+ *     <code>{"href": ".../api/data/files/&lt;username&gt;/dem/pit.tif"}</code>, to chain the jobs;</li>
  * <li>the files of the outputs get the default names, as <code>pit.tif</code> for <code>outPit</code>; the
- *     <code>outputs</code> of the request choose which ones are written, all if missing;</li>
+ *     <code>outputs</code> of the request choose which ones are written, all if missing; they go in the folder of the
+ *     first input in the area of the user, or in <code>outputFolder</code> of the request; files are replaced only
+ *     with <code>"overwrite": true</code>, else the request is answered with 409;</li>
  * <li>the results are given by reference, as hrefs to the files, and the computed values inline; the hrefs are
  *     links signed by the {@link UrlSigner} if they are on, so that GDAL or QGIS can open them without the token;</li>
  * <li>DELETE of a job kills it if it is queued or running, else deletes it with its files.</li>
@@ -170,7 +172,7 @@ public class OgcApi {
         links.add(link(base + "/conformance", REL_PREFIX + "conformance", JSON, "The conformance classes"));
         links.add(link(base + "/processes", REL_PREFIX + "processes", JSON, "The processes"));
         links.add(link(base + "/jobs", REL_PREFIX + "job-list", JSON, "The jobs"));
-        links.add(link(baseUrl(ctx) + StacApi.STAC, "related", JSON, "The STAC catalog of the data, uploads and outputs"));
+        links.add(link(baseUrl(ctx) + StacApi.STAC, "related", JSON, "The STAC catalog of the data and uploads"));
         sendJson(ctx, 200, landing);
     }
 
@@ -281,7 +283,7 @@ public class OgcApi {
             if (isInput(parameter)) {
                 ObjectNode input = inputs.putObject(parameter.name).put("title", parameter.name).put("description",
                         parameter.description + (parameter.isPath()
-                                ? " A path in the workspace (data/..., uploads/..., jobs/<id>/...) or {\"href\": \"<a result of a job>\"}."
+                                ? " A path in the data (data/shared/..., data/<your username>/...) or {\"href\": \"<a file of this server>\"}."
                                 : "") + (parameter.unit != null ? " Unit: " + parameter.unit + "." : ""));
                 input.set("schema", schema(parameter));
                 input.put("minOccurs", parameter.defaultValue != null || parameter.dataType == DataType.BOOLEAN ? 0 : 1);
@@ -327,10 +329,10 @@ public class OgcApi {
     }
 
     /**
-     * @return the path in the workspace of a result of a job of this server, given by its href.
+     * @return the path in the workspace of a file of the data of this server, given by its href.
      */
     private static String hrefToPath( Context ctx, String href ) {
-        String prefix = API + "/jobs/";
+        String prefix = StacApi.DATA_FILES;
         String path = href;
         String base = baseUrl(ctx);
         if (path.startsWith(base)) {
@@ -348,13 +350,11 @@ public class OgcApi {
         if (queryIndex >= 0) {
             path = path.substring(0, queryIndex);
         }
-        int filesIndex = path.indexOf("/files/");
-        if (!path.startsWith(prefix) || filesIndex < 0) {
-            throw new IllegalArgumentException("Only the results of the jobs of this server can be given as href: " + href);
+        if (!path.startsWith(prefix)) {
+            throw new IllegalArgumentException("Only the files of the data of this server can be given as href: " + href);
         }
-        String jobId = path.substring(prefix.length(), filesIndex);
-        String file = URLDecoder.decode(path.substring(filesIndex + "/files/".length()), StandardCharsets.UTF_8);
-        return WorkspacePaths.JOBS + "/" + jobId + "/" + file + table;
+        String file = URLDecoder.decode(path.substring(prefix.length()), StandardCharsets.UTF_8);
+        return WorkspacePaths.DATA + "/" + file + table;
     }
 
     /**
@@ -419,10 +419,23 @@ public class OgcApi {
             throw invalidParameters(errors);
         }
 
+        JsonNode outputFolder = request.get(JobManager.OUTPUT_FOLDER);
+        JsonNode overwrite = request.get("overwrite");
+        if (overwrite != null && !overwrite.isBoolean()) {
+            throw invalidParameters(Map.of("overwrite", "Must be true or false."));
+        }
         Job job;
         try {
-            job = jobManager.submit(user.id, user.isAdmin(), module.getName(), values);
+            job = jobManager.submit(user.id, user.isAdmin(), module.getName(), values,
+                    outputFolder != null && !outputFolder.isNull() ? outputFolder.asText() : null,
+                    overwrite != null && overwrite.asBoolean());
         } catch (JobValidationException e) {
+            if (e.isConflict()) {
+                Map<String, Object> extra = new LinkedHashMap<>();
+                extra.put("errors", e.getErrors());
+                throw new ApiProblem(409, "about:blank", "Conflict",
+                        "Some outputs would replace existing files: run with \"overwrite\": true to replace them.", extra);
+            }
             throw invalidParameters(e.getErrors());
         }
         ctx.header("Location", baseUrl(ctx) + API + "/jobs/" + job.id);
@@ -547,18 +560,27 @@ public class OgcApi {
             throw new ApiProblem(410, "about:blank", "The job was dismissed", null);
         default:
         }
-        String filesPath = API + "/jobs/" + job.id + Auth.FILES_PATH;
-        String ownFolder = WorkspacePaths.JOBS + "/" + job.id + "/";
+        // the outputs are in the data, those of the jobs of the older versions in the folder of their job
+        String jobFolder = WorkspacePaths.JOBS + "/" + job.id + "/";
+        String dataFolder = WorkspacePaths.DATA + "/";
         ObjectNode results = mapper.createObjectNode();
         for( Map.Entry<String, String> entry : job.getOutputs().entrySet() ) {
             String value = entry.getValue();
-            if (value.startsWith(ownFolder)) {
-                String file = WorkspacePaths.filePath(value.substring(ownFolder.length()));
+            String filesPath = null;
+            String file = null;
+            if (value.startsWith(dataFolder)) {
+                filesPath = StacApi.DATA_FILES;
+                file = WorkspacePaths.filePath(value.substring(dataFolder.length()));
+            } else if (value.startsWith(jobFolder)) {
+                filesPath = API + "/jobs/" + job.id + Auth.FILES_PATH;
+                file = WorkspacePaths.filePath(value.substring(jobFolder.length()));
+            }
+            if (file != null) {
                 // the table of a geopackage as fragment, which the next job reads
                 String table = WorkspacePaths.tableOf(value);
                 results.putObject(entry.getKey())
                         .put("href", fileHref(ctx, filesPath + Html.urlPath(file)) + (table != null ? "#" + table : ""))
-                        .put("type", MediaTypes.forFile(file));
+                        .put("type", MediaTypes.forFile(file)).put("hm:path", value);
             } else {
                 results.set(entry.getKey(), inlineValue(value));
             }

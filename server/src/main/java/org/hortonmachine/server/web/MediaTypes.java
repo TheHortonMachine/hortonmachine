@@ -42,6 +42,8 @@ public class MediaTypes {
             Map.entry("shp", "application/vnd.shp"), Map.entry("dbf", "application/vnd.dbf"), //
             Map.entry("kml", "application/vnd.google-earth.kml+xml"), Map.entry("gml", "application/gml+xml"), //
             Map.entry("las", "application/vnd.las"), Map.entry("laz", "application/vnd.laszip"), //
+            // the styles, as the STAC clients of HortonMachine recognize them
+            Map.entry("sld", "application/vnd.ogc.sld+xml"), Map.entry("qml", "application/vnd.qgis.qml+xml"), //
             Map.entry("zip", "application/zip"));
 
     private MediaTypes() {

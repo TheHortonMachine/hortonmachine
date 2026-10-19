@@ -152,15 +152,21 @@ public class JobPages {
         }
         model.with("parameters", parameters);
 
+        // the outputs are in the data once the job succeeded, before in the folder of the job
         String ownFolder = WorkspacePaths.JOBS + "/" + job.id + "/";
+        String dataFolder = WorkspacePaths.DATA + "/";
         List<Model> outputs = new ArrayList<>();
         for( Map.Entry<String, String> entry : job.getOutputs().entrySet() ) {
             String value = entry.getValue();
-            boolean isFile = value.startsWith(ownFolder);
-            outputs.add(Model.of("name", entry.getKey(), "value", value, "isFile", isFile, "href",
-                    isFile ? jobPath + "/files/" + Html.urlPath(WorkspacePaths.filePath(value.substring(ownFolder.length()))) : ""));
+            String href = "";
+            if (value.startsWith(ownFolder)) {
+                href = jobPath + "/files/" + Html.urlPath(WorkspacePaths.filePath(value.substring(ownFolder.length())));
+            } else if (value.startsWith(dataFolder)) {
+                href = "/uploads/files/" + Html.urlPath(WorkspacePaths.filePath(value.substring(dataFolder.length())));
+            }
+            outputs.add(Model.of("name", entry.getKey(), "value", value, "isFile", !href.isEmpty(), "href", href));
         }
-        model.with("outputs", outputs).with("hasOutputs", !outputs.isEmpty());
+        model.with("outputs", outputs).with("hasOutputs", !outputs.isEmpty()).with("outputFolder", job.outputFolder);
 
         Path root = jobManager.getJobFolder(job.id).toPath();
         List<Model> files = new ArrayList<>();

@@ -31,9 +31,10 @@ import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.server.ServerConfig;
+import org.hortonmachine.server.files.FileOrigin;
 import org.hortonmachine.server.jobs.Job;
 import org.hortonmachine.server.jobs.JobState;
-import org.hortonmachine.server.stac.StacIndexer;
+import org.hortonmachine.server.stac.StacCollectionInfo;
 import org.hortonmachine.server.stac.StacRecord;
 import org.hortonmachine.server.stac.StacSearch;
 import org.hortonmachine.server.users.ApiToken;
@@ -41,7 +42,9 @@ import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  * The database of the server: SQLite in the workspace, or PostgreSQL.
@@ -54,12 +57,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class ServerDb implements AutoCloseable {
     /** The version of the tables, to upgrade them when they change. */
-    public static final int SCHEMA_VERSION = 3;
+    public static final int SCHEMA_VERSION = 7;
 
     public static final String SQLITE_FILE = "hm-server.sqlite";
 
     private static final String JOB_COLUMNS = "id, user_id, module, parameters, state, progress, task, message, outputs, "
-            + "created, started, finished, exit_code";
+            + "created, started, finished, exit_code, output_folder, overwrite";
+    private static final String FILE_COLUMNS = "path, origin, user_id, created, job_id, module, parameters, history";
     private static final String USER_COLUMNS = "id, username, role, created, disabled";
     private static final String STAC_COLUMNS = "id, collection, owner_id, path, size, modified, min_lon, min_lat, max_lon, max_lat, "
             + "start_time, end_time, item";
@@ -117,9 +121,14 @@ public class ServerDb implements AutoCloseable {
         if (!db.hasTable("jobs")) {
             execute("CREATE TABLE jobs (id VARCHAR(36) PRIMARY KEY, user_id VARCHAR(36), module VARCHAR(255) NOT NULL, "
                     + "parameters TEXT NOT NULL, state VARCHAR(16) NOT NULL, progress INTEGER NOT NULL, task TEXT, "
-                    + "message TEXT, outputs TEXT, created BIGINT NOT NULL, started BIGINT, finished BIGINT, exit_code INTEGER)");
+                    + "message TEXT, outputs TEXT, created BIGINT NOT NULL, started BIGINT, finished BIGINT, exit_code INTEGER, "
+                    + "output_folder TEXT, overwrite INTEGER NOT NULL DEFAULT 0)");
             execute("CREATE INDEX jobs_user_id ON jobs (user_id)");
             execute("CREATE INDEX jobs_state ON jobs (state)");
+        } else if (version < 5) {
+            // version 5: the jobs write their outputs in a folder of the data
+            execute("ALTER TABLE jobs ADD COLUMN output_folder TEXT");
+            execute("ALTER TABLE jobs ADD COLUMN overwrite INTEGER NOT NULL DEFAULT 0");
         }
         if (!db.hasTable("users")) {
             execute("CREATE TABLE users (id VARCHAR(36) PRIMARY KEY, username VARCHAR(64) NOT NULL UNIQUE, "
@@ -131,14 +140,31 @@ public class ServerDb implements AutoCloseable {
                     + "token_hash VARCHAR(64) NOT NULL UNIQUE, created BIGINT NOT NULL, last_used BIGINT)");
             execute("CREATE INDEX api_tokens_user_id ON api_tokens (user_id)");
         }
-        // version 3: the index of the STAC catalog
+        // version 4: the index of the STAC catalog by folder; it is rebuilt from the files, so the one of version 3 goes
+        if (version < 4 && db.hasTable("stac_items")) {
+            execute("DROP TABLE stac_items");
+        }
         if (!db.hasTable("stac_items")) {
-            execute("CREATE TABLE stac_items (id VARCHAR(255) PRIMARY KEY, collection VARCHAR(255) NOT NULL, owner_id VARCHAR(36), "
-                    + "path TEXT NOT NULL, size BIGINT NOT NULL, modified BIGINT NOT NULL, min_lon DOUBLE PRECISION, "
+            execute("CREATE TABLE stac_items (path VARCHAR(2048) PRIMARY KEY, collection VARCHAR(255) NOT NULL, id VARCHAR(2048) NOT NULL, "
+                    + "owner_id VARCHAR(36), size BIGINT NOT NULL, modified BIGINT NOT NULL, min_lon DOUBLE PRECISION, "
                     + "min_lat DOUBLE PRECISION, max_lon DOUBLE PRECISION, max_lat DOUBLE PRECISION, start_time BIGINT, "
                     + "end_time BIGINT, item TEXT NOT NULL)");
-            execute("CREATE INDEX stac_items_collection ON stac_items (collection)");
+            execute("CREATE UNIQUE INDEX stac_items_collection_id ON stac_items (collection, id)");
             execute("CREATE INDEX stac_items_owner_id ON stac_items (owner_id)");
+        }
+        // version 4: the metadata of the collections, given by the administrators
+        if (!db.hasTable("stac_collections")) {
+            execute("CREATE TABLE stac_collections (id VARCHAR(255) PRIMARY KEY, title TEXT, description TEXT, keywords TEXT, "
+                    + "license VARCHAR(255), updated BIGINT NOT NULL)");
+        }
+        // version 5: where the files of the data come from; the index is rebuilt with the areas
+        if (!db.hasTable("data_files")) {
+            execute("CREATE TABLE data_files (path VARCHAR(2048) PRIMARY KEY, origin VARCHAR(16) NOT NULL, user_id VARCHAR(36), "
+                    + "created BIGINT NOT NULL, job_id VARCHAR(36), module VARCHAR(255), parameters TEXT, history TEXT)");
+        }
+        // version 6: the items are titled by their path in the collection; 7: the areas of the users by username
+        if (version < 7) {
+            execute("DELETE FROM stac_items");
         }
         if (version < SCHEMA_VERSION) {
             execute("UPDATE schema_version SET version = " + SCHEMA_VERSION);
@@ -198,7 +224,7 @@ public class ServerDb implements AutoCloseable {
 
     private Job readJob( IHMResultSet resultSet ) throws Exception {
         Job job = new Job(resultSet.getString(1), resultSet.getString(2), resultSet.getString(3), toMap(resultSet.getString(4)),
-                resultSet.getLong(10));
+                resultSet.getLong(10), resultSet.getString(14), resultSet.getInt(15) != 0);
         job.setState(JobState.valueOf(resultSet.getString(5)));
         job.setProgress(resultSet.getInt(6));
         job.setTask(resultSet.getString(7));
@@ -226,10 +252,10 @@ public class ServerDb implements AutoCloseable {
      * Add a new job.
      */
     public synchronized void insertJob( Job job ) throws Exception {
-        update("INSERT INTO jobs (" + JOB_COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", job.id, job.userId,
+        update("INSERT INTO jobs (" + JOB_COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", job.id, job.userId,
                 job.module, mapper.writeValueAsString(job.parameters), job.getState().name(), job.getProgress(), job.getTask(),
                 job.getMessage(), mapper.writeValueAsString(job.getOutputs()), job.created, job.getStarted(), job.getFinished(),
-                job.getExitCode());
+                job.getExitCode(), job.outputFolder, job.overwrite ? 1 : 0);
     }
 
     /**
@@ -468,46 +494,148 @@ public class ServerDb implements AutoCloseable {
     }
 
     /**
-     * Add an item of the STAC catalog, or replace the one with the same id.
+     * @return the origin of a file of the data, with its history, or <code>null</code> if it has none.
+     */
+    public synchronized FileOrigin getFileOrigin( String path ) throws Exception {
+        return db.execOnConnection(connection -> {
+            try (IHMPreparedStatement statement = connection.prepareStatement("SELECT " + FILE_COLUMNS + " FROM data_files WHERE path = ?")) {
+                statement.setString(1, path);
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    if (!resultSet.next()) {
+                        return null;
+                    }
+                    List<FileOrigin> history = new ArrayList<>();
+                    String historyJson = resultSet.getString(8);
+                    if (historyJson != null && !historyJson.isEmpty()) {
+                        for( JsonNode entry : mapper.readTree(historyJson) ) {
+                            history.add(FileOrigin.fromJson(path, entry));
+                        }
+                    }
+                    String parameters = resultSet.getString(7);
+                    return new FileOrigin(path, resultSet.getString(2), resultSet.getString(3), resultSet.getLong(4),
+                            resultSet.getString(5), resultSet.getString(6), parameters != null ? toMap(parameters) : null, null,
+                            history);
+                }
+            }
+        });
+    }
+
+    /**
+     * Set the origin of a file of the data, replacing the previous one.
+     */
+    public synchronized void putFileOrigin( FileOrigin origin ) throws Exception {
+        ArrayNode history = mapper.createArrayNode();
+        origin.history.forEach(entry -> history.add(entry.toJson(mapper)));
+        update("DELETE FROM data_files WHERE path = ?", origin.path);
+        update("INSERT INTO data_files (" + FILE_COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)", origin.path, origin.origin,
+                origin.userId, origin.created, origin.jobId, origin.module,
+                origin.parameters != null ? mapper.writeValueAsString(origin.parameters) : null, mapper.writeValueAsString(history));
+    }
+
+    /**
+     * Change the paths of an area moved to another name, in the origins of its files and in the jobs.
+     *
+     * @param from the path of the old area, as data/&lt;user id&gt;.
+     * @param to the path of the new one, as data/&lt;username&gt;.
+     */
+    public synchronized void renameAreaPaths( String from, String to ) throws Exception {
+        String escaped = from.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        update("UPDATE data_files SET path = ? || SUBSTR(path, ?) WHERE path LIKE ? ESCAPE '!'", to, from.length() + 1,
+                escaped + "/%");
+        // the paths are also inside the JSON of the parameters and outputs
+        update("UPDATE jobs SET output_folder = REPLACE(output_folder, ?, ?), parameters = REPLACE(parameters, ?, ?), "
+                + "outputs = REPLACE(outputs, ?, ?)", from + "/", to + "/", from + "/", to + "/", from + "/", to + "/");
+        update("UPDATE jobs SET output_folder = ? WHERE output_folder = ?", to, from);
+    }
+
+    /**
+     * Delete the origins of the files of a path or under it, as data/shared/dem for data/shared/dem/dtm.tif.
+     */
+    public synchronized void deleteFileOriginsUnder( String path ) throws Exception {
+        String escaped = path.replace("!", "!!").replace("%", "!%").replace("_", "!_");
+        update("DELETE FROM data_files WHERE path = ? OR path LIKE ? ESCAPE '!'", path, escaped + "/%");
+    }
+
+    /**
+     * Add an item of the STAC catalog, or replace the one of the same file.
      */
     public synchronized void putStacItem( StacRecord item ) throws Exception {
-        update("DELETE FROM stac_items WHERE id = ?", item.id);
+        update("DELETE FROM stac_items WHERE path = ?", item.path);
         update("INSERT INTO stac_items (" + STAC_COLUMNS + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", item.id,
                 item.collection, item.ownerId, item.path, item.size, item.modified, item.minLon, item.minLat, item.maxLon,
                 item.maxLat, item.startTime, item.endTime, item.json);
     }
 
     /**
-     * @return the item of the STAC catalog with the given id, or <code>null</code>.
+     * @return the item of a collection of the STAC catalog, or <code>null</code>.
      */
-    public synchronized StacRecord getStacItem( String id ) throws Exception {
-        List<StacRecord> items = queryStacItems("WHERE id = ?", id);
+    public synchronized StacRecord getStacItem( String collection, String id ) throws Exception {
+        List<StacRecord> items = queryStacItems("WHERE collection = ? AND id = ?", collection, id);
         return items.isEmpty() ? null : items.get(0);
     }
 
     /**
-     * @return the items of a collection of the STAC catalog, by id.
-     */
-    public synchronized List<StacRecord> listStacItems( String collection ) throws Exception {
-        return queryStacItems("WHERE collection = ? ORDER BY id", collection);
-    }
-
-    /**
-     * Delete an item of the STAC catalog.
+     * Delete the item of a file of the STAC catalog.
      *
+     * @param path the path of the file in the workspace.
      * @return <code>false</code> if there is no such item.
      */
-    public synchronized boolean deleteStacItem( String id ) throws Exception {
-        return update("DELETE FROM stac_items WHERE id = ?", id) > 0;
+    public synchronized boolean deleteStacItem( String path ) throws Exception {
+        return update("DELETE FROM stac_items WHERE path = ?", path) > 0;
     }
 
     /**
      * @return the items of the STAC catalog whose path is the given one or is under it, as data/dem for data/dem/dtm.tif.
      */
-    public synchronized List<StacRecord> listStacItemsUnder( String collection, String path ) throws Exception {
+    public synchronized List<StacRecord> listStacItemsUnder( String path ) throws Exception {
         String escaped = path.replace("!", "!!").replace("%", "!%").replace("_", "!_");
-        return queryStacItems("WHERE collection = ? AND (path = ? OR path LIKE ? ESCAPE '!') ORDER BY id", collection, path,
-                escaped + "/%");
+        return queryStacItems("WHERE path = ? OR path LIKE ? ESCAPE '!' ORDER BY path", path, escaped + "/%");
+    }
+
+    /**
+     * @return the users that have files in the STAC catalog.
+     */
+    public synchronized List<String> listStacOwners() throws Exception {
+        return db.execOnConnection(connection -> {
+            List<String> owners = new ArrayList<>();
+            try (IHMStatement statement = connection.createStatement();
+                    IHMResultSet resultSet = statement.executeQuery("SELECT DISTINCT owner_id FROM stac_items WHERE owner_id IS NOT NULL")) {
+                while( resultSet.next() ) {
+                    owners.add(resultSet.getString(1));
+                }
+            }
+            return owners;
+        });
+    }
+
+    /**
+     * @return the metadata of a collection of the STAC catalog, or <code>null</code> if it has none.
+     */
+    public synchronized StacCollectionInfo getStacCollectionInfo( String collection ) throws Exception {
+        return db.execOnConnection(connection -> {
+            try (IHMPreparedStatement statement = connection
+                    .prepareStatement("SELECT title, description, keywords, license FROM stac_collections WHERE id = ?")) {
+                statement.setString(1, collection);
+                try (IHMResultSet resultSet = statement.executeQuery()) {
+                    if (!resultSet.next()) {
+                        return null;
+                    }
+                    String keywords = resultSet.getString(3);
+                    return new StacCollectionInfo(collection, resultSet.getString(1), resultSet.getString(2),
+                            keywords == null || keywords.isEmpty() ? List.of() : List.of(mapper.readValue(keywords, String[].class)),
+                            resultSet.getString(4));
+                }
+            }
+        });
+    }
+
+    /**
+     * Set the metadata of a collection of the STAC catalog, replacing the previous.
+     */
+    public synchronized void putStacCollectionInfo( StacCollectionInfo info ) throws Exception {
+        update("DELETE FROM stac_collections WHERE id = ?", info.id);
+        update("INSERT INTO stac_collections (id, title, description, keywords, license, updated) VALUES (?, ?, ?, ?, ?, ?)", info.id,
+                info.title, info.description, mapper.writeValueAsString(info.keywords), info.license, System.currentTimeMillis());
     }
 
     /**
@@ -518,10 +646,9 @@ public class ServerDb implements AutoCloseable {
     private static String searchWhere( StacSearch search, List<Object> values ) {
         StringBuilder where = new StringBuilder("WHERE 1 = 1");
         if (!search.isAdmin) {
-            // the shared data and the own uploads and jobs
-            where.append(" AND (collection = ? OR owner_id = ?)");
-            values.add(StacIndexer.DATA_COLLECTION);
-            values.add(search.userId);
+            // the shared area and the own one
+            where.append(" AND (owner_id IS NULL OR owner_id = ?)");
+            values.add(search.ownArea);
         }
         appendIn(where, values, "collection", search.collections);
         appendIn(where, values, "id", search.ids);

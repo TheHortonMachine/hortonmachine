@@ -30,8 +30,6 @@ import java.util.regex.Pattern;
 
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.server.stac.StacFiles;
-import org.hortonmachine.server.stac.StacJobs;
-import org.hortonmachine.server.stac.StacRecord;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.web.MediaTypes;
 import org.hortonmachine.server.users.User;
@@ -54,6 +52,8 @@ public class TestOgcApi extends TestCase {
     private HmServer server;
     private HttpClient client;
     private String base;
+    /** The area of the files of jane, named by her username. */
+    private String janeArea;
     private String janeToken;
     private String johnToken;
 
@@ -69,6 +69,7 @@ public class TestOgcApi extends TestCase {
         server.start();
         User jane = server.getUserManager().createUser("jane", "jane-password".toCharArray(), Role.USER);
         User john = server.getUserManager().createUser("john", "john-password".toCharArray(), Role.USER);
+        janeArea = jane.username;
         janeToken = server.getUserManager().createToken(jane.id, "tests");
         johnToken = server.getUserManager().createToken(john.id, "tests");
         SampleData.writeElevation(new WorkspacePaths(workspace));
@@ -116,6 +117,20 @@ public class TestOgcApi extends TestCase {
         assertEquals(base + "/api/jobs/" + jobId, response.headers().firstValue("Location").orElse(""));
         assertEquals(process, info.get("processID").asText());
         return jobId;
+    }
+
+    /**
+     * @return a file of the outputs of jane next to the input, in the folder of its collection.
+     */
+    private File janeOutput( String name ) {
+        return new File(workspace, "data/" + janeArea + "/" + SampleData.COLLECTION + "/" + name);
+    }
+
+    /**
+     * @return the path of the api of a file of the outputs of jane next to the input.
+     */
+    private String janeOutputPath( String name ) {
+        return "/api/data/files/" + janeArea + "/" + SampleData.COLLECTION + "/" + name;
     }
 
     private JsonNode waitFinished( String token, String jobId ) throws Exception {
@@ -219,40 +234,55 @@ public class TestOgcApi extends TestCase {
         assertEquals(100, info.get("progress").asInt());
         assertTrue(info.get("links").toString().contains("/api/jobs/" + jobId + "/results"));
 
+        // the output is in the data, next to the input in the area of jane
         JsonNode results = get("/api/jobs/" + jobId + "/results", janeToken, 200);
         String href = results.at("/outPit/href").asText();
-        assertTrue(href, href.startsWith(base + "/api/jobs/" + jobId + "/files/pit.tif?expires="));
+        assertTrue(href, href.startsWith(base + janeOutputPath("pit.tif") + "?expires="));
+        assertEquals("data/" + janeArea + "/" + SampleData.COLLECTION + "/pit.tif", results.at("/outPit/hm:path").asText());
         assertEquals("image/tiff; application=geotiff", results.at("/outPit/type").asText());
         HttpResponse<byte[]> download = client.send(
                 HttpRequest.newBuilder(URI.create(href)).header("Authorization", "Bearer " + janeToken).build(),
                 HttpResponse.BodyHandlers.ofByteArray());
         assertEquals(200, download.statusCode());
-        assertEquals(new File(workspace, "jobs/" + jobId + "/pit.tif").length(), download.body().length);
+        assertEquals(janeOutput("pit.tif").length(), download.body().length);
 
-        // a result is the input of the next job
-        String next = execute(janeToken, "{\"inputs\": {\"inElev\": {\"href\": \"" + href + "\"}}}");
+        // a result is the input of the next job, here with its outputs in another folder
+        String next = execute(janeToken,
+                "{\"inputs\": {\"inElev\": {\"href\": \"" + href + "\"}}, \"outputFolder\": \"data/" + janeArea + "/next\"}");
         assertEquals("successful", waitFinished(janeToken, next).get("status").asText());
+        assertTrue(new File(workspace, "data/" + janeArea + "/next/pit.tif").isFile());
         assertEquals(2, get("/api/jobs?processID=Pitfiller&status=successful", janeToken, 200).get("jobs").size());
         assertEquals(1, get("/api/jobs?limit=1", janeToken, 200).get("jobs").size());
 
+        // the same output again: a conflict, unless asked to overwrite
+        HttpResponse<String> response = send("POST", "/api/processes/Pitfiller/execution", janeToken, RUN_PIT);
+        assertEquals(409, response.statusCode());
+        assertTrue(response.body(), MAPPER.readTree(response.body()).at("/errors/outPit").asText().contains("overwrite"));
+        String again = execute(janeToken, RUN_PIT.replace("}}", "}, \"overwrite\": true}"));
+        assertEquals("successful", waitFinished(janeToken, again).get("status").asText());
+        assertEquals(400, send("POST", "/api/processes/Pitfiller/execution", janeToken,
+                "{\"inputs\": {\"inElev\": \"" + SampleData.ELEVATION + "\"}, \"outputFolder\": \"data/shared/x\"}").statusCode());
+
         // the jobs of others don't exist
         for( String path : new String[]{"/api/jobs/" + jobId, "/api/jobs/" + jobId + "/results",
-                "/api/jobs/" + jobId + "/files/pit.tif"} ) {
+                "/api/jobs/" + jobId + "/files/job.log"} ) {
             assertEquals(path, "http://www.opengis.net/def/exceptions/ogcapi-processes-1/1.0/no-such-job",
                     get(path, johnToken, 404).get("type").asText());
         }
+        assertEquals(404, getFile(janeOutputPath("pit.tif"), johnToken).statusCode());
         assertEquals(404, send("DELETE", "/api/jobs/" + jobId, johnToken, null).statusCode());
         assertEquals(0, get("/api/jobs", johnToken, 200).get("jobs").size());
-        HttpResponse<String> response = send("POST", "/api/processes/Pitfiller/execution", johnToken,
+        response = send("POST", "/api/processes/Pitfiller/execution", johnToken,
                 "{\"inputs\": {\"inElev\": {\"href\": \"" + href + "\"}}}");
         assertEquals(400, response.statusCode());
 
-        // dismissed: deleted with the files
+        // dismissed: deleted with its folder, the outputs stay in the data
         response = send("DELETE", "/api/jobs/" + jobId, janeToken, null);
         assertEquals(200, response.statusCode());
         assertEquals("dismissed", MAPPER.readTree(response.body()).get("status").asText());
         get("/api/jobs/" + jobId, janeToken, 404);
         assertFalse(new File(workspace, "jobs/" + jobId).exists());
+        assertTrue(janeOutput("pit.tif").isFile());
     }
 
     private HttpResponse<byte[]> getFile( String url, String token, String... headers ) throws Exception {
@@ -269,8 +299,8 @@ public class TestOgcApi extends TestCase {
     public void testRangesAndSignedLinks() throws Exception {
         String jobId = execute(janeToken, RUN_PIT);
         assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
-        String path = "/api/jobs/" + jobId + "/files/pit.tif";
-        byte[] content = Files.readAllBytes(new File(workspace, "jobs/" + jobId + "/pit.tif").toPath());
+        String path = janeOutputPath("pit.tif");
+        byte[] content = Files.readAllBytes(janeOutput("pit.tif").toPath());
         int size = content.length;
 
         // ranges
@@ -335,65 +365,34 @@ public class TestOgcApi extends TestCase {
         assertEquals(401, getFile(href, null).statusCode());
     }
 
-    public void testCatalogItemOfJob() throws Exception {
+    public void testCogOutputs() throws Exception {
         String jobId = execute(janeToken, RUN_PIT);
         assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
-        File jobFolder = new File(workspace, "jobs/" + jobId);
-        File pit = new File(jobFolder, "pit.tif");
+        File pit = janeOutput("pit.tif");
         assertTrue(StacFiles.isCog(pit));
-
-        JsonNode item = MAPPER.readTree(FileUtilities.readFile(new File(jobFolder, StacJobs.ITEM_FILE)));
-        assertEquals(jobId, item.get("id").asText());
-        assertEquals("jobs-Pitfiller", item.get("collection").asText());
-        assertEquals("Polygon", item.at("/geometry/type").asText());
-        assertEquals(4, item.get("bbox").size());
-        assertEquals("./pit.tif", item.at("/assets/outPit/href").asText());
-        assertEquals(StacFiles.COG, item.at("/assets/outPit/type").asText());
-        assertEquals("EPSG:32632", item.at("/assets/outPit/proj:code").asText());
-        assertEquals(pit.length(), item.at("/assets/outPit/file:size").asLong());
-        assertTrue(item.at("/assets/outPit/raster:bands/0/statistics").has("mean"));
-        assertEquals("Pitfiller", item.at("/properties/hm:module").asText());
-        assertEquals(SampleData.ELEVATION, item.at("/properties/hm:parameters/inElev").asText());
-        assertTrue(item.at("/properties").has("start_datetime"));
-        assertTrue(item.at("/properties").has("expires"));
-
-        StacRecord record = server.getDb().getStacItem(jobId);
-        assertEquals("jobs-Pitfiller", record.collection);
-        assertEquals(server.getUserManager().listTokens(record.ownerId).size(), 1);
-        assertEquals(item.get("bbox").get(0).asDouble(), record.minLon, 1e-12);
-        assertNotNull(record.startTime);
-
-        // the item is a file of the job, not the parameters
-        assertEquals(200, getFile("/api/jobs/" + jobId + "/files/" + StacJobs.ITEM_FILE, janeToken).statusCode());
-
-        // gone with the job
-        assertEquals(200, send("DELETE", "/api/jobs/" + jobId, janeToken, null).statusCode());
-        assertNull(server.getDb().getStacItem(jobId));
+        assertEquals(StacFiles.COG, StacFiles.describe(pit, pit.getName()).asset.get("type").asText());
+        // nothing left in the folder of the job
+        assertFalse(new File(workspace, "jobs/" + jobId + "/pit.tif").exists());
 
         // the outputs as the modules write them
         server.getConfig().cogOutputs = false;
-        jobId = execute(janeToken, RUN_PIT);
+        jobId = execute(janeToken, RUN_PIT.replace("}}", "}, \"overwrite\": true}"));
         assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
-        assertFalse(StacFiles.isCog(new File(workspace, "jobs/" + jobId + "/pit.tif")));
-        assertEquals(MediaTypes.GEOTIFF, MAPPER.readTree(server.getDb().getStacItem(jobId).json).at("/assets/outPit/type").asText());
+        assertFalse(StacFiles.isCog(pit));
+        assertEquals(MediaTypes.GEOTIFF, StacFiles.describe(pit, pit.getName()).asset.get("type").asText());
     }
 
     public void testVectorOutput() throws Exception {
         String jobId = execute(janeToken, "{\"inputs\": {\"inRaster\": \"" + SampleData.ELEVATION + "\"}}", "Vectorizer");
         JsonNode info = waitFinished(janeToken, jobId);
         assertEquals(info.toString(), "successful", info.get("status").asText());
-        assertTrue(new File(workspace, "jobs/" + jobId + "/vector.gpkg").isFile());
+        assertTrue(janeOutput("vector.gpkg").isFile());
 
         // the file as href, the table as fragment
         String href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outVector/href").asText();
-        assertTrue(href, href.startsWith(base + "/api/jobs/" + jobId + "/files/vector.gpkg?expires="));
+        assertTrue(href, href.startsWith(base + janeOutputPath("vector.gpkg") + "?expires="));
         assertTrue(href, href.endsWith("#vector"));
         assertEquals(200, getFile(href, null).statusCode());
-
-        JsonNode asset = MAPPER.readTree(server.getDb().getStacItem(jobId).json).at("/assets/outVector");
-        assertEquals("./vector.gpkg", asset.get("href").asText());
-        assertEquals("vector", asset.at("/hm:layers/0/name").asText());
-        assertEquals("EPSG:32632", asset.get("proj:code").asText());
     }
 
     public void testWrongInputs() throws Exception {

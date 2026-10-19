@@ -21,7 +21,7 @@ import java.io.File;
 import java.util.function.Consumer;
 
 /**
- * Told of the ends and deletions of the jobs, as the catalog of their outputs.
+ * Told of the successful ends of the jobs, to prepare their outputs, as the conversion to COG.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
@@ -38,11 +38,4 @@ public interface JobListener {
      * @throws Exception if something went wrong: the message goes to the log of the job, which is still successful.
      */
     void afterRun( Job job, File jobFolder, long endTime, Consumer<String> task ) throws Exception;
-
-    /**
-     * Called after a job was deleted with its folder.
-     *
-     * @param jobId the id of the job.
-     */
-    void deleted( String jobId );
 }

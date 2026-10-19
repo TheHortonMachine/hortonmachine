@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.db.ServerDb;
 
 /**
@@ -75,7 +76,8 @@ public class UserManager {
     /**
      * Create a user.
      *
-     * @param username the name, 3 to 64 letters, digits, dots, dashes or underscores; stored in lower case.
+     * @param username the name, 3 to 64 letters, digits, dots, dashes or underscores, not starting with a dot; stored in
+     *          lower case. It names the folder of the files of the user, so it never changes and can't be "shared".
      * @param password the password, at least {@value #MIN_PASSWORD_LENGTH} characters.
      * @param role the role.
      * @return the user.
@@ -83,8 +85,12 @@ public class UserManager {
      */
     public synchronized User createUser( String username, char[] password, Role role ) throws Exception {
         String name = normalizeUsername(username);
-        if (!name.matches(USERNAME_PATTERN)) {
-            throw new IllegalArgumentException("The user name must have 3 to 64 letters, digits, dots, dashes or underscores.");
+        if (!name.matches(USERNAME_PATTERN) || name.startsWith(".")) {
+            throw new IllegalArgumentException(
+                    "The user name must have 3 to 64 letters, digits, dots, dashes or underscores, and not start with a dot.");
+        }
+        if (name.equals(WorkspacePaths.SHARED)) {
+            throw new IllegalArgumentException("The user name is reserved: " + name);
         }
         checkPassword(password);
         if (db.getUserByName(name) != null) {

@@ -27,6 +27,7 @@ import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.server.SampleData;
 import org.hortonmachine.server.WorkspacePaths;
+import org.hortonmachine.server.jobs.CogOutputs;
 import org.hortonmachine.server.web.MediaTypes;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -88,7 +89,7 @@ public class TestStacFiles extends TestCase {
     }
 
     public void testCog() throws Exception {
-        StacJobs.toCog(elevation);
+        CogOutputs.toCog(elevation);
         assertTrue(StacFiles.isCog(elevation));
         assertFalse(new File(elevation.getAbsolutePath() + ".cog.tmp").exists());
         // the statistics are read from the COG, not computed

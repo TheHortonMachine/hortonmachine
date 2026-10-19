@@ -165,7 +165,7 @@ public class AdminPages {
         for( User user : users.listUsers() ) {
             userModels.add(Model.of("id", user.id, "username", user.username, "created", Html.formatTime(user.created), //
                     "disabled", user.disabled, "isSelf", user.id.equals(admin.id), "roleLabel", user.role.name().toLowerCase(), //
-                    "roles", roleModels(user.role), "uploadsSize", Html.formatSize(uploads.getUsedBytes(user.id)), //
+                    "roles", roleModels(user.role), "filesSize", Html.formatSize(uploads.getUsedBytes(user.username)), //
                     "jobsSize", Html.formatSize(jobManager.getUsedBytes(user.id))));
         }
         Model model = Model.of("message", message, "error", error, "users", userModels, "newUserRoles", roleModels(Role.USER), //
@@ -261,7 +261,7 @@ public class AdminPages {
         change(ctx, () -> {
             User user = getOtherUser(ctx);
             users.deleteUser(user.id);
-            uploads.deleteAll(user.id);
+            uploads.deleteAll(user.username);
             return "The user " + user.username + " was deleted.";
         });
     }
@@ -281,7 +281,7 @@ public class AdminPages {
                 "quota", config.userQuotaMb > 0 ? config.userQuotaMb + " MB per user" : "no limit per user", //
                 "diskFree", Html.formatSize(workspace.getUsableSpace()), "diskTotal", Html.formatSize(workspace.getTotalSpace()), //
                 "dataSize", Html.formatSize(WorkspacePaths.folderSize(paths.getDataFolder().toPath())), //
-                "uploadsSize", Html.formatSize(WorkspacePaths.folderSize(paths.getAllUploadsFolder().toPath())), //
+                "sharedSize", Html.formatSize(WorkspacePaths.folderSize(paths.getAreaFolder(WorkspacePaths.SHARED).toPath())), //
                 "jobsSize", Html.formatSize(WorkspacePaths.folderSize(paths.getJobsFolder().toPath())), //
                 "cleanupPath", JobPages.CLEANUP_PATH);
 

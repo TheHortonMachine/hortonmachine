@@ -35,21 +35,23 @@ import java.util.zip.ZipInputStream;
 
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.server.WorkspacePaths;
+import org.hortonmachine.server.files.FileOrigin;
+import org.hortonmachine.server.files.FileOrigins;
 
 /**
- * The files the users upload, in their own folder of the workspace, reusable by all their jobs.
+ * The files of an area of the data, as the users upload and delete them: the own area of each user, the shared area
+ * for the administrators. Each upload records its origin, see {@link FileOrigins}.
  *
- * <p>The folder is all there is: no database keeps the uploads. Every name given by a browser or found
- * in a zip file is cleaned of the characters that are not allowed in file names, and <code>..</code> is
- * refused, so nothing is written out of the folder of the user. A file is first written in the temporary
- * folder of the workspace and then moved in place, so a broken upload leaves nothing behind.
+ * <p>Every name given by a browser or found in a zip file is cleaned of the characters that are not allowed in file
+ * names, and <code>..</code> is refused, so nothing is written out of the area. A file is first written in the
+ * temporary folder of the workspace and then moved in place, so a broken upload leaves nothing behind.
  * A file with the name of an existing one replaces it.
  *
  * <p>The zip files are unpacked without creating links, whatever their entries say, and with limits on the
  * size and number of the unpacked files, against the zip files built to fill the disk.
  *
- * <p>The quota is checked before every write; two uploads of the same user at the same time can go
- * over it by the size of one of them.
+ * <p>The quota of the area of a user, which holds also the outputs of its jobs, is checked before every write; two
+ * uploads of the same user at the same time can go over it by the size of one of them. The shared area has no quota.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
@@ -62,48 +64,61 @@ public class UploadManager {
     private static final String MACOS_FOLDER = "__MACOSX";
 
     private final WorkspacePaths paths;
+    private final FileOrigins origins;
     // changed by the settings page while running
     private volatile long quotaBytes;
     private volatile long maxUnpackedBytes;
     private volatile Consumer<String> changeListener;
 
     /**
-     * A file or folder of the uploads of a user.
+     * A file or folder of an area.
      */
     public static class Upload {
-        /** The path in the uploads of the user, with / as separator. */
+        /** The area, {@link WorkspacePaths#SHARED} or the id of a user. */
+        public final String area;
+        /** The path in the area, with / as separator. */
         public final String path;
         public final boolean isFolder;
         /** The size of the file, 0 for a folder. */
         public final long size;
 
-        public Upload( String path, boolean isFolder, long size ) {
+        public Upload( String area, String path, boolean isFolder, long size ) {
+            this.area = area;
             this.path = path;
             this.isFolder = isFolder;
             this.size = size;
         }
 
         /**
-         * @return the path as given to the modules, as <code>uploads/dtm/dtm.tif</code>.
+         * @return the path as given to the modules, as <code>data/shared/dtm/dtm.tif</code>.
          */
         public String getWorkspacePath() {
-            return WorkspacePaths.UPLOADS + "/" + path;
+            return workspacePath(area, path);
         }
     }
 
     /**
+     * @return the path in the workspace of a path in an area.
+     */
+    public static String workspacePath( String area, String path ) {
+        return WorkspacePaths.DATA + "/" + area + (path.isEmpty() ? "" : "/" + path);
+    }
+
+    /**
      * @param paths the folders of the workspace.
-     * @param quotaBytes the maximum size of the uploads of each user, 0 for no limit.
+     * @param origins the origins of the files, recorded at each upload.
+     * @param quotaBytes the maximum size of the area of each user, 0 for no limit.
      * @param maxUnpackedBytes the maximum size of the files unpacked from a zip file, besides the quota.
      */
-    public UploadManager( WorkspacePaths paths, long quotaBytes, long maxUnpackedBytes ) {
+    public UploadManager( WorkspacePaths paths, FileOrigins origins, long quotaBytes, long maxUnpackedBytes ) {
         this.paths = paths;
+        this.origins = origins;
         this.quotaBytes = quotaBytes;
         this.maxUnpackedBytes = maxUnpackedBytes;
     }
 
     /**
-     * @return the maximum size of the uploads of each user, 0 for no limit.
+     * @return the maximum size of the area of each user, 0 for no limit.
      */
     public long getQuotaBytes() {
         return quotaBytes;
@@ -169,19 +184,19 @@ public class UploadManager {
     }
 
     /**
-     * Get a file or folder of the uploads of a user.
+     * Get a file or folder of an area.
      *
-     * @param userId the user.
-     * @param path the path in the uploads, as listed by {@link #list(String)}.
+     * @param area the area, {@link WorkspacePaths#SHARED} or the id of a user.
+     * @param path the path in the area, as listed by {@link #list(String)}.
      * @return the file, which may not exist.
-     * @throws IllegalArgumentException if the path is not valid or is the uploads folder itself.
+     * @throws IllegalArgumentException if the path is not valid or is the area itself.
      */
-    public File getFile( String userId, String path ) {
+    public File getFile( String area, String path ) {
         String clean = cleanPath(path);
         if (clean.isEmpty() || !clean.equals(path.replace('\\', '/'))) {
             throw new IllegalArgumentException("Not a valid path: " + path);
         }
-        Path root = paths.getUploadsFolder(userId).toPath();
+        Path root = paths.getAreaFolder(area).toPath();
         Path file = root.resolve(clean).normalize();
         if (!file.startsWith(root) || file.equals(root)) {
             throw new IllegalArgumentException("Not a valid path: " + path);
@@ -190,11 +205,11 @@ public class UploadManager {
     }
 
     /**
-     * @return the files and folders of the uploads of a user, sorted by path.
+     * @return the files and folders of an area, sorted by path.
      */
-    public List<Upload> list( String userId ) throws IOException {
+    public List<Upload> list( String area ) throws IOException {
         List<Upload> uploads = new ArrayList<>();
-        Path root = paths.getUploadsFolder(userId).toPath();
+        Path root = paths.getAreaFolder(area).toPath();
         if (!Files.isDirectory(root)) {
             return uploads;
         }
@@ -210,52 +225,54 @@ public class UploadManager {
                         // removed meanwhile
                     }
                 }
-                uploads.add(new Upload(relative, isFolder, size));
+                uploads.add(new Upload(area, relative, isFolder, size));
             });
         }
         return uploads;
     }
 
     /**
-     * @return the bytes used by the uploads of a user.
+     * @return the bytes used by an area: for a user its uploads and the outputs of its jobs.
      */
-    public long getUsedBytes( String userId ) throws IOException {
-        return WorkspacePaths.folderSize(paths.getUploadsFolder(userId).toPath());
+    public long getUsedBytes( String area ) throws IOException {
+        return WorkspacePaths.folderSize(paths.getAreaFolder(area).toPath());
     }
 
     /**
-     * @return the bytes the user can still upload, {@link Long#MAX_VALUE} without quota.
+     * @return the bytes that can still be written in an area, {@link Long#MAX_VALUE} without quota.
      */
-    private long availableBytes( String userId ) throws IOException {
-        if (quotaBytes <= 0) {
+    public long availableBytes( String area ) throws IOException {
+        if (quotaBytes <= 0 || area.equals(WorkspacePaths.SHARED)) {
             return Long.MAX_VALUE;
         }
-        return Math.max(0, quotaBytes - getUsedBytes(userId));
+        return Math.max(0, quotaBytes - getUsedBytes(area));
     }
 
     /**
      * Save an uploaded file.
      *
-     * @param userId the user.
-     * @param folder the folder in the uploads, as given by the user, can be empty.
+     * @param area the area, {@link WorkspacePaths#SHARED} or the id of a user.
+     * @param uploaderId the user uploading, recorded as origin of the file.
+     * @param folder the folder in the area, as given by the user, can be empty.
      * @param fileName the name given by the browser; only the last name of a path is used.
      * @param size the size of the file.
      * @param content the content of the file, not closed.
-     * @return the path of the file in the uploads.
+     * @return the path of the file in the area.
      * @throws IllegalArgumentException if the names are not valid or the quota would be exceeded.
      */
-    public String save( String userId, String folder, String fileName, long size, InputStream content ) throws IOException {
+    public String save( String area, String uploaderId, String folder, String fileName, long size, InputStream content )
+            throws IOException {
         String name = fileName == null ? "" : fileName.replace('\\', '/');
         name = cleanName(name.substring(name.lastIndexOf('/') + 1));
         String cleanFolder = cleanPath(folder);
         String path = cleanFolder.isEmpty() ? name : cleanFolder + "/" + name;
-        File target = getFile(userId, path);
+        File target = getFile(area, path);
         if (target.isDirectory()) {
             throw new IllegalArgumentException("There is a folder with the name of the file: " + path);
         }
 
         // the file replaced frees its size
-        long available = availableBytes(userId);
+        long available = availableBytes(area);
         if (available != Long.MAX_VALUE && target.isFile()) {
             available += target.length();
         }
@@ -268,30 +285,41 @@ public class UploadManager {
             try (OutputStream output = Files.newOutputStream(tmp)) {
                 copy(content, output, available, quotaMessage(path));
             }
+            recordUpload(area, uploaderId, path);
             moveInPlace(tmp, target.toPath());
         } finally {
             Files.deleteIfExists(tmp);
         }
-        changed(userId);
+        changed(area);
         return path;
     }
 
+    private void recordUpload( String area, String uploaderId, String path ) throws IOException {
+        try {
+            origins.record(FileOrigin.uploaded(workspacePath(area, path), uploaderId, System.currentTimeMillis()));
+        } catch (IOException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException("The origin of the file can't be saved: " + path, e);
+        }
+    }
+
     /**
-     * @param listener told of the user whose uploads changed, after each change, or <code>null</code>.
+     * @param listener told of the area whose files changed, after each change, or <code>null</code>.
      */
     public void setChangeListener( Consumer<String> listener ) {
         this.changeListener = listener;
     }
 
-    private void changed( String userId ) {
+    private void changed( String area ) {
         Consumer<String> listener = changeListener;
         if (listener != null) {
-            listener.accept(userId);
+            listener.accept(area);
         }
     }
 
     private String quotaMessage( String path ) {
-        return "The uploads would be larger than the limit of " + (quotaBytes / (1024 * 1024)) + " MB: " + path
+        return "Your files would be larger than the limit of " + (quotaBytes / (1024 * 1024)) + " MB: " + path
                 + ". Delete some files first.";
     }
 
@@ -335,19 +363,22 @@ public class UploadManager {
     /**
      * Unpack an uploaded zip file. Either all its files are unpacked, or none.
      *
-     * @param userId the user.
-     * @param folder the folder in the uploads to unpack into, as given by the user, can be empty.
+     * @param area the area, {@link WorkspacePaths#SHARED} or the id of a user.
+     * @param uploaderId the user uploading, recorded as origin of the files.
+     * @param folder the folder in the area to unpack into, as given by the user, can be empty.
      * @param zipName the name of the zip file, for the messages.
      * @param content the content of the zip file, not closed.
-     * @return the paths of the unpacked files in the uploads.
+     * @return the paths of the unpacked files in the area.
      * @throws IllegalArgumentException if the file is not a zip file, or one of its names is not valid, or it is
      *         larger than allowed.
      */
-    public List<String> unzip( String userId, String folder, String zipName, InputStream content ) throws IOException {
+    public List<String> unzip( String area, String uploaderId, String folder, String zipName, InputStream content )
+            throws IOException {
         String cleanFolder = cleanPath(folder);
         // the quota is checked at the end, when the files replaced are known
-        long maxBytes = quotaBytes > 0 ? Math.min(quotaBytes, maxUnpackedBytes) : maxUnpackedBytes;
-        String tooLargeMessage = quotaBytes > 0 && quotaBytes < maxUnpackedBytes ? quotaMessage(zipName)
+        boolean hasQuota = quotaBytes > 0 && !area.equals(WorkspacePaths.SHARED);
+        long maxBytes = hasQuota ? Math.min(quotaBytes, maxUnpackedBytes) : maxUnpackedBytes;
+        String tooLargeMessage = hasQuota && quotaBytes < maxUnpackedBytes ? quotaMessage(zipName)
                 : "The unpacked files are larger than " + (maxUnpackedBytes / (1024 * 1024)) + " MB: " + zipName;
         Path tmp = newTmpFile();
         Files.createDirectories(tmp);
@@ -389,23 +420,26 @@ public class UploadManager {
             }
 
             // the files replaced free their size
-            if (quotaBytes > 0) {
+            long available = availableBytes(area);
+            if (available != Long.MAX_VALUE) {
                 long replaced = 0;
                 for( String file : files ) {
-                    File existing = getFile(userId, file);
+                    File existing = getFile(area, file);
                     replaced += existing.isFile() ? existing.length() : 0;
                 }
-                if (total - replaced > availableBytes(userId)) {
+                if (total - replaced > available) {
                     throw new IllegalArgumentException(quotaMessage(zipName));
                 }
             }
             for( String file : files ) {
-                if (getFile(userId, file).isDirectory()) {
+                if (getFile(area, file).isDirectory()) {
                     throw new IllegalArgumentException("There is a folder with the name of the file: " + file);
                 }
             }
-            Path base = cleanFolder.isEmpty() ? paths.getUploadsFolder(userId).toPath()
-                    : getFile(userId, cleanFolder).toPath();
+            for( String file : files ) {
+                recordUpload(area, uploaderId, file);
+            }
+            Path base = cleanFolder.isEmpty() ? paths.getAreaFolder(area).toPath() : getFile(area, cleanFolder).toPath();
             try (Stream<Path> walk = Files.walk(tmp)) {
                 for( Path path : (Iterable<Path>) walk.sorted()::iterator ) {
                     Path target = base.resolve(tmp.relativize(path).toString());
@@ -422,7 +456,7 @@ public class UploadManager {
         } finally {
             FileUtilities.deleteFileOrDir(tmp.toFile());
             // also after a failure, some files may have been moved
-            changed(userId);
+            changed(area);
         }
         return files;
     }
@@ -433,14 +467,15 @@ public class UploadManager {
      * @return <code>false</code> if it doesn't exist.
      * @throws IllegalArgumentException if the path is not valid.
      */
-    public boolean delete( String userId, String path ) throws IOException {
-        File file = getFile(userId, path);
+    public boolean delete( String area, String path ) throws IOException {
+        File file = getFile(area, path);
         if (!Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS)) {
             return false;
         }
         // the result of deleteFileOrDir is false for the folders it deleted
         FileUtilities.deleteFileOrDir(file);
-        changed(userId);
+        forgetOrigins(workspacePath(area, path));
+        changed(area);
         if (file.exists()) {
             throw new IOException("The file can't be deleted: " + path);
         }
@@ -448,14 +483,25 @@ public class UploadManager {
     }
 
     /**
-     * Delete all the uploads of a user, as when the user is deleted.
+     * Delete all the files of an area, as when its user is deleted.
      */
-    public void deleteAll( String userId ) throws IOException {
-        File folder = paths.getUploadsFolder(userId);
+    public void deleteAll( String area ) throws IOException {
+        File folder = paths.getAreaFolder(area);
         FileUtilities.deleteFileOrDir(folder);
-        changed(userId);
+        forgetOrigins(workspacePath(area, ""));
+        changed(area);
         if (folder.exists()) {
-            throw new IOException("The uploads can't be deleted: " + folder);
+            throw new IOException("The files can't be deleted: " + folder);
+        }
+    }
+
+    private void forgetOrigins( String workspacePath ) throws IOException {
+        try {
+            origins.deleteUnder(workspacePath);
+        } catch (IOException | RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new IOException("The origins of the files can't be deleted: " + workspacePath, e);
         }
     }
 

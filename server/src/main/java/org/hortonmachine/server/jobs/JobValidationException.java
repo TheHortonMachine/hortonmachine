@@ -30,13 +30,23 @@ public class JobValidationException extends IllegalArgumentException {
     private static final long serialVersionUID = 1L;
 
     private final Map<String, String> errors;
+    private final boolean isConflict;
 
     /**
      * @param errors the error messages by parameter name.
      */
     public JobValidationException( Map<String, String> errors ) {
+        this(errors, false);
+    }
+
+    /**
+     * @param errors the error messages by parameter name.
+     * @param isConflict <code>true</code> if the values are valid, but some outputs would replace existing files.
+     */
+    public JobValidationException( Map<String, String> errors, boolean isConflict ) {
         super(String.join(" ", errors.values()));
         this.errors = Collections.unmodifiableMap(new LinkedHashMap<>(errors));
+        this.isConflict = isConflict;
     }
 
     /**
@@ -44,5 +54,13 @@ public class JobValidationException extends IllegalArgumentException {
      */
     public Map<String, String> getErrors() {
         return errors;
+    }
+
+    /**
+     * @return <code>true</code> if the only problem is that some outputs would replace existing files, which the job can
+     *         do if asked to.
+     */
+    public boolean isConflict() {
+        return isConflict;
     }
 }

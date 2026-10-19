@@ -460,6 +460,10 @@ public class StacFiles {
             Integer cols ) throws Exception {
         if (crs != null) {
             String code = HMCrsRegistry.getCodeFromCrs(crs);
+            // a code declared by a .prj is not always a real one, as EPSG:30031000: the clients couldn't use it
+            if (code != null && !isKnownCode(code)) {
+                code = null;
+            }
             if (code != null) {
                 asset.put("proj:code", code);
             } else {
@@ -474,6 +478,17 @@ public class StacFiles {
             double xres = envelope.getWidth() / cols;
             double yres = envelope.getHeight() / rows;
             asset.putArray("proj:transform").add(xres).add(0.0).add(envelope.getMinX()).add(0.0).add(-yres).add(envelope.getMaxY());
+        }
+    }
+
+    /**
+     * @return <code>true</code> if the code of a projection can be decoded.
+     */
+    private static boolean isKnownCode( String code ) {
+        try {
+            return HMCrsRegistry.INSTANCE.getCrs(code) != null;
+        } catch (Exception e) {
+            return false;
         }
     }
 

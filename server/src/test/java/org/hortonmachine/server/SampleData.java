@@ -31,14 +31,16 @@ import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class SampleData {
+    /** The folder of the shared data of the tests, a collection of the catalog. */
+    public static final String COLLECTION = "flanginec";
     /** The path in the workspace of the elevation written by {@link #writeElevation(WorkspacePaths)}. */
-    public static final String ELEVATION = WorkspacePaths.DATA + "/elevation.tif";
+    public static final String ELEVATION = WorkspacePaths.DATA + "/" + WorkspacePaths.SHARED + "/" + COLLECTION + "/elevation.tif";
 
     private SampleData() {
     }
 
     /**
-     * Write a small elevation with a pit in the middle, in the data folder.
+     * Write a small elevation with a pit in the middle, in the shared area.
      */
     public static void writeElevation( WorkspacePaths paths ) throws Exception {
         double[][] elevation = { //
@@ -50,6 +52,8 @@ public class SampleData {
         RegionMap region = RegionMap.fromBoundsAndGrid(0, 50, 0, 50, 5, 5);
         GridCoverage2D coverage = CoverageUtilities.buildCoverage("elevation", elevation, region,
                 HMCrsRegistry.INSTANCE.getCrs("EPSG:32632"), true);
-        OmsRasterWriter.writeRaster(new File(paths.getWorkspace(), ELEVATION).getAbsolutePath(), coverage);
+        File file = new File(paths.getWorkspace(), ELEVATION);
+        file.getParentFile().mkdirs();
+        OmsRasterWriter.writeRaster(file.getAbsolutePath(), coverage);
     }
 }

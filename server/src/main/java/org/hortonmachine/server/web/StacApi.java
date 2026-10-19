@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.server.web;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -28,21 +27,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.hortonmachine.Version;
-import org.hortonmachine.cli.ModuleDescriptor;
-import org.hortonmachine.server.ServerConfig;
 import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.db.ServerDb;
 import org.hortonmachine.server.db.ServerDb.StacCollectionExtent;
+import org.hortonmachine.server.stac.StacCollectionInfo;
 import org.hortonmachine.server.stac.StacIndexer;
-import org.hortonmachine.server.stac.StacJobs;
+import org.hortonmachine.server.stac.StacItems;
 import org.hortonmachine.server.stac.StacRecord;
 import org.hortonmachine.server.stac.StacSearch;
-import org.hortonmachine.server.uploads.UploadManager;
 import org.hortonmachine.server.users.User;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -56,10 +52,12 @@ import io.javalin.http.Handler;
 
 /**
  * The files of the server as STAC API 1.0 (https://github.com/radiantearth/stac-api-spec), under
- * {@value #STAC}: a catalog with the collection of the shared data, the collection of the uploads and a collection
- * for the jobs of each module.
+ * {@value #STAC}: a catalog whose collections are the first level folders of the areas of the data, as found by the
+ * {@link StacIndexer}: the uploads and the outputs of the jobs are items as the files put there from outside.
  *
- * <p>A token sees the shared data and the uploads and jobs of its user, the administrators all of them. The hrefs of
+ * <p>A collection is described by the metadata the administrators gave it, else by the name of its folder.
+ *
+ * <p>A token sees the shared area and the area of its user, the administrators all of them. The hrefs of
  * the assets are links signed by the {@link UrlSigner}, if they are on, and the files can be read in parts, so that
  * QGIS and GDAL open them directly.
  *
@@ -82,26 +80,20 @@ public class StacApi {
     public static final int DEFAULT_LIMIT = 10;
     public static final int MAX_LIMIT = 1000;
 
-    /** The paths of the files of the data and of the uploads of a user, for the assets. */
+    /** The path of the files of the data, for the assets and the results of the jobs: followed by area/path. */
     public static final String DATA_FILES = Auth.API_PREFIX + "/data" + Auth.FILES_PATH;
-    public static final String UPLOADS_FILES = Auth.API_PREFIX + "/uploads/{userId}" + Auth.FILES_PATH;
 
     private final ServerDb db;
     private final StacIndexer indexer;
     private final WorkspacePaths paths;
-    private final UploadManager uploads;
     private final UrlSigner signer;
-    private final ServerConfig config;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public StacApi( ServerDb db, StacIndexer indexer, WorkspacePaths paths, UploadManager uploads, UrlSigner signer,
-            ServerConfig config ) {
+    public StacApi( ServerDb db, StacIndexer indexer, WorkspacePaths paths, UrlSigner signer ) {
         this.db = db;
         this.indexer = indexer;
         this.paths = paths;
-        this.uploads = uploads;
         this.signer = signer;
-        this.config = config;
     }
 
     public void register( JavalinConfig config ) {
@@ -115,8 +107,6 @@ public class StacApi {
         config.routes.post(STAC + "/search", api(this::searchPost));
         config.routes.get(DATA_FILES + "<path>", api(this::dataFile));
         config.routes.head(DATA_FILES + "<path>", api(this::dataFile));
-        config.routes.get(UPLOADS_FILES + "<path>", api(this::uploadFile));
-        config.routes.head(UPLOADS_FILES + "<path>", api(this::uploadFile));
     }
 
     private static Handler api( Handler handler ) {
@@ -153,7 +143,7 @@ public class StacApi {
 
     private static StacSearch newSearch( Context ctx ) {
         User user = Auth.user(ctx);
-        return new StacSearch(user.id, user.isAdmin());
+        return new StacSearch(user.username, user.isAdmin());
     }
 
     private static ApiProblem badRequest( String detail ) {
@@ -167,9 +157,9 @@ public class StacApi {
     private void landingPage( Context ctx ) throws Exception {
         String base = base(ctx);
         ObjectNode catalog = mapper.createObjectNode().put("type", "Catalog").put("id", "hortonmachine")
-                .put("stac_version", StacJobs.STAC_VERSION).put("title", "HortonMachine data").put("description",
-                        "The shared data, your uploads and the outputs of your jobs on the HortonMachine server "
-                                + Version.getVersion() + ".");
+                .put("stac_version", StacItems.STAC_VERSION).put("title", "HortonMachine data").put("description",
+                        "The shared data and your uploads on the HortonMachine server " + Version.getVersion()
+                                + ", a collection per folder.");
         ArrayNode conformsTo = catalog.putArray("conformsTo");
         CONFORMANCE.forEach(conformsTo::add);
         ArrayNode links = catalog.putArray("links");
@@ -181,7 +171,8 @@ public class StacApi {
         link(links, base + "/search", "search", GEOJSON, "Search the items").put("method", "POST");
         link(links, OgcApi.baseUrl(ctx) + Auth.API_PREFIX + "/docs", "service-doc", "text/html", "The documentation of the api");
         for( String collection : visibleCollections(ctx) ) {
-            link(links, base + "/collections/" + Html.urlPath(collection), "child", JSON, collectionTitle(collection));
+            link(links, base + "/collections/" + Html.urlPath(collection), "child", JSON,
+                    collectionTitle(collection, db.getStacCollectionInfo(collection)));
         }
         sendJson(ctx, JSON, catalog);
     }
@@ -194,56 +185,41 @@ public class StacApi {
     }
 
     /**
-     * @return the ids of the collections the requester sees: the data, the uploads and those of the modules with jobs.
+     * @return the ids of the collections the requester sees: the folders of the data and of its uploads, also empty.
      */
-    private List<String> visibleCollections( Context ctx ) throws Exception {
-        List<String> collections = new ArrayList<>(List.of(StacIndexer.DATA_COLLECTION, StacIndexer.UPLOADS_COLLECTION));
-        for( StacCollectionExtent extent : db.listStacCollections(newSearch(ctx)) ) {
-            if (!collections.contains(extent.collection)) {
-                collections.add(extent.collection);
-            }
-        }
-        return collections;
+    private List<String> visibleCollections( Context ctx ) {
+        User user = Auth.user(ctx);
+        return indexer.listCollections(user.username, user.isAdmin());
     }
 
-    private static String collectionTitle( String collection ) {
-        if (collection.equals(StacIndexer.DATA_COLLECTION)) {
-            return "Shared data";
-        }
-        if (collection.equals(StacIndexer.UPLOADS_COLLECTION)) {
-            return "Uploads";
-        }
-        return "Jobs of " + collection.substring(StacJobs.COLLECTION_PREFIX.length());
-    }
-
-    private static String collectionDescription( String collection ) {
-        if (collection.equals(StacIndexer.DATA_COLLECTION)) {
-            return "The data shared by the administrators with all the users.";
-        }
-        if (collection.equals(StacIndexer.UPLOADS_COLLECTION)) {
-            return "The files uploaded by the users, each sees only its own.";
-        }
-        return "The outputs of the jobs of the module " + collection.substring(StacJobs.COLLECTION_PREFIX.length())
-                + ", one item per job.";
+    private static boolean isGiven( String value ) {
+        return value != null && !value.isBlank();
     }
 
     /**
-     * @return <code>true</code> if the collection exists, also without items.
+     * @param info the metadata of the administrators, <code>null</code> if none.
      */
-    private static boolean isCollection( String collection ) {
-        if (collection.equals(StacIndexer.DATA_COLLECTION) || collection.equals(StacIndexer.UPLOADS_COLLECTION)) {
-            return true;
-        }
-        return collection.startsWith(StacJobs.COLLECTION_PREFIX) && ModuleDescriptor.getAvailableModules()
-                .containsKey(collection.substring(StacJobs.COLLECTION_PREFIX.length()));
+    private static String collectionTitle( String collection, StacCollectionInfo info ) {
+        return info != null && isGiven(info.title) ? info.title : collection;
     }
 
-    private ObjectNode collectionJson( Context ctx, String collection, StacCollectionExtent extent ) {
+    private static String collectionDescription( String collection, StacCollectionInfo info ) {
+        return info != null && isGiven(info.description) ? info.description
+                : "The files of the folder " + collection + " of the shared data and of the uploads.";
+    }
+
+    private ObjectNode collectionJson( Context ctx, String collection, StacCollectionExtent extent ) throws Exception {
         String base = base(ctx);
         String href = base + "/collections/" + Html.urlPath(collection);
-        ObjectNode json = mapper.createObjectNode().put("type", "Collection").put("stac_version", StacJobs.STAC_VERSION)
-                .put("id", collection).put("title", collectionTitle(collection))
-                .put("description", collectionDescription(collection)).put("license", "other");
+        StacCollectionInfo info = db.getStacCollectionInfo(collection);
+        ObjectNode json = mapper.createObjectNode().put("type", "Collection").put("stac_version", StacItems.STAC_VERSION)
+                .put("id", collection).put("title", collectionTitle(collection, info))
+                .put("description", collectionDescription(collection, info))
+                .put("license", info != null && isGiven(info.license) ? info.license : "other");
+        if (info != null && !info.keywords.isEmpty()) {
+            ArrayNode keywords = json.putArray("keywords");
+            info.keywords.forEach(keywords::add);
+        }
         ObjectNode extentJson = json.putObject("extent");
         ArrayNode bbox = extentJson.putObject("spatial").putArray("bbox").addArray();
         double[] bounds = extent != null && extent.bbox != null ? extent.bbox : new double[]{-180, -90, 180, 90};
@@ -283,7 +259,7 @@ public class StacApi {
 
     private String getCollectionId( Context ctx ) {
         String collection = ctx.pathParam("collectionId");
-        if (!isCollection(collection)) {
+        if (!visibleCollections(ctx).contains(collection)) {
             throw notFound("Unknown collection: " + collection);
         }
         return collection;
@@ -310,8 +286,8 @@ public class StacApi {
     private void item( Context ctx ) throws Exception {
         String collection = getCollectionId(ctx);
         String itemId = ctx.pathParam("itemId");
-        StacRecord record = db.getStacItem(itemId);
-        if (record == null || !record.collection.equals(collection) || !isVisible(ctx, record)) {
+        StacRecord record = db.getStacItem(collection, itemId);
+        if (record == null || !isVisible(ctx, record)) {
             throw notFound("Unknown item: " + itemId);
         }
         // asked alone: as the files are now
@@ -324,7 +300,8 @@ public class StacApi {
 
     private static boolean isVisible( Context ctx, StacRecord record ) {
         User user = Auth.user(ctx);
-        return user.isAdmin() || record.collection.equals(StacIndexer.DATA_COLLECTION) || user.id.equals(record.ownerId);
+        // the owner of an item is the area of its user, named by the username
+        return user.isAdmin() || record.ownerId == null || user.username.equals(record.ownerId);
     }
 
     private void searchGet( Context ctx ) throws Exception {
@@ -480,22 +457,13 @@ public class StacApi {
      * @return the path of the api of the folder of the files of an item, url encoded, ending with /.
      */
     private static String filesFolder( StacRecord record ) {
-        if (record.collection.startsWith(StacJobs.COLLECTION_PREFIX)) {
-            return Auth.API_PREFIX + "/jobs/" + Html.urlPath(record.id) + Auth.FILES_PATH;
-        }
-        String path = record.path;
-        String folder = path.contains("/") ? path.substring(0, path.lastIndexOf('/')) : "";
-        if (record.collection.equals(StacIndexer.DATA_COLLECTION)) {
-            String relative = folder.length() > WorkspacePaths.DATA.length() ? folder.substring(WorkspacePaths.DATA.length() + 1) : "";
-            return DATA_FILES + (relative.isEmpty() ? "" : Html.urlPath(relative) + "/");
-        }
-        String userFolder = WorkspacePaths.UPLOADS + "/" + record.ownerId;
-        String relative = folder.length() > userFolder.length() ? folder.substring(userFolder.length() + 1) : "";
-        return UPLOADS_FILES.replace("{userId}", Html.urlPath(record.ownerId)) + (relative.isEmpty() ? "" : Html.urlPath(relative) + "/");
+        // the path of an item is in an area of the data, data/<area>/...
+        String folder = record.path.substring(0, record.path.lastIndexOf('/'));
+        return DATA_FILES + Html.urlPath(folder.substring(WorkspacePaths.DATA.length() + 1)) + "/";
     }
 
     /**
-     * @return the item as given to the clients: absolute and signed hrefs, its links and the current expiry of the jobs.
+     * @return the item as given to the clients: absolute and signed hrefs and its links.
      */
     private ObjectNode publicItem( Context ctx, StacRecord record ) throws Exception {
         ObjectNode item = (ObjectNode) mapper.readTree(record.json);
@@ -506,16 +474,6 @@ public class StacApi {
                 ((ObjectNode) asset.getValue()).put("href", OgcApi.fileHref(signer, ctx, folder + href.substring(2)));
             }
         }
-        boolean isJob = record.collection.startsWith(StacJobs.COLLECTION_PREFIX);
-        if (isJob) {
-            ObjectNode properties = (ObjectNode) item.get("properties");
-            int ttlDays = config.jobTtlDays;
-            if (ttlDays > 0 && record.endTime != null) {
-                properties.put("expires", Instant.ofEpochMilli(record.endTime + TimeUnit.DAYS.toMillis(ttlDays)).toString());
-            } else {
-                properties.remove("expires");
-            }
-        }
         String base = base(ctx);
         String collection = base + "/collections/" + Html.urlPath(record.collection);
         ArrayNode links = item.putArray("links");
@@ -523,11 +481,6 @@ public class StacApi {
         link(links, collection, "parent", JSON, null);
         link(links, collection, "collection", JSON, null);
         link(links, base, "root", JSON, null);
-        if (isJob) {
-            String server = OgcApi.baseUrl(ctx);
-            link(links, server + "/jobs/" + Html.urlPath(record.id), "alternate", "text/html", "The page of the job");
-            link(links, server + Auth.API_PREFIX + "/jobs/" + Html.urlPath(record.id), "related", JSON, "The status of the job");
-        }
         return item;
     }
 
@@ -543,24 +496,17 @@ public class StacApi {
         return file;
     }
 
+    /**
+     * A file of the data, as area/path: those of the shared area and of the own area, all for the administrators.
+     */
     private void dataFile( Context ctx ) throws Exception {
-        Path root = paths.getDataFolder().toPath().toAbsolutePath().normalize();
-        sendFile(ctx, resolveFile(root, ctx.pathParam("path")));
-    }
-
-    private void uploadFile( Context ctx ) throws Exception {
         User user = Auth.user(ctx);
-        String userId = ctx.pathParam("userId");
-        if (!user.isAdmin() && !user.id.equals(userId)) {
+        String path = ctx.pathParam("path");
+        if (!WorkspacePaths.canRead(WorkspacePaths.areaOf(WorkspacePaths.DATA + "/" + path), user.username, user.isAdmin())) {
             throw notFound("The file doesn't exist.");
         }
-        File file;
-        try {
-            file = uploads.getFile(userId, ctx.pathParam("path"));
-        } catch (IllegalArgumentException e) {
-            throw notFound("The file doesn't exist.");
-        }
-        sendFile(ctx, file.toPath().toAbsolutePath().normalize());
+        Path root = paths.getDataFolder().toPath().toAbsolutePath().normalize();
+        sendFile(ctx, resolveFile(root, path));
     }
 
     private void sendFile( Context ctx, Path file ) throws Exception {

@@ -1,37 +1,48 @@
-<h1>Uploads</h1>
-<p class="muted">Your files, for the inputs of the modules as <code>uploads/...</code>.
+<h1>Files</h1>
+<p>{{#areas}}{{#isCurrent}}<b>{{label}}</b>{{/isCurrent}}{{^isCurrent}}<a href="{{href}}">{{label}}</a>{{/isCurrent}} &nbsp; {{/areas}}</p>
+<p class="muted">The files of <code>{{areaPath}}/…</code>, for the inputs of the modules. The outputs of the jobs are written
+  next to their first input, in your files. The files of a folder, as <code>{{areaPath}}/flanginec/…</code>, are in the
+  collection <code>flanginec</code> of the catalog; those outside of any folder are not.
   In use {{used}}{{#hasQuota}} of {{quota}}{{/hasQuota}}.</p>
 {{> messages}}
 
+{{#canWrite}}
 <fieldset>
   <legend>Upload</legend>
   <form method="post" action="/uploads" enctype="multipart/form-data">
     <input type="hidden" name="csrf" value="{{csrf}}">
+    <input type="hidden" name="area" value="{{area}}">
     <label for="files">Files</label>
     <input type="file" id="files" name="{{filesField}}" multiple required>
-    <p class="help muted">At most {{maxUploadMb}} MB at a time. A shapefile needs all its files, or a zip file with them.</p>
+    <p class="help muted">At most {{maxUploadMb}} MB at a time. A shapefile needs all its files, or a zip file with them.
+      A file with the name of an existing one replaces it.</p>
     <label for="folder">Folder</label>
-    <input type="text" id="folder" name="folder" placeholder="optional, as dtm/2024" value="{{folder}}">
+    <input type="text" id="folder" name="folder" placeholder="as flanginec/dem, the first folder is the collection" value="{{folder}}">
     <p><label class="inline"><input type="checkbox" name="unzip" checked> Unpack the zip files</label></p>
     <p><button type="submit">Upload</button></p>
   </form>
 </fieldset>
+{{/canWrite}}
 
-{{^uploads}}<p class="muted">No uploads yet.</p>{{/uploads}}
+{{^uploads}}<p class="muted">No files yet.</p>{{/uploads}}
 {{#hasUploads}}
 <div class="scroll">
   <table>
-    <tr><th>Path</th><th class="num">Size</th><th></th></tr>
+    <tr><th>Path</th><th class="num">Size</th><th>Origin</th><th></th></tr>
     {{#uploads}}
     <tr>
       <td>{{#isFolder}}{{workspacePath}}/{{/isFolder}}{{^isFolder}}<a href="{{href}}">{{workspacePath}}</a>{{/isFolder}}</td>
       <td class="num">{{size}}</td>
+      <td>{{origin}}</td>
       <td>
+        {{#canWrite}}
         <form class="inline" method="post" action="/uploads/delete">
           <input type="hidden" name="csrf" value="{{csrf}}">
+          <input type="hidden" name="area" value="{{area}}">
           <input type="hidden" name="path" value="{{path}}">
           <button class="link" type="submit">Delete</button>
         </form>
+        {{/canWrite}}
       </td>
     </tr>
     {{/uploads}}

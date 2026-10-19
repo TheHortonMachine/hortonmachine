@@ -23,12 +23,12 @@ package org.hortonmachine.server.stac;
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacRecord {
-    /** The id of the item, unique in the catalog. */
+    /** The id of the item, unique in its collection. */
     public final String id;
     public final String collection;
-    /** The user that can see the item, <code>null</code> for the items all users see. */
+    /** The area of the user that can see the item, its username, <code>null</code> for the items all users see. */
     public final String ownerId;
-    /** The path in the workspace of the file or folder of the item, as jobs/&lt;id&gt;. */
+    /** The path in the workspace of the main file of the item, as data/flanginec/dem/dtm.tif, unique in the catalog. */
     public final String path;
     /** The size and the time of the last change of the files when the item was made, to see if it is still current. */
     public final long size;

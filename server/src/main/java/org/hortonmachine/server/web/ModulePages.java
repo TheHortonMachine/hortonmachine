@@ -33,6 +33,7 @@ import org.hortonmachine.cli.ModuleDescriptor.DataType;
 import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMParameterKind;
+import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.jobs.Job;
 import org.hortonmachine.server.jobs.JobManager;
 import org.hortonmachine.server.jobs.JobValidationException;
@@ -140,12 +141,14 @@ public class ModulePages {
         ModuleDescriptor module = getModule(ctx);
         User user = Auth.user(ctx);
         Map<String, String> values = new LinkedHashMap<>();
+        String outputFolder = "";
         // run again with the values of a job
         String fromJobId = ctx.queryParam("from");
         if (fromJobId != null && jobManager.canRead(user.id, user.isAdmin(), fromJobId)) {
             Job job = jobManager.getJob(fromJobId);
             if (job.module.equals(module.getName())) {
                 values.putAll(job.parameters);
+                outputFolder = job.outputFolder != null ? job.outputFolder : "";
             }
         } else {
             Parameter single = singleOutput(module);
@@ -153,7 +156,7 @@ public class ModulePages {
                 values.put(single.name, defaultOutputName(single));
             }
         }
-        ctx.html(formHtml(ctx, module, values, Collections.emptyMap(), null));
+        ctx.html(formHtml(ctx, module, values, Collections.emptyMap(), null, outputFolder, false));
     }
 
     /**
@@ -223,20 +226,26 @@ public class ModulePages {
                 values.put(parameter.name, value);
             }
         }
+        String outputFolder = ctx.formParam(JobManager.OUTPUT_FOLDER);
+        outputFolder = outputFolder != null ? outputFolder.trim() : "";
+        boolean overwrite = ctx.formParam("overwrite") != null;
         try {
-            Job job = jobManager.submit(user.id, user.isAdmin(), module.getName(), values);
+            Job job = jobManager.submit(user.id, user.isAdmin(), module.getName(), values, outputFolder, overwrite);
             ctx.redirect("/jobs/" + job.id);
         } catch (JobValidationException e) {
-            ctx.status(HttpStatus.BAD_REQUEST).html(formHtml(ctx, module, values, e.getErrors(), "Some values are not valid."));
+            String error = e.isConflict() ? "Some outputs would replace existing files: tick overwrite to replace them."
+                    : "Some values are not valid.";
+            ctx.status(e.isConflict() ? HttpStatus.CONFLICT : HttpStatus.BAD_REQUEST)
+                    .html(formHtml(ctx, module, values, e.getErrors(), error, outputFolder, overwrite));
         }
     }
 
     private String formHtml( Context ctx, ModuleDescriptor module, Map<String, String> values, Map<String, String> errors,
-            String error ) throws Exception {
+            String error, String outputFolder, boolean overwrite ) throws Exception {
         User user = Auth.user(ctx);
         List<String> otherErrors = new ArrayList<>();
         for( String name : errors.keySet() ) {
-            if (module.getParameter(name) == null || module.getParameter(name).isComputed) {
+            if (!name.equals(JobManager.OUTPUT_FOLDER) && (module.getParameter(name) == null || module.getParameter(name).isComputed)) {
                 otherErrors.add(errors.get(name));
             }
         }
@@ -252,9 +261,29 @@ public class ModulePages {
                 groups.add(Model.of("title", kind.getTitle(), "fields", fields));
             }
         }
+        List<Model> folderSuggestions = new ArrayList<>();
+        for( String folder : suggestions.suggestOutputFolders(user) ) {
+            folderSuggestions.add(Model.of("value", folder));
+        }
         Model model = Model.of("name", module.getName(), "folder", module.getFolder(), "description", module.getDescription(),
-                "authors", String.join(", ", module.getAuthors()), "error", error, "otherErrors", otherErrors, "groups", groups);
+                "authors", String.join(", ", module.getAuthors()), "error", error, "otherErrors", otherErrors, "groups", groups,
+                "hasOutputs", hasOutputFiles(module), //
+                "outputFolderName", JobManager.OUTPUT_FOLDER, "outputFolder", outputFolder, //
+                "outputFolderError", errors.get(JobManager.OUTPUT_FOLDER), "outputFolders", folderSuggestions, //
+                "defaultOutputFolder", WorkspacePaths.DATA + "/" + user.username + "/…", "overwrite", overwrite);
         return templates.page(ctx, "module.html", module.getName(), model);
+    }
+
+    /**
+     * @return <code>true</code> if the module writes files.
+     */
+    private static boolean hasOutputFiles( ModuleDescriptor module ) {
+        for( Parameter parameter : module.getParameters() ) {
+            if (parameter.kind == HMParameterKind.OUTPUT && parameter.isPath() && !parameter.isComputed) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

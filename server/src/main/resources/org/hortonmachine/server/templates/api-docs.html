@@ -2,22 +2,32 @@
 <p>Programs can use the server through two standard APIs, both under <code>{{base}}/api</code>:</p>
 <ul>
   <li><a href="#processes">OGC API - Processes</a> to run the modules: every module is a process, every run a job;</li>
-  <li><a href="#stac">STAC API</a> to find and read the files: the shared data, your uploads and the outputs of your jobs.</li>
+  <li><a href="#stac">STAC API</a> to find and read the files: the shared ones and yours, uploaded or written by your jobs.</li>
 </ul>
 
 <h2 id="access">Access</h2>
 <p>Create a token in your <a href="/account">account</a> page and send it with every request, as the header
-  <code>Authorization: Bearer hm_...</code>. A token acts as its user: it sees only the jobs and uploads of the user, as the
+  <code>Authorization: Bearer hm_...</code>. A token acts as its user: it sees only the jobs and files of the user, as the
   pages do. Revoke the tokens you don't use anymore.</p>
 <p>The links to the files given by the API, as the results of the jobs and the assets of the catalog, are signed: for a while
   they work without the header, so that GDAL, QGIS or a browser can open them, as
-  <code>/vsicurl/{{base}}/api/jobs/&lt;id&gt;/files/pit.tif?expires=...</code>. Treat them as the token: they stop working
-  when they expire, when the token is revoked or when the administrators renew the signing key. A signed link opens one file
-  only: for a shapefile, whose parts are separate files, send the header instead, as GDAL does with
+  <code>/vsicurl/{{base}}/api/data/files/&lt;your name&gt;/flanginec/pit.tif?expires=...</code>. Treat them as the token: they
+  stop working when they expire, when the token is revoked or when the administrators renew the signing key. A signed link
+  opens one file only: for a shapefile, whose parts are separate files, send the header instead, as GDAL does with
   <code>GDAL_HTTP_HEADERS="Authorization: Bearer hm_..."</code>, or prefer GeoPackage.</p>
 <p>The files can be read in parts with the <code>Range</code> header, as <code>Range: bytes=0-16383</code>, one range per
   request, and their size is given by <code>HEAD</code>. The GeoTIFF outputs of the jobs are Cloud Optimized GeoTIFFs, so
   that a map of a large raster reads only what it shows.</p>
+
+<h2 id="data">Data</h2>
+<p>All the files are in the data, in areas:</p>
+<ul>
+  <li><code>data/shared/...</code>: the files shared with all the users, written by the administrators only;</li>
+  <li><code>data/&lt;your name&gt;/...</code>: your files, the uploaded ones and the outputs of your jobs, seen by you and the
+    administrators only; the folder has your username, as <code>data/jane/...</code>.</li>
+</ul>
+<p>The server knows where each file comes from: uploaded, written by a job, with its module and parameters, or put in the
+  data from outside. When a file is replaced, where the replaced one came from stays in its history.</p>
 
 <h2 id="processes">Processes</h2>
 <p><a href="https://docs.ogc.org/is/18-062r2/18-062r2.html">OGC API - Processes - Part 1: Core</a>, always asynchronous.</p>
@@ -29,24 +39,31 @@
   <tr><th>POST /api/processes/{id}/execution</th><td>run a process: answers 201 with the job, its address in the Location header</td></tr>
   <tr><th>GET /api/jobs</th><td>your jobs, filtered by <code>processID</code>, <code>status</code>, <code>limit</code></td></tr>
   <tr><th>GET /api/jobs/{id}</th><td>the status of a job: accepted, running, successful, failed, dismissed</td></tr>
-  <tr><th>GET /api/jobs/{id}/results</th><td>the results of a successful job: the files as hrefs, the computed values inline</td></tr>
-  <tr><th>GET /api/jobs/{id}/files/{path}</th><td>a file of a job</td></tr>
-  <tr><th>DELETE /api/jobs/{id}</th><td>kill a queued or running job, or delete a finished one with its files</td></tr>
+  <tr><th>GET /api/jobs/{id}/results</th><td>the results of a successful job: the files as hrefs with their path, the computed values inline</td></tr>
+  <tr><th>GET /api/jobs/{id}/files/{path}</th><td>a file of the folder of a job, as its log</td></tr>
+  <tr><th>DELETE /api/jobs/{id}</th><td>kill a queued or running job, or delete a finished one; its outputs stay in the data</td></tr>
 </table>
 
 <h3>Inputs and outputs</h3>
-<p>The files are paths in the workspace: <code>data/...</code> for the shared data, <code>uploads/...</code> for your uploads,
-  <code>jobs/&lt;id&gt;/...</code> for the outputs of your jobs; the result of a job can also be given as it is,
-  <code>{"href": "{{base}}/api/jobs/&lt;id&gt;/files/pit.tif"}</code>, and the items of the catalog give the path of their
-  file as <code>hm:path</code>. A table of a GeoPackage follows its path after a <code>#</code>, as
-  <code>data/roads.gpkg#roads</code>. The outputs get default names, as <code>pit.tif</code> or
-  <code>vector.gpkg#vector</code>; <code>outputs</code> chooses which ones are written, all if missing.</p>
+<p>The input files are paths in the data, as <code>data/shared/flanginec/dtm.tif</code>, or the hrefs of the files of this
+  server, as the results of a job, <code>{"href": "{{base}}/api/data/files/&lt;your name&gt;/flanginec/pit.tif"}</code>; the
+  items of the catalog give the path of their file as <code>hm:path</code>. A table of a GeoPackage follows its path after a
+  <code>#</code>, as <code>data/shared/roads.gpkg#roads</code>.</p>
+<p>The outputs get default names, as <code>pit.tif</code> or <code>vector.gpkg#vector</code>; <code>outputs</code> chooses
+  which ones are written, all if missing. A job writes them in its own folder and moves them in the output folder once it
+  succeeded: by default the folder of its first input file in your area, as <code>data/&lt;your name&gt;/flanginec</code> for
+  <code>data/shared/flanginec/dtm.tif</code>, so that they are next to it and in the same collection of the catalog. Without
+  input files it is <code>data/&lt;your name&gt;/results</code>. The request can choose another folder of your area:</p>
+<pre>{"inputs": {...}, "outputFolder": "data/&lt;your name&gt;/flanginec/runs", "overwrite": true}</pre>
+<p>An output with the name of an existing file is refused with 409 and the file in <code>errors</code>, unless
+  <code>"overwrite": true</code>.</p>
 
 <h2 id="stac">Catalog</h2>
 <p><a href="https://github.com/radiantearth/stac-api-spec">STAC API 1.0</a> at <code>{{base}}/api/stac</code>, which the STAC
-  browser of QGIS (Data Source Manager, STAC, with the token as the Authorization header of the connection) and
-  <code>pystac-client</code> read. It is always up to date with the files: the uploads and the jobs at once, the shared
-  data a few seconds after a file stopped changing.</p>
+  browser of the HortonMachine (authentication <i>Bearer token</i>), the STAC browser of QGIS (Data Source Manager, STAC,
+  with the token as the Authorization header of the connection) and <code>pystac-client</code> read. It is always up to date
+  with the files: the uploads and the outputs of the jobs at once, the files put in the data from outside a few seconds after
+  they stopped changing.</p>
 <table>
   <tr><th>GET /api/stac</th><td>the catalog, with a link to each collection</td></tr>
   <tr><th>GET /api/stac/conformance</th><td>the conformance classes</td></tr>
@@ -55,21 +72,27 @@
   <tr><th>GET /api/stac/collections/{id}/items</th><td>its items, filtered by <code>bbox</code>, <code>datetime</code>, paged by <code>limit</code> and the <code>next</code> link</td></tr>
   <tr><th>GET /api/stac/collections/{id}/items/{itemId}</th><td>an item, checked against its files</td></tr>
   <tr><th>GET, POST /api/stac/search</th><td>the items of all the collections, filtered by <code>collections</code>, <code>ids</code>, <code>bbox</code>, <code>datetime</code></td></tr>
-  <tr><th>GET /api/data/files/{path}</th><td>a file of the shared data</td></tr>
-  <tr><th>GET /api/uploads/{userId}/files/{path}</th><td>a file of your uploads</td></tr>
+  <tr><th>GET /api/data/files/{area}/{path}</th><td>a file of the shared area or of yours</td></tr>
 </table>
-<p>The collections:</p>
+<p>The collections are the folders: the files of <code>data/shared/flanginec</code> and of <code>data/&lt;your name&gt;/flanginec</code>,
+  at any depth, are the items of the collection <code>flanginec</code>, one item per file. The files directly in an area,
+  outside of any folder, are not in the catalog.</p>
+<p>The id of an item tells where its file is, with <code>~</code> for <code>/</code>: <code>shared~dem~dtm.tif</code> for
+  <code>data/shared/flanginec/dem/dtm.tif</code>, <code>user~jane~dem~dtm.tif</code> for the same path in the area of jane.
+  Its properties tell the rest:</p>
 <ul>
-  <li><code>data</code>: the shared data, one item per file, seen by all the users;</li>
-  <li><code>uploads</code>: your uploads, one item per file;</li>
-  <li><code>jobs-&lt;module&gt;</code>, as <code>jobs-Pitfiller</code>: your successful jobs of a module, one item per job with its
-    output files as assets, the module and its parameters, and when the job is removed (<code>expires</code>).</li>
+  <li><code>hm:path</code>, the path to give to the processes, <code>hm:area</code> and <code>hm:owner</code>, the user of the area;</li>
+  <li><code>hm:origin</code>: <code>uploaded</code>, <code>processed</code> or <code>external</code>, with <code>hm:user</code>
+    who uploaded it or ran the job and <code>hm:created</code>;</li>
+  <li>for the outputs of the jobs <code>hm:job</code>, <code>hm:module</code>, <code>hm:parameters</code> and the
+    <code>processing:software</code> of the processing extension;</li>
+  <li><code>hm:history</code>: the origins of the files it replaced, newest first, each with <code>hm:replaced</code>.</li>
 </ul>
-<p>The administrators see the uploads and jobs of all the users. The files that belong to another one, as the parts of a
+<p>The administrators see the areas of all the users. The files that belong to another one, as the parts of a
   shapefile or the statistics and styles of a raster, are further assets of its item. The rasters and vectors have their
   footprint in WGS84, their projection (<code>proj:code</code>) and the rasters their bands with statistics
-  (<code>raster:bands</code>); the other files have no geometry. <code>datetime</code> is the time of the last change of a file,
-  or the end of a job, with its start in <code>start_datetime</code>.</p>
+  (<code>raster:bands</code>); the other files have no geometry. <code>datetime</code> is the time of the last change of a
+  file.</p>
 
 <h2 id="examples">Examples</h2>
 <pre>TOKEN=hm_...
@@ -77,20 +100,19 @@
 curl -H "Authorization: Bearer $TOKEN" {{base}}/api/processes/Pitfiller
 
 curl -i -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{"inputs": {"inElev": "data/elevation.tif"}}' \
+  -d '{"inputs": {"inElev": "data/shared/flanginec/elevation.tif"}}' \
   {{base}}/api/processes/Pitfiller/execution
 
 curl -H "Authorization: Bearer $TOKEN" {{base}}/api/jobs/&lt;id&gt;
 curl -H "Authorization: Bearer $TOKEN" {{base}}/api/jobs/&lt;id&gt;/results
-curl -O -H "Authorization: Bearer $TOKEN" {{base}}/api/jobs/&lt;id&gt;/files/pit.tif
 
 curl -H "Authorization: Bearer $TOKEN" "{{base}}/api/stac/search?bbox=10.5,46.0,11.0,46.5&amp;datetime=2026-10-01T00:00:00Z/.."
-curl -H "Authorization: Bearer $TOKEN" {{base}}/api/stac/collections/jobs-Pitfiller/items</pre>
+curl -H "Authorization: Bearer $TOKEN" {{base}}/api/stac/collections/flanginec/items</pre>
 
 <pre>from pystac_client import Client
 
 catalog = Client.open("{{base}}/api/stac", headers={"Authorization": "Bearer hm_..."})
-for item in catalog.search(collections=["data"], bbox=[10.5, 46.0, 11.0, 46.5]).items():
-    print(item.id, item.properties["hm:path"], item.assets["data"].href)</pre>
+for item in catalog.search(collections=["flanginec"], bbox=[10.5, 46.0, 11.0, 46.5]).items():
+    print(item.id, item.properties["hm:path"], item.properties["hm:origin"], item.assets["data"].href)</pre>
 
 <p>The errors are answered as <code>application/problem+json</code>, with the errors of each input in <code>errors</code>.</p>

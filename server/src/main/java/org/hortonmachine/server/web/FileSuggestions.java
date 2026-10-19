@@ -22,10 +22,12 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,25 +35,24 @@ import org.hortonmachine.cli.ModuleDescriptor.DataType;
 import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 import org.hortonmachine.server.ServerConfig;
 import org.hortonmachine.server.WorkspacePaths;
-import org.hortonmachine.server.jobs.Job;
-import org.hortonmachine.server.jobs.JobManager;
-import org.hortonmachine.server.jobs.JobState;
+import org.hortonmachine.server.files.FileOrigin;
+import org.hortonmachine.server.files.FileOrigins;
 import org.hortonmachine.server.users.User;
 
 /**
  * The paths in the workspace suggested for an input of a module, in this order:
  * <ol>
- * <li>the matching outputs of the jobs done by the user, all of them for an administrator, newest job first,
- *     labelled with the module and the time of the job;</li>
- * <li>the matching files of the uploads of the user;</li>
- * <li>the matching files of the shared data folder.</li>
+ * <li>the matching files of the area of the user, the outputs of the jobs labelled with the module and the time;</li>
+ * <li>the matching files of the shared area;</li>
+ * <li>for an administrator, the matching files of the areas of the other users.</li>
  * </ol>
- * The suggestions are at most {@link #setMaxSuggestions(int) a maximum}: each source has a share of it, the jobs a third,
- * the uploads half of what is left, the data the rest, so that a large data folder doesn't hide the outputs of the jobs.
+ * The suggestions are at most {@link #setMaxSuggestions(int) a maximum}: the own area has half of it, so that a large
+ * shared area doesn't hide the own files.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class FileSuggestions {
+    private static final Logger LOGGER = Logger.getLogger(FileSuggestions.class.getName());
     private static final int MAX_DEPTH = 6;
 
     private static final Set<String> RASTER_EXTENSIONS = Set.of("tif", "tiff", "asc", "nc", "grd", "png", "jpg");
@@ -60,7 +61,7 @@ public class FileSuggestions {
     private static final Set<String> CSV_EXTENSIONS = Set.of("csv", "txt");
 
     private final WorkspacePaths paths;
-    private final JobManager jobManager;
+    private final FileOrigins origins;
     // changed by the settings page while running
     private volatile int maxSuggestions = ServerConfig.DEFAULT_MAX_SUGGESTIONS;
 
@@ -79,9 +80,9 @@ public class FileSuggestions {
         }
     }
 
-    public FileSuggestions( WorkspacePaths paths, JobManager jobManager ) {
+    public FileSuggestions( WorkspacePaths paths, FileOrigins origins ) {
         this.paths = paths;
-        this.jobManager = jobManager;
+        this.origins = origins;
     }
 
     /**
@@ -102,36 +103,63 @@ public class FileSuggestions {
         Set<String> extensions = parameter.extension != null ? Set.of(parameter.extension.toLowerCase(Locale.ROOT))
                 : extensions(parameter.dataType);
 
-        // the outputs of the jobs, newest first
-        List<Suggestion> jobOutputs = new ArrayList<>();
-        int jobsShare = Math.max(1, max / 3);
-        List<Job> jobs = jobManager.listFinishedJobs(user.isAdmin() ? null : user.id);
-        jobs.sort(Comparator.comparingLong((Job job) -> job.created).reversed());
-        for( Job job : jobs ) {
-            if (jobOutputs.size() >= jobsShare) {
-                break;
-            }
-            if (job.getState() == JobState.DONE) {
-                String label = job.module + ", " + Html.formatTime(job.created);
-                for( String path : collect(jobManager.getJobFolder(job.id), WorkspacePaths.JOBS + "/" + job.id, folders, extensions,
-                        jobsShare - jobOutputs.size()) ) {
-                    jobOutputs.add(new Suggestion(path, label));
+        List<Suggestion> suggestions = new ArrayList<>();
+        for( String path : collect(paths.getAreaFolder(user.username), areaPath(user.username), folders, extensions,
+                Math.max(1, max / 2)) ) {
+            suggestions.add(new Suggestion(path, label(path)));
+        }
+        for( String path : collect(paths.getAreaFolder(WorkspacePaths.SHARED), areaPath(WorkspacePaths.SHARED), folders, extensions,
+                max - suggestions.size()) ) {
+            suggestions.add(new Suggestion(path, null));
+        }
+        if (user.isAdmin()) {
+            File[] areas = paths.getDataFolder().listFiles(File::isDirectory);
+            if (areas != null) {
+                Arrays.sort(areas);
+                for( File area : areas ) {
+                    String name = area.getName();
+                    if (!name.equals(user.username) && !name.equals(WorkspacePaths.SHARED) && WorkspacePaths.isArea(name)) {
+                        for( String path : collect(area, areaPath(name), folders, extensions, max - suggestions.size()) ) {
+                            suggestions.add(new Suggestion(path, null));
+                        }
+                    }
                 }
             }
         }
-
-        List<Suggestion> suggestions = new ArrayList<>(jobOutputs);
-        int uploadsShare = Math.max(1, (max - suggestions.size()) / 2);
-        for( String path : collect(paths.getUploadsFolder(user.id), WorkspacePaths.UPLOADS, folders, extensions, uploadsShare) ) {
-            suggestions.add(new Suggestion(path, null));
-        }
-        if (folders) {
-            suggestions.add(new Suggestion(WorkspacePaths.DATA, null));
-        }
-        for( String path : collect(paths.getDataFolder(), WorkspacePaths.DATA, folders, extensions, max - suggestions.size()) ) {
-            suggestions.add(new Suggestion(path, null));
-        }
         return suggestions;
+    }
+
+    /**
+     * @return the folders a user can write the outputs of a job in: those of the own area, for an administrator also
+     *         those of the shared area; at most the maximum.
+     */
+    public List<String> suggestOutputFolders( User user ) throws IOException {
+        int max = maxSuggestions;
+        List<String> folders = new ArrayList<>(collect(paths.getAreaFolder(user.username), areaPath(user.username), true, null, max));
+        if (user.isAdmin()) {
+            folders.addAll(collect(paths.getAreaFolder(WorkspacePaths.SHARED), areaPath(WorkspacePaths.SHARED), true, null,
+                    max - folders.size()));
+        }
+        return folders;
+    }
+
+    private static String areaPath( String area ) {
+        return WorkspacePaths.DATA + "/" + area;
+    }
+
+    /**
+     * @return the module and time of the job that wrote a file, or <code>null</code>.
+     */
+    private String label( String path ) {
+        try {
+            FileOrigin origin = origins.get(path);
+            if (origin != null && origin.origin.equals(FileOrigin.PROCESSED)) {
+                return origin.module + ", " + Html.formatTime(origin.created);
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The origin of " + path + " can't be read.", e);
+        }
+        return null;
     }
 
     private static Set<String> extensions( DataType dataType ) {
@@ -171,9 +199,6 @@ public class FileSuggestions {
             return false;
         }
         String name = path.getFileName().toString();
-        if (name.equals(JobManager.PARAMS_FILE) || name.equals(JobManager.LOG_FILE)) {
-            return false;
-        }
         if (extensions == null) {
             return true;
         }

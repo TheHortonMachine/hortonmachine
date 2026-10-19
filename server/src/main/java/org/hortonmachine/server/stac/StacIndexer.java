@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -52,8 +53,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.hortonmachine.Version;
 import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.db.ServerDb;
+import org.hortonmachine.server.files.FileOrigin;
+import org.hortonmachine.server.users.User;
 import org.hortonmachine.server.web.Html;
 import org.hortonmachine.server.web.MediaTypes;
 
@@ -62,34 +66,42 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Keeps the items of the shared data and of the uploads of the STAC catalog as the files are.
+ * Keeps the items of the STAC catalog as the files of the areas of the data are.
+ *
+ * <p>The collections are the folders: the files of <code>data/shared/flanginec</code> and of
+ * <code>data/&lt;username&gt;/flanginec</code>, at any depth, are the items of the collection <code>flanginec</code>,
+ * each user seeing the shared ones and the own ones; the files directly in an area are not in the catalog.
  *
  * <p>Each file is an item, with its sidecars (the parts of a shapefile, the georeferencing, statistics and styles of a
- * raster) as further assets. The index follows the files:
+ * raster) as further assets, and with its {@link FileOrigin origin}: uploaded, written by a job, with its module and
+ * parameters, or put there from outside, and the origins of the files it replaced. The index follows the files:
  * <ul>
- * <li>the uploads, changed only by the server, are synchronized at once by {@link #syncUploads(String)};</li>
- * <li>the data folder, changed from outside, is watched: a file is read once it stopped changing for
+ * <li>the changes made by the server, uploads, deletions and outputs of the jobs, are synchronized at once by
+ *     {@link #syncArea(String)} and {@link #syncFolder(String)};</li>
+ * <li>the data folder, changed also from outside, is watched: a file is read once it stopped changing for
  *     {@value #STABLE_MILLIS} ms, as when copied;</li>
  * <li>everything is compared with the files at the start, when the watcher lost events and every
  *     {@link #setRescanMinutes(int) few minutes}, since network folders send no events;</li>
  * <li>{@link #current(StacRecord)} checks an item against its files when it is asked alone.</li>
  * </ul>
- * Only the files whose size or time changed are read again.
+ * Only the files whose size, time or origin changed are read again.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacIndexer implements AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(StacIndexer.class.getName());
 
-    public static final String DATA_COLLECTION = "data";
-    public static final String UPLOADS_COLLECTION = "uploads";
+    /** The start of the ids of the items of the shared area and of the areas of the users. */
+    public static final String SHARED_PREFIX = WorkspacePaths.SHARED;
+    public static final String USER_PREFIX = "user";
+    /** The extension of the items written by a job. */
+    public static final String PROCESSING_EXTENSION = "https://stac-extensions.github.io/processing/v1.2.0/schema.json";
     /** The milliseconds a changed file must stay unchanged before it is read. */
     public static final long STABLE_MILLIS = 3000;
 
     private final ServerDb db;
     private final WorkspacePaths paths;
     private final Path dataFolder;
-    private final Path uploadsFolder;
     private final ObjectMapper mapper = new ObjectMapper();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(runnable -> {
         Thread thread = new Thread(runnable, "hm-stac-indexer");
@@ -107,24 +119,25 @@ public class StacIndexer implements AutoCloseable {
     private volatile boolean closed;
 
     /**
-     * The folder whose files are the items of a collection.
+     * An area of the data, whose folders are collections.
      */
     private static class Root {
-        final String collection;
-        /** The user of the uploads, <code>null</code> for the data. */
+        /** {@link WorkspacePaths#SHARED} or the id of the user. */
+        final String area;
+        /** The user of the area, <code>null</code> for the shared one. */
         final String ownerId;
+        /** The name of the user of the area, <code>null</code> for the shared one. */
+        final String ownerName;
         final Path folder;
-        /** The path in the workspace of the folder, as uploads/&lt;user id&gt;. */
+        /** The path in the workspace of the folder, as data/&lt;username&gt;. */
         final String workspacePath;
-        /** The path of the folder as the users give it to the modules, as uploads. */
-        final String userPath;
 
-        Root( String collection, String ownerId, Path folder, String workspacePath, String userPath ) {
-            this.collection = collection;
+        Root( String area, String ownerId, String ownerName, Path folder ) {
+            this.area = area;
             this.ownerId = ownerId;
+            this.ownerName = ownerName;
             this.folder = folder;
-            this.workspacePath = workspacePath;
-            this.userPath = userPath;
+            this.workspacePath = WorkspacePaths.DATA + "/" + area;
         }
 
         String relative( Path file ) {
@@ -141,7 +154,6 @@ public class StacIndexer implements AutoCloseable {
         this.db = db;
         this.paths = paths;
         this.dataFolder = paths.getDataFolder().toPath().toAbsolutePath().normalize();
-        this.uploadsFolder = paths.getAllUploadsFolder().toPath().toAbsolutePath().normalize();
     }
 
     /**
@@ -153,7 +165,6 @@ public class StacIndexer implements AutoCloseable {
         watcher = FileSystems.getDefault().newWatchService();
         // watched before the comparison, so that no change is lost
         registerTree(dataFolder);
-        registerTree(uploadsFolder);
         watchThread = new Thread(this::watch, "hm-stac-watcher");
         watchThread.setDaemon(true);
         watchThread.start();
@@ -175,39 +186,94 @@ public class StacIndexer implements AutoCloseable {
         }
     }
 
-    private Root dataRoot() {
-        return new Root(DATA_COLLECTION, null, dataFolder, WorkspacePaths.DATA, WorkspacePaths.DATA);
-    }
-
-    private Root uploadsRoot( String userId ) {
-        return new Root(UPLOADS_COLLECTION, userId, uploadsFolder.resolve(userId), WorkspacePaths.UPLOADS + "/" + userId,
-                WorkspacePaths.UPLOADS);
+    private Root areaRoot( String area ) {
+        if (area.equals(WorkspacePaths.SHARED)) {
+            return new Root(area, null, null, dataFolder.resolve(area));
+        }
+        // the area of a user is named by its username, which owns the items
+        return new Root(area, area, area, dataFolder.resolve(area));
     }
 
     /**
-     * @return the root of a file, or <code>null</code> if it is not in the data or in the uploads of a user.
+     * @return the name of a user, its id if it doesn't exist anymore.
+     */
+    private String userName( String userId ) {
+        try {
+            User user = db.getUser(userId);
+            if (user != null) {
+                return user.username;
+            }
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The user " + userId + " can't be read.", e);
+        }
+        return userId;
+    }
+
+    /**
+     * @param ownArea the area of the user, its username.
+     * @return the collections a user sees: the folders of the shared area and of the area of the user, of all the areas
+     *         for the administrators; by name.
+     */
+    public List<String> listCollections( String ownArea, boolean isAdmin ) {
+        Set<String> collections = new TreeSet<>();
+        File[] areas = dataFolder.toFile().listFiles(File::isDirectory);
+        if (areas != null) {
+            for( File area : areas ) {
+                if (WorkspacePaths.isArea(area.getName()) && WorkspacePaths.canRead(area.getName(), ownArea, isAdmin)) {
+                    addFolders(collections, area);
+                }
+            }
+        }
+        return new ArrayList<>(collections);
+    }
+
+    private static void addFolders( Set<String> names, File parent ) {
+        File[] folders = parent.listFiles(File::isDirectory);
+        if (folders != null) {
+            for( File folder : folders ) {
+                if (!isSkipped(folder.getName())) {
+                    names.add(folder.getName());
+                }
+            }
+        }
+    }
+
+    /**
+     * @return the root of a file, or <code>null</code> if it is not in an area of the data.
      */
     private Root rootOf( Path file ) {
         Path path = file.toAbsolutePath().normalize();
-        if (path.startsWith(dataFolder)) {
-            return dataRoot();
-        }
-        if (path.startsWith(uploadsFolder) && !path.equals(uploadsFolder)) {
-            return uploadsRoot(uploadsFolder.relativize(path).getName(0).toString());
+        if (path.startsWith(dataFolder) && !path.equals(dataFolder)) {
+            // the files directly in the data are in no area; a missing folder is the area of a deleted user
+            String area = dataFolder.relativize(path).getName(0).toString();
+            if (WorkspacePaths.isArea(area) && !Files.isRegularFile(dataFolder.resolve(area))) {
+                return areaRoot(area);
+            }
         }
         return null;
     }
 
     private Object lockOf( Root root ) {
-        return locks.computeIfAbsent(root.collection + "/" + root.ownerId, key -> new Object());
+        return locks.computeIfAbsent(root.area, key -> new Object());
     }
 
     /**
-     * @return the id of the item of a file: its path, with ~ for /, prefixed by the user for the uploads.
+     * @param relative the path of a file in its root, as flanginec/dem/dtm.tif.
+     * @return its collection, the first folder, or <code>null</code> for the files directly in the root.
      */
-    static String itemId( String ownerId, String relative ) {
-        String id = relative.replace("~", "~~").replace("/", "~");
-        return ownerId != null ? ownerId + "~" + id : id;
+    static String collectionOf( String relative ) {
+        int slash = relative.indexOf('/');
+        return slash > 0 ? relative.substring(0, slash) : null;
+    }
+
+    /**
+     * @param relative the path of a file in its root, as flanginec/dem/dtm.tif.
+     * @return the id of its item, unique in its collection: the area and the path in the collection, with ~ for /, as
+     *         shared~dem~dtm.tif or user~jane~dem~dtm.tif.
+     */
+    private static String itemId( Root root, String relative ) {
+        String inCollection = relative.substring(relative.indexOf('/') + 1).replace("~", "~~").replace("/", "~");
+        return (root.ownerId == null ? SHARED_PREFIX : USER_PREFIX + "~" + root.ownerName.replace("~", "~~")) + "~" + inCollection;
     }
 
     /**
@@ -219,11 +285,26 @@ public class StacIndexer implements AutoCloseable {
     }
 
     /**
-     * Bring the index of the uploads of a user up to date, at once, as after an upload or a deletion.
+     * Bring the index of an area up to date, at once, as after an upload or a deletion.
+     *
+     * @param area {@link WorkspacePaths#SHARED} or the id of a user.
      */
-    public void syncUploads( String userId ) {
-        Root root = uploadsRoot(userId);
+    public void syncArea( String area ) {
+        Root root = areaRoot(area);
         reconcile(root, root.folder);
+    }
+
+    /**
+     * Bring the index of a folder of the data up to date, at once, as after a job wrote its outputs there.
+     *
+     * @param workspacePath the folder, as path in the workspace: data/&lt;area&gt;/....
+     */
+    public void syncFolder( String workspacePath ) {
+        Path folder = paths.getWorkspace().toPath().resolve(workspacePath).toAbsolutePath().normalize();
+        Root root = rootOf(folder);
+        if (root != null) {
+            reconcile(root, folder);
+        }
     }
 
     /**
@@ -231,20 +312,19 @@ public class StacIndexer implements AutoCloseable {
      */
     void reconcileAll() {
         try {
-            reconcile(dataRoot(), dataFolder);
-            Set<String> users = new HashSet<>();
-            File[] userFolders = uploadsFolder.toFile().listFiles(File::isDirectory);
-            if (userFolders != null) {
-                for( File userFolder : userFolders ) {
-                    users.add(userFolder.getName());
+            Set<String> areas = new HashSet<>();
+            File[] areaFolders = dataFolder.toFile().listFiles(File::isDirectory);
+            if (areaFolders != null) {
+                for( File areaFolder : areaFolders ) {
+                    if (WorkspacePaths.isArea(areaFolder.getName())) {
+                        areas.add(areaFolder.getName());
+                    }
                 }
             }
-            // also the uploads of the users deleted meanwhile
-            for( StacRecord record : db.listStacItems(UPLOADS_COLLECTION) ) {
-                users.add(record.ownerId);
-            }
-            for( String userId : users ) {
-                syncUploads(userId);
+            // also the areas of the users deleted meanwhile
+            areas.addAll(db.listStacOwners());
+            for( String area : areas ) {
+                syncArea(area);
             }
         } catch (Exception e) {
             LOGGER.log(Level.WARNING, "The catalog can't be compared with the files.", e);
@@ -258,7 +338,7 @@ public class StacIndexer implements AutoCloseable {
         synchronized (lockOf(root)) {
             try {
                 Map<String, StacRecord> existing = new HashMap<>();
-                for( StacRecord record : db.listStacItemsUnder(root.collection, root.workspacePath(under)) ) {
+                for( StacRecord record : db.listStacItemsUnder(root.workspacePath(under)) ) {
                     existing.put(record.path, record);
                 }
                 Set<String> seen = new HashSet<>();
@@ -273,7 +353,8 @@ public class StacIndexer implements AutoCloseable {
                                 return FileVisitResult.SKIP_SUBTREE;
                             }
                             File[] files = folder.toFile().listFiles();
-                            if (files != null) {
+                            // the files directly in the data or in the uploads of a user are in no collection
+                            if (files != null && !folder.equals(root.folder)) {
                                 for( File file : files ) {
                                     if (file.isFile() && !isSkipped(file.getName()) && StacFiles.mainOf(file) == null) {
                                         String path = root.workspacePath(file.toPath());
@@ -300,14 +381,15 @@ public class StacIndexer implements AutoCloseable {
                     File file = under.toFile();
                     File[] files = file.getParentFile().listFiles();
                     String path = root.workspacePath(under);
-                    if (!isSkipped(file.getName()) && StacFiles.mainOf(file) == null && files != null) {
+                    if (!isSkipped(file.getName()) && StacFiles.mainOf(file) == null && files != null
+                            && collectionOf(root.relative(under)) != null) {
                         seen.add(path);
                         index(root, file, StacFiles.sidecarsOf(file, files), existing.get(path));
                     }
                 }
                 for( StacRecord record : existing.values() ) {
                     if (!seen.contains(record.path)) {
-                        db.deleteStacItem(record.id);
+                        db.deleteStacItem(record.path);
                     }
                 }
             } catch (Exception e) {
@@ -328,46 +410,70 @@ public class StacIndexer implements AutoCloseable {
             size += sidecar.length();
             modified = Math.max(modified, sidecar.lastModified());
         }
-        if (existing != null && existing.size == size && existing.modified == modified) {
+        String path = root.workspacePath(file.toPath());
+        FileOrigin origin = db.getFileOrigin(path);
+        // a new origin changes the item also if the file kept its time, as when moved in place
+        long changed = origin != null ? Math.max(modified, origin.created) : modified;
+        if (existing != null && existing.size == size && existing.modified == changed) {
             return existing;
         }
         String relative = root.relative(file.toPath());
-        ObjectNode item = fileItem(root, file, relative, sidecars, modified);
+        ObjectNode item = fileItem(root, file, relative, sidecars, modified, origin);
         double[] bbox = null;
         if (item.has("bbox")) {
             ArrayNode array = (ArrayNode) item.get("bbox");
             bbox = new double[]{array.get(0).asDouble(), array.get(1).asDouble(), array.get(2).asDouble(), array.get(3).asDouble()};
         }
-        StacRecord record = new StacRecord(itemId(root.ownerId, relative), root.collection, root.ownerId,
-                root.workspacePath(file.toPath()), size, modified, bbox, modified, modified, mapper.writeValueAsString(item));
+        StacRecord record = new StacRecord(itemId(root, relative), collectionOf(relative), root.ownerId, path, size, changed,
+                bbox, modified, modified, mapper.writeValueAsString(item));
         db.putStacItem(record);
         // the sidecars were items while their file was missing
         for( File sidecar : sidecars ) {
-            db.deleteStacItem(itemId(root.ownerId, root.relative(sidecar.toPath())));
+            db.deleteStacItem(root.workspacePath(sidecar.toPath()));
         }
         return record;
     }
 
-    private ObjectNode fileItem( Root root, File file, String relative, List<File> sidecars, long modified ) {
+    private ObjectNode fileItem( Root root, File file, String relative, List<File> sidecars, long modified, FileOrigin origin ) {
         ObjectNode item = mapper.createObjectNode();
         item.put("type", "Feature");
-        item.put("stac_version", StacJobs.STAC_VERSION);
+        item.put("stac_version", StacItems.STAC_VERSION);
         ArrayNode extensions = item.putArray("stac_extensions");
-        StacJobs.EXTENSIONS.stream().filter(extension -> !extension.contains("/processing/")).forEach(extensions::add);
-        item.put("id", itemId(root.ownerId, relative));
-        item.put("collection", root.collection);
+        StacItems.EXTENSIONS.forEach(extensions::add);
+        boolean isProcessed = origin != null && origin.origin.equals(FileOrigin.PROCESSED);
+        if (isProcessed) {
+            extensions.add(PROCESSING_EXTENSION);
+        }
+        item.put("id", itemId(root, relative));
+        item.put("collection", collectionOf(relative));
 
         StacFiles.Description description = StacFiles.describe(file, file.getName());
-        StacJobs.putGeometry(item, description.footprint);
-        String userPath = root.userPath + "/" + relative;
+        StacItems.putGeometry(item, description.footprint);
+        String userPath = root.workspacePath + "/" + relative;
         String time = Instant.ofEpochMilli(modified).toString();
         ObjectNode properties = item.putObject("properties");
-        properties.put("title", userPath);
+        // the name of the file, with its folders in the collection: the id carries the area to be unique
+        properties.put("title", relative.substring(relative.indexOf('/') + 1));
         properties.put("datetime", time);
-        properties.put("created", time);
+        properties.put("created", Instant.ofEpochMilli(origin != null ? origin.created : modified).toString());
         properties.put("updated", time);
         // the path to give to the modules
         properties.put("hm:path", userPath);
+        properties.put("hm:area", root.area);
+        if (root.ownerName != null) {
+            properties.put("hm:owner", root.ownerName);
+        }
+        putOrigin(properties, origin);
+        if (isProcessed) {
+            properties.putObject("processing:software").put("HortonMachine", Version.getVersion());
+            properties.put("processing:lineage", "Written by the module " + origin.module + " of HortonMachine.");
+        }
+        if (origin != null && !origin.history.isEmpty()) {
+            ArrayNode history = properties.putArray("hm:history");
+            for( FileOrigin previous : origin.history ) {
+                putOrigin(history.addObject(), previous);
+            }
+        }
         item.putArray("links");
 
         ObjectNode assets = item.putObject("assets");
@@ -393,25 +499,43 @@ public class StacIndexer implements AutoCloseable {
     }
 
     /**
+     * Put the origin of a file in the properties of its item, or in an entry of its history: hm:origin, hm:user (the
+     * name of who uploaded it or ran the job), hm:created, the job with its module and parameters, hm:replaced.
+     *
+     * @param origin the origin, <code>null</code> for the files put in the data from outside.
+     */
+    private void putOrigin( ObjectNode properties, FileOrigin origin ) {
+        properties.put("hm:origin", origin != null ? origin.origin : FileOrigin.EXTERNAL);
+        if (origin == null) {
+            return;
+        }
+        if (origin.userId != null) {
+            properties.put("hm:user", userName(origin.userId));
+        }
+        properties.put("hm:created", Instant.ofEpochMilli(origin.created).toString());
+        if (origin.jobId != null) {
+            properties.put("hm:job", origin.jobId);
+            properties.put("hm:module", origin.module);
+            properties.set("hm:parameters", mapper.valueToTree(origin.parameters));
+        }
+        if (origin.replaced != null) {
+            properties.put("hm:replaced", Instant.ofEpochMilli(origin.replaced).toString());
+        }
+    }
+
+    /**
      * Check an item asked alone against its files.
      *
      * @return the item as the files are now, or <code>null</code> if its files are gone.
      */
     public StacRecord current( StacRecord record ) throws Exception {
-        if (record.collection.startsWith(StacJobs.COLLECTION_PREFIX)) {
-            if (!new File(paths.getWorkspace(), record.path).isDirectory()) {
-                db.deleteStacItem(record.id);
-                return null;
-            }
-            return record;
-        }
         Path file = paths.getWorkspace().toPath().resolve(record.path).toAbsolutePath().normalize();
         Root root = rootOf(file);
         if (root == null) {
             return record;
         }
         reconcile(root, file);
-        return db.getStacItem(record.id);
+        return db.getStacItem(record.collection, record.id);
     }
 
     /**
@@ -436,8 +560,8 @@ public class StacIndexer implements AutoCloseable {
         if (root == null) {
             return;
         }
-        if (root.ownerId != null && path.toAbsolutePath().normalize().equals(root.folder)) {
-            syncUploads(root.ownerId);
+        if (path.toAbsolutePath().normalize().equals(root.folder)) {
+            syncArea(root.area);
             return;
         }
         File file = path.toFile();

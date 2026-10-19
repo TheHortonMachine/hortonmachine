@@ -22,13 +22,13 @@ import java.util.Set;
 
 /**
  * A search of the items of the STAC catalog, always limited to the items the requester can see: the shared data and
- * the own uploads and jobs, all of them for the administrators.
+ * the own area, all of them for the administrators.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacSearch {
-    /** The user searching. */
-    public final String userId;
+    /** The area of the user searching, its username. */
+    public final String ownArea;
     public final boolean isAdmin;
     /** The collections to search, all if empty. */
     public final Set<String> collections = new LinkedHashSet<>();
@@ -42,8 +42,8 @@ public class StacSearch {
     public int limit = 10;
     public int offset = 0;
 
-    public StacSearch( String userId, boolean isAdmin ) {
-        this.userId = userId;
+    public StacSearch( String ownArea, boolean isAdmin ) {
+        this.ownArea = ownArea;
         this.isAdmin = isAdmin;
     }
 }

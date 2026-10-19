@@ -3,7 +3,7 @@
 
 <div class="scroll">
   <table>
-    <tr><th>Name</th><th>Created</th><th>Role and state</th><th>Password</th><th class="num">Uploads</th><th class="num">Jobs</th><th></th></tr>
+    <tr><th>Name</th><th>Created</th><th>Role and state</th><th>Password</th><th class="num">Files</th><th class="num">Jobs</th><th></th></tr>
     {{#users}}
     <tr>
       <td>{{username}}{{#disabled}} <span class="error">disabled</span>{{/disabled}}</td>
@@ -31,7 +31,7 @@
         </form>
       </td>
       {{/isSelf}}
-      <td class="num">{{uploadsSize}}</td>
+      <td class="num">{{filesSize}}</td>
       <td class="num">{{jobsSize}}</td>
       <td>
         {{^isSelf}}
@@ -45,7 +45,7 @@
     {{/users}}
   </table>
 </div>
-<p class="muted">Deleting a user deletes the uploads too; the jobs stay until they expire.</p>
+<p class="muted">Deleting a user deletes the files of the user too, uploaded and written by the jobs; the jobs stay until they expire.</p>
 
 <fieldset>
   <legend>New user</legend>

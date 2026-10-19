@@ -20,13 +20,16 @@ package org.hortonmachine.server.jobs;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,9 +43,11 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hortonmachine.cli.CliProgressMonitor;
 import org.hortonmachine.cli.HmCli;
@@ -53,15 +58,22 @@ import org.hortonmachine.gears.libs.modules.HMParameterKind;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.db.ServerDb;
+import org.hortonmachine.server.files.FileOrigin;
+import org.hortonmachine.server.files.FileOrigins;
+import org.hortonmachine.server.users.User;
+import org.hortonmachine.server.web.Html;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Runs the jobs, each in its own process of the command line ({@link HmCli}), at most a given number at the same time.
  *
- * <p>Each job has a folder with the parameters file given to the command line, the log of its output
- * and, if the paths say so, the outputs. The progress, the outputs and the errors are read
- * from the lines of the command line output.
+ * <p>Each job has a folder with the parameters file given to the command line and the log of its output. The module
+ * writes its outputs in the {@link WorkspacePaths#getJobOutputsFolder(String) outputs folder of the job}; when it
+ * succeeded, they are moved in the output folder of the job, in the data, with their {@link FileOrigin origin}: a failed
+ * or killed job leaves nothing in the data. The files of the output folder are replaced only if the job is asked to.
+ *
+ * <p>The progress, the outputs and the errors are read from the lines of the command line output.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
@@ -72,6 +84,8 @@ public class JobManager implements AutoCloseable {
     public static final String LOG_FILE = "job.log";
     /** The java arguments file with the classpath of the jobs, in the jobs folder. */
     public static final String ARGS_FILE = "hm-cli.args";
+    /** The name of the output folder among the errors of the values of a job. */
+    public static final String OUTPUT_FOLDER = "outputFolder";
 
     /** The seconds a killed job has to end before it is forced. */
     private static final int KILL_GRACE_SECONDS = 10;
@@ -80,6 +94,7 @@ public class JobManager implements AutoCloseable {
 
     private final ServerDb db;
     private final WorkspacePaths paths;
+    private final FileOrigins origins;
     private final File jobsFolder;
     // changed by the settings page while running
     private volatile String jobMemory;
@@ -88,6 +103,7 @@ public class JobManager implements AutoCloseable {
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
     private final Map<String, ActiveJob> activeJobs = new ConcurrentHashMap<>();
     private volatile JobListener listener;
+    private volatile Consumer<String> outputsListener;
 
     /**
      * A job queued or running.
@@ -106,13 +122,15 @@ public class JobManager implements AutoCloseable {
     /**
      * @param db the database.
      * @param paths the folders of the workspace, the jobs folder is created if missing.
+     * @param origins the origins of the files, recorded for the outputs.
      * @param slots the number of jobs running at the same time.
      * @param jobMemory the maximum memory of each job, as for the -Xmx option of java.
-     * @param ttlDays the days the finished jobs are kept, 0 to keep them forever.
+     * @param ttlDays the days the finished jobs are kept, 0 to keep them forever; their outputs in the data stay.
      */
-    public JobManager( ServerDb db, WorkspacePaths paths, int slots, String jobMemory, int ttlDays ) {
+    public JobManager( ServerDb db, WorkspacePaths paths, FileOrigins origins, int slots, String jobMemory, int ttlDays ) {
         this.db = db;
         this.paths = paths;
+        this.origins = origins;
         this.jobsFolder = paths.getJobsFolder();
         this.jobMemory = jobMemory;
         this.ttlDays = ttlDays;
@@ -120,10 +138,18 @@ public class JobManager implements AutoCloseable {
     }
 
     /**
-     * @param listener told of the ends and deletions of the jobs, or <code>null</code>.
+     * @param listener told of the successful ends of the jobs, or <code>null</code>.
      */
     public void setListener( JobListener listener ) {
         this.listener = listener;
+    }
+
+    /**
+     * @param listener told of the output folder, as path in the workspace, after the outputs of a job were moved there,
+     *          or <code>null</code>.
+     */
+    public void setOutputsListener( Consumer<String> listener ) {
+        this.outputsListener = listener;
     }
 
     /**
@@ -144,18 +170,33 @@ public class JobManager implements AutoCloseable {
     }
 
     /**
+     * Queue a job, with its outputs in the default output folder, never replacing files.
+     *
+     * @see #submit(String, boolean, String, Map, String, boolean)
+     */
+    public Job submit( String userId, boolean isAdmin, String moduleName, Map<String, String> values ) throws Exception {
+        return submit(userId, isAdmin, moduleName, values, null, false);
+    }
+
+    /**
      * Queue a job.
      *
-     * @param userId the user launching it, or <code>null</code>.
-     * @param isAdmin if the user is an administrator, who can use the outputs of the jobs of all users.
+     * @param userId the user launching it, or <code>null</code>; its area is the one named by its username.
+     * @param isAdmin if the user is an administrator, who can read and write all the areas.
      * @param moduleName the name of the module.
      * @param values the values of the parameters by name, as for {@link ModuleDescriptor#check(Map)},
      *          with the paths in the workspace as described in {@link WorkspacePaths}.
+     * @param outputFolder the folder of the data where the outputs go, as path in the workspace, or <code>null</code> for
+     *          the {@link WorkspacePaths#defaultOutputFolder(String, String) default one}.
+     * @param overwrite <code>true</code> to replace the files of the output folder with the names of the outputs.
      * @return the queued job.
-     * @throws JobValidationException if a value is not valid.
+     * @throws JobValidationException if a value is not valid, or, as {@link JobValidationException#isConflict()
+     *         conflict}, if an output would replace a file without overwrite; the error of the output folder is
+     *         under {@link #OUTPUT_FOLDER}.
      * @throws IllegalArgumentException if the module doesn't exist.
      */
-    public synchronized Job submit( String userId, boolean isAdmin, String moduleName, Map<String, String> values ) throws Exception {
+    public synchronized Job submit( String userId, boolean isAdmin, String moduleName, Map<String, String> values,
+            String outputFolder, boolean overwrite ) throws Exception {
         Class< ? extends HMModel> moduleClass = ModuleDescriptor.getAvailableModules().get(moduleName);
         if (moduleClass == null) {
             throw new IllegalArgumentException("Unknown module: " + moduleName);
@@ -163,7 +204,7 @@ public class JobManager implements AutoCloseable {
         ModuleDescriptor module = ModuleDescriptor.of(moduleClass);
         String jobId = UUID.randomUUID().toString();
         File jobFolder = getJobFolder(jobId);
-        Predicate<String> canReadJob = otherJobId -> canRead(userId, isAdmin, otherJobId);
+        String ownArea = areaOfUser(userId);
 
         // the paths of the user become real paths
         Map<String, String> resolved = new LinkedHashMap<>();
@@ -173,13 +214,45 @@ public class JobManager implements AutoCloseable {
             String value = entry.getValue();
             if (parameter != null && parameter.isPath() && !value.isBlank()) {
                 try {
-                    value = paths.resolve(parameter, value, userId, jobId, canReadJob);
+                    value = paths.resolve(parameter, value, ownArea, isAdmin, jobId);
                 } catch (IllegalArgumentException e) {
                     errors.put(entry.getKey(), e.getMessage());
                 }
             }
             resolved.put(entry.getKey(), value);
         }
+
+        // the outputs go next to the first input, in the area of the user, unless told otherwise
+        String folder = null;
+        if (outputFolder != null && !outputFolder.isBlank()) {
+            try {
+                folder = paths.checkOutputFolder(outputFolder, ownArea, isAdmin);
+            } catch (IllegalArgumentException e) {
+                errors.put(OUTPUT_FOLDER, e.getMessage());
+            }
+        } else {
+            folder = WorkspacePaths.defaultOutputFolder(firstInput(module, values), ownArea);
+        }
+        Map<String, String> conflicts = new LinkedHashMap<>();
+        if (folder != null) {
+            for( Parameter parameter : module.getParameters() ) {
+                String value = values.get(parameter.name);
+                if (parameter.kind == HMParameterKind.OUTPUT && parameter.isPath() && value != null && !value.isBlank()
+                        && !errors.containsKey(parameter.name)) {
+                    String target = folder + "/" + WorkspacePaths.filePath(value.trim().replace('\\', '/'));
+                    File targetFile = paths.toFile(target);
+                    if (targetFile.isDirectory()) {
+                        errors.put(parameter.name, "There is a folder with the name of the output: " + target);
+                    } else if (targetFile.isFile() && !overwrite) {
+                        conflicts.put(parameter.name, existingMessage(target, targetFile));
+                    }
+                }
+            }
+        }
+        if (errors.isEmpty() && !conflicts.isEmpty()) {
+            throw new JobValidationException(conflicts, true);
+        }
+        errors.putAll(conflicts);
         if (errors.isEmpty()) {
             for( Map.Entry<String, String> entry : resolved.entrySet() ) {
                 Parameter parameter = module.getParameter(entry.getKey());
@@ -198,7 +271,7 @@ public class JobManager implements AutoCloseable {
             throw new JobValidationException(errors);
         }
 
-        Job job = new Job(jobId, userId, moduleName, values, System.currentTimeMillis());
+        Job job = new Job(jobId, userId, moduleName, values, System.currentTimeMillis(), folder, overwrite);
         if (!jobFolder.isDirectory() && !jobFolder.mkdirs()) {
             throw new IllegalStateException("The job folder can't be created: " + jobFolder.getAbsolutePath());
         }
@@ -211,6 +284,53 @@ public class JobManager implements AutoCloseable {
             activeJob.future = executor.submit(() -> run(activeJob));
         }
         return job;
+    }
+
+    /**
+     * @return the area of a user, its name; the id itself if it is not a user; <code>null</code> without user.
+     */
+    private String areaOfUser( String userId ) throws Exception {
+        if (userId == null) {
+            return null;
+        }
+        User user = db.getUser(userId);
+        return user != null ? user.username : userId;
+    }
+
+    /**
+     * @return the value of the first input path of a module that is given, in the order of the parameters, or
+     *         <code>null</code>.
+     */
+    private static String firstInput( ModuleDescriptor module, Map<String, String> values ) {
+        for( Parameter parameter : module.getParameters() ) {
+            String value = values.get(parameter.name);
+            if (parameter.kind != HMParameterKind.OUTPUT && parameter.isPath() && value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @return the message telling that an output would replace a file, with where the file comes from.
+     */
+    private String existingMessage( String target, File file ) {
+        String what;
+        try {
+            FileOrigin origin = origins.get(target);
+            if (origin == null) {
+                what = "put in the data";
+            } else if (origin.origin.equals(FileOrigin.PROCESSED)) {
+                what = "written by " + origin.module;
+            } else {
+                what = "uploaded";
+            }
+            what += " " + Html.formatTime(origin != null ? origin.created : file.lastModified());
+        } catch (Exception e) {
+            LOGGER.log(Level.WARNING, "The origin of " + target + " can't be read.", e);
+            what = "existing";
+        }
+        return target + " exists (" + what + "): it is replaced only with overwrite.";
     }
 
     /**
@@ -404,12 +524,18 @@ public class JobManager implements AutoCloseable {
                         state = JobState.KILLED;
                     }
                 }
-                if (state == JobState.KILLED) {
-                    // killed while its outputs were prepared: not in the catalog
-                    listener.deleted(job.id);
+            }
+            String message = null;
+            if (state == JobState.DONE) {
+                try {
+                    publishOutputs(job);
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "The outputs of the job " + job.id + " can't be moved.", e);
+                    state = JobState.FAILED;
+                    message = e.getMessage();
                 }
             }
-            finish(activeJob, state, null);
+            finish(activeJob, state, message);
         } catch (Exception e) {
             synchronized (activeJob) {
                 if (activeJob.killed) {
@@ -453,6 +579,64 @@ public class JobManager implements AutoCloseable {
             }
         }
         job.setTask(null);
+    }
+
+    /**
+     * Move the outputs of a successful job from its folder to its output folder, recording their origin, and tell the
+     * outputs listener. Either all are moved, or none.
+     *
+     * @throws Exception if they can't be moved, as when a file appeared meanwhile and the job doesn't replace files:
+     *         the outputs stay in the folder of the job.
+     */
+    private void publishOutputs( Job job ) throws Exception {
+        File staging = paths.getJobOutputsFolder(job.id);
+        if (job.outputFolder == null || !staging.isDirectory()) {
+            return;
+        }
+        Path stagingPath = staging.toPath();
+        List<Path> files;
+        try (Stream<Path> walk = Files.walk(stagingPath)) {
+            files = walk.filter(Files::isRegularFile).sorted().collect(Collectors.toList());
+        }
+        File target = paths.toFile(job.outputFolder);
+        for( Path file : files ) {
+            String relative = stagingPath.relativize(file).toString().replace('\\', '/');
+            File destination = new File(target, relative);
+            if (destination.isDirectory() || (destination.exists() && !job.overwrite)) {
+                throw new IllegalStateException(job.outputFolder + "/" + relative
+                        + " appeared while the job ran: the outputs are kept in the job, run it again with overwrite.");
+            }
+        }
+
+        long now = System.currentTimeMillis();
+        for( Path file : files ) {
+            String relative = stagingPath.relativize(file).toString().replace('\\', '/');
+            origins.record(FileOrigin.processed(job.outputFolder + "/" + relative, job.userId, now, job.id, job.module,
+                    job.parameters));
+            Path destination = target.toPath().resolve(relative);
+            Files.createDirectories(destination.getParent());
+            try {
+                Files.move(file, destination, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch (IOException e) {
+                Files.move(file, destination, StandardCopyOption.REPLACE_EXISTING);
+            }
+        }
+        FileUtilities.deleteFileOrDir(staging);
+
+        // the users see where the outputs are now
+        String stagingPrefix = WorkspacePaths.JOBS + "/" + job.id + "/" + WorkspacePaths.JOB_OUTPUTS + "/";
+        Map<String, String> outputs = new LinkedHashMap<>();
+        for( Map.Entry<String, String> entry : job.getOutputs().entrySet() ) {
+            String value = entry.getValue();
+            outputs.put(entry.getKey(),
+                    value.startsWith(stagingPrefix) ? job.outputFolder + "/" + value.substring(stagingPrefix.length()) : value);
+        }
+        job.setOutputs(outputs);
+
+        Consumer<String> listener = outputsListener;
+        if (listener != null) {
+            listener.accept(job.outputFolder);
+        }
     }
 
     private static void copyProperty( List<String> command, String name ) {
@@ -553,9 +737,6 @@ public class JobManager implements AutoCloseable {
             throw new IllegalStateException("The folder of the job can't be deleted: " + jobFolder);
         }
         db.deleteJob(jobId);
-        if (listener != null) {
-            listener.deleted(jobId);
-        }
         return true;
     }
 

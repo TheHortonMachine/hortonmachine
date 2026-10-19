@@ -19,15 +19,24 @@ package org.hortonmachine.server;
 
 import java.io.Console;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.hortonmachine.Version;
 import org.hortonmachine.server.db.ServerDb;
+import org.hortonmachine.server.files.FileOrigin;
+import org.hortonmachine.server.files.FileOrigins;
 import org.hortonmachine.server.jobs.JobManager;
+import org.hortonmachine.server.jobs.CogOutputs;
 import org.hortonmachine.server.stac.StacIndexer;
-import org.hortonmachine.server.stac.StacJobs;
 import org.hortonmachine.server.uploads.UploadManager;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
@@ -54,7 +63,7 @@ import io.javalin.config.SizeUnit;
  * The HortonMachine web server: runs the modules for the users of a browser.
  *
  * <p>The options are described in {@link ServerConfig}; the workspace folder holds the data,
- * the database, the jobs and the uploads of the server.
+ * the database, the jobs and the data of the server.
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
@@ -180,32 +189,49 @@ public class HmServer {
     public void start() throws Exception {
         long startTime = System.currentTimeMillis();
         WorkspacePaths paths = new WorkspacePaths(config.workspace);
-        paths.createFolders();
+        if (!config.workspace.isDirectory() && !config.workspace.mkdirs()) {
+            throw new IllegalStateException("The workspace can't be created: " + config.workspace);
+        }
         config.applySettingsFile();
         db = ServerDb.open(config);
-        jobManager = new JobManager(db, paths, config.slots, config.jobMemory, config.jobTtlDays);
-        jobManager.setListener(new StacJobs(db, config));
+        // the files of the older layouts go in the areas, named by the users
+        Map<String, String> usernames = new LinkedHashMap<>();
+        for( User user : db.listUsers() ) {
+            usernames.put(user.id, user.username);
+        }
+        Map<String, String> migratedUsers = paths.migrateLegacyLayout(usernames);
+        for( Map.Entry<String, String> user : usernames.entrySet() ) {
+            if (!user.getKey().equals(user.getValue())) {
+                db.renameAreaPaths(WorkspacePaths.DATA + "/" + user.getKey(), WorkspacePaths.DATA + "/" + user.getValue());
+            }
+        }
+        paths.createFolders();
+        FileOrigins fileOrigins = new FileOrigins(db, paths);
+        recordMigratedUploads(paths, fileOrigins, migratedUsers);
+        jobManager = new JobManager(db, paths, fileOrigins, config.slots, config.jobMemory, config.jobTtlDays);
+        jobManager.setListener(new CogOutputs(config));
         jobManager.start();
         userManager = new UserManager(db);
-        uploadManager = new UploadManager(paths, config.userQuotaMb * MB, config.maxUploadMb * MB * UNPACKED_FACTOR);
+        uploadManager = new UploadManager(paths, fileOrigins, config.userQuotaMb * MB, config.maxUploadMb * MB * UNPACKED_FACTOR);
         uploadManager.cleanTmpFolder();
         stacIndexer = new StacIndexer(db, paths);
-        // the catalog of the uploads follows them at once
-        uploadManager.setChangeListener(stacIndexer::syncUploads);
+        // the catalog follows the changes of the server at once
+        uploadManager.setChangeListener(stacIndexer::syncArea);
+        jobManager.setOutputsListener(stacIndexer::syncFolder);
         stacIndexer.start(config.stacRescanMinutes);
         Templates templates = new Templates(config.workspace);
         urlSigner = new UrlSigner(config.workspace, config.signedUrlMinutes);
         Auth auth = new Auth(userManager, urlSigner, templates);
-        fileSuggestions = new FileSuggestions(paths, jobManager);
+        fileSuggestions = new FileSuggestions(paths, fileOrigins);
         fileSuggestions.setMaxSuggestions(config.maxSuggestions);
         ModulePages modulePages = new ModulePages(jobManager, fileSuggestions, templates);
         JobPages jobPages = new JobPages(jobManager, userManager, templates);
-        uploadPages = new UploadPages(uploadManager, config.maxUploadMb, templates);
+        uploadPages = new UploadPages(uploadManager, fileOrigins, userManager, config.maxUploadMb, templates);
         AccountPages accountPages = new AccountPages(userManager, templates);
         AdminPages adminPages = new AdminPages(config, paths, userManager, jobManager, uploadManager, urlSigner, startTime,
                 this::applyLiveSettings, templates);
         OgcApi ogcApi = new OgcApi(jobManager, urlSigner, templates);
-        StacApi stacApi = new StacApi(db, stacIndexer, paths, uploadManager, urlSigner, config);
+        StacApi stacApi = new StacApi(db, stacIndexer, paths, urlSigner);
 
         app = Javalin.create(javalinConfig -> {
             javalinConfig.startup.showJavalinBanner = false;
@@ -227,6 +253,28 @@ public class HmServer {
             ogcApi.register(javalinConfig);
             stacApi.register(javalinConfig);
         }).start(config.port);
+    }
+
+    /**
+     * Record the files of the uploads moved into the areas of their users as uploaded by them, at the time of the file.
+     */
+    private static void recordMigratedUploads( WorkspacePaths paths, FileOrigins fileOrigins, Map<String, String> areas )
+            throws Exception {
+        for( Map.Entry<String, String> user : areas.entrySet() ) {
+            String userId = user.getKey();
+            Path area = paths.getAreaFolder(user.getValue()).toPath();
+            List<Path> files;
+            try (Stream<Path> walk = Files.walk(area)) {
+                files = walk.filter(Files::isRegularFile).collect(Collectors.toList());
+            }
+            for( Path file : files ) {
+                String path = paths.toWorkspacePath(file.toString());
+                if (fileOrigins.get(path) == null) {
+                    fileOrigins.record(FileOrigin.uploaded(path, userId, Files.getLastModifiedTime(file).toMillis()));
+                }
+            }
+            LOGGER.info("The uploads of the user " + userId + " were moved into " + area + ".");
+        }
     }
 
     private void setMultipartLimits( int maxUploadMb ) {

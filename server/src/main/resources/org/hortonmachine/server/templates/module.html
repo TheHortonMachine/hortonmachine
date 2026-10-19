@@ -2,9 +2,9 @@
 <h1>{{name}}</h1>
 <p>{{description}}</p>
 {{#authors}}<p class="muted">Authors: {{authors}}</p>{{/authors}}
-<p class="muted">Inputs are paths in the workspace: <code>data/…</code> for the shared data,
-  <code>uploads/…</code> for your uploads, <code>jobs/&lt;id&gt;/…</code> for the outputs of your jobs.
-  Outputs are file names, written in the folder of the job. Empty fields use the default.</p>
+<p class="muted">Inputs are paths in the data: <code>data/shared/…</code> for the shared files,
+  <code>{{defaultOutputFolder}}</code> for your files, uploaded or written by your jobs. Outputs are file names, written
+  in the output folder once the job succeeded. Empty fields use the default.</p>
 {{> messages}}
 {{#otherErrors}}<p class="error">{{.}}</p>{{/otherErrors}}
 
@@ -50,5 +50,24 @@
     {{/fields}}
   </fieldset>
   {{/groups}}
+  {{#hasOutputs}}
+  <fieldset>
+    <legend>Where the outputs go</legend>
+    <div class="field">
+      <label for="p-outputFolder">Output folder</label>
+      <datalist id="list-outputFolder">
+        {{#outputFolders}}<option value="{{value}}">{{/outputFolders}}
+      </datalist>
+      <input type="text" id="p-outputFolder" name="{{outputFolderName}}" list="list-outputFolder" placeholder="the folder of the first input, in your files" value="{{outputFolder}}">
+      {{#outputFolderError}}<p class="error help">{{outputFolderError}}</p>{{/outputFolderError}}
+      <p class="help muted">A folder of your files, as {{defaultOutputFolder}}. Empty: the folder of the first input in
+        your files, so that the outputs are next to it and in its collection of the catalog.</p>
+    </div>
+    <div class="field">
+      <label><input type="checkbox" name="overwrite" value="true"{{#overwrite}} checked{{/overwrite}}> Overwrite</label>
+      <p class="help muted">Replace the files with the names of the outputs; their origin stays in the history of the new files.</p>
+    </div>
+  </fieldset>
+  {{/hasOutputs}}
   <p><button type="submit">Run</button></p>
 </form>

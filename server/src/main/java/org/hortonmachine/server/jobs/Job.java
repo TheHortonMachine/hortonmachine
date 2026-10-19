@@ -38,6 +38,13 @@ public class Job {
     public final Map<String, String> parameters;
     /** The creation time, in milliseconds since the epoch. */
     public final long created;
+    /**
+     * The folder of the data where the outputs are moved when the job succeeds, as path in the workspace, or
+     * <code>null</code> for the jobs of the older versions, whose outputs stay in their folder.
+     */
+    public final String outputFolder;
+    /** If the outputs replace the files of the same name in the output folder. */
+    public final boolean overwrite;
 
     private volatile JobState state = JobState.QUEUED;
     private volatile int progress = 0;
@@ -48,12 +55,15 @@ public class Job {
     private volatile Long finished;
     private volatile Integer exitCode;
 
-    public Job( String id, String userId, String module, Map<String, String> parameters, long created ) {
+    public Job( String id, String userId, String module, Map<String, String> parameters, long created, String outputFolder,
+            boolean overwrite ) {
         this.id = id;
         this.userId = userId;
         this.module = module;
         this.parameters = Collections.unmodifiableMap(new LinkedHashMap<>(parameters));
         this.created = created;
+        this.outputFolder = outputFolder;
+        this.overwrite = overwrite;
     }
 
     public JobState getState() {

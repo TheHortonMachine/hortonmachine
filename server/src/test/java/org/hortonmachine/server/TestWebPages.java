@@ -21,7 +21,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.net.http.HttpResponse;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
@@ -83,9 +85,12 @@ public class TestWebPages extends TestCase {
      *
      * @return the response.
      */
-    private static HttpResponse<String> runPitfiller( Browser browser, String inElev, String outPit ) throws Exception {
+    private static HttpResponse<String> runPitfiller( Browser browser, String inElev, String outPit, String... moreFields )
+            throws Exception {
         String csrf = Browser.csrf(browser.get("/modules/Pitfiller"));
-        return browser.post("/modules/Pitfiller", "csrf", csrf, "inElev", inElev, "outPit", outPit);
+        List<String> fields = new ArrayList<>(List.of("csrf", csrf, "inElev", inElev, "outPit", outPit));
+        fields.addAll(List.of(moreFields));
+        return browser.post("/modules/Pitfiller", fields.toArray(new String[0]));
     }
 
     /**
@@ -143,15 +148,20 @@ public class TestWebPages extends TestCase {
 
     public void testRunJob() throws Exception {
         Browser jane = login("jane");
+        // the files of jane are in her area, named by her username
+        String janeArea = "jane";
         String jobId = jobId(runPitfiller(jane, SampleData.ELEVATION, "pit.tif"));
         String page = waitFinished(jane, jobId).body();
         assertTrue(page, page.contains("state-DONE"));
-        assertTrue(page.contains("href=\"/jobs/" + jobId + "/files/pit.tif\""));
+        // next to the input, in the files of jane
+        String pitHref = "/uploads/files/" + janeArea + "/" + SampleData.COLLECTION + "/pit.tif";
+        assertTrue(page, page.contains("href=\"" + pitHref + "\""));
+        assertTrue(page.contains("data/" + janeArea + "/" + SampleData.COLLECTION));
         assertTrue(page.contains("Download all as zip"));
 
         // the downloads
-        File pit = new File(workspace, "jobs/" + jobId + "/pit.tif");
-        HttpResponse<byte[]> download = jane.getBytes("/jobs/" + jobId + "/files/pit.tif");
+        File pit = new File(workspace, "data/" + janeArea + "/" + SampleData.COLLECTION + "/pit.tif");
+        HttpResponse<byte[]> download = jane.getBytes(pitHref);
         assertEquals(200, download.statusCode());
         assertEquals(pit.length(), download.body().length);
         assertTrue(download.headers().firstValue("Content-Disposition").orElse("").contains("attachment"));
@@ -164,22 +174,35 @@ public class TestWebPages extends TestCase {
         assertFalse(200 == jane.get("/jobs/" + jobId + "/files/%2e%2e/%2e%2e/hm-server.sqlite").statusCode());
 
         assertTrue(jane.get("/jobs").body().contains("href=\"/jobs/" + jobId + "\""));
+        // the files page tells where it comes from
+        assertTrue(jane.get("/uploads").body().contains("Pitfiller by jane"));
 
         // the output is suggested for the next jobs, with its module, also with much data
         for( int i = 0; i < 20; i++ ) {
-            Files.write(new File(workspace, "data/a" + i + ".tif").toPath(), new byte[1]);
+            Files.write(new File(workspace, "data/shared/a" + i + ".tif").toPath(), new byte[1]);
         }
         String form = jane.get("/modules/Pitfiller").body();
-        assertTrue(form, form.contains("<option value=\"jobs/" + jobId + "/pit.tif\" label=\"Pitfiller, "));
-        assertTrue(form.contains("<option value=\"data/a0.tif\">"));
-        // the job can run again
+        assertTrue(form, form.contains("<option value=\"data/" + janeArea + "/" + SampleData.COLLECTION + "/pit.tif\" label=\"Pitfiller, "));
+        assertTrue(form.contains("<option value=\"data/shared/a0.tif\">"));
+        // the job can run again, also in the same folder
         String again = jane.get("/modules/Pitfiller?from=" + jobId).body();
         assertTrue(again.contains("value=\"" + SampleData.ELEVATION + "\""));
+        assertTrue(again.contains("name=\"outputFolder\" list=\"list-outputFolder\""));
+        assertTrue(again.contains("value=\"data/" + janeArea + "/" + SampleData.COLLECTION + "\""));
+
+        // the same output again: only with overwrite
+        HttpResponse<String> conflict = runPitfiller(jane, SampleData.ELEVATION, "pit.tif");
+        assertEquals(409, conflict.statusCode());
+        assertTrue(conflict.body().contains("tick overwrite"));
+        assertTrue(conflict.body().contains("written by Pitfiller"));
+        String replacing = jobId(runPitfiller(jane, SampleData.ELEVATION, "pit.tif", "overwrite", "true"));
+        assertTrue(waitFinished(jane, replacing).body().contains("state-DONE"));
+        assertTrue(jane.get("/uploads").body().contains("(replaced 1)"));
 
         // other users don't see it, administrators do
         Browser john = login("john");
         assertEquals(404, john.get("/jobs/" + jobId).statusCode());
-        assertEquals(404, john.get("/jobs/" + jobId + "/files/pit.tif").statusCode());
+        assertEquals(404, john.get(pitHref).statusCode());
         assertFalse(john.get("/jobs").body().contains(jobId));
         assertFalse(john.get("/modules/Pitfiller?from=" + jobId).body().contains(SampleData.ELEVATION + "\"" + " placeholder"));
         String csrf = Browser.csrf(john.get("/jobs"));
@@ -206,8 +229,9 @@ public class TestWebPages extends TestCase {
         assertEquals(404, jane.get("/jobs/" + first).statusCode());
         assertFalse(new File(workspace, "jobs/" + first).exists());
 
-        // all the finished jobs, after a confirmation
-        String second = jobId(runPitfiller(jane, SampleData.ELEVATION, "pit.tif"));
+        // all the finished jobs, after a confirmation; the outputs of the deleted one stay
+        assertTrue(new File(workspace, "data/jane/" + SampleData.COLLECTION + "/pit.tif").isFile());
+        String second = jobId(runPitfiller(jane, SampleData.ELEVATION, "pit2.tif"));
         waitFinished(jane, second);
         String johns = jobId(runPitfiller(john, SampleData.ELEVATION, "pit.tif"));
         waitFinished(john, johns);
@@ -283,38 +307,53 @@ public class TestWebPages extends TestCase {
 
     public void testUploads() throws Exception {
         Browser jane = login("jane");
+        String janeArea = "jane";
+        String filesHref = "/uploads/files/" + janeArea + "/";
         byte[] elevation = Files.readAllBytes(new File(workspace, SampleData.ELEVATION).toPath());
         HttpResponse<String> response = upload(jane, "dtm", false, Map.of("elev.tif", elevation));
         assertEquals(response.body(), 302, response.statusCode());
         String page = jane.get("/uploads").body();
         assertTrue(page, page.contains("1 file(s) uploaded."));
-        assertTrue(page.contains("href=\"/uploads/files/dtm/elev.tif\""));
+        assertTrue(page.contains("href=\"" + filesHref + "dtm/elev.tif\""));
+        assertTrue(page.contains("uploaded by jane"));
         // the message is shown once
         assertFalse(jane.get("/uploads").body().contains("uploaded."));
 
         // zip files are unpacked
         response = upload(jane, "", true, Map.of("more.zip", zip("zipped/elev.tif", elevation)));
         assertEquals(response.body(), 302, response.statusCode());
-        assertTrue(new WorkspacePaths(workspace).getUploadsFolder(userId("jane")).toPath().resolve("zipped/elev.tif").toFile().isFile());
-        assertTrue(jane.get("/modules/Pitfiller").body().contains("<option value=\"uploads/zipped/elev.tif\">"));
+        assertTrue(new WorkspacePaths(workspace).getAreaFolder(janeArea).toPath().resolve("zipped/elev.tif").toFile().isFile());
+        assertTrue(jane.get("/modules/Pitfiller").body().contains("<option value=\"data/" + janeArea + "/zipped/elev.tif\">"));
 
-        // an upload is an input of the modules
-        String jobId = jobId(runPitfiller(jane, "uploads/dtm/elev.tif", "pit.tif"));
+        // an upload is an input of the modules, the output goes next to it
+        String jobId = jobId(runPitfiller(jane, "data/" + janeArea + "/dtm/elev.tif", "pit.tif"));
         assertTrue(waitFinished(jane, jobId).body().contains("state-DONE"));
+        assertTrue(new File(workspace, "data/" + janeArea + "/dtm/pit.tif").isFile());
 
         // downloads, only by the owner
-        HttpResponse<byte[]> download = jane.getBytes("/uploads/files/dtm/elev.tif");
+        HttpResponse<byte[]> download = jane.getBytes(filesHref + "dtm/elev.tif");
         assertEquals(200, download.statusCode());
         assertEquals(elevation.length, download.body().length);
         Browser john = login("john");
-        assertEquals(404, john.get("/uploads/files/dtm/elev.tif").statusCode());
+        assertEquals(404, john.get(filesHref + "dtm/elev.tif").statusCode());
+        assertEquals(404, john.get("/uploads?area=" + janeArea).statusCode());
         assertEquals(404, jane.get("/uploads/files/..%2F..%2Fhm-server.sqlite").statusCode());
         assertFalse(john.get("/uploads").body().contains("elev.tif"));
+        // the shared files are seen by all, written only by the administrators
+        String shared = john.get("/uploads?area=shared").body();
+        assertTrue(shared, shared.contains(SampleData.ELEVATION));
+        assertFalse(shared.contains("enctype=\"multipart/form-data\""));
+        assertEquals(200, john.getBytes("/uploads/files/shared/" + SampleData.COLLECTION + "/elevation.tif").statusCode());
+        assertEquals(404, john.post("/uploads/delete", "csrf", Browser.csrf(john.get("/uploads")), "area", "shared", "path",
+                SampleData.COLLECTION).statusCode());
+        Browser boss = login("boss");
+        assertTrue(boss.get("/uploads?area=" + janeArea).body().contains("dtm/elev.tif"));
+        assertTrue(boss.get("/uploads?area=shared").body().contains("enctype=\"multipart/form-data\""));
 
         // delete
         response = jane.post("/uploads/delete", "csrf", Browser.csrf(jane.get("/uploads")), "path", "dtm");
         assertEquals(302, response.statusCode());
-        assertEquals(404, jane.get("/uploads/files/dtm/elev.tif").statusCode());
+        assertEquals(404, jane.get(filesHref + "dtm/elev.tif").statusCode());
         assertEquals(404, jane.post("/uploads/delete", "csrf", Browser.csrf(jane.get("/uploads")), "path", "../jobs").statusCode());
     }
 
@@ -336,7 +375,7 @@ public class TestWebPages extends TestCase {
         response = upload(jane, "", false, Map.of("d.bin", new byte[2 * 1024 * 1024]));
         assertEquals(response.body(), 413, response.statusCode());
         assertTrue(response.body().contains("larger than 1 MB"));
-        assertFalse(new File(new WorkspacePaths(workspace).getUploadsFolder(userId("jane")), "d.bin").exists());
+        assertFalse(new File(new WorkspacePaths(workspace).getAreaFolder("jane"), "d.bin").exists());
     }
 
     public void testAdminUsers() throws Exception {
@@ -355,6 +394,11 @@ public class TestWebPages extends TestCase {
         assertEquals(400, boss.post("/admin/users", "csrf", csrf, "username", "mary", "password", "mary-password", "role", "USER")
                 .statusCode());
         assertEquals(400, boss.post("/admin/users", "csrf", csrf, "username", "x", "password", "short", "role", "USER").statusCode());
+        // the names of the users name their folders: not the shared one, not hidden
+        assertEquals(400, boss.post("/admin/users", "csrf", csrf, "username", "shared", "password", "mary-password", "role", "USER")
+                .statusCode());
+        assertEquals(400, boss.post("/admin/users", "csrf", csrf, "username", ".mary", "password", "mary-password", "role", "USER")
+                .statusCode());
         login("mary");
 
         String janeId = userId("jane");
@@ -377,8 +421,8 @@ public class TestWebPages extends TestCase {
         assertEquals(400, boss.post("/admin/users/" + bossId, "csrf", csrf, "role", "USER").statusCode());
         assertEquals(404, boss.post("/admin/users/nobody/delete", "csrf", csrf).statusCode());
 
-        // deleted with the uploads
-        File janeUploads = new WorkspacePaths(workspace).getUploadsFolder(janeId);
+        // deleted with the files
+        File janeUploads = new WorkspacePaths(workspace).getAreaFolder("jane");
         assertTrue(new File(janeUploads, "x").mkdirs());
         assertEquals(302, boss.post("/admin/users/" + janeId + "/delete", "csrf", csrf).statusCode());
         assertNull(server.getUserManager().getUser(janeId));

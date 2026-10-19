@@ -30,6 +30,8 @@ import org.hortonmachine.server.SampleData;
 import org.hortonmachine.server.ServerConfig;
 import org.hortonmachine.server.WorkspacePaths;
 import org.hortonmachine.server.db.ServerDb;
+import org.hortonmachine.server.files.FileOrigin;
+import org.hortonmachine.server.files.FileOrigins;
 
 import junit.framework.TestCase;
 
@@ -45,6 +47,7 @@ public class TestJobManager extends TestCase {
     private File tmpFolder;
     private WorkspacePaths paths;
     private ServerDb db;
+    private FileOrigins origins;
     private JobManager jobManager;
 
     @Override
@@ -67,7 +70,8 @@ public class TestJobManager extends TestCase {
     }
 
     private JobManager startJobManager( int slots, int ttlDays ) throws Exception {
-        jobManager = new JobManager(db, paths, slots, "512m", ttlDays);
+        origins = new FileOrigins(db, paths);
+        jobManager = new JobManager(db, paths, origins, slots, "512m", ttlDays);
         jobManager.start();
         return jobManager;
     }
@@ -108,33 +112,26 @@ public class TestJobManager extends TestCase {
         assertDone(first);
         assertTrue(jobManager.getUsedBytes("user1") > 0);
 
-        // with one slot the third job waits behind the second, and reads the outputs of the first
-        Job second = jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif"));
-        Job third = jobManager.submit("user1", false, "Pitfiller",
-                pitValues(WorkspacePaths.JOBS + "/" + first.id + "/pit.tif", "pit2.tif"));
+        // with one slot the second job waits behind the first
+        Job second = jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit2.tif"));
         try {
-            jobManager.delete(first.id);
-            fail();
-        } catch (IllegalArgumentException e) {
-            assertTrue(e.getMessage().contains(third.id));
-        }
-        try {
-            jobManager.delete(third.id);
+            jobManager.delete(second.id);
             fail();
         } catch (IllegalArgumentException e) {
             assertTrue(e.getMessage().contains("kill it first"));
         }
-        assertEquals(0, jobManager.deleteFinished("user1"));
-        waitFinished(jobManager, second.id);
-        assertDone(waitFinished(jobManager, third.id));
+        assertDone(waitFinished(jobManager, second.id));
 
+        // the outputs stay in the data
         assertTrue(jobManager.delete(first.id));
         assertFalse(jobManager.getJobFolder(first.id).exists());
         assertNull(db.getJob(first.id));
         assertFalse(jobManager.delete(first.id));
-        assertEquals(2, jobManager.deleteFinished("user1"));
+        assertEquals(1, jobManager.deleteFinished("user1"));
         assertTrue(jobManager.listJobs("user1", 10).isEmpty());
         assertEquals(0, jobManager.getUsedBytes("user1"));
+        assertTrue(new File(paths.getAreaFolder("user1"), "flanginec/pit.tif").isFile());
+        assertTrue(new File(paths.getAreaFolder("user1"), "flanginec/pit2.tif").isFile());
     }
 
     public void testRunJob() throws Exception {
@@ -148,11 +145,19 @@ public class TestJobManager extends TestCase {
         assertEquals(Integer.valueOf(0), job.getExitCode());
         assertNotNull(job.getStarted());
         assertNotNull(job.getFinished());
-        // the output is in the job folder, shown as a path in the workspace
-        String pitPath = WorkspacePaths.JOBS + "/" + job.id + "/pit.tif";
+        // the output is moved next to the input, in the area of the user
+        String pitPath = "data/user1/flanginec/pit.tif";
+        assertEquals("data/user1/flanginec", job.outputFolder);
         assertEquals(pitPath, job.getOutputs().get("outPit"));
-        assertTrue(new File(jobManager.getJobFolder(job.id), "pit.tif").exists());
+        assertTrue(paths.toFile(pitPath).isFile());
+        assertFalse(paths.getJobOutputsFolder(job.id).exists());
         assertTrue(new File(jobManager.getJobFolder(job.id), JobManager.PARAMS_FILE).exists());
+        FileOrigin origin = origins.get(pitPath);
+        assertEquals(FileOrigin.PROCESSED, origin.origin);
+        assertEquals("user1", origin.userId);
+        assertEquals(job.id, origin.jobId);
+        assertEquals("Pitfiller", origin.module);
+        assertEquals(values, origin.parameters);
 
         // the database has the same, with the paths of the user
         Job saved = db.getJob(job.id);
@@ -161,26 +166,69 @@ public class TestJobManager extends TestCase {
         assertEquals("Pitfiller", saved.module);
         assertEquals(values, saved.parameters);
         assertEquals(job.getOutputs(), saved.getOutputs());
+        assertEquals("data/user1/flanginec", saved.outputFolder);
+        assertFalse(saved.overwrite);
 
         List<Job> jobs = jobManager.listJobs("user1", 10);
         assertEquals(1, jobs.size());
         assertTrue(jobManager.listJobs("user2", 10).isEmpty());
         assertEquals(1, jobManager.listJobs(null, 10).size());
-
-        // the output is the input of a next job of the same user or of an administrator
         assertTrue(jobManager.canRead("user1", false, job.id));
         assertFalse(jobManager.canRead("user2", false, job.id));
         assertTrue(jobManager.canRead("user2", true, job.id));
+
+        // the output is the input of a next job of the same user or of an administrator
         Job next = jobManager.submit("user1", false, "Pitfiller", pitValues(pitPath, "pit2.tif"));
         assertDone(waitFinished(jobManager, next.id));
         try {
             jobManager.submit("user2", false, "Pitfiller", pitValues(pitPath, "pit3.tif"));
             fail();
         } catch (JobValidationException e) {
-            assertTrue(e.getErrors().get("inElev").contains("not of one of your jobs"));
+            assertTrue(e.getErrors().get("inElev").contains("not in an area you can read"));
         }
-        Job admins = jobManager.submit("user2", true, "Pitfiller", pitValues(pitPath, "pit3.tif"));
-        assertDone(waitFinished(jobManager, admins.id));
+        // the administrator writes in the own area
+        Job admins = waitFinished(jobManager, jobManager.submit("admin", true, "Pitfiller", pitValues(pitPath, "pit3.tif")).id);
+        assertDone(admins);
+        assertEquals("data/admin/flanginec/pit3.tif", admins.getOutputs().get("outPit"));
+    }
+
+    public void testOutputFolderAndOverwrite() throws Exception {
+        startJobManager(1, 0);
+        writeElevation();
+        assertDone(waitFinished(jobManager, jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif")).id));
+        String pitPath = "data/user1/flanginec/pit.tif";
+
+        // the same output again: refused as conflict, with where the file comes from
+        try {
+            jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif"));
+            fail();
+        } catch (JobValidationException e) {
+            assertTrue(e.isConflict());
+            assertTrue(e.getErrors().get("outPit"), e.getErrors().get("outPit").contains("written by Pitfiller"));
+        }
+        Job replacing = waitFinished(jobManager,
+                jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif"), null, true).id);
+        assertDone(replacing);
+        FileOrigin origin = origins.get(pitPath);
+        assertEquals(replacing.id, origin.jobId);
+        assertEquals(1, origin.history.size());
+        assertEquals(FileOrigin.PROCESSED, origin.history.get(0).origin);
+        assertNotNull(origin.history.get(0).replaced);
+
+        // another folder of the own area, not one of the others
+        Job other = waitFinished(jobManager,
+                jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif"), "data/user1/other", false).id);
+        assertDone(other);
+        assertEquals("data/user1/other/pit.tif", other.getOutputs().get("outPit"));
+        for( String folder : new String[]{"data/shared/flanginec", "data/user2", "jobs/x", "data/user1/../user2"} ) {
+            try {
+                jobManager.submit("user1", false, "Pitfiller", pitValues(ELEVATION, "pit.tif"), folder, true);
+                fail("Accepted: " + folder);
+            } catch (JobValidationException e) {
+                assertFalse(e.isConflict());
+                assertNotNull(e.getErrors().get(JobManager.OUTPUT_FOLDER));
+            }
+        }
     }
 
     public void testWrongJobs() throws Exception {
@@ -198,7 +246,8 @@ public class TestJobManager extends TestCase {
                 "relative to the workspace");
         assertErrors(pitValues(ELEVATION, "../pit.tif"), "outPit", "can't contain '..'");
         assertErrors(pitValues(ELEVATION, "/tmp/pit.tif"), "outPit", "relative to the workspace");
-        assertErrors(pitValues("data/missing.tif", "pit.tif"), "inElev", "doesn't exist");
+        assertErrors(pitValues("data/shared/missing.tif", "pit.tif"), "inElev", "doesn't exist");
+        assertErrors(pitValues("data/user2/elevation.tif", "pit.tif"), "inElev", "not in an area you can read");
         assertErrors(pitValues("elevation.tif", "pit.tif"), "inElev", "must start with");
         // no job and no job folder is left
         assertTrue(jobManager.listJobs(null, 10).isEmpty());
@@ -243,8 +292,8 @@ public class TestJobManager extends TestCase {
         assertTrue(jobManager.kill(running.id));
         Job killed = waitFinished(jobManager, running.id);
         assertEquals(killed.getMessage(), JobState.KILLED, killed.getState());
-        assertFalse(new File(jobManager.getJobFolder(running.id), "pit.tif").exists());
-        assertFalse(new File(jobManager.getJobFolder(queued.id), "pit.tif").exists());
+        // nothing in the data
+        assertFalse(paths.toFile("data/shared/flanginec/pit.tif").exists());
 
         // finished jobs can't be killed
         assertFalse(jobManager.kill(running.id));
@@ -253,12 +302,12 @@ public class TestJobManager extends TestCase {
 
     public void testRestartAndCleanup() throws Exception {
         // a job running when the server stopped
-        Job interrupted = new Job("interrupted", null, "Pitfiller", Collections.emptyMap(), System.currentTimeMillis());
+        Job interrupted = new Job("interrupted", null, "Pitfiller", Collections.emptyMap(), System.currentTimeMillis(), null, false);
         interrupted.setState(JobState.RUNNING);
         db.insertJob(interrupted);
         // a job finished long ago, with its folder
         long longAgo = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(10);
-        Job old = new Job("old", null, "Pitfiller", Collections.emptyMap(), longAgo);
+        Job old = new Job("old", null, "Pitfiller", Collections.emptyMap(), longAgo, null, false);
         old.setState(JobState.DONE);
         old.setFinished(longAgo);
         db.insertJob(old);
