@@ -31,6 +31,9 @@ import javax.crypto.spec.PBEKeySpec;
  * <p>The hashes are stored as <code>pbkdf2-sha512:&lt;iterations&gt;:&lt;salt&gt;:&lt;hash&gt;</code>,
  * salt and hash in Base64, so that the iterations can be raised later without breaking the stored passwords.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class PasswordHasher {

@@ -24,6 +24,9 @@ import java.util.Set;
  * A search of the items of the STAC catalog, always limited to the items the requester can see: the shared data and
  * the own area, all of them for the administrators.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacSearch {

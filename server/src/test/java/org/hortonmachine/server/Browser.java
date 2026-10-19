@@ -38,6 +38,9 @@ import org.hortonmachine.server.web.Auth;
 /**
  * A browser for the tests: keeps the cookies, doesn't follow redirects.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class Browser {

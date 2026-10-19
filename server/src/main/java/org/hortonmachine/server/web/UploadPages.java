@@ -46,6 +46,9 @@ import io.javalin.http.UploadedFile;
  * <code>area</code> parameter. The files are given to the modules as <code>data/&lt;area&gt;/...</code>; the zip files
  * can be unpacked.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class UploadPages {

@@ -75,6 +75,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  *
  * <p>The progress, the outputs and the errors are read from the lines of the command line output.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class JobManager implements AutoCloseable {

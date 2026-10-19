@@ -24,6 +24,9 @@ import java.util.Map;
 /**
  * The values of a job are not valid.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class JobValidationException extends IllegalArgumentException {

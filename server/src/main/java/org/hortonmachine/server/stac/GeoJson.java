@@ -30,6 +30,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * The footprints of the items as GeoJSON geometries: polygons, or multipolygons for the items with
  * footprints apart.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class GeoJson {

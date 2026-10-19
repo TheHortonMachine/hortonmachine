@@ -28,6 +28,9 @@ import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 /**
  * The data of the tests.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class SampleData {

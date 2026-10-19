@@ -38,6 +38,9 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
  * <p>They are read, as GDAL does, from the <code>.aux.xml</code> sidecar or from the GDAL_METADATA tag of a
  * GeoTIFF, as the COGs of the jobs have them, else computed reading the raster by blocks.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class RasterStats {

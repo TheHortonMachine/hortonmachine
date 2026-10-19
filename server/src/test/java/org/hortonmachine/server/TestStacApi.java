@@ -55,6 +55,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the STAC catalog of the api, and of how it follows the files.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestStacApi extends TestCase {

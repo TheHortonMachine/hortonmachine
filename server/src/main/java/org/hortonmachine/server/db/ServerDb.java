@@ -53,6 +53,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
  * maps as JSON text. The access is serialized, since the SQLite database has a single connection,
  * used by the threads of the web pages and of the jobs.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class ServerDb implements AutoCloseable {

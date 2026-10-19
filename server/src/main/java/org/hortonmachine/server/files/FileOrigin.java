@@ -30,6 +30,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Where a file of the data comes from: uploaded by a user or written by a job, with the previous origins of the files it
  * replaced at the same path. The files without origin were put in the data from outside the server.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class FileOrigin {

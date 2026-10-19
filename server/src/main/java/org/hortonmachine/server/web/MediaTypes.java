@@ -26,6 +26,9 @@ import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 /**
  * The media types of the files, as given to the clients of the api.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class MediaTypes {

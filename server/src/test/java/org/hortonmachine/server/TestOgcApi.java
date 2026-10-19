@@ -42,6 +42,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the OGC API - Processes and of its tokens.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestOgcApi extends TestCase {

@@ -27,6 +27,9 @@ import java.util.Map;
  * <p>The fields that change while the job runs are accessed by the thread running it and by the threads
  * of the web pages, so they are volatile and the maps are replaced, not changed.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class Job {

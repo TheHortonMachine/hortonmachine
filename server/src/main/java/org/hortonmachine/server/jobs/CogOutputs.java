@@ -35,6 +35,9 @@ import org.hortonmachine.server.stac.StacFiles;
  * The GeoTIFF outputs of the successful jobs become Cloud Optimized GeoTIFFs, if the
  * {@link ServerConfig.Setting#COG_OUTPUTS setting} says so, so that the clients of the api read them in parts.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class CogOutputs implements JobListener {

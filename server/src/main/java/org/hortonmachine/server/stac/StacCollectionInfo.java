@@ -23,6 +23,9 @@ import java.util.List;
  * The metadata of a collection of the STAC catalog given by the administrators; without it the collection is described
  * by the name of its folder.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacCollectionInfo {

@@ -28,6 +28,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the byte ranges of the downloads and of the signed links.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestDownloads extends TestCase {

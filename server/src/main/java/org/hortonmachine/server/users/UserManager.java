@@ -40,6 +40,9 @@ import org.hortonmachine.server.db.ServerDb;
  * <p>After {@value #MAX_FAILED_LOGINS} failed logins of a user name in {@value #LOCK_MINUTES} minutes,
  * its logins are refused until the oldest failure is older than that, to slow down the guessing of passwords.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class UserManager {

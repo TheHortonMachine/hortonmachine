@@ -65,6 +65,9 @@ import io.javalin.config.SizeUnit;
  * <p>The options are described in {@link ServerConfig}; the workspace folder holds the data,
  * the database, the jobs and the data of the server.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class HmServer {

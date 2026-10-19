@@ -49,6 +49,9 @@ import org.hortonmachine.server.users.User;
  * The suggestions are at most {@link #setMaxSuggestions(int) a maximum}: the own area has half of it, so that a large
  * shared area doesn't hide the own files.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class FileSuggestions {

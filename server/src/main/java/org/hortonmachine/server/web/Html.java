@@ -28,6 +28,9 @@ import java.util.Locale;
  * The texts of the values shown in the pages: times, durations, sizes and paths for the links.
  * The pages themselves are the {@link Templates}.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class Html {

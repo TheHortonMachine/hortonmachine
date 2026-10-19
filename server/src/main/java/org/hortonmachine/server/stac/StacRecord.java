@@ -20,6 +20,9 @@ package org.hortonmachine.server.stac;
 /**
  * An item of the STAC catalog as kept in the index of the database, with the columns the searches use.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacRecord {

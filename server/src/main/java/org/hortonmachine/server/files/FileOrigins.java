@@ -28,6 +28,9 @@ import org.hortonmachine.server.db.ServerDb;
  * Keeps the origins of the files of the data as the server writes them: each upload and each output of a job records
  * its origin, and the origin of the file it replaces goes in its history.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class FileOrigins {

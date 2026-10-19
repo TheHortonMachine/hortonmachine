@@ -38,6 +38,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the web server and its configuration.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestHmServer extends TestCase {

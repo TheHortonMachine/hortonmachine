@@ -36,6 +36,9 @@ import io.javalin.http.NotFoundResponse;
  * <p>The current password is asked, and its failures count as failed logins. After the change the other
  * sessions of the user end, this one continues.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class AccountPages {

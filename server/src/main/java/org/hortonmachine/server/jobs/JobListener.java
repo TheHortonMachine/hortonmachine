@@ -23,6 +23,9 @@ import java.util.function.Consumer;
 /**
  * Told of the successful ends of the jobs, to prepare their outputs, as the conversion to COG.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public interface JobListener {

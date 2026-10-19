@@ -41,6 +41,9 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
  * it expires, its token is revoked or its user is disabled or deleted, and the user can still read the file;
  * renewing the key or setting the minutes to 0 ends all the links at once.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class UrlSigner {

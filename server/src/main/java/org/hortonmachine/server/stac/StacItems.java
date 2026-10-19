@@ -27,6 +27,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 /**
  * What the STAC items of the catalog have in common.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacItems {

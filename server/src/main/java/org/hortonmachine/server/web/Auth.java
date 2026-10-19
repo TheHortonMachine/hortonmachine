@@ -49,6 +49,9 @@ import jakarta.servlet.http.HttpSession;
  * <li>the pages need a logged in, enabled user, and those under <code>/admin</code> an administrator.</li>
  * </ul>
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class Auth {

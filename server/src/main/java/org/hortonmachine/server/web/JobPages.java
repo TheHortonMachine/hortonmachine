@@ -50,6 +50,9 @@ import io.javalin.http.NotFoundResponse;
  * <p>The users see their own jobs, the administrators all jobs. The pages of jobs that are queued or running
  * reload themselves. A job that can't be seen answers as not existing.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class JobPages {

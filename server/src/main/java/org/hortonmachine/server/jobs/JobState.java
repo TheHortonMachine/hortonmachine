@@ -20,6 +20,9 @@ package org.hortonmachine.server.jobs;
 /**
  * The state of a job.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public enum JobState {

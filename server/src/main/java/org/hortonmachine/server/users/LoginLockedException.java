@@ -20,6 +20,9 @@ package org.hortonmachine.server.users;
 /**
  * Too many logins of a user name failed recently.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class LoginLockedException extends Exception {

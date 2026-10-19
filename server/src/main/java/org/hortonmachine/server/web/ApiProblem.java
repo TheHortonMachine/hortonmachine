@@ -27,6 +27,9 @@ import io.javalin.http.Context;
 /**
  * An error of the api, answered as RFC 7807 problem details, with the exception types of OGC API Processes.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class ApiProblem extends RuntimeException {

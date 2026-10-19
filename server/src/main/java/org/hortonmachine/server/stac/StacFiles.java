@@ -63,6 +63,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * <p>Nothing reads a whole raster: the GeoTIFFs are read by windows, the other rasters only if they are small,
  * the vectors only through their headers or, for GeoJSON, streamed if they are small.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacFiles {

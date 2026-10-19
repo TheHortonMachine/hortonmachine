@@ -50,6 +50,9 @@ import io.javalin.http.NotFoundResponse;
  * <p>The form is built from the {@link ModuleDescriptor}; empty fields are not sent, so the modules use
  * their defaults, shown as placeholders.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class ModulePages {

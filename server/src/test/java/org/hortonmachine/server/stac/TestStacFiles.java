@@ -40,6 +40,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the description of the files as assets of the STAC items.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestStacFiles extends TestCase {

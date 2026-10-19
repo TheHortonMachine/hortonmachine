@@ -73,6 +73,9 @@ import io.javalin.http.Handler;
  * </ul>
  * A job of another user answers as not existing, as in the pages.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class OgcApi {

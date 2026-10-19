@@ -48,6 +48,9 @@ import org.hortonmachine.gears.libs.modules.HMParameterKind;
  * once it succeeded. Absolute paths and <code>..</code> are not accepted, so no path leads out of these folders.
  * Links placed by the administrator in the data folder are followed; the server never creates links.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class WorkspacePaths {

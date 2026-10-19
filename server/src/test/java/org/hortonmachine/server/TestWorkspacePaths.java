@@ -30,6 +30,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the paths of the users in the workspace.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestWorkspacePaths extends TestCase {

@@ -86,6 +86,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * </ul>
  * Only the files whose size, time or origin changed are read again.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacIndexer implements AutoCloseable {

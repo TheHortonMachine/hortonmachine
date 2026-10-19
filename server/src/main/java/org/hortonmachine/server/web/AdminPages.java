@@ -49,6 +49,9 @@ import io.javalin.http.NotFoundResponse;
  * user here, so as not to lock out by mistake: another administrator does, and the password is changed
  * in the account page.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class AdminPages {

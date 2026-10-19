@@ -38,6 +38,9 @@ import io.javalin.http.HandlerType;
  * or <code>bytes=-512</code>), so that GDAL and QGIS can read only the parts of a cloud optimized GeoTIFF they
  * need; several ranges in one request get the whole file. HEAD requests get the headers only.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class Downloads {

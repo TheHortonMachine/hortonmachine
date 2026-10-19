@@ -40,6 +40,9 @@ import junit.framework.TestCase;
 /**
  * Tests of the pages of the modules and the jobs, as a browser uses them.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class TestWebPages extends TestCase {

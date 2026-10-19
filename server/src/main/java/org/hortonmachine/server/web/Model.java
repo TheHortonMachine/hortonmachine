@@ -25,6 +25,9 @@ import java.util.LinkedHashMap;
  * <p>The values are texts, booleans for the <code>{{#name}}</code> sections, lists of models for the
  * repeated parts; a <code>null</code> or missing value is false, as an empty list.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class Model extends LinkedHashMap<String, Object> {

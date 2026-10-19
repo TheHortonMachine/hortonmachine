@@ -61,6 +61,9 @@ import io.javalin.http.Handler;
  * the assets are links signed by the {@link UrlSigner}, if they are on, and the files can be read in parts, so that
  * QGIS and GDAL open them directly.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class StacApi {

@@ -20,6 +20,9 @@ package org.hortonmachine.server.users;
 /**
  * A user of the server.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class User {

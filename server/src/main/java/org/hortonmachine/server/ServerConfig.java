@@ -39,6 +39,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
  * and from the defaults. The port, the workspace, since the file is in it, and the database are only given
  * on the command line; the password of the database only in the environment, never written.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class ServerConfig {

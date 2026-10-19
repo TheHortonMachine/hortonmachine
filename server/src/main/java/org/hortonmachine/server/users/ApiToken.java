@@ -20,6 +20,9 @@ package org.hortonmachine.server.users;
 /**
  * A token of the api of a user. Its secret is shown once, when created, and only its hash is kept.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class ApiToken {

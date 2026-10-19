@@ -53,6 +53,9 @@ import org.hortonmachine.server.files.FileOrigins;
  * <p>The quota of the area of a user, which holds also the outputs of its jobs, is checked before every write; two
  * uploads of the same user at the same time can go over it by the size of one of them. The shared area has no quota.
  *
+ * <p>Developed with the assistance of an AI coding agent;
+ * design, review and validation by the author.</p>
+ *
  * @author Andrea Antonello - https://g-ant.eu
  */
 public class UploadManager {
