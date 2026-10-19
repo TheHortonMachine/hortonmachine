@@ -30,7 +30,7 @@
 		<revision>0.11.5-SNAPSHOT</revision>
 
 		<maven.compiler.source>17</maven.compiler.source>
-		<gt.version>34.4</gt.version>
+		<gt.version>34.6</gt.version>
 
 		<!-- build configuration -->
 		<java.awt.headless>true</java.awt.headless>
@@ -59,7 +59,7 @@
 		<jt.version>1.6.0</jt.version>
 		<jts.version>1.20.0</jts.version>
 
-		<imageio.ext.version>2.0.0</imageio.ext.version>
+		<imageio.ext.version>2.0.6</imageio.ext.version>
 
 		<jackson.version>2.19.0</jackson.version>
 
@@ -71,7 +71,7 @@
 
 
 		<postgis.version>2.5.0</postgis.version>
-		<postgresql.jdbc.version>42.7.7</postgresql.jdbc.version>
+		<postgresql.jdbc.version>42.7.13</postgresql.jdbc.version>
 
 		<performRelease>false</performRelease>
 
