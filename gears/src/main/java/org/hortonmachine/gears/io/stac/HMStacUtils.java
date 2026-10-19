@@ -14,7 +14,8 @@ public class HMStacUtils {
 
     static Integer NO_EPSG_DEFINED = -1;
     static DateFormat dateFormatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
-    static DateFormat filterTimestampFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+    // with the milliseconds, else the end of a time filter falls before the items of its last second
+    static DateFormat filterTimestampFormatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
     static {
         TimeZone utcTz = TimeZone.getTimeZone("UTC");
         filterTimestampFormatter.setTimeZone(utcTz);

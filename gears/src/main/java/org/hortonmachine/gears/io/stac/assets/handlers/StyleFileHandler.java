@@ -72,8 +72,9 @@ public class StyleFileHandler implements IHMStacAssetHandler {
             } else if (assetType.contains(QML_TYPE)) {
                 format = StyleFormat.QML;
             }
-        } else if (assetUrl != null) {
-            // no media type declared, fall back to the file extension
+        }
+        if (format == null && assetUrl != null && (type == null || isGenericType(type))) {
+            // no media type declared, or a generic one, fall back to the file extension
             String path = assetUrl.toLowerCase();
             int queryIndex = path.indexOf('?');
             if (queryIndex > 0)
@@ -84,6 +85,15 @@ public class StyleFileHandler implements IHMStacAssetHandler {
                 format = StyleFormat.QML;
             }
         }
+    }
+
+    /**
+     * @return <code>true</code> for the types that tell nothing about the format, as given by many servers to any file.
+     */
+    private static boolean isGenericType( String type ) {
+        String lower = type.replace(" ", "").toLowerCase();
+        return lower.startsWith("application/octet-stream") || lower.startsWith("text/plain") || lower.startsWith("application/xml")
+                || lower.startsWith("text/xml");
     }
 
     @Override

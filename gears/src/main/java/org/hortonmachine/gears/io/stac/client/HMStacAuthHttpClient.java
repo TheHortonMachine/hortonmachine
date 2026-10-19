@@ -20,6 +20,7 @@ package org.hortonmachine.gears.io.stac.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.geotools.http.DelegateHTTPClient;
@@ -31,7 +32,7 @@ import org.hortonmachine.gears.io.stac.auth.IHMStacAuthentication;
 
 /**
  * An http client that performs the GET requests through the authentications of a {@link HMStacAccess}
- * when they apply, delegating all other requests.
+ * when they apply, and adds their headers to the POST requests, delegating all other requests.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
@@ -59,6 +60,29 @@ public class HMStacAuthHttpClient extends DelegateHTTPClient {
             return new AuthResponse(authentication.get(url.toString()));
         }
         return super.get(url, headers);
+    }
+
+    @Override
+    public HTTPResponse post( URL url, InputStream postContent, String postContentType ) throws IOException {
+        return post(url, postContent, postContentType, null);
+    }
+
+    @Override
+    public HTTPResponse post( URL url, InputStream postContent, String postContentType, Map<String, String> headers )
+            throws IOException {
+        IHMStacAuthentication authentication = access.getAuthentication(url.toString());
+        if (authentication == null) {
+            return headers == null ? super.post(url, postContent, postContentType)
+                    : super.post(url, postContent, postContentType, headers);
+        }
+        // as the POST searches: the headers of the authentication, on its address
+        Map<String, String> allHeaders = new LinkedHashMap<>();
+        if (headers != null) {
+            allHeaders.putAll(headers);
+        }
+        allHeaders.putAll(authentication.getHeaders(url.toString()));
+        URL authenticatedUrl = new URL(authentication.toHttpUrl(url.toString()));
+        return super.post(authenticatedUrl, postContent, postContentType, allHeaders);
     }
 
     private static class AuthResponse implements HTTPResponse {

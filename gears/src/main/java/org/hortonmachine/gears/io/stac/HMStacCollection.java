@@ -122,15 +122,20 @@ public class HMStacCollection {
     /**
      * Set temporal filter for search query;
      * 
-     * @param startTimestamp
-     * @param endTimestamp
+     * @param startTimestamp the start, <code>null</code> for an open start.
+     * @param endTimestamp the end, <code>null</code> for an open end.
      * @return the current collection.
      */
     public HMStacCollection setTimestampFilter( Date startTimestamp, Date endTimestamp ) {
         if (search == null)
             search = new SearchQuery();
-        search.setDatetime(HMStacUtils.filterTimestampFormatter.format(startTimestamp) + "/"
-                + HMStacUtils.filterTimestampFormatter.format(endTimestamp));
+        if (startTimestamp == null && endTimestamp == null) {
+            search.setDatetime(null);
+            return this;
+        }
+        // ".." is the open end of an interval in the STAC api
+        search.setDatetime((startTimestamp != null ? HMStacUtils.filterTimestampFormatter.format(startTimestamp) : "..") + "/"
+                + (endTimestamp != null ? HMStacUtils.filterTimestampFormatter.format(endTimestamp) : ".."));
         return this;
     }
 

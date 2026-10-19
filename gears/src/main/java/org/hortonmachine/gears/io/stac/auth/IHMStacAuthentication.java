@@ -18,6 +18,8 @@
 package org.hortonmachine.gears.io.stac.auth;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * An authentication method to access protected stac catalogs and assets.
@@ -45,6 +47,17 @@ public interface IHMStacAuthentication {
      */
     default String toHttpUrl( String href ) {
         return href;
+    }
+
+    /**
+     * The headers that authenticate the requests to an address, for the requests not done by {@link #get(String)},
+     * as the POST searches.
+     *
+     * @param href the address.
+     * @return the headers, empty if this authentication doesn't use headers or doesn't apply to the address.
+     */
+    default Map<String, String> getHeaders( String href ) {
+        return Collections.emptyMap();
     }
 
     /**

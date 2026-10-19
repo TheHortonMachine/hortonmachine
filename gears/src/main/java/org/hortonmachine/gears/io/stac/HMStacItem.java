@@ -134,6 +134,14 @@ public class HMStacItem {
         return id;
     }
 
+    /**
+     * @return the title of the item, as its catalog names it for the users, or <code>null</code> if it has none.
+     */
+    public String getTitle() {
+        Object title = feature.getAttribute("title");
+        return title != null && !title.toString().isBlank() ? title.toString() : null;
+    }
+
     public String getTimestamp() {
         if (dateCet != null) {
             return ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.format(dateCet);
