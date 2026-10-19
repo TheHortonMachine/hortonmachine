@@ -122,7 +122,11 @@ public class HmServer {
             System.exit(EXIT_FAILURE);
             return;
         }
-        Runtime.getRuntime().addShutdownHook(new Thread(server::stop));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("HortonMachine server shutting down: the queued and running jobs are killed...");
+            server.stop();
+            System.out.println("HortonMachine server stopped.");
+        }));
         System.out.println("HortonMachine server " + Version.getVersion() + " listening on port " + server.getPort()
                 + ", workspace " + config.workspace.getAbsolutePath());
         try {
