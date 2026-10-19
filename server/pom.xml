@@ -15,6 +15,27 @@
 	<packaging>jar</packaging>
 	<name>HM Web Server</name>
 
+	<properties>
+		<!-- the server tests start servers and job processes and are slow: skipped locally, run in CI.
+		     Run them manually with: mvn -pl server test -DskipTests=false -->
+		<skipTests>true</skipTests>
+	</properties>
+
+	<profiles>
+		<profile>
+			<!-- CI is set by GitHub Actions -->
+			<id>server-tests-in-ci</id>
+			<activation>
+				<property>
+					<name>env.CI</name>
+				</property>
+			</activation>
+			<properties>
+				<skipTests>false</skipTests>
+			</properties>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.hortonmachine</groupId>
