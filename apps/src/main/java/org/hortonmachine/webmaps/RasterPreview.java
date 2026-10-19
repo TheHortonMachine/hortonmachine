@@ -23,6 +23,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import java.util.Map;
+import java.util.function.DoubleToIntFunction;
 
 import org.eclipse.imagen.iterator.RandomIter;
 import org.eclipse.imagen.iterator.RandomIterFactory;
@@ -75,6 +76,8 @@ public class RasterPreview {
     public String note;
     /** The argb colors of the classes of categorical data, null for continuous data. */
     Map<Integer, Integer> classColors;
+    /** The argb color of each value given by a style, as a SLD, null if not styled. */
+    DoubleToIntFunction styleColors;
 
     public static RasterPreview create( GridCoverage2D coverage ) throws Exception {
         return create(coverage, null);
@@ -86,8 +89,20 @@ public class RasterPreview {
      *          class are transparent. If null, the data are stretched on a color ramp.
      */
     public static RasterPreview create( GridCoverage2D coverage, Map<Integer, Integer> classColors ) throws Exception {
+        return create(coverage, classColors, null);
+    }
+
+    /**
+     * @param coverage the raster.
+     * @param classColors for categorical data, the argb color of each class value, or null.
+     * @param styleColors the argb color of each value of a single band raster given by a style, as {@link SldRasterColors};
+     *          if not null, it wins over the classes and the color ramp.
+     */
+    public static RasterPreview create( GridCoverage2D coverage, Map<Integer, Integer> classColors, DoubleToIntFunction styleColors )
+            throws Exception {
         RasterPreview preview = new RasterPreview();
         preview.classColors = classColors;
+        preview.styleColors = styleColors;
         RenderedImage ri = coverage.getRenderedImage();
         preview.cols = ri.getWidth();
         preview.rows = ri.getHeight();
@@ -112,7 +127,7 @@ public class RasterPreview {
             ReferencedEnvelope geoEnv = new ReferencedEnvelope(geographic.getEnvelope2D());
             preview.wgs84Envelope = new Envelope(geoEnv.getMinX(), geoEnv.getMaxX(), geoEnv.getMinY(), geoEnv.getMaxY());
             // same stretch as the original, so the colors match
-            preview.wgs84Image = render(geographic.getRenderedImage(), preview.novalue, preview.range, classColors);
+            preview.wgs84Image = render(geographic.getRenderedImage(), preview.novalue, preview.range, classColors, styleColors);
         } else {
             preview.note = "The raster is too large to be reprojected for the map, only its footprint is shown.";
         }
@@ -121,11 +136,12 @@ public class RasterPreview {
 
     private static BufferedImage render( RenderedImage ri, Double novalue, RasterPreview stats ) {
         double[] range = null;
-        if (stats.classColors == null && !isRgb(ri) && !isPaletted(ri)) {
+        boolean styled = stats.styleColors != null && ri.getSampleModel().getNumBands() == 1;
+        if (stats.classColors == null && !styled && !isRgb(ri) && !isPaletted(ri)) {
             range = computeRange(ri, novalue);
             stats.range = range;
         }
-        return render(ri, novalue, range, stats.classColors);
+        return render(ri, novalue, range, stats.classColors, stats.styleColors);
     }
 
     private static boolean isRgb( RenderedImage ri ) {
@@ -166,13 +182,15 @@ public class RasterPreview {
         return min <= max ? new double[]{min, max} : null;
     }
 
-    private static BufferedImage render( RenderedImage ri, Double novalue, double[] range, Map<Integer, Integer> classColors ) {
+    private static BufferedImage render( RenderedImage ri, Double novalue, double[] range, Map<Integer, Integer> classColors,
+            DoubleToIntFunction styleColors ) {
         int step = step(ri);
         int width = (ri.getWidth() + step - 1) / step;
         int height = (ri.getHeight() + step - 1) / step;
         BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         int bands = ri.getSampleModel().getNumBands();
         boolean rgb = isRgb(ri);
+        boolean styled = styleColors != null && bands == 1;
         ColorModel cm = ri.getColorModel();
         IndexColorModel palette = isPaletted(ri) ? (IndexColorModel) cm : null;
         RandomIter iter = RandomIterFactory.create(ri, null);
@@ -182,7 +200,10 @@ public class RasterPreview {
                 for( int ox = 0; ox < width; ox++ ) {
                     int x = ri.getMinX() + ox * step;
                     int argb;
-                    if (classColors != null) {
+                    if (styled) {
+                        double v = iter.getSampleDouble(x, y, 0);
+                        argb = isNovalue(v, novalue) ? 0 : styleColors.applyAsInt(v);
+                    } else if (classColors != null) {
                         double v = iter.getSampleDouble(x, y, 0);
                         Integer color = isNovalue(v, novalue) ? null : classColors.get((int) Math.round(v));
                         argb = color != null ? color : 0;

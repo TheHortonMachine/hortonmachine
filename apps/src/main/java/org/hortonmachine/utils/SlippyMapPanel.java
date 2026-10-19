@@ -129,6 +129,8 @@ public class SlippyMapPanel extends JPanel {
     private Envelope queryBbox;
     private List<Geometry> footprints = new ArrayList<>();
     private int selectedFootprint = -1;
+    /** If the extents and the footprints are drawn, else only the layers show, with their real colors. */
+    private boolean showOutlines = true;
 
     private BufferedImage overlayImage;
     private Envelope overlayEnvelope;
@@ -267,6 +269,18 @@ public class SlippyMapPanel extends JPanel {
         this.footprints = footprints == null ? new ArrayList<>() : new ArrayList<>(footprints);
         selectedFootprint = -1;
         repaint();
+    }
+
+    /**
+     * @param showOutlines <code>false</code> to hide the extents and footprints, which cover the layers.
+     */
+    public void setShowOutlines( boolean showOutlines ) {
+        this.showOutlines = showOutlines;
+        repaint();
+    }
+
+    public boolean isShowOutlines() {
+        return showOutlines;
     }
 
     public void setSelectedFootprint( int index ) {
@@ -502,7 +516,7 @@ public class SlippyMapPanel extends JPanel {
                 paintGeometries(g2, layer.geometries, layer.color);
         }
 
-        for( Envelope ext : extents ) {
+        for( Envelope ext : showOutlines ? extents : List.<Envelope> of() ) {
             Shape s = envelopeShape(ext);
             g2.setColor(withAlpha(EXTENT_COLOR, 25));
             g2.fill(s);
@@ -512,7 +526,7 @@ public class SlippyMapPanel extends JPanel {
         }
 
         g2.setStroke(new BasicStroke(1.2f));
-        for( int i = 0; i < footprints.size(); i++ ) {
+        for( int i = 0; showOutlines && i < footprints.size(); i++ ) {
             if (i == selectedFootprint)
                 continue;
             Shape s = geometryShape(footprints.get(i));
@@ -523,7 +537,7 @@ public class SlippyMapPanel extends JPanel {
             g2.setColor(FOOTPRINT_COLOR);
             g2.draw(s);
         }
-        if (selectedFootprint >= 0 && selectedFootprint < footprints.size()) {
+        if (showOutlines && selectedFootprint >= 0 && selectedFootprint < footprints.size()) {
             Shape s = geometryShape(footprints.get(selectedFootprint));
             if (s != null) {
                 g2.setColor(withAlpha(SELECTED_COLOR, 60));

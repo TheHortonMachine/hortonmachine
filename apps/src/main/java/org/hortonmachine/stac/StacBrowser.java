@@ -41,10 +41,14 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HexFormat;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -82,6 +86,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
+import javax.swing.JPasswordField;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
@@ -108,11 +113,15 @@ import javax.swing.SwingWorker;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableRowSorter;
 
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.style.Style;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.geojson.GeoJSONReader;
@@ -134,6 +143,8 @@ import org.hortonmachine.gears.io.stac.assets.handlers.GeojsonHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeopackageVectorHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.ShapefileHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler.StyleFormat;
+import org.hortonmachine.gears.io.stac.auth.HMHttpAuthentication;
 import org.hortonmachine.gears.io.stac.auth.HMS3Authentication;
 import org.hortonmachine.gears.io.stac.auth.HMS3Location;
 import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
@@ -155,6 +166,7 @@ import org.hortonmachine.utils.MetadataTree;
 import org.hortonmachine.utils.RowTableModel;
 import org.hortonmachine.utils.SlippyMapPanel;
 import org.hortonmachine.webmaps.RasterPreview;
+import org.hortonmachine.webmaps.SldRasterColors;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
@@ -174,6 +186,15 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private static final String PREF_CATALOGS = "STAC_BROWSER_CATALOGS";
     private static final String PREF_AWS_PROFILE = "STAC_BROWSER_AWS_PROFILE";
     private static final String PREF_AWS_REGION = "STAC_BROWSER_AWS_REGION";
+    // the http authentication of each server (scheme, host and port), followed by a hash of the server:
+    // kind, name, user and secret, one per line; the secret in clear text, as the preferences are
+    private static final String PREF_HTTP_AUTH_PREFIX = "STAC_BROWSER_HTTP_AUTH_";
+
+    private static final String AUTH_NONE = "No authentication";
+    private static final String AUTH_BEARER = "Bearer token";
+    private static final String AUTH_BASIC = "User and password";
+    private static final String AUTH_HEADER = "API key header";
+    private static final String AUTH_PARAMETER = "API key parameter";
     private static final String[] PRESET_CATALOGS = {//
             "https://earth-search.aws.element84.com/v1", //
             "https://planetarycomputer.microsoft.com/api/stac/v1", //
@@ -189,6 +210,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private static final String UNSUPPORTED = "✗ unsupported";
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
+    /** The widest a table column is made to fit its content; wider content is cut, the tooltip shows it all. */
+    private static final int MAX_COLUMN_WIDTH = 400;
+    /** The rows measured to fit the columns, enough for their usual content and quick on large results. */
+    private static final int FIT_ROWS = 200;
 
     /** An item found by a search, with the info shown in the tables precomputed. */
     private static class ItemRow {
@@ -203,6 +228,15 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         /** Version and status from the STAC Version extension, null if the item doesn't use it. */
         String version;
         String versionStatus;
+
+        /**
+         * @return the name shown for the item: its title, as the original name of a file of the HortonMachine server,
+         *         else its id.
+         */
+        String name() {
+            String title = item.getTitle();
+            return title != null ? title : item.getId();
+        }
     }
 
     /** An asset key found in the search results, aggregated over the items. */
@@ -249,6 +283,17 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private JPanel awsPanel;
     private JComboBox<String> awsProfileCombo;
     private JTextField awsRegionField;
+    private JPanel httpAuthPanel;
+    private JComboBox<String> httpAuthTypeCombo;
+    private JLabel httpAuthNameLabel;
+    private JTextField httpAuthNameField;
+    private JLabel httpAuthUserLabel;
+    private JTextField httpAuthUserField;
+    private JLabel httpAuthSecretLabel;
+    private JPasswordField httpAuthSecretField;
+    private JCheckBox httpAuthRememberCheck;
+    /** The server whose authentication is in the fields, to load another one's when the catalog changes server. */
+    private String httpAuthServer;
     /** The access context of the current catalog, null for public ones. */
     private HMStacAccess access;
 
@@ -347,6 +392,34 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         awsPanel.add(new JLabel("Region:"));
         awsPanel.add(awsRegionField);
         right.add(awsPanel);
+
+        // credentials of the catalogs served over http(s), sent only to the server of the catalog
+        httpAuthTypeCombo = new JComboBox<>(new String[]{AUTH_NONE, AUTH_BEARER, AUTH_BASIC, AUTH_HEADER, AUTH_PARAMETER});
+        httpAuthTypeCombo.setToolTipText("How the catalog server wants to be authenticated, as a token of the account page "
+                + "of the HortonMachine server");
+        httpAuthNameLabel = new JLabel("Name:");
+        httpAuthNameField = new JTextField(8);
+        httpAuthNameField.setToolTipText("The name of the header or parameter of the key, as X-API-Key or api_key");
+        httpAuthUserLabel = new JLabel("User:");
+        httpAuthUserField = new JTextField(8);
+        httpAuthSecretLabel = new JLabel("Token:");
+        httpAuthSecretField = new JPasswordField(16);
+        httpAuthRememberCheck = new JCheckBox("Remember", true);
+        httpAuthRememberCheck.setToolTipText("Save the authentication of this server at the connection, the secret in clear "
+                + "text in the preferences of your user; it is sent only to this server");
+        httpAuthPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        httpAuthPanel.add(httpAuthTypeCombo);
+        httpAuthPanel.add(httpAuthNameLabel);
+        httpAuthPanel.add(httpAuthNameField);
+        httpAuthPanel.add(httpAuthUserLabel);
+        httpAuthPanel.add(httpAuthUserField);
+        httpAuthPanel.add(httpAuthSecretLabel);
+        httpAuthPanel.add(httpAuthSecretField);
+        httpAuthPanel.add(httpAuthRememberCheck);
+        httpAuthTypeCombo.addActionListener(e -> updateHttpAuthFields());
+        updateHttpAuthFields();
+        right.add(httpAuthPanel);
+
         connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> connect());
         right.add(connectButton);
@@ -366,6 +439,119 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         if (awsPanel.isVisible() != isS3) {
             awsPanel.setVisible(isS3);
             awsPanel.getParent().revalidate();
+        }
+        boolean isHttp = item != null && item.toString().trim().matches("(?i)^https?://.*") && !isS3;
+        if (httpAuthPanel.isVisible() != isHttp) {
+            httpAuthPanel.setVisible(isHttp);
+            httpAuthPanel.getParent().revalidate();
+        }
+        if (isHttp) {
+            loadHttpAuthentication(item.toString().trim());
+        }
+    }
+
+    /**
+     * @return the server of a url, as https://host:port, the scope of its authentication, or <code>null</code>.
+     */
+    private static String serverOf( String url ) {
+        try {
+            URI uri = new URI(url);
+            if (uri.getScheme() == null || uri.getHost() == null)
+                return null;
+            return uri.getScheme().toLowerCase() + "://" + uri.getHost().toLowerCase() + (uri.getPort() >= 0 ? ":" + uri.getPort() : "");
+        } catch (URISyntaxException e) {
+            return null;
+        }
+    }
+
+    /**
+     * @return the key of the preference of the authentication of a server, short enough for the preferences.
+     */
+    private static String httpAuthPreference( String server ) {
+        try {
+            byte[] hash = MessageDigest.getInstance("SHA-256").digest(server.getBytes(StandardCharsets.UTF_8));
+            return PREF_HTTP_AUTH_PREFIX + HexFormat.of().formatHex(hash, 0, 16);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    /**
+     * Put the saved authentication of the server of a catalog in the fields, when the catalog is of another server than
+     * the one in them; none if it has none, so that the secret of a server is never sent to another one.
+     */
+    private void loadHttpAuthentication( String url ) {
+        String server = serverOf(url);
+        if (server == null || server.equals(httpAuthServer))
+            return;
+        httpAuthServer = server;
+        String saved = PreferencesHandler.getPreference(httpAuthPreference(server), "");
+        String[] values = saved.isEmpty() ? new String[0] : saved.split("\n", 4);
+        httpAuthTypeCombo.setSelectedItem(values.length == 4 ? values[0] : AUTH_NONE);
+        httpAuthNameField.setText(values.length == 4 ? values[1] : "");
+        httpAuthUserField.setText(values.length == 4 ? values[2] : "");
+        httpAuthSecretField.setText(values.length == 4 ? values[3] : "");
+        httpAuthRememberCheck.setSelected(true);
+        updateHttpAuthFields();
+    }
+
+    /**
+     * Save the authentication in the fields for the server of a catalog, or forget it if it is not to remember.
+     */
+    private void saveHttpAuthentication( String url, String type, String name, String user, String secret ) {
+        String server = serverOf(url);
+        if (server == null)
+            return;
+        httpAuthServer = server;
+        boolean save = httpAuthRememberCheck.isSelected() && !type.equals(AUTH_NONE);
+        PreferencesHandler.setPreference(httpAuthPreference(server),
+                save ? String.join("\n", type, name, user, secret) : null);
+    }
+
+    /**
+     * Show the fields the chosen http authentication needs.
+     */
+    private void updateHttpAuthFields() {
+        String type = String.valueOf(httpAuthTypeCombo.getSelectedItem());
+        boolean withName = type.equals(AUTH_HEADER) || type.equals(AUTH_PARAMETER);
+        boolean withUser = type.equals(AUTH_BASIC);
+        boolean withSecret = !type.equals(AUTH_NONE);
+        httpAuthNameLabel.setVisible(withName);
+        httpAuthNameField.setVisible(withName);
+        httpAuthUserLabel.setVisible(withUser);
+        httpAuthUserField.setVisible(withUser);
+        httpAuthSecretLabel.setVisible(withSecret);
+        httpAuthSecretField.setVisible(withSecret);
+        httpAuthSecretLabel.setText(withUser ? "Password:" : withName ? "Key:" : "Token:");
+        if (withName && httpAuthNameField.getText().trim().isEmpty()) {
+            httpAuthNameField.setText(type.equals(AUTH_HEADER) ? "X-API-Key" : "api_key");
+        }
+        if (httpAuthPanel != null && httpAuthPanel.getParent() != null) {
+            httpAuthPanel.getParent().revalidate();
+        }
+    }
+
+    /**
+     * @return the http authentication chosen for a catalog, or <code>null</code> for none.
+     * @throws IllegalArgumentException if a needed value is missing.
+     */
+    private HMHttpAuthentication getHttpAuthentication( String url ) {
+        String type = String.valueOf(httpAuthTypeCombo.getSelectedItem());
+        String name = httpAuthNameField.getText().trim();
+        String user = httpAuthUserField.getText().trim();
+        String secret = new String(httpAuthSecretField.getPassword());
+        saveHttpAuthentication(url, type, name, user, secret);
+        switch( type ) {
+        case AUTH_BEARER:
+            return HMHttpAuthentication.bearer(url, secret);
+        case AUTH_BASIC:
+            return HMHttpAuthentication.basic(url, user, secret);
+        case AUTH_HEADER:
+            return HMHttpAuthentication.header(url, name, secret);
+        case AUTH_PARAMETER:
+            return HMHttpAuthentication.queryParameter(url, name, secret);
+        default:
+            return null;
         }
     }
 
@@ -434,6 +620,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         toolbar.add(button("Zoom to collection", this::zoomToCollection));
         toolbar.add(button("Zoom to results", this::zoomToResults));
         toolbar.add(button("Zoom to bbox", () -> mapPanel.zoomToEnvelope(readBboxFields())));
+        JCheckBox outlinesCheck = new JCheckBox("Outlines", mapPanel.isShowOutlines());
+        outlinesCheck.setToolTipText("Show the extent of the collection and the footprints of the items; hide them to see the "
+                + "colors of the layers");
+        outlinesCheck.addActionListener(e -> mapPanel.setShowOutlines(outlinesCheck.isSelected()));
+        toolbar.add(outlinesCheck);
         positionLabel = new JLabel(" ");
         positionLabel.setForeground(Color.GRAY);
         toolbar.add(Box.createHorizontalStrut(12));
@@ -483,8 +674,8 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         timeCheck = new JCheckBox("Filter by time");
         fromField = new JTextField(12);
         toField = new JTextField(12);
-        fromField.setToolTipText("yyyy-MM-dd or yyyy-MM-dd HH:mm:ss");
-        toField.setToolTipText("yyyy-MM-dd (whole day included) or yyyy-MM-dd HH:mm:ss");
+        fromField.setToolTipText("yyyy-MM-dd or yyyy-MM-dd HH:mm:ss, empty for no start");
+        toField.setToolTipText("yyyy-MM-dd (whole day included) or yyyy-MM-dd HH:mm:ss, empty for no end");
         Runnable timeChanged = () -> {
             if (!fromField.getText().isBlank() && !toField.getText().isBlank())
                 timeCheck.setSelected(true);
@@ -558,6 +749,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
 
         // items
         itemsModel = new RowTableModel<ItemRow>()//
+                .col("Name", String.class, ItemRow::name)//
                 .col("Id", String.class, r -> r.item.getId())//
                 .col("Datetime (UTC)", String.class, r -> r.datetime)//
                 .col("Version", String.class, r -> r.version)//
@@ -568,8 +760,6 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 .col("Assets", Integer.class, r -> r.assets.size())//
                 .col("HM readable", Integer.class, r -> r.supportedCount);
         itemsTable = table(itemsModel);
-        itemsTable.getColumnModel().getColumn(0).setPreferredWidth(320);
-        itemsTable.getColumnModel().getColumn(1).setPreferredWidth(150);
         itemsTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting())
                 selectItem();
@@ -613,7 +803,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         JTable assetKeysTable = table(assetKeysModel);
         assetKeysTable.getColumnModel().getColumn(0).setMaxWidth(50);
         downloadsModel = new RowTableModel<DownloadRow>()//
-                .col("Item", String.class, r -> r.itemRow.item.getId())//
+                .col("Item", String.class, r -> r.itemRow.name())//
                 .col("Datetime (UTC)", String.class, r -> r.itemRow.datetime)//
                 .col("Asset", String.class, r -> r.asset.getId())//
                 .col("HM handler", String.class, r -> handlerName(r.asset))//
@@ -779,6 +969,17 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 GuiUtilities.showWarningMessage(this, "Unable to use the AWS credentials: " + e.getMessage());
                 return;
             }
+        } else if (url.matches("(?i)^https?://.*")) {
+            try {
+                HMHttpAuthentication authentication = getHttpAuthentication(url);
+                if (authentication != null) {
+                    newAccess = new HMStacAccess(authentication);
+                    authInfo = authentication.toString();
+                }
+            } catch (IllegalArgumentException e) {
+                GuiUtilities.showWarningMessage(this, "Unable to use the authentication: " + e.getMessage());
+                return;
+            }
         }
         HMStacAccess fAccess = newAccess;
         String fAuthInfo = authInfo;
@@ -873,9 +1074,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     throw new IllegalArgumentException("The bounding box is not valid (lon -180..180, lat -90..90, south < north).");
             }
             if (timeCheck.isSelected()) {
-                from = parseDate(fromField.getText(), false);
-                to = parseDate(toField.getText(), true);
-                if (from.after(to))
+                // an empty field is an open end of the interval
+                from = fromField.getText().isBlank() ? null : parseDate(fromField.getText(), false);
+                to = toField.getText().isBlank() ? null : parseDate(toField.getText(), true);
+                if (from == null && to == null)
+                    throw new IllegalArgumentException("Insert at least the start or the end of the time range.");
+                if (from != null && to != null && from.after(to))
                     throw new IllegalArgumentException("The start date is after the end date.");
             }
             if (cqlCheck.isSelected() && !cqlField.getText().isBlank()) {
@@ -892,13 +1096,15 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         Date fTo = to;
         String fCql = cql;
         log("Search on " + collection.getId() + ": bbox=" + (fBbox == null ? "-" : bboxString(fBbox)) + ", time="
-                + (fFrom == null ? "-" : formatDate(fFrom) + " / " + formatDate(fTo)) + ", filter=" + (fCql == null ? "-" : fCql)
+                + (fFrom == null && fTo == null ? "-"
+                        : (fFrom != null ? formatDate(fFrom) : "..") + " / " + (fTo != null ? formatDate(fTo) : ".."))
+                + ", filter=" + (fCql == null ? "-" : fCql)
                 + ", max items=" + (maxItems <= 0 ? "all" : maxItems));
         runTask("Searching items of " + collection.getId(), () -> {
             collection.clearFilters();
             if (fBbox != null)
                 collection.setBboxFilter(new double[]{fBbox.getMinX(), fBbox.getMinY(), fBbox.getMaxX(), fBbox.getMaxY()});
-            if (fFrom != null)
+            if (fFrom != null || fTo != null)
                 collection.setTimestampFilter(fFrom, fTo);
             if (fCql != null)
                 collection.setCqlFilter(fCql);
@@ -1441,7 +1647,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         for( DownloadRow row : rows ) {
             ClipPlan plan = planClip(row, bbox, resolution);
             plans.add(plan);
-            String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+            String name = row.itemRow.name() + " / " + row.asset.getId();
             if (plan.skipReason != null) {
                 lines.add(String.format("%-26s %s", "skipped", name + "   [" + plan.skipReason + "]"));
             } else {
@@ -1600,11 +1806,26 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             return;
         }
 
-        String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+        String name = row.itemRow.name() + " / " + row.asset.getId();
+        HMStacAsset sld = findSameNameSld(row.itemRow, row.asset);
+        String[] styledWith = new String[1];
         runTask("Reading " + name + " for the map", () -> {
             log("Reading " + row.asset.getId() + " of " + row.itemRow.item.getId() + " for the map on EPSG:" + plan.epsg
                     + " region " + plan.region.getCols() + "x" + plan.region.getRows() + " cells");
             IHMStacAssetRasterHandler handler = (IHMStacAssetRasterHandler) row.asset.getHandler();
+            // the colors of the style of the raster, if it has one
+            SldRasterColors styleColors = null;
+            if (sld != null) {
+                try {
+                    styleColors = SldRasterColors.fromStyle(sld.getHandler().read(Style.class, monitor));
+                    if (styleColors != null)
+                        styledWith[0] = fileName(href(sld));
+                    else
+                        log("The style " + fileName(href(sld)) + " has no raster color map, the raster is stretched.");
+                } catch (Exception e) {
+                    logException("Unable to read the style " + href(sld), e);
+                }
+            }
             GridCoverage2D coverage = handler.readRaster(plan.region);
             try {
                 if (isRgb(coverage))
@@ -1613,7 +1834,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                         .setCrs(coverage.getCoordinateReferenceSystem()).setNoValue(handler.getNoValue()).build()) {
                     // as for the clipped export, mapping on the region fetches only the needed parts
                     raster.mapRaster(null, HMRaster.fromGridCoverage(coverage), MergeMode.SUBSTITUTE);
-                    return RasterPreview.create(raster.buildCoverage(), classColors);
+                    return RasterPreview.create(raster.buildCoverage(), classColors, styleColors);
                 }
             } finally {
                 coverage.dispose(true);
@@ -1624,9 +1845,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 return;
             }
             mapPanel.addImageLayer(mapLayerId(row), name, preview.wgs84Image, preview.wgs84Envelope, false);
-            String msg = "Shown on map: " + name + (preview.range != null
-                    ? String.format(Locale.ROOT, " (stretched %.4g - %.4g)", preview.range[0], preview.range[1])
-                    : classColors != null ? " (" + classColors.size() + " classes, other values transparent)" : "");
+            String msg = "Shown on map: " + name + (styledWith[0] != null ? " (styled with " + styledWith[0] + ")"
+                    : preview.range != null
+                            ? String.format(Locale.ROOT, " (stretched %.4g - %.4g)", preview.range[0], preview.range[1])
+                            : classColors != null ? " (" + classColors.size() + " classes, other values transparent)" : "");
             log(msg);
             statusLabel.setText(msg);
         });
@@ -1732,7 +1954,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 + " and needs to be downloaded completely to be shown. Continue?")) {
             return;
         }
-        String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+        String name = row.itemRow.name() + " / " + row.asset.getId();
         runTask("Reading " + name + " for the map", () -> {
             log("Reading " + row.href + " for the map");
             SimpleFeatureCollection fc = row.asset.getHandler().read(SimpleFeatureCollection.class, monitor);
@@ -1779,7 +2001,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
      * Download a csv asset and show it in a table.
      */
     private void viewCsv( DownloadRow row ) {
-        String name = row.itemRow.item.getId() + " / " + row.asset.getId();
+        String name = row.itemRow.name() + " / " + row.asset.getId();
         runTask("Reading " + name, () -> {
             log("Downloading " + row.href + " to view it");
             File csvFile = row.asset.getHandler().read(File.class, monitor);
@@ -1836,6 +2058,25 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             }
         }
         return bestByFormat.values().stream().flatMap(List::stream).collect(Collectors.toList());
+    }
+
+    /**
+     * @return the SLD of the item with the name of the raster file, as dtm.sld or dtm.tif.sld for dtm.tif, or
+     *         <code>null</code>.
+     */
+    private static HMStacAsset findSameNameSld( ItemRow itemRow, HMStacAsset raster ) {
+        String rasterFile = fileName(href(raster));
+        if (rasterFile == null)
+            return null;
+        String base = rasterFile.contains(".") ? rasterFile.substring(0, rasterFile.lastIndexOf('.')) : rasterFile;
+        for( HMStacAsset asset : itemRow.assets ) {
+            if (asset.getHandler() instanceof StyleFileHandler style && style.getFormat() == StyleFormat.SLD) {
+                String styleFile = fileName(href(asset));
+                if (styleFile != null && (styleFile.equalsIgnoreCase(base + ".sld") || styleFile.equalsIgnoreCase(rasterFile + ".sld")))
+                    return asset;
+            }
+        }
+        return null;
     }
 
     private static String styleExtension( HMStacAsset styleAsset ) {
@@ -2061,8 +2302,17 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private void setTimeFromCollection() {
         if (currentCollection == null)
             return;
+        // read again: the extent of the collection grows with its new items, as the outputs of the jobs of a server
+        HMStacCollection collection = currentCollection;
         try {
-            List<Date> bounds = currentCollection.getTemporalBounds();
+            HMStacCollection current = manager != null ? manager.getCollectionById(currentCollection.getId()) : null;
+            if (current != null)
+                collection = current;
+        } catch (Exception e) {
+            // the extent known since the connection
+        }
+        try {
+            List<Date> bounds = collection.getTemporalBounds();
             Date start = bounds.size() > 0 ? bounds.get(0) : null;
             Date end = bounds.size() > 1 ? bounds.get(bounds.size() - 1) : null;
             fromField.setText(start != null ? formatDate(start) : "");
@@ -2352,20 +2602,24 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     }
 
     /**
-     * Parse a UTC date. A date without time is taken as start of day, or end of day if endOfDay is true.
+     * Parse a UTC date. A date is taken as the start of its day, minute or second, or as their end if endOfDay is
+     * true, so that an end shown as 07:49:07 includes the items of 07:49:07.702.
      */
     private static Date parseDate( String text, boolean endOfDay ) {
         String t = text.trim().replace('T', ' ').replace("Z", "");
-        for( String pattern : new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm"} ) {
+        String[] patterns = {"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm"};
+        long[] lastMillis = {999L, 59_999L};
+        for( int i = 0; i < patterns.length; i++ ) {
             try {
-                return utcFormat(pattern).parse(t);
+                Date date = utcFormat(patterns[i]).parse(t);
+                return endOfDay ? new Date(date.getTime() + lastMillis[i]) : date;
             } catch (ParseException e) {
                 // try next
             }
         }
         try {
             Date day = utcFormat("yyyy-MM-dd").parse(t);
-            return endOfDay ? new Date(day.getTime() + 24L * 3600 * 1000 - 1000) : day;
+            return endOfDay ? new Date(day.getTime() + 24L * 3600 * 1000 - 1) : day;
         } catch (ParseException e) {
             throw new IllegalArgumentException("Unable to parse date: " + text + " (use yyyy-MM-dd or yyyy-MM-dd HH:mm:ss)");
         }
@@ -2413,6 +2667,16 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private static JTable table( RowTableModel< ? > model ) {
         JTable table = new JTable(model){
             @Override
+            public boolean getScrollableTracksViewportWidth() {
+                // the columns fill the view when they fit in it, else they keep their width and the view scrolls
+                int width = 0;
+                for( int c = 0; c < getColumnModel().getColumnCount(); c++ ) {
+                    width += getColumnModel().getColumn(c).getPreferredWidth();
+                }
+                return getParent() == null || width < getParent().getWidth();
+            }
+
+            @Override
             public String getToolTipText( MouseEvent e ) {
                 // show the full content of truncated cells (hrefs, errors...)
                 int row = rowAtPoint(e.getPoint());
@@ -2426,7 +2690,36 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         table.setRowSorter(new TableRowSorter<>(model));
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setFillsViewportHeight(true);
+        // new rows, not the change of a cell: the columns as wide as their content
+        model.addTableModelListener(e -> {
+            if (e.getFirstRow() == 0 && e.getLastRow() == Integer.MAX_VALUE)
+                SwingUtilities.invokeLater(() -> fitColumns(table));
+        });
+        fitColumns(table);
         return table;
+    }
+
+    /**
+     * Make the columns of a table as wide as their header and content, at most {@value #MAX_COLUMN_WIDTH} pixels and
+     * within their own limits; the content is measured on the first {@value #FIT_ROWS} rows.
+     */
+    private static void fitColumns( JTable table ) {
+        TableColumnModel columns = table.getColumnModel();
+        int spacing = table.getIntercellSpacing().width + 10;
+        int rows = Math.min(table.getRowCount(), FIT_ROWS);
+        for( int c = 0; c < columns.getColumnCount(); c++ ) {
+            TableColumn column = columns.getColumn(c);
+            TableCellRenderer headerRenderer = column.getHeaderRenderer() != null ? column.getHeaderRenderer()
+                    : table.getTableHeader().getDefaultRenderer();
+            int width = headerRenderer.getTableCellRendererComponent(table, column.getHeaderValue(), false, false, -1, c)
+                    .getPreferredSize().width;
+            for( int r = 0; r < rows; r++ ) {
+                width = Math.max(width, table.prepareRenderer(table.getCellRenderer(r, c), r, c).getPreferredSize().width);
+            }
+            width = Math.min(width + spacing, MAX_COLUMN_WIDTH);
+            column.setPreferredWidth(Math.max(column.getMinWidth(), Math.min(width, column.getMaxWidth())));
+        }
+        table.revalidate();
     }
 
     private static JButton button( String text, Runnable action ) {
