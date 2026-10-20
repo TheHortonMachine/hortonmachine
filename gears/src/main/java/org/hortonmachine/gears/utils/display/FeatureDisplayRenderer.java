@@ -25,6 +25,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.gears.utils.images.ImageGenerator;
@@ -45,6 +46,19 @@ public class FeatureDisplayRenderer implements IDisplayRenderer {
 
     @Override
     public List<DisplayPart> render( Object value, DisplayOptions options ) throws Exception {
+        return render(value, null, options);
+    }
+
+    /**
+     * Render features with a given style.
+     *
+     * @param value the {@link SimpleFeatureCollection}, {@link SimpleFeatureSource} or {@link SimpleFeature}.
+     * @param style the style to use, if <code>null</code> the default one for the geometry type is used.
+     * @param options the sizes and limits to use.
+     * @return the parts.
+     * @throws Exception
+     */
+    public List<DisplayPart> render( Object value, Style style, DisplayOptions options ) throws Exception {
         if (value instanceof SimpleFeature) {
             return List.of(featureTable((SimpleFeature) value, true));
         }
@@ -71,7 +85,7 @@ public class FeatureDisplayRenderer implements IDisplayRenderer {
         if (geometryDescriptor != null && size > 0) {
             ImageGenerator imgGen = new ImageGenerator(null, null);
             try {
-                imgGen.addFeatures(featureCollection, null);
+                imgGen.addFeatures(featureCollection, style);
                 parts.add(new DisplayImage(imgGen.drawFullExtent(options.imageWidth(), options.imageHeight(), 0)));
             } finally {
                 imgGen.dispose();

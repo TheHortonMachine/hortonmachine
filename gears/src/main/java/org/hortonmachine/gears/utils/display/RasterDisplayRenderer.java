@@ -51,6 +51,19 @@ public class RasterDisplayRenderer implements IDisplayRenderer {
 
     @Override
     public List<DisplayPart> render( Object value, DisplayOptions options ) throws Exception {
+        return render(value, null, options);
+    }
+
+    /**
+     * Render a raster with a given style.
+     *
+     * @param value the {@link GridCoverage2D} or {@link HMRaster}.
+     * @param style the style to use, if <code>null</code> the default one is used.
+     * @param options the sizes and limits to use.
+     * @return the parts.
+     * @throws Exception
+     */
+    public List<DisplayPart> render( Object value, Style style, DisplayOptions options ) throws Exception {
         GridCoverage2D coverage;
         if (value instanceof HMRaster) {
             coverage = ((HMRaster) value).buildCoverage();
@@ -68,13 +81,14 @@ public class RasterDisplayRenderer implements IDisplayRenderer {
         sb.append(", res ").append(format(region.getXres())).append(" x ").append(format(region.getYres()));
         sb.append(", ").append(crsLabel(coverage.getCoordinateReferenceSystem()));
 
-        Style style = null;
         if (bands == 1) {
             double[] minMax = OmsRasterSummary.getMinMax(coverage);
             if (!Double.isNaN(minMax[0]) && !Double.isNaN(minMax[1])) {
                 sb.append(", min ").append(format(minMax[0])).append(", max ").append(format(minMax[1]));
-                style = RasterStyleUtilities.createStyleForColortable(ImageGenerator.DEFAULT_COLORTABLE, minMax[0], minMax[1],
-                        1.0);
+                if (style == null) {
+                    style = RasterStyleUtilities.createStyleForColortable(ImageGenerator.DEFAULT_COLORTABLE, minMax[0],
+                            minMax[1], 1.0);
+                }
             } else {
                 sb.append(", no valid values");
             }

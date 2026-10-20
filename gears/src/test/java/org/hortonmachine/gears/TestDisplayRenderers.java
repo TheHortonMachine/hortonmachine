@@ -23,9 +23,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.feature.simple.SimpleFeatureBuilder;
+import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.IHmExtrasDb;
+import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
+import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMRaster;
@@ -39,7 +47,9 @@ import org.hortonmachine.gears.utils.display.DisplayRenderers;
 import org.hortonmachine.gears.utils.display.DisplayTable;
 import org.hortonmachine.gears.utils.display.DisplayText;
 import org.hortonmachine.gears.utils.display.IDisplayRenderer;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.WKTReader;
 
 /**
@@ -185,6 +195,98 @@ public class TestDisplayRenderers extends HMTestCase {
 
         // a missing file is just text
         assertTrue(DisplayRenderers.render(new File("/not/existing.tif"), OPTIONS).get(0) instanceof DisplayText);
+    }
+
+    public void testSidecarSldIsUsed() throws Exception {
+        File tif = File.createTempFile("hm_display_", ".tif");
+        File sld = new File(tif.getParentFile(), tif.getName().replace(".tif", ".sld"));
+        try {
+            OmsRasterWriter.writeRaster(tif.getAbsolutePath(), elevation());
+            List<DisplayPart> parts = DisplayRenderers.render(tif, OPTIONS);
+            int defaultColor = centerColor(parts.get(1));
+            assertTrue(defaultColor != RED);
+
+            FileUtilities.writeFile(rasterSld("#ff0000"), sld);
+            parts = DisplayRenderers.render(tif, OPTIONS);
+            assertEquals(RED, centerColor(parts.get(1)));
+        } finally {
+            tif.delete();
+            sld.delete();
+        }
+    }
+
+    public void testGeopackageStylesAreUsed() throws Exception {
+        File gpkg = File.createTempFile("hm_display_", ".gpkg");
+        gpkg.delete();
+        String path = gpkg.getAbsolutePath();
+        try {
+            OmsVectorWriter.writeVector(path + "#hmstyled", polygonFC());
+            OmsVectorWriter.writeVector(path + "#qgisstyled", polygonFC());
+
+            // no styles, default rendering, and nothing gets written into the geopackage
+            List<DisplayPart> parts = DisplayRenderers.render(new File(path + "#hmstyled"), OPTIONS);
+            int defaultColor = centerColor(parts.get(1));
+            assertTrue(defaultColor != BLUE);
+            try (GeopackageCommonDb db = (GeopackageCommonDb) EDb.GEOPACKAGE.getSpatialDb()) {
+                db.open(path);
+                assertFalse(db.hasTable(SqlName.m(IHmExtrasDb.HM_STYLES_TABLE)));
+                assertFalse(db.hasTable(SqlName.m(IHmExtrasDb.QGIS_STYLES_TABLE)));
+
+                db.updateSldStyle(SqlName.m("hmstyled"), polygonSld("#0000ff"));
+                db.executeInsertUpdateDeleteSql("create table " + IHmExtrasDb.QGIS_STYLES_TABLE + " ("
+                        + IHmExtrasDb.STYLE_QGIS_TABLENAME_FIELD + " TEXT, " + IHmExtrasDb.STYLE_QGIS_SLD_FIELD + " TEXT)");
+                db.executeInsertUpdateDeleteSql("insert into " + IHmExtrasDb.QGIS_STYLES_TABLE + " values ('qgisstyled', '"
+                        + polygonSld("#00ff00") + "')");
+            }
+
+            parts = DisplayRenderers.render(new File(path + "#hmstyled"), OPTIONS);
+            assertEquals(BLUE, centerColor(parts.get(1)));
+            // not in hm_styles, found in the qgis table
+            parts = DisplayRenderers.render(new File(path + "#qgisstyled"), OPTIONS);
+            assertEquals(GREEN, centerColor(parts.get(1)));
+        } finally {
+            gpkg.delete();
+        }
+    }
+
+    private static final int RED = 0xFFFF0000;
+    private static final int GREEN = 0xFF00FF00;
+    private static final int BLUE = 0xFF0000FF;
+
+    private int centerColor( DisplayPart part ) {
+        BufferedImage image = ((DisplayImage) part).image();
+        return image.getRGB(image.getWidth() / 2, image.getHeight() / 2);
+    }
+
+    private SimpleFeatureCollection polygonFC() throws Exception {
+        SimpleFeatureTypeBuilder b = new SimpleFeatureTypeBuilder();
+        b.setName("polygons");
+        b.setCRS(HMTestMaps.getCrs());
+        b.add("the_geom", Polygon.class);
+        b.add("cat", Integer.class);
+        SimpleFeatureType type = b.buildFeatureType();
+        SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
+        builder.add(new WKTReader().read("POLYGON ((1640650 5139780, 1640950 5139780, 1640950 5140020, 1640650 5140020, 1640650 5139780))"));
+        builder.add(1);
+        DefaultFeatureCollection fc = new DefaultFeatureCollection();
+        fc.add(builder.buildFeature(null));
+        return fc;
+    }
+
+    private String rasterSld( String color ) {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\">"
+                + "<NamedLayer><Name>raster</Name><UserStyle><FeatureTypeStyle><Rule><RasterSymbolizer><ColorMap>"
+                + "<ColorMapEntry color=\"" + color + "\" quantity=\"0\"/><ColorMapEntry color=\"" + color + "\" quantity=\"5000\"/>"
+                + "</ColorMap></RasterSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
+    }
+
+    private String polygonSld( String color ) {
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                + "<StyledLayerDescriptor version=\"1.0.0\" xmlns=\"http://www.opengis.net/sld\" xmlns:ogc=\"http://www.opengis.net/ogc\">"
+                + "<NamedLayer><Name>polygons</Name><UserStyle><FeatureTypeStyle><Rule><PolygonSymbolizer><Fill>"
+                + "<CssParameter name=\"fill\">" + color + "</CssParameter>"
+                + "</Fill></PolygonSymbolizer></Rule></FeatureTypeStyle></UserStyle></NamedLayer></StyledLayerDescriptor>";
     }
 
     public void testRegisteredRendererComesFirst() throws Exception {

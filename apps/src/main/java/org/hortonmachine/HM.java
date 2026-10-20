@@ -118,6 +118,7 @@ import org.hortonmachine.gears.utils.crs.ProjectionInfo;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
+import org.hortonmachine.gears.utils.display.FileDisplayRenderer;
 import org.hortonmachine.gears.utils.images.ImageGenerator;
 import org.hortonmachine.gears.utils.images.ImageUtilities;
 import org.hortonmachine.gears.utils.math.regressions.LogTrendLine;
@@ -1963,7 +1964,7 @@ public class HM {
                 if(file.getName().toLowerCase().endsWith(".tif")){
                     GridCoverage2D raster = readRaster( file.getAbsolutePath());
                     final ImageGenerator imgGen = new ImageGenerator(null, raster.getCoordinateReferenceSystem());
-                    imgGen.addCoverage(raster, null);
+                    imgGen.addCoverage(raster, FileDisplayRenderer.findStyle(file.getAbsolutePath()));
                     return imgGen.drawFullExtent(width, height, 0);
                 }else{
                 	return ImageUtilities.scaleImage(ImageIO.read(file), height);
