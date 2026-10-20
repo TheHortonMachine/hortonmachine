@@ -1961,17 +1961,10 @@ public class HM {
             File file = new File(fileOrGeometryWkt);
             if (file.exists()) {
                 if(file.getName().toLowerCase().endsWith(".tif")){
-                    makeSldStyleForRaster("rainbow", file.getAbsolutePath());
                     GridCoverage2D raster = readRaster( file.getAbsolutePath());
-                    RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(raster);
-                    Envelope envelope = region.toEnvelope();
-                    ReferencedEnvelope refEnv = new ReferencedEnvelope(envelope, raster.getCoordinateReferenceSystem());    
-
                     final ImageGenerator imgGen = new ImageGenerator(null, raster.getCoordinateReferenceSystem());
-                    imgGen.addCoveragePath(file.getAbsolutePath());
-                    imgGen.setLayers();
-                    BufferedImage imageWithCheck = imgGen.getImageWithCheck(refEnv, width, height, 0, null);
-                    return imageWithCheck;
+                    imgGen.addCoverage(raster, null);
+                    return imgGen.drawFullExtent(width, height, 0);
                 }else{
                 	return ImageUtilities.scaleImage(ImageIO.read(file), height);
                 }

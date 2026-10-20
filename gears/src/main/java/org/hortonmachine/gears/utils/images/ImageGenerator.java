@@ -69,14 +69,19 @@ import org.geotools.ows.wms.map.WMSLayer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.modules.r.summary.OmsRasterSummary;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
@@ -90,18 +95,37 @@ import org.locationtech.jts.geom.Envelope;
  * imgGen.setLayers();
  * imgGen.dumpPngImage(imagePath, bounds, 300, 300, 100);
  * </pre>
- * 
+ *
+ * <p>In memory data can be drawn as well, for example a quicklook of a raster with points on top:
+ * <pre>
+ * ImageGenerator imgGen = new ImageGenerator(null, null);
+ * imgGen.addCoverage(raster, null);
+ * imgGen.addFeatures(points, null);
+ * BufferedImage image = imgGen.drawFullExtent(800, 600, 0);
+ * </pre>
+ *
+ * <p>Layers are drawn in this order: wms, coverage paths, in memory coverages, feature
+ * paths, in memory features. Inside each group the order of addition is kept.</p>
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  * @since 0.7.3
  */
 public class ImageGenerator {
 
+    /**
+     * The colortable used for in memory coverages that are added without style.
+     */
+    public static final String DEFAULT_COLORTABLE = "rainbow";
 
     private String wmsURL = null;
     private List<String> featurePaths = new ArrayList<String>();
     private List<String> featureFilter = new ArrayList<String>();
     private List<String> coveragePaths = new ArrayList<String>();
     private List<GridGeometry2D> coverageRegions = new ArrayList<GridGeometry2D>();
+    private List<GridCoverage2D> coverages = new ArrayList<GridCoverage2D>();
+    private List<Style> coverageStyles = new ArrayList<Style>();
+    private List<SimpleFeatureCollection> featureCollections = new ArrayList<SimpleFeatureCollection>();
+    private List<Style> featureStyles = new ArrayList<Style>();
     // private AffineTransform worldToScreen;
     // private AffineTransform screenToWorld;
 
@@ -148,6 +172,46 @@ public class ImageGenerator {
         if (!coverageRegions.contains(coverageRegion)) {
             coverageRegions.add(coverageRegion);
         }
+    }
+
+    /**
+     * Add an in memory coverage.
+     *
+     * <p>The order will be considered. First coverages are drawn first.</p>
+     *
+     * @param coverage the coverage to add.
+     * @param style the style to use. If <code>null</code>, single band coverages are
+     *              styled with the {@link #DEFAULT_COLORTABLE} stretched on their min and max,
+     *              multiband ones with a default raster style.
+     */
+    public void addCoverage( GridCoverage2D coverage, Style style ) {
+        coverages.add(coverage);
+        coverageStyles.add(style);
+    }
+
+    /**
+     * Add an in memory {@link HMRaster}.
+     *
+     * @param raster the raster to add.
+     * @param style the style to use, see {@link #addCoverage(GridCoverage2D, Style)}.
+     * @throws IOException if the coverage can't be built from the raster.
+     */
+    public void addRaster( HMRaster raster, Style style ) throws IOException {
+        addCoverage(raster.buildCoverage(), style);
+    }
+
+    /**
+     * Add an in memory feature collection.
+     *
+     * <p>The order will be considered. First collections are drawn first.</p>
+     *
+     * @param featureCollection the features to add.
+     * @param style the style to use. If <code>null</code>, a default style for the
+     *              geometry type is used.
+     */
+    public void addFeatures( SimpleFeatureCollection featureCollection, Style style ) {
+        featureCollections.add(featureCollection);
+        featureStyles.add(style);
     }
 
     /**
@@ -221,10 +285,20 @@ public class ImageGenerator {
      * Set the layers that have to be drawn.
      * 
      * <p><b>This has to be called before the drawing process.</p>
+     *
+     * <p>Calling it again rebuilds the layers from scratch.</p>
+     *
      * @return the max envelope of the data.
-     * @throws Exception 
+     * @throws Exception
      */
-    public ReferencedEnvelope setLayers() throws Exception {
+    public synchronized ReferencedEnvelope setLayers() throws Exception {
+        if (content != null) {
+            content.dispose();
+            content = null;
+            renderer = null;
+        }
+        layers = new ArrayList<Layer>();
+
         ReferencedEnvelope maxExtent = null;
 
         // wms first
@@ -348,6 +422,21 @@ public class ImageGenerator {
         }
         monitor.done();
 
+        for( int i = 0; i < coverages.size(); i++ ) {
+            GridCoverage2D coverage = coverages.get(i);
+            Style style = coverageStyles.get(i);
+            if (style == null) {
+                style = createDefaultCoverageStyle(coverage);
+            }
+            layers.add(new GridCoverageLayer(coverage, style));
+
+            var envelope = coverage.getEnvelope();
+            if (maxExtent == null) {
+                maxExtent = new ReferencedEnvelope(envelope.getCoordinateReferenceSystem());
+            }
+            expandToIncludeEnvelope(maxExtent, envelope);
+        }
+
         monitor.beginTask("Reading vector maps...", featurePaths.size());
         for( int i = 0; i < featurePaths.size(); i++ ) {
             String featurePath = featurePaths.get(i);
@@ -383,10 +472,65 @@ public class ImageGenerator {
             monitor.worked(1);
         }
 
+        for( int i = 0; i < featureCollections.size(); i++ ) {
+            SimpleFeatureCollection featureCollection = featureCollections.get(i);
+            Style style = featureStyles.get(i);
+            if (style == null) {
+                style = StyleUtilities.createDefaultStyle(featureCollection);
+            }
+            if (style == null) {
+                style = SLD.createSimpleStyle(featureCollection.getSchema());
+            }
+            layers.add(new FeatureLayer(featureCollection, style));
+
+            if (maxExtent == null) {
+                maxExtent = new ReferencedEnvelope(featureCollection.getSchema().getCoordinateReferenceSystem());
+            }
+            expandToIncludeEnvelope(maxExtent, featureCollection.getBounds());
+        }
+
         synchronizedLayers = Collections.synchronizedList(layers);
 
         monitor.done();
         return maxExtent;
+    }
+
+    private Style createDefaultCoverageStyle( GridCoverage2D coverage ) throws Exception {
+        if (coverage.getNumSampleDimensions() == 1) {
+            double[] minMax = OmsRasterSummary.getMinMax(coverage);
+            if (!Double.isNaN(minMax[0]) && !Double.isNaN(minMax[1])) {
+                return RasterStyleUtilities.createStyleForColortable(DEFAULT_COLORTABLE, minMax[0], minMax[1], 1.0);
+            }
+        }
+        return RasterStyleUtilities.createDefaultRasterStyle();
+    }
+
+    /**
+     * Draw all the layers on their full extent.
+     *
+     * <p>This calls {@link #setLayers()}, so it can be used right after adding the data.
+     * The aspect ratio of the data is kept and the background is transparent.</p>
+     *
+     * @param imageWidth the width of the image to produce.
+     * @param imageHeight the height of the image to produce.
+     * @param buffer the buffer to add around the map bounds in map units.
+     * @return the image.
+     * @throws Exception
+     */
+    public BufferedImage drawFullExtent( int imageWidth, int imageHeight, double buffer ) throws Exception {
+        ReferencedEnvelope extent = setLayers();
+        if (extent == null || extent.isNull()) {
+            throw new IllegalStateException("No layers with valid bounds to draw.");
+        }
+        if (extent.getWidth() == 0 || extent.getHeight() == 0) {
+            // single point or aligned points, give them some room
+            double delta = Math.max(extent.getWidth(), extent.getHeight()) * 0.05;
+            if (delta == 0) {
+                delta = 1.0;
+            }
+            extent.expandBy(delta, delta);
+        }
+        return drawImageWithNewMapContent(extent, imageWidth, imageHeight, buffer);
     }
 
     private void expandToIncludeEnvelope( ReferencedEnvelope maxExtent, Bounds envelope ) {
@@ -398,6 +542,14 @@ public class ImageGenerator {
         coordinate = ur.getCoordinate();
         tmpExtent.expandToInclude(new Coordinate(coordinate[0], coordinate[1]));
 
+        CoordinateReferenceSystem sourceCrs = tmpExtent.getCoordinateReferenceSystem();
+        CoordinateReferenceSystem targetCrs = maxExtent.getCoordinateReferenceSystem();
+        if (sourceCrs == null || targetCrs == null || HMCrsRegistry.crsEquals(sourceCrs, targetCrs)) {
+            // nothing to transform, ex. geometries without crs
+            maxExtent.expandToInclude(new Coordinate(tmpExtent.getMinX(), tmpExtent.getMinY()));
+            maxExtent.expandToInclude(new Coordinate(tmpExtent.getMaxX(), tmpExtent.getMaxY()));
+            return;
+        }
         try {
             ReferencedEnvelope transformed = tmpExtent.transform(maxExtent.getCoordinateReferenceSystem(), true);
             maxExtent.expandToInclude(transformed);
@@ -441,6 +593,7 @@ public class ImageGenerator {
     public BufferedImage drawImage( ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
         checkMapContent();
 
+        ref = new ReferencedEnvelope(ref);
         if (buffer > 0.0)
             ref.expandBy(buffer, buffer);
 
@@ -467,6 +620,7 @@ public class ImageGenerator {
     public void drawImage( Graphics2D g2d, ReferencedEnvelope ref, int imageWidth, int imageHeight, double buffer ) {
         checkMapContent();
 
+        ref = new ReferencedEnvelope(ref);
         if (buffer > 0.0)
             ref.expandBy(buffer, buffer);
 
@@ -516,8 +670,9 @@ public class ImageGenerator {
         StreamingRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(content);
 
+        // work on a copy, the aspect ratio fix below would change the caller's envelope
+        ref = new ReferencedEnvelope(ref);
         if (buffer > 0.0) {
-            ref = new ReferencedEnvelope(ref);
             ref.expandBy(buffer, buffer);
         }
 

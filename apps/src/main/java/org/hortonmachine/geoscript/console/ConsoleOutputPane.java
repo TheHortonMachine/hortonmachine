@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.geoscript.console;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -27,28 +28,37 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.table.TableColumn;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-import org.codehaus.groovy.runtime.FormatHelper;
 import org.hortonmachine.HM;
 import org.hortonmachine.gears.utils.coverage.RasterCellInfo;
+import org.hortonmachine.gears.utils.display.DisplayImage;
+import org.hortonmachine.gears.utils.display.DisplayOptions;
+import org.hortonmachine.gears.utils.display.DisplayPart;
+import org.hortonmachine.gears.utils.display.DisplayRenderers;
+import org.hortonmachine.gears.utils.display.DisplayTable;
+import org.hortonmachine.gears.utils.display.DisplayText;
+import org.hortonmachine.gears.utils.display.TableDisplayRenderer;
 import org.hortonmachine.gui.editor.CodeEditorFactory;
 
 /**
@@ -68,6 +78,8 @@ public class ConsoleOutputPane extends JTextPane {
 
     private static final int MAX_LENGTH = 2_000_000;
     private static final int IMAGE_SIZE = 600;
+    /** The tables scroll, so they can hold more rows than the default. */
+    private static final DisplayOptions DISPLAY_OPTIONS = new DisplayOptions(IMAGE_SIZE, IMAGE_SIZE, 1000);
 
     public final SimpleAttributeSet normalStyle = new SimpleAttributeSet();
     public final SimpleAttributeSet errorStyle = new SimpleAttributeSet();
@@ -292,30 +304,44 @@ public class ConsoleOutputPane extends JTextPane {
             return new ImageIcon(((geoscript.render.Map) result).renderToImage());
         }
         if (result instanceof geoscript.feature.Feature) {
-            return mapTable(((geoscript.feature.Feature) result).getAttributes(), "Name");
+            Map< ? , ? > attributes = ((geoscript.feature.Feature) result).getAttributes();
+            return table(TableDisplayRenderer.mapTable(attributes, "Name", attributes.size()));
         }
         if (result instanceof RasterCellInfo) {
             return result.toString();
         }
-        if (result instanceof Map) {
-            return mapTable((Map< ? , ? >) result, "Key");
+        return toSwing(DisplayRenderers.render(result, DISPLAY_OPTIONS));
+    }
+
+    /**
+     * Convert the display parts: a single text stays text, the rest becomes components.
+     */
+    private Object toSwing( List<DisplayPart> parts ) {
+        if (parts.size() == 1 && parts.get(0) instanceof DisplayText) {
+            return ((DisplayText) parts.get(0)).text();
         }
-        if (result instanceof Collection && !((Collection< ? >) result).isEmpty()) {
-            return collectionTable((Collection< ? >) result);
+        if (parts.size() == 1 && parts.get(0) instanceof DisplayImage) {
+            return new ImageIcon(((DisplayImage) parts.get(0)).image());
         }
-        if (result instanceof double[][]) {
-            double[][] matrix = (double[][]) result;
-            List<List<Object>> rows = new ArrayList<>();
-            for( double[] row : matrix ) {
-                List<Object> values = new ArrayList<>();
-                for( double v : row ) {
-                    values.add(v);
-                }
-                rows.add(values);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setOpaque(false);
+        panel.setAlignmentY(0.8f);
+        for( DisplayPart part : parts ) {
+            JComponent component;
+            if (part instanceof DisplayText) {
+                JLabel label = new JLabel(((DisplayText) part).text());
+                label.setFont(getFont());
+                component = label;
+            } else if (part instanceof DisplayImage) {
+                component = new JLabel(new ImageIcon(((DisplayImage) part).image()));
+            } else {
+                component = table((DisplayTable) part);
             }
-            return collectionTable(rows);
+            component.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panel.add(component);
         }
-        return FormatHelper.toString(result);
+        return panel;
     }
 
     private static Map<String, Object> imageOptions() {
@@ -325,53 +351,58 @@ public class ConsoleOutputPane extends JTextPane {
         return options;
     }
 
-    private JComponent mapTable( Map< ? , ? > map, String keyHeader ) {
-        Object[][] data = new Object[map.size()][];
-        int i = 0;
-        for( Map.Entry< ? , ? > entry : map.entrySet() ) {
-            data[i++] = new Object[]{String.valueOf(entry.getKey()), FormatHelper.inspect(entry.getValue())};
+    private JComponent table( DisplayTable displayTable ) {
+        List<List<String>> rows = displayTable.rows();
+        Object[][] data = new Object[rows.size()][];
+        for( int i = 0; i < rows.size(); i++ ) {
+            data[i] = rows.get(i).toArray();
         }
-        return table(data, new Object[]{keyHeader, "Value"});
-    }
-
-    private JComponent collectionTable( Collection< ? > collection ) {
-        int columns = 1;
-        boolean nested = false;
-        for( Object item : collection ) {
-            if (item instanceof Collection) {
-                nested = true;
-                columns = Math.max(columns, ((Collection< ? >) item).size());
-            }
-        }
-        Object[][] data = new Object[collection.size()][columns];
-        int i = 0;
-        for( Object item : collection ) {
-            if (item instanceof Collection) {
-                int j = 0;
-                for( Object value : (Collection< ? >) item ) {
-                    data[i][j++] = String.valueOf(value);
-                }
-            } else {
-                data[i][0] = String.valueOf(item);
-            }
-            i++;
-        }
-        Object[] header = new Object[columns];
-        for( int c = 0; c < columns; c++ ) {
-            header[c] = nested ? "Value " + (c + 1) : "Value";
-        }
-        return table(data, header);
-    }
-
-    private JComponent table( Object[][] data, Object[] header ) {
-        JTable table = new JTable(data, header);
+        JTable table = new JTable(data, displayTable.header().toArray());
         table.setDefaultEditor(Object.class, null);
+        fitColumns(table);
         Dimension preferred = table.getPreferredSize();
         int width = Math.max(300, Math.min(preferred.width, 900));
         int height = Math.min(preferred.height, 300);
         table.setPreferredScrollableViewportSize(new Dimension(width, height));
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setAlignmentY(0.8f);
-        return scrollPane;
+        if (!displayTable.isTruncated()) {
+            return scrollPane;
+        }
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+        panel.setAlignmentY(0.8f);
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(new JLabel("Showing " + rows.size() + " of " + displayTable.totalRows() + " rows."), BorderLayout.SOUTH);
+        return panel;
+    }
+
+    /**
+     * Size the columns on their header and content, so that tables with many columns
+     * scroll horizontally instead of squeezing them.
+     */
+    private static void fitColumns( JTable table ) {
+        int minWidth = 40;
+        int maxWidth = 300;
+        int padding = 12;
+        // the content of the first rows is enough to size the columns
+        int rowsToCheck = Math.min(table.getRowCount(), 200);
+        int totalWidth = 0;
+        for( int c = 0; c < table.getColumnCount(); c++ ) {
+            TableColumn column = table.getColumnModel().getColumn(c);
+            Component header = table.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(table,
+                    column.getHeaderValue(), false, false, -1, c);
+            int width = header.getPreferredSize().width;
+            for( int r = 0; r < rowsToCheck; r++ ) {
+                Component cell = table.prepareRenderer(table.getCellRenderer(r, c), r, c);
+                width = Math.max(width, cell.getPreferredSize().width);
+            }
+            width = Math.max(minWidth, Math.min(maxWidth, width + padding));
+            column.setPreferredWidth(width);
+            totalWidth += width;
+        }
+        if (totalWidth > 900) {
+            table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        }
     }
 }
