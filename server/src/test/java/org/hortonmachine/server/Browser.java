@@ -30,6 +30,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.stream.Stream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +56,34 @@ public class Browser {
 
     public HttpResponse<String> get( String path ) throws Exception {
         return client.send(HttpRequest.newBuilder(URI.create(base + path)).build(), HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * Get a page with more headers, as names and values.
+     */
+    public HttpResponse<String> getWithHeaders( String path, String... headers ) throws Exception {
+        return client.send(HttpRequest.newBuilder(URI.create(base + path)).headers(headers).build(),
+                HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * Read the server sent events of a path in a thread, putting the data of each event in a queue.
+     *
+     * @return the queue of the data of the events.
+     */
+    public BlockingQueue<String> events( String path ) throws Exception {
+        BlockingQueue<String> events = new LinkedBlockingQueue<>();
+        HttpResponse<Stream<String>> response = client.send(
+                HttpRequest.newBuilder(URI.create(base + path)).header("Accept", "text/event-stream").build(),
+                HttpResponse.BodyHandlers.ofLines());
+        Thread reader = new Thread(() -> response.body().forEach(line -> {
+            if (line.startsWith("data:")) {
+                events.add(line.substring(5).trim());
+            }
+        }));
+        reader.setDaemon(true);
+        reader.start();
+        return events;
     }
 
     public HttpResponse<byte[]> getBytes( String path ) throws Exception {

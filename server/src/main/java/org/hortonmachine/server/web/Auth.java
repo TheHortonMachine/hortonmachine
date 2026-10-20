@@ -100,6 +100,17 @@ public class Auth {
      * Add the session configuration, the checks before the requests and the login and logout pages.
      */
     public void register( JavalinConfig config ) {
+        configureSessions(config);
+        config.routes.before(this::beforeRequest);
+        config.routes.get("/login", this::loginPage);
+        config.routes.post("/login", this::login);
+        config.routes.post("/logout", this::logout);
+    }
+
+    /**
+     * Configure the session cookie: HttpOnly, SameSite=Strict, ending after {@value #SESSION_HOURS} hours without requests.
+     */
+    public static void configureSessions( JavalinConfig config ) {
         config.jetty.modifyServletContextHandler(handler -> {
             SessionHandler sessions = new SessionHandler();
             sessions.setSessionCookie(SESSION_COOKIE);
@@ -108,10 +119,38 @@ public class Auth {
             sessions.setMaxInactiveInterval(SESSION_HOURS * 3600);
             handler.setSessionHandler(sessions);
         });
-        config.routes.before(this::beforeRequest);
-        config.routes.get("/login", this::loginPage);
-        config.routes.post("/login", this::login);
-        config.routes.post("/logout", this::logout);
+    }
+
+    /**
+     * Set the security headers: no scripts, frames or foreign form targets.
+     */
+    public static void securityHeaders( Context ctx ) {
+        ctx.header("Content-Security-Policy", CONTENT_SECURITY_POLICY);
+        ctx.header("X-Content-Type-Options", "nosniff");
+        ctx.header("X-Frame-Options", "DENY");
+        ctx.header("Referrer-Policy", "no-referrer");
+    }
+
+    /**
+     * Refuse a POST without the token of the session.
+     *
+     * @throws ForbiddenResponse if the token is missing or wrong.
+     */
+    public static void checkCsrf( Context ctx ) {
+        HttpSession session = ctx.req().getSession(false);
+        String expected = session != null ? (String) session.getAttribute(SESSION_CSRF) : null;
+        String token = ctx.formParam(CSRF_FIELD);
+        if (expected == null || token == null
+                || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8), token.getBytes(StandardCharsets.UTF_8))) {
+            throw new ForbiddenResponse("The form has expired: reload the page and try again.");
+        }
+    }
+
+    /**
+     * @return a new random token, url safe.
+     */
+    public static String randomToken() {
+        return newToken();
     }
 
     /**
@@ -215,10 +254,7 @@ public class Auth {
     }
 
     private void beforeRequest( Context ctx ) throws Exception {
-        ctx.header("Content-Security-Policy", CONTENT_SECURITY_POLICY);
-        ctx.header("X-Content-Type-Options", "nosniff");
-        ctx.header("X-Frame-Options", "DENY");
-        ctx.header("Referrer-Policy", "no-referrer");
+        securityHeaders(ctx);
         if (isApi(ctx.path())) {
             if (ctx.path().equals(API_DOCS) && ctx.method() == HandlerType.GET) {
                 // a page without data or effects, shown with the menu of the logged in user
@@ -233,13 +269,7 @@ public class Auth {
         }
 
         if (ctx.method() == HandlerType.POST) {
-            HttpSession session = ctx.req().getSession(false);
-            String expected = session != null ? (String) session.getAttribute(SESSION_CSRF) : null;
-            String token = ctx.formParam(CSRF_FIELD);
-            if (expected == null || token == null
-                    || !MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8), token.getBytes(StandardCharsets.UTF_8))) {
-                throw new ForbiddenResponse("The form has expired: reload the page and try again.");
-            }
+            checkCsrf(ctx);
         }
 
         User user = sessionUser(ctx);

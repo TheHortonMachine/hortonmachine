@@ -55,7 +55,8 @@ import io.javalin.http.NotFoundResponse;
  * <li><code>title</code>: the title of the page;</li>
  * <li><code>csrf</code>: the token to put in every form, as <code>&lt;input type="hidden" name="csrf" value="{{csrf}}"&gt;</code>;</li>
  * <li><code>user</code>: the logged in user, with <code>username</code> and <code>isAdmin</code>, missing in the login page;</li>
- * <li><code>version</code>: the version of HortonMachine.</li>
+ * <li><code>version</code>: the version of HortonMachine;</li>
+ * <li><code>notebooks</code>: <code>true</code> in the notebook server, which has only the notebooks.</li>
  * </ul>
  *
  * <p>Developed with the assistance of an AI coding agent;
@@ -74,6 +75,7 @@ public class Templates {
 
     private final File overrideFolder;
     private final DefaultMustacheFactory cachedFactory;
+    private boolean notebooks = false;
 
     /**
      * @param workspace the workspace, whose {@value #OVERRIDE_FOLDER} folder can replace the templates.
@@ -81,6 +83,13 @@ public class Templates {
     public Templates( File workspace ) {
         overrideFolder = new File(workspace, OVERRIDE_FOLDER);
         cachedFactory = new DefaultMustacheFactory(this::getReader);
+    }
+
+    /**
+     * @param notebooks <code>true</code> in the notebook server, for the menu.
+     */
+    public void setNotebooks( boolean notebooks ) {
+        this.notebooks = notebooks;
     }
 
     /**
@@ -158,7 +167,7 @@ public class Templates {
         User user = Auth.user(ctx);
         Model common = Model.of("title", title, "csrf", Auth.csrfToken(ctx), "version", Version.getVersion(), //
                 "user", user == null ? null : Model.of("username", user.username, "isAdmin", user.isAdmin()), //
-                "refresh", refreshSeconds);
+                "refresh", refreshSeconds, "notebooks", notebooks);
         String content = render(template, common, model);
         return render(LAYOUT, common, Model.of("content", content));
     }

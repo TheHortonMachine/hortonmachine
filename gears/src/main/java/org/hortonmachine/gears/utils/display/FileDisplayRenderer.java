@@ -26,6 +26,8 @@ import java.util.List;
 import javax.imageio.ImageIO;
 
 import org.geotools.api.style.Style;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
@@ -36,6 +38,7 @@ import org.hortonmachine.dbs.utils.TableName;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.images.ImageUtilities;
@@ -83,7 +86,7 @@ public class FileDisplayRenderer implements IDisplayRenderer {
 
         List<DisplayPart> parts = new ArrayList<>();
         if (endsWith(name, RASTERS)) {
-            parts.addAll(new RasterDisplayRenderer().render(OmsRasterReader.readRaster(path), findStyle(path), options));
+            parts.addAll(new RasterDisplayRenderer().render(readRaster(path), findStyle(path), options));
         } else if (endsWith(name, IMAGES)) {
             BufferedImage image = ImageIO.read(file);
             if (image == null) {
@@ -104,13 +107,31 @@ public class FileDisplayRenderer implements IDisplayRenderer {
                         "Vector tables: " + String.join(", ", tables) + ". Showing " + tables.get(0) + "."));
             }
             String tablePath = path + HMConstants.DB_TABLE_PATH_SEPARATOR + tables.get(0);
-            parts.addAll(new FeatureDisplayRenderer().render(OmsVectorReader.readVector(tablePath), findStyle(tablePath),
-                    options));
+            parts.addAll(new FeatureDisplayRenderer().render(readVector(tablePath), findStyle(tablePath), options));
         } else {
             // vectors and geopackage tables
-            parts.addAll(new FeatureDisplayRenderer().render(OmsVectorReader.readVector(path), findStyle(path), options));
+            parts.addAll(new FeatureDisplayRenderer().render(readVector(path), findStyle(path), options));
         }
         return parts;
+    }
+
+    /**
+     * Read a raster without printing the progress: it is not what the user asked for.
+     */
+    private static GridCoverage2D readRaster( String path ) throws Exception {
+        OmsRasterReader reader = new OmsRasterReader();
+        reader.pm = new DummyProgressMonitor();
+        reader.file = path;
+        reader.process();
+        return reader.outRaster;
+    }
+
+    private static SimpleFeatureCollection readVector( String path ) throws Exception {
+        OmsVectorReader reader = new OmsVectorReader();
+        reader.pm = new DummyProgressMonitor();
+        reader.file = path;
+        reader.process();
+        return reader.outVector;
     }
 
     /**

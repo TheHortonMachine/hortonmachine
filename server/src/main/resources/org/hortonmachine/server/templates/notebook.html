@@ -1,0 +1,52 @@
+<link rel="stylesheet" href="/static/notebook/codemirror.css">
+<link rel="stylesheet" href="/static/notebook/notebook.css">
+<div id="notebook" data-base="{{base}}" data-csrf="{{csrf}}">
+  <div class="nb-toolbar">
+    <h1 class="nb-title"><a href="/notebooks">Notebooks</a> / {{name}}</h1>
+    <div class="nb-buttons">
+      <button type="button" data-action="save" title="Save (Ctrl+S)">Save</button>
+      <button type="button" data-action="download" title="Save and download the .ipynb file">Download</button>
+      <button type="button" data-action="add-code" title="Add a code cell below the selected one">+ Code</button>
+      <button type="button" data-action="add-markdown" title="Add a text cell below the selected one">+ Text</button>
+      <button type="button" data-action="run-all">Run all</button>
+      <button type="button" data-action="interrupt" title="Stop the running cell">Stop</button>
+      <button type="button" data-action="restart" title="Start a new kernel: the variables are lost">Restart</button>
+      <details class="nb-help" id="nb-help">
+        <summary title="The keyboard shortcuts (H)">Keys</summary>
+        <div class="nb-help-panel">
+          <table>
+            <tr><th colspan="2">While editing a cell</th></tr>
+            <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>run, go to the next cell</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>run</td></tr>
+            <tr><td><kbd>Alt</kbd>+<kbd>Enter</kbd></td><td>run, add a cell below</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>save</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>leave the editor, for the keys below</td></tr>
+            <tr><th colspan="2">Outside the editor, as in Jupyter</th></tr>
+            <tr><td><kbd>Enter</kbd></td><td>edit the cell</td></tr>
+            <tr><td><kbd>↑</kbd> <kbd>↓</kbd> or <kbd>K</kbd> <kbd>J</kbd></td><td>select the cell above / below</td></tr>
+            <tr><td><kbd>A</kbd> <kbd>B</kbd></td><td>add a cell above / below</td></tr>
+            <tr><td><kbd>D</kbd> <kbd>D</kbd></td><td>delete the cell</td></tr>
+            <tr><td><kbd>Z</kbd></td><td>bring back the deleted cell</td></tr>
+            <tr><td><kbd>M</kbd> <kbd>Y</kbd></td><td>make it a text / code cell</td></tr>
+            <tr><td><kbd>X</kbd> <kbd>C</kbd> <kbd>V</kbd></td><td>cut / copy / paste the cell</td></tr>
+            <tr><td><kbd>I</kbd> <kbd>I</kbd></td><td>stop the running cell</td></tr>
+            <tr><td><kbd>0</kbd> <kbd>0</kbd></td><td>restart the kernel</td></tr>
+            <tr><td><kbd>S</kbd></td><td>save</td></tr>
+            <tr><td><kbd>H</kbd></td><td>show or hide these keys</td></tr>
+          </table>
+          <p class="muted">The value of the last line of a cell is shown, as what <code>display(value)</code> gets.
+            Double click a text cell to edit it.</p>
+        </div>
+      </details>
+      <span class="nb-state" id="nb-state" role="status">kernel off</span>
+      <span class="nb-saved muted" id="nb-saved"></span>
+    </div>
+  </div>
+  <div id="nb-cells" class="nb-cells"><p class="muted">Loading...</p></div>
+</div>
+<script src="/static/notebook/codemirror.js"></script>
+<script src="/static/notebook/groovy.js"></script>
+<script src="/static/notebook/markdown.js"></script>
+<script src="/static/notebook/matchbrackets.js"></script>
+<script src="/static/notebook/closebrackets.js"></script>
+<script src="/static/notebook/notebook.js"></script>

@@ -28,7 +28,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -163,9 +162,7 @@ public class JobManager implements AutoCloseable {
         if (!jobsFolder.isDirectory() && !jobsFolder.mkdirs()) {
             throw new IllegalStateException("The jobs folder can't be created: " + jobsFolder.getAbsolutePath());
         }
-        // in a file, since the classpath can be longer than the command line allows on Windows
-        String classpath = System.getProperty("java.class.path").replace("\\", "\\\\");
-        FileUtilities.writeFile("-cp\n\"" + classpath + "\"\n", new File(jobsFolder, ARGS_FILE));
+        JavaCommand.writeArgsFile(new File(jobsFolder, ARGS_FILE));
 
         db.failUnfinishedJobs("The server stopped while the job was queued or running.", System.currentTimeMillis());
         // also without days to keep the jobs, since they can be set later
@@ -484,17 +481,7 @@ public class JobManager implements AutoCloseable {
         Job job = activeJob.job;
         File jobFolder = getJobFolder(job.id);
         try {
-            List<String> command = new ArrayList<>();
-            command.add(Paths.get(System.getProperty("java.home"), "bin", "java").toString());
-            command.add("-Xmx" + jobMemory);
-            command.add("-Xss64m");
-            command.add("-Djava.awt.headless=true");
-            // from java 18 the default charset, used to read the output, is UTF-8 and the console one may differ
-            command.add("-Dstdout.encoding=" + Charset.defaultCharset().name());
-            command.add("-Dstderr.encoding=" + Charset.defaultCharset().name());
-            copyProperty(command, "java.util.logging.config.file");
-            copyProperty(command, "java.library.path");
-            command.add("@" + new File(jobsFolder, ARGS_FILE).getAbsolutePath());
+            List<String> command = javaCommand();
             command.add(HmCli.class.getName());
             command.add("run");
             command.add(job.module);
@@ -642,11 +629,11 @@ public class JobManager implements AutoCloseable {
         }
     }
 
-    private static void copyProperty( List<String> command, String name ) {
-        String value = System.getProperty(name);
-        if (value != null && !value.isEmpty()) {
-            command.add("-D" + name + "=" + value);
-        }
+    /**
+     * @return the start of the command of a job process, see {@link JavaCommand}.
+     */
+    private List<String> javaCommand() {
+        return JavaCommand.build(new File(jobsFolder, ARGS_FILE), jobMemory);
     }
 
     /**

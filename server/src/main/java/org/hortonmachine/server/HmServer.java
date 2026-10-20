@@ -18,6 +18,7 @@
 package org.hortonmachine.server;
 
 import java.io.Console;
+import java.io.File;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,6 +37,8 @@ import org.hortonmachine.server.files.FileOrigin;
 import org.hortonmachine.server.files.FileOrigins;
 import org.hortonmachine.server.jobs.JobManager;
 import org.hortonmachine.server.jobs.CogOutputs;
+import org.hortonmachine.server.jobs.JavaCommand;
+import org.hortonmachine.server.notebooks.NotebookManager;
 import org.hortonmachine.server.stac.StacIndexer;
 import org.hortonmachine.server.uploads.UploadManager;
 import org.hortonmachine.server.users.Role;
@@ -47,6 +50,8 @@ import org.hortonmachine.server.web.Auth;
 import org.hortonmachine.server.web.FileSuggestions;
 import org.hortonmachine.server.web.JobPages;
 import org.hortonmachine.server.web.ModulePages;
+import org.hortonmachine.server.web.NotebookAuth;
+import org.hortonmachine.server.web.NotebookPages;
 import org.hortonmachine.server.web.OgcApi;
 import org.hortonmachine.server.web.StacApi;
 import org.hortonmachine.server.web.Templates;
@@ -80,6 +85,8 @@ public class HmServer {
     private static final long MB = 1024L * 1024L;
     /** The unpacked files of a zip file can be this many times larger than the largest upload. */
     private static final int UNPACKED_FACTOR = 10;
+    /** The java arguments file with the classpath of the kernels of the notebooks, in the workspace. */
+    private static final String KERNEL_ARGS_FILE = "hm-notebook-kernel.args";
 
     private final ServerConfig config;
     private ServerDb db;
@@ -90,6 +97,8 @@ public class HmServer {
     private FileSuggestions fileSuggestions;
     private UrlSigner urlSigner;
     private StacIndexer stacIndexer;
+    private NotebookManager notebookManager;
+    private String notebookToken;
     private MultipartConfig multipartConfig;
     private Javalin app;
 
@@ -126,10 +135,18 @@ public class HmServer {
             return;
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("HortonMachine server shutting down: the queued and running jobs are killed...");
+            System.out.println("HortonMachine server shutting down: the running " + (config.notebooks ? "notebooks" : "jobs")
+                    + " are killed...");
             server.stop();
             System.out.println("HortonMachine server stopped.");
         }));
+        if (config.notebooks) {
+            System.out.println("HortonMachine notebooks " + Version.getVersion() + ", folder "
+                    + config.getNotebooksFolder().getAbsolutePath());
+            System.out.println("Open this link in the browser of this computer, it works only with its token:");
+            System.out.println("    " + server.getNotebookUrl());
+            return;
+        }
         System.out.println("HortonMachine server " + Version.getVersion() + " listening on port " + server.getPort()
                 + ", workspace " + config.workspace.getAbsolutePath());
         try {
@@ -194,6 +211,10 @@ public class HmServer {
      * @throws Exception if the workspace or the database can't be opened or the port is not available.
      */
     public void start() throws Exception {
+        if (config.notebooks) {
+            startNotebooks();
+            return;
+        }
         long startTime = System.currentTimeMillis();
         WorkspacePaths paths = new WorkspacePaths(config.workspace);
         if (!config.workspace.isDirectory() && !config.workspace.mkdirs()) {
@@ -263,6 +284,51 @@ public class HmServer {
     }
 
     /**
+     * Start the notebook server: only the notebooks, no database, jobs or catalog, listening only on the
+     * local address, opened with the token of {@link #getNotebookToken()}.
+     */
+    private void startNotebooks() throws Exception {
+        if (!config.workspace.isDirectory() && !config.workspace.mkdirs()) {
+            throw new IllegalStateException("The workspace can't be created: " + config.workspace);
+        }
+        File argsFile = new File(config.workspace, KERNEL_ARGS_FILE);
+        JavaCommand.writeArgsFile(argsFile);
+        notebookManager = new NotebookManager(config.getNotebooksFolder(),
+                () -> JavaCommand.build(argsFile, config.jobMemory));
+        Templates templates = new Templates(config.workspace);
+        templates.setNotebooks(true);
+        notebookToken = Auth.randomToken();
+        NotebookAuth auth = new NotebookAuth(notebookToken, templates);
+        NotebookPages notebookPages = new NotebookPages(notebookManager, templates);
+
+        app = Javalin.create(javalinConfig -> {
+            javalinConfig.startup.showJavalinBanner = false;
+            javalinConfig.startup.showOldJavalinVersionWarning = false;
+            auth.register(javalinConfig);
+            templates.register(javalinConfig);
+            javalinConfig.routes.get("/", ctx -> ctx.redirect("/notebooks"));
+            notebookPages.register(javalinConfig);
+        });
+        // the cells run any code: only for the browsers of this computer
+        app.start(ServerConfig.LOCALHOST, config.port);
+    }
+
+    /**
+     * @return the token of the link that opens the notebook server, once started; <code>null</code> for the
+     *         server of the modules.
+     */
+    public String getNotebookToken() {
+        return notebookToken;
+    }
+
+    /**
+     * @return the link that opens the notebook server, with its token.
+     */
+    public String getNotebookUrl() {
+        return "http://localhost:" + getPort() + "/?" + NotebookAuth.TOKEN_PARAM + "=" + notebookToken;
+    }
+
+    /**
      * Record the files of the uploads moved into the areas of their users as uploaded by them, at the time of the file.
      */
     private static void recordMigratedUploads( WorkspacePaths paths, FileOrigins fileOrigins, Map<String, String> areas )
@@ -319,6 +385,10 @@ public class HmServer {
             app = null;
         }
         try {
+            if (notebookManager != null) {
+                notebookManager.close();
+                notebookManager = null;
+            }
             if (stacIndexer != null) {
                 stacIndexer.close();
                 stacIndexer = null;

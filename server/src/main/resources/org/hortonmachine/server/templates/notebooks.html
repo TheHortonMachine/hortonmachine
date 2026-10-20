@@ -1,0 +1,33 @@
+<h1>Notebooks</h1>
+{{> messages}}
+<p class="help muted">Notebooks mix text and Groovy code cells that run on this computer, with maps, tables and
+  values shown under the cells. They are saved as Jupyter notebooks in <code>{{folder}}</code>, which is also the
+  folder of the relative paths of the cells.</p>
+
+<form class="actions" method="post" action="/notebooks">
+  <input type="hidden" name="csrf" value="{{csrf}}">
+  <input type="text" name="name" placeholder="Name of a new notebook" required maxlength="100" aria-label="Name of a new notebook">
+  <button type="submit">Create</button>
+</form>
+
+{{^hasNotebooks}}<p class="muted">No notebooks yet.</p>{{/hasNotebooks}}
+{{#hasNotebooks}}
+<div class="scroll">
+  <table>
+    <tr><th>Name</th><th>Changed</th><th></th></tr>
+    {{#notebookList}}
+    <tr>
+      <td><a href="{{href}}">{{name}}</a></td>
+      <td>{{modified}}</td>
+      <td>
+        <a href="{{href}}/download">Download</a>
+        <form class="inline" method="post" action="{{href}}/delete">
+          <input type="hidden" name="csrf" value="{{csrf}}">
+          <button class="link" type="submit">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{/notebookList}}
+  </table>
+</div>
+{{/hasNotebooks}}

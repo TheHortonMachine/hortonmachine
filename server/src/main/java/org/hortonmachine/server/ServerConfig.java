@@ -143,6 +143,20 @@ public class ServerConfig {
     public String dbUser;
     /** The name of an administrator to create, instead of starting the server, or <code>null</code>. */
     public String createAdmin;
+    /**
+     * If the server is a notebook server, instead of the server of the modules: a personal tool, whose cells
+     * run any code on this computer, so it listens only on {@value #LOCALHOST}, accepts only requests
+     * addressed to the local host and opens with a token printed at the start instead of accounts.
+     */
+    public boolean notebooks = false;
+    /** The folder of the notebooks, or <code>null</code> for the {@value #NOTEBOOKS_FOLDER} folder of the workspace. */
+    public File notebooksFolder;
+
+    /** The default folder of the notebooks, in the workspace. */
+    public static final String NOTEBOOKS_FOLDER = "notebooks";
+
+    /** The address the server listens on when the notebooks are on. */
+    public static final String LOCALHOST = "127.0.0.1";
 
     /** The settings given on the command line, which the settings file doesn't change. */
     public final Set<Setting> fromCommandLine = new LinkedHashSet<>();
@@ -196,6 +210,18 @@ public class ServerConfig {
                 }
                 config.createAdmin = value;
                 break;
+            case "notebooks":
+                if (!value.equals("true") && !value.equals("false")) {
+                    throw new IllegalArgumentException("The value of --notebooks must be true or false: " + value);
+                }
+                config.notebooks = Boolean.parseBoolean(value);
+                break;
+            case "notebooks-folder":
+                if (value.isEmpty()) {
+                    throw new IllegalArgumentException("The notebooks folder is missing.");
+                }
+                config.notebooksFolder = new File(value);
+                break;
             default:
                 Setting setting = Setting.of(name);
                 if (setting == null) {
@@ -205,7 +231,17 @@ public class ServerConfig {
                 config.fromCommandLine.add(setting);
             }
         }
+        if (config.notebooksFolder != null && !config.notebooks) {
+            throw new IllegalArgumentException("--notebooks-folder needs --notebooks=true.");
+        }
         return config;
+    }
+
+    /**
+     * @return the folder of the notebooks.
+     */
+    public File getNotebooksFolder() {
+        return notebooksFolder != null ? notebooksFolder : new File(workspace, NOTEBOOKS_FOLDER);
     }
 
     /**
@@ -361,6 +397,13 @@ public class ServerConfig {
         out.println("  --db-user=user          the user of the PostgreSQL database");
         out.println("  --create-admin=name     create an administrator in the workspace and exit, without starting;");
         out.println("                          the password is asked, or read from the " + ADMIN_PASSWORD_ENV + " variable");
+        out.println("  --notebooks=false       true to start a notebook server instead: a personal tool whose");
+        out.println("                          cells run any code on this computer. It has only the notebooks,");
+        out.println("                          listens only on " + LOCALHOST + " and opens with the link with");
+        out.println("                          a token that it prints at the start; --job-memory is the");
+        out.println("                          memory of each notebook");
+        out.println("  --notebooks-folder=path the folder of the notebooks and of the relative paths of their");
+        out.println("                          cells, default the " + NOTEBOOKS_FOLDER + " folder of the workspace");
         out.println("  --version               show the version");
         out.println();
         out.println("The options but the port, the workspace and the database can also be set by the administrators");
