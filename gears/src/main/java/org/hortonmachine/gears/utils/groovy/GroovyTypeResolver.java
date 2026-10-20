@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.geoscript.console;
+package org.hortonmachine.gears.utils.groovy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
  * Infers, without running it, the type of an expression in a groovy script.
  *
  * <p>
- * This is not a groovy type checker: it follows the simple cases that a script console needs, i.e.
+ * This is not a groovy type checker: it follows the simple cases that a script console or a notebook needs, i.e.
  * chains of property accesses and method calls that start from:
  * <ul>
  * <li>a variable of the binding (the type of its current value, once the script has run);</li>

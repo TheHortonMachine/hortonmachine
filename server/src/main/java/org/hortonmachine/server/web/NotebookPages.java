@@ -82,6 +82,8 @@ public class NotebookPages {
             "codemirror.css", new String[]{"codemirror/codemirror.css", "text/css"}, //
             "groovy.js", new String[]{"codemirror/groovy.js", "text/javascript"}, //
             "markdown.js", new String[]{"codemirror/markdown.js", "text/javascript"}, //
+            "show-hint.js", new String[]{"codemirror/show-hint.js", "text/javascript"}, //
+            "show-hint.css", new String[]{"codemirror/show-hint.css", "text/css"}, //
             "matchbrackets.js", new String[]{"codemirror/matchbrackets.js", "text/javascript"}, //
             "closebrackets.js", new String[]{"codemirror/closebrackets.js", "text/javascript"} //
     );
@@ -106,6 +108,7 @@ public class NotebookPages {
         config.routes.get("/notebooks/{name}/download", this::download);
         config.routes.post("/notebooks/{name}/save", this::save);
         config.routes.post("/notebooks/{name}/run", this::run);
+        config.routes.post("/notebooks/{name}/complete", this::complete);
         config.routes.post("/notebooks/{name}/interrupt", ctx -> {
             session(ctx).interrupt();
             ctx.status(HttpStatus.NO_CONTENT);
@@ -271,6 +274,24 @@ public class NotebookPages {
             throw new BadRequestResponse(e.getMessage());
         }
         ctx.status(HttpStatus.ACCEPTED);
+    }
+
+    /**
+     * The code completions at a position of a cell, from the kernel, which knows the values of the variables.
+     */
+    private void complete( Context ctx ) throws Exception {
+        NotebookSession session = session(ctx);
+        String code = ctx.formParam("code");
+        int cursor;
+        try {
+            cursor = Integer.parseInt(ctx.formParam("cursor"));
+        } catch (NumberFormatException e) {
+            throw new BadRequestResponse("The cursor position is needed.");
+        }
+        if (code == null || cursor < 0 || cursor > code.length()) {
+            throw new BadRequestResponse("The code and the cursor position are needed.");
+        }
+        ctx.contentType("application/json").result(session.complete(code, cursor).toString());
     }
 
     private void events( SseClient client ) {

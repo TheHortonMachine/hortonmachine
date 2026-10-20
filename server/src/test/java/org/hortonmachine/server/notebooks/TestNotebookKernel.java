@@ -210,6 +210,48 @@ public class TestNotebookKernel extends TestCase {
         }
     }
 
+    private JsonNode complete( String code ) throws Exception {
+        String id = "c" + (nextId++);
+        toKernel.println(mapper.writeValueAsString(Map.of("op", "complete", "id", id, "code", code, "cursor", code.length())));
+        while( true ) {
+            JsonNode message = next();
+            if (message.path("type").asText().equals("completions") && message.path("id").asText().equals(id)) {
+                return message;
+            }
+        }
+    }
+
+    private static JsonNode findItem( JsonNode completions, String name ) {
+        for( JsonNode item : completions.path("items") ) {
+            if (item.path("name").asText().equals(name)) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    public void testCompletion() throws Exception {
+        // a variable whose type is known only from its value
+        run("def things = [1, 2, 3].collect { it * 2 }\nimport java.time.Duration\nnull");
+        JsonNode completions = complete("things.si");
+        assertEquals(7, completions.path("from").asInt());
+        JsonNode size = findItem(completions, "size");
+        assertNotNull(completions.toString(), size);
+        assertEquals("method", size.path("kind").asText());
+        assertEquals(0, size.path("params").size());
+
+        // the import of the earlier cell is known
+        completions = complete("Duration.ofSec");
+        JsonNode ofSeconds = findItem(completions, "ofSeconds");
+        assertNotNull(completions.toString(), ofSeconds);
+        assertEquals("Duration", ofSeconds.path("type").asText());
+
+        // the variables, the most relevant first, and the keywords
+        completions = complete("thi");
+        assertEquals("things", completions.path("items").get(0).path("name").asText());
+        assertNotNull(findItem(completions, "this"));
+    }
+
     public void testInterrupt() throws Exception {
         String running = execute("while( true ) { }");
         String queued = execute("42");

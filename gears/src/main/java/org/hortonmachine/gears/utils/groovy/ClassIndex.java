@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package org.hortonmachine.geoscript.console;
+package org.hortonmachine.gears.utils.groovy;
 
 import java.io.File;
 import java.net.URI;
@@ -62,7 +62,7 @@ public class ClassIndex {
      * Start indexing in a daemon thread.
      */
     public void buildAsync() {
-        Thread thread = new Thread(this::build, "hm-console-class-index");
+        Thread thread = new Thread(this::build, "hm-class-index");
         thread.setDaemon(true);
         thread.start();
     }

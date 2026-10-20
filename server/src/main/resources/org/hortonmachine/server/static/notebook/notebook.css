@@ -75,6 +75,30 @@ button.nb-run {
 .nb-table table { font-size: 0.85em; }
 .nb-table th { position: sticky; top: 0; background: var(--panel); }
 
+/* the completions */
+.CodeMirror-hints {
+  font: 13px ui-monospace, "Cascadia Code", Menlo, Consolas, monospace; max-height: 18em; max-width: 720px; z-index: 30;
+  background: var(--bg); border: 1px solid var(--line); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+.CodeMirror-hint { color: var(--fg); padding: 2px 6px; display: flex; gap: 6px; align-items: baseline; white-space: nowrap; }
+li.CodeMirror-hint-active { background: var(--accent); color: var(--bg); }
+li.CodeMirror-hint-active .nb-hint-detail, li.CodeMirror-hint-active .nb-hint-params { color: var(--bg); }
+.nb-hint-kind {
+  display: inline-block; width: 1.3em; text-align: center; border-radius: 50%; color: #ffffff;
+  font: bold 10px system-ui, sans-serif; line-height: 1.3em; flex: none; align-self: center;
+}
+.nb-hint-method { background: #3b82f6; }
+.nb-hint-gdk { background: #64748b; }
+.nb-hint-property { background: #8b5cf6; }
+.nb-hint-field { background: #d97706; }
+.nb-hint-parameter { background: #16a34a; }
+.nb-hint-class { background: #0d9488; }
+.nb-hint-package { background: #6b7280; }
+.nb-hint-variable { background: #db2777; }
+.nb-hint-keyword { background: #9ca3af; }
+.nb-hint-params { color: var(--muted); }
+.nb-hint-detail { color: var(--muted); margin-left: auto; padding-left: 16px; font-size: 0.9em; }
+
 @media (prefers-color-scheme: dark) {
   .nb-editor .cm-keyword { color: #c792ea; }
   .nb-editor .cm-string { color: #c3e88d; }

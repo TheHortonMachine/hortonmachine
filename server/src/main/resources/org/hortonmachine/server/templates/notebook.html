@@ -1,4 +1,5 @@
 <link rel="stylesheet" href="/static/notebook/codemirror.css">
+<link rel="stylesheet" href="/static/notebook/show-hint.css">
 <link rel="stylesheet" href="/static/notebook/notebook.css">
 <div id="notebook" data-base="{{base}}" data-csrf="{{csrf}}">
   <div class="nb-toolbar">
@@ -19,6 +20,7 @@
             <tr><td><kbd>Shift</kbd>+<kbd>Enter</kbd></td><td>run, go to the next cell</td></tr>
             <tr><td><kbd>Ctrl</kbd>+<kbd>Enter</kbd></td><td>run</td></tr>
             <tr><td><kbd>Alt</kbd>+<kbd>Enter</kbd></td><td>run, add a cell below</td></tr>
+            <tr><td><kbd>Ctrl</kbd>+<kbd>Space</kbd></td><td>complete the code, also after typing a <kbd>.</kbd></td></tr>
             <tr><td><kbd>Ctrl</kbd>+<kbd>S</kbd></td><td>save</td></tr>
             <tr><td><kbd>Esc</kbd></td><td>leave the editor, for the keys below</td></tr>
             <tr><th colspan="2">Outside the editor, as in Jupyter</th></tr>
@@ -49,4 +51,5 @@
 <script src="/static/notebook/markdown.js"></script>
 <script src="/static/notebook/matchbrackets.js"></script>
 <script src="/static/notebook/closebrackets.js"></script>
+<script src="/static/notebook/show-hint.js"></script>
 <script src="/static/notebook/notebook.js"></script>

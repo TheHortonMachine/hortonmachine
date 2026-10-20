@@ -24,7 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
@@ -69,6 +74,12 @@ public class NotebookSession {
     private final List<Consumer<JsonNode>> listeners = new CopyOnWriteArrayList<>();
     /** The cells of the runs sent to the kernel and not done yet, by id of the run. */
     private final Map<String, String> pending = new LinkedHashMap<>();
+    /** The completions asked to the kernel and not answered yet, by id of the request. */
+    private final Map<String, CompletableFuture<JsonNode>> completions = new ConcurrentHashMap<>();
+
+    /** The seconds to wait for the completions of a running kernel, and of one just started. */
+    private static final int COMPLETE_SECONDS = 5;
+    private static final int COMPLETE_START_SECONDS = 30;
 
     private KernelProcess kernel;
     private String state = OFF;
@@ -182,6 +193,45 @@ public class NotebookSession {
     }
 
     /**
+     * Ask the kernel the completions at a position of the code of a cell, starting the kernel if needed.
+     *
+     * @param code the code of the cell.
+     * @param cursor the position in the code.
+     * @return <code>{"from":..,"items":[..]}</code>, with no items if the kernel doesn't answer in time.
+     */
+    public JsonNode complete( String code, int cursor ) throws Exception {
+        String id = UUID.randomUUID().toString();
+        CompletableFuture<JsonNode> future = new CompletableFuture<>();
+        KernelProcess target;
+        boolean starting;
+        synchronized (this) {
+            lastActivity = System.currentTimeMillis();
+            starting = kernel == null;
+            if (starting) {
+                startKernel();
+            }
+            target = kernel;
+            completions.put(id, future);
+        }
+        // not holding the lock: the answer comes through onKernelMessage
+        target.send(Map.of("op", "complete", "id", id, "code", code, "cursor", cursor));
+        try {
+            JsonNode answer = future.get(starting ? COMPLETE_START_SECONDS : COMPLETE_SECONDS, TimeUnit.SECONDS);
+            ObjectNode result = NotebookDocument.MAPPER.createObjectNode();
+            result.put("from", answer.path("from").asInt(cursor));
+            result.set("items", answer.path("items"));
+            return result;
+        } catch (TimeoutException | ExecutionException e) {
+            ObjectNode empty = NotebookDocument.MAPPER.createObjectNode();
+            empty.put("from", cursor);
+            empty.putArray("items");
+            return empty;
+        } finally {
+            completions.remove(id);
+        }
+    }
+
+    /**
      * Stop the running cell and drop the queued ones.
      */
     public synchronized void interrupt() {
@@ -234,6 +284,13 @@ public class NotebookSession {
         }
         lastActivity = System.currentTimeMillis();
         String type = message.path("type").asText();
+        if (type.equals("completions")) {
+            CompletableFuture<JsonNode> future = completions.remove(message.path("id").asText());
+            if (future != null) {
+                future.complete(message);
+            }
+            return;
+        }
         String cellId = pending.get(message.path("id").asText());
         Cell cell = cellId != null ? document.getCell(cellId) : null;
         switch( type ) {

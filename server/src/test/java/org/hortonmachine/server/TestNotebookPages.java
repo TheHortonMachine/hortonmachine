@@ -229,6 +229,14 @@ public class TestNotebookPages extends TestCase {
         assertEquals("idle", content.path("state").asText());
         assertEquals(3, content.path("cells").size());
 
+        // the completion knows the variables of the cells that ran
+        HttpResponse<String> completions = owner.post(NOTEBOOK + "/complete", "csrf", csrf, "code", "a.intV", "cursor", "6");
+        assertEquals(200, completions.statusCode());
+        JsonNode result = mapper.readTree(completions.body());
+        assertEquals(2, result.path("from").asInt());
+        assertEquals("intValue", result.path("items").get(0).path("name").asText());
+        assertEquals(400, owner.post(NOTEBOOK + "/complete", "csrf", csrf, "code", "a", "cursor", "9").statusCode());
+
         // a cell that never ends
         owner.post(NOTEBOOK + "/run", "csrf", csrf, "cell", "c3", "code", "while( true ) { }");
         waitFor(events, "start", "c3");

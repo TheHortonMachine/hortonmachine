@@ -106,6 +106,8 @@ import org.hortonmachine.HM;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
 import org.hortonmachine.gears.utils.PreferencesHandler;
+import org.hortonmachine.gears.utils.groovy.ClassIndex;
+import org.hortonmachine.gears.utils.groovy.GroovyTypeResolver;
 import org.hortonmachine.gui.editor.CodeEditorFactory;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.GuiUtilities;

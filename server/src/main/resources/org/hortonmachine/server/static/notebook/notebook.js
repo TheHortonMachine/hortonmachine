@@ -249,6 +249,120 @@
         cell.countEl.textContent = '[' + text + ']';
     }
 
+    // ---- code completion, from the kernel ----
+
+    var KIND_LETTERS = {
+        method: 'm', gdk: 'g', property: 'p', field: 'f', parameter: 'i', 'class': 'C', 'package': 'P',
+        variable: 'v', keyword: 'k'
+    };
+
+    function signature(item) {
+        if (!item.params) {
+            return '';
+        }
+        return '(' + item.params.map(function (param) {
+            return param.type + ' ' + param.name;
+        }).join(', ') + ')';
+    }
+
+    function renderHint(element, data, completion) {
+        var item = completion.item;
+        var badge = el('span', 'nb-hint-kind nb-hint-' + item.kind, KIND_LETTERS[item.kind] || '?');
+        element.appendChild(badge);
+        element.appendChild(el('span', 'nb-hint-name', item.name));
+        if (item.params) {
+            element.appendChild(el('span', 'nb-hint-params', signature(item)));
+        }
+        var detail = item.type || '';
+        if (item.definedIn && item.kind !== 'class') {
+            detail += (detail ? ' - ' : '') + item.definedIn;
+        }
+        if (item.needsImport) {
+            detail += ' (adds the import)';
+        }
+        element.appendChild(el('span', 'nb-hint-detail', detail));
+        var tip = item.description || item.fqn;
+        if (tip) {
+            element.title = (item.role ? 'module ' + item.role + ': ' : '') + tip;
+        }
+    }
+
+    /** Insert a method with its parentheses, the cursor inside if it has parameters. */
+    function applyHint(cm, data, completion) {
+        var item = completion.item;
+        var text = item.params ? item.name + '()' : item.name;
+        cm.replaceRange(text, data.from, data.to, 'complete');
+        if (item.params && item.params.length) {
+            var cursor = cm.getCursor();
+            cm.setCursor({ line: cursor.line, ch: cursor.ch - 1 });
+        }
+    }
+
+    /** Add an import at the start of the cell, after its imports, if it isn't there yet. */
+    function addImport(cm, fqn) {
+        var line = 'import ' + fqn;
+        var insertAt = 0;
+        for (var i = 0; i < cm.lineCount(); i++) {
+            var text = cm.getLine(i);
+            if (text.trim() === line) {
+                return;
+            }
+            if (/^\s*import\s/.test(text)) {
+                insertAt = i + 1;
+            } else if (text.trim() !== '' && insertAt > 0) {
+                break;
+            }
+        }
+        cm.replaceRange(line + '\n', { line: insertAt, ch: 0 });
+    }
+
+    function groovyHint(cm, callback) {
+        var cursor = cm.getCursor();
+        var token = cm.getTokenAt(cursor);
+        if (token.type && /string|comment/.test(token.type)) {
+            callback(null);
+            return;
+        }
+        var cell = null;
+        cells.forEach(function (c) {
+            if (c.editor === cm) {
+                cell = c;
+            }
+        });
+        if (!cell) {
+            callback(null);
+            return;
+        }
+        post('/complete', { code: cm.getValue(), cursor: cm.indexFromPos(cursor) }).then(function (response) {
+            return response.json();
+        }).then(function (result) {
+            if (!result.items || !result.items.length) {
+                callback(null);
+                return;
+            }
+            var data = {
+                from: cm.posFromIndex(result.from),
+                to: cm.getCursor(),
+                list: result.items.map(function (item) {
+                    return { text: item.name, item: item, render: renderHint, hint: applyHint };
+                })
+            };
+            CodeMirror.on(data, 'pick', function (completion) {
+                if (completion.item.needsImport && completion.item.fqn) {
+                    addImport(cm, completion.item.fqn);
+                }
+            });
+            callback(data);
+        }).catch(function () {
+            callback(null);
+        });
+    }
+    groovyHint.async = true;
+
+    function showCompletions(cm) {
+        cm.showHint({ hint: groovyHint, completeSingle: false, closeOnUnfocus: true });
+    }
+
     // ---- cells ----
 
     function cellIndex(cell) {
@@ -356,6 +470,11 @@
                     addCell('code');
                 },
                 'Esc': function () { commandMode(cell); },
+                'Ctrl-Space': function (cm) {
+                    if (cell.type === 'code') {
+                        showCompletions(cm);
+                    }
+                },
                 'Ctrl-S': function () { save(); },
                 'Cmd-S': function () { save(); },
                 'Tab': function (cm) {
@@ -365,6 +484,14 @@
             }
         });
         cell.editor.on('change', markDirty);
+        if (cell.type === 'code') {
+            // as in the console, the members after a dot
+            cell.editor.on('inputRead', function (cm, change) {
+                if (change.text.length === 1 && change.text[0] === '.' && !cm.state.completionActive) {
+                    showCompletions(cm);
+                }
+            });
+        }
         cell.editor.on('focus', function () { select(cell); });
         cell.el.addEventListener('click', function () { select(cell); });
 

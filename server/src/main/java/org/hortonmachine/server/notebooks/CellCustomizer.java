@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ImportNode;
@@ -60,6 +61,8 @@ class CellCustomizer extends CompilationCustomizer {
 
     private final ImportCustomizer imports;
     private final Set<String> known = new HashSet<>();
+    /** The imports of the cells as statements, for the code completion of the next cells. */
+    private final List<String> importLines = new CopyOnWriteArrayList<>();
 
     /**
      * @param imports the imports given to all the cells, where the imports of the cells are added.
@@ -104,10 +107,24 @@ class CellCustomizer extends CompilationCustomizer {
         rememberImports(module);
     }
 
+    /**
+     * @return the imports of the cells that ran, as import statements, one per line.
+     */
+    String getImportLines() {
+        StringBuilder sb = new StringBuilder();
+        for( String line : importLines ) {
+            sb.append(line).append('\n');
+        }
+        return sb.toString();
+    }
+
     private void rememberImports( ModuleNode module ) {
         for( ImportNode node : module.getImports() ) {
             if (known.add("class:" + node.getAlias() + ":" + node.getClassName())) {
                 imports.addImport(node.getAlias(), node.getClassName());
+                String simpleName = node.getClassName().substring(node.getClassName().lastIndexOf('.') + 1);
+                importLines.add("import " + node.getClassName()
+                        + (node.getAlias().equals(simpleName) ? "" : " as " + node.getAlias()));
             }
         }
         for( ImportNode node : module.getStarImports() ) {
@@ -117,17 +134,21 @@ class CellCustomizer extends CompilationCustomizer {
             }
             if (known.add("star:" + packageName)) {
                 imports.addStarImports(packageName);
+                importLines.add("import " + packageName + ".*");
             }
         }
         for( Map.Entry<String, ImportNode> entry : module.getStaticImports().entrySet() ) {
             ImportNode node = entry.getValue();
             if (known.add("static:" + entry.getKey() + ":" + node.getClassName() + ":" + node.getFieldName())) {
                 imports.addStaticImport(entry.getKey(), node.getClassName(), node.getFieldName());
+                importLines.add("import static " + node.getClassName() + "." + node.getFieldName()
+                        + (entry.getKey().equals(node.getFieldName()) ? "" : " as " + entry.getKey()));
             }
         }
         for( ImportNode node : module.getStaticStarImports().values() ) {
             if (known.add("staticstar:" + node.getClassName())) {
                 imports.addStaticStars(node.getClassName());
+                importLines.add("import static " + node.getClassName() + ".*");
             }
         }
     }

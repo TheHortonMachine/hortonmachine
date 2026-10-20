@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,12 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.display.DisplayOptions;
 import org.hortonmachine.gears.utils.display.DisplayRenderers;
+import org.hortonmachine.gears.utils.groovy.ClassIndex;
+import org.hortonmachine.gears.utils.groovy.GroovyCompleter;
+import org.hortonmachine.gears.utils.groovy.GroovyCompleter.Item;
+import org.hortonmachine.gears.utils.groovy.GroovyCompleter.Param;
+import org.hortonmachine.gears.utils.groovy.GroovyCompleter.Result;
+import org.hortonmachine.gears.utils.groovy.GroovyTypeResolver;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -56,11 +63,12 @@ import groovy.transform.ThreadInterrupt;
  *
  * <p>It talks with the server through its standard input and output, one JSON message per line:
  * <ul>
- * <li>in: <code>{"op":"execute","id":..,"code":..}</code>, <code>{"op":"interrupt"}</code>,
- *     <code>{"op":"shutdown"}</code>;</li>
+ * <li>in: <code>{"op":"execute","id":..,"code":..}</code>, <code>{"op":"complete","id":..,"code":..,"cursor":..}</code>,
+ *     <code>{"op":"interrupt"}</code>, <code>{"op":"shutdown"}</code>;</li>
  * <li>out: <code>{"type":"ready"}</code>, <code>{"type":"start","id":..,"count":..}</code>,
  *     <code>{"type":"output","id":..,"output":{..}}</code> with the outputs in the nbformat 4 form, and
- *     <code>{"type":"done","id":..,"status":"ok|error|interrupted"}</code>.</li>
+ *     <code>{"type":"done","id":..,"status":"ok|error|interrupted"}</code>, <code>{"type":"completions",..}</code>
+ *     for the code completion, see {@link #complete(String, String, int)}.</li>
  * </ul>
  *
  * <p>What the cells print is sent as stream outputs, the value of the last expression and the values
@@ -93,12 +101,16 @@ public class NotebookKernel {
     );
 
     private static final String CELL_CLASS_PREFIX = "Cell";
+    private static final int MAX_COMPLETIONS = 300;
 
     private final ObjectMapper mapper = new ObjectMapper();
     private final PrintStream protocol;
     private final Binding binding = new Binding();
     private final ImportCustomizer imports = new ImportCustomizer();
+    private final CellCustomizer cellCustomizer = new CellCustomizer(imports);
     private final GroovyShell shell;
+    private final ClassIndex classIndex = new ClassIndex();
+    private final GroovyCompleter completer;
     private final LinkedBlockingQueue<JsonNode> queue = new LinkedBlockingQueue<>();
 
     private volatile String currentId;
@@ -108,9 +120,10 @@ public class NotebookKernel {
     NotebookKernel( PrintStream protocol ) {
         this.protocol = protocol;
         CompilerConfiguration config = new CompilerConfiguration();
-        config.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class), imports,
-                new CellCustomizer(imports));
+        config.addCompilationCustomizers(new ASTTransformationCustomizer(ThreadInterrupt.class), imports, cellCustomizer);
         shell = new GroovyShell(NotebookKernel.class.getClassLoader(), binding, config);
+        // the variables of the binding are the live values of the cells that ran
+        completer = new GroovyCompleter(new GroovyTypeResolver(classIndex, shell::getClassLoader, binding::getVariables));
         binding.setVariable("display", new Closure<Object>(this){
             private static final long serialVersionUID = 1L;
             @SuppressWarnings("unused")
@@ -137,6 +150,7 @@ public class NotebookKernel {
      * registries of JAI: out of a cell, what is printed is dropped. The first cell is faster too.
      */
     void warmUp() {
+        classIndex.buildAsync();
         try {
             shell.evaluate("1", "WarmUp");
             RegionMap region = RegionMap.fromBoundsAndGrid(0, 2, 0, 2, 2, 2);
@@ -169,12 +183,63 @@ public class NotebookKernel {
             String op = message.path("op").asText();
             if (op.equals("execute")) {
                 queue.add(message);
+            } else if (op.equals("complete")) {
+                // also while a cell runs: it reads the binding only
+                complete(message.path("id").asText(), message.path("code").asText(), message.path("cursor").asInt());
             } else if (op.equals("interrupt")) {
                 interrupt();
             } else if (op.equals("shutdown")) {
                 break;
             }
         }
+    }
+
+    /**
+     * Send the completions at a position of the code of a cell, as
+     * <code>{"type":"completions","id":..,"from":..,"items":[..]}</code>, the most relevant first.
+     *
+     * @param code the code of the cell.
+     * @param cursor the position in the code.
+     */
+    void complete( String id, String code, int cursor ) {
+        List<Map<String, Object>> items = new ArrayList<>();
+        int from = cursor;
+        try {
+            // the imports of the cells that ran come first, as the compiler sees them
+            String header = cellCustomizer.getImportLines();
+            Result result = completer.complete(header + code, header.length() + Math.max(0, Math.min(cursor, code.length())),
+                    true);
+            from = Math.max(0, result.from() - header.length());
+            List<Item> sorted = new ArrayList<>(result.items());
+            sorted.sort(Comparator.comparingInt(Item::relevance).reversed().thenComparing(Item::name));
+            for( Item item : sorted.subList(0, Math.min(MAX_COMPLETIONS, sorted.size())) ) {
+                Map<String, Object> map = new LinkedHashMap<>();
+                map.put("kind", item.kind().name().toLowerCase());
+                map.put("name", item.name());
+                map.put("type", item.type());
+                map.put("definedIn", item.definedIn());
+                if (item.params() != null) {
+                    List<Map<String, String>> params = new ArrayList<>();
+                    for( Param param : item.params() ) {
+                        params.add(Map.of("type", param.type(), "name", param.name()));
+                    }
+                    map.put("params", params);
+                }
+                map.put("description", item.description());
+                map.put("role", item.role());
+                map.put("fqn", item.fqn());
+                map.put("needsImport", item.needsImport());
+                items.add(map);
+            }
+        } catch (Throwable e) {
+            // no completions
+        }
+        Map<String, Object> message = new LinkedHashMap<>();
+        message.put("type", "completions");
+        message.put("id", id);
+        message.put("from", from);
+        message.put("items", items);
+        send(message);
     }
 
     /**
