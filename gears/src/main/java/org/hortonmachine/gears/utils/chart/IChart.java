@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.gears.utils.chart;
 
+import java.awt.image.BufferedImage;
+
 import org.jfree.chart.JFreeChart;
 
 /**
@@ -29,4 +31,15 @@ public interface IChart {
     JFreeChart getChart();
 
     String getTitle();
+
+    /**
+     * Render the chart to an image, ex. to show it as the result of a console script.
+     *
+     * @param width the image width [px].
+     * @param height the image height [px].
+     * @return the image.
+     */
+    default BufferedImage getImage( int width, int height ) {
+        return getChart().createBufferedImage(width, height);
+    }
 }

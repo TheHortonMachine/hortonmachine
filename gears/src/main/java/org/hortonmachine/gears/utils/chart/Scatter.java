@@ -38,6 +38,7 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.general.Series;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.ui.RectangleAnchor;
 import org.jfree.ui.TextAnchor;
 
 /**
@@ -57,6 +58,7 @@ public class Scatter implements IChart {
     protected JFreeChart chart;
     protected String title;
     private Color[] colors;
+    private boolean sortByX = true;
 
     public Scatter( String title ) {
         this.title = title;
@@ -80,7 +82,7 @@ public class Scatter implements IChart {
      * @param y the y data array.
      */
     public void addSeries( String seriesName, double[] x, double[] y ) {
-        XYSeries series = new XYSeries(seriesName);
+        XYSeries series = new XYSeries(seriesName, sortByX);
         for( int i = 0; i < x.length; i++ ) {
             series.add(x[i], y[i]);
         }
@@ -100,9 +102,21 @@ public class Scatter implements IChart {
      * @return the {@link XYSeries} to use.
      */
     public XYSeries getSeries( String seriesName ) {
-        XYSeries series = new XYSeries(seriesName);
+        XYSeries series = new XYSeries(seriesName, sortByX);
         dataset.addSeries(series);
         return series;
+    }
+
+    /**
+     * Whether the points of the series added after this call are sorted by x (the default).
+     *
+     * <p>Disable it to keep the points in the order they are given, ex. for a vertical
+     * profile, where x is the value and y the depth.</p>
+     *
+     * @param sortByX <code>false</code> to keep the given order.
+     */
+    public void setSortByX( boolean sortByX ) {
+        this.sortByX = sortByX;
     }
 
     public void setLogAxes( boolean xLog, boolean yLog ) {
@@ -224,6 +238,24 @@ public class Scatter implements IChart {
             plot.addAnnotation(updateLabel);
         }
         setShapeLinesVisibility(plot);
+    }
+
+    /**
+     * Add a horizontal line at a given y, ex. a layer boundary in a vertical profile.
+     *
+     * @param text an optional label, placed at the left side, or <code>null</code>.
+     * @param y the y value of the line.
+     */
+    public void addHorizontalAnnotation( String text, double y ) {
+        XYPlot plot = (XYPlot) getChart().getPlot();
+        Color color = new Color(0, 0, 0, 100);
+        ValueMarker marker = new ValueMarker(y, color, new BasicStroke(1f));
+        if (text != null) {
+            marker.setLabel(text);
+            marker.setLabelAnchor(RectangleAnchor.TOP_LEFT);
+            marker.setLabelTextAnchor(TextAnchor.BOTTOM_LEFT);
+        }
+        plot.addRangeMarker(marker);
     }
 
     public void setColors( Color[] colors ) {
