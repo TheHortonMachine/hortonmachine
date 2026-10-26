@@ -141,8 +141,15 @@ public class HMStacCollection {
 
     /**
      * Set geometry intersection filter for search query;
-     * 
-     * @param intersectionGeometry
+     *
+     * <p>The geometry is sent as GeoJSON, which the STAC API requires to be in
+     * WGS84 (EPSG:4326) with longitude/latitude axis order (x = lon, y = lat).
+     * No reprojection is done here, geometries in other CRSs need to be
+     * transformed by the caller.</p>
+     *
+     * <p>Only one of the geometry or bbox filters can be set.</p>
+     *
+     * @param intersectionGeometry the geometry in WGS84 lon/lat.
      * @return the current collection.
      */
     public HMStacCollection setGeometryFilter( Geometry intersectionGeometry ) {
@@ -156,7 +163,16 @@ public class HMStacCollection {
 
     /**
      * Set the geometry bbox filter for search query
-     * @param bbox
+     *
+     * <p>The STAC API requires the bbox to be in WGS84 (EPSG:4326) degrees with
+     * longitude/latitude axis order. No reprojection is done here, a bbox in
+     * other CRSs (ex. projected meters) needs to be transformed by the caller,
+     * else the server will interpret the values as degrees.</p>
+     *
+     * <p>Only one of the geometry or bbox filters can be set.</p>
+     *
+     * @param bbox the bbox as <code>[minLon, minLat, maxLon, maxLat]</code>,
+     *          ex. <code>[5.7357, 49.4154, 6.5263, 50.2098]</code>.
      * @return the current collection.
      */
     public HMStacCollection setBboxFilter( double[] bbox ) {
