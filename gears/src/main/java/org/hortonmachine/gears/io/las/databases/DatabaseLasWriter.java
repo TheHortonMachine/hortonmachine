@@ -95,7 +95,7 @@ public class DatabaseLasWriter extends HMModel {
     public String inFolder;
 
     @Description("The database to write to: it is created if it does not exist, otherwise the files are added to it.")
-    @UI(HMConstants.FILEIN_UI_HINT_GENERIC)
+    @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String inDatabasePath;
 
