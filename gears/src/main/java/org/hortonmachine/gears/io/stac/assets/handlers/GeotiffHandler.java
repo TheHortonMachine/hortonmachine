@@ -160,6 +160,40 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		return resolution;
 	}
 
+	/**
+	 * Read the CRS from the header of the geotiff with range requests. If the catalog doesn't
+	 * declare the resolution, also that is taken from the header.
+	 *
+	 * <p>Only for assets readable through plain http range requests, null for the others,
+	 * which would need the download of the whole file.</p>
+	 */
+	@Override
+	public CoordinateReferenceSystem readCrs() throws Exception {
+		checkSupported();
+		HMStacAccess access = asset.getAccess();
+		if (assetUrl.startsWith("s3://") || (access != null && access.isAuthenticated(assetUrl))) {
+			return null;
+		}
+		BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
+		if (PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)) {
+			cogUri = new BasicAuthURI(PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl), false);
+		}
+		CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
+				new CogImageInputStreamSpi(), HttpRangeReader.class.getName());
+		GeoTiffReader reader = new GeoTiffReader(inputProvider);
+		try {
+			if (resolution <= 0) {
+				int cols = reader.getOriginalGridRange().getSpan(0);
+				if (cols > 0) {
+					resolution = reader.getOriginalEnvelope().getSpan(0) / cols;
+				}
+			}
+			return reader.getCoordinateReferenceSystem();
+		} finally {
+			reader.dispose();
+		}
+	}
+
 	@Override
 	public <T> T read(Class<T> targetType, IHMProgressMonitor monitor) throws Exception {
 		checkSupported();

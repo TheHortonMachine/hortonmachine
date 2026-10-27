@@ -25,6 +25,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
@@ -71,8 +72,10 @@ import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.swing.BorderFactory;
@@ -110,12 +113,16 @@ import javax.swing.Scrollable;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.RowFilter;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import org.geotools.api.feature.simple.SimpleFeature;
@@ -158,6 +165,7 @@ import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
@@ -184,6 +192,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @SuppressWarnings("serial")
 public class StacBrowser extends JPanel implements IOnCloseListener {
     private static final String PREF_CATALOGS = "STAC_BROWSER_CATALOGS";
+    /** The whole list of catalogs, once the user manages it, presets included. */
+    private static final String PREF_CATALOG_LIST = "STAC_BROWSER_CATALOG_LIST";
     private static final String PREF_AWS_PROFILE = "STAC_BROWSER_AWS_PROFILE";
     private static final String PREF_AWS_REGION = "STAC_BROWSER_AWS_REGION";
     // the http authentication of each server (scheme, host and port), followed by a hash of the server:
@@ -276,6 +286,8 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         }
     });
     private boolean busy = false;
+    /** The assets whose CRS has already been looked for in their files, since the catalog doesn't declare it. */
+    private final Set<HMStacAsset> crsReadTried = ConcurrentHashMap.newKeySet();
 
     // connection
     private JComboBox<String> catalogCombo;
@@ -316,6 +328,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private JCheckBox cqlCheck;
     private JTextField cqlField;
     private JSpinner maxItemsSpinner;
+    private JCheckBox latLonCheck;
     private JButton searchButton;
     private JLabel searchInfoLabel;
     private TitledBorder searchTitle;
@@ -331,6 +344,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private JTree itemTree;
     private RowTableModel<HMStacAsset> itemAssetsModel;
     private RowTableModel<AssetKeyRow> assetKeysModel;
+    private JTable assetKeysTable;
     private RowTableModel<DownloadRow> downloadsModel;
     private JTable downloadsTable;
     private JLabel downloadSummaryLabel;
@@ -423,6 +437,9 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> connect());
         right.add(connectButton);
+        JButton catalogsButton = button("Catalogs...", this::manageCatalogs);
+        catalogsButton.setToolTipText("Remove, reorder, import and export the catalogs of the list");
+        right.add(catalogsButton);
         panel.add(right, BorderLayout.EAST);
 
         // the credentials are shown only for catalogs on S3
@@ -712,9 +729,17 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         searchButton.setFont(searchButton.getFont().deriveFont(Font.BOLD));
         searchButton.addActionListener(e -> search());
         searchInfoLabel = new JLabel(" ");
+        latLonCheck = new JCheckBox("Footprints in lat/lon order");
+        latLonCheck.setToolTipText("<html>For catalogs writing the item geometries and bboxes as latitude/longitude instead of "
+                + "longitude/latitude.<br>Global extents are detected and swapped anyway, this forces it for all.</html>");
+        latLonCheck.addActionListener(e -> {
+            if (manager != null)
+                manager.setForceLatLon(latLonCheck.isSelected());
+        });
         addRow(runPanel, 0, new JLabel("Max items (0 = all)"), maxItemsSpinner);
-        addRow(runPanel, 1, searchButton);
-        addRow(runPanel, 2, searchInfoLabel);
+        addRow(runPanel, 1, latLonCheck);
+        addRow(runPanel, 2, searchButton);
+        addRow(runPanel, 3, searchInfoLabel);
         panel.add(Box.createVerticalGlue());
 
         JScrollPane scroll = new JScrollPane(panel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -783,7 +808,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         JTabbedPane itemTabs = new JTabbedPane();
         thumbnailPanel = new ThumbnailPanel();
         itemTabs.addTab("Preview", thumbnailPanel);
-        itemTabs.addTab("Assets", new JScrollPane(table(itemAssetsModel)));
+        JTable itemAssetsTable = table(itemAssetsModel);
+        JPanel itemAssetsPanel = new JPanel(new BorderLayout(0, 4));
+        itemAssetsPanel.add(filterPanel(itemAssetsTable, "Filter the assets by the text of any column"), BorderLayout.NORTH);
+        itemAssetsPanel.add(new JScrollPane(itemAssetsTable), BorderLayout.CENTER);
+        itemTabs.addTab("Assets", itemAssetsPanel);
         itemTabs.addTab("Metadata", new JScrollPane(itemTree));
         JSplitPane itemsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, new JScrollPane(itemsTable), itemTabs);
         itemsSplit.setResizeWeight(0.5);
@@ -800,8 +829,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 .col("In items", Integer.class, r -> r.count)//
                 .col("HM readable", Integer.class, r -> r.supported)//
                 .col("HM handler", String.class, r -> String.join(", ", r.handlers));
-        JTable assetKeysTable = table(assetKeysModel);
+        assetKeysTable = table(assetKeysModel);
         assetKeysTable.getColumnModel().getColumn(0).setMaxWidth(50);
+        JPanel assetKeysPanel = new JPanel(new BorderLayout(0, 4));
+        assetKeysPanel.add(filterPanel(assetKeysTable, "Filter the asset keys by the text of any column; "
+                + "\"Select readable keys\" then uses only the keys shown"), BorderLayout.NORTH);
+        assetKeysPanel.add(new JScrollPane(assetKeysTable), BorderLayout.CENTER);
         downloadsModel = new RowTableModel<DownloadRow>()//
                 .col("Item", String.class, r -> r.itemRow.name())//
                 .col("Datetime (UTC)", String.class, r -> r.itemRow.datetime)//
@@ -890,13 +923,14 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         downloadSummaryLabel.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
         JPanel downloadHeader = new JPanel(new BorderLayout());
         downloadHeader.add(downloadTools, BorderLayout.NORTH);
-        downloadHeader.add(downloadSummaryLabel, BorderLayout.SOUTH);
+        downloadHeader.add(downloadSummaryLabel, BorderLayout.CENTER);
+        downloadHeader.add(filterPanel(downloadsTable, "Filter the assets by the text of any column"), BorderLayout.SOUTH);
 
         JPanel downloadsPanel = new JPanel(new BorderLayout());
         downloadsPanel.add(downloadHeader, BorderLayout.NORTH);
         downloadsPanel.add(new JScrollPane(downloadsTable), BorderLayout.CENTER);
-        JSplitPane downloadSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JScrollPane(assetKeysTable), downloadsPanel);
-        downloadSplit.setDividerLocation(150);
+        JSplitPane downloadSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, assetKeysPanel, downloadsPanel);
+        downloadSplit.setDividerLocation(180);
         tabs.addTab("Download preview", downloadSplit);
 
         // service
@@ -984,12 +1018,14 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         HMStacAccess fAccess = newAccess;
         String fAuthInfo = authInfo;
         HMStacManager oldManager = manager;
+        boolean forceLatLon = latLonCheck.isSelected();
         runTask("Connecting to " + url, () -> {
             if (oldManager != null)
                 oldManager.close();
             long t0 = System.currentTimeMillis();
             HMStacManager newManager = new HMStacManager(url, monitor);
             newManager.setAccess(fAccess);
+            newManager.setForceLatLon(forceLatLon);
             newManager.open();
             String conformance;
             try {
@@ -1359,8 +1395,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     }
 
     private void selectAssetKeys( boolean onlyReadable ) {
-        for( AssetKeyRow r : assetKeysModel.getRows() ) {
-            r.selected = onlyReadable && r.supported > 0;
+        List<AssetKeyRow> rows = assetKeysModel.getRows();
+        for( int i = 0; i < rows.size(); i++ ) {
+            // keys hidden by the filter are not selected
+            boolean shown = assetKeysTable.convertRowIndexToView(i) >= 0;
+            rows.get(i).selected = onlyReadable && shown && rows.get(i).supported > 0;
         }
         assetKeysModel.fireTableDataChanged();
         refreshDownloads();
@@ -1621,8 +1660,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         Envelope bbox = readBboxFields();
         if (rows.isEmpty() || bbox == null)
             return;
+        if (readMissingEpsgs(rows, this::exportClippedSelected))
+            return;
 
-        // default to the native resolution, if the catalog declares it
+        // default to the native resolution, if the catalog (or the file header) declares it
         double nativeRes = rows.stream().mapToDouble(r -> ((IHMStacAssetRasterHandler) r.asset.getHandler()).getResolution())
                 .filter(r -> r > 0).findFirst().orElse(10.0);
         String resString = GuiUtilities.showInputDialog(this,
@@ -1694,6 +1735,50 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             log(msg);
             statusLabel.setText(msg);
         });
+    }
+
+    /**
+     * Read from the file headers the EPSG of the raster assets the catalog doesn't declare it for, then run an action.
+     *
+     * @param rows the assets about to be read.
+     * @param then the action to run once the EPSGs have been read, not run if canceled.
+     * @return <code>true</code> if a read has been started and the action will run after it, <code>false</code> if
+     *         nothing had to be read.
+     */
+    private boolean readMissingEpsgs( List<DownloadRow> rows, Runnable then ) {
+        List<DownloadRow> missing = rows.stream()
+                .filter(r -> isRasterAsset(r.asset) && r.asset.getEpsg() == null && r.itemRow.epsg == null
+                        && !crsReadTried.contains(r.asset))
+                .collect(Collectors.toList());
+        if (missing.isEmpty())
+            return false;
+        runTask("Reading the CRS of " + missing.size() + " asset(s) from their files", () -> {
+            for( DownloadRow row : missing ) {
+                if (monitor.isCanceled())
+                    break;
+                crsReadTried.add(row.asset);
+                try {
+                    CoordinateReferenceSystem crs = ((IHMStacAssetRasterHandler) row.asset.getHandler()).readCrs();
+                    Integer epsg = crs != null ? HMCrsRegistry.getSrid(crs) : null;
+                    if (epsg != null) {
+                        row.asset.setEpsg(epsg);
+                        log("No EPSG in the catalog for " + row.asset.getId() + ", EPSG:" + epsg + " read from the file.");
+                    } else {
+                        log("No EPSG in the catalog for " + row.asset.getId() + " and none found in the file.");
+                    }
+                } catch (Exception e) {
+                    logException("Unable to read the CRS of " + row.href, e);
+                }
+            }
+            return null;
+        }, r -> {
+            // update the cells keeping the selection
+            if (downloadsModel.getRowCount() > 0)
+                downloadsModel.fireTableRowsUpdated(0, downloadsModel.getRowCount() - 1);
+            if (!monitor.isCanceled())
+                then.run();
+        });
+        return true;
     }
 
     /**
@@ -1781,9 +1866,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             GuiUtilities.showWarningMessage(this, "The item of the asset is not in the map view, zoom to it first.");
             return;
         }
+        if (readMissingEpsgs(List.of(row), () -> showRasterOnMap(row)))
+            return;
         Integer epsg = row.asset.getEpsg() != null ? row.asset.getEpsg() : row.itemRow.epsg;
         if (epsg == null) {
-            GuiUtilities.showWarningMessage(this, "The asset has no EPSG, it can't be placed on the map.");
+            GuiUtilities.showWarningMessage(this, "The asset has no EPSG, neither in the catalog nor in its file, "
+                    + "it can't be placed on the map.");
             return;
         }
         ClipPlan plan;
@@ -2722,6 +2810,25 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         table.revalidate();
     }
 
+    /**
+     * A field filtering the rows of a table on the text of any of their cells, case insensitive.
+     */
+    @SuppressWarnings("unchecked")
+    private static JPanel filterPanel( JTable table, String tooltip ) {
+        JTextField field = new JTextField();
+        field.setToolTipText(tooltip);
+        TableRowSorter<TableModel> sorter = (TableRowSorter<TableModel>) table.getRowSorter();
+        onTextChange(field, () -> {
+            String text = field.getText().trim();
+            sorter.setRowFilter(text.isEmpty() ? null : RowFilter.regexFilter("(?i)" + Pattern.quote(text)));
+        });
+        JPanel panel = new JPanel(new BorderLayout(4, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+        panel.add(new JLabel("Filter:"), BorderLayout.WEST);
+        panel.add(field, BorderLayout.CENTER);
+        return panel;
+    }
+
     private static JButton button( String text, Runnable action ) {
         JButton b = new JButton(text);
         b.addActionListener(e -> action.run());
@@ -2794,8 +2901,20 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         });
     }
 
+    /**
+     * @return the catalogs of the list: the one managed by the user if saved, else the old history
+     *         followed by the presets.
+     */
     private static List<String> getCatalogHistory() {
         LinkedHashSet<String> catalogs = new LinkedHashSet<>();
+        String[] managed = PreferencesHandler.getPreference(PREF_CATALOG_LIST, new String[0]);
+        for( String c : managed ) {
+            if (c != null && !c.isBlank())
+                catalogs.add(c);
+        }
+        // an empty managed list falls back on the defaults
+        if (!catalogs.isEmpty())
+            return new ArrayList<>(catalogs);
         for( String c : PreferencesHandler.getPreference(PREF_CATALOGS, new String[0]) ) {
             if (c != null && !c.isBlank())
                 catalogs.add(c);
@@ -2804,16 +2923,140 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         return new ArrayList<>(catalogs);
     }
 
+    /**
+     * Save the catalogs list and show it in the combo, keeping the text being edited.
+     */
+    private void setCatalogs( List<String> catalogs ) {
+        PreferencesHandler.setPreference(PREF_CATALOG_LIST, catalogs.toArray(new String[0]));
+        Object current = catalogCombo.getEditor().getItem();
+        catalogCombo.setModel(new DefaultComboBoxModel<>(catalogs.toArray(new String[0])));
+        catalogCombo.setSelectedItem(current);
+    }
+
     private void addCatalogToHistory( String url ) {
-        List<String> history = new ArrayList<>();
-        history.add(url);
-        for( String c : PreferencesHandler.getPreference(PREF_CATALOGS, new String[0]) ) {
-            if (c != null && !c.isBlank() && !c.equals(url) && history.size() < 20)
-                history.add(c);
+        List<String> catalogs = getCatalogHistory();
+        catalogs.remove(url);
+        catalogs.add(0, url);
+        setCatalogs(catalogs);
+    }
+
+    /**
+     * Dialog to remove, reorder, import and export the catalogs of the list.
+     */
+    private void manageCatalogs() {
+        DefaultListModel<String> model = new DefaultListModel<>();
+        getCatalogHistory().forEach(model::addElement);
+        JList<String> list = new JList<>(model);
+        list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        list.setVisibleRowCount(15);
+
+        JButton removeButton = button("Remove", () -> {
+            int[] selected = list.getSelectedIndices();
+            for( int i = selected.length - 1; i >= 0; i-- ) {
+                model.remove(selected[i]);
+            }
+        });
+        JButton upButton = button("Up", () -> moveCatalog(list, model, -1));
+        JButton downButton = button("Down", () -> moveCatalog(list, model, 1));
+        JButton importButton = button("Import...", () -> {
+            File[] files = GuiUtilities.showOpenFilesDialog(this, "Import catalogs (one url per line)", false,
+                    PreferencesHandler.getLastFile(), null);
+            if (files == null || files.length == 0)
+                return;
+            File file = files[0];
+            try {
+                int added = 0;
+                for( String line : FileUtilities.readFileToLinesList(file) ) {
+                    String url = line.trim();
+                    if (!url.isEmpty() && !url.startsWith("#") && !model.contains(url)) {
+                        model.addElement(url);
+                        added++;
+                    }
+                }
+                PreferencesHandler.setLastPath(file.getAbsolutePath());
+                log("Imported " + added + " new catalogs from " + file);
+            } catch (Exception e) {
+                logException("Unable to import the catalogs", e);
+                GuiUtilities.showErrorMessage(this, "Unable to import the catalogs: " + e.getMessage());
+            }
+        });
+        JButton exportButton = button("Export...", () -> {
+            File file = GuiUtilities.showSaveFileDialog(this, "Export catalogs", PreferencesHandler.getLastFile());
+            if (file == null)
+                return;
+            try {
+                List<String> lines = new ArrayList<>();
+                lines.add("# STAC catalogs, one url per line");
+                for( int i = 0; i < model.size(); i++ ) {
+                    lines.add(model.get(i));
+                }
+                FileUtilities.writeFile(lines, file);
+                PreferencesHandler.setLastPath(file.getAbsolutePath());
+                log("Exported " + model.size() + " catalogs to " + file);
+            } catch (Exception e) {
+                logException("Unable to export the catalogs", e);
+                GuiUtilities.showErrorMessage(this, "Unable to export the catalogs: " + e.getMessage());
+            }
+        });
+        JButton presetsButton = button("Add presets", () -> {
+            for( String preset : PRESET_CATALOGS ) {
+                if (!model.contains(preset))
+                    model.addElement(preset);
+            }
+        });
+        Runnable updateButtons = () -> {
+            boolean hasSelection = !list.isSelectionEmpty();
+            removeButton.setEnabled(hasSelection);
+            upButton.setEnabled(hasSelection && list.getMinSelectionIndex() > 0);
+            downButton.setEnabled(hasSelection && list.getMaxSelectionIndex() < model.size() - 1);
+        };
+        list.addListSelectionListener(e -> updateButtons.run());
+        updateButtons.run();
+
+        JPanel buttons = new JPanel(new GridLayout(0, 1, 0, 4));
+        for( JButton b : new JButton[]{removeButton, upButton, downButton, importButton, exportButton, presetsButton} ) {
+            buttons.add(b);
         }
-        PreferencesHandler.setPreference(PREF_CATALOGS, history.toArray(new String[0]));
-        if (((javax.swing.DefaultComboBoxModel<String>) catalogCombo.getModel()).getIndexOf(url) < 0)
-            catalogCombo.insertItemAt(url, 0);
+        JPanel east = new JPanel(new BorderLayout());
+        east.add(buttons, BorderLayout.NORTH);
+        JPanel panel = new JPanel(new BorderLayout(6, 0));
+        JScrollPane scroll = new JScrollPane(list);
+        scroll.setPreferredSize(new Dimension(600, 300));
+        panel.add(scroll, BorderLayout.CENTER);
+        panel.add(east, BorderLayout.EAST);
+
+        int answer = JOptionPane.showConfirmDialog(this, panel, "STAC catalogs", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (answer == JOptionPane.OK_OPTION) {
+            List<String> catalogs = new ArrayList<>();
+            for( int i = 0; i < model.size(); i++ ) {
+                catalogs.add(model.get(i));
+            }
+            setCatalogs(catalogs);
+        }
+    }
+
+    /**
+     * Move the selected catalogs of the list up (-1) or down (+1) by one place.
+     */
+    private static void moveCatalog( JList<String> list, DefaultListModel<String> model, int direction ) {
+        int[] selected = list.getSelectedIndices();
+        if (selected.length == 0)
+            return;
+        if (direction < 0) {
+            for( int i = 0; i < selected.length; i++ ) {
+                int index = selected[i];
+                model.add(index - 1, model.remove(index));
+                selected[i] = index - 1;
+            }
+        } else {
+            for( int i = selected.length - 1; i >= 0; i-- ) {
+                int index = selected[i];
+                model.add(index + 1, model.remove(index));
+                selected[i] = index + 1;
+            }
+        }
+        list.setSelectedIndices(selected);
     }
 
     // ==================== lifecycle ====================

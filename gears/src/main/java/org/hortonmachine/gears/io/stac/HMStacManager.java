@@ -28,6 +28,7 @@ public class HMStacManager implements AutoCloseable {
     private HMSTACClient stacClient;
     private IHMProgressMonitor pm;
     private HMStacAccess access;
+    private boolean forceLatLon = false;
 
     public HMStacManager( String catalogUrl, IHMProgressMonitor pm ) {
         this.catalogUrl = catalogUrl;
@@ -54,6 +55,21 @@ public class HMStacManager implements AutoCloseable {
     }
 
     /**
+     * Some catalogs write the item geometries and bboxes in latitude/longitude order instead of
+     * the longitude/latitude required by STAC. That is detected and fixed for those reaching
+     * latitudes over +-90 (global layers), this forces the fix also where it can't be detected.
+     *
+     * @param forceLatLon if <code>true</code>, geometries and bboxes are always swapped.
+     * @return the current manager.
+     */
+    public HMStacManager setForceLatLon( boolean forceLatLon ) {
+        this.forceLatLon = forceLatLon;
+        if (stacClient != null)
+            stacClient.setForceLatLon(forceLatLon);
+        return this;
+    }
+
+    /**
      * Open the connection to the stac repository.
      * 
      * @throws Exception
@@ -66,7 +82,23 @@ public class HMStacManager implements AutoCloseable {
             url = access.toHttpUrl(catalogUrl);
             http = new HMStacAuthHttpClient(http, access);
         }
-        stacClient = new HMSTACClient(new URL(url), http);
+        try {
+            stacClient = new HMSTACClient(new URL(url), http);
+        } catch (Exception e) {
+            // static catalogs on object storage (e.g. https://host/bucket/catalog) have no
+            // index document on the folder, the root is the catalog.json inside it
+            if (url.toLowerCase().endsWith(".json")) {
+                throw e;
+            }
+            String staticUrl = (url.endsWith("/") ? url : url + "/") + "catalog.json";
+            try {
+                stacClient = new HMSTACClient(new URL(staticUrl), http);
+            } catch (Exception e2) {
+                e.addSuppressed(e2);
+                throw e;
+            }
+        }
+        stacClient.setForceLatLon(forceLatLon);
     }
 
     /**

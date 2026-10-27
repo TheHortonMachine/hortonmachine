@@ -37,6 +37,7 @@ import org.geotools.stac.client.Link;
 import org.geotools.stac.client.STACClient;
 import org.geotools.stac.client.STACConformance;
 import org.geotools.stac.client.SearchQuery;
+import org.hortonmachine.gears.io.stac.HMStacUtils;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -73,9 +74,26 @@ public class HMSTACClient extends STACClient {
 	/** The documents the collections found following child links have been read from. */
 	private final Map<String, URL> collectionUrls = new ConcurrentHashMap<>();
 
+	/** If true, the item geometries are always read as latitude/longitude. */
+	private boolean forceLatLon = false;
+
 	public HMSTACClient(URL landingPageURL, HTTPClient http) throws IOException {
 		super(landingPageURL, http);
 		this.landingPageURL = landingPageURL;
+	}
+
+	/**
+	 * Some catalogs write the item geometries in latitude/longitude order instead of longitude/latitude.
+	 * That is detected and fixed for geometries reaching latitudes over +-90, this forces the fix for all.
+	 *
+	 * @param forceLatLon if <code>true</code>, the item geometries are always swapped to longitude/latitude.
+	 */
+	public void setForceLatLon(boolean forceLatLon) {
+		this.forceLatLon = forceLatLon;
+	}
+
+	public boolean isForceLatLon() {
+		return forceLatLon;
 	}
 
 	/**
@@ -289,12 +307,18 @@ public class HMSTACClient extends STACClient {
 		List<SimpleFeature> items = new ArrayList<>();
 		Set<String> visited = new HashSet<>();
 		visited.add(collectionUrl.toString());
-		collectStaticItems(readJson(collectionUrl), collectionUrl, filter, maxItems, pm, 0, visited, items);
+		int[] swapped = { 0 };
+		collectStaticItems(readJson(collectionUrl), collectionUrl, filter, maxItems, pm, 0, visited, items, swapped);
+		if (swapped[0] > 0) {
+			pm.message("WARNING: " + swapped[0]
+					+ " item geometries were in latitude/longitude order and have been swapped to longitude/latitude.");
+		}
 		return items;
 	}
 
 	private void collectStaticItems(JsonNode document, URL documentUrl, StaticItemFilter filter, int maxItems,
-			IHMProgressMonitor pm, int depth, Set<String> visited, List<SimpleFeature> items) throws IOException {
+			IHMProgressMonitor pm, int depth, Set<String> visited, List<SimpleFeature> items, int[] swapped)
+			throws IOException {
 		if (depth > MAX_CHILD_DEPTH || !document.has("links"))
 			return;
 		for (JsonNode link : document.get("links")) {
@@ -309,13 +333,16 @@ public class HMSTACClient extends STACClient {
 			JsonNode node = readJson(url);
 			if ("Feature".equals(node.path("type").asText())) {
 				SimpleFeature feature = toFeature(node, url);
+				// fix the axis order before the spatial filter
+				if (feature != null && HMStacUtils.fixLatLonGeometry(feature, forceLatLon))
+					swapped[0]++;
 				if (feature != null && filter.accepts(node, feature)) {
 					items.add(feature);
 					pm.worked(1);
 				}
 			} else {
 				// nested catalogs of items
-				collectStaticItems(node, url, filter, maxItems, pm, depth + 1, visited, items);
+				collectStaticItems(node, url, filter, maxItems, pm, depth + 1, visited, items, swapped);
 			}
 		}
 	}

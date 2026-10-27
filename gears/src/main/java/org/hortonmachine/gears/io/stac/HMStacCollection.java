@@ -109,7 +109,22 @@ public class HMStacCollection {
         // String crs = spatial.getCrs();
 
         // better to get the bounds from the collection directly
-        return collection.getBounds();
+        ReferencedEnvelope bounds = collection.getBounds();
+        if (bounds != null && (isForceLatLon() || HMStacUtils.looksLatLon(bounds))) {
+            // the bbox has been written in latitude/longitude order
+            bounds = new ReferencedEnvelope(bounds.getMinY(), bounds.getMaxY(), bounds.getMinX(), bounds.getMaxX(),
+                    bounds.getCoordinateReferenceSystem());
+        }
+        if (bounds != null && !bounds.isNull()) {
+            // the extent is always WGS84, but catalogs often go half a pixel over the limits (e.g. 180.0005)
+            bounds = new ReferencedEnvelope(Math.max(bounds.getMinX(), -180.0), Math.min(bounds.getMaxX(), 180.0),
+                    Math.max(bounds.getMinY(), -90.0), Math.min(bounds.getMaxY(), 90.0), bounds.getCoordinateReferenceSystem());
+        }
+        return bounds;
+    }
+
+    private boolean isForceLatLon() {
+        return stacClient instanceof HMSTACClient hmClient && hmClient.isForceLatLon();
     }
 
     public List<Date> getTemporalBounds() {
@@ -287,11 +302,16 @@ public class HMStacCollection {
         Iterator<SimpleFeature> staticIterator = staticItems != null ? staticItems.iterator() : null;
         pm.beginTask("Extracting STAC items...", -1);
         List<HMStacItem> stacItems = new ArrayList<>();
+        boolean forceLatLon = isForceLatLon();
+        int swapped = 0;
         try {
             // check the limits before hasNext, which would trigger the download of the next page
             while( !pm.isCanceled() && (maxItems <= 0 || stacItems.size() < maxItems)
                     && (iterator != null ? iterator.hasNext() : staticIterator.hasNext()) ) {
                 SimpleFeature f = iterator != null ? iterator.next() : staticIterator.next();
+                // static items have been fixed before filtering them
+                if (iterator != null && HMStacUtils.fixLatLonGeometry(f, forceLatLon))
+                    swapped++;
                 HMStacItem item;
                 if(metadataEpsg != null) {
                 	item = HMStacItem.fromSimpleFeature(f, metadataEpsg);
@@ -310,6 +330,9 @@ public class HMStacCollection {
             if (iterator != null)
                 iterator.close();
         }
+        if (swapped > 0)
+            pm.message("WARNING: " + swapped
+                    + " item geometries were in latitude/longitude order and have been swapped to longitude/latitude.");
         pm.message("Done.");
         return stacItems;
     }

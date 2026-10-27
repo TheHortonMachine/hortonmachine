@@ -64,7 +64,14 @@ public class HMStacAsset {
 				}
 			}
 		}
-		
+		if (epsg == null) {
+			// projection extension v1.x: integer code
+			JsonNode projEpsgNode = assetNode.get("proj:epsg");
+			if (projEpsgNode != null && projEpsgNode.canConvertToInt()) {
+				epsg = projEpsgNode.intValue();
+			}
+		}
+
 		JsonNode bboxNode = assetNode.get("proj:bbox");
 		if (bboxNode != null && bboxNode.isArray() && bboxNode.size() == 4) {
 			double minX = bboxNode.get(0).asDouble();
@@ -98,6 +105,15 @@ public class HMStacAsset {
 	
 	public Integer getEpsg() {
 		return epsg;
+	}
+
+	/**
+	 * Set the epsg of the asset, for example when read from the file since the catalog doesn't declare it.
+	 *
+	 * @param epsg the epsg code.
+	 */
+	public void setEpsg(Integer epsg) {
+		this.epsg = epsg;
 	}
 	
 	public Envelope getEnvelope() {
