@@ -13,7 +13,6 @@ Inserts the las files of a folder into a spatialite or H2GIS database, in cells 
 | Parameter | Type | Unit | Default | Description |
 |---|---|---|---|---|
 | `inFolder` | folder |  |  | The folder containing the las files to insert. |
-| `inDatabasePath` | file |  |  | The database to write to: it is created if it does not exist, otherwise the files are added to it. |
 | `pDbType` | String |  | `SPATIALITE` | The type of the database. Allowed values: `SPATIALITE`, `H2GIS`. |
 | `inOrtophoto` | vector file |  |  | The optional image mosaic of orthophotos, by its shapefile index, with 3 bands, to take the colors of the points from. |
 | `pCode` | CRS code |  |  | The optional code defining the target coordinate reference system. This is needed only if the file has no prj file. If set, it will be used over the prj file. |
@@ -23,4 +22,10 @@ Inserts the las files of a folder into a spatialite or H2GIS database, in cells 
 | `doEmptyCells` | boolean |  | `false` | Flag to define if empty cells should also be written into the database. |
 | `doAvoidIndex` | boolean |  | `false` | Flag to define if the spatial index creation should be ignored (will not create levels). |
 | `inLasNames` | List |  |  | Optional las list names to process only those (inside las folder). |
+
+**Outputs**
+
+| Parameter | Type | Unit | Description |
+|---|---|---|---|
+| `inDatabasePath` | output file |  | The database to write to, new or existing: if it does not exist it is created, otherwise the las files are added to it. |
 
