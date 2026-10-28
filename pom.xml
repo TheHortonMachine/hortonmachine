@@ -702,6 +702,14 @@
 
 	<profiles>
 		<profile>
+			<!-- the llm assistants are not part of the current release: they are neither built
+			nor deployed unless explicitly asked for with -Pllm -->
+			<id>llm</id>
+			<modules>
+				<module>llm</module>
+			</modules>
+		</profile>
+		<profile>
 			<!-- the IDEs based on m2e (Eclipse, VS Code) build into their own folder, so that their
 			automatic builds don't collide with the command line builds in target -->
 			<id>ide</id>

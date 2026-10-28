@@ -20,6 +20,7 @@ package org.hortonmachine.database;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
@@ -29,7 +30,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.reflect.InvocationTargetException;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -47,6 +53,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.imageio.ImageIO;
@@ -73,6 +80,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
@@ -88,6 +96,10 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 
+import com.jgoodies.forms.layout.CellConstraints;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.RowSpec;
+
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.crs.GeographicCRS;
 import org.geotools.api.style.Style;
@@ -98,6 +110,8 @@ import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcBlob;
 import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.HM;
+import org.hortonmachine.database.assistant.ISqlAssistantHost;
+import org.hortonmachine.database.assistant.SqlAssistantPanel;
 import org.hortonmachine.database.spi.IDbViewerActionProvider;
 import org.hortonmachine.database.tree.DatabaseTreeCellRenderer;
 import org.hortonmachine.database.tree.DatabaseTreeModel;
@@ -119,7 +133,11 @@ import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.spatialite.SpatialiteCommonMethods;
 import org.hortonmachine.dbs.utils.CommonQueries;
 import org.hortonmachine.dbs.utils.DbsUtilities;
+import org.hortonmachine.dbs.utils.SqlFormatter;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.gears.assistant.Assistants;
+import org.hortonmachine.gears.assistant.IAssistantBackend;
+import org.hortonmachine.gears.assistant.ISqlAssistant;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -172,15 +190,18 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private static final String SQL_TEMPLATES = "sql templates";
     private static final String SQL_HISTORY_TOOLTIP = "select queries from the history";
     private static final String SQL_HISTORY = "sql history";
+    private static final String SQL_ASSISTANT_TOOLTIP = "write, fix and explain SQL with a language model";
+    private static final String SQL_ASSISTANT = "assistant";
     private static final String DISCONNECT_TOOLTIP = "disconnect from current database";
     private static final String DISCONNECT = "disconnect";
     // private static final String RUN_QUERY = "run query";
-    private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor";
+    private static final String RUN_QUERY_TOOLTIP = "run the query in the SQL Editor (Ctrl+Enter)";
     private static final String RUN_QUERY_TO_FILE_TOOLTIP = "run the query in the SQL Editor and store result in file";
     private static final String RUN_QUERY_TO_SHAPEFILE_TOOLTIP = "run the query in the SQL Editor and store result in a shapefile/gpkg";
     protected static final String VIEW_QUERY_TOOLTIP = "run spatial query and view the result in the geometry viewer";
     // private static final String SQL_EDITOR = "SQL Editor";
-    private static final String CLEAR_SQL_EDITOR = "clear SQL editor";
+    private static final String CLEAR_SQL_EDITOR = "clear SQL editor (Ctrl+W)";
+    private static final String FORMAT_SQL_TOOLTIP = "lay out the SQL of the editor, or the selected part, on indented lines (Ctrl+Shift+F)";
     // private static final String DATA_VIEWER = "Data viewer";
     private static final String DATABASE_CONNECTIONS = "Database connection";
     private static final String NEW = "new";
@@ -231,6 +252,19 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     private DatabaseTreeView databaseTreeView;
     private SqlEditorView sqlEditorView;
     private DataTableView dataTableView;
+
+    /**
+     * The button and window of the SQL assistant, <code>null</code> when no assistant module is installed.
+     */
+    private JButton formatSqlButton;
+    private JButton assistantButton;
+    private JFrame assistantWindow;
+    private SqlAssistantPanel assistantPanel;
+    /**
+     * The last SQL of the editor that failed and its error, for the fix of the assistant.
+     */
+    private volatile String lastFailedSql;
+    private volatile String lastQueryError;
 
     private static class DatabaseLoadEvent {
         private final SchemaLevel schemaLevel;
@@ -354,6 +388,14 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentSqlEditorArea = sqlEditorArea;
             }
             addSqlAreaContextMenu(sqlEditorArea);
+            // the same keys as the buttons of the editor column, which they press
+            sqlEditorArea.getInputMap().put(
+                    KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK), "formatSql");
+            sqlEditorArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK), "runSql");
+            sqlEditorArea.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK), "clearSql");
+            sqlEditorArea.getActionMap().put("formatSql", editorButtonAction(() -> formatSqlButton));
+            sqlEditorArea.getActionMap().put("runSql", editorButtonAction(() -> sqlEditorView._runQueryButton));
+            sqlEditorArea.getActionMap().put("clearSql", editorButtonAction(() -> sqlEditorView._clearSqlEditorbutton));
             editorPanesArray[i] = sqlEditorArea;
         }
 
@@ -532,6 +574,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
         });
 
+        addSqlAssistantButton();
+
         addComponentListener(new ComponentListener(){
 
             public void componentShown( ComponentEvent e ) {
@@ -647,6 +691,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         } catch (Exception e1) {
             Logger.INSTANCE.insertError("", "Error", e1);
         }
+
+        // before the layout of the tree, which enables or disables the editor buttons
+        addFormatSqlButton();
 
         layoutTree(null, false);
 
@@ -827,11 +874,124 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         sqlEditorView._clearSqlEditorbutton.addActionListener(e -> {
             currentSqlEditorArea.setText("");
         });
+    }
 
+    /**
+     * Add the button that lays out the SQL of the editor below the clear button, in two new rows
+     * of the generated button column.
+     */
+    private void addFormatSqlButton() {
+        formatSqlButton = new JButton();
+        formatSqlButton.setIcon(ImageCache.getInstance().getImage(ImageCache.LIST));
+        formatSqlButton.setToolTipText(FORMAT_SQL_TOOLTIP);
+        formatSqlButton.setPreferredSize(preferredSqleditorButtonSize);
+        formatSqlButton.addActionListener(e -> formatEditorSql());
+
+        Container buttonsColumn = sqlEditorView._clearSqlEditorbutton.getParent();
+        FormLayout layout = (FormLayout) buttonsColumn.getLayout();
+        // the clear button is in row 10, row 11 is the filler: the editor area, which spans it, grows
+        layout.insertRow(11, RowSpec.decode("CENTER:2DLU:NONE"));
+        layout.insertRow(12, RowSpec.decode("CENTER:DEFAULT:NONE"));
+        buttonsColumn.add(formatSqlButton, new CellConstraints().xy(1, 12));
+    }
+
+    /**
+     * @param button gives the button, which may not exist yet when the action is made.
+     * @return an action that presses the button, if it is enabled.
+     */
+    @SuppressWarnings("serial")
+    private static AbstractAction editorButtonAction( Supplier<JButton> button ) {
+        return new AbstractAction(){
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                JButton b = button.get();
+                if (b != null && b.isEnabled()) {
+                    b.doClick();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lay out the SQL of the current editor on indented lines: the selected part, or all of it.
+     */
+    private void formatEditorSql() {
+        String selected = currentSqlEditorArea.getSelectedText();
+        if (selected != null && !selected.isBlank()) {
+            currentSqlEditorArea.replaceSelection(SqlFormatter.format(selected));
+        } else {
+            currentSqlEditorArea.setText(SqlFormatter.format(currentSqlEditorArea.getText()));
+        }
     }
 
     protected abstract void setViewQueryButton( JButton _viewQueryButton, Dimension preferredButtonSize,
             JTextPane sqlEditorArea );
+
+    /**
+     * Add the SQL assistant to the toolbar, only if a module providing it is installed: without
+     * it the viewer stays as it always was.
+     */
+    private void addSqlAssistantButton() {
+        IAssistantBackend backend = Assistants.getBackend().orElse(null);
+        ISqlAssistant sqlAssistant = backend == null ? null : backend.getSqlAssistant().orElse(null);
+        if (sqlAssistant == null) {
+            return;
+        }
+
+        ISqlAssistantHost host = new ISqlAssistantHost(){
+            @Override
+            public ADb getDatabase() {
+                return currentConnectedSqlDatabase;
+            }
+
+            @Override
+            public String getEditorSql() {
+                return currentSqlEditorArea.getText();
+            }
+
+            @Override
+            public void addSqlToEditor( String sql ) {
+                addTextToQueryEditor(sql);
+            }
+
+            @Override
+            public String getLastError( String sql ) {
+                String failedSql = lastFailedSql;
+                return failedSql != null && failedSql.trim().equals(sql.trim()) ? lastQueryError : null;
+            }
+        };
+
+        assistantButton = new JButton();
+        assistantButton.setVerticalTextPosition(SwingConstants.BOTTOM);
+        assistantButton.setHorizontalTextPosition(SwingConstants.CENTER);
+        assistantButton.setText(SQL_ASSISTANT);
+        assistantButton.setToolTipText(SQL_ASSISTANT_TOOLTIP);
+        assistantButton.setPreferredSize(preferredToolbarButtonSize);
+        assistantButton.setIcon(ImageCache.getInstance().getImage(ImageCache.NOTE));
+        assistantButton.addActionListener(e -> {
+            if (assistantWindow != null && assistantWindow.isDisplayable()) {
+                assistantPanel.updateDatabaseState();
+                assistantWindow.toFront();
+                return;
+            }
+            assistantPanel = new SqlAssistantPanel(backend, sqlAssistant, host);
+            assistantWindow = guiBridge.showWindow(assistantPanel, "SQL assistant");
+            assistantWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            assistantWindow.setLocationRelativeTo(assistantButton);
+            // the connection can change while the window is open
+            assistantWindow.addWindowListener(new WindowAdapter(){
+                @Override
+                public void windowActivated( WindowEvent we ) {
+                    assistantPanel.updateDatabaseState();
+                }
+            });
+        });
+
+        // the free column after the templates button of the toolbar
+        Container toolbar = _templatesButton.getParent();
+        toolbar.add(assistantButton, new CellConstraints().xy(13, 1));
+        toolbar.revalidate();
+    }
 
     @SuppressWarnings("serial")
     private void addJtreeDragNDrop() {
@@ -1828,6 +1988,19 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     protected void loadDataViewer( QueryResult queryResult ) {
+        // the queries run on their own threads: building the table off the event thread deadlocked
+        // with the painting of the same table (the lazy renderer of UIDefaults against the tree lock)
+        if (!SwingUtilities.isEventDispatchThread()) {
+            try {
+                SwingUtilities.invokeAndWait(() -> loadDataViewer(queryResult));
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                throw cause instanceof RuntimeException ? (RuntimeException) cause : new RuntimeException(cause);
+            }
+            return;
+        }
         this.currentQueryResult = queryResult;
         if (queryResult == null) {
             currentDataTable.setModel(new DefaultTableModel());
@@ -1986,7 +2159,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         sqlEditorView._runQueryAndStoreShapefileButton.setEnabled(enable);
         _templatesButton.setEnabled(enable);
         _historyButton.setEnabled(enable);
+        // the assistant stays enabled: without a database it helps to connect to one
+        if (assistantPanel != null) {
+            assistantPanel.updateDatabaseState();
+        }
         sqlEditorView._clearSqlEditorbutton.setEnabled(enable);
+        formatSqlButton.setEnabled(enable);
         sqlEditorView._viewQueryButton.setEnabled(enable);
 
         dataTableView._recordCountTextfield.setText("");
@@ -2010,6 +2188,11 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     }
 
     public void onClose() {
+        if (assistantWindow != null) {
+            assistantPanel.cancel();
+            assistantWindow.dispose();
+            assistantWindow = null;
+        }
         if (currentConnectedSqlDatabase != null) {
             PreferencesHandler.setPreference(DatabaseGuiUtils.HM_SPATIALITE_LAST_FILE,
                     currentConnectedSqlDatabase.getDatabasePath());
@@ -2583,6 +2766,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         }
         boolean hasError = false;
         int limit = getLimit();
+        String editorSql = sqlText;
+        lastFailedSql = null;
+        lastQueryError = null;
         if (currentConnectedSqlDatabase != null && sqlText.length() > 0) {
             try {
                 String[] split = sqlText.split("\n");
@@ -2676,11 +2862,13 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             } catch (Exception e1) {
                 String localizedMessage = getQueryErrorMessage(e1, HMQueryContext.current());
                 hasError = true;
+                lastFailedSql = editorSql;
+                lastQueryError = localizedMessage;
                 pm.errorMessage("An error occurred: " + localizedMessage);
             } finally {
                 pm.done();
             }
-        } 
+        }
 
         if (!hasError && sqlEditorView._refreshTreeAfterQueryCheckbox.isSelected()) {
             try {

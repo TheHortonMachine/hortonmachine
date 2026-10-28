@@ -235,6 +235,21 @@ public class FileUtilities {
     }
 
     /**
+     * Append text in UTF-8 at the end of a file, creating it if missing.
+     *
+     * @param text the text to append.
+     * @param file the file to append to.
+     *
+     * @throws IOException
+     */
+    public static void appendToFile( String text, File file ) throws IOException {
+        try (BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(file, true), Charset.forName("UTF-8")))) {
+            bw.write(text);
+        }
+    }
+
+    /**
      * Write a list of lines to a file.
      *
      * @param lines    the list of lines to write.
