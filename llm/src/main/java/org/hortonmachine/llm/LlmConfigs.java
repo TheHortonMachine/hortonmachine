@@ -29,7 +29,8 @@ import org.hortonmachine.gears.utils.PreferencesHandler;
  * <p>Each value is taken from the first place that has it:</p>
  * <ol>
  * <li>the java system properties ({@value #KEY_KIND}, {@value #KEY_URL}, {@value #KEY_MODEL},
- * {@value #KEY_API_KEY}, {@value #KEY_TIMEOUT}, {@value #KEY_HISTORY});</li>
+ * {@value #KEY_API_KEY}, {@value #KEY_TIMEOUT}, {@value #KEY_HISTORY}, {@value #KEY_KEEP_ALIVE},
+ * {@value #KEY_CONTEXT});</li>
  * <li>the environment variables with the same names in upper case and with underscores
  * (e.g. <code>HM_LLM_URL</code>);</li>
  * <li>the user preferences, as saved by {@link #save(AssistantConfig)};</li>
@@ -37,7 +38,9 @@ import org.hortonmachine.gears.utils.PreferencesHandler;
  * It comes after the preferences since it is often set only to open the local server to the
  * network, and must not hide a server chosen in the settings;</li>
  * <li>the defaults: local Ollama, no model, {@value AssistantConfig#DEFAULT_TIMEOUT_SECONDS} s,
- * {@value AssistantConfig#DEFAULT_HISTORY_TURNS} turns of discussion.</li>
+ * {@value AssistantConfig#DEFAULT_HISTORY_TURNS} turns of discussion, model kept loaded
+ * {@value AssistantConfig#DEFAULT_KEEP_ALIVE_MINUTES} minutes, a context of
+ * {@value AssistantConfig#DEFAULT_CONTEXT_LENGTH} tokens.</li>
  * </ol>
  *
  * <p>Developed with the assistance of an AI coding agent;
@@ -53,6 +56,8 @@ public class LlmConfigs {
     public static final String KEY_API_KEY = "hm.llm.apikey";
     public static final String KEY_TIMEOUT = "hm.llm.timeout";
     public static final String KEY_HISTORY = "hm.llm.history";
+    public static final String KEY_KEEP_ALIVE = "hm.llm.keepalive";
+    public static final String KEY_CONTEXT = "hm.llm.context";
 
     private static final String OLLAMA_HOST = "OLLAMA_HOST";
     private static final int OLLAMA_DEFAULT_PORT = 11434;
@@ -103,9 +108,14 @@ public class LlmConfigs {
 
         int timeout = parseInt(lookup.apply(KEY_TIMEOUT), AssistantConfig.DEFAULT_TIMEOUT_SECONDS);
         int historyTurns = Math.max(0, parseInt(lookup.apply(KEY_HISTORY), AssistantConfig.DEFAULT_HISTORY_TURNS));
+        int keepAlive = Math.max(0, parseInt(lookup.apply(KEY_KEEP_ALIVE), AssistantConfig.DEFAULT_KEEP_ALIVE_MINUTES));
+        int contextLength = parseInt(lookup.apply(KEY_CONTEXT), AssistantConfig.DEFAULT_CONTEXT_LENGTH);
+        if (contextLength < 2048) {
+            contextLength = AssistantConfig.DEFAULT_CONTEXT_LENGTH;
+        }
 
         return new AssistantConfig(kind, url.trim(), lookup.apply(KEY_MODEL), lookup.apply(KEY_API_KEY), timeout,
-                historyTurns);
+                historyTurns, keepAlive, contextLength);
     }
 
     private static int parseInt( String value, int defaultValue ) {
@@ -131,6 +141,8 @@ public class LlmConfigs {
         PreferencesHandler.setPreference(KEY_API_KEY, config.apiKey());
         PreferencesHandler.setPreference(KEY_TIMEOUT, String.valueOf(config.timeoutSeconds()));
         PreferencesHandler.setPreference(KEY_HISTORY, String.valueOf(config.historyTurns()));
+        PreferencesHandler.setPreference(KEY_KEEP_ALIVE, String.valueOf(config.keepAliveMinutes()));
+        PreferencesHandler.setPreference(KEY_CONTEXT, String.valueOf(config.contextLength()));
     }
 
     /**

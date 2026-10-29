@@ -52,6 +52,20 @@ public interface LlmProvider {
             throws Exception;
 
     /**
+     * Let the server load the model and read the messages, asking for no real answer: servers
+     * that keep what they read of the last request then answer the next one with the same
+     * beginning much faster.
+     *
+     * <p>The default does nothing, for servers that gain nothing from it.</p>
+     *
+     * @param messages the messages, the beginning of the next requests.
+     * @param pm the monitor used to cancel the request, or <code>null</code>.
+     * @throws Exception if the request fails.
+     */
+    default void prepare( List<ChatMessage> messages, IHMProgressMonitor pm ) throws Exception {
+    }
+
+    /**
      * @return the models the server offers.
      * @throws Exception if the server can't be reached.
      */

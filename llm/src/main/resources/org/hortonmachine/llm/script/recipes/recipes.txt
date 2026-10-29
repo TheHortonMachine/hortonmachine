@@ -1,0 +1,37 @@
+# The recipes of the script assistant, one file of this folder per line (see Recipes).
+# To remove a recipe, delete its file and its line. TestRecipes compiles each one and checks
+# its use of the modules.
+
+# hydrology
+hydro_chain.groovy
+basin_at_outlet.groovy
+basins_from_large_dem.groovy
+debris_flow_paths.groovy
+river_sections.groovy
+
+# rasters
+raster_info.groovy
+mosaic_folder.groovy
+resample_folder.groovy
+subsample_raster.groovy
+folder_to_geotiff_with_crs.groovy
+qgis_styles_folder.groovy
+cog_read_region.groovy
+
+# projections and vectors
+reproject_geometry.groovy
+reproject_vectors_to_gpkg.groovy
+crs_area_distortion.groovy
+aoi_polygon.groovy
+
+# remote data
+stac_download.groovy
+wcs_download.groovy
+wfs_download.groovy
+copernicus_daily_meteo.groovy
+copernicus_cds_download.groovy
+
+# databases
+spatial_database.groovy
+sqlite_import_timeseries.groovy
+postgis_import_shapefile.groovy

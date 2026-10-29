@@ -27,16 +27,20 @@ import org.hortonmachine.gears.assistant.AssistantConfig;
 import org.hortonmachine.gears.assistant.AssistantConfig.ServerKind;
 import org.hortonmachine.gears.assistant.BackendStatus;
 import org.hortonmachine.gears.assistant.IAssistantBackend;
+import org.hortonmachine.gears.assistant.IScriptAssistant;
 import org.hortonmachine.gears.assistant.ISqlAssistant;
 import org.hortonmachine.gears.assistant.ModelInfo;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.llm.script.LlmScriptAssistant;
+import org.hortonmachine.llm.script.ModuleCatalog;
 import org.hortonmachine.llm.sql.LlmSqlAssistant;
 
 /**
  * The {@link IAssistantBackend} of this module, registered for the {@link java.util.ServiceLoader}.
  *
- * <p>Chats go through the OpenAI compatible api for both kinds of server; with an Ollama server the
- * native api is used in addition to check the version and to list and download models.</p>
+ * <p>With an Ollama server everything goes through its native api: chats (with the context
+ * length and keep alive of the configuration), version, models and downloads. Other servers are
+ * reached through the OpenAI compatible api.</p>
  *
  * <p>Developed with the assistance of an AI coding agent;
  * design, review and validation by the author.</p>
@@ -174,8 +178,24 @@ public class LlmAssistantBackend implements IAssistantBackend {
         new OllamaManager(config, client).pull(model, pm);
     }
 
+    /**
+     * @return the chat client for a configuration: the native api of Ollama, which also sets the
+     *          context and keeps the model loaded, else the OpenAI compatible one.
+     */
+    LlmProvider provider( AssistantConfig current ) {
+        if (current.serverKind() == ServerKind.OLLAMA) {
+            return new OllamaChatProvider(current, client);
+        }
+        return new OpenAiCompatibleProvider(current, client);
+    }
+
     @Override
     public Optional<ISqlAssistant> getSqlAssistant() {
-        return Optional.of(new LlmSqlAssistant(this::getConfig, c -> new OpenAiCompatibleProvider(c, client), auditLog));
+        return Optional.of(new LlmSqlAssistant(this::getConfig, this::provider, auditLog));
+    }
+
+    @Override
+    public Optional<IScriptAssistant> getScriptAssistant() {
+        return Optional.of(new LlmScriptAssistant(this::getConfig, this::provider, ModuleCatalog::getDefault, auditLog));
     }
 }

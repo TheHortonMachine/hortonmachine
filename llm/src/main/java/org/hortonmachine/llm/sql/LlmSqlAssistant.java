@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.gears.assistant.AssistantConfig;
@@ -32,6 +33,7 @@ import org.hortonmachine.gears.assistant.SqlAssistOptions;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.llm.AuditLog;
 import org.hortonmachine.llm.ChatMessage;
+import org.hortonmachine.llm.CodeChats;
 import org.hortonmachine.llm.LlmProvider;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -39,12 +41,13 @@ import org.json.JSONObject;
 /**
  * The {@link ISqlAssistant} on top of a {@link LlmProvider}.
  *
- * <p>The model gets the rules, the notes on the dialect and the schema as instructions, and
- * answers with a JSON object <code>{sql, explanation}</code> enforced through a JSON schema. The
- * SQL is then checked with the {@link SqlGuard}: the read-only flag is set and queries without
- * a limit get the one of the options. Read-only SQL is also planned by the database
- * (<code>EXPLAIN</code>, never run): if the database rejects it, its error goes back to the model,
- * up to {@value #MAX_REPAIR_ROUNDS} times. Every request goes to the {@link AuditLog}.</p>
+ * <p>The model gets the rules, the notes on the dialect and the schema as instructions. Questions
+ * are answered with text, whose last SQL code block is the SQL, if any; fixes with a JSON object
+ * <code>{sql, explanation}</code> enforced through a JSON schema. The SQL is then checked with the
+ * {@link SqlGuard}: the read-only flag is set and queries without a limit get the one of the
+ * options. Read-only SQL is also planned by the database (<code>EXPLAIN</code>, never run): if the
+ * database rejects it, its error goes back to the model, up to {@value #MAX_REPAIR_ROUNDS} times.
+ * Every request goes to the {@link AuditLog}.</p>
  *
  * <p>Developed with the assistance of an AI coding agent;
  * design, review and validation by the author.</p>
@@ -61,6 +64,9 @@ public class LlmSqlAssistant implements ISqlAssistant {
             .put("required", new JSONArray().put("sql").put("explanation"))//
             .put("additionalProperties", false);
 
+    /**
+     * The rules of the fixes, answered as JSON.
+     */
     private static final String SQL_RULES = """
             You write SQL for the database described below.
             Rules:
@@ -81,13 +87,27 @@ public class LlmSqlAssistant implements ISqlAssistant {
             Point out mistakes, such as tables or columns that don't exist or functions the dialect lacks.
             """;
 
-    private static final String HELP_RULES = """
+    private static final String ASK_RULES = """
             You help a user of the HortonMachine database viewer with databases and spatial data.
-            Answer briefly and practically, in the language of the question. If SQL helps, show it, but
-            remember that the user runs it: you can't connect, run or change anything yourself.
-            When writing SQL, take table and column names from the schema, never from earlier answers,
-            which can be wrong.
+            Rules:
+            - Answer briefly and practically, in the language of the question. You can't connect, run or
+              change anything yourself: the user does.
+            - When the question asks for data of the connected database, or SQL is the best answer, give exactly
+              one SQL statement for this database in a sql code block, then say in one or two sentences what it does.
+            - Use only the tables and columns of the schema, with their exact names; never invent names.
+              Primary keys are not always called id: check the schema.
+            - A table without a GEOMETRY column has no geometry: never use other columns as geometries.
+              To place it, join the table holding its location, as listed after the schema.
+            - Earlier answers in the discussion can be wrong: take names from the schema, never from earlier answers.
+            - Write a query that only reads data, unless the request explicitly asks to change data or tables.
             """;
+
+    /**
+     * The start of SQL statements, after any comment lines: code blocks without a language are
+     * taken as SQL only if they start like this.
+     */
+    private static final Pattern SQL_START = Pattern.compile(
+            "^(SELECT|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|PRAGMA|EXPLAIN|VALUES|REPLACE)\\b", Pattern.CASE_INSENSITIVE);
 
     /**
      * How many times SQL rejected by the database is sent back to the model to be corrected.
@@ -111,10 +131,16 @@ public class LlmSqlAssistant implements ISqlAssistant {
     }
 
     @Override
-    public SqlAnswer generate( ADb db, String question, List<AssistantTurn> history, SqlAssistOptions options,
+    public SqlAnswer ask( ADb db, String question, List<AssistantTurn> history, SqlAssistOptions options,
             Consumer<String> onToken, IHMProgressMonitor pm ) throws Exception {
-        List<ChatMessage> messages = chat(instructions(SQL_RULES, db, options), history, question, historyTurns(), true);
-        return askSql("sql-generate", db, messages, options, onToken, pm);
+        String system = ASK_RULES + "\n" + ConnectionGuide.TEXT;
+        if (db == null) {
+            system += "\nNo database is connected right now.\n";
+        } else {
+            system += "\nThe connected database:\n" + instructions("", db, options);
+        }
+        List<ChatMessage> messages = chat(system, history, question, historyTurns(), false);
+        return askSql("sql-ask", false, db, messages, options, onToken, pm);
     }
 
     @Override
@@ -122,7 +148,7 @@ public class LlmSqlAssistant implements ISqlAssistant {
             Consumer<String> onToken, IHMProgressMonitor pm ) throws Exception {
         List<ChatMessage> messages = chat(instructions(SQL_RULES, db, options), history, fixRequest(sql, dbError),
                 historyTurns(), true);
-        return askSql("sql-fix", db, messages, options, onToken, pm);
+        return askSql("sql-fix", true, db, messages, options, onToken, pm);
     }
 
     @Override
@@ -131,18 +157,6 @@ public class LlmSqlAssistant implements ISqlAssistant {
         List<ChatMessage> messages = chat(instructions(EXPLAIN_RULES, db, options), history, explainRequest(sql),
                 historyTurns(), false);
         return askText("sql-explain", messages, onToken, pm);
-    }
-
-    @Override
-    public String help( ADb db, String question, List<AssistantTurn> history, SqlAssistOptions options,
-            Consumer<String> onToken, IHMProgressMonitor pm ) throws Exception {
-        String system = HELP_RULES + "\n" + ConnectionGuide.TEXT;
-        if (db == null) {
-            system += "\nNo database is connected right now.\n";
-        } else {
-            system += "\nThe connected database:\n" + instructions("", db, options);
-        }
-        return askText("sql-help", chat(system, history, question, historyTurns(), false), onToken, pm);
     }
 
     private int historyTurns() {
@@ -159,43 +173,11 @@ public class LlmSqlAssistant implements ISqlAssistant {
     }
 
     /**
-     * Build the messages of a request: the instructions, the last turns of the discussion and the
-     * new request.
-     *
-     * <p>Earlier answers with SQL are given back in the form the new answer must have: the JSON the
-     * model answers with when SQL is asked, text with an SQL code block when text is asked.
-     * Small models copy the form of the earlier answers, so a text answer would otherwise come
-     * as JSON.</p>
-     *
-     * @param system the instructions.
-     * @param history the earlier turns, oldest first, can be <code>null</code>.
-     * @param request the new request.
-     * @param maxTurns the most recent turns to give back, 0 for none.
-     * @param jsonAnswers <code>true</code> if the new answer is the JSON with SQL, <code>false</code> for text.
-     * @return the messages.
+     * The messages of a request, see {@link CodeChats#chat(String, List, String, int, boolean, String, String)}.
      */
     static List<ChatMessage> chat( String system, List<AssistantTurn> history, String request, int maxTurns,
             boolean jsonAnswers ) {
-        List<ChatMessage> messages = new ArrayList<>();
-        messages.add(ChatMessage.system(system));
-        if (history != null && maxTurns > 0) {
-            int from = Math.max(0, history.size() - maxTurns);
-            for( AssistantTurn turn : history.subList(from, history.size()) ) {
-                messages.add(ChatMessage.user(turn.question()));
-                String answer = turn.answer() == null ? "" : turn.answer();
-                if (turn.sql() != null) {
-                    answer = jsonAnswers ? new JSONObject().put("sql", turn.sql()).put("explanation", answer).toString()
-                            : asText(answer, turn.sql());
-                }
-                messages.add(ChatMessage.assistant(answer));
-            }
-        }
-        messages.add(ChatMessage.user(request));
-        return messages;
-    }
-
-    private static String asText( String explanation, String sql ) {
-        return (explanation.isBlank() ? "" : explanation.strip() + "\n\n") + "```sql\n" + sql.strip() + "\n```";
+        return CodeChats.chat(system, history, request, maxTurns, jsonAnswers, "sql", "sql");
     }
 
     private String askText( String task, List<ChatMessage> messages, Consumer<String> onToken, IHMProgressMonitor pm )
@@ -213,35 +195,21 @@ public class LlmSqlAssistant implements ISqlAssistant {
     }
 
     /**
-     * Take a text answer as it is, unless the model wrote the JSON of the SQL answers anyways: that
-     * is turned into text with an SQL code block.
-     *
-     * @param response the answer of the model.
-     * @return the text to show.
+     * The text to show of a text answer, see {@link CodeChats#toText(String, String, String)}.
      */
     static String toText( String response ) {
-        String text = response.trim();
-        String json = stripFences(text).trim();
-        if (json.startsWith("{") && json.endsWith("}")) {
-            try {
-                JSONObject object = new JSONObject(json);
-                if (object.has("explanation") || object.has("sql")) {
-                    String sql = stripFences(object.optString("sql", "")).trim();
-                    String explanation = object.optString("explanation", "");
-                    return sql.isEmpty() ? explanation.strip() : asText(explanation, sql);
-                }
-            } catch (Exception e) {
-                // not that JSON: keep the text
-            }
-        }
-        return text;
+        return CodeChats.toText(response, "sql", "sql");
     }
 
     /**
-     * Ask for SQL, have the database check it and send it back to the model to be corrected while
-     * the database rejects it, up to {@value #MAX_REPAIR_ROUNDS} times.
+     * Ask, have the database check the SQL of the answer and send it back to the model to be
+     * corrected while the database rejects it, up to {@value #MAX_REPAIR_ROUNDS} times.
+     *
+     * @param json <code>true</code> if the answer is the JSON object with the SQL, which must have
+     *          some; <code>false</code> for text, whose last SQL code block is the SQL, if any.
+     * @param db the database that checks the SQL, or <code>null</code> to check nothing.
      */
-    private SqlAnswer askSql( String task, ADb db, List<ChatMessage> messages, SqlAssistOptions options,
+    private SqlAnswer askSql( String task, boolean json, ADb db, List<ChatMessage> messages, SqlAssistOptions options,
             Consumer<String> onToken, IHMProgressMonitor pm ) throws Exception {
         AssistantConfig config = configSupplier.get();
         LlmProvider provider = providerFactory.apply(config);
@@ -250,21 +218,26 @@ public class LlmSqlAssistant implements ISqlAssistant {
         for( int round = 0;; round++ ) {
             String response = null;
             try {
-                response = provider.chat(conversation, ANSWER_SCHEMA, onToken, pm);
-                SqlAnswer answer = toAnswer(response, options);
-                boolean checked = answer.readOnly() && SqlGuard.isSingleStatement(answer.sql());
+                response = provider.chat(conversation, json ? ANSWER_SCHEMA : null, onToken, pm);
+                SqlAnswer answer = json ? toAnswer(response, options) : textToAnswer(response, options);
+                if (answer.sql() == null) {
+                    auditLog.append(roundTask, config, conversation, response, null, null);
+                    return answer;
+                }
+                boolean checked = db != null && answer.readOnly() && SqlGuard.isSingleStatement(answer.sql());
                 String checkError = checked ? check(db, answer.sql()) : null;
                 auditLog.append(roundTask, config, conversation, response, answer.sql(),
                         checkError == null ? null : "rejected by the database: " + checkError);
                 if (checkError == null || round >= MAX_REPAIR_ROUNDS) {
-                    return new SqlAnswer(answer.sql(), answer.explanation(), answer.readOnly(), answer.limitApplied(), checked,
+                    return new SqlAnswer(answer.text(), answer.sql(), answer.readOnly(), answer.limitApplied(), checked,
                             checkError);
                 }
                 conversation.add(ChatMessage.assistant(response));
-                conversation.add(ChatMessage.user(repairRequest(checkError, tablesUsedIn(db, answer.sql()))));
+                conversation.add(ChatMessage.user(repairRequest(checkError, tablesUsedIn(db, answer.sql()), json)));
                 roundTask = task + "-repair";
-                if (onToken != null) {
-                    onToken.accept("\n");
+                // the answer that follows replaces the rejected one
+                if (pm != null) {
+                    pm.beginTask(CodeChats.repairTaskName("SQL", checkError, round + 2, MAX_REPAIR_ROUNDS + 1), -1);
                 }
             } catch (Exception e) {
                 auditLog.append(roundTask, config, conversation, response, null, errorText(e));
@@ -282,15 +255,17 @@ public class LlmSqlAssistant implements ISqlAssistant {
      *
      * @param dbError the error of the database.
      * @param tablesUsed the description of the tables the SQL uses, can be empty.
+     * @param json <code>true</code> if the answer is the JSON with the SQL, else text with a code block.
      * @return the request.
      */
-    static String repairRequest( String dbError, String tablesUsed ) {
+    static String repairRequest( String dbError, String tablesUsed, boolean json ) {
         String firstLine = dbError.strip().lines().findFirst().orElse(dbError).strip();
         String request = "The database rejected this SQL with the error:\n" + firstLine + "\n";
         if (!tablesUsed.isBlank()) {
             request += "\nThe tables used in the SQL have exactly these columns:\n" + tablesUsed;
         }
-        return request + "\nWrite the corrected SQL. Use only these tables and columns, with their exact names.";
+        return request + (json ? "\nWrite the corrected SQL." : "\nAnswer again, with the corrected SQL in a sql code block.")
+                + " Use only these tables and columns, with their exact names.";
     }
 
     private static String tablesUsedIn( ADb db, String sql ) {
@@ -339,13 +314,7 @@ public class LlmSqlAssistant implements ISqlAssistant {
      * @throws IllegalStateException if the answer holds no SQL.
      */
     static SqlAnswer toAnswer( String response, SqlAssistOptions options ) {
-        String json = stripFences(response);
-        int start = json.indexOf('{');
-        int end = json.lastIndexOf('}');
-        if (start == -1 || end <= start) {
-            throw new IllegalStateException("The model didn't answer with JSON: " + shorten(response));
-        }
-        JSONObject object = new JSONObject(json.substring(start, end + 1));
+        JSONObject object = CodeChats.toJson(response);
         String sql = stripFences(object.optString("sql", "")).trim();
         if (sql.isEmpty()) {
             throw new IllegalStateException("The model gave no SQL: " + shorten(response));
@@ -357,26 +326,53 @@ public class LlmSqlAssistant implements ISqlAssistant {
         if (readOnly) {
             finalSql = SqlGuard.applyLimit(sql, options.autoLimit());
         }
-        return new SqlAnswer(finalSql, explanation, readOnly, !finalSql.equals(sql), false, null);
+        return new SqlAnswer(CodeChats.asText(explanation, finalSql, "sql"), finalSql, readOnly, !finalSql.equals(sql), false,
+                null);
+    }
+
+    /**
+     * Turn a text answer of the model into a {@link SqlAnswer}: its last SQL code block, if any, is
+     * the SQL, with the checks of the {@link SqlGuard}; a limit added to it shows in the text too.
+     *
+     * @param response the answer of the model.
+     * @param options the options of the request.
+     * @return the answer, with <code>null</code> SQL if the text has none.
+     */
+    static SqlAnswer textToAnswer( String response, SqlAssistOptions options ) {
+        String text = toText(response);
+        String sql = CodeChats.lastCodeBlock(text, "sql");
+        if (sql == null || !looksLikeSql(sql)) {
+            return new SqlAnswer(text, null, false, false, false, null);
+        }
+        boolean readOnly = SqlGuard.isReadOnly(sql);
+        String finalSql = readOnly ? SqlGuard.applyLimit(sql, options.autoLimit()) : sql;
+        return new SqlAnswer(text.replace(sql, finalSql), finalSql, readOnly, !finalSql.equals(sql), false, null);
+    }
+
+    /**
+     * @return <code>true</code> if the code starts, after any comment lines, like a SQL statement:
+     *          code blocks without a language can also be urls, paths or shell commands.
+     */
+    static boolean looksLikeSql( String code ) {
+        for( String line : code.strip().split("\n") ) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("--")) {
+                continue;
+            }
+            return SQL_START.matcher(trimmed).find();
+        }
+        return false;
     }
 
     private static String stripFences( String text ) {
-        String trimmed = text.trim();
-        if (trimmed.startsWith("```")) {
-            int firstNewline = trimmed.indexOf('\n');
-            trimmed = firstNewline == -1 ? "" : trimmed.substring(firstNewline + 1);
-            if (trimmed.endsWith("```")) {
-                trimmed = trimmed.substring(0, trimmed.length() - 3);
-            }
-        }
-        return trimmed;
+        return CodeChats.stripFences(text);
     }
 
     private static String shorten( String text ) {
-        return text.length() > 200 ? text.substring(0, 200) + "..." : text;
+        return CodeChats.shorten(text);
     }
 
     private static String errorText( Exception e ) {
-        return e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage();
+        return CodeChats.errorText(e);
     }
 }

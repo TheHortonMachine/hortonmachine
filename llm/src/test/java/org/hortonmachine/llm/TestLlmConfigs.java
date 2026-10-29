@@ -59,7 +59,22 @@ public class TestLlmConfigs {
         assertNull(config.apiKey());
         assertEquals(AssistantConfig.DEFAULT_TIMEOUT_SECONDS, config.timeoutSeconds());
         assertEquals(AssistantConfig.DEFAULT_HISTORY_TURNS, config.historyTurns());
+        assertEquals(AssistantConfig.DEFAULT_KEEP_ALIVE_MINUTES, config.keepAliveMinutes());
+        assertEquals(AssistantConfig.DEFAULT_CONTEXT_LENGTH, config.contextLength());
         assertTrue(config.isLocal());
+    }
+
+    @Test
+    public void testKeepAliveAndContext() {
+        preferences.put(LlmConfigs.KEY_KEEP_ALIVE, "120");
+        environment.put("HM_LLM_CONTEXT", "32768");
+        assertEquals(120, resolve().keepAliveMinutes());
+        assertEquals(32768, resolve().contextLength());
+        // a context too small for the instructions falls back to the default
+        environment.put("HM_LLM_CONTEXT", "512");
+        assertEquals(AssistantConfig.DEFAULT_CONTEXT_LENGTH, resolve().contextLength());
+        preferences.put(LlmConfigs.KEY_KEEP_ALIVE, "-1");
+        assertEquals(0, resolve().keepAliveMinutes());
     }
 
     @Test
@@ -131,9 +146,9 @@ public class TestLlmConfigs {
 
     @Test
     public void testIsLocal() {
-        assertTrue(new AssistantConfig(ServerKind.OLLAMA, "http://127.0.0.1:11434", null, null, 1, 0).isLocal());
-        assertTrue(new AssistantConfig(ServerKind.OLLAMA, "http://[::1]:11434", null, null, 1, 0).isLocal());
-        assertFalse(new AssistantConfig(ServerKind.OLLAMA, "not a url", null, null, 1, 0).isLocal());
+        assertTrue(new AssistantConfig(ServerKind.OLLAMA, "http://127.0.0.1:11434", null, null, 1, 0, 30, 16384).isLocal());
+        assertTrue(new AssistantConfig(ServerKind.OLLAMA, "http://[::1]:11434", null, null, 1, 0, 30, 16384).isLocal());
+        assertFalse(new AssistantConfig(ServerKind.OLLAMA, "not a url", null, null, 1, 0, 30, 16384).isLocal());
     }
 
     @Test

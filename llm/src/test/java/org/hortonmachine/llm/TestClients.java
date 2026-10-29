@@ -71,7 +71,7 @@ public class TestClients {
     }
 
     private AssistantConfig config( ServerKind kind, String model, String apiKey ) {
-        return new AssistantConfig(kind, server.url(), model, apiKey, 10, 0);
+        return new AssistantConfig(kind, server.url(), model, apiKey, 10, 0, 30, 16384);
     }
 
     @Test
@@ -95,6 +95,7 @@ public class TestClients {
         assertTrue(body.getBoolean("stream"));
         assertEquals("system", body.getJSONArray("messages").getJSONObject(0).getString("role"));
         assertEquals("question", body.getJSONArray("messages").getJSONObject(1).getString("content"));
+        assertEquals(OpenAiCompatibleProvider.MAX_ANSWER_TOKENS, body.getInt("max_tokens"));
         JSONObject format = body.getJSONObject("response_format");
         assertEquals("json_schema", format.getString("type"));
         assertEquals("object", format.getJSONObject("json_schema").getJSONObject("schema").getString("type"));
@@ -114,7 +115,7 @@ public class TestClients {
     @Test
     public void testBaseUrlWithV1() throws Exception {
         server.answer("/v1/models", 200, "application/json", "{\"data\":[{\"id\":\"a\"},{\"id\":\"b\"}]}");
-        AssistantConfig config = new AssistantConfig(ServerKind.OPENAI_COMPATIBLE, server.url() + "/v1/", null, null, 10, 0);
+        AssistantConfig config = new AssistantConfig(ServerKind.OPENAI_COMPATIBLE, server.url() + "/v1/", null, null, 10, 0, 30, 16384);
 
         List<ModelInfo> models = new OpenAiCompatibleProvider(config, client).listModels();
         assertEquals(2, models.size());
@@ -254,6 +255,97 @@ public class TestClients {
     }
 
     @Test
+    public void testOllamaNativeChat() throws Exception {
+        String lines = """
+                {"message":{"role":"assistant","content":"{\\"sql\\":"},"done":false}
+                {"message":{"role":"assistant","content":"\\"SELECT 1\\"}"},"done":false}
+                {"message":{"role":"assistant","content":""},"done":true,"prompt_eval_count":12}
+                """;
+        server.answer("/api/chat", 200, "application/x-ndjson", lines);
+        OllamaChatProvider provider = new OllamaChatProvider(config(ServerKind.OLLAMA, "m1", null), client);
+
+        List<String> tokens = new ArrayList<>();
+        JSONObject schema = new JSONObject().put("type", "object");
+        String answer = provider.chat(List.of(ChatMessage.system("rules"), ChatMessage.user("question")), schema, tokens::add,
+                new TestMonitor());
+
+        assertEquals("{\"sql\":\"SELECT 1\"}", answer);
+        assertEquals(List.of("{\"sql\":", "\"SELECT 1\"}"), tokens);
+        JSONObject body = new JSONObject(server.received.get(0).body());
+        assertEquals("m1", body.getString("model"));
+        assertEquals("object", body.getJSONObject("format").getString("type"));
+        // the settings the OpenAI compatible api can't send
+        assertEquals("30m", body.getString("keep_alive"));
+        assertEquals(16384, body.getJSONObject("options").getInt("num_ctx"));
+        assertEquals(0, body.getJSONObject("options").getInt("temperature"));
+        assertFalse(body.getJSONObject("options").has("num_predict"));
+    }
+
+    @Test
+    public void testOllamaRequestTooLong() throws Exception {
+        server.answer("/api/chat", 200, "application/x-ndjson", "{\"message\":{\"content\":\"Y\"},\"done\":true}\n");
+        OllamaChatProvider provider = new OllamaChatProvider(config(ServerKind.OLLAMA, "m1", null), client);
+
+        // a schema of 73000 tokens in a context of 16384: Ollama would drop its beginning, so it isn't sent
+        String schema = "TABLE ne_50m_admin_0_countries\n  - POP_EST DOUBLE\n".repeat(6000);
+        try {
+            provider.chat(List.of(ChatMessage.system(schema), ChatMessage.user("the 3 largest countries")), null, null, null);
+            fail();
+        } catch (IllegalStateException e) {
+            assertTrue(e.getMessage(), e.getMessage().startsWith("The request needs about 75005 tokens, more than the context "
+                    + "of the model (16384 tokens, 1024 of them kept for the answer)"));
+        }
+        assertTrue(server.received.isEmpty());
+
+        // what fits is sent
+        int fitting = (16384 - OllamaChatProvider.ANSWER_TOKENS) * OllamaChatProvider.CHARS_PER_TOKEN;
+        assertEquals("Y", provider.chat(List.of(ChatMessage.user("x".repeat(fitting))), null, null, null));
+        try {
+            provider.chat(List.of(ChatMessage.user("x".repeat(fitting + OllamaChatProvider.CHARS_PER_TOKEN))), null, null, null);
+            fail();
+        } catch (IllegalStateException e) {
+            // one token more
+        }
+    }
+
+    @Test
+    public void testOllamaNativeChatError() throws Exception {
+        server.answer("/api/chat", 404, "application/json", "{\"error\":\"model 'x' not found\"}");
+        try {
+            new OllamaChatProvider(config(ServerKind.OLLAMA, "x", null), client).chat(List.of(ChatMessage.user("hi")), null, null,
+                    null);
+            fail();
+        } catch (IOException e) {
+            assertEquals("The server answered with status 404: model 'x' not found", e.getMessage());
+        }
+    }
+
+    @Test
+    public void testPrepare() throws Exception {
+        server.answer("/api/chat", 200, "application/x-ndjson", "{\"message\":{\"content\":\"Y\"},\"done\":true}\n");
+        server.answer("/v1/chat/completions", 200, "text/event-stream", FakeLlmServer.chatStream("Y"));
+        List<ChatMessage> messages = List.of(ChatMessage.system("reference"), ChatMessage.user("Ready?"));
+
+        // only one token is asked: the server reads the messages and keeps them
+        new OllamaChatProvider(config(ServerKind.OLLAMA, "m1", null), client).prepare(messages, null);
+        JSONObject body = new JSONObject(server.received.get(0).body());
+        assertEquals(1, body.getJSONObject("options").getInt("num_predict"));
+        assertEquals("reference", body.getJSONArray("messages").getJSONObject(0).getString("content"));
+
+        new OpenAiCompatibleProvider(config(ServerKind.OPENAI_COMPATIBLE, "m1", null), client).prepare(messages, null);
+        assertEquals(1, new JSONObject(server.received.get(1).body()).getInt("max_tokens"));
+    }
+
+    @Test
+    public void testBackendProviders() throws Exception {
+        AuditLog log = new AuditLog(java.io.File.createTempFile("hm-llm-", ".jsonl"));
+        assertTrue(new LlmAssistantBackend(config(ServerKind.OLLAMA, "m", null), log)
+                .provider(config(ServerKind.OLLAMA, "m", null)) instanceof OllamaChatProvider);
+        assertTrue(new LlmAssistantBackend(config(ServerKind.OLLAMA, "m", null), log)
+                .provider(config(ServerKind.OPENAI_COMPATIBLE, "m", null)) instanceof OpenAiCompatibleProvider);
+    }
+
+    @Test
     public void testBackendStatus() throws Exception {
         server.answer("/api/version", 200, "application/json", "{\"version\":\"0.12.3\"}");
         server.answer("/api/tags", 200, "application/json", TAGS);
@@ -277,14 +369,14 @@ public class TestClients {
         String url = server.url();
         server.close();
         AuditLog log = new AuditLog(java.io.File.createTempFile("hm-llm-", ".jsonl"));
-        AssistantConfig config = new AssistantConfig(ServerKind.OLLAMA, url, null, null, 5, 0);
+        AssistantConfig config = new AssistantConfig(ServerKind.OLLAMA, url, null, null, 5, 0, 30, 16384);
 
         BackendStatus status = new LlmAssistantBackend(config, log).checkStatus();
         assertFalse(status.reachable());
         assertTrue(status.message().contains("ollama.com"));
         assertTrue(status.message(), status.message().contains("connection refused"));
 
-        AssistantConfig openAi = new AssistantConfig(ServerKind.OPENAI_COMPATIBLE, url, null, null, 5, 0);
+        AssistantConfig openAi = new AssistantConfig(ServerKind.OPENAI_COMPATIBLE, url, null, null, 5, 0, 30, 16384);
         LlmAssistantBackend backend = new LlmAssistantBackend(openAi, log);
         status = backend.checkStatus();
         assertFalse(status.reachable());

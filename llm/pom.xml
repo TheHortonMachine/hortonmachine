@@ -23,6 +23,12 @@
 			<artifactId>hm-gears</artifactId>
 		</dependency>
 		<dependency>
+			<!-- in every installation: the module catalog of the script assistant reads it through
+			     its ModuleDescriptor -->
+			<groupId>org.hortonmachine</groupId>
+			<artifactId>hm-modules</artifactId>
+		</dependency>
+		<dependency>
 			<!-- already in every installation through hm-dbs -->
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>

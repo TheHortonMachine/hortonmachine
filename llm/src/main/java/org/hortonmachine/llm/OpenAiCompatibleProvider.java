@@ -45,6 +45,13 @@ import org.json.JSONObject;
  */
 public class OpenAiCompatibleProvider implements LlmProvider {
 
+    /**
+     * The longest answer asked for. Without it hosted services assume the longest answer the
+     * model can give and refuse the request if the credit could not pay for it; scripts and
+     * queries need a few thousand tokens, the rest is room for models that reason first.
+     */
+    static final int MAX_ANSWER_TOKENS = 8192;
+
     private final AssistantConfig config;
     private final HttpClient client;
 
@@ -60,20 +67,10 @@ public class OpenAiCompatibleProvider implements LlmProvider {
     @Override
     public String chat( List<ChatMessage> messages, JSONObject jsonSchema, Consumer<String> onToken, IHMProgressMonitor pm )
             throws Exception {
-        String model = config.model();
-        if (model == null || model.isBlank()) {
-            throw new IllegalStateException("No model is chosen in the assistant settings.");
-        }
-
-        JSONObject body = new JSONObject();
-        body.put("model", model);
-        JSONArray messagesArray = new JSONArray();
-        for( ChatMessage message : messages ) {
-            messagesArray.put(new JSONObject().put("role", message.role()).put("content", message.content()));
-        }
-        body.put("messages", messagesArray);
+        JSONObject body = body(messages);
         body.put("stream", true);
         body.put("temperature", 0);
+        body.put("max_tokens", MAX_ANSWER_TOKENS);
         if (jsonSchema != null) {
             JSONObject schemaFormat = new JSONObject().put("name", "answer").put("strict", true).put("schema", jsonSchema);
             body.put("response_format", new JSONObject().put("type", "json_schema").put("json_schema", schemaFormat));
@@ -116,6 +113,33 @@ public class OpenAiCompatibleProvider implements LlmProvider {
             throw new IOException("The model gave an empty answer.");
         }
         return answer.toString();
+    }
+
+    @Override
+    public void prepare( List<ChatMessage> messages, IHMProgressMonitor pm ) throws Exception {
+        JSONObject body = body(messages);
+        // one token is enough to make the server read the whole request
+        body.put("max_tokens", 1);
+        HttpRequest request = HttpSupport.request(config, HttpSupport.openAiPath(config, "/chat/completions"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body.toString())).build();
+        HttpSupport.streamLines(client, request, pm, line -> {
+        });
+    }
+
+    private JSONObject body( List<ChatMessage> messages ) {
+        String model = config.model();
+        if (model == null || model.isBlank()) {
+            throw new IllegalStateException("No model is chosen in the assistant settings.");
+        }
+        JSONObject body = new JSONObject();
+        body.put("model", model);
+        JSONArray messagesArray = new JSONArray();
+        for( ChatMessage message : messages ) {
+            messagesArray.put(new JSONObject().put("role", message.role()).put("content", message.content()));
+        }
+        body.put("messages", messagesArray);
+        return body;
     }
 
     @Override

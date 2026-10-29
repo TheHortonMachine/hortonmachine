@@ -122,7 +122,7 @@ public class TestSqlAssistant {
     }
 
     private static AssistantConfig config() {
-        return new AssistantConfig(ServerKind.OLLAMA, "http://localhost:11434", "test-model", null, 10, 2);
+        return new AssistantConfig(ServerKind.OLLAMA, "http://localhost:11434", "test-model", null, 10, 2, 30, 16384);
     }
 
     @Test
@@ -148,19 +148,20 @@ public class TestSqlAssistant {
     }
 
     @Test
-    public void testGenerate() throws Exception {
+    public void testAsk() throws Exception {
         ScriptedProvider provider = new ScriptedProvider();
-        provider.answer = "{\"sql\":\"SELECT code FROM parcels;\",\"explanation\":\"The parcel codes.\"}";
+        provider.answer = "The parcel codes.\n\n```sql\nSELECT code FROM parcels;\n```";
         File logFile = File.createTempFile("hm-llm-", ".jsonl");
         LlmSqlAssistant assistant = new LlmSqlAssistant(TestSqlAssistant::config, c -> provider, new AuditLog(logFile));
 
         List<String> tokens = new ArrayList<>();
-        SqlAnswer answer = assistant.generate(db, "Which parcel codes are there?", List.of(), SqlAssistOptions.defaults(),
+        SqlAnswer answer = assistant.ask(db, "Which parcel codes are there?", List.of(), SqlAssistOptions.defaults(),
                 tokens::add,
                 null);
 
         assertEquals("SELECT code FROM parcels\nLIMIT 100", answer.sql());
-        assertEquals("The parcel codes.", answer.explanation());
+        // the limit shows in the text too
+        assertEquals("The parcel codes.\n\n```sql\nSELECT code FROM parcels\nLIMIT 100\n```", answer.text());
         assertTrue(answer.readOnly());
         assertTrue(answer.limitApplied());
         assertTrue(answer.checked());
@@ -172,12 +173,12 @@ public class TestSqlAssistant {
         assertTrue(messages.get(0).content().contains("Dialect: GeoPackage (SQLite)"));
         assertTrue(messages.get(0).content().contains("TABLE parcels"));
         assertEquals("Which parcel codes are there?", messages.get(1).content());
-        assertEquals("object", provider.schemas.get(0).getString("type"));
+        assertNull("free text, no schema", provider.schemas.get(0));
 
         List<String> lines = FileUtilities.readFileToLinesList(logFile);
         assertEquals(1, lines.size());
         JSONObject entry = new JSONObject(lines.get(0));
-        assertEquals("sql-generate", entry.getString("task"));
+        assertEquals("sql-ask", entry.getString("task"));
         assertEquals("test-model", entry.getString("model"));
         assertEquals("SELECT code FROM parcels\nLIMIT 100", entry.getString("code"));
         assertTrue(entry.isNull("error"));
@@ -187,11 +188,11 @@ public class TestSqlAssistant {
     @Test
     public void testWriteSqlGetsNoLimit() throws Exception {
         ScriptedProvider provider = new ScriptedProvider();
-        provider.answer = "{\"sql\":\"DELETE FROM owners\",\"explanation\":\"Removes all owners.\"}";
+        provider.answer = "Removes all owners:\n```sql\nDELETE FROM owners\n```";
         File logFile = File.createTempFile("hm-llm-", ".jsonl");
         LlmSqlAssistant assistant = new LlmSqlAssistant(TestSqlAssistant::config, c -> provider, new AuditLog(logFile));
 
-        SqlAnswer answer = assistant.generate(db, "Remove all owners", List.of(), SqlAssistOptions.defaults(), null, null);
+        SqlAnswer answer = assistant.ask(db, "Remove all owners", List.of(), SqlAssistOptions.defaults(), null, null);
         assertEquals("DELETE FROM owners", answer.sql());
         assertFalse(answer.readOnly());
         assertFalse(answer.limitApplied());
@@ -204,12 +205,12 @@ public class TestSqlAssistant {
     @Test
     public void testRejectedSqlIsRepaired() throws Exception {
         ScriptedProvider provider = new ScriptedProvider();
-        provider.queuedAnswers.add("{\"sql\":\"SELECT nome FROM owners\",\"explanation\":\"The names.\"}");
-        provider.answer = "{\"sql\":\"SELECT name FROM owners\",\"explanation\":\"The names.\"}";
+        provider.queuedAnswers.add("The names.\n```sql\nSELECT nome FROM owners\n```");
+        provider.answer = "The names.\n```sql\nSELECT name FROM owners\n```";
         File logFile = File.createTempFile("hm-llm-", ".jsonl");
         LlmSqlAssistant assistant = new LlmSqlAssistant(TestSqlAssistant::config, c -> provider, new AuditLog(logFile));
 
-        SqlAnswer answer = assistant.generate(db, "The owner names", List.of(), new SqlAssistOptions(false, 0), null, null);
+        SqlAnswer answer = assistant.ask(db, "The owner names", List.of(), new SqlAssistOptions(false, 0), null, null);
         assertEquals("SELECT name FROM owners", answer.sql());
         assertTrue(answer.checked());
         assertNull(answer.checkError());
@@ -222,14 +223,15 @@ public class TestSqlAssistant {
         assertTrue(repair.get(3).content(), repair.get(3).content().contains("no such column: nome"));
         // the right columns come with the error
         assertTrue(repair.get(3).content(), repair.get(3).content().contains("owners: id (primary key), name\n"));
+        assertTrue(repair.get(3).content(), repair.get(3).content().contains("Answer again, with the corrected SQL in a sql code block."));
 
         List<String> lines = FileUtilities.readFileToLinesList(logFile);
         assertEquals(2, lines.size());
         JSONObject first = new JSONObject(lines.get(0));
-        assertEquals("sql-generate", first.getString("task"));
+        assertEquals("sql-ask", first.getString("task"));
         assertTrue(first.getString("error").startsWith("rejected by the database"));
         JSONObject second = new JSONObject(lines.get(1));
-        assertEquals("sql-generate-repair", second.getString("task"));
+        assertEquals("sql-ask-repair", second.getString("task"));
         assertTrue(second.isNull("error"));
         logFile.delete();
     }
@@ -254,25 +256,27 @@ public class TestSqlAssistant {
     public void testRepairRequestKeepsOnlyTheError() {
         String error = "ERROR: column p.id does not exist\n  Hint: Perhaps you meant to reference the column \"e.id\".\n"
                 + "  Position: 147";
-        String request = LlmSqlAssistant.repairRequest(error, "pipe: idsap (primary key)\n");
+        String request = LlmSqlAssistant.repairRequest(error, "pipe: idsap (primary key)\n", true);
         assertTrue(request, request.contains("ERROR: column p.id does not exist\n"));
         assertFalse(request, request.contains("Hint"));
         assertFalse(request, request.contains("Position"));
         assertTrue(request, request.contains("pipe: idsap (primary key)\n"));
+        assertTrue(request, request.contains("Write the corrected SQL."));
 
-        request = LlmSqlAssistant.repairRequest("no such column: x", "");
+        request = LlmSqlAssistant.repairRequest("no such column: x", "", false);
         assertFalse(request, request.contains("tables used"));
+        assertTrue(request, request.contains("in a sql code block"));
     }
 
     @Test
     public void testRepairGivesUp() throws Exception {
         ScriptedProvider provider = new ScriptedProvider();
         // the GeoPackage connection has no ST_Area: planning the SQL finds it
-        provider.answer = "{\"sql\":\"SELECT ST_Area(geom) FROM parcels\",\"explanation\":\"The areas.\"}";
+        provider.answer = "The areas.\n```sql\nSELECT ST_Area(geom) FROM parcels\n```";
         File logFile = File.createTempFile("hm-llm-", ".jsonl");
         LlmSqlAssistant assistant = new LlmSqlAssistant(TestSqlAssistant::config, c -> provider, new AuditLog(logFile));
 
-        SqlAnswer answer = assistant.generate(db, "The areas", List.of(), new SqlAssistOptions(false, 0), null, null);
+        SqlAnswer answer = assistant.ask(db, "The areas", List.of(), new SqlAssistOptions(false, 0), null, null);
         assertEquals("SELECT ST_Area(geom) FROM parcels", answer.sql());
         assertTrue(answer.checked());
         assertTrue(answer.checkError(), answer.checkError().contains("no such function: ST_Area"));
@@ -291,7 +295,10 @@ public class TestSqlAssistant {
         SqlAnswer answer = assistant.fix(db, "SELECT nome FROM owners", "no such column: nome", List.of(), options, null,
                 null);
         assertEquals("SELECT name FROM owners", answer.sql());
+        // the JSON of the fix, shown as text like the other answers
+        assertEquals("The column is name.\n\n```sql\nSELECT name FROM owners\n```", answer.text());
         assertFalse(answer.limitApplied());
+        assertEquals("object", provider.schemas.get(0).getString("type"));
         String request = provider.requests.get(0).get(1).content();
         assertTrue(request.contains("SELECT nome FROM owners"));
         assertTrue(request.contains("no such column: nome"));
@@ -308,29 +315,49 @@ public class TestSqlAssistant {
     }
 
     @Test
-    public void testHelpWithAndWithoutDatabase() throws Exception {
+    public void testAskWithAndWithoutDatabase() throws Exception {
         ScriptedProvider provider = new ScriptedProvider();
         File logFile = File.createTempFile("hm-llm-", ".jsonl");
         LlmSqlAssistant assistant = new LlmSqlAssistant(TestSqlAssistant::config, c -> provider, new AuditLog(logFile));
         SqlAssistOptions options = SqlAssistOptions.defaults();
 
-        provider.answer = "Use the remote button with jdbc:postgresql://host:5432/name.\n";
-        String answer = assistant.help(null, "How do I open our PostGIS?", List.of(), options, null, null);
-        assertEquals("Use the remote button with jdbc:postgresql://host:5432/name.", answer);
+        // a code block that isn't SQL is no SQL
+        provider.answer = "Use the remote button with:\n```\njdbc:postgresql://host:5432/name\n```\n";
+        SqlAnswer answer = assistant.ask(null, "How do I open our PostGIS?", List.of(), options, null, null);
+        assertEquals("Use the remote button with:\n```\njdbc:postgresql://host:5432/name\n```", answer.text());
+        assertNull(answer.sql());
         String system = provider.requests.get(0).get(0).content();
         assertTrue(system.contains("jdbc:postgresql://<host>"));
         assertTrue(system.contains("No database is connected right now."));
         assertFalse(system.contains("Schema:"));
         assertNull(provider.schemas.get(0));
 
-        assistant.help(db, "What is an SRID?", List.of(), options, null, null);
-        system = provider.requests.get(1).get(0).content();
+        // SQL without a database: nothing can check it
+        provider.answer = "```sql\nSELECT * FROM roads\n```";
+        answer = assistant.ask(null, "All the roads", List.of(), options, null, null);
+        assertEquals("SELECT * FROM roads\nLIMIT 100", answer.sql());
+        assertFalse(answer.checked());
+        assertNull(answer.checkError());
+
+        provider.answer = "The code of a reference system.";
+        assistant.ask(db, "What is an SRID?", List.of(), options, null, null);
+        system = provider.requests.get(2).get(0).content();
         assertTrue(system.contains("Dialect: GeoPackage (SQLite)"));
         assertTrue(system.contains("TABLE parcels"));
 
         List<String> lines = FileUtilities.readFileToLinesList(logFile);
-        assertEquals("sql-help", new JSONObject(lines.get(0)).getString("task"));
+        assertEquals("sql-ask", new JSONObject(lines.get(0)).getString("task"));
         logFile.delete();
+    }
+
+    @Test
+    public void testLooksLikeSql() {
+        assertTrue(LlmSqlAssistant.looksLikeSql("SELECT 1"));
+        assertTrue(LlmSqlAssistant.looksLikeSql("-- the names\n  with x as (select 1) select * from x"));
+        assertTrue(LlmSqlAssistant.looksLikeSql("PRAGMA table_info(roads)"));
+        assertFalse(LlmSqlAssistant.looksLikeSql("jdbc:postgresql://host:5432/name"));
+        assertFalse(LlmSqlAssistant.looksLikeSql("psql -h host -d name"));
+        assertFalse(LlmSqlAssistant.looksLikeSql("-- only a comment"));
     }
 
     @Test
@@ -344,8 +371,10 @@ public class TestSqlAssistant {
                 new AssistantTurn("Which parcels are there?", "All the parcel codes.", "SELECT code FROM parcels"), //
                 new AssistantTurn("What is an SRID?", "The code of a reference system.", null));
 
+        // a fix, answered as JSON, gets the earlier SQL as JSON, or the model would answer in text
         provider.answer = "{\"sql\":\"SELECT code FROM parcels WHERE owner_id = 1\",\"explanation\":\"Only Rossi.\"}";
-        assistant.generate(db, "now only the ones of Rossi", history, SqlAssistOptions.defaults(), null, null);
+        assistant.fix(db, "SELECT code FROM parcels WHERE owner = 1", "no such column: owner", history,
+                SqlAssistOptions.defaults(), null, null);
 
         List<ChatMessage> messages = provider.requests.get(0);
         assertEquals(6, messages.size());
@@ -357,16 +386,16 @@ public class TestSqlAssistant {
         assertEquals("All the parcel codes.", sqlTurn.getString("explanation"));
         assertEquals("What is an SRID?", messages.get(3).content());
         assertEquals("The code of a reference system.", messages.get(4).content());
-        assertEquals("now only the ones of Rossi", messages.get(5).content());
 
         List<ChatMessage> none = LlmSqlAssistant.chat("rules", history, "alone", 0, true);
         assertEquals(2, none.size());
 
-        // a text request gets the earlier SQL as text, or the model would answer in JSON
+        // a question, answered as text, gets the earlier SQL as text
         provider.answer = "They all use 4326.";
-        assistant.help(db, "Do the tables use different SRIDs?", history, SqlAssistOptions.defaults(), null, null);
+        assistant.ask(db, "Do the tables use different SRIDs?", history, SqlAssistOptions.defaults(), null, null);
         List<ChatMessage> textMessages = provider.requests.get(1);
         assertEquals("All the parcel codes.\n\n```sql\nSELECT code FROM parcels\n```", textMessages.get(2).content());
+        assertEquals("Do the tables use different SRIDs?", textMessages.get(5).content());
         logFile.delete();
     }
 
@@ -388,7 +417,7 @@ public class TestSqlAssistant {
 
         provider.answer = "I can't help with that.";
         try {
-            assistant.generate(db, "?", List.of(), SqlAssistOptions.defaults(), null, null);
+            assistant.fix(db, "SELECT x", "no such column: x", List.of(), SqlAssistOptions.defaults(), null, null);
             fail();
         } catch (IllegalStateException e) {
             assertTrue(e.getMessage().startsWith("The model didn't answer with JSON"));
@@ -396,7 +425,7 @@ public class TestSqlAssistant {
 
         provider.failure = new IllegalStateException("server down");
         try {
-            assistant.generate(db, "?", List.of(), SqlAssistOptions.defaults(), null, null);
+            assistant.ask(db, "?", List.of(), SqlAssistOptions.defaults(), null, null);
             fail();
         } catch (IllegalStateException e) {
             assertEquals("server down", e.getMessage());
@@ -418,6 +447,6 @@ public class TestSqlAssistant {
         String response = "```json\n{\"sql\":\"```sql\\nSELECT 1\\n```\",\"explanation\":\"One.\"}\n```";
         SqlAnswer answer = LlmSqlAssistant.toAnswer(response, new SqlAssistOptions(false, 0));
         assertEquals("SELECT 1", answer.sql());
-        assertEquals("One.", answer.explanation());
+        assertEquals("One.\n\n```sql\nSELECT 1\n```", answer.text());
     }
 }
