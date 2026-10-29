@@ -37,25 +37,32 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
  * turns may be sent to the model, to stay within its context.</p>
  *
  * <p>In all methods <code>onToken</code> receives the raw text of the answer while it
- * arrives (can be <code>null</code>), and <code>pm</code> is used to cancel the request.</p>
+ * arrives (can be <code>null</code>), and <code>pm</code> is used to cancel the request. When
+ * SQL is rejected by the database and sent back to the model, <code>pm.beginTask</code> is
+ * called with what happens: the text <code>onToken</code> receives after it is a new answer,
+ * which replaces the rejected one.</p>
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface ISqlAssistant {
 
     /**
-     * Write the SQL that answers a question.
+     * Answer a question: write the SQL that answers it, or answer about databases (how to connect
+     * to one, what the viewer can do, concepts like SRIDs or spatial indexes).
      *
-     * @param db the database the question is about.
+     * <p>It works also without a connected database, for example to help connecting to one. With
+     * one, the SQL of the answer, if any, is checked like the one of {@link #fix}.</p>
+     *
+     * @param db the connected database, whose schema is given to the model, or <code>null</code> if none.
      * @param question the question, in natural language.
      * @param history the earlier turns of the discussion, oldest first.
      * @param options the options of the request.
      * @param onToken receives the answer while it arrives, or <code>null</code>.
      * @param pm the monitor used to cancel the request.
-     * @return the generated SQL with its explanation.
+     * @return the answer, with its SQL if it has some.
      * @throws Exception if the request fails or is canceled.
      */
-    SqlAnswer generate( ADb db, String question, List<AssistantTurn> history, SqlAssistOptions options,
+    SqlAnswer ask( ADb db, String question, List<AssistantTurn> history, SqlAssistOptions options,
             Consumer<String> onToken, IHMProgressMonitor pm ) throws Exception;
 
     /**
@@ -87,24 +94,5 @@ public interface ISqlAssistant {
      * @throws Exception if the request fails or is canceled.
      */
     String explain( ADb db, String sql, List<AssistantTurn> history, SqlAssistOptions options, Consumer<String> onToken,
-            IHMProgressMonitor pm ) throws Exception;
-
-    /**
-     * Answer a free question about databases: how to connect to one, what the viewer can do,
-     * concepts like SRIDs or spatial indexes.
-     *
-     * <p>It works also without a connected database, for example to help connecting to one. The
-     * answer is only text: connecting or running anything is up to the user.</p>
-     *
-     * @param db the connected database, whose schema is given to the model, or <code>null</code> if none.
-     * @param question the question, in natural language.
-     * @param history the earlier turns of the discussion, oldest first.
-     * @param options the options of the request.
-     * @param onToken receives the answer while it arrives, or <code>null</code>.
-     * @param pm the monitor used to cancel the request.
-     * @return the answer.
-     * @throws Exception if the request fails or is canceled.
-     */
-    String help( ADb db, String question, List<AssistantTurn> history, SqlAssistOptions options, Consumer<String> onToken,
             IHMProgressMonitor pm ) throws Exception;
 }

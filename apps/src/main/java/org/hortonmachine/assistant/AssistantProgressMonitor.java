@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.assistant;
 
+import java.util.function.Consumer;
+
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
@@ -37,6 +39,7 @@ public class AssistantProgressMonitor extends DummyProgressMonitor {
     private int worked = 0;
     private int total = 0;
     private String taskName = "";
+    private volatile Consumer<String> taskListener;
 
     /**
      * @param progressBar the bar to update, or <code>null</code>.
@@ -57,11 +60,23 @@ public class AssistantProgressMonitor extends DummyProgressMonitor {
         canceled = value;
     }
 
+    /**
+     * @param taskListener receives the name of each task when it begins, on the thread that begins
+     *          it (not the UI thread), or <code>null</code>.
+     */
+    public void setTaskListener( Consumer<String> taskListener ) {
+        this.taskListener = taskListener;
+    }
+
     @Override
     public void beginTask( String name, int totalWork ) {
         worked = 0;
         total = totalWork;
         taskName = name;
+        Consumer<String> listener = taskListener;
+        if (listener != null) {
+            listener.accept(name);
+        }
         SwingUtilities.invokeLater(() -> {
             if (progressBar != null) {
                 progressBar.setIndeterminate(totalWork <= 0);

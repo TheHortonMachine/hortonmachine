@@ -99,4 +99,11 @@ public interface IAssistantBackend {
      * @return the text to SQL assistant, if this backend has one.
      */
     Optional<ISqlAssistant> getSqlAssistant();
+
+    /**
+     * @return the script assistant, if this backend has one.
+     */
+    default Optional<IScriptAssistant> getScriptAssistant() {
+        return Optional.empty();
+    }
 }

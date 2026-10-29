@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,6 +63,10 @@ public class MarkdownHtml {
     private static final Pattern BOLD = Pattern.compile("\\*\\*(.+?)\\*\\*");
     private static final Pattern ITALIC = Pattern.compile("(?<![*\\w])\\*(?![\\s*])(.+?)(?<!\\s)\\*(?!\\*)");
     private static final Pattern LINK = Pattern.compile("\\[([^\\]]+)\\]\\((https?://[^)\\s]+)\\)");
+    /**
+     * A bare url in escaped text, not already inside a link; punctuation at its end belongs to the sentence.
+     */
+    private static final Pattern BARE_URL = Pattern.compile("(?<![\"'>=/\\w])https?://[^\\s<>\"'*]*[^\\s<>\"'*.,;:!?)\\]]");
     private static final Pattern SQL_START = Pattern.compile(
             "^\\s*(SELECT|WITH|INSERT|UPDATE|DELETE|CREATE|DROP|ALTER|PRAGMA|EXPLAIN)\\b", Pattern.CASE_INSENSITIVE);
 
@@ -76,6 +81,18 @@ public class MarkdownHtml {
      * @return the HTML fragment, to put inside a body.
      */
     public static String toHtml( String markdown, Palette palette ) {
+        return toHtml(markdown, palette, null);
+    }
+
+    /**
+     * @param markdown the markdown text.
+     * @param palette the colors to use.
+     * @param beforeCodeBlock gives the html put before each complete code block, from its code and
+     *          language (empty if the fence has none), e.g. actions on the code; can return
+     *          <code>null</code>, and be <code>null</code>. Not called for a block still open at the end.
+     * @return the HTML fragment, to put inside a body.
+     */
+    public static String toHtml( String markdown, Palette palette, BiFunction<String, String, String> beforeCodeBlock ) {
         StringBuilder out = new StringBuilder();
         StringBuilder paragraph = new StringBuilder();
         StringBuilder code = null;
@@ -86,6 +103,12 @@ public class MarkdownHtml {
             String trimmed = line.trim();
             if (code != null) {
                 if (trimmed.startsWith("```")) {
+                    if (beforeCodeBlock != null) {
+                        String before = beforeCodeBlock.apply(code.toString(), codeLanguage);
+                        if (before != null) {
+                            out.append(before);
+                        }
+                    }
                     out.append(codeBlock(code.toString(), codeLanguage, palette));
                     code = null;
                 } else {
@@ -166,12 +189,13 @@ public class MarkdownHtml {
      * @param code the code.
      * @param language the language of the fence, can be empty.
      * @param palette the colors.
-     * @return the code block, SQL highlighted.
+     * @return the code block, SQL and Groovy highlighted.
      */
     public static String codeBlock( String code, String language, Palette palette ) {
         String text = code.endsWith("\n") ? code.substring(0, code.length() - 1) : code;
         boolean sql = "sql".equals(language) || ((language == null || language.isEmpty()) && SQL_START.matcher(text).find());
-        String body = sql ? highlightSql(text, palette) : escape(text);
+        boolean groovy = "groovy".equals(language) || "java".equals(language);
+        String body = sql ? highlightSql(text, palette) : groovy ? highlightGroovy(text, palette) : escape(text);
         return "<table width=\"100%\" cellspacing=\"0\" cellpadding=\"6\"><tr><td bgcolor=\"" + palette.codeBackground()
                 + "\"><font face=\"Monospaced\">" + keepLines(body) + "</font></td></tr></table>";
     }
@@ -204,11 +228,14 @@ public class MarkdownHtml {
         for( int i = 0; i < parts.length; i++ ) {
             boolean isCode = i % 2 == 1 && i < parts.length - 1;
             if (isCode) {
-                sb.append("<code><font color=\"").append(palette.inlineCode()).append("\">").append(escape(parts[i]))
+                // models often quote urls as code: they are linked too
+                String code = BARE_URL.matcher(escape(parts[i])).replaceAll("<a href=\"$0\">$0</a>");
+                sb.append("<code><font color=\"").append(palette.inlineCode()).append("\">").append(code)
                         .append("</font></code>");
             } else {
                 String part = escape(i % 2 == 1 ? "`" + parts[i] : parts[i]);
                 part = LINK.matcher(part).replaceAll("<a href=\"$2\">$1</a>");
+                part = BARE_URL.matcher(part).replaceAll("<a href=\"$0\">$0</a>");
                 part = BOLD.matcher(part).replaceAll("<b>$1</b>");
                 part = ITALIC.matcher(part).replaceAll("<i>$1</i>");
                 sb.append(part);
@@ -280,6 +307,69 @@ public class MarkdownHtml {
         }
         return sb.toString();
     }
+
+    /**
+     * @param code the Groovy code.
+     * @param palette the colors.
+     * @return the escaped code with keywords, strings, numbers and comments colored.
+     */
+    public static String highlightGroovy( String code, Palette palette ) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        int n = code.length();
+        while( i < n ) {
+            char c = code.charAt(i);
+            if (c == '/' && i + 1 < n && code.charAt(i + 1) == '/') {
+                int end = code.indexOf('\n', i);
+                end = end == -1 ? n : end;
+                sb.append(colored(code.substring(i, end), palette.comment()));
+                i = end;
+            } else if (c == '/' && i + 1 < n && code.charAt(i + 1) == '*') {
+                int end = code.indexOf("*/", i + 2);
+                end = end == -1 ? n : end + 2;
+                sb.append(colored(code.substring(i, end), palette.comment()));
+                i = end;
+            } else if (c == '\'' || c == '"') {
+                String quote = code.startsWith(String.valueOf(c).repeat(3), i) ? String.valueOf(c).repeat(3) : String.valueOf(c);
+                int j = i + quote.length();
+                while( j < n && !code.startsWith(quote, j) && (quote.length() == 3 || code.charAt(j) != '\n') ) {
+                    j += code.charAt(j) == '\\' ? 2 : 1;
+                }
+                int end = Math.min(code.startsWith(quote, j) ? j + quote.length() : j, n);
+                sb.append(colored(code.substring(i, end), palette.string()));
+                i = end;
+            } else if (Character.isDigit(c)) {
+                int j = i;
+                while( j < n && (Character.isLetterOrDigit(code.charAt(j)) || code.charAt(j) == '.') ) {
+                    j++;
+                }
+                sb.append(colored(code.substring(i, j), palette.number()));
+                i = j;
+            } else if (Character.isLetter(c) || c == '_' || c == '$') {
+                int j = i;
+                while( j < n && (Character.isLetterOrDigit(code.charAt(j)) || code.charAt(j) == '_' || code.charAt(j) == '$') ) {
+                    j++;
+                }
+                String word = code.substring(i, j);
+                if (GROOVY_KEYWORDS.contains(word)) {
+                    sb.append("<b>").append(colored(word, palette.keyword())).append("</b>");
+                } else {
+                    sb.append(escape(word));
+                }
+                i = j;
+            } else {
+                sb.append(escape(String.valueOf(c)));
+                i++;
+            }
+        }
+        return sb.toString();
+    }
+
+    private static final Set<String> GROOVY_KEYWORDS = Set.of("abstract", "as", "assert", "boolean", "break", "byte", "case",
+            "catch", "char", "class", "continue", "def", "default", "do", "double", "else", "enum", "extends", "false", "final",
+            "finally", "float", "for", "if", "implements", "import", "in", "instanceof", "int", "interface", "long", "new",
+            "null", "package", "private", "protected", "public", "return", "short", "static", "super", "switch", "this",
+            "throw", "throws", "true", "try", "var", "void", "while");
 
     private static String colored( String text, String color ) {
         return "<font color=\"" + color + "\">" + escape(text) + "</font>";

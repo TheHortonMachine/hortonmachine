@@ -104,8 +104,15 @@ import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 import org.hortonmachine.HM;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.assistant.Assistants;
+import org.hortonmachine.gears.assistant.IAssistantBackend;
+import org.hortonmachine.gears.assistant.IScriptAssistant;
+import org.hortonmachine.gears.assistant.ScriptContext;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
 import org.hortonmachine.gears.utils.PreferencesHandler;
+import org.hortonmachine.geoscript.console.assistant.ConsoleAssistantContext;
+import org.hortonmachine.geoscript.console.assistant.IScriptAssistantHost;
+import org.hortonmachine.geoscript.console.assistant.ScriptAssistantPanel;
 import org.hortonmachine.gui.editor.CodeEditorFactory;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.GuiUtilities;
@@ -196,6 +203,19 @@ public class ScriptConsole {
     private final VariablesTableModel variablesModel = new VariablesTableModel();
     private boolean paused = false;
     private Object pausedLineTag;
+
+    /**
+     * The action and window of the script assistant, the action <code>null</code> when no
+     * assistant module is installed.
+     */
+    private Action assistantAction;
+    private JFrame assistantWindow;
+    private ScriptAssistantPanel assistantPanel;
+    /**
+     * The text of the last run, if it failed, and its error, for the fix of the assistant.
+     */
+    private String lastFailedScript;
+    private String lastError;
 
     /**
      * @param exitOnClose if <code>true</code> the jvm exits when the console is closed.
@@ -407,6 +427,78 @@ public class ScriptConsole {
         };
         stepOutAction.putValue(Action.SHORT_DESCRIPTION, "Run up to the end of the current method or closure (Shift+F11)");
         setStepping(false);
+        createAssistantAction();
+    }
+
+    /**
+     * Create the action of the script assistant, only if a module providing it is installed:
+     * without it the console stays as it always was.
+     */
+    private void createAssistantAction() {
+        IAssistantBackend backend = Assistants.getBackend().orElse(null);
+        IScriptAssistant scriptAssistant = backend == null ? null : backend.getScriptAssistant().orElse(null);
+        if (scriptAssistant == null) {
+            return;
+        }
+        IScriptAssistantHost host = new IScriptAssistantHost(){
+            @Override
+            public ScriptContext getContext() {
+                return new ScriptContext(ConsoleExamples.HM_IMPORTS, ConsoleAssistantContext.helperReference(),
+                        ConsoleExamples.getExamples(), ConsoleAssistantContext.variables(binding.getVariables()),
+                        ConsoleAssistantContext.checker(shell.getClassLoader()), null);
+            }
+
+            @Override
+            public String getEditorScript() {
+                return editor.getText();
+            }
+
+            @Override
+            public String getSelectedScript() {
+                return editor.getSelectedText();
+            }
+
+            @Override
+            public void addScriptToEditor( String script, boolean replace ) {
+                if (replace) {
+                    // through the selection, so that the editor can undo it
+                    editor.selectAll();
+                }
+                editor.replaceSelection(script.endsWith("\n") ? script : script + "\n");
+                frame.toFront();
+                editor.requestFocusInWindow();
+            }
+
+            @Override
+            public String getLastError( String script ) {
+                String failedScript = lastFailedScript;
+                return failedScript != null && failedScript.strip().equals(script.strip()) ? lastError : null;
+            }
+        };
+        assistantAction = new AbstractAction("Assistant", ImageCache.get(ImageCache.NOTE)){
+            public void actionPerformed( ActionEvent e ) {
+                if (assistantWindow != null && assistantWindow.isDisplayable()) {
+                    assistantWindow.toFront();
+                    return;
+                }
+                assistantPanel = new ScriptAssistantPanel(backend, scriptAssistant, host);
+                assistantWindow = new JFrame("Script assistant");
+                assistantWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                assistantWindow.getContentPane().add(assistantPanel);
+                GuiUtilities.setDefaultFrameIcon(assistantWindow);
+                assistantWindow.addWindowListener(new WindowAdapter(){
+                    @Override
+                    public void windowClosed( WindowEvent we ) {
+                        assistantPanel.cancel();
+                    }
+                });
+                assistantWindow.pack();
+                assistantWindow.setLocationRelativeTo(frame);
+                assistantWindow.setVisible(true);
+            }
+        };
+        assistantAction.putValue(Action.SHORT_DESCRIPTION,
+                "Open the script assistant: it writes, fixes and explains scripts, it never runs them (Ctrl+Shift+A)");
     }
 
     private JMenuBar createMenuBar() {
@@ -486,6 +578,10 @@ public class ScriptConsole {
             examplesMenu.add(item(example.getKey(), null, null, e -> editor.replaceSelection(example.getValue())));
         }
         hmMenu.add(examplesMenu);
+        if (assistantAction != null) {
+            hmMenu.addSeparator();
+            hmMenu.add(item(assistantAction, keyCtrlShift(KeyEvent.VK_A)));
+        }
         menuBar.add(hmMenu);
 
         JMenu helpMenu = new JMenu("Help");
@@ -512,6 +608,10 @@ public class ScriptConsole {
         toolBar.add(stepOutAction);
         toolBar.addSeparator();
         toolBar.add(toolButton("Clear output", ImageCache.get(ImageCache.TRASH), e -> output.clear()));
+        if (assistantAction != null) {
+            toolBar.addSeparator();
+            toolBar.add(assistantAction);
+        }
         return toolBar;
     }
 
@@ -706,6 +806,8 @@ public class ScriptConsole {
             return;
         }
         clearErrorHighlight();
+        lastFailedScript = null;
+        lastError = null;
         if (autoClearOutput) {
             output.clear();
         }
@@ -752,7 +854,7 @@ public class ScriptConsole {
                 });
             } catch (Throwable t) {
                 System.out.flush();
-                SwingUtilities.invokeLater(() -> showError(t, scriptName, lineOffset));
+                SwingUtilities.invokeLater(() -> showError(t, text, scriptName, lineOffset));
             } finally {
                 runThread = null;
                 SwingUtilities.invokeLater(() -> setRunning(false));
@@ -762,10 +864,19 @@ public class ScriptConsole {
         runThread.start();
     }
 
-    private void showError( Throwable t, String scriptName, int lineOffset ) {
+    /**
+     * Show the error of a run and keep it for the fix of the assistant. The kept error has the
+     * line numbers of the text that was run, the shown one those of the editor.
+     *
+     * @param text the text that was run.
+     */
+    private void showError( Throwable t, String text, String scriptName, int lineOffset ) {
         if (t instanceof MultipleCompilationErrorsException) {
             MultipleCompilationErrorsException ce = (MultipleCompilationErrorsException) t;
-            output.appendLine(ce.getMessage().replace(scriptName + ": ", "").trim(), output.errorStyle);
+            String errorText = ce.getMessage().replace(scriptName + ": ", "").trim();
+            output.appendLine(errorText, output.errorStyle);
+            lastFailedScript = text;
+            lastError = errorText;
             for( Message message : ce.getErrorCollector().getErrors() ) {
                 if (message instanceof SyntaxErrorMessage) {
                     highlightErrorLine(((SyntaxErrorMessage) message).getCause().getStartLine() - 1 + lineOffset);
@@ -784,8 +895,11 @@ public class ScriptConsole {
         // wrapped, with the original, the one with the message, as cause
         Throwable current = StackTraceUtils.deepSanitize(t);
         boolean highlighted = false;
+        StringBuilder error = new StringBuilder();
         for( int depth = 0; current != null && depth < 10; depth++ ) {
-            output.appendLine((depth == 0 ? "" : "Caused by: ") + current, output.errorStyle);
+            String header = (depth == 0 ? "" : "Caused by: ") + current;
+            output.appendLine(header, output.errorStyle);
+            error.append(header).append("\n");
             int printed = 0;
             for( StackTraceElement element : current.getStackTrace() ) {
                 if (element.getClassName().startsWith(ScriptConsole.class.getName())) {
@@ -794,17 +908,21 @@ public class ScriptConsole {
                 if (scriptName.equals(element.getFileName())) {
                     int line = element.getLineNumber() + lineOffset;
                     output.appendLine("    at line " + line + " of the script", output.errorStyle);
+                    error.append("    at line ").append(element.getLineNumber()).append(" of the script\n");
                     if (!highlighted) {
                         highlightErrorLine(line - 1);
                         highlighted = true;
                     }
                 } else if (printed < 8) {
                     output.appendLine("    at " + element, output.errorStyle);
+                    error.append("    at ").append(element).append("\n");
                     printed++;
                 }
             }
             current = current.getCause() != current ? current.getCause() : null;
         }
+        lastFailedScript = text;
+        lastError = error.toString().strip();
         setStatus("Execution failed: " + t.getClass().getSimpleName());
     }
 
@@ -1083,6 +1201,9 @@ public class ScriptConsole {
         }
         System.setOut(originalOut);
         System.setErr(originalErr);
+        if (assistantWindow != null) {
+            assistantWindow.dispose();
+        }
         frame.dispose();
         if (exitOnClose) {
             System.exit(0);
@@ -1127,6 +1248,7 @@ public class ScriptConsole {
                 {"Ctrl+S / Ctrl+Shift+S", "Save / save as"}, //
                 {"Ctrl+F", "Find and replace (Esc closes it)"}, //
                 {"Ctrl+= / Ctrl+-", "Bigger / smaller font"}, //
+                {"Ctrl+Shift+A", "Open the script assistant (only with the assistant module installed)"}, //
                 {"Debugging", null}, //
                 {"F5", "Debug the script (or the selection), continue when paused"}, //
                 {"F9", "Toggle a breakpoint (or click in the gutter, left of the line numbers)"}, //

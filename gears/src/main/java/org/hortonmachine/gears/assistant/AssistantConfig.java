@@ -31,11 +31,16 @@ import java.net.URI;
  * @param historyTurns how many earlier turns of a discussion are sent again with each request, so
  *          that follow-up questions are understood; 0 makes every request stand alone. More turns
  *          make longer and slower requests and use more of the context of the model.
+ * @param keepAliveMinutes how long an Ollama server keeps the model loaded after the last request.
+ *          While it is loaded, the server also keeps what it read of the last request and reuses
+ *          it for the next one with the same beginning, which is then much faster.
+ * @param contextLength the context of the model on an Ollama server, in tokens: the whole
+ *          request and the answer must fit in it, or the server silently cuts the request.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public record AssistantConfig( ServerKind serverKind, String baseUrl, String model, String apiKey, int timeoutSeconds,
-        int historyTurns ) {
+        int historyTurns, int keepAliveMinutes, int contextLength ) {
 
     /**
      * The kinds of server an assistant can talk to.
@@ -66,6 +71,18 @@ public record AssistantConfig( ServerKind serverKind, String baseUrl, String mod
      * enough for the context of the small local models.
      */
     public static final int DEFAULT_HISTORY_TURNS = 6;
+
+    /**
+     * The default minutes an Ollama server keeps the model loaded: a pause for reading or running a
+     * script doesn't make the next request load it again.
+     */
+    public static final int DEFAULT_KEEP_ALIVE_MINUTES = 30;
+
+    /**
+     * The default context on an Ollama server: the instructions of the script assistant are about
+     * 10 thousand tokens, more than the 4096 some servers use by default.
+     */
+    public static final int DEFAULT_CONTEXT_LENGTH = 16384;
 
     /**
      * @return <code>true</code> if the server runs on this machine, so that no data leaves it.

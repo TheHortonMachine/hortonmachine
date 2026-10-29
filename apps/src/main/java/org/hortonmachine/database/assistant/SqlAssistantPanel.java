@@ -19,7 +19,6 @@ package org.hortonmachine.database.assistant;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Desktop;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
@@ -40,7 +39,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.SwingWorker;
@@ -48,8 +46,6 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
 
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.hortonmachine.assistant.AssistantProgressMonitor;
 import org.hortonmachine.assistant.AssistantSettingsPanel;
 import org.hortonmachine.assistant.MarkdownHtml;
@@ -67,18 +63,18 @@ import org.hortonmachine.gui.editor.CodeEditorFactory;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
 /**
- * The SQL assistant of the database viewer: answers free questions (also how to connect to a
- * database, so it works without a connection), writes SQL from a question, fixes the SQL of the
- * editor with the error of the database, explains it.
+ * The SQL assistant of the database viewer: answers questions (also how to connect to a
+ * database, so it works without a connection) with SQL when it helps, fixes the SQL of the editor
+ * with the error of the database, explains it.
  *
  * <p>The requests form a discussion: it is shown formatted (markdown of the answers, highlighted
  * SQL) and each request carries the earlier turns, so follow-ups are understood (how many is set in
  * the settings). "New conversation" starts over. With an empty question box, the last question is
- * used again, e.g. to write the SQL of something just asked.</p>
+ * used again.</p>
  *
- * <p>Generated SQL is never run: it goes into the editor only when the user asks, after a
- * confirmation if it changes the database. No row limit is added, since the viewer already
- * limits the rows it shows.</p>
+ * <p>Each SQL of the discussion has links to add it to the editor or to copy it. Generated SQL is
+ * never run: it goes into the editor only when the user asks, after a confirmation if it changes
+ * the database. No row limit is added, since the viewer already limits the rows it shows.</p>
  *
  * @author Andrea Antonello - https://g-ant.eu
  */
@@ -93,7 +89,6 @@ public class SqlAssistantPanel extends JPanel {
     private final JLabel databaseLabel = new JLabel(" ");
     private final JCheckBox sampleRowsCheckbox = new JCheckBox("Include sample rows");
     private final JButton askButton = new JButton("Ask");
-    private final JButton generateButton = new JButton("Write SQL");
     private final JButton fixButton = new JButton("Fix editor SQL");
     private final JButton explainButton = new JButton("Explain editor SQL");
     private final JButton cancelButton = new JButton("Cancel");
@@ -110,25 +105,50 @@ public class SqlAssistantPanel extends JPanel {
             return true;
         }
     };
-    private final RSyntaxTextArea sqlArea = CodeEditorFactory.createEditor(SyntaxConstants.SYNTAX_STYLE_SQL);
-    private final JLabel writeWarningLabel = new JLabel(" ");
-    private final JButton insertButton = new JButton("Add to editor");
 
     /**
-     * The turns of the current discussion, oldest first.
+     * The turns of the current discussion, oldest first, as told to the model.
      */
     private final List<AssistantTurn> history = new ArrayList<>();
     /**
-     * For each turn, the result of the database check, shown in the discussion only: in the
-     * history the model would copy it into its next answers.
+     * For each turn, the answer as shown, with the result of the database check: shown in the
+     * discussion only, in the history the model would copy the marks of the check into its next answers.
      */
-    private final List<String> turnNotes = new ArrayList<>();
+    private final List<SqlAnswer> turnAnswers = new ArrayList<>();
+
+    /**
+     * A SQL block of the discussion, which its links refer to by index.
+     *
+     * @param sql the SQL.
+     * @param changesData <code>true</code> if it was recognized as changing the database.
+     * @param checkError the error the database still gives for it, or <code>null</code>.
+     */
+    private record CodeBlock( String sql, boolean changesData, String checkError ) {
+    }
+
+    /**
+     * The SQL blocks of the discussion as last rendered, in order.
+     */
+    private final List<CodeBlock> codeBlocks = new ArrayList<>();
+    /**
+     * The links above the SQL blocks: <code>hm:action:index</code>.
+     */
+    private static final String CODE_LINK = "hm:";
     /**
      * The request waiting for its answer, shown after the turns.
      */
     private String pendingQuestion;
     private final StringBuilder pendingText = new StringBuilder();
     private boolean pendingIsSql;
+    /**
+     * Why the pending answer is a new attempt, if the database rejected the earlier one.
+     */
+    private String pendingRoundNote;
+    /**
+     * Published among the tokens when a repair round starts, followed by its description: the
+     * model never writes this character.
+     */
+    private static final String ROUND_MARKER = "\u0000round:";
     /**
      * A message shown after the discussion, e.g. why the last request failed.
      */
@@ -141,7 +161,6 @@ public class SqlAssistantPanel extends JPanel {
     private int recallIndex = -1;
 
     private AssistantProgressMonitor monitor;
-    private SqlAnswer lastAnswer;
     private boolean running = false;
 
     /**
@@ -167,11 +186,10 @@ public class SqlAssistantPanel extends JPanel {
         questionArea.setLineWrap(true);
         questionArea.setWrapStyleWord(true);
         questionArea.setToolTipText("<html>e.g.: the 10 longest roads with their municipality; or: how do I open our PostGIS?<br>"
-                + "Ctrl+Enter runs it, Ctrl+W clears it, Ctrl+Up/Down recall earlier questions.<br>"
-                + "With the box empty, Ask and Write SQL use the last question again.</html>");
-        askButton.setToolTipText("Ask anything about databases, also how to connect to one. The answer is only text. "
-                + "(Ctrl+Shift+Enter, or Ctrl+Enter without a database)");
-        generateButton.setToolTipText("Write the SQL that answers the question, for the connected database. (Ctrl+Enter)");
+                + "Ctrl+Enter asks, Ctrl+W clears it, Ctrl+Up/Down recall earlier questions.<br>"
+                + "With the box empty, Ask uses the last question again.</html>");
+        askButton.setToolTipText("<html>Ask anything about the connected database (the answer has SQL when it helps, checked "
+                + "by the database, not run), or about databases, also how to connect to one. (Ctrl+Enter)</html>");
         newConversationButton.setToolTipText("Forget the discussion and start over. (Ctrl+N)");
         sampleRowsCheckbox.setToolTipText(
                 "Give the model the first rows of each table. Helps with codes and formats, but sends data to the server.");
@@ -182,23 +200,22 @@ public class SqlAssistantPanel extends JPanel {
         discussionPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         discussionPane.setFont(UIManager.getFont("Label.font"));
         discussionPane.addHyperlinkListener(e -> {
-            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED && e.getURL() != null) {
+            if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED) {
+                return;
+            }
+            if (e.getDescription() != null && e.getDescription().startsWith(CODE_LINK)) {
+                codeAction(e.getDescription());
+            } else if (e.getURL() != null) {
                 try {
-                    Desktop.getDesktop().browse(e.getURL().toURI());
+                    GuiUtilities.openUrl(e.getURL().toURI());
                 } catch (Exception ex) {
                     Logger.INSTANCE.insertError("SqlAssistantPanel", "Can't open " + e.getURL(), ex);
                 }
             }
         });
-        sqlArea.setRows(6);
-        sqlArea.setLineWrap(true);
-        sqlArea.setWrapStyleWord(true);
-        writeWarningLabel.setForeground(new Color(180, 40, 0));
-        insertButton.setEnabled(false);
         cancelButton.setEnabled(false);
 
         askButton.addActionListener(e -> ask());
-        generateButton.addActionListener(e -> generate());
         fixButton.addActionListener(e -> fix());
         explainButton.addActionListener(e -> explain());
         cancelButton.addActionListener(e -> {
@@ -211,7 +228,6 @@ public class SqlAssistantPanel extends JPanel {
             AssistantSettingsPanel.showDialog(this, backend);
             updateStatus();
         });
-        insertButton.addActionListener(e -> insertIntoEditor());
         addShortcuts();
 
         JPanel questionPanel = new JPanel(new BorderLayout(0, 4));
@@ -219,7 +235,6 @@ public class SqlAssistantPanel extends JPanel {
         questionPanel.add(new JScrollPane(questionArea), BorderLayout.CENTER);
         JPanel actionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         actionsPanel.add(askButton);
-        actionsPanel.add(generateButton);
         actionsPanel.add(fixButton);
         actionsPanel.add(explainButton);
         actionsPanel.add(cancelButton);
@@ -238,24 +253,13 @@ public class SqlAssistantPanel extends JPanel {
         progressPanel.add(progressBar, BorderLayout.EAST);
         outputPanel.add(progressPanel, BorderLayout.NORTH);
         JScrollPane discussionScroll = new JScrollPane(discussionPane);
-        discussionScroll.setPreferredSize(new java.awt.Dimension(700, 320));
+        discussionScroll.setPreferredSize(new java.awt.Dimension(700, 460));
         outputPanel.add(discussionScroll, BorderLayout.CENTER);
-
-        JPanel sqlPanel = new JPanel(new BorderLayout(0, 4));
-        sqlPanel.setBorder(BorderFactory.createTitledBorder("Latest SQL"));
-        sqlPanel.add(CodeEditorFactory.createScrollPane(sqlArea), BorderLayout.CENTER);
-        JPanel insertPanel = new JPanel(new BorderLayout(4, 0));
-        insertPanel.add(writeWarningLabel, BorderLayout.CENTER);
-        insertPanel.add(insertButton, BorderLayout.EAST);
-        sqlPanel.add(insertPanel, BorderLayout.SOUTH);
-
-        JSplitPane answerSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, outputPanel, sqlPanel);
-        answerSplit.setResizeWeight(0.7);
 
         setLayout(new BorderLayout(0, 6));
         setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
         add(questionPanel, BorderLayout.NORTH);
-        add(answerSplit, BorderLayout.CENTER);
+        add(outputPanel, BorderLayout.CENTER);
 
         updateStatus();
         updateDatabaseState();
@@ -263,19 +267,18 @@ public class SqlAssistantPanel extends JPanel {
     }
 
     /**
-     * Ctrl+Enter runs the question (Write SQL with a database, Ask without), Ctrl+Shift+Enter
-     * always asks, Ctrl+W clears the question, Ctrl+N starts a new conversation: they work in the
-     * whole window. Ctrl+Up/Down in the question box recall the earlier questions.
+     * Ctrl+Enter asks (Ctrl+Shift+Enter too, which asked when writing SQL was apart), Ctrl+W
+     * clears the question, Ctrl+N starts a new conversation: they work in the whole window.
+     * Ctrl+Up/Down in the question box recall the earlier questions.
      */
     private void addShortcuts() {
         InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = getActionMap();
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK), "runQuestion");
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK), "askQuestion");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK),
                 "askQuestion");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.CTRL_DOWN_MASK), "clearQuestion");
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK), "newConversation");
-        actionMap.put("runQuestion", action(() -> clickIfEnabled(host.getDatabase() != null ? generateButton : askButton)));
         actionMap.put("askQuestion", action(() -> clickIfEnabled(askButton)));
         actionMap.put("clearQuestion", action(() -> {
             questionArea.setText("");
@@ -345,22 +348,17 @@ public class SqlAssistantPanel extends JPanel {
      */
     public void updateDatabaseState() {
         boolean hasDb = host.getDatabase() != null;
-        generateButton.setEnabled(hasDb && !running);
         fixButton.setEnabled(hasDb && !running);
         explainButton.setEnabled(hasDb && !running);
         databaseLabel.setText(hasDb
                 ? "Connected to " + host.getDatabase().getDatabasePath()
-                : "No database connected: writing SQL needs one, but you can Ask, e.g. how to connect.");
+                : "No database connected: SQL for your data needs one, but you can Ask, e.g. how to connect.");
     }
 
     private void newConversation() {
         history.clear();
-        turnNotes.clear();
+        turnAnswers.clear();
         notice = null;
-        lastAnswer = null;
-        sqlArea.setText("");
-        writeWarningLabel.setText(" ");
-        insertButton.setEnabled(false);
         updateStatus();
         renderDiscussion();
         questionArea.requestFocusInWindow();
@@ -368,7 +366,8 @@ public class SqlAssistantPanel extends JPanel {
 
     /**
      * Show the discussion: each question in a tinted block, each answer with its markdown
-     * formatted and its SQL highlighted, then the request waiting for its answer and the notice.
+     * formatted and its SQL highlighted, with their links, then the request waiting for its answer
+     * and the notice.
      */
     private void renderDiscussion() {
         streamRenderTimer.stop();
@@ -378,29 +377,35 @@ public class SqlAssistantPanel extends JPanel {
         String youColor = dark ? "#7fb2ff" : "#0b4fa8";
         String assistantColor = dark ? "#8fd18f" : "#2e7d32";
 
+        codeBlocks.clear();
         StringBuilder sb = new StringBuilder("<html><body>");
         if (history.isEmpty() && pendingQuestion == null && notice == null) {
-            sb.append("<p><font color=\"#888888\">Ask a question or let the assistant write SQL. Follow-up questions "
-                    + "continue the discussion; New conversation starts over.</font></p>");
+            sb.append("<p><font color=\"#888888\">Ask a question, also for SQL on your data. Follow-up questions "
+                    + "continue the discussion; New conversation starts over. The links above each SQL put it into "
+                    + "the editor.</font></p>");
         }
         for( int i = 0; i < history.size(); i++ ) {
-            AssistantTurn turn = history.get(i);
-            String note = turnNotes.get(i);
-            appendQuestion(sb, turn.question(), questionBackground, youColor, palette);
-            appendAnswer(sb, MarkdownHtml.toHtml(turn.answer() == null ? "" : turn.answer(), palette)
-                    + (turn.sql() != null ? MarkdownHtml.codeBlock(SqlFormatter.format(turn.sql()), "sql", palette) : "")
+            SqlAnswer answer = turnAnswers.get(i);
+            appendQuestion(sb, history.get(i).question(), questionBackground, youColor, palette);
+            // models write SQL on one line: laid out for reading, and so it goes to the editor
+            String text = answer.sql() == null ? answer.text() : answer.text().replace(answer.sql(), formatted(answer));
+            String note = checkNote(answer);
+            appendAnswer(sb, MarkdownHtml.toHtml(text, palette, ( code, language ) -> codeLinks(answer, code, language))
                     + (note != null ? note : ""), assistantColor);
         }
         if (pendingQuestion != null) {
             appendQuestion(sb, pendingQuestion, questionBackground, youColor, palette);
-            String answer;
+            String answer = "";
+            if (pendingRoundNote != null) {
+                answer = "<p><font color=\"#b26a00\"><i>" + MarkdownHtml.escape(pendingRoundNote) + "</i></font></p>";
+            }
             if (pendingText.length() == 0) {
-                answer = "<p><i>waiting for the model...</i></p>";
+                answer += "<p><i>waiting for the model...</i></p>";
             } else if (pendingIsSql) {
-                // JSON while it arrives: shown raw
-                answer = "<p><i>writing the SQL...</i></p>" + MarkdownHtml.codeBlock(pendingText.toString(), "json", palette);
+                // JSON while it arrives, unreadable: only how far it is, the SQL is shown when done
+                answer += "<p><i>writing the SQL... (" + pendingText.length() + " characters so far)</i></p>";
             } else {
-                answer = MarkdownHtml.toHtml(pendingText.toString(), palette);
+                answer += MarkdownHtml.toHtml(pendingText.toString(), palette);
             }
             appendAnswer(sb, answer, assistantColor);
         }
@@ -410,6 +415,93 @@ public class SqlAssistantPanel extends JPanel {
         sb.append("</body></html>");
         discussionPane.setText(sb.toString());
         discussionPane.setCaretPosition(discussionPane.getDocument().getLength());
+    }
+
+    private static String formatted( SqlAnswer answer ) {
+        return SqlFormatter.format(answer.sql());
+    }
+
+    /**
+     * @return the result of the database check of the SQL of the answer, as html to show under
+     *          it, or <code>null</code> if there is nothing to tell.
+     */
+    private static String checkNote( SqlAnswer answer ) {
+        if (answer.sql() == null) {
+            return null;
+        }
+        if (answer.checkError() != null) {
+            return "<p><font color=\"#c0392b\"><b>The database still rejects this SQL:</b> "
+                    + MarkdownHtml.escape(answer.checkError()) + "</font></p>";
+        }
+        if (!answer.readOnly()) {
+            return "<p><font color=\"#b26a00\"><i>This SQL changes the database, or could not be recognized as a query: "
+                    + "check it before running it.</i></font></p>";
+        }
+        if (answer.checked()) {
+            return "<p><font color=\"#2e7d32\"><i>Checked by the database. Not run.</i></font></p>";
+        }
+        return null;
+    }
+
+    /**
+     * The links above a SQL block of an answer, which refer to it by its index in {@link #codeBlocks}.
+     *
+     * @param answer the answer the block is in.
+     * @param code the code of the block.
+     * @param language the language of the block.
+     * @return the links, or <code>null</code> for blocks that aren't SQL.
+     */
+    private String codeLinks( SqlAnswer answer, String code, String language ) {
+        if (!language.isEmpty() && !language.equals("sql")) {
+            return null;
+        }
+        // what the checks found belongs to the SQL that was checked
+        boolean isAnswerSql = answer.sql() != null && code.strip().equals(formatted(answer).strip());
+        int index = codeBlocks.size();
+        codeBlocks.add(new CodeBlock(code.strip(), isAnswerSql && !answer.readOnly(), isAnswerSql ? answer.checkError() : null));
+        return "<p><font size=\"-1\"><a href=\"" + CODE_LINK + "add:" + index + "\">Add to editor</a> &nbsp;&middot;&nbsp; "
+                + "<a href=\"" + CODE_LINK + "copy:" + index + "\">Copy</a></font></p>";
+    }
+
+    /**
+     * Run the action of a link above a SQL block.
+     *
+     * @param link the link, as <code>hm:action:index</code>.
+     */
+    private void codeAction( String link ) {
+        String[] parts = link.substring(CODE_LINK.length()).split(":");
+        if (parts.length != 2) {
+            return;
+        }
+        int index;
+        try {
+            index = Integer.parseInt(parts[1]);
+        } catch (NumberFormatException e) {
+            return;
+        }
+        if (index < 0 || index >= codeBlocks.size()) {
+            return;
+        }
+        CodeBlock block = codeBlocks.get(index);
+        if (parts[0].equals("copy")) {
+            GuiUtilities.copyToClipboard(block.sql());
+            statusLabel.setText("SQL copied.");
+            return;
+        }
+        if (block.changesData()) {
+            boolean ok = GuiUtilities.showYesNoDialog(this, "This SQL changes the database, or could not be recognized as a query.\n"
+                    + "It is only added to the editor, not run. Add it?");
+            if (!ok) {
+                return;
+            }
+        } else if (block.checkError() != null) {
+            boolean ok = GuiUtilities.showYesNoDialog(this,
+                    "The database rejects this SQL:\n" + block.checkError() + "\n\nAdd it to the editor anyway?");
+            if (!ok) {
+                return;
+            }
+        }
+        host.addSqlToEditor(block.sql());
     }
 
     /**
@@ -491,20 +583,7 @@ public class SqlAssistantPanel extends JPanel {
         // the connection is optional here: without one the model helps to connect
         ADb db = host.getDatabase();
         List<AssistantTurn> turns = List.copyOf(history);
-        runTextRequest(question, true, ( onToken, pm ) -> sqlAssistant.help(db, question, turns, options(), onToken, pm));
-    }
-
-    private void generate() {
-        String question = readQuestion();
-        if (question == null) {
-            return;
-        }
-        ADb db = checkDatabase();
-        if (db == null) {
-            return;
-        }
-        List<AssistantTurn> turns = List.copyOf(history);
-        runSqlRequest(question, true, ( onToken, pm ) -> sqlAssistant.generate(db, question, turns, options(), onToken, pm));
+        runSqlRequest(question, true, false, ( onToken, pm ) -> sqlAssistant.ask(db, question, turns, options(), onToken, pm));
     }
 
     private void fix() {
@@ -525,7 +604,7 @@ public class SqlAssistantPanel extends JPanel {
         }
         List<AssistantTurn> turns = List.copyOf(history);
         String turnQuestion = "Fix this SQL:\n```sql\n" + sql + "\n```\nThe database gave this error: " + error;
-        runSqlRequest(turnQuestion, false,
+        runSqlRequest(turnQuestion, false, true,
                 ( onToken, pm ) -> sqlAssistant.fix(db, sql, error, turns, options(), onToken, pm));
     }
 
@@ -574,7 +653,7 @@ public class SqlAssistantPanel extends JPanel {
                 try {
                     String answer = get();
                     history.add(new AssistantTurn(turnQuestion, answer, null));
-                    turnNotes.add(null);
+                    turnAnswers.add(new SqlAnswer(answer, null, true, false, false, null));
                     endTurn();
                 } catch (Exception e) {
                     endWithError(e, fromQuestionBox ? turnQuestion : null);
@@ -583,21 +662,34 @@ public class SqlAssistantPanel extends JPanel {
         }.execute();
     }
 
-    private void runSqlRequest( String turnQuestion, boolean fromQuestionBox, Request<SqlAnswer> request ) {
-        lastAnswer = null;
-        sqlArea.setText("");
-        writeWarningLabel.setText(" ");
-        startRequest(turnQuestion, true, fromQuestionBox);
+    /**
+     * @param turnQuestion the question as recorded in the discussion.
+     * @param fromQuestionBox <code>true</code> if the request comes from the question box.
+     * @param json <code>true</code> if the answer streams as JSON, unreadable until done.
+     * @param request the request, whose SQL, if any, is checked and maybe repaired.
+     */
+    private void runSqlRequest( String turnQuestion, boolean fromQuestionBox, boolean json, Request<SqlAnswer> request ) {
+        startRequest(turnQuestion, json, fromQuestionBox);
         AssistantProgressMonitor pm = monitor;
         new SwingWorker<SqlAnswer, String>(){
             @Override
             protected SqlAnswer doInBackground() throws Exception {
+                // through the same channel as the tokens, so that it comes after those of the rejected answer
+                pm.setTaskListener(task -> publish(ROUND_MARKER + task));
                 return request.run(this::publish, pm);
             }
 
             @Override
             protected void process( List<String> tokens ) {
-                tokens.forEach(pendingText::append);
+                for( String token : tokens ) {
+                    if (token.startsWith(ROUND_MARKER)) {
+                        // a new attempt replaces the rejected answer
+                        pendingText.setLength(0);
+                        pendingRoundNote = token.substring(ROUND_MARKER.length());
+                    } else {
+                        pendingText.append(token);
+                    }
+                }
                 scheduleStreamRender();
             }
 
@@ -605,29 +697,15 @@ public class SqlAssistantPanel extends JPanel {
             protected void done() {
                 try {
                     SqlAnswer answer = get();
-                    lastAnswer = answer;
                     // a rejection is told to the model too, as a plain fact a follow-up can use; the
                     // marks of the check are only shown, or the model copies them into its answers
-                    String answerText = answer.explanation();
-                    String note = null;
+                    String answerText = answer.text();
                     if (answer.checkError() != null) {
                         answerText += "\n\n(The database rejected this SQL: " + answer.checkError().strip().lines().findFirst()
                                 .orElse("") + ")";
-                        note = "<p><font color=\"#c0392b\"><b>The database still rejects this SQL:</b> "
-                                + MarkdownHtml.escape(answer.checkError()) + "</font></p>";
-                    } else if (answer.checked()) {
-                        note = "<p><font color=\"#2e7d32\"><i>Checked by the database.</i></font></p>";
                     }
-                    history.add(new AssistantTurn(turnQuestion, answerText, answer.sql()));
-                    turnNotes.add(note);
-                    // models write SQL on one line: laid out for reading, and so it goes to the editor
-                    sqlArea.setText(SqlFormatter.format(answer.sql()));
-                    sqlArea.setCaretPosition(0);
-                    if (answer.checkError() != null) {
-                        writeWarningLabel.setText("The database rejects this SQL: " + answer.checkError());
-                    } else if (!answer.readOnly()) {
-                        writeWarningLabel.setText("This SQL changes the database, or could not be recognized as a query.");
-                    }
+                    history.add(new AssistantTurn(turnQuestion, answerText, null));
+                    turnAnswers.add(answer);
                     endTurn();
                 } catch (Exception e) {
                     endWithError(e, fromQuestionBox ? turnQuestion : null);
@@ -643,6 +721,7 @@ public class SqlAssistantPanel extends JPanel {
         notice = null;
         pendingQuestion = turnQuestion;
         pendingText.setLength(0);
+        pendingRoundNote = null;
         pendingIsSql = isSql;
         monitor = new AssistantProgressMonitor(progressBar, null);
         statusLabel.setText("Waiting for the answer...");
@@ -692,29 +771,7 @@ public class SqlAssistantPanel extends JPanel {
         settingsButton.setEnabled(!running);
         newConversationButton.setEnabled(!running);
         cancelButton.setEnabled(running);
-        insertButton.setEnabled(!running && lastAnswer != null);
         updateDatabaseState();
-    }
-
-    private void insertIntoEditor() {
-        String sql = sqlArea.getText().trim();
-        if (sql.isEmpty() || lastAnswer == null) {
-            return;
-        }
-        if (!lastAnswer.readOnly()) {
-            boolean ok = GuiUtilities.showYesNoDialog(this, "This SQL changes the database, or could not be recognized as a query.\n"
-                    + "It is only added to the editor, not run. Add it?");
-            if (!ok) {
-                return;
-            }
-        } else if (lastAnswer.checkError() != null) {
-            boolean ok = GuiUtilities.showYesNoDialog(this,
-                    "The database rejects this SQL:\n" + lastAnswer.checkError() + "\n\nAdd it to the editor anyway?");
-            if (!ok) {
-                return;
-            }
-        }
-        host.addSqlToEditor(sql);
     }
 
     /**

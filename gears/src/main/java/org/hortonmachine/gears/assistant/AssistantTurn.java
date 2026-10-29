@@ -25,10 +25,10 @@ package org.hortonmachine.gears.assistant;
  * starts over.</p>
  *
  * @param question what the user asked.
- * @param answer the text of the answer (the explanation, for answers with SQL).
- * @param sql the SQL of the answer, or <code>null</code> for answers that are only text.
+ * @param answer the text of the answer (the explanation, for answers with code).
+ * @param code the code of the answer (SQL or a script), or <code>null</code> for answers that are only text.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public record AssistantTurn( String question, String answer, String sql ) {
+public record AssistantTurn( String question, String answer, String code ) {
 }

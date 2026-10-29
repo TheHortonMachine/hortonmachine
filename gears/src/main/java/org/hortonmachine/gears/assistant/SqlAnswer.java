@@ -28,8 +28,8 @@ package org.hortonmachine.gears.assistant;
  * functions the dialect lacks. Rejected SQL is sent back to the model to be corrected a few times;
  * if the database still rejects it, the error is in <code>checkError</code>.</p>
  *
- * @param sql the generated SQL.
- * @param explanation what the SQL does, for the user.
+ * @param text the whole answer as markdown, with the SQL, if any, in a sql code block.
+ * @param sql the SQL of the answer that was checked, or <code>null</code> if the answer has none.
  * @param readOnly <code>true</code> if the SQL only reads data.
  * @param limitApplied <code>true</code> if a limit on the rows was added to the SQL of the model.
  * @param checked <code>true</code> if the database checked the SQL (only read-only SQL is checked).
@@ -38,6 +38,6 @@ package org.hortonmachine.gears.assistant;
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public record SqlAnswer( String sql, String explanation, boolean readOnly, boolean limitApplied, boolean checked,
+public record SqlAnswer( String text, String sql, boolean readOnly, boolean limitApplied, boolean checked,
         String checkError ) {
 }

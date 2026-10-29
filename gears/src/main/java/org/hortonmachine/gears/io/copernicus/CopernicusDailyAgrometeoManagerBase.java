@@ -330,10 +330,20 @@ public abstract class CopernicusDailyAgrometeoManagerBase extends HMModel {
 		if (repoFolder != null && !repoFolder.isBlank() && new File(repoFolder).exists()) {
 			return repoFolder;
 		}
+		String preferenceFolder = repoFolder;
 		// then check in environment variables
 		repoFolder = System.getenv("COPERNICUS_REPO_FOLDER");
 		if (repoFolder != null && !repoFolder.isBlank() && new File(repoFolder).exists()) {
 			return repoFolder;
+		}
+		// a folder that is set but missing (e.g. on a drive not mounted) must not read as "not set"
+		if (preferenceFolder != null && !preferenceFolder.isBlank()) {
+			throw new IllegalArgumentException("The Copernicus repository folder of the Horton Machine preferences doesn't exist: "
+					+ preferenceFolder + ". Create it, connect its drive, or choose another one in the settings.");
+		}
+		if (repoFolder != null && !repoFolder.isBlank()) {
+			throw new IllegalArgumentException("The Copernicus repository folder of the environment variable COPERNICUS_REPO_FOLDER doesn't exist: "
+					+ repoFolder + ".");
 		}
 		throw new IllegalArgumentException("No Copernicus repository folder found. Please set it in Horton Machine preferences or as an environment variable: COPERNICUS_REPO_FOLDER");
 	}

@@ -44,10 +44,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
@@ -131,6 +133,33 @@ public class GuiUtilities {
             Desktop desktop = Desktop.getDesktop();
             desktop.open(file);
         }
+    }
+
+    /**
+     * Open a web page in the browser of the system.
+     *
+     * <p>Java can't browse on some Linux desktops (it needs the GNOME libraries): there the
+     * opener of the system is used, <code>xdg-open</code>.</p>
+     *
+     * @param uri the page to open.
+     * @throws IOException if no browser could be started.
+     */
+    public static void openUrl( URI uri ) throws IOException {
+        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            Desktop.getDesktop().browse(uri);
+            return;
+        }
+        String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        String[] command;
+        if (os.contains("mac")) {
+            command = new String[]{"open", uri.toString()};
+        } else if (os.contains("win")) {
+            command = new String[]{"rundll32", "url.dll,FileProtocolHandler", uri.toString()};
+        } else {
+            command = new String[]{"xdg-open", uri.toString()};
+        }
+        new ProcessBuilder(command).redirectOutput(ProcessBuilder.Redirect.DISCARD)
+                .redirectError(ProcessBuilder.Redirect.DISCARD).start();
     }
 
     public static JDialog openDialogWithPanel( JPanel panel, String title, Dimension dimension, boolean modal ) {
