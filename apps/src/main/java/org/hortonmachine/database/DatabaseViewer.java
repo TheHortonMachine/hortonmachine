@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.database;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
@@ -55,8 +56,10 @@ import org.hortonmachine.database.csv.ImportCsvAsNewTableAction;
 import org.hortonmachine.database.csv.ImportCsvIntoTableAction;
 import org.hortonmachine.gears.io.dbs.DbsHelper;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.CyclicSupplier;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gui.console.LogConsoleController;
 import org.hortonmachine.gui.settings.SettingsController;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
@@ -80,6 +83,7 @@ public class DatabaseViewer extends DatabaseController {
     // private static final Logger logger = LoggerFactory.getLogger(SpatialiteViewer.class);
     private static final long serialVersionUID = 1L;
     private ToolsPanelController toolsPanelController;
+    private final CyclicSupplier<Color> layerColors = new CyclicSupplier<>(ColorUtilities.getDistinctColors());
 
     public DatabaseViewer( GuiBridgeHandler guiBridge ) {
         super(guiBridge);
@@ -143,7 +147,7 @@ public class DatabaseViewer extends DatabaseController {
                 if (title == null) {
                     title = "QueryLayer";
                 }
-                toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
+                toolsPanelController.loadFeatureCollection(title, rfc, layerColors.next());
                 zoomNwwTo(fc.getBounds());
                 addQueryToHistoryCombo(sqlText);
             }
@@ -209,10 +213,14 @@ public class DatabaseViewer extends DatabaseController {
         if (toolsPanelController == null) {
             return;
         }
+        // a different color for every request, the collections of one request share it
+        Color color = layerColors.next();
         ReferencedEnvelope bounds = null;
-        for( SimpleFeatureCollection fc : fcs ) {
+        for( int i = 0; i < fcs.size(); i++ ) {
+            SimpleFeatureCollection fc = fcs.get(i);
             ReprojectingFeatureCollection rfc = new ReprojectingFeatureCollection(fc, NwwUtilities.GPS_CRS);
-            toolsPanelController.loadFeatureCollection(null, title, null, rfc, null);
+            String layerName = fcs.size() > 1 ? title + " " + (i + 1) : title;
+            toolsPanelController.loadFeatureCollection(layerName, rfc, color);
             ReferencedEnvelope fcBounds = fc.getBounds().transform(NwwUtilities.GPS_CRS, true);
             if (bounds == null) {
                 bounds = fcBounds;

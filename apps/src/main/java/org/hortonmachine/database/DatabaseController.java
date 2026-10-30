@@ -2541,6 +2541,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     pm.message("Need to acquire Azure token to use as password for this connection...");
                     _pwd = AzCliTokenProvider.getAccessToken("https://ossrdbms-aad.database.windows.net");
                     pm.message("Token acquired: " + _pwd);
+                    GuiUtilities.copyToClipboard(_pwd);
+                    pm.message("Token copied to the clipboard.");
                 }
 
                 currentConnectedSqlDatabase.setCredentials(user, _pwd);
@@ -3130,7 +3132,12 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             }
             String title = "Geometries " + String.join(", ", crsLabels);
             if (in3D) {
-                showGeometriesIn3D(title, fcs);
+                // the geometries come from a query, let the user name the virtual layer
+                String layerName = GuiUtilities.showInputDialog(this, "Name of the layer to add to the 3D viewer", "query layer");
+                if (layerName == null || layerName.trim().isEmpty()) {
+                    return;
+                }
+                showGeometriesIn3D(layerName.trim(), fcs);
             } else {
                 showInMapFrame(false, fcs.toArray(new SimpleFeatureCollection[0]), null);
                 mapFrame.setTitle(title);

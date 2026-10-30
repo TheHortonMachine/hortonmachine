@@ -766,12 +766,34 @@ public class ToolsPanelController extends ToolsPanelView {
      */
     public void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
             SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap, Style sldStyle ) throws Exception {
+        loadFeatureCollection(selectedFile, name, featureStore, readFC, field2ValuesMap, sldStyle, null);
+    }
+
+    /**
+     * Load a feature collection to layer with a given color, as for virtual layers that
+     * have neither a file nor a style.
+     *
+     * @param name name of the layer.
+     * @param readFC the feature collection to load, in WGS84 lon/lat.
+     * @param color the color of the layer.
+     * @throws Exception
+     */
+    public void loadFeatureCollection( String name, SimpleFeatureCollection readFC, Color color ) throws Exception {
+        SimpleStyle simpleStyle = new SimpleStyle();
+        simpleStyle.fillColor = color;
+        simpleStyle.strokeColor = color;
+        loadFeatureCollection(null, name, null, readFC, null, null, simpleStyle);
+    }
+
+    private void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
+            SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap, Style sldStyle,
+            SimpleStyle simpleStyle ) throws Exception {
         if (_useRasterizedCheckbox.isSelected()) {
             Style style = sldStyle;
             if (style == null && selectedFile != null)
                 style = SldUtilities.getStyleFromFile(selectedFile);
             if (style == null)
-                style = SLD.createSimpleStyle(readFC.getSchema(), Color.BLUE);
+                style = SLD.createSimpleStyle(readFC.getSchema(), simpleStyle != null ? simpleStyle.strokeColor : Color.BLUE);
             RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style, null,
                     true);
 
@@ -789,7 +811,9 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 featureCollectionPolygonLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionPolygonLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = getSimpleStyle(sldStyle, absolutePath, EGeometryType.POLYGON.name());
+                SimpleStyle style = simpleStyle != null
+                        ? simpleStyle
+                        : getSimpleStyle(sldStyle, absolutePath, EGeometryType.POLYGON.name());
                 if (style != null) {
                     featureCollectionPolygonLayer.setStyle(style);
                 }
@@ -801,7 +825,9 @@ public class ToolsPanelController extends ToolsPanelView {
                         featureStore, field2ValuesMap);
                 featureCollectionLinesLayer.setElevationMode(WorldWind.RELATIVE_TO_GROUND);
                 featureCollectionLinesLayer.setExtrusionProperties(5.0, null, null, true);
-                SimpleStyle style = getSimpleStyle(sldStyle, absolutePath, EGeometryType.LINESTRING.name());
+                SimpleStyle style = simpleStyle != null
+                        ? simpleStyle
+                        : getSimpleStyle(sldStyle, absolutePath, EGeometryType.LINESTRING.name());
                 if (style != null) {
                     featureCollectionLinesLayer.setStyle(style);
                 }
@@ -820,7 +846,9 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 FeatureCollectionPointsLayer featureCollectionPointsLayer = new FeatureCollectionPointsLayer(name, readFC,
                         featureStore, field2ValuesMap, imagePath);
-                SimpleStyle style = getSimpleStyle(sldStyle, absolutePath, EGeometryType.POINT.name());
+                SimpleStyle style = simpleStyle != null
+                        ? simpleStyle
+                        : getSimpleStyle(sldStyle, absolutePath, EGeometryType.POINT.name());
                 if (style != null) {
                     featureCollectionPointsLayer.setStyle(style);
                 }
