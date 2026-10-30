@@ -130,7 +130,8 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 	// pCmO3 = 0.4-0.6;
 
 	@Description("Default relative humidity value")
-	public double pRH = 0.7;
+	//@TODO to check as in LWRB
+	public double pRH = 60;
 
 	@Description(" For aerosol attenuation (5 < vis < 180 Km) [km].")
 	@In
@@ -355,7 +356,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 
 	private double computeE0(DateTime date) {
 		// k is the day angle in radiant
-		double k = 2 * Math.PI * (date.getDayOfMonth() - 1.0) / 365.0;
+		double k = 2 * Math.PI * (date.getDayOfYear() - 1.0) / 365.0;
 		return 1.00011 + 0.034221 * Math.cos(k) + 0.00128 * Math.sin(k) + 0.000719 * Math.cos(2 * k)
 				+ 0.000077 * Math.sin(2 * k);
 	}
@@ -554,7 +555,7 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 		double zenith = Math.acos(sunVector[2]);
 
 		// mr [–] relative optical air mass:
-		double mr = 1.0 / (sunVector[2] + 0.15 * Math.pow((93.885 - (zenith * (180 / (2 * Math.PI)))), (-1.253)));
+		double mr = 1.0 / (sunVector[2] + 0.15 * Math.pow((93.885 - (Math.toDegrees(zenith))), (-1.253)));
 
 		// altitude of the station
 		double z = demWR.getSampleDouble(i, j, 0);
@@ -600,8 +601,10 @@ public class ShortwaveRadiationBalancePointCase extends HMModel {
 			cos_inc = 0;
 
 		// Direct radiation under cloudless sky incident on arbitrary tilted
-		// surfaces (by inclusion of cosinc)
-		In = 0.9571 * SOLARCTE * E0 * (tau_r * tau_o * tau_g * tau_w * tau_a + beta_s);
+		// surfaces (by inclusion of cosinc). Shadow index?
+		//@TODO I change the coefficent as in Modeling shortwave solar radiation using the
+		//JGrass-NewAge system. Formetta 2013
+		In = 0.9751 * SOLARCTE * E0 * (tau_r * tau_o * tau_g * tau_w * tau_a + beta_s);
 
 		double S_incident = In * cos_inc * shadowWR.getSampleDouble(i, j, 0);
 

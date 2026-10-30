@@ -73,7 +73,8 @@ public class Lwrb extends HMModel {
 	public HashMap<Integer, double[]> inSoilTempratureValuesHM;
 
 	@Description("Reference humidity")
-	private static final double pRH = 0.7;
+	//TODO check, I set 60 because it should be relative humidity in a range form 0 to 100 as later it's divided by 100. I suppose R stay for Rference not relative
+	private static final double pRH = 60;
 
 	@Description("Humidity input Hashmap")
 	@In
@@ -325,7 +326,6 @@ public class Lwrb extends HMModel {
 	 * @throws SchemaException
 	 */
 	private void storeResult(int ID, double downwellingALLSKY, double upwelling) throws SchemaException {
-
 		outHMlongwaveDownwellingHM.put(ID, new double[] { downwellingALLSKY });
 		outHMlongwaveUpwellingHM.put(ID, new double[] { upwelling });
 	}
