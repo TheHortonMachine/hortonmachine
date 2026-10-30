@@ -180,6 +180,10 @@ While a query runs, its progress is shown in a console window: press its stop bu
 The SQL templates.
 :::
 
+### SQL assistant
+
+When the installation includes the assistant module, the **assistant** button of the toolbar opens an AI assistant that writes, fixes and explains SQL for the connected database. It never runs anything itself. It is still highly experimental; see the [AI assistant](../assistant.md#in-the-database-viewer) chapter.
+
 ## Working with the results
 
 Right-click on the selected cells of the Data Viewer to copy their content. The menu offers more, depending on the content of the cell.

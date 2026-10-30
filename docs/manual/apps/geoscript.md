@@ -190,6 +190,10 @@ Dialogs
 
 For example, `HM.makeQgisStyleForRaster("net", net, 0)` creates the QGIS style file for the network raster of the example above.
 
+## Script assistant
+
+When the installation includes the assistant module, the **Assistant** button of the toolbar and **HM > Assistant** (Ctrl+Shift+A) open an AI assistant that writes, fixes and explains scripts with the HortonMachine modules. It never runs anything itself. It is still highly experimental; see the [AI assistant](../assistant.md#in-the-geoscript-console) chapter.
+
 ## Running scripts in batch
 
 Passing a script file to the launcher runs it without opening the console, printing its output in the terminal:

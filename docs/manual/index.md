@@ -27,6 +27,8 @@ The library can be used in three ways:
 
 This manual covers the first two. It is a work in progress: the chapters are added one application at a time.
 
+Two newer parts, still highly experimental, have their own chapters: the [web server](server.md), which runs the modules for the users of a browser and for other programs, and the [AI assistant](assistant.md) of the Database Viewer and of the Geoscript Console.
+
 ## License
 
 The HortonMachine source code is licensed under the [GNU General Public License, Version 3](https://github.com/TheHortonMachine/hortonmachine/blob/master/LICENSE). The manual is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
@@ -56,4 +58,12 @@ apps/index
 :caption: Modules
 
 modules/index
+```
+
+```{toctree}
+:maxdepth: 2
+:caption: Experimental
+
+server
+assistant
 ```
