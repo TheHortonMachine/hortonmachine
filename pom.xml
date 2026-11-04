@@ -27,7 +27,7 @@
 
 	<properties>
 		<!-- this Hortonmachine version -->
-		<revision>0.12.0</revision>
+		<revision>0.12.1-SNAPSHOT</revision>
 
 		<maven.compiler.source>17</maven.compiler.source>
 		<gt.version>35.2</gt.version>
