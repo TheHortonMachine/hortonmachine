@@ -26,7 +26,6 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.davidmoten.aws.lw.client.Client;
 
 import it.geosolutions.imageio.core.BasicAuthURI;
@@ -37,6 +36,7 @@ import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
 import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
 import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
 import it.geosolutions.imageioimpl.plugins.cog.RangeReader;
+import tools.jackson.databind.JsonNode;
 
 public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	public final static String[] ACCEPTED_TYPES = { 
@@ -58,7 +58,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	public void initialize(HMStacAsset asset) throws IOException {
 		this.asset = asset;
 		this.assetNode = asset.getAssetNode();
-		this.assetUrl = assetNode.get("href").textValue();
+		this.assetUrl = assetNode.get("href").stringValue(null);
 		String type = asset.getType();
 		if(type==null) {
 			return;
@@ -78,7 +78,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			}
 			JsonNode rasterBandNode = assetNode.get("raster:bands");
 			if (rasterBandNode != null && !rasterBandNode.isEmpty()) {
-				Iterator<JsonNode> rbIterator = rasterBandNode.elements();
+				Iterator<JsonNode> rbIterator = rasterBandNode.values().iterator();
 				while (rbIterator.hasNext()) {
 					JsonNode rbNode = rbIterator.next();
 					JsonNode resolNode = rbNode.get("spatial_resolution");
@@ -118,7 +118,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		if (node.isNumber()) {
 			return node.doubleValue();
 		}
-		String text = node.asText().trim().toLowerCase();
+		String text = node.asString("").trim().toLowerCase();
 		switch (text) {
 		case "nan":
 			return Double.NaN;

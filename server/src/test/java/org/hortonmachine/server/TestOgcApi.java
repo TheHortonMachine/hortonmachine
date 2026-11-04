@@ -34,8 +34,8 @@ import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.web.MediaTypes;
 import org.hortonmachine.server.users.User;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import junit.framework.TestCase;
 
@@ -116,9 +116,9 @@ public class TestOgcApi extends TestCase {
         HttpResponse<String> response = send("POST", "/api/processes/" + process + "/execution", token, body);
         assertEquals(response.body(), 201, response.statusCode());
         JsonNode info = MAPPER.readTree(response.body());
-        String jobId = info.get("jobID").asText();
+        String jobId = info.get("jobID").asString();
         assertEquals(base + "/api/jobs/" + jobId, response.headers().firstValue("Location").orElse(""));
-        assertEquals(process, info.get("processID").asText());
+        assertEquals(process, info.get("processID").asString());
         return jobId;
     }
 
@@ -140,7 +140,7 @@ public class TestOgcApi extends TestCase {
         long end = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(120);
         while( System.currentTimeMillis() < end ) {
             JsonNode info = get("/api/jobs/" + jobId, token, 200);
-            String status = info.get("status").asText();
+            String status = info.get("status").asString();
             if (!status.equals("accepted") && !status.equals("running")) {
                 return info;
             }
@@ -218,31 +218,31 @@ public class TestOgcApi extends TestCase {
         JsonNode list = get("/api/processes", janeToken, 200);
         assertTrue(list.get("processes").toString().contains("\"id\":\"Pitfiller\""));
         JsonNode pitfiller = get("/api/processes/Pitfiller", janeToken, 200);
-        assertEquals("string", pitfiller.at("/inputs/inElev/schema/type").asText());
+        assertEquals("string", pitfiller.at("/inputs/inElev/schema/type").asString());
         assertEquals(1, pitfiller.at("/inputs/inElev/minOccurs").asInt());
-        assertEquals("image/tiff; application=geotiff", pitfiller.at("/outputs/outPit/schema/contentMediaType").asText());
+        assertEquals("image/tiff; application=geotiff", pitfiller.at("/outputs/outPit/schema/contentMediaType").asString());
         assertTrue(pitfiller.get("jobControlOptions").toString().contains("async-execute"));
         JsonNode gradient = get("/api/processes/Gradient", janeToken, 200);
-        assertEquals("boolean", gradient.at("/inputs/doDegrees/schema/type").asText());
+        assertEquals("boolean", gradient.at("/inputs/doDegrees/schema/type").asString());
         assertTrue(gradient.at("/inputs/pMode/schema/enum").toString().contains("Finite Differences"));
 
         JsonNode problem = get("/api/processes/NoSuchModule", janeToken, 404);
-        assertEquals("http://www.opengis.net/def/exceptions/ogcapi-processes-1/1.0/no-such-process", problem.get("type").asText());
+        assertEquals("http://www.opengis.net/def/exceptions/ogcapi-processes-1/1.0/no-such-process", problem.get("type").asString());
     }
 
     public void testExecuteAndResults() throws Exception {
         String jobId = execute(janeToken, RUN_PIT);
         JsonNode info = waitFinished(janeToken, jobId);
-        assertEquals("successful", info.get("status").asText());
+        assertEquals("successful", info.get("status").asString());
         assertEquals(100, info.get("progress").asInt());
         assertTrue(info.get("links").toString().contains("/api/jobs/" + jobId + "/results"));
 
         // the output is in the data, next to the input in the area of jane
         JsonNode results = get("/api/jobs/" + jobId + "/results", janeToken, 200);
-        String href = results.at("/outPit/href").asText();
+        String href = results.at("/outPit/href").asString();
         assertTrue(href, href.startsWith(base + janeOutputPath("pit.tif") + "?expires="));
-        assertEquals("data/" + janeArea + "/" + SampleData.COLLECTION + "/pit.tif", results.at("/outPit/hm:path").asText());
-        assertEquals("image/tiff; application=geotiff", results.at("/outPit/type").asText());
+        assertEquals("data/" + janeArea + "/" + SampleData.COLLECTION + "/pit.tif", results.at("/outPit/hm:path").asString());
+        assertEquals("image/tiff; application=geotiff", results.at("/outPit/type").asString());
         HttpResponse<byte[]> download = client.send(
                 HttpRequest.newBuilder(URI.create(href)).header("Authorization", "Bearer " + janeToken).build(),
                 HttpResponse.BodyHandlers.ofByteArray());
@@ -252,7 +252,7 @@ public class TestOgcApi extends TestCase {
         // a result is the input of the next job, here with its outputs in another folder
         String next = execute(janeToken,
                 "{\"inputs\": {\"inElev\": {\"href\": \"" + href + "\"}}, \"outputFolder\": \"data/" + janeArea + "/next\"}");
-        assertEquals("successful", waitFinished(janeToken, next).get("status").asText());
+        assertEquals("successful", waitFinished(janeToken, next).get("status").asString());
         assertTrue(new File(workspace, "data/" + janeArea + "/next/pit.tif").isFile());
         assertEquals(2, get("/api/jobs?processID=Pitfiller&status=successful", janeToken, 200).get("jobs").size());
         assertEquals(1, get("/api/jobs?limit=1", janeToken, 200).get("jobs").size());
@@ -260,9 +260,9 @@ public class TestOgcApi extends TestCase {
         // the same output again: a conflict, unless asked to overwrite
         HttpResponse<String> response = send("POST", "/api/processes/Pitfiller/execution", janeToken, RUN_PIT);
         assertEquals(409, response.statusCode());
-        assertTrue(response.body(), MAPPER.readTree(response.body()).at("/errors/outPit").asText().contains("overwrite"));
+        assertTrue(response.body(), MAPPER.readTree(response.body()).at("/errors/outPit").asString().contains("overwrite"));
         String again = execute(janeToken, RUN_PIT.replace("}}", "}, \"overwrite\": true}"));
-        assertEquals("successful", waitFinished(janeToken, again).get("status").asText());
+        assertEquals("successful", waitFinished(janeToken, again).get("status").asString());
         assertEquals(400, send("POST", "/api/processes/Pitfiller/execution", janeToken,
                 "{\"inputs\": {\"inElev\": \"" + SampleData.ELEVATION + "\"}, \"outputFolder\": \"data/shared/x\"}").statusCode());
 
@@ -270,7 +270,7 @@ public class TestOgcApi extends TestCase {
         for( String path : new String[]{"/api/jobs/" + jobId, "/api/jobs/" + jobId + "/results",
                 "/api/jobs/" + jobId + "/files/job.log"} ) {
             assertEquals(path, "http://www.opengis.net/def/exceptions/ogcapi-processes-1/1.0/no-such-job",
-                    get(path, johnToken, 404).get("type").asText());
+                    get(path, johnToken, 404).get("type").asString());
         }
         assertEquals(404, getFile(janeOutputPath("pit.tif"), johnToken).statusCode());
         assertEquals(404, send("DELETE", "/api/jobs/" + jobId, johnToken, null).statusCode());
@@ -282,7 +282,7 @@ public class TestOgcApi extends TestCase {
         // dismissed: deleted with its folder, the outputs stay in the data
         response = send("DELETE", "/api/jobs/" + jobId, janeToken, null);
         assertEquals(200, response.statusCode());
-        assertEquals("dismissed", MAPPER.readTree(response.body()).get("status").asText());
+        assertEquals("dismissed", MAPPER.readTree(response.body()).get("status").asString());
         get("/api/jobs/" + jobId, janeToken, 404);
         assertFalse(new File(workspace, "jobs/" + jobId).exists());
         assertTrue(janeOutput("pit.tif").isFile());
@@ -301,7 +301,7 @@ public class TestOgcApi extends TestCase {
 
     public void testRangesAndSignedLinks() throws Exception {
         String jobId = execute(janeToken, RUN_PIT);
-        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
+        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asString());
         String path = janeOutputPath("pit.tif");
         byte[] content = Files.readAllBytes(janeOutput("pit.tif").toPath());
         int size = content.length;
@@ -338,7 +338,7 @@ public class TestOgcApi extends TestCase {
         assertEquals(401, send("HEAD", path, null, null).statusCode());
 
         // signed links work without the token, for the file only
-        String href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outPit/href").asText();
+        String href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outPit/href").asString();
         String query = href.substring(href.indexOf('?'));
         response = getFile(href, null, "Range", "bytes=0-99");
         assertEquals(206, response.statusCode());
@@ -361,7 +361,7 @@ public class TestOgcApi extends TestCase {
         assertEquals(401, getFile(href, null).statusCode());
 
         // revoking the token ends its links
-        href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outPit/href").asText();
+        href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outPit/href").asString();
         assertEquals(200, getFile(href, null).statusCode());
         User jane = server.getUserManager().listUsers().stream().filter(u -> u.username.equals("jane")).findFirst().get();
         assertTrue(server.getUserManager().revokeToken(jane.id, server.getUserManager().listTokens(jane.id).get(0).id));
@@ -370,29 +370,29 @@ public class TestOgcApi extends TestCase {
 
     public void testCogOutputs() throws Exception {
         String jobId = execute(janeToken, RUN_PIT);
-        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
+        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asString());
         File pit = janeOutput("pit.tif");
         assertTrue(StacFiles.isCog(pit));
-        assertEquals(StacFiles.COG, StacFiles.describe(pit, pit.getName()).asset.get("type").asText());
+        assertEquals(StacFiles.COG, StacFiles.describe(pit, pit.getName()).asset.get("type").asString());
         // nothing left in the folder of the job
         assertFalse(new File(workspace, "jobs/" + jobId + "/pit.tif").exists());
 
         // the outputs as the modules write them
         server.getConfig().cogOutputs = false;
         jobId = execute(janeToken, RUN_PIT.replace("}}", "}, \"overwrite\": true}"));
-        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
+        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asString());
         assertFalse(StacFiles.isCog(pit));
-        assertEquals(MediaTypes.GEOTIFF, StacFiles.describe(pit, pit.getName()).asset.get("type").asText());
+        assertEquals(MediaTypes.GEOTIFF, StacFiles.describe(pit, pit.getName()).asset.get("type").asString());
     }
 
     public void testVectorOutput() throws Exception {
         String jobId = execute(janeToken, "{\"inputs\": {\"inRaster\": \"" + SampleData.ELEVATION + "\"}}", "Vectorizer");
         JsonNode info = waitFinished(janeToken, jobId);
-        assertEquals(info.toString(), "successful", info.get("status").asText());
+        assertEquals(info.toString(), "successful", info.get("status").asString());
         assertTrue(janeOutput("vector.gpkg").isFile());
 
         // the file as href, the table as fragment
-        String href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outVector/href").asText();
+        String href = get("/api/jobs/" + jobId + "/results", janeToken, 200).at("/outVector/href").asString();
         assertTrue(href, href.startsWith(base + janeOutputPath("vector.gpkg") + "?expires="));
         assertTrue(href, href.endsWith("#vector"));
         assertEquals(200, getFile(href, null).statusCode());
@@ -403,11 +403,11 @@ public class TestOgcApi extends TestCase {
                 "{\"inputs\": {\"inElev\": \"/etc/passwd\", \"noSuchInput\": 1}, \"outputs\": {\"noSuchOutput\": {}}}");
         assertEquals(400, response.statusCode());
         JsonNode problem = MAPPER.readTree(response.body());
-        assertTrue(problem.at("/errors/noSuchInput").asText().contains("Not an input"));
-        assertTrue(problem.at("/errors/noSuchOutput").asText().contains("Not an output"));
+        assertTrue(problem.at("/errors/noSuchInput").asString().contains("Not an input"));
+        assertTrue(problem.at("/errors/noSuchOutput").asString().contains("Not an output"));
         response = send("POST", "/api/processes/Pitfiller/execution", janeToken, RUN_PIT.replace(SampleData.ELEVATION, "/etc/passwd"));
         assertEquals(400, response.statusCode());
-        assertTrue(MAPPER.readTree(response.body()).at("/errors/inElev").asText().contains("relative to the workspace"));
+        assertTrue(MAPPER.readTree(response.body()).at("/errors/inElev").asString().contains("relative to the workspace"));
         assertEquals(400, send("POST", "/api/processes/Pitfiller/execution", janeToken, "{not json").statusCode());
         assertEquals(400, send("POST", "/api/processes/Pitfiller/execution", janeToken,
                 "{\"inputs\": {\"inElev\": {\"href\": \"https://example.org/dem.tif\"}}}").statusCode());
@@ -419,10 +419,10 @@ public class TestOgcApi extends TestCase {
         String first = execute(janeToken, RUN_PIT);
         String second = execute(janeToken, RUN_PIT);
         assertEquals("http://www.opengis.net/def/exceptions/ogcapi-processes-1/1.0/result-not-ready",
-                get("/api/jobs/" + second + "/results", janeToken, 404).get("type").asText());
+                get("/api/jobs/" + second + "/results", janeToken, 404).get("type").asString());
         HttpResponse<String> response = send("DELETE", "/api/jobs/" + second, janeToken, null);
         assertEquals(200, response.statusCode());
-        assertEquals("dismissed", waitFinished(janeToken, second).get("status").asText());
+        assertEquals("dismissed", waitFinished(janeToken, second).get("status").asString());
         assertEquals(410, send("GET", "/api/jobs/" + second + "/results", janeToken, null).statusCode());
         waitFinished(janeToken, first);
     }

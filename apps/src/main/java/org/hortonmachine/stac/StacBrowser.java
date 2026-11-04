@@ -178,9 +178,9 @@ import org.hortonmachine.webmaps.SldRasterColors;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * A browser for STAC catalogs, to check how well a service is supported by the HortonMachine:
@@ -1278,7 +1278,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             JsonNode roles = asset.getAssetNode().get("roles");
             if (roles != null && roles.isArray()) {
                 for( JsonNode role : roles ) {
-                    if ("thumbnail".equals(role.asText()) || "overview".equals(role.asText()))
+                    if ("thumbnail".equals(role.asString("")) || "overview".equals(role.asString("")))
                         return asset;
                 }
             }
@@ -1963,13 +1963,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             JsonNode value = c.get("value");
             if (value == null || !value.canConvertToInt() || c.path("nodata").asBoolean(false))
                 continue;
-            String hint = c.path("color_hint").asText("").trim();
+            String hint = c.path("color_hint").asString("").trim();
             Integer color = null;
             if (hint.matches("#?[0-9a-fA-F]{6}"))
                 color = 0xff000000 | Integer.parseInt(hint.replace("#", ""), 16);
             if (color == null) // golden ratio hues, well apart from each other
                 color = Color.HSBtoRGB((colors.size() * 0.618034f) % 1f, 0.65f, 0.9f);
-            colors.put(value.intValue(), color);
+            colors.put(value.asInt(), color);
         }
         return colors.isEmpty() ? null : colors;
     }
@@ -2667,7 +2667,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
 
     private static String href( HMStacAsset asset ) {
         JsonNode hrefNode = asset.getAssetNode().get("href");
-        return hrefNode != null ? hrefNode.asText() : null;
+        return hrefNode != null ? hrefNode.asString("") : null;
     }
 
     private static String toJson( Object object ) {

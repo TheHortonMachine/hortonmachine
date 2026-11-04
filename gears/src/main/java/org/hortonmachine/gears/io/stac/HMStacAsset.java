@@ -5,7 +5,7 @@ import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
 import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.locationtech.jts.geom.Envelope;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * An asset from a stac item.
@@ -41,11 +41,11 @@ public class HMStacAsset {
 		this.access = access;
 		this.assetNode = assetNode;
 		if (assetNode.has("title")) {
-			title = assetNode.get("title").textValue();
+			title = assetNode.get("title").stringValue(null);
 		}
 		JsonNode typeNode = assetNode.get("type");
 		if (typeNode != null) {
-			type = typeNode.textValue();
+			type = typeNode.stringValue(null);
 //            isAcceptedType = HMStacUtils.ACCEPTED_TYPES.contains(type.toLowerCase().replace(" ", ""));
 //        } else {
 //            isAcceptedType = HMStacUtils.ACCEPTED_EXTENSIONS.contains(FilenameUtils.getExtension(assetUrl));
@@ -53,7 +53,7 @@ public class HMStacAsset {
 		
 		JsonNode epsgNode = assetNode.get("proj:code");
 		if (epsgNode != null) {
-			String epsgCode = epsgNode.textValue();
+			String epsgCode = epsgNode.stringValue(null);
 			if (epsgCode != null && epsgCode.toLowerCase().startsWith("epsg:")) {
 				// Corner case when proj:code is defined, but it's null :(
 				// Example: https://stac.terrascope.be/collections/lcfm-lcm-10/items/LCFM_LCM-10_V100_2020_S57W072_MAP for the asset "Preview" before applying the predicate
@@ -68,7 +68,7 @@ public class HMStacAsset {
 			// projection extension v1.x: integer code
 			JsonNode projEpsgNode = assetNode.get("proj:epsg");
 			if (projEpsgNode != null && projEpsgNode.canConvertToInt()) {
-				epsg = projEpsgNode.intValue();
+				epsg = projEpsgNode.asInt();
 			}
 		}
 

@@ -23,7 +23,8 @@ import java.util.Map;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * A generic client for OGC API - Processes servers.
@@ -337,7 +338,12 @@ public class OGCProcessesManager implements AutoCloseable {
 
     @SuppressWarnings("unchecked")
     private Map<String, Object> parseMap( String body ) throws IOException {
-        return OBJECT_MAPPER.readValue(body, Map.class);
+        try {
+            return OBJECT_MAPPER.readValue(body, Map.class);
+        } catch (JacksonException e) {
+            // unchecked since Jackson 3, keep reporting server responses that are not json as IOException
+            throw new IOException("Invalid json response: " + e.getOriginalMessage(), e);
+        }
     }
 
     private static String asString( Object o ) {

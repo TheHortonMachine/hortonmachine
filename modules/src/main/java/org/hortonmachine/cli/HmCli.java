@@ -33,9 +33,8 @@ import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMParameterKind;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The HortonMachine command line: lists, describes and runs the modules.
@@ -284,8 +283,7 @@ public class HmCli {
         root.put("format", DESCRIBE_FORMAT);
         root.put("version", Version.getVersion());
         root.put("modules", modules);
-        ObjectMapper mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-        out.println(mapper.writeValueAsString(root));
+        out.println(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(root));
         return EXIT_OK;
     }
 
@@ -420,10 +418,10 @@ public class HmCli {
             if (value.isNull()) {
                 continue;
             }
-            if (value.isContainerNode()) {
+            if (value.isContainer()) {
                 throw new UsageException("The value of " + field.getKey() + " in the parameters file is not a single value.");
             }
-            values.put(field.getKey(), value.asText());
+            values.put(field.getKey(), value.asString());
         }
         return values;
     }

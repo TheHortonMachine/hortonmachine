@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -20,8 +19,8 @@ import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
 import org.locationtech.jts.geom.Geometry;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The items from a collection.
@@ -64,7 +63,7 @@ public class HMStacItem {
             if (top != null) {
                 JsonNode idNode = top.get("id");
                 if (idNode != null) {
-                    stacItem.id = idNode.textValue();
+                    stacItem.id = idNode.stringValue(null);
                 }
             }
         }
@@ -249,8 +248,8 @@ public class HMStacItem {
         if (top == null || top.get("links") == null)
             return null;
         for( JsonNode link : top.get("links") ) {
-            if (rel.equals(link.path("rel").asText()))
-                return link.path("href").asText(null);
+            if (rel.equals(link.path("rel").asString("")))
+                return link.path("href").asString(null);
         }
         return null;
     }
@@ -290,11 +289,8 @@ public class HMStacItem {
                 ObjectNode assets = (ObjectNode) top.get("assets");
 
                 if (assets != null) {
-                    Iterator<String> assetIds = assets.fieldNames();
-                    while( assetIds.hasNext() ) {
-                        String assetId = assetIds.next();
-                        JsonNode assetNode = assets.get(assetId);
-                        assetsList.add(new HMStacAsset(assetId, assetNode, access));
+                    for( Map.Entry<String, JsonNode> asset : assets.properties() ) {
+                        assetsList.add(new HMStacAsset(asset.getKey(), asset.getValue(), access));
                     }
                 }
             }

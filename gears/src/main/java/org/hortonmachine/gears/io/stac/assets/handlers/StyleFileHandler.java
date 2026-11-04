@@ -62,7 +62,7 @@ public class StyleFileHandler implements IHMStacAssetHandler {
     @Override
     public void initialize( HMStacAsset asset ) throws IOException {
         this.asset = asset;
-        this.assetUrl = asset.getAssetNode().has("href") ? asset.getAssetNode().get("href").textValue() : null;
+        this.assetUrl = asset.getAssetNode().has("href") ? asset.getAssetNode().get("href").stringValue(null) : null;
 
         String type = asset.getType();
         if (type != null) {

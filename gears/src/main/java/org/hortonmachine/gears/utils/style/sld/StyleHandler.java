@@ -17,7 +17,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.activation.MimetypesFileTypeMap;
-import javax.annotation.Resource;
 
 import org.geotools.api.style.ResourceLocator;
 import org.geotools.api.style.StyleFactory;
@@ -178,8 +177,8 @@ public abstract class StyleHandler {
     /**
      * Turns input into a Reader.
      *
-     * @param input A {@link Reader}, {@link java.io.InputStream}, {@link File}, or {@link
-     *     Resource}.
+     * @param input A {@link Reader}, {@link java.io.InputStream}, {@link String}, {@link URL} or
+     *     {@link File}.
      */
     protected Reader toReader(Object input) throws IOException {
         if (input instanceof Reader) {

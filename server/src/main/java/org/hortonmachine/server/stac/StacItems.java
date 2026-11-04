@@ -22,7 +22,7 @@ import java.util.List;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * What the STAC items of the catalog have in common.

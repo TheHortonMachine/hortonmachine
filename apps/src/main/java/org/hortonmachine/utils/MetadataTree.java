@@ -17,7 +17,6 @@
  */
 package org.hortonmachine.utils;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -32,7 +31,7 @@ import javax.swing.tree.TreePath;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.locationtech.jts.geom.Geometry;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Builds browsable trees out of metadata (maps, lists and jackson json nodes).
@@ -104,10 +103,8 @@ public class MetadataTree {
         if (value instanceof JsonNode node) {
             if (node.isObject()) {
                 DefaultMutableTreeNode n = container(key, "{" + node.size() + "}");
-                Iterator<String> names = node.fieldNames();
-                while( names.hasNext() ) {
-                    String name = names.next();
-                    n.add(build(name, node.get(name)));
+                for( Map.Entry<String, JsonNode> property : node.properties() ) {
+                    n.add(build(property.getKey(), property.getValue()));
                 }
                 return n;
             } else if (node.isArray()) {
@@ -117,7 +114,7 @@ public class MetadataTree {
                 }
                 return n;
             } else {
-                return leaf(key, node.isNull() ? "null" : node.asText());
+                return leaf(key, node.isNull() ? "null" : node.asString(""));
             }
         } else if (value instanceof Map< ? , ? > map) {
             DefaultMutableTreeNode n = container(key, "{" + map.size() + "}");

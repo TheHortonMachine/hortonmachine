@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -44,11 +43,12 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.cfg.EnumFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 public class HMSTACClient extends STACClient {
 
@@ -59,11 +59,12 @@ public class HMSTACClient extends STACClient {
 	 * and can parse GeoJSON geometries
 	 */
 	static {
-		OBJECT_MAPPER = new ObjectMapper();
-		OBJECT_MAPPER.enable(SerializationFeature.WRITE_ENUMS_USING_TO_STRING);
-		OBJECT_MAPPER.enable(DeserializationFeature.READ_ENUMS_USING_TO_STRING);
-		OBJECT_MAPPER.registerModule(new JtsModule());
-		OBJECT_MAPPER.setDefaultPropertyInclusion(JsonInclude.Include.NON_EMPTY);
+		OBJECT_MAPPER = JsonMapper.builder()
+				.enable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
+				.enable(EnumFeature.READ_ENUMS_USING_TO_STRING)
+				.addModule(new JtsModule())
+				.changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_EMPTY))
+				.build();
 	}
 
 	/** Maximum depth of nested catalogs followed through child links. */
@@ -210,7 +211,7 @@ public class HMSTACClient extends STACClient {
 			}
 			if (node == null || !node.isObject())
 				continue;
-			String type = node.hasNonNull("type") ? node.get("type").asText() : "";
+			String type = node.hasNonNull("type") ? node.get("type").asString("") : "";
 			if ("collection".equalsIgnoreCase(type)) {
 				Collection collection = OBJECT_MAPPER.treeToValue(node, Collection.class);
 				boolean isNew = collections.stream().noneMatch(c -> c.getId().equals(collection.getId()));
@@ -324,14 +325,14 @@ public class HMSTACClient extends STACClient {
 		for (JsonNode link : document.get("links")) {
 			if (pm.isCanceled() || (maxItems > 0 && items.size() >= maxItems))
 				return;
-			String rel = link.path("rel").asText();
+			String rel = link.path("rel").asString("");
 			if (!"item".equals(rel) && !"child".equals(rel))
 				continue;
-			URL url = resolve(documentUrl, link.path("href").asText());
+			URL url = resolve(documentUrl, link.path("href").asString(""));
 			if (url == null || !visited.add(url.toString()))
 				continue;
 			JsonNode node = readJson(url);
-			if ("Feature".equals(node.path("type").asText())) {
+			if ("Feature".equals(node.path("type").asString(""))) {
 				SimpleFeature feature = toFeature(node, url);
 				// fix the axis order before the spatial filter
 				if (feature != null && HMStacUtils.fixLatLonGeometry(feature, forceLatLon))
@@ -354,11 +355,9 @@ public class HMSTACClient extends STACClient {
 		// asset hrefs are often relative to the item document
 		JsonNode assets = item.get("assets");
 		if (assets != null && assets.isObject()) {
-			Iterator<String> names = assets.fieldNames();
-			while (names.hasNext()) {
-				JsonNode asset = assets.get(names.next());
+			for (JsonNode asset : assets.values()) {
 				if (asset.isObject() && asset.hasNonNull("href")) {
-					URL absolute = resolve(itemUrl, asset.get("href").asText());
+					URL absolute = resolve(itemUrl, asset.get("href").asString(""));
 					if (absolute != null)
 						((ObjectNode) asset).put("href", absolute.toString());
 				}
@@ -418,9 +417,9 @@ public class HMSTACClient extends STACClient {
 				return false;
 			if (from != null || to != null) {
 				JsonNode properties = item.path("properties");
-				Instant start = parseInstant(properties.path("start_datetime").asText(null));
-				Instant end = parseInstant(properties.path("end_datetime").asText(null));
-				Instant datetime = parseInstant(properties.path("datetime").asText(null));
+				Instant start = parseInstant(properties.path("start_datetime").asString(null));
+				Instant end = parseInstant(properties.path("end_datetime").asString(null));
+				Instant datetime = parseInstant(properties.path("datetime").asString(null));
 				if (start == null)
 					start = datetime;
 				if (end == null)

@@ -27,7 +27,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-import org.apache.http.client.utils.URIBuilder;
+import org.apache.hc.core5.net.URIBuilder;
 import org.geootols.filter.text.cql_2.CQL2;
 import org.geotools.api.filter.Filter;
 import org.geotools.filter.text.cqljson.CQL2Json;
@@ -38,7 +38,7 @@ import org.geotools.stac.client.STACLandingPage;
 import org.geotools.stac.client.SearchQuery;
 import org.geotools.stac.client.SortBy;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import tools.jackson.core.JacksonException;
 
 /** Builds a Search GET URL based on the landing page and {@link SearchQuery} specification */
 class HMSearchGetBuilder {
@@ -71,7 +71,7 @@ class HMSearchGetBuilder {
         if (search.getIntersects() != null) {
             try {
                 builder.addParameter("intersects", HMSTACClient.OBJECT_MAPPER.writeValueAsString(search.getIntersects()));
-            } catch (JsonProcessingException e) {
+            } catch (JacksonException e) {
                 throw new RuntimeException(e);
             }
         }

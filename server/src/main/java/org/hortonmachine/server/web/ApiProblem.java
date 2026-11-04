@@ -20,9 +20,8 @@ package org.hortonmachine.server.web;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.javalin.http.Context;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * An error of the api, answered as RFC 7807 problem details, with the exception types of OGC API Processes.

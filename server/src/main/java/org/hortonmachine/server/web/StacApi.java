@@ -41,10 +41,10 @@ import org.hortonmachine.server.stac.StacRecord;
 import org.hortonmachine.server.stac.StacSearch;
 import org.hortonmachine.server.users.User;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
@@ -334,19 +334,19 @@ public class StacApi {
         }
         StacSearch search = newSearch(ctx);
         for( JsonNode collection : body.path("collections") ) {
-            search.collections.add(collection.asText());
+            search.collections.add(collection.asString(""));
         }
         for( JsonNode id : body.path("ids") ) {
-            search.ids.add(id.asText());
+            search.ids.add(id.asString(""));
         }
         String bbox = null;
         if (body.has("bbox")) {
             List<String> values = new ArrayList<>();
-            body.get("bbox").forEach(value -> values.add(value.asText()));
+            body.get("bbox").forEach(value -> values.add(value.asString("")));
             bbox = String.join(",", values);
         }
-        readCommonParameters(search, bbox, body.has("datetime") ? body.get("datetime").asText() : null,
-                body.has("limit") ? body.get("limit").asText() : null, body.has("token") ? body.get("token").asText() : null);
+        readCommonParameters(search, bbox, body.has("datetime") ? body.get("datetime").asString("") : null,
+                body.has("limit") ? body.get("limit").asString("") : null, body.has("token") ? body.get("token").asString("") : null);
         sendItems(ctx, search, base(ctx) + "/search", (ObjectNode) body);
     }
 
@@ -472,7 +472,7 @@ public class StacApi {
         ObjectNode item = (ObjectNode) mapper.readTree(record.json);
         String folder = filesFolder(record);
         for( Map.Entry<String, JsonNode> asset : item.path("assets").properties() ) {
-            String href = asset.getValue().path("href").asText();
+            String href = asset.getValue().path("href").asString();
             if (href.startsWith("./")) {
                 ((ObjectNode) asset.getValue()).put("href", OgcApi.fileHref(signer, ctx, folder + href.substring(2)));
             }

@@ -63,7 +63,7 @@ import org.hortonmachine.server.files.FileOrigins;
 import org.hortonmachine.server.users.User;
 import org.hortonmachine.server.web.Html;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Runs the jobs, each in its own process of the command line ({@link HmCli}), at most a given number at the same time.
