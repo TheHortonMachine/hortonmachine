@@ -189,11 +189,6 @@
 				<version>${revision}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.hortonmachine</groupId>
-				<artifactId>hm-apps</artifactId>
-				<version>${revision}</version>
-			</dependency>
-			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
@@ -511,6 +506,11 @@
 				<extensions>true</extensions>
 				<configuration>
 					<publishingServerId>central</publishingServerId>
+					<!-- hm-apps is the desktop application, not a library:
+					it is built but not published to Maven Central -->
+					<excludeArtifacts>
+						<artifact>hm-apps</artifact>
+					</excludeArtifacts>
 				</configuration>
 			</plugin>
 			<plugin>
