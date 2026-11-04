@@ -13,7 +13,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.CompressionUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public class CsvfileHandler implements IHMStacAssetHandler {
 	public final static String[] ACCEPTED_TYPES = { "application/x.csv+zip", "text/csv" };
@@ -28,7 +28,7 @@ public class CsvfileHandler implements IHMStacAssetHandler {
 	public void initialize(HMStacAsset asset) throws IOException {
 		this.asset = asset;
 		this.assetNode = asset.getAssetNode();
-		this.assetUrl = assetNode.get("href").textValue();
+		this.assetUrl = assetNode.get("href").stringValue(null);
 		for (String acceptedType : ACCEPTED_TYPES) {
 			if (asset.getType()!=null && asset.getType().toLowerCase().contains(acceptedType)) {
 				supported = true;

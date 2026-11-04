@@ -27,9 +27,8 @@ import java.util.Set;
 import org.hortonmachine.Version;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * The configuration of the server, from the command line options and the settings file of the workspace.
@@ -320,7 +319,7 @@ public class ServerConfig {
      * @param settings the settings by option name.
      */
     public static void writeSettingsFile( File workspace, Map<String, String> settings ) throws Exception {
-        String json = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT).writeValueAsString(settings);
+        String json = new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(settings);
         FileUtilities.writeFile(json, new File(workspace, SETTINGS_FILE));
     }
 

@@ -47,8 +47,8 @@ import org.hortonmachine.server.stac.StacCollectionInfo;
 import org.hortonmachine.server.users.Role;
 import org.hortonmachine.server.users.User;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import junit.framework.TestCase;
 
@@ -141,7 +141,7 @@ public class TestStacApi extends TestCase {
     private String ids( JsonNode itemCollection ) {
         StringBuilder ids = new StringBuilder();
         for( JsonNode feature : itemCollection.get("features") ) {
-            ids.append(ids.length() > 0 ? "," : "").append(feature.get("id").asText());
+            ids.append(ids.length() > 0 ? "," : "").append(feature.get("id").asString());
         }
         return ids.toString();
     }
@@ -164,8 +164,8 @@ public class TestStacApi extends TestCase {
     }
 
     private JsonNode waitFinished( String token, String jobId ) throws Exception {
-        return waitFor("/api/jobs/" + jobId, token, info -> !info.get("status").asText().equals("accepted")
-                && !info.get("status").asText().equals("running"));
+        return waitFor("/api/jobs/" + jobId, token, info -> !info.get("status").asString().equals("accepted")
+                && !info.get("status").asString().equals("running"));
     }
 
     /**
@@ -174,7 +174,7 @@ public class TestStacApi extends TestCase {
     private static String collectionIds( JsonNode collections ) {
         StringBuilder ids = new StringBuilder();
         for( JsonNode collection : collections.get("collections") ) {
-            ids.append(ids.length() > 0 ? "," : "").append(collection.get("id").asText());
+            ids.append(ids.length() > 0 ? "," : "").append(collection.get("id").asString());
         }
         return ids.toString();
     }
@@ -191,7 +191,7 @@ public class TestStacApi extends TestCase {
 
         assertEquals(401, send("GET", "/api/stac", null, null).statusCode());
         JsonNode catalog = get("/api/stac", janeToken, 200);
-        assertEquals("Catalog", catalog.get("type").asText());
+        assertEquals("Catalog", catalog.get("type").asString());
         assertTrue(catalog.get("conformsTo").toString().contains("https://api.stacspec.org/v1.0.0/item-search"));
         String links = catalog.get("links").toString();
         assertTrue(links, links.contains(base + "/api/stac/collections/" + COLLECTION));
@@ -211,15 +211,15 @@ public class TestStacApi extends TestCase {
 
         // described by the folder name, unless the administrators gave metadata
         JsonNode collection = get("/api/stac/collections/" + COLLECTION, janeToken, 200);
-        assertEquals(COLLECTION, collection.get("title").asText());
-        assertEquals("other", collection.get("license").asText());
+        assertEquals(COLLECTION, collection.get("title").asString());
+        assertEquals("other", collection.get("license").asString());
         assertFalse(collection.has("keywords"));
         server.getDb().putStacCollectionInfo(new StacCollectionInfo(COLLECTION, "Flanginec valley", "The elevation of the valley.",
                 List.of("dem", "alps"), "CC-BY-4.0"));
         collection = get("/api/stac/collections/" + COLLECTION, janeToken, 200);
-        assertEquals("Flanginec valley", collection.get("title").asText());
-        assertEquals("The elevation of the valley.", collection.get("description").asText());
-        assertEquals("CC-BY-4.0", collection.get("license").asText());
+        assertEquals("Flanginec valley", collection.get("title").asString());
+        assertEquals("The elevation of the valley.", collection.get("description").asString());
+        assertEquals("CC-BY-4.0", collection.get("license").asString());
         assertEquals("[\"dem\",\"alps\"]", collection.get("keywords").toString());
         assertTrue(get("/api/stac", janeToken, 200).get("links").toString().contains("Flanginec valley"));
 
@@ -230,15 +230,15 @@ public class TestStacApi extends TestCase {
     public void testDataItems() throws Exception {
         JsonNode items = waitFor(itemsOf(COLLECTION), janeToken, json -> json.get("features").size() == 1);
         JsonNode item = items.get("features").get(0);
-        assertEquals(ELEVATION_ID, item.get("id").asText());
-        assertEquals(COLLECTION, item.get("collection").asText());
-        assertEquals(SampleData.ELEVATION, item.at("/properties/hm:path").asText());
-        assertEquals("shared", item.at("/properties/hm:area").asText());
-        assertEquals("external", item.at("/properties/hm:origin").asText());
+        assertEquals(ELEVATION_ID, item.get("id").asString());
+        assertEquals(COLLECTION, item.get("collection").asString());
+        assertEquals(SampleData.ELEVATION, item.at("/properties/hm:path").asString());
+        assertEquals("shared", item.at("/properties/hm:area").asString());
+        assertEquals("external", item.at("/properties/hm:origin").asString());
         assertFalse(item.get("properties").has("hm:owner"));
-        assertEquals("EPSG:32632", item.at("/assets/data/proj:code").asText());
+        assertEquals("EPSG:32632", item.at("/assets/data/proj:code").asString());
         assertTrue(item.at("/assets/data/raster:bands/0/statistics").has("mean"));
-        String href = item.at("/assets/data/href").asText();
+        String href = item.at("/assets/data/href").asString();
         assertTrue(href, href.startsWith(base + "/api/data/files/shared/" + COLLECTION + "/elevation.tif?expires="));
         assertTrue(item.get("links").toString().contains(base + "/api/stac/collections/" + COLLECTION + "/items/" + ELEVATION_ID));
 
@@ -251,7 +251,7 @@ public class TestStacApi extends TestCase {
         assertEquals(404, send("GET", "/api/data/files/../hm-server.sqlite", janeToken, null).statusCode());
 
         // one item asked alone, only in its collection
-        assertEquals(ELEVATION_ID, get(itemsOf(COLLECTION) + "/" + ELEVATION_ID, johnToken, 200).get("id").asText());
+        assertEquals(ELEVATION_ID, get(itemsOf(COLLECTION) + "/" + ELEVATION_ID, johnToken, 200).get("id").asString());
         assertEquals(404, send("GET", itemsOf(COLLECTION) + "/elevation.tif", janeToken, null).statusCode());
 
         // search: the elevation is near 4.5E 0N; the file directly in the data is not in the catalog
@@ -280,8 +280,8 @@ public class TestStacApi extends TestCase {
         JsonNode items = waitFor(itemsOf(COLLECTION), janeToken, json -> json.get("features").size() == 2);
         assertTrue(ids(items), ids(items).contains("shared~dem~copy.tif"));
         JsonNode item = get(itemPath, janeToken, 200);
-        assertEquals("data/shared/" + COLLECTION + "/dem/copy.tif", item.at("/properties/hm:path").asText());
-        assertTrue(item.at("/assets/data/href").asText()
+        assertEquals("data/shared/" + COLLECTION + "/dem/copy.tif", item.at("/properties/hm:path").asString());
+        assertTrue(item.at("/assets/data/href").asString()
                 .startsWith(base + "/api/data/files/shared/" + COLLECTION + "/dem/copy.tif?"));
 
         // a shapefile is one item, with its parts as assets
@@ -292,9 +292,9 @@ public class TestStacApi extends TestCase {
         items = waitFor(itemsOf(COLLECTION), janeToken, json -> ids(json).contains("shared~dem~roads.shp")
                 && !ids(json).contains("roads.dbf"));
         JsonNode roads = get(itemsOf(COLLECTION) + "/shared~dem~roads.shp", janeToken, 200);
-        assertTrue(roads.at("/assets/dbf/href").asText()
+        assertTrue(roads.at("/assets/dbf/href").asString()
                 .startsWith(base + "/api/data/files/shared/" + COLLECTION + "/dem/roads.dbf?"));
-        assertEquals("metadata", roads.at("/assets/prj/roles/0").asText());
+        assertEquals("metadata", roads.at("/assets/prj/roles/0").asString());
 
         // changed: read again
         long size = item.at("/assets/data/file:size").asLong();
@@ -338,14 +338,14 @@ public class TestStacApi extends TestCase {
         String itemId = "user~jane~mine.tif";
         assertEquals(ELEVATION_ID + "," + itemId, ids(get(itemsOf(COLLECTION), janeToken, 200)));
         JsonNode item = get(itemsOf(COLLECTION) + "/" + itemId, janeToken, 200);
-        assertEquals("data/jane/" + COLLECTION + "/mine.tif", item.at("/properties/hm:path").asText());
-        assertEquals("mine.tif", item.at("/properties/title").asText());
-        assertEquals("jane", item.at("/properties/hm:area").asText());
-        assertEquals("jane", item.at("/properties/hm:owner").asText());
-        assertEquals("uploaded", item.at("/properties/hm:origin").asText());
-        assertEquals("jane", item.at("/properties/hm:user").asText());
+        assertEquals("data/jane/" + COLLECTION + "/mine.tif", item.at("/properties/hm:path").asString());
+        assertEquals("mine.tif", item.at("/properties/title").asString());
+        assertEquals("jane", item.at("/properties/hm:area").asString());
+        assertEquals("jane", item.at("/properties/hm:owner").asString());
+        assertEquals("uploaded", item.at("/properties/hm:origin").asString());
+        assertEquals("jane", item.at("/properties/hm:user").asString());
         String filesPath = "/api/data/files/jane/" + COLLECTION + "/mine.tif";
-        String href = item.at("/assets/data/href").asText();
+        String href = item.at("/assets/data/href").asString();
         assertTrue(href, href.startsWith(base + filesPath + "?expires="));
         assertEquals(200, send("GET", href, null, null).statusCode());
         JsonNode notes = get(itemsOf("docs") + "/user~jane~notes.txt", janeToken, 200);
@@ -364,19 +364,19 @@ public class TestStacApi extends TestCase {
         assertEquals(200, send("GET", filesPath, adminToken, null).statusCode());
 
         // the path of an item is an input of the modules; the output goes next to it, in the same collection
-        String run = "{\"inputs\": {\"inElev\": \"" + item.at("/properties/hm:path").asText() + "\"}}";
+        String run = "{\"inputs\": {\"inElev\": \"" + item.at("/properties/hm:path").asString() + "\"}}";
         HttpResponse<String> response = send("POST", "/api/processes/Pitfiller/execution", janeToken, run);
         assertEquals(response.body(), 201, response.statusCode());
-        String jobId = MAPPER.readTree(response.body()).get("jobID").asText();
-        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asText());
+        String jobId = MAPPER.readTree(response.body()).get("jobID").asString();
+        assertEquals("successful", waitFinished(janeToken, jobId).get("status").asString());
         assertEquals("docs," + COLLECTION, collectionIds(get("/api/stac/collections", janeToken, 200)));
         assertEquals(4, get("/api/stac/search", janeToken, 200).get("numberMatched").asInt());
         // at once, with where it comes from
         JsonNode pit = get(itemsOf(COLLECTION) + "/user~jane~pit.tif", janeToken, 200);
-        assertEquals("processed", pit.at("/properties/hm:origin").asText());
-        assertEquals("Pitfiller", pit.at("/properties/hm:module").asText());
-        assertEquals(jobId, pit.at("/properties/hm:job").asText());
-        assertEquals(item.at("/properties/hm:path").asText(), pit.at("/properties/hm:parameters/inElev").asText());
+        assertEquals("processed", pit.at("/properties/hm:origin").asString());
+        assertEquals("Pitfiller", pit.at("/properties/hm:module").asString());
+        assertEquals(jobId, pit.at("/properties/hm:job").asString());
+        assertEquals(item.at("/properties/hm:path").asString(), pit.at("/properties/hm:parameters/inElev").asString());
         assertTrue(pit.get("stac_extensions").toString().contains("processing"));
         assertTrue(pit.at("/properties/processing:software").has("HortonMachine"));
         assertFalse(pit.get("properties").has("hm:history"));
@@ -385,11 +385,11 @@ public class TestStacApi extends TestCase {
         // replaced: the previous one in the history
         response = send("POST", "/api/processes/Pitfiller/execution", janeToken, run.replace("}}", "}, \"overwrite\": true}"));
         assertEquals(response.body(), 201, response.statusCode());
-        String again = MAPPER.readTree(response.body()).get("jobID").asText();
-        assertEquals("successful", waitFinished(janeToken, again).get("status").asText());
+        String again = MAPPER.readTree(response.body()).get("jobID").asString();
+        assertEquals("successful", waitFinished(janeToken, again).get("status").asString());
         pit = get(itemsOf(COLLECTION) + "/user~jane~pit.tif", janeToken, 200);
-        assertEquals(again, pit.at("/properties/hm:job").asText());
-        assertEquals(jobId, pit.at("/properties/hm:history/0/hm:job").asText());
+        assertEquals(again, pit.at("/properties/hm:job").asString());
+        assertEquals(jobId, pit.at("/properties/hm:history/0/hm:job").asString());
         assertTrue(pit.at("/properties/hm:history/0").has("hm:replaced"));
 
         // deleted: at once
@@ -480,8 +480,8 @@ public class TestStacApi extends TestCase {
         assertEquals(3, page.get("numberMatched").asInt());
         String next = null;
         for( JsonNode link : page.get("links") ) {
-            if (link.get("rel").asText().equals("next")) {
-                next = link.get("href").asText();
+            if (link.get("rel").asString().equals("next")) {
+                next = link.get("href").asString();
             }
         }
         assertNotNull(page.toString(), next);
@@ -494,12 +494,12 @@ public class TestStacApi extends TestCase {
                 send("POST", "/api/stac/search", janeToken, "{\"collections\": [\"" + COLLECTION + "\"], \"limit\": 2}").body());
         JsonNode nextLink = null;
         for( JsonNode link : page.get("links") ) {
-            if (link.get("rel").asText().equals("next")) {
+            if (link.get("rel").asString().equals("next")) {
                 nextLink = link;
             }
         }
-        assertEquals("POST", nextLink.get("method").asText());
-        page = MAPPER.readTree(send("POST", nextLink.get("href").asText(), janeToken, nextLink.get("body").toString()).body());
+        assertEquals("POST", nextLink.get("method").asString());
+        page = MAPPER.readTree(send("POST", nextLink.get("href").asString(), janeToken, nextLink.get("body").toString()).body());
         assertEquals(ELEVATION_ID, ids(page));
     }
 }

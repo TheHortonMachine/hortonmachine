@@ -34,8 +34,9 @@ import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.github.davidmoten.aws.lw.client.Client;
+
+import tools.jackson.databind.JsonNode;
 
 /**
  * Handler of the ESRI ASCII grids (.asc).
@@ -62,7 +63,7 @@ public class AsciiGridHandler implements IHMStacAssetRasterHandler {
         this.asset = asset;
         JsonNode assetNode = asset.getAssetNode();
         JsonNode hrefNode = assetNode.get("href");
-        assetUrl = hrefNode != null ? hrefNode.textValue() : null;
+        assetUrl = hrefNode != null ? hrefNode.stringValue(null) : null;
         if (assetUrl == null || !fileName(assetUrl).toLowerCase().endsWith(EXTENSION)) {
             return;
         }
@@ -85,7 +86,7 @@ public class AsciiGridHandler implements IHMStacAssetRasterHandler {
             }
             JsonNode bands = assetNode.get("raster:bands");
             if (bands != null) {
-                Iterator<JsonNode> iterator = bands.elements();
+                Iterator<JsonNode> iterator = bands.values().iterator();
                 while( iterator.hasNext() ) {
                     JsonNode resolutionNode = iterator.next().get("spatial_resolution");
                     if (resolutionNode != null) {

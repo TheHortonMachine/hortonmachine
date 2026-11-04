@@ -51,11 +51,11 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * The description of the files of the workspace as assets of STAC items, with their footprint.
@@ -401,10 +401,10 @@ public class StacFiles {
     private static Geometry describeGeoJson( File file, ObjectNode asset ) throws Exception {
         Envelope envelope = new Envelope();
         int features = 0;
-        try (JsonParser parser = MAPPER.getFactory().createParser(file)) {
+        try (JsonParser parser = MAPPER.createParser(file)) {
             JsonToken token;
             while( (token = parser.nextToken()) != null ) {
-                if (token != JsonToken.FIELD_NAME) {
+                if (token != JsonToken.PROPERTY_NAME) {
                     continue;
                 }
                 String field = parser.currentName();
@@ -432,7 +432,7 @@ public class StacFiles {
     /**
      * Read the value of a coordinates member, nested arrays ending in positions, into the envelope.
      */
-    private static void readCoordinates( JsonParser parser, Envelope envelope ) throws IOException {
+    private static void readCoordinates( JsonParser parser, Envelope envelope ) {
         if (parser.currentToken() != JsonToken.START_ARRAY) {
             parser.skipChildren();
             return;

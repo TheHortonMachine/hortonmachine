@@ -33,8 +33,8 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.modules.HMTestCase;
 import org.hortonmachine.modules.HMTestMaps;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Tests of the command line.
@@ -119,15 +119,15 @@ public class TestHmCli extends HMTestCase {
         JsonNode root = new ObjectMapper().readTree(out());
         assertEquals(HmCli.DESCRIBE_FORMAT, root.get("format").asInt());
         JsonNode module = root.get("modules").get(0);
-        assertEquals("Gradient", module.get("name").asText());
-        assertEquals("org.hortonmachine.modules.Gradient", module.get("class").asText());
+        assertEquals("Gradient", module.get("name").asString());
+        assertEquals("org.hortonmachine.modules.Gradient", module.get("class").asString());
 
         JsonNode parameters = module.get("parameters");
         assertEquals(4, parameters.size());
         assertParameter(parameters.get(0), "inElev", "input", "raster");
         assertParameter(parameters.get(1), "pMode", "parameter", "choice");
         assertEquals(3, parameters.get(1).get("choices").size());
-        assertEquals("Finite Differences", parameters.get(1).get("default").asText());
+        assertEquals("Finite Differences", parameters.get(1).get("default").asString());
         assertParameter(parameters.get(2), "doDegrees", "parameter", "boolean");
         assertFalse(parameters.get(2).get("default").asBoolean());
         // the kind of data written is read from the Oms module
@@ -139,9 +139,9 @@ public class TestHmCli extends HMTestCase {
     }
 
     private void assertParameter( JsonNode parameter, String name, String kind, String type ) {
-        assertEquals(name, parameter.get("name").asText());
-        assertEquals(kind, parameter.get("kind").asText());
-        assertEquals(type, parameter.get("type").asText());
+        assertEquals(name, parameter.get("name").asString());
+        assertEquals(kind, parameter.get("kind").asString());
+        assertEquals(type, parameter.get("type").asString());
     }
 
     public void testRun() throws Exception {
@@ -207,17 +207,17 @@ public class TestHmCli extends HMTestCase {
         assertEquals(HmCli.EXIT_OK, cli("describe", "ErmCalibration"));
         JsonNode parameters = new ObjectMapper().readTree(out()).get("modules").get(0).get("parameters");
         for( JsonNode parameter : parameters ) {
-            switch( parameter.get("name").asText() ) {
+            switch( parameter.get("name").asString() ) {
             case "inGeopackagePath":
                 // the database is a file, not a vector layer
                 assertParameter(parameter, "inGeopackagePath", "input", "file");
-                assertEquals("gpkg", parameter.get("extension").asText());
+                assertEquals("gpkg", parameter.get("extension").asString());
                 break;
             case "pCostFunction":
                 // an enum
                 assertParameter(parameter, "pCostFunction", "parameter", "choice");
-                assertEquals("KGE", parameter.get("choices").get(0).asText());
-                assertEquals("KGE", parameter.get("default").asText());
+                assertEquals("KGE", parameter.get("choices").get(0).asString());
+                assertEquals("KGE", parameter.get("default").asString());
                 break;
             case "outParams":
                 assertParameter(parameter, "outParams", "output", "numbers");

@@ -61,9 +61,9 @@ import org.hortonmachine.server.users.User;
 import org.hortonmachine.server.web.Html;
 import org.hortonmachine.server.web.MediaTypes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Keeps the items of the STAC catalog as the files of the areas of the data are.

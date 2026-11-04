@@ -11,7 +11,7 @@ import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 public class GeojsonHandler implements IHMStacAssetHandler {
 	public final static String[] ACCEPTED_TYPES = { "application/geo+json", "application/vnd.geo+json", "application/json", "application/geojson" };
@@ -25,7 +25,7 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 	public void initialize(HMStacAsset asset) throws IOException {
 		this.asset = asset;
 		this.assetNode = asset.getAssetNode();
-		this.assetUrl = assetNode.get("href").textValue();
+		this.assetUrl = assetNode.get("href").stringValue(null);
 		for (String acceptedType : ACCEPTED_TYPES) {
 			if (asset.getType()!=null && asset.getType().toLowerCase().contains(acceptedType)) {
 				supported = true;

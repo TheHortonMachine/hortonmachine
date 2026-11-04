@@ -33,7 +33,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import junit.framework.TestCase;
 
@@ -75,9 +75,9 @@ public class TestStacFiles extends TestCase {
         assertFalse(StacFiles.isCog(elevation));
         StacFiles.Description description = StacFiles.describe(elevation, "elevation.tif");
         JsonNode asset = description.asset;
-        assertEquals(MediaTypes.GEOTIFF, asset.get("type").asText());
+        assertEquals(MediaTypes.GEOTIFF, asset.get("type").asString());
         assertEquals(elevation.length(), asset.get("file:size").asLong());
-        assertEquals("EPSG:32632", asset.get("proj:code").asText());
+        assertEquals("EPSG:32632", asset.get("proj:code").asString());
         assertEquals("[5,5]", asset.get("proj:shape").toString());
         assertEquals("[10.0,0.0,0.0,0.0,-10.0,50.0]", asset.get("proj:transform").toString());
         assertEquals("[0.0,0.0,50.0,50.0]", asset.get("proj:bbox").toString());
@@ -101,8 +101,8 @@ public class TestStacFiles extends TestCase {
         assertEquals(5.0, stats.minimum, 1e-9);
         assertEquals(9.4, stats.mean, 1e-9);
         JsonNode asset = StacFiles.describe(elevation, "elevation.tif").asset;
-        assertEquals(StacFiles.COG, asset.get("type").asText());
-        assertEquals("EPSG:32632", asset.get("proj:code").asText());
+        assertEquals(StacFiles.COG, asset.get("type").asString());
+        assertEquals("EPSG:32632", asset.get("proj:code").asString());
         assertStatistics(asset);
     }
 
@@ -130,7 +130,7 @@ public class TestStacFiles extends TestCase {
             OmsVectorWriter.writeVector(file.getAbsolutePath() + (name.endsWith(".gpkg") ? "#points" : ""), points);
             StacFiles.Description description = StacFiles.describe(file, name);
             JsonNode asset = description.asset;
-            assertEquals(name, "EPSG:32632", asset.get("proj:code").asText());
+            assertEquals(name, "EPSG:32632", asset.get("proj:code").asString());
             assertEquals(name, 3, asset.at("/hm:layers/0/count").asInt());
             assertEquals(name, 500000.0, asset.at("/proj:bbox/0").asDouble(), 1e-6);
             assertEquals(name, 5010000.0, asset.at("/proj:bbox/3").asDouble(), 1e-6);
@@ -160,7 +160,7 @@ public class TestStacFiles extends TestCase {
                 + "{\"type\": \"Feature\", \"properties\": {\"name\": \"b\"}, \"geometry\": {\"type\": \"Point\", \"coordinates\": [11.5, 46.5]}}"
                 + "]}", geojson);
         StacFiles.Description description = StacFiles.describe(geojson, "points.geojson");
-        assertEquals("application/geo+json", description.asset.get("type").asText());
+        assertEquals("application/geo+json", description.asset.get("type").asString());
         assertEquals(description.asset.toString(), 2, description.asset.at("/hm:layers/0/count").asInt());
         Envelope envelope = description.footprint.getEnvelopeInternal();
         assertEquals(11.0, envelope.getMinX(), 1e-9);
@@ -170,7 +170,7 @@ public class TestStacFiles extends TestCase {
         FileUtilities.writeFile("not geographic", text);
         description = StacFiles.describe(text, "notes.txt");
         assertNull(description.footprint);
-        assertEquals("text/plain", description.asset.get("type").asText());
+        assertEquals("text/plain", description.asset.get("type").asString());
         assertEquals(text.length(), description.asset.get("file:size").asLong());
 
         // a broken raster is still an asset

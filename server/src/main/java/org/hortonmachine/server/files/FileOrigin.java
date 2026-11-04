@@ -22,9 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Where a file of the data comes from: uploaded by a user or written by a job, with the previous origins of the files it
@@ -122,12 +122,12 @@ public class FileOrigin {
         if (json.has("parameters")) {
             parameters = new LinkedHashMap<>();
             for( Map.Entry<String, JsonNode> entry : json.get("parameters").properties() ) {
-                parameters.put(entry.getKey(), entry.getValue().asText());
+                parameters.put(entry.getKey(), entry.getValue().asString());
             }
         }
-        return new FileOrigin(path, json.path("origin").asText(EXTERNAL), json.hasNonNull("userId") ? json.get("userId").asText() : null,
-                json.path("created").asLong(), json.hasNonNull("jobId") ? json.get("jobId").asText() : null,
-                json.hasNonNull("module") ? json.get("module").asText() : null, parameters,
+        return new FileOrigin(path, json.path("origin").asString(EXTERNAL), json.hasNonNull("userId") ? json.get("userId").asString() : null,
+                json.path("created").asLong(), json.hasNonNull("jobId") ? json.get("jobId").asString() : null,
+                json.hasNonNull("module") ? json.get("module").asString() : null, parameters,
                 json.hasNonNull("replaced") ? json.get("replaced").asLong() : null, null);
     }
 }

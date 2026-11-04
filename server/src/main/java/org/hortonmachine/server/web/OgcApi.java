@@ -44,10 +44,10 @@ import org.hortonmachine.server.jobs.JobState;
 import org.hortonmachine.server.jobs.JobValidationException;
 import org.hortonmachine.server.users.User;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import io.javalin.config.JavalinConfig;
 import io.javalin.http.Context;
@@ -313,7 +313,7 @@ public class OgcApi {
             if (!parameter.isPath()) {
                 throw new IllegalArgumentException("Only the files can be given as href.");
             }
-            return hrefToPath(ctx, node.get("href").asText());
+            return hrefToPath(ctx, node.get("href").asString(""));
         }
         if (node.isArray()) {
             List<String> values = new ArrayList<>();
@@ -321,12 +321,12 @@ public class OgcApi {
                 if (!item.isValueNode()) {
                     throw new IllegalArgumentException("The array can contain only values.");
                 }
-                values.add(item.asText());
+                values.add(item.asString());
             }
             return String.join(",", values);
         }
         if (node.isValueNode() && !node.isNull()) {
-            return node.asText();
+            return node.asString();
         }
         throw new IllegalArgumentException("Not a valid value.");
     }
@@ -430,7 +430,7 @@ public class OgcApi {
         Job job;
         try {
             job = jobManager.submit(user.id, user.isAdmin(), module.getName(), values,
-                    outputFolder != null && !outputFolder.isNull() ? outputFolder.asText() : null,
+                    outputFolder != null && !outputFolder.isNull() ? outputFolder.asString("") : null,
                     overwrite != null && overwrite.asBoolean());
         } catch (JobValidationException e) {
             if (e.isConflict()) {
@@ -605,7 +605,7 @@ public class OgcApi {
         } catch (NumberFormatException e) {
             // as text
         }
-        return mapper.getNodeFactory().textNode(value);
+        return mapper.getNodeFactory().stringNode(value);
     }
 
     private void download( Context ctx ) throws Exception {
