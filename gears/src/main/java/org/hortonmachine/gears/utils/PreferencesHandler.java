@@ -33,6 +33,10 @@ public class PreferencesHandler {
     public static final String HM_PREF_PROXYCHECK = "hm_pref_proxycheck";
     public static final String HM_PREF_UISCALE = "hm_pref_uiscale";
     public static final double HM_DEF_UISCALE = 1.0;
+    /**
+     * The name of the gui theme (look and feel) to use, see GuiTheme in the gui module.
+     */
+    public static final String HM_PREF_UITHEME = "hm_pref_uitheme";
     
     public static final String HM_PREF_COPERNICUS_API_TOKEN = "hm_pref_copernicus_api_token";
     public static final String HM_PREF_COPERNICUS_REPO_FOLDER= "hm_pref_copernicus_repo_folder";

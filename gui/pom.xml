@@ -49,6 +49,10 @@
 			<artifactId>flatlaf</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.formdev</groupId>
+			<artifactId>flatlaf-intellij-themes</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.fifesoft</groupId>
 			<artifactId>rsyntaxtextarea</artifactId>
 		</dependency>

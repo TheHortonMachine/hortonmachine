@@ -302,11 +302,17 @@ public class GuiUtilities {
 				// ignore and use default
 			}
     	}
-    	System.setProperty("flatlaf.uiScale", "" + uiScale); 
+    	System.setProperty("flatlaf.uiScale", "" + uiScale);
+    	GuiTheme theme = GuiTheme.fromName(PreferencesHandler.getPreference(HM_PREF_UITHEME, GuiTheme.DEFAULT.name()));
     	try {
-			UIManager.setLookAndFeel(new FlatLightLaf());
-		} catch (UnsupportedLookAndFeelException e) {
+			UIManager.setLookAndFeel(theme.createLookAndFeel());
+		} catch (Exception e) {
 			e.printStackTrace();
+			try {
+				UIManager.setLookAndFeel(new FlatLightLaf());
+			} catch (UnsupportedLookAndFeelException e1) {
+				e1.printStackTrace();
+			}
 		}
 
 //    	String uiFontSizeString = PreferencesHandler.getPreference(HM_PREF_UIFONTSIZE, "");

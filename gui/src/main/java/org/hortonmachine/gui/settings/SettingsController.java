@@ -18,35 +18,80 @@ import java.nio.charset.Charset;
 import java.util.prefs.Preferences;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.UIManager;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.dbs.log.PreferencesDb;
 import org.hortonmachine.dbs.utils.DbsUtilities;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
+import org.hortonmachine.gui.utils.GuiTheme;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.GuiUtilities.IOnCloseListener;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.ssh.ProxyEnabler;
 import org.hortonmachine.ssh.SshUtilities;
 
+import com.formdev.flatlaf.FlatLaf;
+
 public class SettingsController extends SettingsView implements IOnCloseListener {
 
 	private JSpinner dbPreviewTimeoutSpinner;
 	private JSpinner dbEditorTimeoutSpinner;
+	private JComboBox<GuiTheme> themeCombo;
 
 	public SettingsController() {
 		setPreferredSize(new Dimension(900, 400));
 
 		_jtabbedpane1.addTab("Database", null, createDatabasePanel());
+		_jtabbedpane1.addTab("Appearance", null, createAppearancePanel());
 
 		fillFromPreferences();
+	}
+
+	private JPanel createAppearancePanel() {
+		themeCombo = new JComboBox<>(GuiTheme.values());
+		GuiTheme currentTheme = GuiTheme.fromName(PreferencesHandler.getPreference(HM_PREF_UITHEME, GuiTheme.DEFAULT.name()));
+		themeCombo.setSelectedItem(currentTheme);
+		themeCombo.addActionListener(e -> {
+			GuiTheme theme = (GuiTheme) themeCombo.getSelectedItem();
+			if (theme != null) {
+				PreferencesHandler.setPreference(HM_PREF_UITHEME, theme.name());
+				applyTheme(theme);
+			}
+		});
+
+		JPanel panel = new JPanel(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		c.insets = new Insets(5, 5, 5, 5);
+		c.anchor = GridBagConstraints.WEST;
+		c.gridy = 0;
+		panel.add(new JLabel("Theme"), c);
+		panel.add(themeCombo, c);
+		c.gridy = 1;
+		c.gridwidth = 2;
+		c.weightx = 1;
+		c.weighty = 1;
+		c.anchor = GridBagConstraints.NORTHWEST;
+		panel.add(new JLabel("<html>The theme is applied immediately to the open windows and stored for the next start.<br>"
+				+ "Code editors that are already open keep their colors until they are reopened.</html>"), c);
+		return panel;
+	}
+
+	private static void applyTheme(GuiTheme theme) {
+		try {
+			UIManager.setLookAndFeel(theme.createLookAndFeel());
+			FlatLaf.updateUI();
+		} catch (Exception e) {
+			Logger.INSTANCE.insertError("SettingsController", "Unable to apply the theme " + theme.getLabel(), e);
+		}
 	}
 
 	private JPanel createDatabasePanel() {

@@ -46,6 +46,7 @@
 		<groovy.version>4.0.15</groovy.version>
 		<geoscript.version>1.22.0</geoscript.version>
 		<rsyntaxtextarea.version>4.0.1</rsyntaxtextarea.version>
+		<flatlaf.version>3.7</flatlaf.version>
 		<autocomplete.version>4.0.0</autocomplete.version>
 
 		<c3p0.version>0.14.0</c3p0.version>
@@ -364,7 +365,12 @@
 			<dependency>
 				<groupId>com.formdev</groupId>
 				<artifactId>flatlaf</artifactId>
-				<version>3.7</version>
+				<version>${flatlaf.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.formdev</groupId>
+				<artifactId>flatlaf-intellij-themes</artifactId>
+				<version>${flatlaf.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>com.fifesoft</groupId>
