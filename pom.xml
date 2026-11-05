@@ -51,7 +51,8 @@
 		<c3p0.version>0.14.0</c3p0.version>
 		<c3p0.commons.version>0.6.0</c3p0.commons.version>
 
-		<h2gis.version>1.5.0</h2gis.version>
+		<h2gis.version>2.2.5</h2gis.version>
+		<h2.version>2.4.240</h2.version>
 		<sqlitejdbc.version>3.50.3.0</sqlitejdbc.version>
 
 		<netcdf.version>5.5.3</netcdf.version>
@@ -289,10 +290,10 @@
 			</dependency>
 
 			<dependency>
-				<!-- overrides the h2 2.x of the GeoTools BOM: h2gis 1.5 needs h2 1.4 -->
+				<!-- kept in line with the h2 version h2gis is built on -->
 				<groupId>com.h2database</groupId>
 				<artifactId>h2</artifactId>
-				<version>1.4.197</version>
+				<version>${h2.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.orbisgis</groupId>

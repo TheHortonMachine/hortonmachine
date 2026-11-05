@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.dbs.h2gis;
 
+import java.util.regex.Pattern;
+
 import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 
 /**
@@ -69,11 +71,21 @@ public class H2SyntaxHelper extends ADatabaseSyntaxHelper {
         return LONG() + " " + PRIMARYKEY() + " " + AUTOINCREMENT();
     }
 
+    /**
+     * Geometry column in the short form of the other spatial dbs, ex. <code>the_geom MULTIPOLYGON</code>,
+     * terminated by a comma or the closing parenthesis.
+     */
+    private static final Pattern SHORT_GEOMETRY_COLUMN = Pattern.compile(
+            "(\\s|\\(|,)(\\w+|\"[^\"]+\")\\s+(GEOMETRYCOLLECTION|GEOMETRY|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|POINT|LINESTRING|POLYGON)(\\s*(?:ZM|Z|M))?(?=\\s*[,)])",
+            Pattern.CASE_INSENSITIVE);
+
     public String checkSqlCompatibilityIssues( String sql ) {
         String lowerCase = sql.toLowerCase().trim();
         if (lowerCase.startsWith("create table")) {
             sql = sql.replaceAll("AUTOINCREMENT", "AUTO_INCREMENT");
             sql = sql.replaceAll("TEXT", "varchar");
+            // H2 2 has no geometry type domains: the_geom POINT -> the_geom GEOMETRY(POINT)
+            sql = SHORT_GEOMETRY_COLUMN.matcher(sql).replaceAll("$1$2 GEOMETRY($3$4)");
         }
         return sql;
     }

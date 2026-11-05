@@ -198,14 +198,9 @@ public class SpatialDbsImportUtils {
                         avoidSpatialIndex);
             } else if (db instanceof H2GisDb) {
                 H2GisDb h2gisDb = (H2GisDb) db;
-                String typeStringExtra = typeString;
-                // String typeStringExtra = "GEOMETRY(" + typeString + "," + codeFromCrs + ")";
-                attrSql.add(GEOMFIELD_FOR_SHAPEFILE + " " + typeStringExtra);
                 String[] array = attrSql.toArray(new String[0]);
-                h2gisDb.createTable(newTableName, array);
-                h2gisDb.addSrid(newTableName, sridString, GEOMFIELD_FOR_SHAPEFILE);
-                if (!avoidSpatialIndex)
-                    h2gisDb.createSpatialIndex(newTableName, GEOMFIELD_FOR_SHAPEFILE);
+                h2gisDb.createSpatialTable(newTableName, Integer.parseInt(sridString), GEOMFIELD_FOR_SHAPEFILE + " " + typeString,
+                        array, null, avoidSpatialIndex);
             } else if (db instanceof GeopackageDb) {
                 GeopackageCommonDb gpkgDb = (GeopackageCommonDb) db;
 

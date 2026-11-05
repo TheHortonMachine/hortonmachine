@@ -108,7 +108,6 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.swing.JMapFrame.Tool;
 import org.h2.jdbc.JdbcBlob;
-import org.h2.jdbc.JdbcSQLException;
 import org.hortonmachine.HM;
 import org.hortonmachine.database.assistant.ISqlAssistantHost;
 import org.hortonmachine.database.assistant.SqlAssistantPanel;
@@ -2235,7 +2234,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 refreshActiveActionProviders();
 
                 showDatabaseTreeAndLoadLevelsAsync(currentConnectedSqlDatabase, false);
-            } catch (Exception e) {
+            } catch (Throwable e) {
+                // Throwable: Errors (e.g. NoClassDefFoundError from a broken classpath)
+                // would otherwise close the console as if all went well
                 currentConnectedSqlDatabase = null;
                 Logger.INSTANCE.insertError("", "Error connecting to the database...", e);
                 pm.errorMessage("Error creating database: " + e.getMessage());
@@ -2315,7 +2316,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         }
                         loadTableInfos(db, schemaLevel);
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     if (!isCancelled() && currentConnectedSqlDatabase == db && databaseLevelLoader == this) {
                         Logger.INSTANCE.insertError("", "Error loading database metadata...", e);
                     }
@@ -2452,8 +2453,25 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 currentConnectedSqlDatabase.setCredentials(user, pwd);
                 try {
                     currentConnectedSqlDatabase.open(dbfilePath);
-                } catch (JdbcSQLException e) {
-                    String message = e.getMessage();
+                    // pooled databases connect lazily: get a connection now, so that connection
+                    // errors (old file format, db in use, credentials) are reported here
+                    currentConnectedSqlDatabase.execOnConnection(connection -> null);
+                } catch (SQLException e) {
+                    // H2 2 throws specific SQLException subclasses, in pooled mode wrapped by c3p0
+                    StringBuilder messages = new StringBuilder();
+                    for( Throwable t = e; t != null; t = t.getCause() ) {
+                        messages.append(t.getMessage()).append("\n");
+                    }
+                    String message = messages.toString();
+                    if (message.contains("Unsupported database file version") || message.contains("smaller than the supported format")) {
+                        guiBridge.messageDialog(
+                                "The database was created with an older H2 version (1.4.x), which can't be opened by H2 2.x.\n"
+                                        + "It needs to be migrated: export it with H2 1.4.x (SCRIPT TO 'dump.sql')\n"
+                                        + "and import the dump with H2 2.x (RUNSCRIPT FROM 'dump.sql' FROM_1X).",
+                                "ERROR", JOptionPane.ERROR_MESSAGE);
+                        currentConnectedSqlDatabase = null;
+                        return;
+                    }
                     if (message.contains("Wrong user name or password")) {
                         guiBridge.messageDialog("Wrong user name or password.", "ERROR", JOptionPane.ERROR_MESSAGE);
                         currentConnectedSqlDatabase = null;
@@ -2465,6 +2483,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                         currentConnectedSqlDatabase = null;
                         return;
                     }
+                    Logger.INSTANCE.insertError("", "ERROR", e);
+                    pm.errorMessage("Error opening database: " + e.getMessage());
+                    hadError = true;
                 } catch (Exception e) {
                     Logger.INSTANCE.insertError("", "ERROR", e);
                     pm.errorMessage("Error opening database: " + e.getMessage());

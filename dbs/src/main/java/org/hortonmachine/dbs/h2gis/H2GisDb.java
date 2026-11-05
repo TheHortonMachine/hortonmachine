@@ -22,10 +22,11 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.h2gis.functions.factory.H2GISFunctions;
-import org.h2gis.utilities.SFSUtilities;
-import org.h2gis.utilities.TableLocation;
+import org.h2gis.utilities.JDBCUtilities;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
@@ -52,16 +53,20 @@ import org.locationtech.jts.geom.Polygon;
  * A spatialite database.
  * 
  * <p>Notes:</p>
- * <p>To create a spatial table you need to do:
- * <pre>
- * {@link H2GisDb#createTable(String, String...)};
- * {@link H2GisDb#addSrid(String, String)});
- * {@link H2GisDb#createSpatialIndex(String, String)};
- * </p>
+ * <p>To create a spatial table use {@link H2GisDb#createSpatialTable(SqlName, int, String, String[], String[], boolean)}.
+ * Geometry columns in h2gis 2 carry type and srid in the column type, ex. <code>GEOMETRY(POINT, 4326)</code>.
+ * The short form <code>the_geom POINT</code> is converted.</p>
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
 public class H2GisDb extends ASpatialDb {
+    /**
+     * Short geometry column definition: name, geometry type, optional dimension, rest of the definition.
+     */
+    private static final Pattern SHORT_GEOMETRY_FIELD = Pattern.compile(
+            "^\\s*(\\S+)\\s+(GEOMETRYCOLLECTION|GEOMETRY|MULTIPOINT|MULTILINESTRING|MULTIPOLYGON|POINT|LINESTRING|POLYGON)\\s*(ZM|Z|M)?(\\s.*)?$",
+            Pattern.CASE_INSENSITIVE);
+
     private H2Db h2Db;
     private boolean wasInitialized = false;
 
@@ -127,7 +132,7 @@ public class H2GisDb extends ASpatialDb {
     }
 
     public Connection getJdbcConnection() throws Exception {
-        Connection jdbcConn = SFSUtilities.wrapConnection(h2Db.getJdbcConnection());
+        Connection jdbcConn = JDBCUtilities.wrapConnection(h2Db.getJdbcConnection());
         return jdbcConn;
     }
 
@@ -176,8 +181,8 @@ public class H2GisDb extends ASpatialDb {
 
         // OR DO FULL GEOMETRIES SCAN
 
-        String sql = "SELECT ST_XMin(ST_collect(" + geomFieldName + ")) , ST_YMin(ST_collect(" + geomFieldName + ")),"
-                + "ST_XMax(ST_collect(" + geomFieldName + ")), ST_YMax(ST_collect(" + geomFieldName + ")) " + "FROM " + tableName.fixedDoubleName;
+        String sql = "SELECT ST_XMin(ext), ST_YMin(ext), ST_XMax(ext), ST_YMax(ext) FROM (SELECT ST_Extent(" + geomFieldName
+                + ") AS ext FROM " + tableName.fixedDoubleName + ")";
 
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -215,8 +220,43 @@ public class H2GisDb extends ASpatialDb {
         }
     }
 
+    /**
+     * Converts a geometry column definition in the short form used by the other spatial dbs
+     * (ex. <code>the_geom MULTIPOLYGON</code>) into the h2gis 2 column type, which carries
+     * geometry type and srid (ex. <code>the_geom GEOMETRY(MULTIPOLYGON, 4326)</code>).
+     *
+     * <p>Definitions that are not in the short form are returned unchanged.</p>
+     *
+     * @param geometryFieldData the column definition.
+     * @param srid the srid to set, ignored if <= 0.
+     * @return the h2gis column definition.
+     */
+    public static String toH2GisGeometryFieldData( String geometryFieldData, int srid ) {
+        Matcher matcher = SHORT_GEOMETRY_FIELD.matcher(geometryFieldData);
+        if (!matcher.matches()) {
+            return geometryFieldData;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(matcher.group(1)).append(" GEOMETRY(").append(matcher.group(2).toUpperCase());
+        String dimension = matcher.group(3);
+        if (dimension != null) {
+            sb.append(" ").append(dimension.toUpperCase());
+        }
+        if (srid > 0) {
+            sb.append(", ").append(srid);
+        }
+        sb.append(")");
+        String rest = matcher.group(4);
+        if (rest != null) {
+            sb.append(rest);
+        }
+        return sb.toString();
+    }
+
     public void createSpatialTable( SqlName tableName, int srid, String geometryFieldData, String[] fieldData,
             String[] foreignKeys, boolean avoidIndex ) throws Exception {
+        String h2GeometryFieldData = toH2GisGeometryFieldData(geometryFieldData, srid);
+        boolean sridInType = !h2GeometryFieldData.equals(geometryFieldData);
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         sb.append(tableName.fixedDoubleName).append("(");
@@ -225,7 +265,7 @@ public class H2GisDb extends ASpatialDb {
                 sb.append(",");
             sb.append(fieldData[i]);
         }
-        sb.append(",").append(geometryFieldData);
+        sb.append(",").append(h2GeometryFieldData);
         if (foreignKeys != null) {
             for( int i = 0; i < foreignKeys.length; i++ ) {
                 sb.append(",");
@@ -241,12 +281,13 @@ public class H2GisDb extends ASpatialDb {
             return null;
         });
 
-        addSrid(tableName, String.valueOf(srid), null);
+        String[] split = geometryFieldData.trim().split("\\s+");
+        String geomColName = split[0];
+        if (!sridInType) {
+            addSrid(tableName, String.valueOf(srid), geomColName);
+        }
 
         if (!avoidIndex) {
-            String[] split = geometryFieldData.trim().split("\\s+");
-            String geomColName = split[0];
-
             createSpatialIndex(tableName, geomColName);
         }
     }
@@ -293,7 +334,8 @@ public class H2GisDb extends ASpatialDb {
                     queryResult.names.add(columnName);
                     String columnTypeName = rsmd.getColumnTypeName(i);
                     queryResult.types.add(columnTypeName);
-                    if (columnTypeName.equalsIgnoreCase(H2GISFunctions.GEOMETRY_BASE_TYPE)) {
+                    // H2 2 reports the full type, ex. GEOMETRY(POINT, 4326)
+                    if (columnTypeName.toUpperCase().startsWith(H2GISFunctions.GEOMETRY_BASE_TYPE.toUpperCase())) {
                         geomIndex = i;
                         queryResult.geometryIndex = i - 1;
                     }
@@ -420,9 +462,19 @@ public class H2GisDb extends ASpatialDb {
 
         Envelope envelopeInternal = geometry.getEnvelopeInternal();
         Polygon bounds = DbsUtilities.createPolygonFromEnvelope(envelopeInternal);
-        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "') AND ST_Intersects(" + alias
-                + gCol.geometryColumnName + ",ST_GeomFromText('" + geometry.toText() + "'))";
+        String sridPart = sridPart(gCol);
+        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "'" + sridPart
+                + ") AND ST_Intersects(" + alias + gCol.geometryColumnName + ",ST_GeomFromText('" + geometry.toText() + "'"
+                + sridPart + "))";
         return sql;
+    }
+
+    /**
+     * H2 2 does not allow operations on geometries with different srid, so query geometries
+     * need the srid of the column.
+     */
+    private static String sridPart( GeometryColumn gCol ) {
+        return gCol.srid > 0 ? ", " + gCol.srid : "";
     }
 
     @Override
@@ -435,8 +487,10 @@ public class H2GisDb extends ASpatialDb {
         } else {
             alias = alias + ".";
         }
-        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "') AND ST_Intersects(" + alias
-                + gCol.geometryColumnName + ",ST_GeomFromText('" + bounds.toText() + "'))";
+        String sridPart = sridPart(gCol);
+        String sql = alias + gCol.geometryColumnName + " && ST_GeomFromText('" + bounds.toText() + "'" + sridPart
+                + ") AND ST_Intersects(" + alias + gCol.geometryColumnName + ",ST_GeomFromText('" + bounds.toText() + "'"
+                + sridPart + "))";
         return sql;
 
     }
@@ -570,7 +624,8 @@ public class H2GisDb extends ASpatialDb {
 
         String sql;
         if (fields == null || fields.length == 0) {
-            sql = "SELECT ST_AsGeoJson(ST_Collect(ST_Transform(" + gCol.geometryColumnName + ",4326))) FROM " + tableName;
+            // ST_Accum is the collecting aggregate in h2gis 2 (ST_Collect takes an array)
+            sql = "SELECT ST_AsGeoJson(ST_Accum(ST_Transform(" + gCol.geometryColumnName + ",4326))) FROM " + tableName;
             if (wherePiece != null) {
                 sql += " WHERE " + wherePiece;
             }
@@ -614,12 +669,18 @@ public class H2GisDb extends ASpatialDb {
         int srid = Integer.parseInt(codeFromCrs);
         if (geometryColumnName == null)
             geometryColumnName = "the_geom";
-        String realName = getProperColumnNameCase(tableName, geometryColumnName);
-        String realTableName = getProperTableNameCase(tableName);
-        TableLocation tableLocation = TableLocation.parse(realTableName);
         if (srid > 0) {
-            getJdbcConnection().createStatement().execute(
-                    String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + realName + ")=%d", tableLocation.toString(), srid));
+            // h2gis 2 reads the srid from the column type: UpdateGeometrySRID changes the type
+            // keeping the geometry type and dimension. It needs the exact name case.
+            String realName = getProperColumnNameCase(tableName, geometryColumnName);
+            String realTableName = getProperTableNameCase(tableName);
+            String sql = new H2GisSqlTemplates().updateGeometrySrid(realTableName, realName, srid);
+            execOnConnection(connection -> {
+                try (IHMStatement stmt = connection.createStatement()) {
+                    stmt.execute(sql);
+                }
+                return null;
+            });
         }
     }
 

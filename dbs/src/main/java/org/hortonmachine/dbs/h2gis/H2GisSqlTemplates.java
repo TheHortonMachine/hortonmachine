@@ -19,7 +19,6 @@ package org.hortonmachine.dbs.h2gis;
 
 import java.io.File;
 
-import org.h2gis.utilities.TableLocation;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ASqlTemplates;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
@@ -136,8 +135,23 @@ public class H2GisSqlTemplates extends ASqlTemplates {
     public String addSrid( SqlName tableName, int srid, String geometryColumnName ) {
         if (geometryColumnName == null)
             geometryColumnName = "the_geom";
-        TableLocation tableLocation = TableLocation.parse(tableName.name);
-        return String.format("ALTER TABLE %s ADD CHECK ST_SRID(" + geometryColumnName + ")=%d", tableLocation.toString(), srid);
+        return updateGeometrySrid(tableName.name, geometryColumnName, srid);
+    }
+
+    /**
+     * Sets the srid of a geometry column, keeping its geometry type and dimension.
+     *
+     * <p>h2gis 2 reads the srid from the column type (<code>GEOMETRY(POINT, 4326)</code>), a
+     * <code>CHECK ST_SRID</code> constraint is not seen by GEOMETRY_COLUMNS.</p>
+     *
+     * @param tableName the table name, in its exact case.
+     * @param geometryColumnName the geometry column name, in its exact case.
+     * @param srid the srid.
+     * @return the sql.
+     */
+    public String updateGeometrySrid( String tableName, String geometryColumnName, int srid ) {
+        return String.format("SELECT UpdateGeometrySRID('%s', '%s', %d)", tableName.replace("'", "''"),
+                geometryColumnName.replace("'", "''"), srid);
     }
 
     @Override

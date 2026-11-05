@@ -20,10 +20,10 @@ package org.hortonmachine.dbs.h2gis;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.hortonmachine.dbs.compat.ADb;
@@ -51,6 +51,10 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
  */
 public class H2Db extends ADb {
     private static final String DRIVER_CLASS = "org.h2.Driver";
+    /**
+     * Keywords of H2 2 that are allowed as unquoted identifiers.
+     */
+    public static final String NON_KEYWORDS_SETTING = ";NON_KEYWORDS=KEY,VALUE";
     /**
      * Connection use in non pooled mode.
      */
@@ -128,6 +132,10 @@ public class H2Db extends ADb {
         }
 
         String jdbcUrl = EDb.H2.getJdbcPrefix() + dbPath;
+        if (!jdbcUrl.toUpperCase().contains("NON_KEYWORDS")) {
+            // KEY and VALUE are keywords since H2 2, but used as column names (mbtiles metadata, preferences)
+            jdbcUrl += NON_KEYWORDS_SETTING;
+        }
 
         if (makePooled) {
             Properties p = new Properties(System.getProperties());
@@ -245,9 +253,10 @@ public class H2Db extends ADb {
     public List<TableName> getTables( ) throws Exception {
         List<TableName> tableNames = new ArrayList<TableName>();
         String sql = """
-                SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE 
+                SELECT TABLE_SCHEMA, TABLE_NAME, TABLE_TYPE
                 FROM INFORMATION_SCHEMA.TABLES
-                WHERE TABLE_TYPE IN ('TABLE', 'VIEW', 'EXTERNAL')
+                WHERE TABLE_TYPE IN ('BASE TABLE', 'VIEW', 'TABLE LINK')
+                AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'
                 ORDER BY TABLE_SCHEMA, TABLE_NAME;
                 """;
 
@@ -288,7 +297,8 @@ public class H2Db extends ADb {
 
     @Override
     public boolean hasTable( SqlName tableName ) throws Exception {
-        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='TABLE' or TABLE_TYPE='VIEW' or TABLE_TYPE='EXTERNAL'";
+        String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE IN ('BASE TABLE', 'VIEW', 'TABLE LINK')"
+                + " AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
@@ -303,7 +313,8 @@ public class H2Db extends ADb {
     }
 
     public ETableType getTableType( SqlName tableName ) throws Exception {
-        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName + "')";
+        String sql = "SELECT TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE Lower(TABLE_NAME)=Lower('" + tableName
+                + "') AND TABLE_SCHEMA <> 'INFORMATION_SCHEMA'";
         return execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
 
@@ -327,9 +338,9 @@ public class H2Db extends ADb {
         // select * from information_schema.columns where table_name = 'TEST';
         // [name, type, primarykey]
         String tableNameUpper = tableName.name.toUpperCase();
-        String pkSql = "select c.COLUMN_NAME from information_schema.columns c , information_schema.indexes i"
-                + " where  upper(c.table_name) = '" + tableNameUpper + "' and upper(i.table_name) = '" + tableNameUpper + "'"
-                + " and c.COLUMN_NAME=i.COLUMN_NAME and i.PRIMARY_KEY = true";
+        String pkSql = "SELECT ic.COLUMN_NAME FROM INFORMATION_SCHEMA.INDEXES i JOIN INFORMATION_SCHEMA.INDEX_COLUMNS ic"
+                + " ON ic.INDEX_SCHEMA=i.INDEX_SCHEMA AND ic.INDEX_NAME=i.INDEX_NAME"
+                + " WHERE i.INDEX_TYPE_NAME='PRIMARY KEY' AND upper(i.TABLE_NAME) = '" + tableNameUpper + "'";
         String pkName = execOnConnection(connection -> {
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(pkSql)) {
                 if (rs.next()) {
@@ -339,8 +350,8 @@ public class H2Db extends ADb {
             }
         });
 
-        String sql = "select COLUMN_NAME, TYPE_NAME from information_schema.columns where upper(table_name) = '" + tableNameUpper
-                + "' and TABLE_SCHEMA != 'INFORMATION_SCHEMA'";
+        String sql = "select COLUMN_NAME, DATA_TYPE from information_schema.columns where upper(table_name) = '" + tableNameUpper
+                + "' and TABLE_SCHEMA != 'INFORMATION_SCHEMA' ORDER BY ORDINAL_POSITION";
         return execOnConnection(connection -> {
             List<String[]> colInfo = new ArrayList<>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -361,8 +372,13 @@ public class H2Db extends ADb {
     @Override
     public List<ForeignKey> getForeignKeys( SqlName tableName ) throws Exception {
 
-        String sql = "SELECT PKTABLE_NAME, PKCOLUMN_NAME, FKCOLUMN_NAME FROM INFORMATION_SCHEMA.CROSS_REFERENCES where upper(FKTABLE_NAME)='"
-                + tableName.name.toUpperCase() + "'";
+        String sql = "SELECT pk.TABLE_NAME, pk.COLUMN_NAME, fk.COLUMN_NAME FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc" //
+                + " JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk" //
+                + " ON fk.CONSTRAINT_SCHEMA=rc.CONSTRAINT_SCHEMA AND fk.CONSTRAINT_NAME=rc.CONSTRAINT_NAME" //
+                + " JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk" //
+                + " ON pk.CONSTRAINT_SCHEMA=rc.UNIQUE_CONSTRAINT_SCHEMA AND pk.CONSTRAINT_NAME=rc.UNIQUE_CONSTRAINT_NAME" //
+                + " AND pk.ORDINAL_POSITION=fk.POSITION_IN_UNIQUE_CONSTRAINT" //
+                + " WHERE upper(fk.TABLE_NAME)='" + tableName.name.toUpperCase() + "'";
         return execOnConnection(connection -> {
             List<ForeignKey> fKeys = new ArrayList<ForeignKey>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -382,52 +398,33 @@ public class H2Db extends ADb {
     @Override
     public List<Index> getIndexes( SqlName tableName ) throws Exception {
 
-        String sql = "SELECT INDEX_NAME, sql FROM information_schema.indexes where upper(TABLE_NAME)='" + tableName.name.toUpperCase()
-                + "'";
+        // primary keys and the indexes backing constraints (CONSTRAINT_INDEX_*) are not reported
+        String sql = "SELECT i.INDEX_NAME, i.INDEX_TYPE_NAME, ic.COLUMN_NAME FROM INFORMATION_SCHEMA.INDEXES i" //
+                + " JOIN INFORMATION_SCHEMA.INDEX_COLUMNS ic ON ic.INDEX_SCHEMA=i.INDEX_SCHEMA AND ic.INDEX_NAME=i.INDEX_NAME" //
+                + " WHERE upper(i.TABLE_NAME)='" + tableName.name.toUpperCase() + "'" //
+                + " AND i.INDEX_TYPE_NAME <> 'PRIMARY KEY' AND i.INDEX_NAME NOT LIKE 'CONSTRAINT_INDEX%'" //
+                + " ORDER BY i.INDEX_NAME, ic.ORDINAL_POSITION";
 
         return execOnConnection(connection -> {
-            List<Index> indexes = new ArrayList<Index>();
+            Map<String, Index> indexesMap = new LinkedHashMap<>();
             try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
                 while( rs.next() ) {
-                    Index index = new Index();
-
                     String indexName = rs.getString(1);
+                    String indexType = rs.getString(2);
+                    String column = rs.getString(3);
 
-                    index.table = tableName.name;
-                    index.name = indexName;
-
-                    String createSql = rs.getString(2);
-                    String lower = createSql.toLowerCase();
-                    if (lower.contains("constraint_index")) {
-                        continue;
-                    } else if (lower.contains("primary key")) {
-                        continue;
-                    } else if (lower.startsWith("create index") || lower.startsWith("create unique index")) {
-                        String[] split = createSql.split("\\(|\\)");
-                        String columns = split[1];
-                        String[] colSplit = columns.split(",");
-                        for( String col : colSplit ) {
-                            col = col.trim();
-                            if (col.length() > 0) {
-                                index.columns.add(col);
-                            }
-                        }
-
-                        if (lower.startsWith("create unique index")) {
-                            index.isUnique = true;
-                        }
-
+                    Index index = indexesMap.get(indexName);
+                    if (index == null) {
+                        index = new Index();
+                        index.table = tableName.name;
+                        index.name = indexName;
+                        index.isUnique = "UNIQUE INDEX".equalsIgnoreCase(indexType);
+                        indexesMap.put(indexName, index);
                     }
-                    indexes.add(index);
-                }
-                return indexes;
-            } catch (SQLException e) {
-                if (e.getMessage().contains("query does not return ResultSet")) {
-                    return indexes;
-                } else {
-                    throw e;
+                    index.columns.add(column);
                 }
             }
+            return new ArrayList<Index>(indexesMap.values());
         });
 
     }

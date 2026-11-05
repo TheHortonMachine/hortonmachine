@@ -26,7 +26,7 @@ public class TestMbtiles {
 
     @BeforeClass
     public static void createDb() throws Exception {
-        URL dataUrl = TestMbtiles.class.getClassLoader().getResource("italy_h2gis_fortests.mbtiles.mv.db");
+        URL dataUrl = TestMbtiles.class.getClassLoader().getResource("italy_h2gis_v2_fortests.mbtiles.mv.db");
         File file = new File(dataUrl.toURI());
         String openPath = file.getAbsolutePath().replaceFirst(".mv.db", "");
 
