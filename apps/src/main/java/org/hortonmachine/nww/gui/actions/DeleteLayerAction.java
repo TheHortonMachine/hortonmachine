@@ -20,8 +20,8 @@ package org.hortonmachine.nww.gui.actions;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.LayerEventsListener;
 
 import gov.nasa.worldwind.WorldWindow;
@@ -42,7 +42,7 @@ public class DeleteLayerAction extends AbstractAction {
     private LayerEventsListener eventsListener;
 
     public DeleteLayerAction(LayerEventsListener eventsListener, WorldWindow wwd, Layer layer) {
-        super("", new ImageIcon(DeleteLayerAction.class.getResource("/org/hortonmachine/images/trash.gif")));
+        super("", ImageCache.get(ImageCache.TRASH));
 
         this.eventsListener = eventsListener;
         this.wwd = wwd;

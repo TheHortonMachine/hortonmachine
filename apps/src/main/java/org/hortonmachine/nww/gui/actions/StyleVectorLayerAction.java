@@ -21,9 +21,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.style.StylePanelController;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
@@ -41,7 +41,7 @@ public class StyleVectorLayerAction extends AbstractAction {
     protected boolean selected;
 
     public StyleVectorLayerAction( NwwPanel wwdPanel, NwwVectorLayer layer ) {
-        super("", new ImageIcon(StyleVectorLayerAction.class.getResource("/org/hortonmachine/images/palette.png")));
+        super("", ImageCache.get(ImageCache.PALETTE));
         this.wwdPanel = wwdPanel;
         this.layer = layer;
     }

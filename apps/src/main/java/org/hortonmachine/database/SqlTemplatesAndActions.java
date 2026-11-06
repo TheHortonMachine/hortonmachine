@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -726,9 +725,7 @@ public class SqlTemplatesAndActions {
 
                         final MainController controller = new MainController(new File(databasePath), table.tableName.getFullName());
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine SLD Editor");
-                        Class<DatabaseViewer> class1 = DatabaseViewer.class;
-                        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-                        frame.setIconImage(icon.getImage());
+                        GuiUtilities.setDefaultFrameIcon(frame);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
@@ -752,9 +749,7 @@ public class SqlTemplatesAndActions {
                                 table.tableName.getFullName());
                         final FormBuilderController controller = new FormBuilderController(formHandler);
                         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine FORMS Editor");
-                        Class<DatabaseViewer> class1 = DatabaseViewer.class;
-                        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-                        frame.setIconImage(icon.getImage());
+                        GuiUtilities.setDefaultFrameIcon(frame);
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

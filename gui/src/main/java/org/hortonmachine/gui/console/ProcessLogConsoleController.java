@@ -37,6 +37,7 @@ import javax.swing.text.StyledDocument;
 import org.hortonmachine.gears.utils.processes.ELogStyle;
 import org.hortonmachine.gears.utils.processes.IProcessListener;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 
 /**
  * A console for logging processes.
@@ -60,10 +61,9 @@ public class ProcessLogConsoleController extends ProcessLogConsoleView implement
     }
 
     private void init() {
-        Class<ProcessLogConsoleController> class1 = ProcessLogConsoleController.class;
-        ImageIcon trashIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/trash.gif"));
-        ImageIcon copyIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/copy_edit.gif"));
-        ImageIcon stopIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/progress_stop.gif"));
+        ImageIcon trashIcon = ImageCache.get(ImageCache.TRASH);
+        ImageIcon copyIcon = ImageCache.get(ImageCache.COPY);
+        ImageIcon stopIcon = ImageCache.get(ImageCache.PROGRESS_STOP);
 
         logPane = new JTextPane();
         scrollPane = new JScrollPane(logPane);

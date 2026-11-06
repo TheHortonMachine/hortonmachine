@@ -1,7 +1,6 @@
 package org.hortonmachine.nww.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -110,7 +109,7 @@ public class LayersPanelView extends JPanel
    public JScrollPane createlayersGridView()
    {
       _layersGridView.setName("layersGridView");
-      TitledBorder titledborder1 = new TitledBorder(null,"Layers",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(49,106,196));
+      TitledBorder titledborder1 = new TitledBorder(null,"Layers",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       _layersGridView.setBorder(titledborder1);
       JScrollPane jscrollpane1 = new JScrollPane();
       jscrollpane1.setViewportView(_layersGridView);

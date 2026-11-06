@@ -3,7 +3,6 @@ package org.hortonmachine.style;
 import com.jgoodies.forms.layout.CellConstraints;
 import com.jgoodies.forms.layout.FormLayout;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -130,7 +129,7 @@ public class MainView extends JPanel
       jpanel1.add(_filepathField,cc.xywh(2,2,5,1));
 
       _rulesTree.setName("rulesTree");
-      TitledBorder titledborder1 = new TitledBorder(null,"Style Tree",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      TitledBorder titledborder1 = new TitledBorder(null,"Style Tree",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       _rulesTree.setBorder(titledborder1);
       JScrollPane jscrollpane1 = new JScrollPane();
       jscrollpane1.setViewportView(_rulesTree);
@@ -172,7 +171,7 @@ public class MainView extends JPanel
    public JPanel createmapPaneHolder()
    {
       _mapPaneHolder.setName("mapPaneHolder");
-      TitledBorder titledborder1 = new TitledBorder(null,"Map Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      TitledBorder titledborder1 = new TitledBorder(null,"Map Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       _mapPaneHolder.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -185,7 +184,7 @@ public class MainView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Templates",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(0,0,0));
+      TitledBorder titledborder1 = new TitledBorder(null,"Templates",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0),FILL:4DLU:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();

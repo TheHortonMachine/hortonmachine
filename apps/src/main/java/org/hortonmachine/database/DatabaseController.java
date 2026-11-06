@@ -60,7 +60,6 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -3298,10 +3297,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
 
     protected void showInMapFrame( boolean withLayers, SimpleFeatureCollection[] fcs, Style[] styles ) {
         if (mapFrame == null || !mapFrame.isVisible()) {
-            Class<DatabaseController> class1 = DatabaseController.class;
-            ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
             mapFrame = new HMMapframe("Geometries Viewer");
-            mapFrame.setIconImage(icon.getImage());
+            GuiUtilities.setDefaultFrameIcon(mapFrame);
             mapFrame.enableToolBar(true);
             mapFrame.enableStatusBar(false);
             mapFrame.enableLayerTable(withLayers);

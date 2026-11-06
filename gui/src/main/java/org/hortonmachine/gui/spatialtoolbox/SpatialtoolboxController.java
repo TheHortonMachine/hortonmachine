@@ -135,15 +135,14 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
     private void init() {
         preInit();
 
-        Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
-        ImageIcon processingIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/processingregion.png"));
-        ImageIcon startIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/start.gif"));
-        ImageIcon runScriptIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/run_script.gif"));
-        ImageIcon generateScriptIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/generate_script.gif"));
-        ImageIcon trashIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/trash.gif"));
-        final ImageIcon categoryIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/category.gif"));
-        final ImageIcon moduleIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/module.gif"));
-        final ImageIcon moduleExpIcon = new ImageIcon(class1.getResource("/org/hortonmachine/images/module_exp.gif"));
+        ImageIcon processingIcon = ImageCache.get(ImageCache.PROCESSING_REGION);
+        ImageIcon startIcon = ImageCache.get(ImageCache.RUN);
+        ImageIcon runScriptIcon = ImageCache.get(ImageCache.RUN_SCRIPT);
+        ImageIcon generateScriptIcon = ImageCache.get(ImageCache.GENERATE_SCRIPT);
+        ImageIcon trashIcon = ImageCache.get(ImageCache.TRASH);
+        final ImageIcon categoryIcon = ImageCache.get(ImageCache.CATEGORY);
+        final ImageIcon moduleIcon = ImageCache.get(ImageCache.MODULE);
+        final ImageIcon moduleExpIcon = ImageCache.get(ImageCache.MODULEEXP);
 
         ImageIcon worldIcon = ImageCache.getInstance().getImage(ImageCache.BROWSER);
 
@@ -422,10 +421,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
             String crsStr = crsSet.stream().collect(Collectors.joining("\n"));
             boolean isOk = GuiUtilities.showYesNoDialog(pPanel, "Found the following CRS in the data: \n" + crsStr);
             if (isOk) {
-                Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
-                ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
                 HMMapframe mapFrame = new HMMapframe("Module dataset viewer");
-                mapFrame.setIconImage(icon.getImage());
+                GuiUtilities.setDefaultFrameIcon(mapFrame);
                 mapFrame.enableToolBar(true);
                 mapFrame.enableStatusBar(true);
                 mapFrame.enableLayerTable(true);

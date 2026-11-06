@@ -1,7 +1,6 @@
 package org.hortonmachine.geopaparazzi;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -172,7 +171,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createchartHolderFrame()
    {
       _chartHolderFrame.setName("chartHolderFrame");
-      TitledBorder titledborder1 = new TitledBorder(null,"Charts",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Charts",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       _chartHolderFrame.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -188,7 +187,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createnwwHolderFrame()
    {
       _nwwHolderFrame.setName("nwwHolderFrame");
-      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Viewer",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       _nwwHolderFrame.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -217,7 +216,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createdatabaseTreeView()
    {
       _databaseTreeView.setName("databaseTreeView");
-      TitledBorder titledborder1 = new TitledBorder(null,"Projects",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Projects",TitledBorder.LEFT,TitledBorder.DEFAULT_POSITION,null,null);
       _databaseTreeView.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();
@@ -237,7 +236,7 @@ public class GeopaparazziView extends JPanel
    public JPanel createPanel1()
    {
       JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Info",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,new Color(33,33,33));
+      TitledBorder titledborder1 = new TitledBorder(null,"Info",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       jpanel1.setBorder(titledborder1);
       FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
       CellConstraints cc = new CellConstraints();

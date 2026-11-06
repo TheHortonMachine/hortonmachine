@@ -46,6 +46,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.Note;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiBridgeHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 
 /**
  * The spatialtoolbox view controller.
@@ -209,11 +210,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
         final GeopaparazziViewer controller = new GeopaparazziViewer(gBridge);
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "Geopaparazzi Projects Viewer - " + org.hortonmachine.Version.getVersion());
 
-        Class<GeopaparazziViewer> class1 = GeopaparazziViewer.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/geopaparazzi_icon.png"));
-        frame.setIconImage(icon.getImage());
-
-        GuiUtilities.setDefaultFrameIcon(frame);
+        GuiUtilities.setDefaultFrameIcon(frame, ImageCache.getBuffered(ImageCache.GEOPAPARAZZI_ICON));
 
         GuiUtilities.addClosingListener(frame, controller);
     }

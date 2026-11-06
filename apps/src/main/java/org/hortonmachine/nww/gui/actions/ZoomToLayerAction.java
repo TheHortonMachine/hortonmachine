@@ -20,8 +20,8 @@ package org.hortonmachine.nww.gui.actions;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 
@@ -43,7 +43,7 @@ public class ZoomToLayerAction extends AbstractAction {
     protected boolean selected;
 
     public ZoomToLayerAction(NwwPanel wwdPanel, NwwLayer layer) {
-        super("", new ImageIcon(ZoomToLayerAction.class.getResource("/org/hortonmachine/images/zoom.gif")));
+        super("", ImageCache.get(ImageCache.ZOOM));
         this.wwdPanel = wwdPanel;
         this.layer = layer;
     }

@@ -7,7 +7,6 @@ import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYUSER
 
 import java.awt.Dimension;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 
@@ -164,9 +163,7 @@ public class SshTesterController extends SshTesterView implements IOnCloseListen
 
         final JFrame frame = gBridge.showWindow(controller.asJComponent(), "HortonMachine Ssh Utils");
 
-        Class<SshTesterController> class1 = SshTesterController.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         GuiUtilities.addClosingListener(frame, controller);
 

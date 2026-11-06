@@ -27,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -38,7 +37,6 @@ import javax.swing.filechooser.FileFilter;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.modules.HMFileFilter;
 import org.hortonmachine.gears.utils.PreferencesHandler;
-import org.hortonmachine.gui.spatialtoolbox.SpatialtoolboxController;
 
 /**
  * JGT implementation of the {@link GuiBridgeHandler}.
@@ -363,9 +361,7 @@ public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
     @Override
     public JFrame showWindow( JComponent component, String windowTitle ) {
         JFrame frame = new JFrame(windowTitle);
-        Class<SpatialtoolboxController> class1 = SpatialtoolboxController.class;
-        ImageIcon icon = new ImageIcon(class1.getResource("/org/hortonmachine/images/hm150.png"));
-        frame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(frame);
 
         frame.getContentPane().add(component, BorderLayout.CENTER);
         frame.pack();

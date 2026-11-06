@@ -19,6 +19,8 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
+import org.hortonmachine.gui.utils.ImageCache;
+
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
@@ -31,10 +33,13 @@ import gov.nasa.worldwind.layers.LayerList;
  */
 public class GeneralLayerPanel extends JPanel
 {
-    public static final ImageIcon UP_ARROW =
-        new ImageIcon(GeneralLayerPanel.class.getResource("/images/up_arrow_16x16.png"));
-    public static final ImageIcon DOWN_ARROW =
-        new ImageIcon(GeneralLayerPanel.class.getResource("/images/down_arrow_16x16.png"));
+    public static final ImageIcon UP_ARROW = iconOrWorldwind(ImageCache.ARROW_UP, "/images/up_arrow_16x16.png");
+    public static final ImageIcon DOWN_ARROW = iconOrWorldwind(ImageCache.ARROW_DOWN, "/images/down_arrow_16x16.png");
+
+    private static ImageIcon iconOrWorldwind( String key, String worldwindPath ) {
+        ImageIcon icon = ImageCache.get(key);
+        return icon != null ? icon : new ImageIcon(GeneralLayerPanel.class.getResource(worldwindPath));
+    }
 
     protected Layer layer; // the layer represented by this instance
 

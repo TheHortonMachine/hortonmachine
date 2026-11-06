@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 
 import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
@@ -80,6 +79,13 @@ public class HMMapframe extends JMapFrame {
         content = new MapContent();
         content.setTitle(title);
         setMapContent(content);
+    }
+
+    @Override
+    public void initComponents() {
+        super.initComponents();
+        // the GeoTools toolbar is created here, swap its bitmap icons for the themed ones
+        ImageCache.applyMapToolIcons(getToolBar());
     }
 
     public void addLayer( SimpleFeatureCollection featureCollection ) {
@@ -361,9 +367,8 @@ public class HMMapframe extends JMapFrame {
      * @param initialLayers optional layers to add before the frame is shown.
      */
     private static HMMapframe getBaseFrame( String title, boolean exitOnClose, List<Layer> initialLayers ) {
-        ImageIcon icon = new ImageIcon(ImageCache.getInstance().getBufferedImage(ImageCache.HORTONMACHINE_FRAME_ICON));
         HMMapframe mapFrame = new HMMapframe(title);
-        mapFrame.setIconImage(icon.getImage());
+        GuiUtilities.setDefaultFrameIcon(mapFrame);
         mapFrame.enableToolBar(true);
         mapFrame.enableStatusBar(true);
         mapFrame.enableLayerTable(true);

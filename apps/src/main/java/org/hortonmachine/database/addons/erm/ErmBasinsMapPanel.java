@@ -47,6 +47,7 @@ import org.geotools.swing.RenderingExecutorListener;
 import org.geotools.swing.RenderingOperands;
 import org.geotools.swing.RenderingTask;
 import org.geotools.swing.action.NoToolAction;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.geotools.swing.action.PanAction;
 import org.geotools.swing.action.ZoomInAction;
 import org.geotools.swing.action.ZoomOutAction;
@@ -213,7 +214,11 @@ public class ErmBasinsMapPanel extends JPanel {
 
         ButtonGroup group = new ButtonGroup();
 
-        Action selectAction = new AbstractAction("", new ImageIcon(NoToolAction.class.getResource(NoToolAction.ICON_IMAGE))){
+        ImageIcon selectIcon = ImageCache.get(ImageCache.MAP_POINTER);
+        if (selectIcon == null) {
+            selectIcon = new ImageIcon(NoToolAction.class.getResource(NoToolAction.ICON_IMAGE));
+        }
+        Action selectAction = new AbstractAction("", selectIcon){
             private static final long serialVersionUID = 1L;
 
             @Override
@@ -239,6 +244,7 @@ public class ErmBasinsMapPanel extends JPanel {
         group.add(zoomOutButton);
         toolBar.add(zoomOutButton);
 
+        ImageCache.applyMapToolIcons(toolBar);
         return toolBar;
     }
 

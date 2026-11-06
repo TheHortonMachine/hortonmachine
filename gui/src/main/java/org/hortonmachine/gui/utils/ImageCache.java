@@ -17,16 +17,32 @@
  */
 package org.hortonmachine.gui.utils;
 
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 
+import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
+import javax.swing.JToolBar;
+
+import org.geotools.swing.action.InfoAction;
+import org.geotools.swing.action.NoToolAction;
+import org.geotools.swing.action.PanAction;
+import org.geotools.swing.action.ResetAction;
+import org.geotools.swing.action.ZoomInAction;
+import org.geotools.swing.action.ZoomOutAction;
+import org.hortonmachine.gui.utils.MaterialIcon.IconColor;
 
 /**
  * A singleton cache for images.
- * 
+ *
+ * <p>Keys mapped in {@link #GLYPHS} are drawn as Material Symbols ({@link MaterialIcon}),
+ * all others (and all keys, if the icon font is not available) are loaded from the bitmap files.</p>
+ *
  * @author Andrea Antonello (www.hydrologis.com)
  */
 @SuppressWarnings("nls")
@@ -135,6 +151,127 @@ public class ImageCache {
     public static final String FORM_PLUS = "form_plus.png";
 
     public static final String HORTONMACHINE_FRAME_ICON = "hm150.png";
+    public static final String GEOPAPARAZZI_ICON = "geopaparazzi_icon.png";
+
+    public static final String RUN_SCRIPT = "run16x16.gif";
+    public static final String GENERATE_SCRIPT = "generate_script.gif";
+    public static final String PROCESSING_REGION = "processingregion.png";
+
+    /*
+     * Keys that only exist as Material Symbols glyph, without bitmap. If the icon font is not
+     * available, they return null and the caller keeps its own icon.
+     */
+    public static final String MAP_POINTER = "glyph:arrow_selector_tool";
+    public static final String MAP_PAN = "glyph:pan_tool";
+    public static final String MAP_ZOOM_IN = "glyph:zoom_in";
+    public static final String MAP_ZOOM_OUT = "glyph:zoom_out";
+    public static final String MAP_INFO = "glyph:info";
+    public static final String MAP_RESET = "glyph:fit_screen";
+    public static final String ARROW_UP = "glyph:arrow_upward";
+    public static final String ARROW_DOWN = "glyph:arrow_downward";
+
+    private record Glyph(char codepoint, int size, IconColor color) {
+    }
+
+    private static Glyph g( int codepoint ) {
+        return new Glyph((char) codepoint, 16, IconColor.DEFAULT);
+    }
+
+    private static Glyph g( int codepoint, IconColor color ) {
+        return new Glyph((char) codepoint, 16, color);
+    }
+
+    private static Glyph g( int codepoint, int size ) {
+        return new Glyph((char) codepoint, size, IconColor.DEFAULT);
+    }
+
+    /**
+     * Image keys drawn with Material Symbols glyphs. The codepoints are those of
+     * gui/tools/material-icons/glyphs.txt, the glyph names are in the comments.
+     */
+    private static final Map<String, Glyph> GLYPHS = Map.ofEntries(//
+            Map.entry(HOME, g(0xe9b2)), // home
+            Map.entry(TRASH, g(0xe92e)), // delete
+            Map.entry(CATEGORY, g(0xe72c)), // category
+            Map.entry(MODULE, g(0xe87b)), // extension
+            Map.entry(MODULEEXP, g(0xea4b)), // science
+            Map.entry(MODULE_TEMPLATE, g(0xe745)), // edit_note
+            Map.entry(TEMPLATE, g(0xe873)), // description
+            Map.entry(RUN, g(0xe1c4, IconColor.RUN)), // play_circle
+            Map.entry(RUN_TO_FILE, g(0xf17f, IconColor.RUN)), // file_save
+            Map.entry(RUN_TO_SHAPEFILE, g(0xf8d3, IconColor.RUN)), // shape_line
+            Map.entry(STOP, g(0xef71, IconColor.STOP)), // stop_circle
+            Map.entry(GRID, g(0xe3ec)), // grid_on
+            Map.entry(PROGRESS_STOP, g(0xe888, IconColor.STOP)), // cancel
+            Map.entry(NEW, g(0xe145)), // add
+            Map.entry(OPEN, g(0xe2c8)), // folder_open
+            Map.entry(SAVE, g(0xe161)), // save
+            Map.entry(COPY, g(0xe14d)), // content_copy
+            Map.entry(MEMORY, g(0xe322)), // memory
+            Map.entry(DEBUG, g(0xe868)), // bug_report
+            Map.entry(STEP_OVER, g(0xf6ff)), // step_over
+            Map.entry(STEP_INTO, g(0xf701)), // step_into
+            Map.entry(STEP_OUT, g(0xf700)), // step_out
+            Map.entry(FONT, g(0xe262)), // text_fields
+            Map.entry(FILE, g(0xe66d)), // draft
+            Map.entry(FOLDER, g(0xe2c7)), // folder
+            Map.entry(REFRESH, g(0xe5d5)), // refresh
+            Map.entry(CONNECT, g(0xe63c)), // power
+            Map.entry(CONNECT_REMOTE, g(0xf15c)), // cloud
+            Map.entry(DISCONNECT, g(0xe646)), // power_off
+            Map.entry(HISTORY_DB, g(0xe8b3)), // history
+            Map.entry(NEW_DATABASE, g(0xe03c)), // library_add
+            Map.entry(DATABASE, g(0xf20e)), // database
+            Map.entry(TABLE_FOLDER, g(0xf586)), // folder_data
+            Map.entry(TABLE, g(0xf191)), // table
+            Map.entry(TABLETYPE, g(0xf1be)), // table_view
+            Map.entry(VIEW, g(0xf1c5)), // preview
+            Map.entry(TABLE_SPATIAL, g(0xe55b)), // map
+            Map.entry(TABLE_SPATIAL_VIRTUAL, g(0xe53b)), // layers
+            Map.entry(TABLE_COLUMN, g(0xe8ec)), // view_column
+            Map.entry(TABLE_COLUMN_PRIMARYKEY, g(0xe73c, IconColor.ACCENT)), // key
+            Map.entry(TABLE_COLUMN_INDEX, g(0xea0b)), // bolt
+            Map.entry(TABLE_COLUMN_FK, g(0xe250)), // link
+            Map.entry(DBIMAGE, g(0xe3f4)), // image
+            Map.entry(LOG, g(0xef42)), // article
+            Map.entry(INFO, g(0xe88e, 32)), // info
+            Map.entry(INFO16, g(0xe88e)), // info
+            Map.entry(PHOTO, g(0xe412, 32)), // photo_camera
+            Map.entry(NOTE, g(0xf1fc)), // sticky_note_2
+            Map.entry(EXPORT, g(0xf09b)), // upload
+            Map.entry(IMPORT, g(0xf090)), // download
+            Map.entry(ZOOM, g(0xe8ff)), // zoom_in
+            Map.entry(LIST, g(0xe896)), // list
+            Map.entry(FOLDER_OPEN, g(0xe2c8)), // folder_open
+            Map.entry(INFOTOOL_ON, g(0xe88e, IconColor.ACCENT)), // info
+            Map.entry(INFOTOOL_OFF, g(0xe88e)), // info
+            Map.entry(GLOBE, g(0xe80b)), // public
+            Map.entry(ZOOM_TO_ALL, g(0xea10)), // fit_screen
+            Map.entry(ZOOM_TO_NEXT, g(0xe5cc)), // navigate_next
+            Map.entry(ZOOM_TO_PREVIOUS, g(0xe5cb)), // navigate_before
+            Map.entry(SELECTION_MODE, g(0xef52, 24)), // highlight_alt
+            Map.entry(BROWSER, g(0xe2db)), // travel_explore
+            Map.entry(VECTOR, g(0xf8d3)), // shape_line
+            Map.entry(GEOM_POINT, g(0xe268)), // scatter_plot
+            Map.entry(GEOM_LINE, g(0xebbb)), // polyline
+            Map.entry(GEOM_POLYGON, g(0xeb50)), // pentagon
+            Map.entry(DEM, g(0xe564)), // terrain
+            Map.entry(TREE_OPEN, g(0xe5cf)), // expand_more
+            Map.entry(TREE_CLOSED, g(0xe5cc)), // chevron_right
+            Map.entry(SETTINGS, g(0xe8b8)), // settings
+            Map.entry(PALETTE, g(0xe40a)), // palette
+            Map.entry(RUN_SCRIPT, g(0xeb8e)), // terminal
+            Map.entry(GENERATE_SCRIPT, g(0xe86f)), // code
+            Map.entry(PROCESSING_REGION, g(0xe3c2)), // crop_free
+            Map.entry(MAP_POINTER, g(0xf82f)), // arrow_selector_tool
+            Map.entry(MAP_PAN, g(0xe925)), // pan_tool
+            Map.entry(MAP_ZOOM_IN, g(0xe8ff)), // zoom_in
+            Map.entry(MAP_ZOOM_OUT, g(0xe900)), // zoom_out
+            Map.entry(MAP_INFO, g(0xe88e)), // info
+            Map.entry(MAP_RESET, g(0xea10)), // fit_screen
+            Map.entry(ARROW_UP, g(0xe5d8)), // arrow_upward
+            Map.entry(ARROW_DOWN, g(0xe5db)) // arrow_downward
+    );
 
     private static ImageCache imageCache;
 
@@ -182,10 +319,55 @@ public class ImageCache {
     }
 
     private ImageIcon createImage( String key ) {
+        Glyph glyph = GLYPHS.get(key);
+        if (glyph != null && MaterialIcon.isAvailable()) {
+            return new MaterialIcon(glyph.codepoint(), glyph.size(), glyph.color());
+        }
         URL resource = class1.getResource("/org/hortonmachine/images/" + key);
-        
+        if (resource == null) {
+            // glyph only key and icon font not available
+            return null;
+        }
         ImageIcon icon = new ImageIcon(resource);
         return icon;
+    }
+
+    /**
+     * Replace the bitmap icons of the GeoTools map tool buttons in a toolbar with the matching
+     * Material Symbols icons. Buttons of other actions are left untouched.
+     *
+     * @param toolBar the toolbar, for example of a {@link org.geotools.swing.JMapFrame}.
+     */
+    public static void applyMapToolIcons( JToolBar toolBar ) {
+        if (toolBar == null) {
+            return;
+        }
+        for( Component component : toolBar.getComponents() ) {
+            if (component instanceof AbstractButton button) {
+                String key = getMapToolKey(button.getAction());
+                ImageIcon icon = key != null ? get(key) : null;
+                if (icon != null) {
+                    button.setIcon(icon);
+                }
+            }
+        }
+    }
+
+    private static String getMapToolKey( Action action ) {
+        if (action instanceof NoToolAction) {
+            return MAP_POINTER;
+        } else if (action instanceof PanAction) {
+            return MAP_PAN;
+        } else if (action instanceof ZoomInAction) {
+            return MAP_ZOOM_IN;
+        } else if (action instanceof ZoomOutAction) {
+            return MAP_ZOOM_OUT;
+        } else if (action instanceof InfoAction) {
+            return MAP_INFO;
+        } else if (action instanceof ResetAction) {
+            return MAP_RESET;
+        }
+        return null;
     }
 
     public static ImageIcon get( String key ) {
