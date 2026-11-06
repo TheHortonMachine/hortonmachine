@@ -17,6 +17,8 @@
  */
 package org.hortonmachine.gui.utils;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -30,6 +32,7 @@ import javax.swing.AbstractAction;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
+import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 
 import org.geotools.api.referencing.FactoryException;
@@ -43,6 +46,7 @@ import org.geotools.map.MapContent;
 import org.geotools.map.MapLayerListEvent;
 import org.geotools.styling.SLD;
 import org.geotools.swing.JMapFrame;
+import org.geotools.swing.MapLayerTable;
 import org.geotools.tile.TileService;
 import org.geotools.tile.util.TileLayer;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
@@ -55,6 +59,8 @@ import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.style.StyleUtilities;
 import org.hortonmachine.gui.settings.SettingsController;
+
+import com.formdev.flatlaf.util.UIScale;
 
 /**
  * A simple map frame where layers can be set or added with default styles.
@@ -84,8 +90,29 @@ public class HMMapframe extends JMapFrame {
     @Override
     public void initComponents() {
         super.initComponents();
-        // the GeoTools toolbar is created here, swap its bitmap icons for the themed ones
+        // the GeoTools toolbar, layer table and status bar are created here, swap their bitmap icons for the themed ones
         ImageCache.applyMapToolIcons(getToolBar());
+        ImageCache.applyMapLayerTableIcons();
+        ImageCache.applyMapStatusBarIcons(getContentPane());
+        // the layer table gets only its preferred width, which cuts the layer names
+        JSplitPane splitPane = findSplitPane(getContentPane());
+        if (splitPane != null && splitPane.getLeftComponent() instanceof MapLayerTable) {
+            splitPane.setDividerLocation(Math.max(splitPane.getDividerLocation(), UIScale.scale(260)));
+        }
+    }
+
+    private static JSplitPane findSplitPane( Container container ) {
+        for( Component component : container.getComponents() ) {
+            if (component instanceof JSplitPane splitPane) {
+                return splitPane;
+            } else if (component instanceof Container child) {
+                JSplitPane found = findSplitPane(child);
+                if (found != null) {
+                    return found;
+                }
+            }
+        }
+        return null;
     }
 
     public void addLayer( SimpleFeatureCollection featureCollection ) {
@@ -142,7 +169,7 @@ public class HMMapframe extends JMapFrame {
      * <p>To be called once the frame is visible, i.e. the toolbar exists.</p>
      */
     public void addOsmToolbarButton() {
-        getToolBar().add(new AbstractAction("Add OSM background", ImageCache.getInstance().getImage(ImageCache.GLOBE)){
+        getToolBar().add(new AbstractAction("Add OSM background", ImageCache.get(ImageCache.GLOBE, ImageCache.SIZE_TOOLBAR)){
             @Override
             public void actionPerformed( ActionEvent e ) {
                 addOsmBackground();

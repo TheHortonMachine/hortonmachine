@@ -78,6 +78,8 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JTree;
+
+import com.formdev.flatlaf.util.UIScale;
 import javax.swing.SwingConstants;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -218,8 +220,9 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
     protected ColumnLevel currentSelectedColumn;
     protected LeafLevel currentSelectedLeaf;
 
-    private Dimension preferredToolbarButtonSize = new Dimension(120, 65);
-    private Dimension preferredSqleditorButtonSize = new Dimension(30, 30);
+    // scaled with the ui scale, else the labels get truncated on enlarged interfaces
+    private Dimension preferredToolbarButtonSize = UIScale.scale(new Dimension(120, 65));
+    private Dimension preferredSqleditorButtonSize = UIScale.scale(new Dimension(30, 30));
 
     private List<String> oldSqlCommands = new ArrayList<String>();
     protected SqlTemplatesAndActions sqlTemplatesAndActions;
@@ -406,7 +409,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _newDbButton.setText(NEW);
         _newDbButton.setToolTipText(NEW_TOOLTIP);
         _newDbButton.setPreferredSize(preferredToolbarButtonSize);
-        _newDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.NEW_DATABASE));
+        _newDbButton.setIcon(ImageCache.get(ImageCache.NEW_DATABASE, ImageCache.SIZE_TOOLBAR_LARGE));
         _newDbButton.addActionListener(e -> {
 
             JDialog f = new JDialog();
@@ -434,7 +437,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _connectDbButton.setText(CONNECT);
         _connectDbButton.setToolTipText(CONNECT_TOOLTIP);
         _connectDbButton.setPreferredSize(preferredToolbarButtonSize);
-        _connectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT));
+        _connectDbButton.setIcon(ImageCache.get(ImageCache.CONNECT, ImageCache.SIZE_TOOLBAR_LARGE));
         _connectDbButton.addActionListener(e -> {
             JDialog f = new JDialog();
             f.setModal(true);
@@ -479,7 +482,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _connectRemoteDbButton.setText(CONNECT_REMOTE);
         _connectRemoteDbButton.setToolTipText(CONNECT_REMOTE_TOOLTIP);
         _connectRemoteDbButton.setPreferredSize(preferredToolbarButtonSize);
-        _connectRemoteDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.CONNECT_REMOTE));
+        _connectRemoteDbButton.setIcon(ImageCache.get(ImageCache.CONNECT_REMOTE, ImageCache.SIZE_TOOLBAR_LARGE));
         _connectRemoteDbButton.addActionListener(e -> {
             JDialog f = new JDialog();
             f.setModal(true);
@@ -514,7 +517,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _disconnectDbButton.setText(DISCONNECT);
         _disconnectDbButton.setToolTipText(DISCONNECT_TOOLTIP);
         _disconnectDbButton.setPreferredSize(preferredToolbarButtonSize);
-        _disconnectDbButton.setIcon(ImageCache.getInstance().getImage(ImageCache.DISCONNECT));
+        _disconnectDbButton.setIcon(ImageCache.get(ImageCache.DISCONNECT, ImageCache.SIZE_TOOLBAR_LARGE));
         _disconnectDbButton.addActionListener(e -> {
             try {
                 closeCurrentDb(true);
@@ -529,7 +532,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _historyButton.setText(SQL_HISTORY);
         _historyButton.setToolTipText(SQL_HISTORY_TOOLTIP);
         _historyButton.setPreferredSize(preferredToolbarButtonSize);
-        _historyButton.setIcon(ImageCache.getInstance().getImage(ImageCache.HISTORY_DB));
+        _historyButton.setIcon(ImageCache.get(ImageCache.HISTORY_DB, ImageCache.SIZE_TOOLBAR_LARGE));
         _historyButton.addActionListener(e -> {
             try {
                 if (oldSqlCommands.size() == 0) {
@@ -553,7 +556,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         _templatesButton.setText(SQL_TEMPLATES);
         _templatesButton.setToolTipText(SQL_TEMPLATES_TOOLTIP);
         _templatesButton.setPreferredSize(preferredToolbarButtonSize);
-        _templatesButton.setIcon(ImageCache.getInstance().getImage(ImageCache.TEMPLATE));
+        _templatesButton.setIcon(ImageCache.get(ImageCache.TEMPLATE, ImageCache.SIZE_TOOLBAR_LARGE));
         _templatesButton.addActionListener(e -> {
             try {
                 if (currentConnectedSqlDatabase == null) {
@@ -965,7 +968,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         assistantButton.setText(SQL_ASSISTANT);
         assistantButton.setToolTipText(SQL_ASSISTANT_TOOLTIP);
         assistantButton.setPreferredSize(preferredToolbarButtonSize);
-        assistantButton.setIcon(ImageCache.getInstance().getImage(ImageCache.NOTE));
+        assistantButton.setIcon(ImageCache.get(ImageCache.NOTE, ImageCache.SIZE_TOOLBAR_LARGE));
         assistantButton.addActionListener(e -> {
             if (assistantWindow != null && assistantWindow.isDisplayable()) {
                 assistantPanel.updateDatabaseState();

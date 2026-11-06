@@ -20,7 +20,7 @@ names = [n.strip() for n in open(namesfile, encoding="utf-8") if n.strip() and n
 unicodes = sorted({codepoints[n] for n in names})
 
 font = TTFont(src)
-static = instancer.instantiateVariableFont(font, {"FILL": 0, "GRAD": 0, "opsz": 20, "wght": 400})
+static = instancer.instantiateVariableFont(font, {"FILL": 0, "GRAD": 0, "opsz": 24, "wght": 400})
 
 options = subset.Options()
 options.layout_features = []  # no ligatures needed, glyphs are addressed by codepoint

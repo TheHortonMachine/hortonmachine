@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -159,7 +160,7 @@ public class LasInfoView extends JPanel
    public JPanel createPanel()
    {
       JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:150DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:190DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -177,8 +178,8 @@ public class LasInfoView extends JPanel
       jpanel1.setLayout(formlayout1);
 
       jpanel1.add(createPanel2(),cc.xywh(2,1,3,1));
-      jpanel1.add(createPanel3(),cc.xywh(2,5,3,1));
-      jpanel1.add(createPanel4(),cc.xywh(2,6,3,1));
+      // header and first point in tabs, taking all the free height of the column
+      jpanel1.add(createInfoTabs(),cc.xywh(2,5,3,2));
       jpanel1.add(createPanel5(),cc.xywh(2,3,3,1));
       jpanel1.add(createPanel6(),cc.xywh(2,8,3,1));
       _loadDataButton.setActionCommand("Load Preview");
@@ -209,6 +210,20 @@ public class LasInfoView extends JPanel
 
       addFillComponents(jpanel1,new int[]{ 2 },new int[0]);
       return jpanel1;
+   }
+
+   /**
+    * The header and first point tables, as tabs (no longer in createPanel3/createPanel4,
+    * where they got too little height).
+    */
+   public JTabbedPane createInfoTabs()
+   {
+      JTabbedPane tabs = new JTabbedPane();
+      _headerTable.setName("headerTable");
+      tabs.addTab("Header", new JScrollPane(_headerTable));
+      _firstPointTable.setName("firstPointTable");
+      tabs.addTab("First point", new JScrollPane(_firstPointTable));
+      return tabs;
    }
 
    public JPanel createPanel3()
@@ -592,7 +607,8 @@ public class LasInfoView extends JPanel
       JPanel jpanel1 = new JPanel();
       TitledBorder titledborder1 = new TitledBorder(null,"Extract Circles",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
+      // each button on its own row: on one row with the field they got clipped by the slicing panel width
+      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
       CellConstraints cc = new CellConstraints();
       jpanel1.setLayout(formlayout1);
 
@@ -606,14 +622,14 @@ public class LasInfoView extends JPanel
       _circlesExtractButton.setActionCommand("Load Preview");
       _circlesExtractButton.setName("circlesExtractButton");
       _circlesExtractButton.setText("Extract Circles");
-      jpanel1.add(_circlesExtractButton,cc.xy(5,2));
+      jpanel1.add(_circlesExtractButton,cc.xywh(1,4,3,1));
 
       _circlesSaveShpButton.setActionCommand("Load Preview");
       _circlesSaveShpButton.setName("circlesSaveShpButton");
       _circlesSaveShpButton.setText("Save Circles Shp");
-      jpanel1.add(_circlesSaveShpButton,cc.xywh(1,4,5,1));
+      jpanel1.add(_circlesSaveShpButton,cc.xywh(1,6,3,1));
 
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,3 });
+      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,3,5 });
       return jpanel1;
    }
 

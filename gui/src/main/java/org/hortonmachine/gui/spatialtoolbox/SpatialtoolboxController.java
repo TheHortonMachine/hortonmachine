@@ -137,7 +137,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
 
         ImageIcon processingIcon = ImageCache.get(ImageCache.PROCESSING_REGION);
         ImageIcon startIcon = ImageCache.get(ImageCache.RUN);
-        ImageIcon runScriptIcon = ImageCache.get(ImageCache.RUN_SCRIPT);
+        ImageIcon runScriptIcon = ImageCache.get(ImageCache.RUN_SCRIPT, ImageCache.SIZE_TOOLBAR);
         ImageIcon generateScriptIcon = ImageCache.get(ImageCache.GENERATE_SCRIPT);
         ImageIcon trashIcon = ImageCache.get(ImageCache.TRASH);
         final ImageIcon folderIcon = ImageCache.get(ImageCache.FOLDER);
@@ -145,7 +145,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         final ImageIcon moduleIcon = ImageCache.get(ImageCache.MODULE);
         final ImageIcon moduleExpIcon = ImageCache.get(ImageCache.MODULEEXP);
 
-        ImageIcon worldIcon = ImageCache.getInstance().getImage(ImageCache.BROWSER);
+        ImageIcon worldIcon = ImageCache.get(ImageCache.BROWSER, ImageCache.SIZE_TOOLBAR);
 
         _parametersPanel.setLayout(new BorderLayout());
 

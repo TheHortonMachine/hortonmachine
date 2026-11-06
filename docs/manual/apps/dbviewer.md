@@ -125,7 +125,7 @@ The databases written by the GeoFrame modules are recognized: their name in the 
 
 ## Running queries
 
-Write a query in the SQL Editor and press the run button (the green arrow) on its left. The results appear in the current tab of the Data Viewer, and the number of records and the time taken are shown below it.
+Write a query in the SQL Editor and press the run button (the green play button) on its left. The results appear in the current tab of the Data Viewer, and the number of records and the time taken are shown below it.
 
 :::{figure} ../images/apps/dbviewer/query.png
 :alt: A query and its results
@@ -193,11 +193,14 @@ For geometries:
 View geometry
 : shows the geometries of the selected cells in a small viewer.
 
-Plot geometry
-: plots the geometries of the selected cells as a chart.
-
 View geometry with directions hint
 : shows the geometries with arrows marking the direction of their lines.
+
+View geometry in 3D
+: shows the geometries on the 3D globe, where available.
+
+Plot geometry vertices
+: plots the geometries of the selected cells as a chart, with their vertices.
 
 :::{figure} ../images/apps/dbviewer/cell_menu.png
 :alt: The context menu of a geometry cell

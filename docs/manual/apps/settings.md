@@ -1,12 +1,12 @@
 # Settings
 
-The Settings application edits the preferences shared by all the HortonMachine applications and modules: network proxy, character encoding, interface scaling, SSH keys, native libraries, credentials for data services and database query timeouts.
+The Settings application edits the preferences shared by all the HortonMachine applications and modules: network proxy, character encoding, interface scaling, SSH keys, native libraries, credentials for data services, database query timeouts and the theme of the interface.
 
 ## Launching
 
 Start the application with the `hm-settings` launcher (see [Launching an application](../installation.md#launching-an-application)).
 
-The settings are organized in tabs, and are saved when the window is closed. They apply to the applications started afterwards.
+The settings are organized in tabs, and are saved with the **Apply** button at the bottom of the window, or when the window is closed. They apply to the applications started afterwards.
 
 :::{figure} ../images/apps/settings/proxy.png
 :alt: The Settings application
@@ -42,7 +42,7 @@ Folder to store the preferences database
 : the folder where the preferences of the applications are stored, like the recent files, the saved connections of the Database Viewer or the style templates.
 
 UI scaling to apply
-: a factor to enlarge the fonts and the components of the interface, useful on high resolution screens: `1.2` enlarges them by 20%.
+: a factor to enlarge the fonts and the components of the interface: `1.2` enlarges them by 20%. Leave it empty (*automatic*, the default) to use the scale of the system, taken from its font size and the resolution of the screen; set a value only if the automatic one doesn't suit you.
 
 ## SSH
 
@@ -65,3 +65,17 @@ Table preview query timeout
 
 SQL editor query timeout
 : the limit for the queries run from the SQL Editor, `0` (no limit) by default. Keep it at `0` to run long commands, like a `VACUUM FULL` on a large table; a running query can always be stopped with the stop button of its console window.
+
+## Appearance
+
+The **Theme** of the applications. The default is *HortonMachine Light*, used in all the images of this manual; *HortonMachine Dark* is its dark counterpart, and a few Material and Flat themes, light and dark, are available too.
+
+:::{figure} ../images/apps/settings/appearance_dark.png
+:alt: The appearance tab with the dark theme
+:width: 80%
+:align: center
+
+The Settings application with the HortonMachine Dark theme.
+:::
+
+A new theme is applied immediately to the open windows of the Settings application and is used by the applications started afterwards. Code editors that are already open keep their colors until they are reopened.

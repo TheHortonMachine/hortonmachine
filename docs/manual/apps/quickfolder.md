@@ -26,7 +26,7 @@ More files can be added by dragging them from the file manager onto the window.
 The rasters and the shapefile of a folder, with their styles.
 :::
 
-The **Layers** list on the left shows the loaded layers: the eye shows or hides a layer, the buttons at the bottom show, hide, select or unselect all of them.
+The **Layers** list on the left shows the loaded layers: the eye shows or hides a layer, the check box selects it, the palette edits its style and the trash removes it. The buttons at the bottom show, hide, select or unselect all of them.
 
 The tools of the toolbar zoom in and out (click, or drag a box), pan, show the values of the layers at the clicked point, and reset the view to the whole data. The globe button adds an OpenStreetMap background. The status bar shows the coordinates under the mouse, the bounds of the view and the projection of the map.
 

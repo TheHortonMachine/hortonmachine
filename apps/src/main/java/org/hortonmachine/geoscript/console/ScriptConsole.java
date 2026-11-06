@@ -612,6 +612,7 @@ public class ScriptConsole {
             toolBar.addSeparator();
             toolBar.add(assistantAction);
         }
+        ImageCache.setToolBarIconSize(toolBar, ImageCache.SIZE_TOOLBAR);
         return toolBar;
     }
 

@@ -39,7 +39,7 @@ The modules whose name contains "pit".
 
 Type in the field above the tree to show only the modules whose name contains the text; the tree is expanded to show all the matches. The filter ignores the case. The trash button next to the field clears the filter.
 
-**Load Experimental**, below the tree, also shows the modules marked as experimental. They have a slightly different icon from the stable ones. Uncheck it to hide them.
+**Load Experimental**, below the tree, also shows the modules marked as experimental. They are marked with a flask icon, the stable ones with a puzzle piece. Uncheck it to hide them.
 
 ## Setting the parameters
 

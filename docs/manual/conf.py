@@ -32,7 +32,9 @@ source_suffix = {
 }
 
 # The module reference fragments are not pages: they are included in the module pages.
-exclude_patterns = ["README.md", "_build", ".venv", "Thumbs.db", ".DS_Store", "modules/generated/*", "modules/undocumented.md"]
+# The sample data folder holds data and their source notes (README), not pages.
+exclude_patterns = ["README.md", "_build", ".venv", "Thumbs.db", ".DS_Store", "modules/generated/*", "modules/undocumented.md",
+                    "modules/maps/data/**"]
 
 html_theme = "furo"
 html_title = "HortonMachine Manual"

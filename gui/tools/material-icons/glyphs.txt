@@ -72,3 +72,9 @@ expand_more
 chevron_right
 settings
 palette
+visibility
+visibility_off
+check_box
+check_box_outline_blank
+progress_activity
+radio_button_unchecked

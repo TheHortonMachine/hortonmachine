@@ -113,6 +113,7 @@ import javax.swing.Scrollable;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 import javax.swing.RowFilter;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
@@ -592,7 +593,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     boolean cellHasFocus ) {
                 HMStacCollection c = (HMStacCollection) value;
                 String title = c.getTitle() != null ? escape(c.getTitle()) : "";
-                String text = "<html><b>" + escape(c.getId()) + "</b><br><font color='#777777'>" + title + "</font></html>";
+                // the title is greyed from the theme, but keeps the selection color, else it is unreadable on it
+                String subtitle = title;
+                Color grey = UIManager.getColor("Label.disabledForeground");
+                if (!isSelected && grey != null) {
+                    subtitle = String.format("<font color='#%06X'>%s</font>", grey.getRGB() & 0xFFFFFF, title);
+                }
+                String text = "<html><b>" + escape(c.getId()) + "</b><br>" + subtitle + "</html>";
                 JLabel label = (JLabel) super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
                 label.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
                 return label;

@@ -19,7 +19,7 @@ An airborne lidar plot, drawn with the heights above ground calculated from a DT
 On the left:
 
 Las/Laz input file
-: the point cloud to inspect, chosen with the **...** button. Its **Header Information** (version, point format, number of points, bounds, scale and offset, projection) and the **First Point Information** are shown below.
+: the point cloud to inspect, chosen with the **...** button. Its **Header** (version, point format, number of points, bounds, scale and offset, projection) and its **First point** are shown in the two tabs below.
 
 Optional DTM for delta
 : a DTM raster (`.asc` or `.tif`) of the same area. When set, the elevation of each point is replaced by its height above the ground, which turns the terrain flat and makes the vegetation and the buildings stand out.

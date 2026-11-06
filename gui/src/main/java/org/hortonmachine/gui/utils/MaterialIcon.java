@@ -24,9 +24,17 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
+import java.awt.geom.PathIterator;
+import java.awt.image.BaseMultiResolutionImage;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 
+import javax.swing.CellRendererPane;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -100,12 +108,20 @@ public class MaterialIcon extends ImageIcon implements FlatLaf.DisabledIconProvi
         }
     }
 
+    /**
+     * How much the em square is enlarged over the icon size: 24/20 removes the built-in padding.
+     */
+    private static final float GLYPH_ENLARGEMENT = 24f / 20f;
+
     private static Font baseFont;
     private static boolean fontLoaded = false;
 
     private final char glyph;
     private final int size;
     private final IconColor iconColor;
+
+    private transient Shape outline;
+    private transient int outlineSize;
 
     /**
      * Create a new icon.
@@ -154,42 +170,132 @@ public class MaterialIcon extends ImageIcon implements FlatLaf.DisabledIconProvi
     @Override
     public void paintIcon( Component c, Graphics g, int x, int y ) {
         IconColor role = c != null && !c.isEnabled() ? IconColor.DISABLED : iconColor;
-        paint(g, x, y, role.getColor());
+        Color selectionColor = getRendererSelectionColor(c);
+        paint(g, x, y, selectionColor != null ? selectionColor : role.getColor());
+    }
+
+    /**
+     * Inside a selected tree, table or list cell the icon takes the selection text color,
+     * else an accent colored glyph vanishes on the accent colored selection.
+     *
+     * @return the selection foreground if c is a renderer of a selected cell, else <code>null</code>.
+     */
+    private static Color getRendererSelectionColor( Component c ) {
+        if (c == null || !(c.getParent() instanceof CellRendererPane)) {
+            return null;
+        }
+        Color fg = c.getForeground();
+        if (fg == null) {
+            return null;
+        }
+        for( String prefix : new String[]{"Tree", "Table", "List"} ) {
+            Color selFg = UIManager.getColor(prefix + ".selectionForeground");
+            Color normalFg = UIManager.getColor(prefix + ".foreground");
+            if (selFg != null && !selFg.equals(normalFg) && selFg.getRGB() == fg.getRGB()) {
+                return fg;
+            }
+        }
+        return null;
     }
 
     private void paint( Graphics g, int x, int y, Color color ) {
-        Font font = getBaseFont();
-        if (font == null) {
+        Shape glyphOutline = getOutline();
+        if (glyphOutline == null) {
             return;
         }
-        int s = getIconWidth();
         Graphics2D g2 = (Graphics2D) g.create();
         try {
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
-            g2.setFont(font.deriveFont((float) s));
             g2.setColor(color);
-            // the glyphs fill the em square, which sits on the baseline
-            g2.drawString(String.valueOf(glyph), x, y + s);
+            // the font has no hinting: snap the outline to the device pixels (after the HiDPI scale),
+            // else at most sizes its edges fall between two pixels and the icon looks blurry
+            AffineTransform toDevice = g2.getTransform();
+            toDevice.translate(x, y);
+            Shape deviceOutline = snapToPixels(toDevice.createTransformedShape(glyphOutline));
+            g2.setTransform(new AffineTransform());
+            g2.fill(deviceOutline);
         } finally {
             g2.dispose();
         }
     }
 
     /**
+     * @return the outline of the glyph, filling the icon box at the current ui scale, or
+     *         <code>null</code> if the icon font is not available.
+     */
+    private Shape getOutline() {
+        int s = getIconWidth();
+        if (outline == null || outlineSize != s) {
+            Font font = getBaseFont();
+            if (font == null) {
+                return null;
+            }
+            // the glyphs are drawn on a 24 unit grid with a 2 unit empty border (20/24 of the em square):
+            // enlarge the em square so that the shape fills the icon box, as the other icons of the theme
+            float em = s * GLYPH_ENLARGEMENT;
+            float offset = (s - em) / 2f;
+            GlyphVector glyphVector = font.deriveFont(em).createGlyphVector(new FontRenderContext(null, true, true),
+                    String.valueOf(glyph));
+            // the em square sits on the baseline
+            outline = glyphVector.getOutline(offset, offset + em);
+            outlineSize = s;
+        }
+        return outline;
+    }
+
+    /**
+     * Round all the points of a shape to whole pixels. The straight edges of the glyphs (on whole
+     * units of their 24 unit grid) so become sharp pixel borders, at any size.
+     */
+    private static Shape snapToPixels( Shape shape ) {
+        Path2D.Float path = new Path2D.Float(Path2D.WIND_NON_ZERO);
+        float[] c = new float[6];
+        for( PathIterator it = shape.getPathIterator(null); !it.isDone(); it.next() ) {
+            int type = it.currentSegment(c);
+            for( int i = 0; i < c.length; i++ ) {
+                c[i] = Math.round(c[i]);
+            }
+            switch( type ) {
+            case PathIterator.SEG_MOVETO -> path.moveTo(c[0], c[1]);
+            case PathIterator.SEG_LINETO -> path.lineTo(c[0], c[1]);
+            case PathIterator.SEG_QUADTO -> path.quadTo(c[0], c[1], c[2], c[3]);
+            case PathIterator.SEG_CUBICTO -> path.curveTo(c[0], c[1], c[2], c[3], c[4], c[5]);
+            case PathIterator.SEG_CLOSE -> path.closePath();
+            default -> throw new IllegalStateException("Unknown path segment: " + type);
+            }
+        }
+        return path;
+    }
+
+    /**
      * Renders the icon with its normal color, for code that needs an {@link Image}
-     * (for example frame icons).
+     * (for example frame icons). The image has variants for HiDPI screens, each snapped
+     * to its own pixels.
      */
     @Override
     public Image getImage() {
         int s = getIconWidth();
-        BufferedImage image = new BufferedImage(s, s, BufferedImage.TYPE_INT_ARGB);
-        Graphics g = image.getGraphics();
-        paint(g, 0, 0, iconColor.getColor());
-        g.dispose();
-        return image;
+        double[] scales = {1, 1.25, 1.5, 2, 3};
+        Image[] variants = new Image[scales.length];
+        for( int i = 0; i < scales.length; i++ ) {
+            int px = (int) Math.ceil(s * scales[i]);
+            BufferedImage image = new BufferedImage(px, px, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = image.createGraphics();
+            g.scale(scales[i], scales[i]);
+            paint(g, 0, 0, iconColor.getColor());
+            g.dispose();
+            variants[i] = image;
+        }
+        return new BaseMultiResolutionImage(variants);
+    }
+
+    /**
+     * @param newSize the unscaled size in pixels.
+     * @return the same glyph and color at another size.
+     */
+    public MaterialIcon withSize( int newSize ) {
+        return newSize == size ? this : new MaterialIcon(glyph, newSize, iconColor);
     }
 
     @Override

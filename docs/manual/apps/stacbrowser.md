@@ -230,6 +230,15 @@ Download whole files...
 Export rasters clipped to bbox (GeoTIFF)...
 : reads only the part of each raster covering the search region and saves it as a GeoTIFF. Only available when a valid search region is set.
 
+Show on map
+: draws a single raster or vector asset over the map, reading only the part visible in the map at about the screen resolution.
+
+Remove from map, Remove all from map
+: remove the selected assets, or all of them, from the map.
+
+View table...
+: shows a single CSV asset as a table.
+
 Copy URL
 : copies the addresses of the selected assets to the clipboard.
 

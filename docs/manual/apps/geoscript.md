@@ -70,6 +70,40 @@ Ctrl+Space shows the possible completions of what is being typed, and they also 
 The completions of a module: its parameters first, with the description of the selected one.
 :::
 
+### Debugging
+
+The debugger runs a script line by line, to follow what it does and check the values of its variables along the way.
+
+Set a **breakpoint** on a line with a click in the gutter, left of the line numbers, or with **Script > Toggle breakpoint** (F9) on the line of the cursor; a red dot marks it. Click again (or F9) to remove it; **Script > Remove all breakpoints** removes them all.
+
+**Script > Debug** (F5), or the bug button of the toolbar, runs the script (or the selected lines, as for a normal run) and stops at the first breakpoint, before running its line. The paused line is highlighted, the status bar says where the script stopped, and the **variables** table below the output shows the variables visible at that point: their name, type, value and scope, *local* for the ones defined with `def` in the script, *binding* for the ones kept between runs. Hover over a value to see it in full, double click a variable to print it in the output, with tables and images as for the results.
+
+:::{figure} ../images/apps/geoscript/debug.png
+:alt: The debugger paused at a breakpoint
+:width: 100%
+:align: center
+
+The network script paused at a breakpoint, after the pit filling and the drainage directions: the variables table shows the paths and the modules created so far.
+:::
+
+While paused:
+
+Continue (F5)
+: runs up to the next breakpoint, or to the end of the script.
+
+Step over (F10)
+: runs the current line and stops at the next one.
+
+Step into (F11)
+: stops at the next statement, also inside the methods and closures defined in the script.
+
+Step out (Shift+F11)
+: runs up to the end of the current method or closure.
+
+The stop button interrupts the script, as for a normal run. The editor can't be edited while debugging, since the pauses refer to its lines.
+
+Only the code of the script is stepped through: a call to a module or another Java method runs as a whole, so a step over `pitfiller.process()` runs the whole module. **Help > Keyboard shortcuts** lists all the keys of the console, the debugger ones included.
+
 ## The HM menu
 
 The **HM** menu adds a few HortonMachine specific helpers to the standard console.

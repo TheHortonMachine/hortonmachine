@@ -293,16 +293,16 @@ public class GuiUtilities {
     }
 
     public static void setDefaultLookAndFeel() {
-    	String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, String.valueOf(HM_DEF_UISCALE));
-    	double uiScale = HM_DEF_UISCALE;
-    	if(!uiScaleString.isBlank()) {
+    	// a scale set in the settings wins, else FlatLaf detects it from the system font and screen
+    	String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, "");
+    	if (uiScaleString != null && !uiScaleString.isBlank()) {
     		try {
-				uiScale = Double.parseDouble(uiScaleString);
-			} catch (NumberFormatException e) {
-				// ignore and use default
-			}
+    			double uiScale = Double.parseDouble(uiScaleString.trim());
+    			System.setProperty("flatlaf.uiScale", String.valueOf(uiScale));
+    		} catch (NumberFormatException e) {
+    			// invalid value, leave the automatic scale
+    		}
     	}
-    	System.setProperty("flatlaf.uiScale", "" + uiScale);
     	GuiTheme theme = GuiTheme.fromName(PreferencesHandler.getPreference(HM_PREF_UITHEME, GuiTheme.DEFAULT.name()));
     	try {
 			UIManager.setLookAndFeel(theme.createLookAndFeel());

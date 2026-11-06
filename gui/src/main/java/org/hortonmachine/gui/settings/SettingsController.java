@@ -7,9 +7,11 @@ import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYPWD;
 import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_PROXYUSER;
 import static org.hortonmachine.gears.utils.PreferencesHandler.HM_PREF_SHP_CHARSET;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -17,7 +19,9 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.prefs.Preferences;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -53,7 +57,40 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 		_jtabbedpane1.addTab("Database", null, createDatabasePanel());
 		_jtabbedpane1.addTab("Appearance", null, createAppearancePanel());
 
+		_uiScalingTextField.putClientProperty("JTextField.placeholderText", "automatic");
+		_uiScalingTextField.setToolTipText("<html>Leave empty to use the scale of the system (font size and screen), or set a factor, e.g. 1.25.<br>"
+				+ "Applied when the applications are restarted.</html>");
+
+		add(createApplyPanel(), BorderLayout.SOUTH);
+
 		fillFromPreferences();
+	}
+
+	/**
+	 * The settings are saved also when the window is closed, the apply button saves them
+	 * without having to close it.
+	 */
+	private JPanel createApplyPanel() {
+		JLabel savedLabel = new JLabel();
+		savedLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		JButton applyButton = new JButton("Apply");
+		applyButton.setToolTipText("Save the settings (they are also saved when the window is closed)");
+		applyButton.addActionListener(e -> {
+			try {
+				applySettingsAndSavePreferences();
+				applySettings(this);
+				savedLabel.setText("Settings saved. A changed UI scale is applied when the applications are restarted.");
+			} catch (Exception ex) {
+				Logger.INSTANCE.insertError("SettingsController", "An error occurred while saving the settings", ex);
+				savedLabel.setText("The settings could not be saved: " + ex.getMessage());
+			}
+		});
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		// keep the button off the window border, near the right edge of the tab contents
+		panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 6, 20));
+		panel.add(savedLabel);
+		panel.add(applyButton);
+		return panel;
 	}
 
 	private JPanel createAppearancePanel() {
@@ -124,7 +161,7 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 		String proxyPort = PreferencesHandler.getPreference(HM_PREF_PROXYPORT, "");
 		String proxyUser = PreferencesHandler.getPreference(HM_PREF_PROXYUSER, "");
 		String proxyPwd = PreferencesHandler.getPreference(HM_PREF_PROXYPWD, "");
-		String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, ""+HM_DEF_UISCALE);
+		String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, "");
 		String copernicusToken = PreferencesHandler.getPreference(HM_PREF_COPERNICUS_API_TOKEN, "");
 		String copernicusFolder = PreferencesHandler.getPreference(HM_PREF_COPERNICUS_REPO_FOLDER, "");
 		
@@ -214,16 +251,17 @@ public class SettingsController extends SettingsView implements IOnCloseListener
 			preferences.put(PreferencesDb.HM_PREF_PREFFOLDER, folderPath);
 		}
 
-		String uiScaleValueString = _uiScalingTextField.getText();
-		double uiScale = HM_DEF_UISCALE;
-		if (!uiScaleValueString.isBlank()) {
+		// empty means automatic: FlatLaf detects the scale from the system font and screen
+		String uiScaleValueString = _uiScalingTextField.getText().trim();
+		String uiScaleToSave = "";
+		if (!uiScaleValueString.isEmpty()) {
 			try {
-				uiScale = Double.parseDouble(uiScaleValueString);
+				uiScaleToSave = String.valueOf(Double.parseDouble(uiScaleValueString));
 			} catch (NumberFormatException e1) {
-				// ignore and use default
+				// not a number, keep automatic
 			}
-			PreferencesHandler.setPreference(HM_PREF_UISCALE, String.valueOf(uiScale));
 		}
+		PreferencesHandler.setPreference(HM_PREF_UISCALE, uiScaleToSave);
 
 		PreferencesHandler.setPreference(HM_PREF_DB_PREVIEW_TIMEOUT, String.valueOf(dbPreviewTimeoutSpinner.getValue()));
 		PreferencesHandler.setPreference(HM_PREF_DB_EDITOR_TIMEOUT, String.valueOf(dbEditorTimeoutSpinner.getValue()));

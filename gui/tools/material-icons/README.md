@@ -6,7 +6,11 @@ font (Apache License 2.0), stored as
 `gui/src/main/resources/org/hortonmachine/gui/icons/MaterialSymbolsOutlined-hm.ttf`.
 
 It only contains the glyphs listed in `glyphs.txt`, instanced at
-FILL=0, GRAD=0, opsz=20, wght=400.
+FILL=0, GRAD=0, opsz=24, wght=400.
+
+The opsz=24 outlines lie on a 24 unit grid (all their straight edges on whole units), which
+`MaterialIcon` snaps to the device pixels when drawing: keep that optical size, the others
+are not grid aligned and draw blurry.
 
 ## Adding an icon
 

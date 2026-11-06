@@ -444,6 +444,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         btn = new JButton(new ResetAction(mapPane));
         btn.setName(JMapFrame.TOOLBAR_RESET_BUTTON_NAME);
         toolBar.add(btn);
+        ImageCache.applyMapToolIcons(toolBar);
         return toolBar;
     }
 

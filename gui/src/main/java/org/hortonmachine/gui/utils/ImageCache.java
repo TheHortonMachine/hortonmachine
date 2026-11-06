@@ -18,16 +18,24 @@
 package org.hortonmachine.gui.utils;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.swing.AbstractButton;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JToolBar;
+
+import org.geotools.swing.MapLayerTableCellRenderer.LayerControlItem;
+import org.geotools.swing.control.JMenuStatusBarItem;
+import org.geotools.swing.control.JRendererStatusBarItem;
 
 import org.geotools.swing.action.InfoAction;
 import org.geotools.swing.action.NoToolAction;
@@ -169,6 +177,14 @@ public class ImageCache {
     public static final String MAP_RESET = "glyph:fit_screen";
     public static final String ARROW_UP = "glyph:arrow_upward";
     public static final String ARROW_DOWN = "glyph:arrow_downward";
+    public static final String MAP_LAYER_VISIBLE = "glyph:visibility";
+    public static final String MAP_LAYER_HIDDEN = "glyph:visibility_off";
+    public static final String MAP_LAYER_SELECTED = "glyph:check_box";
+    public static final String MAP_LAYER_UNSELECTED = "glyph:check_box_outline_blank";
+    public static final String MAP_RENDER_BUSY = "glyph:progress_activity";
+    public static final String MAP_RENDER_IDLE = "glyph:radio_button_unchecked";
+
+    private static boolean mapLayerTableIconsApplied = false;
 
     private record Glyph(char codepoint, int size, IconColor color) {
     }
@@ -249,7 +265,7 @@ public class ImageCache {
             Map.entry(ZOOM_TO_ALL, g(0xea10)), // fit_screen
             Map.entry(ZOOM_TO_NEXT, g(0xe5cc)), // navigate_next
             Map.entry(ZOOM_TO_PREVIOUS, g(0xe5cb)), // navigate_before
-            Map.entry(SELECTION_MODE, g(0xef52, 24)), // highlight_alt
+            Map.entry(SELECTION_MODE, g(0xef52)), // highlight_alt
             Map.entry(BROWSER, g(0xe2db)), // travel_explore
             Map.entry(VECTOR, g(0xf8d3)), // shape_line
             Map.entry(GEOM_POINT, g(0xe268)), // scatter_plot
@@ -270,7 +286,13 @@ public class ImageCache {
             Map.entry(MAP_INFO, g(0xe88e)), // info
             Map.entry(MAP_RESET, g(0xea10)), // fit_screen
             Map.entry(ARROW_UP, g(0xe5d8)), // arrow_upward
-            Map.entry(ARROW_DOWN, g(0xe5db)) // arrow_downward
+            Map.entry(ARROW_DOWN, g(0xe5db)), // arrow_downward
+            Map.entry(MAP_LAYER_VISIBLE, g(0xe8f4)), // visibility
+            Map.entry(MAP_LAYER_HIDDEN, g(0xe8f5)), // visibility_off
+            Map.entry(MAP_LAYER_SELECTED, g(0xe9de)), // check_box
+            Map.entry(MAP_LAYER_UNSELECTED, g(0xe835)), // check_box_outline_blank
+            Map.entry(MAP_RENDER_BUSY, g(0xe9d0, IconColor.ACCENT)), // progress_activity
+            Map.entry(MAP_RENDER_IDLE, g(0xe836)) // radio_button_unchecked
     );
 
     private static ImageCache imageCache;
@@ -345,11 +367,112 @@ public class ImageCache {
         for( Component component : toolBar.getComponents() ) {
             if (component instanceof AbstractButton button) {
                 String key = getMapToolKey(button.getAction());
-                ImageIcon icon = key != null ? get(key) : null;
+                ImageIcon icon = key != null ? get(key, SIZE_TOOLBAR) : null;
                 if (icon != null) {
                     button.setIcon(icon);
                 }
             }
+        }
+    }
+
+    /**
+     * Show the glyph icons of the buttons of a toolbar at a larger size. The icons shared with
+     * menus (through actions) are left as they are, the buttons get resized copies.
+     *
+     * @param toolBar the toolbar.
+     * @param size the unscaled size in pixels, for example {@link #SIZE_TOOLBAR}.
+     */
+    public static void setToolBarIconSize( JToolBar toolBar, int size ) {
+        if (toolBar == null) {
+            return;
+        }
+        for( Component component : toolBar.getComponents() ) {
+            if (component instanceof AbstractButton button && button.getIcon() instanceof MaterialIcon icon) {
+                button.setIcon(icon.withSize(size));
+            }
+        }
+    }
+
+    /**
+     * Replace the bitmaps of the GeoTools layer table (visibility, selection, style and remove
+     * icons of the layers and the buttons below them) with Material Symbols icons.
+     *
+     * <p>The GeoTools icons are shared static instances, so their images are replaced in place,
+     * once, for all the layer tables.</p>
+     */
+    public static synchronized void applyMapLayerTableIcons() {
+        if (mapLayerTableIconsApplied || !MaterialIcon.isAvailable()) {
+            return;
+        }
+        mapLayerTableIconsApplied = true;
+        for( LayerControlItem item : LayerControlItem.values() ) {
+            switch( item ) {
+            case VISIBLE:
+                replaceImage(item.getIcon(), MAP_LAYER_VISIBLE);
+                replaceImage(item.getOffIcon(), MAP_LAYER_HIDDEN);
+                break;
+            case SELECTED:
+                replaceImage(item.getIcon(), MAP_LAYER_SELECTED);
+                replaceImage(item.getOffIcon(), MAP_LAYER_UNSELECTED);
+                break;
+            case STYLE:
+                replaceImage(item.getIcon(), PALETTE);
+                replaceImage(item.getOffIcon(), PALETTE);
+                break;
+            case REMOVE:
+                replaceImage(item.getIcon(), TRASH);
+                replaceImage(item.getOffIcon(), TRASH);
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    /**
+     * Replace the bitmaps of the GeoTools map status bar (renderer busy/idle and settings menu)
+     * found in a container with Material Symbols icons.
+     *
+     * @param container the container holding the status bar, for example a map frame's content pane.
+     */
+    public static void applyMapStatusBarIcons( Container container ) {
+        if (container == null || !MaterialIcon.isAvailable()) {
+            return;
+        }
+        for( Component component : container.getComponents() ) {
+            if (component instanceof JRendererStatusBarItem) {
+                // the icons are private, but swapped in place on every render event
+                for( String[] fieldAndKey : new String[][]{{"busyIcon", MAP_RENDER_BUSY}, {"idleIcon", MAP_RENDER_IDLE}} ) {
+                    try {
+                        Field field = JRendererStatusBarItem.class.getDeclaredField(fieldAndKey[0]);
+                        field.setAccessible(true);
+                        replaceImage((Icon) field.get(component), fieldAndKey[1]);
+                    } catch (Exception e) {
+                        // keep the GeoTools icon
+                    }
+                }
+                for( Component child : ((Container) component).getComponents() ) {
+                    if (child instanceof JLabel label && label.getIcon() != null) {
+                        label.repaint();
+                    }
+                }
+            } else if (component instanceof JMenuStatusBarItem) {
+                ImageIcon settings = get(SETTINGS);
+                for( Component child : ((Container) component).getComponents() ) {
+                    if (child instanceof AbstractButton button && settings != null) {
+                        button.setIcon(settings);
+                    }
+                }
+            } else if (component instanceof Container child) {
+                applyMapStatusBarIcons(child);
+            }
+        }
+    }
+
+    private static void replaceImage( Icon target, String key ) {
+        ImageIcon glyph = get(key);
+        if (target instanceof ImageIcon imageIcon && glyph instanceof MaterialIcon) {
+            imageIcon.setImage(glyph.getImage());
         }
     }
 
@@ -372,6 +495,28 @@ public class ImageCache {
 
     public static ImageIcon get( String key ) {
         return ImageCache.getInstance().getImage(key);
+    }
+
+    /** Icon size for big toolbar buttons, with the text below the icon. */
+    public static final int SIZE_TOOLBAR_LARGE = 24;
+    /** Icon size for compact toolbar buttons. */
+    public static final int SIZE_TOOLBAR = 20;
+
+    /**
+     * Get an icon at a given size. Only glyph icons can be resized: for bitmap keys, or if the
+     * icon font is not available, the normal icon is returned.
+     *
+     * @param key the image key.
+     * @param size the unscaled size in pixels, for example {@link #SIZE_TOOLBAR}.
+     * @return the icon.
+     */
+    public static ImageIcon get( String key, int size ) {
+        Glyph glyph = GLYPHS.get(key);
+        if (glyph == null || glyph.size() == size || !MaterialIcon.isAvailable()) {
+            return get(key);
+        }
+        return ImageCache.getInstance().imageMap.computeIfAbsent(key + "@" + size,
+                k -> new MaterialIcon(glyph.codepoint(), size, glyph.color()));
     }
 
     public static BufferedImage getBuffered( String key ) {

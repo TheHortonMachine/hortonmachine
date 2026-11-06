@@ -87,6 +87,8 @@ import org.hortonmachine.utils.SlippyMapPanel;
 import org.hortonmachine.webmaps.ServicePanel.LayerEntry;
 import org.locationtech.jts.geom.Envelope;
 
+import com.formdev.flatlaf.util.UIScale;
+
 /**
  * A testbed for OGC web services (WMS, WCS and WFS), to check how well a service is supported by
  * the HortonMachine: browse the layers and their metadata, run requests on a region, see the
@@ -339,8 +341,9 @@ public class WebServicesBrowser extends JPanel implements IOnCloseListener {
         JPanel requestPanel = new JPanel(new BorderLayout());
         requestPanel.add(scroll, BorderLayout.CENTER);
         requestPanel.add(actionCards, BorderLayout.SOUTH);
-        requestPanel.setMinimumSize(new Dimension(380, 100));
-        requestPanel.setPreferredSize(new Dimension(420, 100));
+        // scaled with the ui scale, else the region buttons get clipped on enlarged interfaces
+        requestPanel.setMinimumSize(UIScale.scale(new Dimension(380, 100)));
+        requestPanel.setPreferredSize(UIScale.scale(new Dimension(420, 100)));
         return requestPanel;
     }
 
