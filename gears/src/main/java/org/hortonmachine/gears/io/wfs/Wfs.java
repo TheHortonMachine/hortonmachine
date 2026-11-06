@@ -44,6 +44,7 @@ import org.geotools.data.wfs.WFSServiceInfo;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.util.factory.GeoTools;
 import org.hortonmachine.gears.utils.features.CoordinateSwappingFeatureCollection;
 import org.hortonmachine.gears.utils.features.FeatureGeometrySubstitutor;
 import org.locationtech.jts.geom.Envelope;
@@ -236,6 +237,12 @@ public class Wfs implements AutoCloseable {
 			}
 		}
 		params.put("WFSDataStoreFactory:GET_CAPABILITIES_URL", wfsUrl);
+
+		// the GetFeature responses reference the DescribeFeatureType of the service,
+		// which the default GeoTools entity resolver blocks
+		WfsEntityResolver.allowHost(wfsUrl);
+		// the datastore parsers use their own parameter, the GetFeature pull parser the global hint
+		params.put(WFSDataStoreFactory.ENTITY_RESOLVER.key, GeoTools.getEntityResolver(null));
 
 		dataStore = DataStoreFinder.getDataStore(params);
 		if (dataStore == null) {
@@ -458,7 +465,16 @@ public class Wfs implements AutoCloseable {
 		} finally {
 			featureIterator.close();
 		}
-		
+
+		if (fc.isEmpty()) {
+			// an empty DefaultFeatureCollection has no schema, give it the one the features would have had
+			SimpleFeatureType type = getSimpleFeatureType();
+			if ((normalizeGeomName || forceXYSwap) && type.getGeometryDescriptor() != null) {
+				Class<?> geomBinding = type.getGeometryDescriptor().getType().getBinding();
+				type = new FeatureGeometrySubstitutor(type, geomBinding).getNewFeatureType();
+			}
+			return new DefaultFeatureCollection(null, type);
+		}
 		return fc;
 	}
 	

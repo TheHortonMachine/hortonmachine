@@ -117,6 +117,7 @@ class WfsServicePanel extends ServicePanel {
     @Override
     String[] getPresets() {
         return new String[]{//
+                "https://geoservices9.civis.bz.it/geoserver/wfs?SERVICE=WFS&REQUEST=GetCapabilities", //
                 "https://visualizador.ideam.gov.co/gisserver/services/Vulnerabilidad_Susceptibilidad_Ambiental/MapServer/WFSServer?service=WFS&request=GetCapabilities"//
         };
     }
