@@ -92,7 +92,7 @@ public class OmsProfile extends HMModel {
     public static final String OMSPROFILE_KEYWORDS = "OmsProfile, Raster";
     public static final String OMSPROFILE_LABEL = RASTERPROCESSING;
     public static final String OMSPROFILE_NAME = "profile";
-    public static final int OMSPROFILE_STATUS = 5;
+    public static final int OMSPROFILE_STATUS = 20;
     public static final String OMSPROFILE_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSPROFILE_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSPROFILE_AUTHORCONTACTS = "http://www.hydrologis.com";

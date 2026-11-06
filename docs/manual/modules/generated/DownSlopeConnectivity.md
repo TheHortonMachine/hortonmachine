@@ -3,7 +3,7 @@
 Calculates the downslope component of the index of sediment connectivity of Cavalli et al.: for each cell, the sum along its flow path down to the network of the length of each step divided by the weight and the slope of its cell. Low values mark the cells well connected to the network.
 
 **Toolbox folder:** Hillslope<br>
-**Status:** Draft<br>
+**Status:** Tested<br>
 **Keywords:** connectivity, sediment, raster<br>
 **Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.DownSlopeConnectivity`

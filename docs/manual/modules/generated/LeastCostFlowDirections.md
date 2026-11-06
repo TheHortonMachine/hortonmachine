@@ -3,7 +3,7 @@
 Calculates the drainage directions with a least cost search, without filling the depressions: starting from the cells at the border of the map, the outlets, the directions grow upstream, always from the lowest cell reached. The paths cross the depressions instead of filling them, which changes the elevation model less.
 
 **Toolbox folder:** Geomorphology<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Geomorphology, Drainage directions, Least cost<br>
 **Authors:** Silvia Franceschi, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.LeastCostFlowDirections`

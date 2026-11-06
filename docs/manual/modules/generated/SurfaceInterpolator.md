@@ -3,7 +3,7 @@
 Interpolates the values of a vector of points onto the grid of a raster, with Thin Plate Splines or Inverse Distance Weighting: each cell is computed from the points within the buffer distance around it.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Draft<br>
+**Status:** Tested<br>
 **Keywords:** Interpolation, Raster, Points, Spline, IDW<br>
 **Authors:** Jan Jezek, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.SurfaceInterpolator`

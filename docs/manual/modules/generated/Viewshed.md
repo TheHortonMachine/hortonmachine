@@ -3,7 +3,7 @@
 Calculates the viewshed of one or more viewpoints on an elevation model: the cells visible from the viewpoints, with the number of viewpoints that see each cell. The cells not visible are no-data.
 
 **Toolbox folder:** Geomorphology<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Viewshed, Visibility, Line of sight<br>
 **Authors:** Dr. John Lindsay<br>
 **Class:** `org.hortonmachine.modules.Viewshed`

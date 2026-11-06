@@ -3,7 +3,7 @@
 Classifies the landforms with the geomorphon method: in each of the 8 directions, within the search radius, the terrain is compared with the line of sight from the cell, and it is higher, lower or level with it. The pattern of the 8 directions gives the landform: 1000 flat, 1001 peak, 1002 ridge, 1003 shoulder, 1004 spur, 1005 slope, 1006 hollow, 1007 footslope, 1008 valley, 1009 pit.
 
 **Toolbox folder:** Geomorphology<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Geomorphology, Geomorphon, Landforms<br>
 **Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.Geomorphon`

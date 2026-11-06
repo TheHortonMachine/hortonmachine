@@ -19,7 +19,6 @@ package org.hortonmachine.modules;
 
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 import static org.hortonmachine.gears.modules.r.connectivity.OmsDownSlopeConnectivity.BIBLIO;
 import static org.hortonmachine.gears.modules.r.connectivity.OmsDownSlopeConnectivity.DESCRIPTION;
@@ -55,7 +54,7 @@ import oms3.annotations.Unit;
 @Keywords(KEYWORDS)
 @Label(LABEL)
 @Name("_" + NAME)
-@Status(OMSHYDRO_DRAFT)
+@Status(Status.TESTED)
 @License(OMSHYDRO_LICENSE)
 @Bibliography(BIBLIO)
 public class DownSlopeConnectivity extends HMModel {

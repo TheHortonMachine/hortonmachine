@@ -6,6 +6,7 @@ General purpose modules to process rasters.
 :maxdepth: 1
 
 bobthebuilder
+cannyedgedetector
 carver
 cutout
 imagemosaiccreator

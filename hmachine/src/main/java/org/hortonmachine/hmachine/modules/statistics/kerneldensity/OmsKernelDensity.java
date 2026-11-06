@@ -93,7 +93,7 @@ public class OmsKernelDensity extends HMModel {
     public static final String OMSKERNELDENSITY_KEYWORDS = "Kernel Density, Raster";
     public static final String OMSKERNELDENSITY_LABEL = "Raster Processing";
     public static final String OMSKERNELDENSITY_NAME = "kerneldenisty";
-    public static final int OMSKERNELDENSITY_STATUS = 5;
+    public static final int OMSKERNELDENSITY_STATUS = 20;
     public static final String OMSKERNELDENSITY_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSKERNELDENSITY_AUTHORNAMES = "Andrea Antonello, Diego Bengocheapaz";
     public static final String OMSKERNELDENSITY_AUTHORCONTACTS = "http://jaitools.org, www.hydrologis.com";

@@ -21,7 +21,6 @@ import static java.lang.Math.pow;
 import static java.lang.Math.sqrt;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import java.awt.image.WritableRaster;
@@ -57,7 +56,7 @@ import oms3.annotations.Unit;
 @Keywords(OmsDownSlopeConnectivity.KEYWORDS)
 @Label(OmsDownSlopeConnectivity.LABEL)
 @Name(OmsDownSlopeConnectivity.NAME)
-@Status(OMSHYDRO_DRAFT)
+@Status(Status.TESTED)
 @License(OMSHYDRO_LICENSE)
 @Bibliography(OmsDownSlopeConnectivity.BIBLIO)
 public class OmsDownSlopeConnectivity extends HMModel {

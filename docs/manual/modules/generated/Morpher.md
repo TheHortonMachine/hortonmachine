@@ -3,7 +3,7 @@
 Morphological operations on rasters, where the valid cells are the objects and the novalues the background: dilation, erosion, opening and closing of the objects, their thinning to lines one cell wide (skeletonize) and the pruning of the short branches, and the search of the ends and of the junctions of the lines.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Draft<br>
+**Status:** Tested<br>
 **Keywords:** Dilation, Erosion, Skeletonize, Open, Close, Raster<br>
 **Authors:** Simon Horne, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Morpher`

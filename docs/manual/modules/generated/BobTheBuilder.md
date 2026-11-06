@@ -3,7 +3,7 @@
 Builds an artifact, as a dam, an embankment or a levee, into an elevation model: inside a polygon, the elevations are interpolated from points with the elevation of the artifact, and replace the ones of the raster where they are higher, or everywhere if erosion is enabled.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Build, Raster<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.BobTheBuilder`

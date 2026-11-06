@@ -24,6 +24,7 @@ org.hortonmachine.modules.Markoutlets
 org.hortonmachine.modules.Gradient
 org.hortonmachine.modules.Slope
 org.hortonmachine.modules.Curvatures
+org.hortonmachine.modules.CurvaturesBivariate
 org.hortonmachine.modules.Ab
 org.hortonmachine.modules.TopIndex
 org.hortonmachine.modules.RescaledDistance
@@ -79,6 +80,7 @@ org.hortonmachine.modules.RasterSummary
 org.hortonmachine.modules.SurfaceInterpolator
 org.hortonmachine.modules.RangeLookup
 org.hortonmachine.modules.BobTheBuilder
+org.hortonmachine.modules.CannyEdgeDetector
 org.hortonmachine.modules.Carver
 org.hortonmachine.modules.KernelDensity
 org.hortonmachine.modules.Profile

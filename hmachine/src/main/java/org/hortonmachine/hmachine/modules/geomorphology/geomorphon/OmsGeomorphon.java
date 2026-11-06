@@ -80,7 +80,7 @@ public class OmsGeomorphon extends HMModel {
     public GridCoverage2D outRaster;
 
     public static final String LICENSE = HMConstants.GPL3_LICENSE;
-    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final int STATUS = Status.TESTED;
     public static final String NAME = "geomorphonraster";
     public static final String KEYWORDS = "Geomorphology, Geomorphon, Landforms";
     public static final String CONTACT = "www.hydrologis.com";

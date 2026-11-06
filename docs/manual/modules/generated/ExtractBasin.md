@@ -3,7 +3,7 @@
 Extracts the basin draining to an outlet point, from a map of drainage directions.
 
 **Toolbox folder:** Dem Manipulation<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Dem manipulation, Basin, Watershed, Outlet<br>
 **Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.ExtractBasin`

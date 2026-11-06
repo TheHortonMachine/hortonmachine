@@ -95,7 +95,7 @@ public class OmsIntersectionFinder extends HMModel {
     public static final String OMSINTERSECTIONFINDER_KEYWORDS = "Vector";
     public static final String OMSINTERSECTIONFINDER_LABEL = HMConstants.VECTORPROCESSING;
     public static final String OMSINTERSECTIONFINDER_NAME = "intersectionfinder";
-    public static final int OMSINTERSECTIONFINDER_STATUS = 10;
+    public static final int OMSINTERSECTIONFINDER_STATUS = 20;
     public static final String OMSINTERSECTIONFINDER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSINTERSECTIONFINDER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSINTERSECTIONFINDER_AUTHORCONTACTS = "www.hydrologis.com";

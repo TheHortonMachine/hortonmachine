@@ -341,7 +341,7 @@ public class GearsMessages {
     public static final String OMSRASTERRESOLUTIONRESAMPLER_KEYWORDS = "Raster, Resampling, Resolution";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERRESOLUTIONRESAMPLER_NAME = "rresolresampler";
-    public static final int OMSRASTERRESOLUTIONRESAMPLER_STATUS = 5;
+    public static final int OMSRASTERRESOLUTIONRESAMPLER_STATUS = 20;
     public static final String OMSRASTERRESOLUTIONRESAMPLER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERRESOLUTIONRESAMPLER_AUTHORCONTACTS = "www.hydrologis.com";
@@ -399,7 +399,7 @@ public class GearsMessages {
     public static final String OMSCARVER_KEYWORDS = "Carve, Raster";
     public static final String OMSCARVER_LABEL = RASTERPROCESSING;
     public static final String OMSCARVER_NAME = "carver";
-    public static final int OMSCARVER_STATUS = 5;
+    public static final int OMSCARVER_STATUS = 20;
     public static final String OMSCARVER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSCARVER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSCARVER_AUTHORCONTACTS = "www.hydrologis.com";
@@ -647,7 +647,7 @@ public class GearsMessages {
     public static final String OMSSURFACEINTERPOLATOR_KEYWORDS = "Interpolation, Raster, Points, Spline, IDW";
     public static final String OMSSURFACEINTERPOLATOR_LABEL = RASTERPROCESSING;
     public static final String OMSSURFACEINTERPOLATOR_NAME = "surfaceinterpolator";
-    public static final int OMSSURFACEINTERPOLATOR_STATUS = 10;
+    public static final int OMSSURFACEINTERPOLATOR_STATUS = 20;
     public static final String OMSSURFACEINTERPOLATOR_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSSURFACEINTERPOLATOR_AUTHORNAMES = "Jan Jezek, Andrea Antonello";
     public static final String OMSSURFACEINTERPOLATOR_AUTHORCONTACTS = "www.hydrologis.com";
@@ -865,7 +865,7 @@ public class GearsMessages {
     public static final String OMSBOBTHEBUILDER_KEYWORDS = "Build, Raster";
     public static final String OMSBOBTHEBUILDER_LABEL = RASTERPROCESSING;
     public static final String OMSBOBTHEBUILDER_NAME = "bobbuilder";
-    public static final int OMSBOBTHEBUILDER_STATUS = 5;
+    public static final int OMSBOBTHEBUILDER_STATUS = 20;
     public static final String OMSBOBTHEBUILDER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSBOBTHEBUILDER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSBOBTHEBUILDER_AUTHORCONTACTS = "www.hydrologis.com";

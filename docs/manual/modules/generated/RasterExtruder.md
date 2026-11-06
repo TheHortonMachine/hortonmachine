@@ -3,7 +3,7 @@
 Puts the values of a field of polygons into a raster: the cells inside the polygons get the value of their polygon, or, with the add option, the value is added to the one of the cell, as the heights of the buildings onto an elevation model.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Draft<br>
+**Status:** Tested<br>
 **Keywords:** vector, raster, add, extrude, buildings<br>
 **Authors:** Andrea Antonello, Silvia Franceschi<br>
 **Class:** `org.hortonmachine.modules.RasterExtruder`

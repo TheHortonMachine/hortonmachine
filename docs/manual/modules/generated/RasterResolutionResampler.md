@@ -3,7 +3,7 @@
 Resamples a raster to a new cell size, on the same extent, with the chosen interpolation.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Raster, Resampling, Resolution<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.RasterResolutionResampler`

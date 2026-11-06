@@ -37,7 +37,7 @@ import oms3.annotations.UI;
 @Keywords("Dilation, Erosion, Skeletonize, Open, Close, Raster")
 @Label(HMConstants.RASTERPROCESSING)
 @Name("morpher")
-@Status(Status.DRAFT)
+@Status(Status.TESTED)
 @License("http://www.gnu.org/licenses/gpl-3.0.html")
 public class Morpher extends OmsMorpher {
 

@@ -1,7 +1,7 @@
 /*
  * This file is part of HortonMachine (http://www.hortonmachine.org)
- * (C) HydroloGIS - www.hydrologis.com 
- * 
+ * (C) HydroloGIS - www.hydrologis.com
+ *
  * The HortonMachine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -17,39 +17,32 @@
  */
 package org.hortonmachine.hmachine.modules.geomorphology.curvatures;
 
-import static java.lang.Math.atan;
-import static java.lang.Math.pow;
-import static java.lang.Math.sqrt;
-import static java.lang.Math.toDegrees;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
-import static org.hortonmachine.gears.libs.modules.HMConstants.doubleNovalue;
 import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_LABEL;
 import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_outPlan_DESCRIPTION;
 import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvatures.OMSCURVATURES_outProf_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate.BIBLIOGRAPHY_WILSON_2007;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate.BIBLIOGRAPHY_WOOD_1996;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate.OMSCURVATURESBIVARIATE_DESCRIPTION;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate.OMSCURVATURESBIVARIATE_DOCUMENTATION;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate.OMSCURVATURESBIVARIATE_KEYWORDS;
+import static org.hortonmachine.hmachine.modules.geomorphology.curvatures.OmsCurvaturesBivariate.OMSCURVATURESBIVARIATE_STATUS;
 
-import java.awt.image.WritableRaster;
-
-import org.eclipse.imagen.iterator.RandomIter;
-
-import org.apache.commons.math3.linear.DecompositionSolver;
 import org.apache.commons.math3.linear.MatrixUtils;
 import org.apache.commons.math3.linear.RRQRDecomposition;
-import org.apache.commons.math3.linear.RealMatrix;
-import org.apache.commons.math3.linear.RealVector;
 import org.geotools.coverage.grid.GridCoverage2D;
-import org.hortonmachine.gears.libs.modules.GridNode;
+import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
-import org.hortonmachine.gears.utils.RegionMap;
-import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 
 import oms3.annotations.Author;
 import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
 import oms3.annotations.Keywords;
@@ -59,47 +52,71 @@ import oms3.annotations.Name;
 import oms3.annotations.Out;
 import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
-@Description("Estimates the longitudinal, normal and planar curvatures by means of a bivariate quadratic representation of the terrain.")
+@Description(OMSCURVATURESBIVARIATE_DESCRIPTION)
+@Documentation(OMSCURVATURESBIVARIATE_DOCUMENTATION)
 @Author(name = OMSHYDRO_AUTHORNAMES, contact = OMSHYDRO_AUTHORCONTACTS)
-@Keywords("curvatures, bivariate, slope, aspect")
+@Keywords(OMSCURVATURESBIVARIATE_KEYWORDS)
 @Label(OMSCURVATURES_LABEL)
 @Name("oms_curvaturesbivariate")
-@Status(OMSHYDRO_DRAFT)
+@Status(OMSCURVATURESBIVARIATE_STATUS)
 @License(OMSHYDRO_LICENSE)
-@Bibliography("Multiscale Terrain Analysis of Multibeam Bathymetry Data for Habitat Mapping on the Continental Slope, Wilson M., 2007")
+@Bibliography({BIBLIOGRAPHY_WOOD_1996, BIBLIOGRAPHY_WILSON_2007})
 public class OmsCurvaturesBivariate extends HMModel {
-    @Description("The map of the digital elevation model (DEM or pit).")
-    @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @Description(OMSCURVATURESBIVARIATE_inElev_DESCRIPTION)
+    @Unit("m")
     @In
     public GridCoverage2D inElev = null;
 
-    @Description("The size of the analysis window in odd cells number.")
+    @Description(OMSCURVATURESBIVARIATE_pCells_DESCRIPTION)
+    @Unit("cells")
     @In
     public int pCells = 3;
 
-    // output
     @Description(OMSCURVATURES_outProf_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outProf = null;
 
     @Description(OMSCURVATURES_outPlan_DESCRIPTION)
+    @Unit("1/m")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outPlan = null;
 
-    @Description("The map of slope.")
+    @Description(OMSCURVATURESBIVARIATE_outSlope_DESCRIPTION)
+    @Unit("degree")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outSlope = null;
 
-    @Description("The map of aspect")
+    @Description(OMSCURVATURESBIVARIATE_outAspect_DESCRIPTION)
+    @Unit("degree")
     @UI(HMConstants.FILEOUT_UI_HINT)
     @Out
     public GridCoverage2D outAspect = null;
 
-    private double novalue;
+    public static final String BIBLIOGRAPHY_WOOD_1996 = "Wood, J. (1996). The geomorphological characterisation of digital elevation models. PhD thesis, University of Leicester.";
+    public static final String BIBLIOGRAPHY_WILSON_2007 = "Wilson, M. F. J., O'Connell, B., Brown, C., Guinan, J. C., Grehan, A. J. (2007). Multiscale terrain analysis of multibeam bathymetry data for habitat mapping on the continental slope. Marine Geodesy, 30(1-2), 3-35.";
+    public static final String OMSCURVATURESBIVARIATE_DESCRIPTION = "Calculates the profile and planar curvatures, the slope and the aspect of the terrain from a quadratic surface fitted by least squares to a window of pCells x pCells cells around each cell. Larger windows describe the forms at a larger scale. The cells closer to the border of the map or of the no-data than half the window are left as no-data.";
+    public static final String OMSCURVATURESBIVARIATE_DOCUMENTATION = """
+            For each cell, the surface z = ax² + by² + cxy + dx + ey + f is fitted by least squares to the elevations of the window, with the coordinates in map units, centred on the cell, x towards east and y towards north. The derivatives of the surface at the centre give the slope, from the gradient (d, e), the aspect, the direction opposite to the gradient, and the curvatures, from the second derivatives 2a, 2b and c, as in Wood (1996).
+
+            The curvatures have the same units and signs of the Curvatures module: 1/m, positive where the profile is concave and where the contour lines converge. On a 3x3 window the fitted derivatives are those of the finite differences of Evans, so the results are close to Curvatures; larger windows smooth the small forms and the noise of the elevation, and bring out the forms of the size of the window, which is the reason to use this module.
+
+            On the flat cells, where the gradient is zero, the curvatures and the slope are 0 and the aspect, undefined, is no-data.
+            """;
+    public static final String OMSCURVATURESBIVARIATE_KEYWORDS = "Geomorphology, Curvature, Bivariate, Slope, Aspect, Multiscale";
+    public static final int OMSCURVATURESBIVARIATE_STATUS = 40;
+    public static final String OMSCURVATURESBIVARIATE_inElev_DESCRIPTION = "The map of the elevation.";
+    public static final String OMSCURVATURESBIVARIATE_pCells_DESCRIPTION = "The size of the window, in cells: an odd number, at least 3.";
+    public static final String OMSCURVATURESBIVARIATE_outSlope_DESCRIPTION = "The map of the slope, in degrees.";
+    public static final String OMSCURVATURESBIVARIATE_outAspect_DESCRIPTION = "The map of the aspect, in degrees clockwise from north: 0 for the slopes facing north, 90 east, 180 south, 270 west. No-data on the flat cells.";
+
+    /** Below this squared gradient the cell is flat. */
+    private static final double FLAT_GRADIENT2 = 1E-20;
 
     @Execute
     public void process() throws Exception {
@@ -107,162 +124,137 @@ public class OmsCurvaturesBivariate extends HMModel {
             return;
         }
         checkNull(inElev);
-        novalue = HMConstants.getNovalue(inElev);
-
-        if (pCells < 3) {
-            pCells = 3;
-        }
-        if (pCells % 2 == 0) {
-            pCells = pCells + 1;
+        if (pCells < 3 || pCells % 2 == 0) {
+            throw new ModelsIllegalargumentException("The window size has to be an odd number of cells, at least 3: " + pCells,
+                    this, pm);
         }
 
-        RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inElev);
-        int nCols = regionMap.getCols();
-        int nRows = regionMap.getRows();
-        double xRes = regionMap.getXres();
-        double yRes = regionMap.getYres();
+        try (HMRaster elev = HMRaster.fromGridCoverage(inElev);
+                HMRaster prof = new HMRasterWritableBuilder().setName("prof_curvature").setTemplate(elev).build();
+                HMRaster plan = new HMRasterWritableBuilder().setName("plan_curvature").setTemplate(elev).build();
+                HMRaster slope = new HMRasterWritableBuilder().setName("slope").setTemplate(elev).build();
+                HMRaster aspect = new HMRasterWritableBuilder().setName("aspect").setTemplate(elev).build()) {
 
-        RandomIter elevationIter = CoverageUtilities.getRandomIterator(inElev);
+            double[][] fit = fitMatrix(pCells, elev.getXRes(), elev.getYRes());
+            int half = pCells / 2;
+            int size = pCells * pCells;
+            double[] window = new double[size];
+            double[] results = new double[4];
 
-        WritableRaster profWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
-        WritableRaster planWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
-        WritableRaster slopeWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
-        WritableRaster aspectWR = CoverageUtilities.createWritableRaster(nCols, nRows, null, null, novalue);
-
-        final double[] planProfSlopeAspect = new double[4];
-        double disXX = Math.pow(xRes, 2.0);
-        double disYY = Math.pow(yRes, 2.0);
-        /*
-         * calculate curvatures
-         */
-        pm.beginTask("Processing...", nRows - 2);
-        for( int r = 1; r < nRows - 1; r++ ) {
+            elev.process(pm, "Fitting the bivariate quadratic surfaces...", ( col, row, value, cols, rows ) -> {
+                if (elev.isNovalue(value)) {
+                    return;
+                }
+                int i = 0;
+                for( int r = row - half; r <= row + half; r++ ) {
+                    for( int c = col - half; c <= col + half; c++ ) {
+                        double v = elev.getValue(c, r);
+                        if (elev.isNovalue(v)) {
+                            // outside of the map or no-data in the window
+                            return;
+                        }
+                        window[i++] = v;
+                    }
+                }
+                calculate(fit, window, results);
+                prof.setValue(col, row, results[0]);
+                plan.setValue(col, row, results[1]);
+                slope.setValue(col, row, results[2]);
+                if (!Double.isNaN(results[3])) {
+                    aspect.setValue(col, row, results[3]);
+                }
+            });
             if (pm.isCanceled()) {
                 return;
             }
-            for( int c = 1; c < nCols - 1; c++ ) {
-                calculateCurvatures(elevationIter, novalue, planProfSlopeAspect, nCols, nRows, c, r, xRes, yRes, disXX, disYY,
-                        pCells);
-                planWR.setSample(c, r, 0, planProfSlopeAspect[0]);
-                profWR.setSample(c, r, 0, planProfSlopeAspect[1]);
-                slopeWR.setSample(c, r, 0, planProfSlopeAspect[2]);
-                aspectWR.setSample(c, r, 0, planProfSlopeAspect[3]);
-            }
-            pm.worked(1);
-        }
-        pm.done();
 
-        if (pm.isCanceled()) {
+            outProf = prof.buildCoverage();
+            outPlan = plan.buildCoverage();
+            outSlope = slope.buildCoverage();
+            outAspect = aspect.buildCoverage();
+        }
+    }
+
+    /**
+     * Build the matrix that gives the parameters of the least squares quadratic surface from the
+     * values of a window.
+     *
+     * <p>The surface is <code>z = ax² + by² + cxy + dx + ey + f</code>, with x towards east and y
+     * towards north, in map units, from the centre of the window. As the coordinates are the same
+     * for every window, the pseudo-inverse of the design matrix is computed once.</p>
+     *
+     * @param windowSize the odd size of the window, in cells.
+     * @param xRes the cell size along x.
+     * @param yRes the cell size along y.
+     * @return the 6 x windowSize² matrix that, multiplied by the window values in row-major order
+     *          from the north-west corner, gives [a, b, c, d, e, f].
+     */
+    public static double[][] fitMatrix( int windowSize, double xRes, double yRes ) {
+        int half = windowSize / 2;
+        double[][] design = new double[windowSize * windowSize][6];
+        int i = 0;
+        for( int r = -half; r <= half; r++ ) {
+            for( int c = -half; c <= half; c++ ) {
+                double x = c * xRes;
+                // rows grow towards south
+                double y = -r * yRes;
+                design[i][0] = x * x;
+                design[i][1] = y * y;
+                design[i][2] = x * y;
+                design[i][3] = x;
+                design[i][4] = y;
+                design[i][5] = 1;
+                i++;
+            }
+        }
+        // least squares solution for each unit vector: the columns of the pseudo-inverse
+        return new RRQRDecomposition(MatrixUtils.createRealMatrix(design)).getSolver()
+                .solve(MatrixUtils.createRealIdentityMatrix(design.length)).getData();
+    }
+
+    /**
+     * Calculate the curvatures, slope and aspect at the centre of a window.
+     *
+     * @param fit the matrix of {@link #fitMatrix(int, double, double)}.
+     * @param window the window values in row-major order from the north-west corner.
+     * @param results the array to fill with [profile curvature, planar curvature, slope in degrees,
+     *          aspect in degrees clockwise from north or NaN on flat cells].
+     */
+    public static void calculate( double[][] fit, double[] window, double[] results ) {
+        double a = dot(fit[0], window);
+        double b = dot(fit[1], window);
+        double c = dot(fit[2], window);
+        double d = dot(fit[3], window);
+        double e = dot(fit[4], window);
+
+        // first derivatives zx = d, zy = e; second derivatives zxx = 2a, zyy = 2b, zxy = c
+        double p = d * d + e * e;
+        if (p < FLAT_GRADIENT2) {
+            results[0] = 0;
+            results[1] = 0;
+            results[2] = 0;
+            results[3] = Double.NaN;
             return;
         }
-        CoordinateReferenceSystem crs = inElev.getCoordinateReferenceSystem();
-        outProf = CoverageUtilities.buildCoverageWithNovalue("prof_curvature", profWR, regionMap, crs, novalue);
-        outPlan = CoverageUtilities.buildCoverageWithNovalue("plan_curvature", planWR, regionMap, crs, novalue);
-        outSlope = CoverageUtilities.buildCoverageWithNovalue("slope", slopeWR, regionMap, crs, novalue);
-        outAspect = CoverageUtilities.buildCoverageWithNovalue("aspect", aspectWR, regionMap, crs, novalue);
+        // positive where the slope decreases downhill
+        results[0] = (2 * a * d * d + 2 * c * d * e + 2 * b * e * e) / (p * Math.pow(1 + p, 1.5));
+        // positive where the contour lines converge
+        results[1] = (2 * a * e * e - 2 * c * d * e + 2 * b * d * d) / Math.pow(p, 1.5);
+        results[2] = Math.toDegrees(Math.atan(Math.sqrt(p)));
+        // the slope faces the direction opposite to the gradient
+        double azimuth = Math.toDegrees(Math.atan2(-d, -e));
+        if (azimuth < 0) {
+            azimuth += 360;
+        }
+        results[3] = azimuth;
     }
 
-    /**
-     * Calculate curvatures for a single cell.
-     * 
-     * @param elevationIter the elevation map.
-     * @param planTangProf the array into which to insert the resulting [plan, tang, prof] curvatures.
-     * @param col the column to process.
-     * @param row the row to process.
-     * @param ncols the columns of the raster.
-     * @param nrows the rows of the raster.
-     * @param xRes 
-     * @param yRes
-     * @param disXX the diagonal size of the cell, x component.
-     * @param disYY the diagonal size of the cell, y component.
-     */
-    public static void calculateCurvatures( RandomIter elevationIter, double novalue, final double[] planTangProf, int ncols,
-            int nrows, int col, int row, double xRes, double yRes, double disXX, double disYY, int windowSize ) {
-
-        GridNode node = new GridNode(elevationIter, ncols, nrows, xRes, yRes, col, row, novalue);
-        double[][] window = node.getWindow(windowSize, false);
-        if (!hasNovalues(window)) {
-            double[] parameters = calculateParameters(window);
-            double a = parameters[0];
-            double b = parameters[1];
-            double c = parameters[2];
-            double d = parameters[3];
-            double e = parameters[4];
-
-            double slope = atan(sqrt(d * d + e * e));
-            slope = toDegrees(slope);
-            double aspect = atan(e / d);
-            aspect = toDegrees(aspect);
-
-            double profcNumerator = -200.0 * (a * d * d + b * e * e + c * d * e);
-            double profcDenominator = (e * e + d * d) * pow((1 + e * e + d * d), 1.5);
-            double profc = profcNumerator / profcDenominator;
-
-            double plancNumerator = -200.0 * (b * d * d + a * e * e + c * d * e);
-            double plancDenominator = pow((e * e + d * d), 1.5);
-            double planc = plancNumerator / plancDenominator;
-
-            planTangProf[0] = planc;
-            planTangProf[1] = profc;
-            planTangProf[2] = slope;
-            planTangProf[3] = aspect;
-        } else {
-            planTangProf[0] = doubleNovalue;
-            planTangProf[1] = doubleNovalue;
-            planTangProf[2] = doubleNovalue;
-            planTangProf[3] = doubleNovalue;
+    private static double dot( double[] v1, double[] v2 ) {
+        double sum = 0;
+        for( int i = 0; i < v1.length; i++ ) {
+            sum += v1[i] * v2[i];
         }
-    }
-
-    private static boolean hasNovalues( double[][] window ) {
-        for( int i = 0; i < window.length; i++ ) {
-            for( int j = 0; j < window[0].length; j++ ) {
-                if (HMConstants.isNovalue(window[i][j])) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Calculates the parameters of a bivariate quadratic equation.
-     * 
-     * @param elevationValues the window of points to use.
-     * @return the parameters of the bivariate quadratic equation as [a, b, c, d, e, f]
-     */
-    private static double[] calculateParameters( final double[][] elevationValues ) {
-        int rows = elevationValues.length;
-        int cols = elevationValues[0].length;
-        int pointsNum = rows * cols;
-
-        final double[][] xyMatrix = new double[pointsNum][6];
-        final double[] valueArray = new double[pointsNum];
-
-        // TODO check on resolution
-        int index = 0;
-        for( int y = 0; y < rows; y++ ) {
-            for( int x = 0; x < cols; x++ ) {
-                xyMatrix[index][0] = x * x; // x^2
-                xyMatrix[index][1] = y * y; // y^2
-                xyMatrix[index][2] = x * y; // xy
-                xyMatrix[index][3] = x; // x
-                xyMatrix[index][4] = y; // y
-                xyMatrix[index][5] = 1;
-                valueArray[index] = elevationValues[y][x];
-                index++;
-            }
-        }
-
-        RealMatrix A = MatrixUtils.createRealMatrix(xyMatrix);
-        RealVector z = MatrixUtils.createRealVector(valueArray);
-
-        DecompositionSolver solver = new RRQRDecomposition(A).getSolver();
-        RealVector solution = solver.solve(z);
-
-        // start values for a, b, c, d, e, f, all set to 0.0
-        final double[] parameters = solution.toArray();
-        return parameters;
+        return sum;
     }
 
 }

@@ -3,7 +3,7 @@
 Transforms the network shape to a flow map.
 
 **Toolbox folder:** Network<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Network, Flowdirections<br>
 **Authors:** Silvia Franceschi, Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Netshape2Flow`

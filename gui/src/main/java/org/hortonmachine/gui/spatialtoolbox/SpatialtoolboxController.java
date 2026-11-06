@@ -140,7 +140,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
         ImageIcon runScriptIcon = ImageCache.get(ImageCache.RUN_SCRIPT);
         ImageIcon generateScriptIcon = ImageCache.get(ImageCache.GENERATE_SCRIPT);
         ImageIcon trashIcon = ImageCache.get(ImageCache.TRASH);
-        final ImageIcon categoryIcon = ImageCache.get(ImageCache.CATEGORY);
+        final ImageIcon folderIcon = ImageCache.get(ImageCache.FOLDER);
+        final ImageIcon folderOpenIcon = ImageCache.get(ImageCache.FOLDER_OPEN);
         final ImageIcon moduleIcon = ImageCache.get(ImageCache.MODULE);
         final ImageIcon moduleExpIcon = ImageCache.get(ImageCache.MODULEEXP);
 
@@ -297,10 +298,8 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
                         boolean expanded, boolean leaf, int row, boolean hasFocus ) {
 
                     super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
-                    if (value instanceof Modules) {
-                        setIcon(categoryIcon);
-                    } else if (value instanceof ViewerFolder) {
-                        setIcon(categoryIcon);
+                    if (value instanceof Modules || value instanceof ViewerFolder) {
+                        setIcon(expanded ? folderOpenIcon : folderIcon);
                     } else if (value instanceof ViewerModule) {
                         if (isExperimental(value)) {
                             setIcon(moduleExpIcon);

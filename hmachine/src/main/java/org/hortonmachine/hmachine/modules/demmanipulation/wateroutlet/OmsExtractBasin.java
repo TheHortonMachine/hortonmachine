@@ -147,7 +147,7 @@ public class OmsExtractBasin extends HMModel {
     public static final String OMSEXTRACTBASIN_KEYWORDS = "Dem manipulation, Basin, Watershed, Outlet";
     public static final String OMSEXTRACTBASIN_LABEL = DEMMANIPULATION;
     public static final String OMSEXTRACTBASIN_NAME = "extractbasin";
-    public static final int OMSEXTRACTBASIN_STATUS = 5;
+    public static final int OMSEXTRACTBASIN_STATUS = 20;
     public static final String OMSEXTRACTBASIN_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSEXTRACTBASIN_AUTHORNAMES = "Andrea Antonello, Silvia Franceschi";
     public static final String OMSEXTRACTBASIN_AUTHORCONTACTS = "http://www.hydrologis.com";

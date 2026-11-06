@@ -100,7 +100,7 @@ public class OmsContourExtractor extends HMModel {
     public static final String OMSCONTOUREXTRACTOR_KEYWORDS = "Contours, Isolines, Raster, Vector";
     public static final String OMSCONTOUREXTRACTOR_LABEL = VECTORPROCESSING;
     public static final String OMSCONTOUREXTRACTOR_NAME = "contourextract";
-    public static final int OMSCONTOUREXTRACTOR_STATUS = 5;
+    public static final int OMSCONTOUREXTRACTOR_STATUS = 20;
     public static final String OMSCONTOUREXTRACTOR_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSCONTOUREXTRACTOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSCONTOUREXTRACTOR_AUTHORCONTACTS = "http://www.hydrologis.com";

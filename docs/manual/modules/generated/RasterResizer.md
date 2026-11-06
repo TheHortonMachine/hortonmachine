@@ -3,7 +3,7 @@
 Cuts a raster to the bounds of a polygon vector or of a mask raster, keeping its resolution. The new bounds are snapped to the cells of the original raster.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Raster, Vector, Resize<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.RasterResizer`

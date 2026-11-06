@@ -3,7 +3,7 @@
 Kernel density estimator: for each cell, the sum of the values of the cells within a radius, each weighted by a kernel that decreases with the distance. Applied to a map of presences, as 1 for the channels and 0 elsewhere, it gives their density.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Kernel Density, Raster<br>
 **Authors:** Andrea Antonello, Diego Bengocheapaz<br>
 **Class:** `org.hortonmachine.modules.KernelDensity`

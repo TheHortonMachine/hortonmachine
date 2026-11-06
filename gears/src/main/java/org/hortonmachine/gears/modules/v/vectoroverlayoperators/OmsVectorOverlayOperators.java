@@ -113,7 +113,7 @@ public class OmsVectorOverlayOperators extends HMModel {
     public static final String OMSVECTOROVERLAYOPERATORS_KEYWORDS = "JTS, Overlay, Union, Intersect, SymDifference, Difference";
     public static final String OMSVECTOROVERLAYOPERATORS_LABEL = VECTORPROCESSING;
     public static final String OMSVECTOROVERLAYOPERATORS_NAME = "overlay";
-    public static final int OMSVECTOROVERLAYOPERATORS_STATUS = 5;
+    public static final int OMSVECTOROVERLAYOPERATORS_STATUS = 20;
     public static final String OMSVECTOROVERLAYOPERATORS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSVECTOROVERLAYOPERATORS_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSVECTOROVERLAYOPERATORS_AUTHORCONTACTS = "www.hydrologis.com";

@@ -96,7 +96,7 @@ public class OmsViewshed extends HMModel {
     public static final String DESCR_inRaster = "The elevation model.";
     public static final String LICENSE = HMConstants.GPL3_LICENSE;
     public static final String LABEL = GEOMORPHOLOGY;
-    public static final int STATUS = Status.EXPERIMENTAL;
+    public static final int STATUS = Status.TESTED;
     public static final String KEYWORDS = "Viewshed, Visibility, Line of sight";
     public static final String CONTACT = "jlindsay@uoguelph.ca";
     public static final String AUTHOR = "Dr. John Lindsay";

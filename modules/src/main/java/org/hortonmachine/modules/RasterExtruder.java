@@ -31,7 +31,6 @@ import oms3.annotations.UI;
 
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORCONTACTS;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_AUTHORNAMES;
-import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_DRAFT;
 import static org.hortonmachine.gears.i18n.GearsMessages.OMSHYDRO_LICENSE;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -51,7 +50,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 @Keywords("vector, raster, add, extrude, buildings")
 @Label(HMConstants.RASTERPROCESSING)
 @Name("rasterextruder")
-@Status(OMSHYDRO_DRAFT)
+@Status(Status.TESTED)
 @License(OMSHYDRO_LICENSE)
 public class RasterExtruder extends HMModel {
 

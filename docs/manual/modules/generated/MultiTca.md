@@ -3,7 +3,7 @@
 Calculates the total contributing areas with multiple directions on the divergent terrain: on the cells of the classes 10 to 60 of the topographic classes, the area is split among all the lower neighbours, in proportion to the drop; on the convergent cells, classes 70 to 90, it follows the single drainage direction.
 
 **Toolbox folder:** Geomorphology<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Geomorphology, Contributing area, Multiple flow directions<br>
 **Authors:** Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo<br>
 **Class:** `org.hortonmachine.modules.MultiTca`

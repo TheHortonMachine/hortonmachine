@@ -37,6 +37,8 @@ Slope          | ../examples/hm/slope.groovy          | slope.tif               
 Curvatures     | ../examples/hm/curvatures.groovy     | plan.tif                    | rainbow  | clip
 Curvatures     | -                                    | prof.tif                    | rainbow  | clip
 Curvatures     | -                                    | tang.tif                    | rainbow  | clip
+CurvaturesBivariate | ../examples/hm/curvaturesbivariate.groovy | plan_bivariate.tif | rainbow | clip
+CurvaturesBivariate | -                               | prof_bivariate.tif          | rainbow  | clip
 Ab             | ../examples/hm/ab.groovy             | ab.tif                      | logarithmic
 TopIndex       | ../examples/hm/topindex.groovy       | topindex.tif                | rainbow
 ExtractBasin   | ../examples/hm/extractbasin.groovy   | basin.tif                   | blues    | nolegend
@@ -117,6 +119,10 @@ ScanLineRasterizer | ../examples/hm/scanlinerasterizer.groovy | subbasins_avgele
 RasterExtruder | ../examples/hm/rasterextruder.groovy | dtm_wall.tif - dtm_flanginec.tif | reds | positive,nolegend,base=dtm_wall.tif,extent=1637830:1638830:5111910:5112710
 Morpher        | ../examples/hm/morpher.groovy        | steep.tif                   | reds     | nolegend,positive
 Morpher        | -                                    | steep_open.tif              | reds     | nolegend,positive
+CannyEdgeDetector | ../examples/hm/cannyedgedetector_terraces.groovy | terraces_gradient.tif | slope | base=terraces.tif
+CannyEdgeDetector | -                                 | terraces_breaks.tif         | reds     | nolegend,base=terraces.tif
+CannyEdgeDetector | -                                 | terraces_breaks_low.tif     | reds     | nolegend,base=terraces.tif
+CannyEdgeDetector | ../examples/hm/cannyedgedetector.groovy | slope_breaks.tif      | reds     | nolegend
 RiverSectionsExtractor | ../examples/hm/riversectionsextractor.groovy | sections.shp | reds | over=main_channel_smooth.shp,extent=1638500:1640200:5112600:5114000
 HecrasInputBuilder | ../examples/hm/hecrasinputbuilder.groovy | - | -
 SaintGeo       | ../examples/hm/saintgeo_river.groovy | river.tif                   | elev     | base=river.tif

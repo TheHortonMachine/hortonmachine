@@ -34,7 +34,7 @@ import oms3.annotations.Status;
 import oms3.annotations.UI;
 
 @Description("Prepares the inputs of the GeoFrame modelling environment: the geometries, the topology and the attributes of the sub-basins and of the network, computed from the rasters of the basin.")
-@Author(name = "Antonello Andrea, Silvia Franceschi", contact = "http://www.hydrologis.com")
+@Author(name = "Antonello Andrea, Silvia Franceschi, Daniele Andreis", contact = "http://www.hydrologis.com")
 @Keywords("GeoFrame, Sub-basins, Network, Topology")
 @Label(HMConstants.HYDROGEOMORPHOLOGY)
 @Name("_GeoframeInputsBuilder")

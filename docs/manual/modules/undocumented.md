@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-42 of the 197 toolbox modules have no manual page yet.
+40 of the 197 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -79,13 +79,6 @@
 | GeopaparazziProject3To4Converter | draft | Convert a geopaparazzi 3 folder project into a geopaparazzi 4 database. |
 | GeopaparazziSpatialiteCreator | draft | Creates a spatialite database for geopaparazzi from a set of shapefiles or adds to an existing one. |
 
-## Other (2)
-
-| Module | Status | Description |
-|---|---|---|
-| CannyEdgeDetector |  |  |
-| CurvaturesBivariate |  |  |
-
 ## Statistics (4)
 
 | Module | Status | Description |
@@ -99,10 +92,10 @@
 
 | Module | Status | Description |
 |---|---|---|
-| Buffer | experimental | A module that performs a buffer operation on a vector layer. |
+| Buffer | tested | A module that performs a buffer operation on a vector layer. |
 | DwgConverter | experimental | Module to convert dxf files to geotools vecotors. |
-| IntersectionFinder | draft | Finds intersection geometries in feature collections |
+| IntersectionFinder | tested | Finds intersection geometries in feature collections |
 | PointsVectorizer | experimental | Module that creates a points vector layer from raster values. |
 | Shp2DxfConverter | draft | Shapefiles to dxf converter (Based on work of Michael Michaud) |
-| VectorOverlayOperators | experimental | A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables. |
+| VectorOverlayOperators | tested | A module that performs overlay operations on a pure geometric layer. The resulting feature layer does not consider original attributes tables. |
 

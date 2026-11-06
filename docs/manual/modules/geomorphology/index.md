@@ -8,6 +8,7 @@ The modules that derive the geomorphological properties of the terrain from a di
 ab
 aspect
 curvatures
+curvaturesbivariate
 draindir
 flowdirections
 gc

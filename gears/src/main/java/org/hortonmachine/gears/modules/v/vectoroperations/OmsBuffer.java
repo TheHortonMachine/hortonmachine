@@ -103,7 +103,7 @@ public class OmsBuffer extends HMModel {
     public static final String OMSBUFFER_KEYWORDS = "JTS, OmsBuffer";
     public static final String OMSBUFFER_LABEL = VECTORPROCESSING;
     public static final String OMSBUFFER_NAME = "vbuffer";
-    public static final int OMSBUFFER_STATUS = 5;
+    public static final int OMSBUFFER_STATUS = 20;
     public static final String OMSBUFFER_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
     public static final String OMSBUFFER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSBUFFER_AUTHORCONTACTS = "www.hydrologis.com";

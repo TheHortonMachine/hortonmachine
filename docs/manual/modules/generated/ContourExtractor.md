@@ -3,7 +3,7 @@
 Extracts the contour lines of a raster, at regular intervals of its values, as a vector of lines.
 
 **Toolbox folder:** Vector Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Contours, Isolines, Raster, Vector<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.ContourExtractor`

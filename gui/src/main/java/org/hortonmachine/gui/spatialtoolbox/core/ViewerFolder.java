@@ -142,30 +142,24 @@ public class ViewerFolder {
             }
         }
 
-        // remove empty folders
+        // remove the folders left without modules, at any depth
+        removeEmptyFolders(folders);
+        return folders;
+    }
+
+    /**
+     * Remove from the list the folders that, also through their subfolders, contain no modules.
+     */
+    private static void removeEmptyFolders( List<ViewerFolder> folders ) {
         Iterator<ViewerFolder> folderIterator = folders.iterator();
         while( folderIterator.hasNext() ) {
             ViewerFolder folder = folderIterator.next();
-            List<ViewerFolder> subFoldersList = folder.getSubFolders();
-            // first check the subfolders
-            Iterator<ViewerFolder> subFoldersIterator = subFoldersList.iterator();
-            while( subFoldersIterator.hasNext() ) {
-                ViewerFolder subFolder = subFoldersIterator.next();
-                List<ViewerFolder> subSubFoldersList = subFolder.getSubFolders();
-                if (subFolder.getModules().isEmpty() && subSubFoldersList.isEmpty()) {
-                    subFoldersIterator.remove();
-                    continue;
-                }
-            }
-            // then check the main folders
-            if (folder.getModules().isEmpty() && subFoldersList.isEmpty()) {
+            // the subfolders first, so that a folder holding only empty ones is removed too
+            removeEmptyFolders(folder.getSubFolders());
+            if (folder.getModules().isEmpty() && folder.getSubFolders().isEmpty()) {
                 folderIterator.remove();
-                continue;
             }
-
         }
-
-        return folders;
     }
 
 }

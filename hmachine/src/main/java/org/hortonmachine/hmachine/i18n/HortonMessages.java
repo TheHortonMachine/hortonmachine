@@ -238,9 +238,9 @@ public class HortonMessages {
     public static final String OMSSPLITSUBBASINS_KEYWORDS = "Subbasins, Hack order, Network";
     public static final String OMSSPLITSUBBASINS_LABEL = DEMMANIPULATION;
     public static final String OMSSPLITSUBBASINS_NAME = "splitsubbasins";
-    public static final int OMSSPLITSUBBASINS_STATUS = 5;
+    public static final int OMSSPLITSUBBASINS_STATUS = 20;
     public static final String OMSSPLITSUBBASINS_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";
-    public static final String OMSSPLITSUBBASINS_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla";
+    public static final String OMSSPLITSUBBASINS_AUTHORNAMES = "Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla, Daniele Andreis";
     public static final String OMSSPLITSUBBASINS_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSSPLITSUBBASINS_inFlow_DESCRIPTION = "The map of the drainage directions.";
     public static final String OMSSPLITSUBBASINS_inHack_DESCRIPTION = "The map of the Hack orders of the network, as computed by the NetworkAttributesBuilder module.";
@@ -281,7 +281,7 @@ public class HortonMessages {
     public static final String OMSNETSHAPE2FLOW_KEYWORDS = "Network, Flowdirections";
     public static final String OMSNETSHAPE2FLOW_LABEL = NETWORK;
     public static final String OMSNETSHAPE2FLOW_NAME = "net2flow";
-    public static final int OMSNETSHAPE2FLOW_STATUS = 5;
+    public static final int OMSNETSHAPE2FLOW_STATUS = 20;
     public static final String OMSNETSHAPE2FLOW_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSNETSHAPE2FLOW_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSNETSHAPE2FLOW_AUTHORCONTACTS = "http://www.hydrologis.com";
@@ -531,7 +531,7 @@ public class HortonMessages {
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_KEYWORDS = "Geomorphology, Drainage directions, Least cost";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_LABEL = GEOMORPHOLOGY;
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_NAME = "flowlc";
-    public static final int OMSLEASTCOSTFLOWDIRECTIONS_STATUS = 5;
+    public static final int OMSLEASTCOSTFLOWDIRECTIONS_STATUS = 20;
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_AUTHORNAMES = "Silvia Franceschi, Andrea Antonello";
     public static final String OMSLEASTCOSTFLOWDIRECTIONS_AUTHORCONTACTS = "http://www.hydrologis.com";
@@ -771,7 +771,7 @@ public class HortonMessages {
     public static final String OMSTCA_KEYWORDS = "Geomorphology, Contributing area, Drainage directions";
     public static final String OMSTCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSTCA_NAME = "tca";
-    public static final int OMSTCA_STATUS = 5;
+    public static final int OMSTCA_STATUS = 20;
     public static final String OMSTCA_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSTCA_AUTHORNAMES = "Antonello Andrea";
     public static final String OMSTCA_AUTHORCONTACTS = "http://www.hydrologis.com";
@@ -926,7 +926,7 @@ public class HortonMessages {
     public static final String OMSMULTITCA_KEYWORDS = "Geomorphology, Contributing area, Multiple flow directions";
     public static final String OMSMULTITCA_LABEL = GEOMORPHOLOGY;
     public static final String OMSMULTITCA_NAME = "multitca";
-    public static final int OMSMULTITCA_STATUS = 5;
+    public static final int OMSMULTITCA_STATUS = 20;
     public static final String OMSMULTITCA_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSMULTITCA_AUTHORNAMES = "Andreis Daniele, Erica Ghesla, Antonello Andrea, Cozzini Andrea, Franceschi Silvia, Pisoni Silvano, Rigon Riccardo";
     public static final String OMSMULTITCA_AUTHORCONTACTS = "";

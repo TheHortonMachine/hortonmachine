@@ -3,7 +3,7 @@
 Splits a basin into the subbasins of the streams up to a Hack order: with order 2, the subbasins of the streams of order 1 and 2, and their network, are extracted and numbered.
 
 **Toolbox folder:** Dem Manipulation<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Subbasins, Hack order, Network<br>
 **Authors:** Antonello Andrea, Franceschi Silvia, Rigon Riccardo, Erica Ghesla<br>
 **Class:** `org.hortonmachine.modules.SplitSubbasins`

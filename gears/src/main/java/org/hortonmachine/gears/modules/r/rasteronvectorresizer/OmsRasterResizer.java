@@ -89,7 +89,7 @@ public class OmsRasterResizer extends HMModel {
 	public static final String OmsRasterResizer_KEYWORDS = "Raster, Vector, Resize";
 	public static final String OmsRasterResizer_LABEL = RASTERPROCESSING;
 	public static final String OmsRasterResizer_NAME = "rresizer";
-	public static final int OmsRasterResizer_STATUS = 5;
+	public static final int OmsRasterResizer_STATUS = 20;
 	public static final String OmsRasterResizer_LICENSE = "General Public License Version 3 (GPLv3)";
 	public static final String OmsRasterResizer_AUTHORNAMES = "Andrea Antonello";
 	public static final String OmsRasterResizer_AUTHORCONTACTS = "http://www.hydrologis.com";

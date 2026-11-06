@@ -17,23 +17,61 @@
  */
 package org.hortonmachine.modules;
 
+import static org.hortonmachine.gears.modules.r.edgedetection.OmsCannyEdgeDetector.*;
+
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.modules.r.edgedetection.OmsCannyEdgeDetector;
 
+import oms3.annotations.Author;
+import oms3.annotations.Bibliography;
 import oms3.annotations.Description;
+import oms3.annotations.Documentation;
 import oms3.annotations.Execute;
 import oms3.annotations.In;
+import oms3.annotations.Keywords;
+import oms3.annotations.Label;
+import oms3.annotations.License;
 import oms3.annotations.Name;
+import oms3.annotations.Status;
 import oms3.annotations.UI;
+import oms3.annotations.Unit;
 
+@Description(OMSCANNY_DESCRIPTION)
+@Documentation(OMSCANNY_DOCUMENTATION)
+@Author(name = "Andrea Antonello", contact = "https://g-ant.eu")
+@Keywords(OMSCANNY_KEYWORDS)
+@Label(HMConstants.RASTERPROCESSING)
 @Name("canny")
-public class CannyEdgeDetector extends OmsCannyEdgeDetector {
+@Status(OMSCANNY_STATUS)
+@License(HMConstants.GPL3_LICENSE)
+@Bibliography(BIBLIOGRAPHY_CANNY_1986)
+public class CannyEdgeDetector extends HMModel {
 
-    @Description("The map on which to perform edge detection.")
+    @Description(OMSCANNY_inMap_DESCRIPTION)
     @UI(HMConstants.FILEIN_UI_HINT_RASTER)
+    @In
     public String inMap = null;
 
-    @Description("The resulting map.")
+    @Description(OMSCANNY_pLowthres_DESCRIPTION)
+    @In
+    public Double pLowthres = 0.1;
+
+    @Description(OMSCANNY_pHighthres_DESCRIPTION)
+    @In
+    public Double pHighthres = 0.2;
+
+    @Description(OMSCANNY_pRadiusgauss_DESCRIPTION)
+    @Unit("cells")
+    @In
+    public Double pRadiusgauss = 2.0;
+
+    @Description(OMSCANNY_pWidthgauss_DESCRIPTION)
+    @Unit("cells")
+    @In
+    public Integer pWidthgauss = 16;
+
+    @Description(OMSCANNY_outMap_DESCRIPTION)
     @UI(HMConstants.FILEOUT_UI_HINT)
     @In
     public String outMap = null;
@@ -46,7 +84,6 @@ public class CannyEdgeDetector extends OmsCannyEdgeDetector {
         cannyedgedetector.pHighthres = pHighthres;
         cannyedgedetector.pRadiusgauss = pRadiusgauss;
         cannyedgedetector.pWidthgauss = pWidthgauss;
-        cannyedgedetector.doNormcontrast = doNormcontrast;
         cannyedgedetector.pm = pm;
         cannyedgedetector.process();
         dumpRaster(cannyedgedetector.outMap, outMap);

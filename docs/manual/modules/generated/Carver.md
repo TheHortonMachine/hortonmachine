@@ -3,7 +3,7 @@
 Carves lines and polygons into an elevation model, lowering the cells they cover by a depth: as rivers burned into the terrain, so that the flow follows them, or excavations.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** Carve, Raster<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Carver`

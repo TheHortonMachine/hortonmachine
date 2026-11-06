@@ -3,7 +3,7 @@
 Extracts the profile of a raster along a line, given as coordinates or as the lines of a vector: the values of the raster at regular steps along the line, with their progressive distance and position.
 
 **Toolbox folder:** Raster Processing<br>
-**Status:** Experimental<br>
+**Status:** Tested<br>
 **Keywords:** OmsProfile, Raster<br>
 **Authors:** Andrea Antonello<br>
 **Class:** `org.hortonmachine.modules.Profile`
