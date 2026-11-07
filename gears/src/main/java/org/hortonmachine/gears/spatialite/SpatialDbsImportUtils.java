@@ -291,7 +291,8 @@ public class SpatialDbsImportUtils {
         int epsg = geometryColumns.srid;
         CoordinateReferenceSystem crs = null;
         try {
-            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + epsg);
+            // the table stores longitude/easting as x
+            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + epsg, true);
         } catch (Exception e1) {
             // ignore and try without
         }
@@ -483,15 +484,17 @@ public class SpatialDbsImportUtils {
         GeometryColumn geometryColumn = db.getGeometryColumnsForTable(tableName);
         CoordinateReferenceSystem forceCrs = null;
         CoordinateReferenceSystem crs;
+        // spatial databases store the geometries with longitude/easting as x, so the crs
+        // needs that axis order, independently of the forceXY setting
         if (geometryColumn != null) {
             if (forceSrid == -1) {
                 forceSrid = geometryColumn.srid;
             } else {
-                forceCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
+                forceCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid, true);
             }
-            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + geometryColumn.srid);
+            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + geometryColumn.srid, true);
         } else {
-            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid);
+            crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + forceSrid, true);
         }
 
         QueryResult tableRecords = db.getTableRecordsMapIn(tableName, envelope, featureLimit, forceSrid, whereStr);

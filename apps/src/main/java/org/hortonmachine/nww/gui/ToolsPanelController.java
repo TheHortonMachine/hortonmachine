@@ -21,14 +21,15 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -36,11 +37,13 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -101,6 +104,7 @@ import org.hortonmachine.nww.layers.defaults.vector.RasterizedShapefilesFolderNw
 import org.hortonmachine.nww.layers.defaults.vector.ShapefilesFolderLayer;
 import org.hortonmachine.nww.utils.CursorUtils;
 import org.hortonmachine.nww.utils.EGlobeModes;
+import org.hortonmachine.nww.utils.FakeGps;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 import org.hortonmachine.nww.utils.selection.ObjectsOnScreenByBoxSelector;
@@ -131,6 +135,23 @@ public class ToolsPanelController extends ToolsPanelView {
     private static final long serialVersionUID = 1L;
     private static final String PREF_GLOBE_MODE = "NWW_GLOBE_MODE";
 
+    /**
+     * Colors given in turn to the vector layers without a style: distinct hues that stay visible
+     * on both the street maps and the satellite imagery.
+     */
+    private static final Color[] DEFAULT_LAYER_COLORS = {//
+            new Color(0x1f77b4), // blue
+            new Color(0xff7f0e), // orange
+            new Color(0x2ca02c), // green
+            new Color(0xd62728), // red
+            new Color(0x9467bd), // purple
+            new Color(0x17becf), // cyan
+            new Color(0xe377c2), // pink
+            new Color(0xbcbd22), // olive
+            new Color(0x8c564b) // brown
+    };
+    private int nextDefaultColorIndex = 0;
+
     private GenericSelectListener genericSelectListener;
 
     private WhiteNwwLayer whiteLayer = new WhiteNwwLayer();
@@ -157,49 +178,18 @@ public class ToolsPanelController extends ToolsPanelView {
         }
         final String desc = sb.substring(1);
 
+        _loadGpsLabel.setText("Load vector to fly along");
+        _loadGpsButton.setToolTipText("Fly along the geometries of a shapefile or geopackage table");
         _loadGpsButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            FileFilter fileFilter = new FileFilter(){
-
-                @Override
-                public String getDescription() {
-                    return "*.shp";
-                }
-
-                @Override
-                public boolean accept( File f ) {
-                    if (f.isDirectory()) {
-                        return true;
-                    }
-                    String name = f.getName();
-                    if (name.endsWith("shp")) {
-                        return true;
-                    }
-                    return false;
-                }
-            };
-            fileChooser.setFileFilter(fileFilter);
+            fileChooser.setFileFilter(new FileNameExtensionFilter("Vector files (*.shp, *.gpkg)", "shp", "gpkg"));
             fileChooser.setCurrentDirectory(PreferencesHandler.getLastFile());
             int result = fileChooser.showOpenDialog((Component) wwjPanel);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
                 PreferencesHandler.setLastPath(selectedFile.getAbsolutePath());
-
-                CurrentGpsPointLayer currentGpsPointLayer = new CurrentGpsPointLayer(null, null, null, null, null);
-                SimplePointsLayer simplePointsLayer = new SimplePointsLayer("GPS Points");
-                simplePointsLayer.setMaxMarkers(10);
-
-                wwjPanel.getWwd().getModel().getLayers().add(currentGpsPointLayer);
-                layerEventsListener.onLayerAdded(currentGpsPointLayer);
-                wwjPanel.getWwd().getModel().getLayers().add(simplePointsLayer);
-                layerEventsListener.onLayerAdded(simplePointsLayer);
-
-                try {
-                    new org.hortonmachine.nww.utils.FakeGps(selectedFile, wwjPanel, currentGpsPointLayer, simplePointsLayer);
-                } catch (Exception e1) {
-                    e1.printStackTrace();
-                }
+                flyAlongVector(selectedFile);
             }
         });
 
@@ -234,58 +224,15 @@ public class ToolsPanelController extends ToolsPanelView {
             int result = fileChooser.showOpenDialog((Component) wwjPanel);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File[] selectedFiles = fileChooser.getSelectedFiles();
-                if (selectedFiles != null && selectedFiles.length == 1 && selectedFiles[0].isDirectory()) {
-                    try {
-                        Layer layer;
-                        if (_useRasterizedCheckbox.isSelected()) {
-                            layer = new RasterizedShapefilesFolderNwwLayer(null, selectedFiles[0], null, true);
-                        } else {
-                            layer = new ShapefilesFolderLayer(selectedFiles[0].getAbsolutePath());
-                        }
-                        wwjPanel.getWwd().getModel().getLayers().add(layer);
-                        layerEventsListener.onLayerAdded(layer);
-                    } catch (Exception e1) {
-                        e1.printStackTrace();
-                        // try to load it as single files
-                        File[] listFiles = selectedFiles[0].listFiles(new FilenameFilter(){
-
-                            @Override
-                            public boolean accept( File dir, String name ) {
-                                for( String ext : supportedExtensions ) {
-                                    if (name.endsWith(ext)) {
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            }
-                        });
-                        for( File file : listFiles ) {
-                            PreferencesHandler.setLastPath(file.getAbsolutePath());
-                            loadFile(file);
-                        }
-                    }
-
-                } else {
-                    if (selectedFiles != null && selectedFiles.length > 0) {
-                        PreferencesHandler.setLastPath(selectedFiles[0].getAbsolutePath());
-                        if (selectedFiles.length == 1) {
-                            loadFile(selectedFiles[0]);
-                        } else {
-                            if (selectedFiles[0].getName().endsWith(".map")) {
-                                try {
-                                    String layerName = selectedFiles[0].getParentFile().getName() + "-maps";
-                                    MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, selectedFiles, null, null);
-                                    wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
-                                    layerEventsListener.onLayerAdded(mbTileLayer);
-                                } catch (Exception e1) {
-                                    e1.printStackTrace();
-                                }
-                            }
-                        }
-                    }
+                if (selectedFiles != null) {
+                    loadFiles(Arrays.asList(selectedFiles));
                 }
             }
         });
+
+        if (layerEventsListener instanceof LayersPanelController) {
+            ((LayersPanelController) layerEventsListener).setFileDropHandler(this::loadFiles);
+        }
 
         _pasteWkt.addActionListener(e -> {
             try {
@@ -562,15 +509,256 @@ public class ToolsPanelController extends ToolsPanelView {
         return wwjPanel;
     }
 
+    /**
+     * @return <code>true</code> if the file has one of the {@link NwwUtilities#SUPPORTED_EXTENSIONS}.
+     */
+    private static boolean isSupportedFile( File file ) {
+        String name = file.getName().toLowerCase();
+        for( String ext : NwwUtilities.SUPPORTED_EXTENSIONS ) {
+            if (name.endsWith("." + ext)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Load files as layers, as selected in the file chooser or dropped on the layers panel.
+     *
+     * <p>Folders are loaded as shapefiles folders, more mapsforge files are loaded in a single
+     * layer, the other files one by one. Files of not supported formats are reported.</p>
+     *
+     * @param files the files and folders to load.
+     */
+    public void loadFiles( List<File> files ) {
+        if (files == null || files.isEmpty()) {
+            return;
+        }
+        PreferencesHandler.setLastPath(files.get(0).getAbsolutePath());
+
+        boolean allMaps = files.size() > 1 && files.stream().allMatch(f -> f.getName().toLowerCase().endsWith(".map"));
+        if (allMaps) {
+            try {
+                File[] mapFiles = files.toArray(new File[0]);
+                String layerName = mapFiles[0].getParentFile().getName() + "-maps";
+                MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, mapFiles, null, null);
+                wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
+                layerEventsListener.onLayerAdded(mbTileLayer);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
+        List<String> notSupported = new ArrayList<>();
+        for( File file : files ) {
+            if (file.isDirectory()) {
+                loadFolder(file);
+            } else if (isSupportedFile(file)) {
+                loadFile(file);
+            } else {
+                notSupported.add(file.getName());
+            }
+        }
+        if (!notSupported.isEmpty()) {
+            GuiUtilities.showWarningMessage(this, "WARNING", "The format of these files is not supported:\n"
+                    + String.join("\n", notSupported) + "\n\nSupported are: " + String.join(", ", NwwUtilities.SUPPORTED_EXTENSIONS));
+        }
+    }
+
+    /**
+     * Load a folder of shapefiles in a single layer or, if that fails, its supported files one by one.
+     */
+    private void loadFolder( File folder ) {
+        try {
+            Layer layer;
+            if (_useRasterizedCheckbox.isSelected()) {
+                layer = new RasterizedShapefilesFolderNwwLayer(null, folder, null, true);
+            } else {
+                layer = new ShapefilesFolderLayer(folder.getAbsolutePath());
+            }
+            wwjPanel.getWwd().getModel().getLayers().add(layer);
+            layerEventsListener.onLayerAdded(layer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            // try to load it as single files
+            File[] listFiles = folder.listFiles(f -> f.isFile() && isSupportedFile(f));
+            if (listFiles != null) {
+                for( File file : listFiles ) {
+                    loadFile(file);
+                }
+            }
+        }
+    }
+
+    /**
+     * Fly along the geometries of a shapefile or of a geopackage table, chosen if there are more.
+     */
+    private void flyAlongVector( File vectorFile ) {
+        try {
+            String vectorPath = vectorFile.getAbsolutePath();
+            if (vectorFile.getName().toLowerCase().endsWith(".gpkg")) {
+                List<String> featureTables = new ArrayList<>();
+                try (GeopackageCommonDb db = new GeopackageDb()) {
+                    db.open(vectorFile.getAbsolutePath());
+                    for( FeatureEntry featureEntry : db.features() ) {
+                        featureTables.add(featureEntry.getTableName());
+                    }
+                }
+                if (featureTables.isEmpty()) {
+                    GuiUtilities.showWarningMessage(this, "WARNING", "The geopackage contains no vector table.");
+                    return;
+                }
+                String tableName = featureTables.get(0);
+                if (featureTables.size() > 1) {
+                    String[] tables = featureTables.toArray(new String[0]);
+                    tableName = (String) JOptionPane.showInputDialog(this, "Select the table to fly along", "Table selection",
+                            JOptionPane.QUESTION_MESSAGE, null, tables, tables[0]);
+                    if (tableName == null) {
+                        return;
+                    }
+                }
+                vectorPath = vectorPath + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
+            }
+
+            CurrentGpsPointLayer currentGpsPointLayer = new CurrentGpsPointLayer(null, null, null, null, null);
+            SimplePointsLayer simplePointsLayer = new SimplePointsLayer("GPS Points");
+            simplePointsLayer.setMaxMarkers(10);
+
+            // read the vector before adding the layers, so that they are not added if it fails
+            new FakeGps(vectorPath, wwjPanel, currentGpsPointLayer, simplePointsLayer);
+
+            wwjPanel.getWwd().getModel().getLayers().add(currentGpsPointLayer);
+            layerEventsListener.onLayerAdded(currentGpsPointLayer);
+            wwjPanel.getWwd().getModel().getLayers().add(simplePointsLayer);
+            layerEventsListener.onLayerAdded(simplePointsLayer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            GuiUtilities.showWarningMessage(this, "WARNING", "Unable to fly along the vector: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Load the tiles and vector tables of a geopackage. If there are more, the user selects
+     * those to load.
+     */
+    private void loadGeopackage( File gpkgFile ) throws Exception {
+        List<String> tilesTables = new ArrayList<>();
+        List<String> featureTables = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        try (GeopackageCommonDb db = new GeopackageDb()) {
+            db.open(gpkgFile.getAbsolutePath());
+            for( TileEntry tileEntry : db.tiles() ) {
+                tilesTables.add(tileEntry.getTableName());
+                labels.add(tileEntry.getTableName() + "  (tiles)");
+            }
+            for( FeatureEntry featureEntry : db.features() ) {
+                featureTables.add(featureEntry.getTableName());
+                String type = featureEntry.getGeometryType() != null
+                        ? featureEntry.getGeometryType().name().toLowerCase()
+                        : "vector";
+                labels.add(featureEntry.getTableName() + "  (" + type + ")");
+            }
+        }
+        if (labels.isEmpty()) {
+            GuiUtilities.showWarningMessage(this, "WARNING", "The geopackage contains no tiles or vector table.");
+            return;
+        }
+
+        boolean[] selected = new boolean[labels.size()];
+        Arrays.fill(selected, true);
+        if (labels.size() > 1) {
+            selected = showTablesSelectionDialog(gpkgFile.getName(), labels);
+            if (selected == null) {
+                return;
+            }
+        }
+
+        for( int i = 0; i < tilesTables.size(); i++ ) {
+            if (selected[i]) {
+                GeopackageTilesNwwLayer gpkgTilesLayer = new GeopackageTilesNwwLayer(gpkgFile, tilesTables.get(i));
+                wwjPanel.getWwd().getModel().getLayers().add(gpkgTilesLayer);
+                layerEventsListener.onLayerAdded(gpkgTilesLayer);
+            }
+        }
+
+        // the tables are loaded as the other vectors, reprojected from their CRS
+        // and styled with the table's style, if available
+        for( int i = 0; i < featureTables.size(); i++ ) {
+            if (!selected[tilesTables.size() + i]) {
+                continue;
+            }
+            String tableName = featureTables.get(i);
+            SimpleFeatureCollection readFC = NwwUtilities
+                    .readAndReproject(gpkgFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
+            Style sldStyle = null;
+            try (GeopackageCommonDb db = new GeopackageDb()) {
+                db.open(gpkgFile.getAbsolutePath());
+                String sldString = db.getSldString(SqlName.m(tableName));
+                if (sldString != null) {
+                    sldStyle = SldUtilities.getStyleFromSldString(sldString);
+                }
+            }
+            String layerName = gpkgFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
+            loadFeatureCollection(null, layerName, null, readFC, null, sldStyle);
+        }
+    }
+
+    /**
+     * Let the user select the tables of a geopackage to load, all selected at the start.
+     *
+     * @param fileName the name of the geopackage.
+     * @param labels the labels of the tables.
+     * @return the selection state of each table or <code>null</code> if cancelled.
+     */
+    private boolean[] showTablesSelectionDialog( String fileName, List<String> labels ) {
+        JPanel checksPanel = new JPanel(new GridLayout(0, 1));
+        List<JCheckBox> checks = new ArrayList<>();
+        for( String label : labels ) {
+            JCheckBox check = new JCheckBox(label, true);
+            checks.add(check);
+            checksPanel.add(check);
+        }
+        JScrollPane scrollPane = new JScrollPane(checksPanel);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        Dimension size = scrollPane.getPreferredSize();
+        scrollPane.setPreferredSize(new Dimension(Math.max(size.width + 20, 300), Math.min(size.height, 400)));
+
+        JButton allButton = new JButton("Select all");
+        allButton.addActionListener(e -> checks.forEach(c -> c.setSelected(true)));
+        JButton noneButton = new JButton("Select none");
+        noneButton.addActionListener(e -> checks.forEach(c -> c.setSelected(false)));
+        JPanel selectionButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        selectionButtons.add(allButton);
+        selectionButtons.add(noneButton);
+
+        JPanel panel = new JPanel(new BorderLayout(0, 8));
+        panel.add(new JLabel("Select the layers to load from " + fileName + ":"), BorderLayout.NORTH);
+        panel.add(scrollPane, BorderLayout.CENTER);
+        panel.add(selectionButtons, BorderLayout.SOUTH);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Geopackage layers", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (result != JOptionPane.OK_OPTION) {
+            return null;
+        }
+        boolean[] selected = new boolean[checks.size()];
+        for( int i = 0; i < selected.length; i++ ) {
+            selected[i] = checks.get(i).isSelected();
+        }
+        return selected;
+    }
+
     private void loadFile( File selectedFile ) {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
+        String lowerName = selectedFile.getName().toLowerCase();
         try {
-            if (selectedFile.getName().endsWith(".asc") || selectedFile.getName().endsWith(".tiff")
-                    || selectedFile.getName().endsWith(".tif")) {
+            if (lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif")) {
                 GridCoverageNwwLayer coverageNwwLayer = new GridCoverageNwwLayer(selectedFile, null, Color.WHITE);
                 wwjPanel.getWwd().getModel().getLayers().add(coverageNwwLayer);
                 layerEventsListener.onLayerAdded(coverageNwwLayer);
-            } else if (selectedFile.getName().endsWith(".shp")) {
+            } else if (lowerName.endsWith(".shp")) {
                 // shp or image mosaic?
 
                 File parentFolder = selectedFile.getParentFile();
@@ -618,53 +806,18 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(featureSource);
                 loadFeatureCollection(selectedFile, name, featureStore, readFC, field2ValuesMap);
-            } else if (selectedFile.getName().endsWith(".mbtiles")) {
+            } else if (lowerName.endsWith(".mbtiles")) {
                 MBTilesNwwLayer mbTileLayer = new MBTilesNwwLayer(selectedFile);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
-            } else if (selectedFile.getName().endsWith(".gpkg")) {
-                List<String> tilesTables = new ArrayList<>();
-                List<String> featureTables = new ArrayList<>();
-                try (GeopackageCommonDb db = new GeopackageDb()) {
-                    db.open(selectedFile.getAbsolutePath());
-                    List<TileEntry> tiles = db.tiles();
-                    for( TileEntry tileEntry : tiles ) {
-                        tilesTables.add(tileEntry.getTableName());
-                    }
-                    List<FeatureEntry> features = db.features();
-                    for( FeatureEntry featureEntry : features ) {
-                        featureTables.add(featureEntry.getTableName());
-                    }
-                }
-                for( String tableName : tilesTables ) {
-                    GeopackageTilesNwwLayer gpkgTilesLayer = new GeopackageTilesNwwLayer(selectedFile, tableName);
-                    wwjPanel.getWwd().getModel().getLayers().add(gpkgTilesLayer);
-                    layerEventsListener.onLayerAdded(gpkgTilesLayer);
-                }
-
-                // the tables are loaded as the other vectors, reprojected from their CRS
-                // and styled with the table's style, if available
-                for( String tableName : featureTables ) {
-                    SimpleFeatureCollection readFC = NwwUtilities
-                            .readAndReproject(selectedFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
-                    Style sldStyle = null;
-                    try (GeopackageCommonDb db = new GeopackageDb()) {
-                        db.open(selectedFile.getAbsolutePath());
-                        String sldString = db.getSldString(SqlName.m(tableName));
-                        if (sldString != null) {
-                            sldStyle = SldUtilities.getStyleFromSldString(sldString);
-                        }
-                    }
-                    String layerName = selectedFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
-                    loadFeatureCollection(null, layerName, null, readFC, null, sldStyle);
-                }
-
-            } else if (selectedFile.getName().endsWith(".map")) {
+            } else if (lowerName.endsWith(".gpkg")) {
+                loadGeopackage(selectedFile);
+            } else if (lowerName.endsWith(".map")) {
                 String layerName = FileUtilities.getNameWithoutExtention(selectedFile);
                 MapsforgeNwwLayer mbTileLayer = new MapsforgeNwwLayer(layerName, new File[]{selectedFile}, null, null);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);
                 layerEventsListener.onLayerAdded(mbTileLayer);
-            } else if (selectedFile.getName().endsWith(".rl2")) {
+            } else if (lowerName.endsWith(".rl2")) {
                 GTSpatialiteThreadsafeDb db = new GTSpatialiteThreadsafeDb();
                 db.open(selectedFile.getAbsolutePath());
                 Rasterlite2Db rldb = new Rasterlite2Db(db);
@@ -676,7 +829,7 @@ public class ToolsPanelController extends ToolsPanelView {
                     wwjPanel.getWwd().getModel().getLayers().add(rl2Layer);
                     layerEventsListener.onLayerAdded(rl2Layer);
                 }
-            } else if (selectedFile.getName().endsWith(".sqlite")) {
+            } else if (lowerName.endsWith(".sqlite")) {
                 ASpatialDb db = new GTSpatialiteThreadsafeDb();
                 db.open(selectedFile.getAbsolutePath());
 
@@ -793,7 +946,7 @@ public class ToolsPanelController extends ToolsPanelView {
             if (style == null && selectedFile != null)
                 style = SldUtilities.getStyleFromFile(selectedFile);
             if (style == null)
-                style = SLD.createSimpleStyle(readFC.getSchema(), simpleStyle != null ? simpleStyle.strokeColor : Color.BLUE);
+                style = SLD.createSimpleStyle(readFC.getSchema(), simpleStyle != null ? simpleStyle.strokeColor : nextDefaultColor());
             RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style, null,
                     true);
 
@@ -863,7 +1016,8 @@ public class ToolsPanelController extends ToolsPanelView {
     }
 
     /**
-     * @return the style from the given sld style, if available, else the one of the file.
+     * @return the style from the given sld style, if available, else the one of the file, else
+     *          the next one of the default colors.
      */
     private SimpleStyle getSimpleStyle( Style sldStyle, String absolutePath, String geomTypeName ) throws Exception {
         if (sldStyle != null) {
@@ -872,7 +1026,27 @@ public class ToolsPanelController extends ToolsPanelView {
                 return style;
             }
         }
-        return SimpleStyleUtilities.getSimpleStyle(absolutePath, geomTypeName);
+        if (absolutePath != null) {
+            SimpleStyle style = SimpleStyleUtilities.getSimpleStyle(absolutePath, geomTypeName);
+            if (style != null) {
+                return style;
+            }
+        }
+        Color color = nextDefaultColor();
+        SimpleStyle style = new SimpleStyle();
+        style.fillColor = color;
+        // polygons get a darker outline, to separate the adjacent ones
+        style.strokeColor = EGeometryType.POLYGON.name().equals(geomTypeName) ? color.darker() : color;
+        return style;
+    }
+
+    /**
+     * @return the next color of the rotation used for the layers without a style.
+     */
+    private Color nextDefaultColor() {
+        Color color = DEFAULT_LAYER_COLORS[nextDefaultColorIndex % DEFAULT_LAYER_COLORS.length];
+        nextDefaultColorIndex++;
+        return color;
     }
 
 

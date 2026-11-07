@@ -45,8 +45,19 @@ public class FakeGps {
 
     public FakeGps(File shapefile, NwwPanel nwwPanel, CurrentGpsPointLayer gpsPointLayer,
             SimplePointsLayer simplePointsLayer) throws Exception {
+        this(shapefile.getAbsolutePath(), nwwPanel, gpsPointLayer, simplePointsLayer);
+    }
 
-        SimpleFeatureCollection fc = NwwUtilities.readAndReproject(shapefile.getAbsolutePath());
+    /**
+     * Fly along the geometries of a vector.
+     *
+     * @param vectorPath the path of the vector, as a shapefile or a geopackage table, given as
+     *          <code>file.gpkg#table</code>.
+     */
+    public FakeGps(String vectorPath, NwwPanel nwwPanel, CurrentGpsPointLayer gpsPointLayer,
+            SimplePointsLayer simplePointsLayer) throws Exception {
+
+        SimpleFeatureCollection fc = NwwUtilities.readAndReproject(vectorPath);
         List<Geometry> geomsList = FeatureUtilities.featureCollectionToGeometriesList(fc, true, null);
 
         List<Coordinate> coordsList = new ArrayList<>();

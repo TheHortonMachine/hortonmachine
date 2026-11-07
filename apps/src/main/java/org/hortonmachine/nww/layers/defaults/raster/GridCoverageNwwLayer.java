@@ -22,6 +22,10 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
+import java.awt.image.IndexColorModel;
+import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,6 +33,7 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.style.RasterSymbolizer;
 import org.geotools.api.style.Style;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
@@ -42,7 +47,10 @@ import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.colors.EColorTables;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
@@ -76,6 +84,12 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     private Coordinate centerCoordinate;
     private Envelope boundsLL;
 
+    /**
+     * The renderer of the tiles, with a key of its style for the tiles cache.
+     */
+    private record StyledRenderer( GTRenderer renderer, String styleKey ) {
+    }
+
     public GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent ) throws Exception {
         super(makeLevels(gridCoverageFile, getRenderer(gridCoverageFile), tileSize, colorToMakeTransparent));
         this.layerName = FileUtilities.getNameWithoutExtention(gridCoverageFile);
@@ -98,18 +112,25 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
 
     }
 
-    private static GTRenderer getRenderer( File rasterFile ) {
+    private static StyledRenderer getRenderer( File rasterFile ) {
 
         AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
         AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
 
         MapContent mapContent = new MapContent();
+        String styleKey = "default";
         try {
-
             Style rasterStyle = SldUtilities.getStyleFromFile(rasterFile);
-            if (rasterStyle == null) {
-                RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
-                rasterStyle = SLD.wrapSymbolizers(sym);
+            if (rasterStyle != null) {
+                styleKey = "sld";
+            } else {
+                rasterStyle = makeFullRangeStyle(coverageReader, rasterFile);
+                if (rasterStyle != null) {
+                    styleKey = "auto";
+                } else {
+                    RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
+                    rasterStyle = SLD.wrapSymbolizers(sym);
+                }
             }
 
             GridReaderLayer layer = new GridReaderLayer(coverageReader, rasterStyle);
@@ -120,10 +141,47 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         }
         GTRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(mapContent);
-        return renderer;
+        return new StyledRenderer(renderer, styleKey);
     }
 
-    private static LevelSet makeLevels( File imsf, GTRenderer renderer, Integer tileSize, Color colorToMakeTransparent ) throws MalformedURLException {
+    /**
+     * Make an elevation colortable style on the value range of the whole raster, for single band rasters
+     * of non byte data, as for example DEMs. With the default style, each tile would be
+     * stretched on its own values range.
+     *
+     * @return the style or <code>null</code> if the raster is shown well by the default style,
+     *          as RGB or palette images.
+     */
+    private static Style makeFullRangeStyle( AbstractGridCoverage2DReader coverageReader, File rasterFile ) {
+        try {
+            // the image is read lazily, only its structure is used here
+            RenderedImage image = coverageReader.read((GeneralParameterValue[]) null).getRenderedImage();
+            SampleModel sampleModel = image.getSampleModel();
+            if (sampleModel.getNumBands() != 1 || sampleModel.getDataType() == DataBuffer.TYPE_BYTE
+                    || image.getColorModel() instanceof IndexColorModel) {
+                return null;
+            }
+            double[] stats;
+            try (HMRaster raster = HMRaster.fromFile(rasterFile)) {
+                stats = raster.getStatistics();
+            }
+            if (stats == null) {
+                return null;
+            }
+            double min = stats[0];
+            double max = stats[1];
+            if (max <= min) {
+                max = min + 1;
+            }
+            return RasterStyleUtilities.createStyleForColortable(EColorTables.elev.name(), min, max, 1.0);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static LevelSet makeLevels( File imsf, StyledRenderer styledRenderer, Integer tileSize, Color colorToMakeTransparent ) throws MalformedURLException {
+        GTRenderer renderer = styledRenderer.renderer();
         AVList params = new AVListImpl();
         if (tileSize == null || tileSize < 256) {
             tileSize = TILESIZE;
@@ -131,7 +189,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
 
         int finalTileSize = tileSize;
 
-        String tilesPart = "-tiles";
+        String tilesPart = "-" + styledRenderer.styleKey() + "-tiles";
         // a changed raster or style gets new tiles
         long stamp = imsf.lastModified();
         File styleFile = SldUtilities.getStyleFile(imsf);

@@ -19,9 +19,6 @@ package org.hortonmachine.nww.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -35,6 +32,7 @@ import org.hortonmachine.nww.elevation.CopernicusElevationModel;
 import org.hortonmachine.nww.layers.defaults.raster.OSMMapnikLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 
+import gov.nasa.worldwind.BasicModel;
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
@@ -51,8 +49,10 @@ import gov.nasa.worldwind.globes.EarthFlat;
 import gov.nasa.worldwind.globes.GeographicProjection;
 import gov.nasa.worldwind.globes.projections.ProjectionEquirectangular;
 import gov.nasa.worldwind.globes.projections.ProjectionMercator;
+import gov.nasa.worldwind.layers.CompassLayer;
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
+import gov.nasa.worldwind.layers.ScalebarLayer;
 import gov.nasa.worldwind.terrain.ZeroElevationModel;
 import gov.nasa.worldwind.globes.ElevationModel;
 import gov.nasa.worldwind.view.orbit.OrbitView;
@@ -123,31 +123,25 @@ public class NwwPanel extends JPanel {
         logger.insertDebug("NwwPanel", "Create Canvas - DONE " + (t2 - t1) / 1000);
 
         logger.insertDebug("NwwPanel", "Create Model");
-        Model model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
-        // the default elevations of World Wind came from NASA servers that are no longer available,
-        // the 3D terrain is enabled on request through setSphereGlobe(true)
-        model.getGlobe().setElevationModel(new ZeroElevationModel());
+        // the default elevations of World Wind came from NASA and USGS servers that are no longer
+        // available, the 3D terrain is enabled on request through setSphereGlobe(true). The globe
+        // gets its elevation model at construction, since the default one requests the capabilities
+        // of those servers as soon as it is created.
+        Model model;
+        if (removeDefaultLayers) {
+            // also the default layers request the capabilities of the old NASA servers when
+            // created, so the model is built with only the layers that are kept
+            LayerList layers = new LayerList();
+            layers.add(new ScalebarLayer());
+            layers.add(new CompassLayer());
+            model = new BasicModel(new Earth(new ZeroElevationModel()), layers);
+        } else {
+            model = (Model) WorldWind.createConfigurationComponent(AVKey.MODEL_CLASS_NAME);
+            model.setGlobe(new Earth(new ZeroElevationModel()));
+        }
         wwd.setModel(model);
         long t3 = System.currentTimeMillis();
         logger.insertDebug("NwwPanel", "Create Model - DONE " + (t3 - t2) / 1000);
-
-        if (removeDefaultLayers) {
-            logger.insertDebug("NwwPanel", "Remove and add layers");
-            LayerList layers = model.getLayers();
-            List<Layer> addBack = new ArrayList<>();
-            Iterator<Layer> layerIterator = layers.iterator();
-            List<String> namesToKeep = NwwUtilities.LAYERS_TO_KEEP_FROM_ORIGNALNWW;
-            while( layerIterator.hasNext() ) {
-                Layer layer = layerIterator.next();
-                if (namesToKeep.contains(layer.getName())) {
-                    addBack.add(layer);
-                }
-            }
-            layers.clear();
-            layers.addAll(addBack);
-            long t4 = System.currentTimeMillis();
-            logger.insertDebug("NwwPanel", "Remove and add layers - DONE " + (t4 - t3) / 1000);
-        }
         this.add((Component) wwd, BorderLayout.CENTER);
 
         if (withStatusBar) {
@@ -302,8 +296,7 @@ public class NwwPanel extends JPanel {
      *            if <code>true</code>, mercator is used as opposed to lat/long.
      */
     public void setFlatGlobe( boolean doMercator ) {
-        EarthFlat globe = new EarthFlat();
-        globe.setElevationModel(new ZeroElevationModel());
+        EarthFlat globe = new EarthFlat(new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         GeographicProjection projection;
@@ -330,9 +323,8 @@ public class NwwPanel extends JPanel {
      *            elevation data of the areas viewed.
      */
     public void setSphereGlobe( boolean withTerrain ) {
-        Earth globe = new Earth();
         ElevationModel terrain = localTerrainElevationModel != null ? localTerrainElevationModel : getTerrainElevationModel();
-        globe.setElevationModel(withTerrain ? terrain : new ZeroElevationModel());
+        Earth globe = new Earth(withTerrain ? terrain : new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         wwd.redraw();
@@ -345,8 +337,7 @@ public class NwwPanel extends JPanel {
      *            {@link org.hortonmachine.nww.elevation.CoverageElevationModel}.
      */
     public void setSphereGlobe( ElevationModel elevationModel ) {
-        Earth globe = new Earth();
-        globe.setElevationModel(elevationModel);
+        Earth globe = new Earth(elevationModel);
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         wwd.redraw();
@@ -377,8 +368,7 @@ public class NwwPanel extends JPanel {
      * Set the globe as flat sphere.
      */
     public void setFlatSphereGlobe() {
-        Earth globe = new Earth();
-        globe.setElevationModel(new ZeroElevationModel());
+        Earth globe = new Earth(new ZeroElevationModel());
         wwd.getModel().setGlobe(globe);
         wwd.getView().stopMovement();
         wwd.redraw();

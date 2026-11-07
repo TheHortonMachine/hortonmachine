@@ -10,14 +10,16 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 
+import javax.swing.BorderFactory;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
-import org.hortonmachine.nww.gui.ViewControlsLayer;
 import org.hortonmachine.nww.layers.defaults.raster.EsriSatellite;
 import org.hortonmachine.nww.layers.defaults.raster.OepnvkarteLayer;
 import org.hortonmachine.nww.layers.defaults.raster.OpenTopoLayer;
@@ -75,8 +77,6 @@ public class SimpleNwwViewer {
                 EsriSatellite esriLayer = new EsriSatellite();
                 esriLayer.setEnabled(false);
                 wwjPanel.addLayer(esriLayer);
-                ViewControlsLayer viewControls = wwjPanel.addViewControls();
-                viewControls.setScale(1.5);
 
                 layerPanel = new LayersPanelController(wwjPanel);
                 toolsPanel = new ToolsPanelController(wwjPanel, layerPanel);
@@ -86,11 +86,31 @@ public class SimpleNwwViewer {
             nwwFrame.setTitle(appName + ": map view - " + org.hortonmachine.Version.getVersion());
             GuiUtilities.setDefaultFrameIcon(nwwFrame);
 
-//            JPanel mapPanel = new JPanel(new BorderLayout());
-//            mapPanel.add(nwwComponent, BorderLayout.CENTER);
-            nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);
-            nwwFrame.getContentPane().add(layerPanel, BorderLayout.WEST);
-            nwwFrame.getContentPane().add(toolsPanel, BorderLayout.EAST);
+            if (layerPanel != null && toolsPanel != null) {
+                // resizable panels: layers | map | tools, the map gets the extra space
+                Dimension small = new Dimension(100, 100);
+                nwwComponent.setMinimumSize(small);
+                ((Component) wwjPanel.getWwd()).setMinimumSize(small);
+                layerPanel.setMinimumSize(small);
+                JScrollPane toolsScroll = new JScrollPane(toolsPanel);
+                toolsScroll.setBorder(BorderFactory.createEmptyBorder());
+                toolsScroll.getVerticalScrollBar().setUnitIncrement(16);
+                toolsScroll.setMinimumSize(small);
+
+                JSplitPane mapToolsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, nwwComponent, toolsScroll);
+                mapToolsSplit.setResizeWeight(1.0);
+                mapToolsSplit.setContinuousLayout(true);
+                mapToolsSplit.setOneTouchExpandable(true);
+                mapToolsSplit.setBorder(null);
+                JSplitPane mainSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, layerPanel, mapToolsSplit);
+                mainSplit.setResizeWeight(0.0);
+                mainSplit.setContinuousLayout(true);
+                mainSplit.setOneTouchExpandable(true);
+                mainSplit.setBorder(null);
+                nwwFrame.getContentPane().add(mainSplit, BorderLayout.CENTER);
+            } else {
+                nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);
+            }
             nwwFrame.setResizable(true);
             nwwFrame.setPreferredSize(new Dimension(1200, 900));
             nwwFrame.pack();
