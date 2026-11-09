@@ -70,14 +70,43 @@ public class LasConstraints {
 
     private double upperThresConstrainD;
 
-    private List<LasRecord> filteredPoints;
-    private List<LasRecord> lastReadPoints;
+    /*
+     * The points read and the ones filtered from them, as columns to keep also tens of millions of
+     * points in memory.
+     */
+    private LasPointColumns filteredColumns;
+    private LasPointColumns lastReadColumns;
+    /** The height over the DTM of the last point checked, NaN if not known. */
+    private double checkedGroundHeight;
 
     /**
-     * @return the points that survived the last {@link #applyConstraints(ALasReader)} run.
+     * Get the points that survived the last {@link #applyConstraints(ALasReader, boolean, IProgressPrinter)} run.
+     *
+     * <p>The records are created at every call: with many points use {@link #getFilteredColumns()},
+     * which needs less than half of the memory.</p>
+     *
+     * @return the points, or <code>null</code> if the constraints were never applied.
      */
     public List<LasRecord> getFilteredPoints() {
-        return filteredPoints;
+        LasPointColumns columns = filteredColumns;
+        if (columns == null) {
+            return null;
+        }
+        List<LasRecord> points = new ArrayList<>(columns.size());
+        for( int i = 0; i < columns.size(); i++ ) {
+            points.add(columns.get(i));
+        }
+        return points;
+    }
+
+    /**
+     * Get the points that survived the last {@link #applyConstraints(ALasReader, boolean, IProgressPrinter)} run,
+     * as columns. The height over the DTM is in {@link LasPointColumns#groundHeight}.
+     *
+     * @return the points, or <code>null</code> if the constraints were never applied. Not to be modified.
+     */
+    public LasPointColumns getFilteredColumns() {
+        return filteredColumns;
     }
 
     /**
@@ -121,8 +150,13 @@ public class LasConstraints {
         upperThresConstrainD = upperThresConstrain != null ? upperThresConstrain : 0;
 
         filteredEnvelope = new Envelope();
-        if (doReread || lastReadPoints == null) {
-            lastReadPoints = new ArrayList<>(1000000);
+        if (doReread || lastReadColumns == null) {
+            // release the old points before reading the new ones
+            lastReadColumns = null;
+            filteredColumns = null;
+            long recordsCount = lasReader.getHeader().getRecordsCount();
+            long expected = doSampling && samp > 0 ? recordsCount / samp + 1 : recordsCount;
+            LasPointColumns readColumns = new LasPointColumns((int) Math.min(expected, Integer.MAX_VALUE - 8));
             try {
                 int progress = 0;
                 while( lasReader.hasNextPoint() ) {
@@ -133,13 +167,16 @@ public class LasConstraints {
                     count++;
 
                     LasRecord lasDot = lasReader.getNextPoint();
-                    boolean takeIt = checkPoint(lasDot, doSampling, samp, count);
+                    boolean takeIt = checkPoint(lasDot.x, lasDot.y, lasDot.z, lasDot.intensity, lasDot.classification,
+                            lasDot.returnNumber, doSampling, samp, count);
                     if (takeIt) {
-                        lastReadPoints.add(lasDot);
+                        lasDot.groundElevation = checkedGroundHeight;
+                        readColumns.add(lasDot);
                     }
                 }
-                filteredPoints = lastReadPoints;
-                System.out.println(filteredPoints.size());
+                readColumns.trimToSize();
+                lastReadColumns = readColumns;
+                filteredColumns = readColumns;
             } finally {
                 try {
                     lasReader.rewind();
@@ -148,27 +185,30 @@ public class LasConstraints {
                 }
             }
         } else {
-            List<LasRecord> newFilteredPoints = new ArrayList<>(1000000);
-            lastReadPoints.forEach(lr -> {
+            LasPointColumns read = lastReadColumns;
+            LasPointColumns newFiltered = new LasPointColumns(read.size());
+            for( int i = 0; i < read.size(); i++ ) {
                 // do not resample
-                boolean takeIt = checkPoint(lr, false, -1, -1);
+                boolean takeIt = checkPoint(read.x[i], read.y[i], read.z[i], read.intensity[i], read.classification[i],
+                        read.returnNumber[i], false, -1, -1);
                 if (takeIt) {
-                    newFilteredPoints.add(lr);
+                    newFiltered.add(read, i);
+                    newFiltered.groundHeight[newFiltered.size() - 1] = (float) checkedGroundHeight;
                 }
-            });
-            filteredPoints = newFilteredPoints;
-            System.out.println(filteredPoints.size());
+            }
+            newFiltered.trimToSize();
+            filteredColumns = newFiltered;
         }
     }
 
-    private boolean checkPoint( LasRecord lasDot, boolean doSampling, int samp, int count ) {
+    /**
+     * Check if a point passes the constraints, leaving its height over the DTM in
+     * {@link #checkedGroundHeight}, and update the statistics of the filtered points.
+     */
+    private boolean checkPoint( double x, double y, double z, double intensity, int classification, double impulse,
+            boolean doSampling, int samp, int count ) {
         boolean takeIt = true;
-        final double x = lasDot.x;
-        final double y = lasDot.y;
-        double z = lasDot.z;
-        final double intensity = lasDot.intensity;
-        final int classification = lasDot.classification;
-        final double impulse = lasDot.returnNumber;
+        checkedGroundHeight = Double.NaN;
 
         if (doSampling && (count % samp != 0)) {
             takeIt = false;
@@ -212,25 +252,21 @@ public class LasConstraints {
 
         if (takeIt) {
             if (dtm != null) {
-                double value = CoverageUtilities.getValue(dtm, lasDot.x, lasDot.y);
+                double value = CoverageUtilities.getValue(dtm, x, y);
                 if (!HMConstants.isNovalue(value)) {
-                    double groundHeight = z - value;
-                    if (groundHeight < 0)
-                        groundHeight = 0;
-                    lasDot.groundElevation = groundHeight;
+                    // negative heights are kept: they show where the points are under the DTM
+                    checkedGroundHeight = z - value;
                     takeIt = true;
                 } else {
                     takeIt = false;
                 }
 
-                if (lowerThresConstrain != null) {
-                    takeIt = lasDot.groundElevation >= lowerThresConstrainD;
+                if (takeIt && lowerThresConstrain != null) {
+                    takeIt = checkedGroundHeight >= lowerThresConstrainD;
                 }
-                if (upperThresConstrain != null) {
-                    takeIt = lasDot.groundElevation <= upperThresConstrainD;
+                if (takeIt && upperThresConstrain != null) {
+                    takeIt = checkedGroundHeight <= upperThresConstrainD;
                 }
-            } else {
-                lasDot.groundElevation = Double.NaN;
             }
         }
 
@@ -243,9 +279,9 @@ public class LasConstraints {
             maxClass = Math.max(maxClass, classification);
             minElevation = Math.min(minElevation, z);
             maxElevation = Math.max(maxElevation, z);
-            if (!Double.isNaN(lasDot.groundElevation)) {
-                minGroundHeight = Math.min(minGroundHeight, lasDot.groundElevation);
-                maxGroundHeight = Math.max(maxGroundHeight, lasDot.groundElevation);
+            if (!Double.isNaN(checkedGroundHeight)) {
+                minGroundHeight = Math.min(minGroundHeight, checkedGroundHeight);
+                maxGroundHeight = Math.max(maxGroundHeight, checkedGroundHeight);
             }
 
             filteredEnvelope.expandToInclude(x, y);

@@ -1,17 +1,15 @@
 package org.hortonmachine.lidar;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -19,6 +17,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.border.TitledBorder;
 
 import com.jgoodies.forms.layout.CellConstraints;
@@ -46,6 +45,8 @@ public class LasInfoView extends JPanel
    JTextField _minZField = new JTextField();
    JTextField _maxZField = new JTextField();
    JButton _boundsLoadButton = new JButton();
+   JToggleButton _boundsSelectButton = new JToggleButton();
+   JButton _boundsClearButton = new JButton();
    JButton _loadDataButton = new JButton();
    JRadioButton _elevationRadio = new JRadioButton();
    ButtonGroup _buttongroup1 = new ButtonGroup();
@@ -53,22 +54,9 @@ public class LasInfoView extends JPanel
    JRadioButton _classRadio = new JRadioButton();
    JRadioButton _impulseRadio = new JRadioButton();
    JRadioButton _ownColorRadio = new JRadioButton();
-   JTextField _pointSizeField = new JTextField();
-   JTextField _elevHigherThanField = new JTextField();
-   JTextField _intensityHigherThanField = new JTextField();
    JButton _loadPreviewButton = new JButton();
-   JButton _load3DButton = new JButton();
-   JLabel _previewImageLabel = new JLabel();
-   JCheckBox _slicingModeCheck = new JCheckBox();
-   JTextField _sliceIntervalField = new JTextField();
-   JTextField _sliceWidthField = new JTextField();
-   JButton _loadSlicedataButton = new JButton();
-   JComboBox _slicesCombo = new JComboBox();
-   JTextField _circlesMinCellCountField = new JTextField();
-   JButton _circlesExtractButton = new JButton();
-   JButton _circlesSaveShpButton = new JButton();
-   JButton _convertButton = new JButton();
-   JButton _createOverviewButton = new JButton();
+   /** The container of the 3D viewer, filled by the controller. */
+   JPanel _viewerPanel = new JPanel(new BorderLayout());
 
    /**
     * Default constructor
@@ -182,10 +170,20 @@ public class LasInfoView extends JPanel
       jpanel1.add(createInfoTabs(),cc.xywh(2,5,3,2));
       jpanel1.add(createPanel5(),cc.xywh(2,3,3,1));
       jpanel1.add(createPanel6(),cc.xywh(2,8,3,1));
+      // reading the file and filtering again what was read, side by side
+      JPanel loadButtons = new JPanel(new java.awt.GridLayout(1, 2, 4, 0));
       _loadDataButton.setActionCommand("Load Preview");
       _loadDataButton.setName("loadDataButton");
       _loadDataButton.setText("Load data");
-      jpanel1.add(_loadDataButton,cc.xywh(2,10,3,1));
+      _loadDataButton.setToolTipText("Read the file, with sampling and filters");
+      loadButtons.add(_loadDataButton);
+      _loadPreviewButton.setActionCommand("Apply filters");
+      _loadPreviewButton.setName("loadPreviewButton");
+      _loadPreviewButton.setText("Refilter loaded");
+      _loadPreviewButton.setToolTipText("<html>Apply the filters again to the points already read, without reading the file.<br>"
+            + "It can only keep points that were read, and computes the heights over a DTM set later.</html>");
+      loadButtons.add(_loadPreviewButton);
+      jpanel1.add(loadButtons,cc.xywh(2,10,3,1));
 
       addFillComponents(jpanel1,new int[]{ 1,2,3,4,5 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11 });
       return jpanel1;
@@ -219,6 +217,10 @@ public class LasInfoView extends JPanel
    public JTabbedPane createInfoTabs()
    {
       JTabbedPane tabs = new JTabbedPane();
+      // the default viewport of the tables asks 450 pixels of width, more than the fixed width
+      // of the column, which pushed all the fields of the column out of their panels
+      _headerTable.setPreferredScrollableViewportSize(new Dimension(100, 100));
+      _firstPointTable.setPreferredScrollableViewportSize(new Dimension(100, 100));
       _headerTable.setName("headerTable");
       tabs.addTab("Header", new JScrollPane(_headerTable));
       _firstPointTable.setName("firstPointTable");
@@ -406,253 +408,98 @@ public class LasInfoView extends JPanel
       _maxZField.setName("maxZField");
       jpanel1.add(_maxZField,cc.xywh(4,11,3,1));
 
+      // the bounds from a file, drawn on the map, or cleared, in one row
+      // without a width of its own: three buttons as wide as the widest are more than the fixed
+      // width of the column, and pushed all the fields of the column out of their panels
+      JPanel boundsButtons = new JPanel(new java.awt.GridLayout(1, 3, 4, 0)){
+         @Override
+         public Dimension getPreferredSize() {
+            return new Dimension(10, super.getPreferredSize().height);
+         }
+
+         @Override
+         public Dimension getMinimumSize() {
+            return getPreferredSize();
+         }
+      };
       _boundsLoadButton.setActionCommand("load");
       _boundsLoadButton.setName("boundsLoadButton");
-      _boundsLoadButton.setText("Bounds from file");
-      jpanel1.add(_boundsLoadButton,cc.xywh(2,13,5,1));
+      _boundsLoadButton.setText("From file");
+      _boundsLoadButton.setToolTipText("Take the bounds from the extent of a vector file");
+      boundsButtons.add(_boundsLoadButton);
+      _boundsSelectButton.setName("boundsSelectButton");
+      _boundsSelectButton.setText("Draw on map");
+      _boundsSelectButton.setToolTipText("<html>When active, drag a box on the 3D view to set the bounds,<br>"
+            + "then drag its sides or inside to adjust it.</html>");
+      boundsButtons.add(_boundsSelectButton);
+      _boundsClearButton.setName("boundsClearButton");
+      _boundsClearButton.setText("Clear");
+      _boundsClearButton.setToolTipText("Remove the bounds, to load the whole file");
+      boundsButtons.add(_boundsClearButton);
+      for( java.awt.Component button : boundsButtons.getComponents() ) {
+         ((javax.swing.AbstractButton) button).setMargin(new java.awt.Insets(2, 4, 2, 4));
+      }
+      jpanel1.add(boundsButtons,cc.xywh(2,13,5,1));
 
       addFillComponents(jpanel1,new int[]{ 1,3,5,6 },new int[]{ 1,2,3,4,5,6,7,8,9,10,11,12,13,14 });
       return jpanel1;
    }
 
+   /**
+    * The right side: the 3D viewer, taking all the space, and under it the coloring of the points.
+    */
    public JPanel createPanel9()
    {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.5)","FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      jpanel1.add(createPanel10(),cc.xy(1,2));
-      jpanel1.add(createPanel14(),cc.xywh(1,1,3,1));
-      jpanel1.add(createPanel15(),cc.xy(2,2));
-      jpanel1.add(createPanel17(),cc.xy(3,2));
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,2,3,4 });
+      JPanel jpanel1 = new JPanel(new BorderLayout(0, 4));
+      _viewerPanel.setName("viewerPanel");
+      jpanel1.add(_viewerPanel, BorderLayout.CENTER);
+      jpanel1.add(createPanel10(), BorderLayout.SOUTH);
       return jpanel1;
    }
 
+   /**
+    * The coloring of the points, in one row. The value used for the coloring is also the one
+    * filtered by the range slider of the viewer.
+    */
    public JPanel createPanel10()
    {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Preview properties",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
+      JPanel jpanel1 = new JPanel(new BorderLayout());
+      TitledBorder titledborder1 = new TitledBorder(null,"Color and slice by",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
       jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.2),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.2),FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(0.2)","TOP:DEFAULT:GROW(1.0)");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
 
-      jpanel1.add(createPanel11(),cc.xy(2,1));
-      jpanel1.add(createPanel12(),cc.xy(4,1));
-      jpanel1.add(createPanel13(),cc.xy(6,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6 },new int[]{ 1 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel11()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Color by",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
+      JPanel radios = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
       _elevationRadio.setActionCommand("elevation");
       _elevationRadio.setName("elevationRadio");
       _elevationRadio.setText("elevation");
+      _elevationRadio.setToolTipText("The elevation, or the height over the ground if a DTM is set");
       _buttongroup1.add(_elevationRadio);
-      jpanel1.add(_elevationRadio,cc.xy(1,1));
+      radios.add(_elevationRadio);
 
       _intensityRadio.setActionCommand("intensity");
       _intensityRadio.setName("intensityRadio");
       _intensityRadio.setText("intensity");
       _buttongroup1.add(_intensityRadio);
-      jpanel1.add(_intensityRadio,cc.xy(1,3));
+      radios.add(_intensityRadio);
 
-      _classRadio.setActionCommand("intensity");
+      _classRadio.setActionCommand("classification");
       _classRadio.setName("classRadio");
       _classRadio.setText("classification");
       _buttongroup1.add(_classRadio);
-      jpanel1.add(_classRadio,cc.xy(1,5));
+      radios.add(_classRadio);
 
-      _impulseRadio.setActionCommand("intensity");
+      _impulseRadio.setActionCommand("impulse");
       _impulseRadio.setName("impulseRadio");
       _impulseRadio.setText("impulse");
       _buttongroup1.add(_impulseRadio);
-      jpanel1.add(_impulseRadio,cc.xy(1,7));
+      radios.add(_impulseRadio);
 
-      _ownColorRadio.setActionCommand("intensity");
+      _ownColorRadio.setActionCommand("own color");
       _ownColorRadio.setName("ownColorRadio");
       _ownColorRadio.setText("own color");
+      _ownColorRadio.setToolTipText("The colors of the points, sliced by elevation");
       _buttongroup1.add(_ownColorRadio);
-      jpanel1.add(_ownColorRadio,cc.xy(1,9));
-
-      addFillComponents(jpanel1,new int[0],new int[]{ 2,4,6,8 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel12()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Other",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,TOP:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      JLabel jlabel1 = new JLabel();
-      jlabel1.setText("point size");
-      jpanel1.add(jlabel1,cc.xy(1,1));
-
-      _pointSizeField.setName("pointSizeField");
-      jpanel1.add(_pointSizeField,cc.xy(3,1));
-
-      JLabel jlabel2 = new JLabel();
-      jlabel2.setText("show elevation higher than");
-      jpanel1.add(jlabel2,cc.xy(1,3));
-
-      _elevHigherThanField.setName("elevHigherThanField");
-      jpanel1.add(_elevHigherThanField,cc.xy(3,3));
-
-      JLabel jlabel3 = new JLabel();
-      jlabel3.setText("show intensity higher than");
-      jpanel1.add(jlabel3,cc.xy(1,5));
-
-      _intensityHigherThanField.setName("intensityHigherThanField");
-      jpanel1.add(_intensityHigherThanField,cc.xy(3,5));
-
-      addFillComponents(jpanel1,new int[]{ 2 },new int[]{ 2,4 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel13()
-   {
-      JPanel jpanel1 = new JPanel();
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _loadPreviewButton.setActionCommand("Load Preview");
-      _loadPreviewButton.setName("loadPreviewButton");
-      _loadPreviewButton.setText("Draw loaded data");
-      jpanel1.add(_loadPreviewButton,cc.xy(1,2));
-
-      _load3DButton.setActionCommand("Load Preview");
-      _load3DButton.setName("load3DButton");
-      _load3DButton.setText("Show bounds in 3D");
-      jpanel1.add(_load3DButton,cc.xy(1,4));
-
-      addFillComponents(jpanel1,new int[]{ 1 },new int[]{ 1,3,5 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel14()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Preview",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:GROW(1.0)","FILL:DEFAULT:GROW(1.0)");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _previewImageLabel.setBackground(new Color(254,254,254));
-      _previewImageLabel.setName("previewImageLabel");
-      jpanel1.add(_previewImageLabel,cc.xy(1,1));
-
-      addFillComponents(jpanel1,new int[0],new int[0]);
-      return jpanel1;
-   }
-
-   public JPanel createPanel15()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Slicing",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:18DLU:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:18DLU:NONE,FILL:DEFAULT:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _slicingModeCheck.setActionCommand("enable slicing mode");
-      _slicingModeCheck.setName("slicingModeCheck");
-      _slicingModeCheck.setText("enable slicing mode");
-      jpanel1.add(_slicingModeCheck,cc.xywh(2,2,7,1));
-
-      JLabel jlabel1 = new JLabel();
-      jlabel1.setText("interval [m]");
-      jpanel1.add(jlabel1,cc.xy(2,4));
-
-      _sliceIntervalField.setName("sliceIntervalField");
-      jpanel1.add(_sliceIntervalField,cc.xy(4,4));
-
-      JLabel jlabel2 = new JLabel();
-      jlabel2.setText("slice width [m]");
-      jpanel1.add(jlabel2,cc.xy(6,4));
-
-      _sliceWidthField.setName("sliceWidthField");
-      jpanel1.add(_sliceWidthField,cc.xy(8,4));
-
-      _loadSlicedataButton.setActionCommand("Load Preview");
-      _loadSlicedataButton.setName("loadSlicedataButton");
-      _loadSlicedataButton.setText("Load Slice Data");
-      jpanel1.add(_loadSlicedataButton,cc.xywh(2,6,7,1));
-
-      _slicesCombo.setName("slicesCombo");
-      jpanel1.add(_slicesCombo,cc.xywh(2,8,7,1));
-
-      jpanel1.add(createPanel16(),cc.xywh(2,10,7,1));
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6,7,8,9 },new int[]{ 1,2,3,4,5,6,7,8,9,10 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel16()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Extract Circles",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
-      jpanel1.setBorder(titledborder1);
-      // each button on its own row: on one row with the field they got clipped by the slicing panel width
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0)","CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE,CENTER:2DLU:NONE,CENTER:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      JLabel jlabel1 = new JLabel();
-      jlabel1.setText("min cell count");
-      jpanel1.add(jlabel1,cc.xy(1,2));
-
-      _circlesMinCellCountField.setName("circlesMinCellCountField");
-      jpanel1.add(_circlesMinCellCountField,cc.xy(3,2));
-
-      _circlesExtractButton.setActionCommand("Load Preview");
-      _circlesExtractButton.setName("circlesExtractButton");
-      _circlesExtractButton.setText("Extract Circles");
-      jpanel1.add(_circlesExtractButton,cc.xywh(1,4,3,1));
-
-      _circlesSaveShpButton.setActionCommand("Load Preview");
-      _circlesSaveShpButton.setName("circlesSaveShpButton");
-      _circlesSaveShpButton.setText("Save Circles Shp");
-      jpanel1.add(_circlesSaveShpButton,cc.xywh(1,6,3,1));
-
-      addFillComponents(jpanel1,new int[]{ 1,2,3 },new int[]{ 1,3,5 });
-      return jpanel1;
-   }
-
-   public JPanel createPanel17()
-   {
-      JPanel jpanel1 = new JPanel();
-      TitledBorder titledborder1 = new TitledBorder(null,"Export region",TitledBorder.DEFAULT_JUSTIFICATION,TitledBorder.DEFAULT_POSITION,null,null);
-      jpanel1.setBorder(titledborder1);
-      FormLayout formlayout1 = new FormLayout("FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:NONE,FILL:DEFAULT:GROW(1.0),FILL:DEFAULT:NONE,FILL:24DLU:NONE","CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,CENTER:DEFAULT:NONE,FILL:DEFAULT:NONE");
-      CellConstraints cc = new CellConstraints();
-      jpanel1.setLayout(formlayout1);
-
-      _convertButton.setActionCommand("Load Preview");
-      _convertButton.setName("convertButton");
-      _convertButton.setText("Export to shp/las");
-      jpanel1.add(_convertButton,cc.xywh(2,2,5,1));
-
-      _createOverviewButton.setActionCommand("Load Preview");
-      _createOverviewButton.setName("createOverviewButton");
-      _createOverviewButton.setText("Create overview");
-      jpanel1.add(_createOverviewButton,cc.xywh(2,4,5,1));
-
-      addFillComponents(jpanel1,new int[]{ 1,2,3,4,5,6 },new int[]{ 1,2,3,4,5 });
+      radios.add(_ownColorRadio);
+      jpanel1.add(radios, BorderLayout.CENTER);
       return jpanel1;
    }
 

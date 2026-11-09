@@ -14,7 +14,7 @@ The HortonMachine ships a set of desktop applications and a command line, each s
 | [Web Services Browser](webservices.md) | `hm-webservices` | Browse WMS, WCS and WFS services and save maps, coverages and features |
 | [Geopaparazzi Viewer](geopaparazzi.md) | `hm-geopaparazzi_viewer` | View the data of Geopaparazzi survey projects |
 | [Form Builder](gforms.md) | `hm-gforms` | Create the forms used by Geopaparazzi and SMASH |
-| [LAS Viewer](lasviewer.md) | `hm-lasviewer` | Inspect lidar LAS files |
+| [LAS Viewer](lasviewer.md) | `hm-lasviewer` | Inspect lidar LAS/LAZ files and view their points in 3D |
 | [Map Calculator](mapcalc.md) | `hm-mapcalc` | Raster map algebra |
 | [Simple NWW Viewer](nwwviewer.md) | `hm-simplenww-viewer` | A 3D globe viewer based on NASA WorldWind |
 | [Quick Folder](quickfolder.md) | `hm-quickfolder` | Quickly view the spatial files of a folder on a map |

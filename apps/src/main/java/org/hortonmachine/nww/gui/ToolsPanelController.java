@@ -38,12 +38,14 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -53,6 +55,7 @@ import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.parameter.ParameterValue;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.style.Style;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
@@ -70,19 +73,26 @@ import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.dbs.utils.TableName;
+import org.hortonmachine.gears.io.las.core.ALasReader;
+import org.hortonmachine.gears.io.las.core.ILasHeader;
+import org.hortonmachine.gears.io.las.core.Las;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.executor.ExecutorProgressGui;
 import org.hortonmachine.nww.elevation.CoverageElevationModel;
 import org.hortonmachine.nww.gui.listeners.GenericSelectListener;
 import org.hortonmachine.nww.layers.defaults.annotations.HtmlScreenAnnotation;
 import org.hortonmachine.nww.layers.defaults.annotations.HtmlScreenAnnotation.Builder;
 import org.hortonmachine.nww.layers.defaults.other.CurrentGpsPointLayer;
+import org.hortonmachine.nww.layers.defaults.other.LasPointCloudLayer;
+import org.hortonmachine.nww.layers.defaults.other.LasPointCloudLayer.ColorMode;
 import org.hortonmachine.nww.layers.defaults.other.SimplePointsLayer;
 import org.hortonmachine.nww.layers.defaults.other.WhiteNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.GeopackageTilesNwwLayer;
@@ -155,6 +165,9 @@ public class ToolsPanelController extends ToolsPanelView {
     private GenericSelectListener genericSelectListener;
 
     private WhiteNwwLayer whiteLayer = new WhiteNwwLayer();
+
+    /** The points of a las file loaded by default, the sampling proposed keeps under them. */
+    private static final long LAS_DEFAULT_MAX_POINTS = 20_000_000;
 
     private NwwPanel wwjPanel;
 
@@ -750,6 +763,118 @@ public class ToolsPanelController extends ToolsPanelView {
         return selected;
     }
 
+    /**
+     * Load a las/laz file as point cloud, asking sampling and coloring, and the CRS if the file has
+     * none. The points are read in the background.
+     */
+    private void loadLasFile( File lasFile ) throws Exception {
+        ALasReader reader = Las.getReader(lasFile);
+        boolean started = false;
+        try {
+            ILasHeader header = reader.getHeader();
+            long recordsCount = header.getRecordsCount();
+            CoordinateReferenceSystem fileCrs = header.getCrs();
+
+            long defaultSampling = Math.max(1, (recordsCount + LAS_DEFAULT_MAX_POINTS - 1) / LAS_DEFAULT_MAX_POINTS);
+            JTextField samplingField = new JTextField(String.valueOf(defaultSampling), 8);
+            samplingField.setToolTipText("Read one point every this: 1 reads all the points");
+            JComboBox<ColorMode> colorCombo = new JComboBox<>(ColorMode.values());
+            JTextField crsField = new JTextField(12);
+            crsField.setToolTipText("The EPSG code of the coordinates of the file, e.g. EPSG:32632");
+
+            JPanel panel = new JPanel(new GridBagLayout());
+            GridBagConstraints c = new GridBagConstraints();
+            c.insets = new Insets(3, 3, 3, 3);
+            c.anchor = GridBagConstraints.WEST;
+            c.gridx = 0;
+            c.gridy = 0;
+            c.gridwidth = 2;
+            String info = String.format("<html><b>%s</b>: %,d points", lasFile.getName(), recordsCount);
+            if (fileCrs == null) {
+                info += "<br>The file has no CRS: enter the one of its coordinates.";
+            }
+            panel.add(new JLabel(info + "</html>"), c);
+            c.gridwidth = 1;
+            c.gridy++;
+            panel.add(new JLabel("Sampling"), c);
+            c.gridx = 1;
+            panel.add(samplingField, c);
+            c.gridx = 0;
+            c.gridy++;
+            panel.add(new JLabel("Color by"), c);
+            c.gridx = 1;
+            panel.add(colorCombo, c);
+            if (fileCrs == null) {
+                c.gridx = 0;
+                c.gridy++;
+                panel.add(new JLabel("CRS"), c);
+                c.gridx = 1;
+                panel.add(crsField, c);
+            }
+            int answer = JOptionPane.showConfirmDialog(this, panel, "Load point cloud", JOptionPane.OK_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE);
+            if (answer != JOptionPane.OK_OPTION) {
+                return;
+            }
+
+            int sampling;
+            try {
+                sampling = Math.max(1, Integer.parseInt(samplingField.getText().trim()));
+            } catch (NumberFormatException e) {
+                GuiUtilities.showWarningMessage(this, "WARNING", "The sampling needs to be an integer number.");
+                return;
+            }
+            CoordinateReferenceSystem crs = fileCrs;
+            if (crs == null) {
+                String code = crsField.getText().trim();
+                if (code.matches("\\d+")) {
+                    code = "EPSG:" + code;
+                }
+                try {
+                    crs = HMCrsRegistry.INSTANCE.getCrs(code, true);
+                } catch (Exception e) {
+                    crs = null;
+                }
+                if (crs == null) {
+                    GuiUtilities.showWarningMessage(this, "WARNING", "Unable to use the CRS: " + code);
+                    return;
+                }
+            }
+
+            ColorMode mode = (ColorMode) colorCombo.getSelectedItem();
+            CoordinateReferenceSystem _crs = crs;
+            String layerName = lasFile.getName();
+            new ExecutorProgressGui((int) (recordsCount / 1000)){
+                @Override
+                public void backGroundWork() throws Exception {
+                    LasPointCloudLayer layer;
+                    try {
+                        layer = LasPointCloudLayer.fromReader(layerName, reader, _crs, sampling, mode, this);
+                    } finally {
+                        reader.close();
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (layer.getPointsCount() == 0) {
+                            GuiUtilities.showWarningMessage(ToolsPanelController.this, "WARNING",
+                                    "No point read from " + layerName);
+                            return;
+                        }
+                        wwjPanel.getWwd().getModel().getLayers().add(layer);
+                        layerEventsListener.onLayerAdded(layer);
+                                        org.locationtech.jts.geom.Envelope bounds = layer.getBounds();
+                        wwjPanel.goTo(Sector.fromDegrees(bounds.getMinY(), bounds.getMaxY(), bounds.getMinX(), bounds.getMaxX()),
+                                true);
+                    });
+                }
+            }.execute();
+            started = true;
+        } finally {
+            if (!started) {
+                reader.close();
+            }
+        }
+    }
+
     private void loadFile( File selectedFile ) {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
         String lowerName = selectedFile.getName().toLowerCase();
@@ -806,6 +931,8 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(featureSource);
                 loadFeatureCollection(selectedFile, name, featureStore, readFC, field2ValuesMap);
+            } else if (lowerName.endsWith(".las") || lowerName.endsWith(".laz")) {
+                loadLasFile(selectedFile);
             } else if (lowerName.endsWith(".mbtiles")) {
                 MBTilesNwwLayer mbTileLayer = new MBTilesNwwLayer(selectedFile);
                 wwjPanel.getWwd().getModel().getLayers().add(mbTileLayer);

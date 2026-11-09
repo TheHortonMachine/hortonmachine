@@ -23,6 +23,7 @@ import javax.swing.AbstractAction;
 
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.LayerEventsListener;
+import org.hortonmachine.nww.layers.defaults.NwwLayer;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
@@ -53,6 +54,10 @@ public class DeleteLayerAction extends AbstractAction {
         LayerList layers = wwd.getModel().getLayers();
         layers.remove(layer);
         eventsListener.onLayerRemoved(layer);
+        if (layer instanceof NwwLayer) {
+            // e.g. the graphics memory of point clouds
+            ((NwwLayer) layer).freeResources();
+        }
         wwd.redraw();
     }
 }
