@@ -34,6 +34,7 @@ import org.locationtech.jts.geom.Envelope;
 
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.Layer;
+import gov.nasa.worldwind.layers.LayerList;
 
 /**
  * The access of the {@link INwwTool}s to the viewer: its map, layers and loaders.
@@ -44,16 +45,19 @@ public class NwwContext {
 
     /** The points of each side of an envelope transformed to longitude/latitude. */
     private static final int DENSIFICATION_POINTS = 10;
+    /** The key of the layer that replaced a layer, kept in the replaced one. */
+    private static final String REPLACED_BY_KEY = "org.hortonmachine.nww.tools.NwwContext.replacedBy";
 
     private final NwwPanel nwwPanel;
     private final LayerEventsListener layerEventsListener;
     private final ToolsPanelController toolsPanel;
+    private NwwToolsTabs toolsTabs;
 
     /**
      * @param nwwPanel the map.
      * @param layerEventsListener the listener told of the layers added and removed, as the
      *          layers panel.
-     * @param toolsPanel the panel of the general tools, which loads files and feature collections.
+     * @param toolsPanel the general actions of the viewer, which load files and feature collections.
      */
     public NwwContext( NwwPanel nwwPanel, LayerEventsListener layerEventsListener, ToolsPanelController toolsPanel ) {
         this.nwwPanel = nwwPanel;
@@ -62,10 +66,24 @@ public class NwwContext {
     }
 
     /**
+     * @param toolsTabs the tabs created with this context.
+     */
+    void setToolsTabs( NwwToolsTabs toolsTabs ) {
+        this.toolsTabs = toolsTabs;
+    }
+
+    /**
      * @return the map.
      */
     public NwwPanel getNwwPanel() {
         return nwwPanel;
+    }
+
+    /**
+     * @return the general actions of the viewer, which load and reload the layers.
+     */
+    public ToolsPanelController getToolsPanel() {
+        return toolsPanel;
     }
 
     /**
@@ -96,6 +114,55 @@ public class NwwContext {
     public void removeLayer( Layer layer ) {
         nwwPanel.removeLayer(layer);
         layerEventsListener.onLayerRemoved(layer);
+    }
+
+    /**
+     * Replace a layer by another, as a filtered version of it: the replacement takes its
+     * position, visibility and opacity, its panel in the layer tab and, if it was the current
+     * layer, its place as current layer. The replaced layer is disposed.
+     *
+     * <p>The panels that keep a layer find the one that replaced it with
+     * {@link #getLatest(Layer)}.</p>
+     *
+     * @param layer the layer to replace.
+     * @param replacement the layer that replaces it.
+     */
+    public void replaceLayer( Layer layer, Layer replacement ) {
+        LayerList layers = nwwPanel.getWwd().getModel().getLayers();
+        int index = layers.indexOf(layer);
+        if (index < 0) {
+            throw new IllegalArgumentException("The layer is not in the viewer: " + layer.getName());
+        }
+        replacement.setEnabled(layer.isEnabled());
+        replacement.setOpacity(layer.getOpacity());
+        if (toolsTabs != null) {
+            toolsTabs.replaceLayer(layer, replacement);
+        }
+        layers.set(index, replacement);
+        if (layerEventsListener instanceof LayersPanelController) {
+            ((LayersPanelController) layerEventsListener).onLayerReplaced(layer, replacement);
+        } else {
+            layerEventsListener.onLayerRemoved(layer);
+            layerEventsListener.onLayerAdded(replacement);
+        }
+        layer.dispose();
+        // after the disposal, which might clear the values of the layer
+        layer.setValue(REPLACED_BY_KEY, replacement);
+        nwwPanel.getWwd().redraw();
+    }
+
+    /**
+     * @param layer a layer.
+     * @return the layer that replaced it, after any number of replacements, as by a filter and
+     *          then a style, or the layer itself if it was not replaced.
+     */
+    public Layer getLatest( Layer layer ) {
+        Layer latest = layer;
+        Object replacement;
+        while( (replacement = latest.getValue(REPLACED_BY_KEY)) instanceof Layer ) {
+            latest = (Layer) replacement;
+        }
+        return latest;
     }
 
     /**

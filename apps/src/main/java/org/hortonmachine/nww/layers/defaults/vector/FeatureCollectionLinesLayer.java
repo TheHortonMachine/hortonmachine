@@ -21,17 +21,21 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.utils.style.FeatureStyler;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.shapes.FeatureLine;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.nww.shapes.FeatureSurfacePolyline;
-import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -39,10 +43,12 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
 import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.airspaces.AirspaceAttributes;
 import gov.nasa.worldwind.render.airspaces.BasicAirspaceAttributes;
 
@@ -70,6 +76,13 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
     private FeatureStoreInfo featureStoreInfo;
     private SimpleFeatureStore featureStore;
     private SimpleFeatureCollection featureCollectionLL;
+
+    /** The SLD style, <code>null</code> to draw all features with the simple style. */
+    private volatile FeatureStyler styler;
+    /** The attributes of the looks given by the SLD style, shared by the features. */
+    private final Map<FeatureStyler.Symbol, BasicShapeAttributes> stylerAttributes = new ConcurrentHashMap<>();
+    /** Incremented at each load, so that an older load stops and doesn't replace a newer one. */
+    private final AtomicInteger loadGeneration = new AtomicInteger();
 
     /**
      * Build the layer.
@@ -100,10 +113,12 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
         loadData();
     }
 
+    /**
+     * @return the collection given to the layer, not the whole feature store, since it can be a
+     *          filtered view of it. Collections read from a store read it again at each use, so
+     *          they show the edited attributes.
+     */
     private SimpleFeatureCollection getfeatureCollection() throws Exception {
-        if (featureStore != null) {
-            return NwwUtilities.readAndReproject(featureStore);
-        }
         return featureCollectionLL;
     }
 
@@ -151,21 +166,88 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
         t.start();
     }
 
+    @Override
+    public void setSldStyle( Style style ) {
+        styler = style != null ? new FeatureStyler(style) : null;
+        stylerAttributes.clear();
+        loadData();
+    }
+
+    @Override
+    public Style getSldStyle() {
+        return styler != null ? styler.getStyle() : null;
+    }
+
+    /**
+     * Get the attributes of a feature, adding its label if the style has one.
+     *
+     * @param feature the feature.
+     * @param labels the labels to add to, <code>null</code> to add none.
+     * @return the attributes, <code>null</code> if the feature is not drawn.
+     */
+    private BasicShapeAttributes getAttributes( SimpleFeature feature, FeatureLabels labels ) {
+        if (styler == null) {
+            return mNormalShapeAttributes;
+        }
+        FeatureStyler.Styled styled = styler.style(feature);
+        if (styled == null) {
+            return null;
+        }
+        if (styled.label() != null && labels != null) {
+            labels.add((Geometry) feature.getDefaultGeometry(), styled.label());
+        }
+        if (styled.symbol() == null || styled.symbol().stroke() == null) {
+            return null;
+        }
+        return stylerAttributes.computeIfAbsent(styled.symbol(), symbol -> {
+            BasicShapeAttributes attributes = new BasicShapeAttributes();
+            attributes.setOutlineMaterial(new Material(symbol.stroke()));
+            attributes.setOutlineOpacity(symbol.strokeOpacity());
+            attributes.setOutlineWidth(symbol.strokeWidth());
+            attributes.setDrawOutline(symbol.strokeWidth() > 0 && symbol.strokeOpacity() > 0);
+            return attributes;
+        });
+    }
+
     public class WorkerThread extends Thread {
 
         public void run() {
+            int generation = loadGeneration.incrementAndGet();
             try {
-                removeAllRenderables();
+                List<Renderable> renderables = new ArrayList<>();
+                FeatureLabels labels = new FeatureLabels();
                 SimpleFeatureIterator featureIterator = getfeatureCollection().features();
-                while( featureIterator.hasNext() ) {
-                    SimpleFeature lineFeature = featureIterator.next();
-                    boolean doExtrude = false;
-                    if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
-                        doExtrude = true;
+                try {
+                    while( featureIterator.hasNext() ) {
+                        if (generation != loadGeneration.get()) {
+                            // a newer load started, as for a new style
+                            return;
+                        }
+                        SimpleFeature lineFeature = featureIterator.next();
+                        BasicShapeAttributes attributes = getAttributes(lineFeature, labels);
+                        if (attributes == null) {
+                            continue;
+                        }
+                        boolean doExtrude = false;
+                        if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
+                            doExtrude = true;
+                        }
+                        addLine(lineFeature, doExtrude, attributes, renderables);
                     }
-                    addLine(lineFeature, doExtrude);
+                } finally {
+                    featureIterator.close();
                 }
-                featureIterator.close();
+                synchronized (loadGeneration) {
+                    if (generation == loadGeneration.get()) {
+                        removeAllRenderables();
+                        addRenderables(renderables);
+                        if (!labels.isEmpty()) {
+                            addRenderable(labels);
+                        }
+                    }
+                }
+                // the map was drawn when the load started: draw it again with the new shapes
+                firePropertyChange(AVKey.LAYER, null, FeatureCollectionLinesLayer.this);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -173,7 +255,8 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
 
     }
 
-    private void addLine( SimpleFeature lineFeature, boolean doExtrude ) {
+    private void addLine( SimpleFeature lineFeature, boolean doExtrude, BasicShapeAttributes attributes,
+            List<Renderable> renderables ) {
         Geometry geometry = (Geometry) lineFeature.getDefaultGeometry();
         if (geometry == null) {
             return;
@@ -223,17 +306,17 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
                 if (!doExtrude && isDrapedOnTerrain()) {
                     FeatureSurfacePolyline surfaceLine = new FeatureSurfacePolyline(verticesList, featureStoreInfo);
                     surfaceLine.setFeature(lineFeature);
-                    surfaceLine.setAttributes(mNormalShapeAttributes);
+                    surfaceLine.setAttributes(attributes);
                     surfaceLine.setHighlightAttributes(highlightAttrs);
-                    addRenderable(surfaceLine);
+                    renderables.add(surfaceLine);
                 } else {
                     FeatureLine path = new FeatureLine(verticesList, featureStoreInfo);
                     path.setFeature(lineFeature);
                     path.setAltitudeMode(mElevationMode);
-                    path.setAttributes(mNormalShapeAttributes);
+                    path.setAttributes(attributes);
                     path.setHighlightAttributes(highlightAttrs);
                     path.setExtrude(doExtrude);
-                    addRenderable(path);
+                    renderables.add(path);
                 }
             }
         }
@@ -291,7 +374,13 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
 
     @Override
     public void add( SimpleFeature feature ) {
-        addLine(feature, mApplyExtrusion);
+        // the label of an added feature is shown at the next reload
+        BasicShapeAttributes attributes = getAttributes(feature, null);
+        if (attributes != null) {
+            List<Renderable> renderables = new ArrayList<>();
+            addLine(feature, mApplyExtrusion, attributes, renderables);
+            addRenderables(renderables);
+        }
     }
 
     @Override

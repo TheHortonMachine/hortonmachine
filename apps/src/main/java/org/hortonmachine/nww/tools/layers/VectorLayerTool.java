@@ -18,9 +18,13 @@
 package org.hortonmachine.nww.tools.layers;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -36,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 import org.geotools.api.data.FileDataStore;
@@ -45,7 +51,11 @@ import org.geotools.api.data.SimpleFeatureSource;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.feature.type.AttributeDescriptor;
 import org.geotools.api.feature.type.GeometryDescriptor;
+import org.geotools.api.filter.Filter;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.filter.text.ecql.ECQL;
+import org.hortonmachine.dbs.compat.IHMResultSet;
+import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
@@ -90,9 +100,13 @@ public class VectorLayerTool implements INwwLayerTool {
             try {
                 VectorInfo info = source.isGeopackageTable() ? readGeopackageTable(source) : readShapefile(source.file());
                 SwingUtilities.invokeLater(() -> {
+                    JTextField filterField = new JTextField(source.filter() == null ? "" : source.filter());
+                    JPanel northPanel = new JPanel(new BorderLayout(0, 6));
+                    northPanel.add(infoPanel(info.properties()), BorderLayout.NORTH);
+                    northPanel.add(filterPanel(context, layer, info.count(), filterField), BorderLayout.CENTER);
                     panel.removeAll();
-                    panel.add(infoPanel(info.properties()), BorderLayout.NORTH);
-                    panel.add(columnsPanel(info), BorderLayout.CENTER);
+                    panel.add(northPanel, BorderLayout.NORTH);
+                    panel.add(columnsPanel(info, filterField), BorderLayout.CENTER);
                     panel.revalidate();
                     panel.repaint();
                 });
@@ -105,14 +119,164 @@ public class VectorLayerTool implements INwwLayerTool {
     }
 
     /**
-     * What is shown of a vector: the properties, by label, and the columns.
+     * What is shown of a vector: the properties, by label, the columns and the number of all
+     * the features.
      */
-    private record VectorInfo( Map<String, String> properties, List<String[]> columns, boolean withPrimaryKey ) {
+    private record VectorInfo( Map<String, String> properties, List<String[]> columns, boolean withPrimaryKey, long count ) {
+    }
+
+    /**
+     * The filter of the features shown by the layer: applying it replaces the layer by one with
+     * the matching features only.
+     *
+     * @param layer the layer of the panel when it is created.
+     * @param total the number of all the features.
+     * @param filterField the field of the filter, into which the columns table inserts names.
+     */
+    private static JPanel filterPanel( NwwContext context, Layer layer, long total, JTextField filterField ) {
+        LayerSource source = LayerSource.of(layer);
+
+        String hint = source.isGeopackageTable()
+                ? "SQL WHERE condition, e.g.  \"ID\" > 10 AND \"name\" LIKE 'A%'"
+                : "ECQL condition, e.g.  \"AREA\" > 1000 AND \"NAME\" LIKE 'A%'  (quote ID, a keyword)";
+        JLabel hintLabel = new JLabel(hint);
+        hintLabel.setEnabled(false);
+        JLabel statusLabel = new JLabel(countText(source.filter() == null ? total : -1, total));
+        JButton applyButton = new JButton("Apply");
+        JButton clearButton = new JButton("Clear");
+
+        Runnable apply = () -> {
+            String filter = filterField.getText().trim();
+            String where = filter.isEmpty() ? null : filter;
+            applyButton.setEnabled(false);
+            clearButton.setEnabled(false);
+            statusLabel.setForeground(UIManager.getColor("Label.foreground"));
+            statusLabel.setText(where == null ? "Loading all the features..." : "Filtering...");
+            // the layer is replaced by each filter applied, as well as by a new style
+            Layer currentLayer = context.getLatest(layer);
+            new Thread(() -> {
+                try {
+                    // counting first also checks the filter, before the layer is rebuilt
+                    long count = where == null ? total : countFeatures(source, where);
+                    Layer replacement = context.getToolsPanel().reloadVectorLayer(currentLayer, where);
+                    SwingUtilities.invokeLater(() -> {
+                        context.replaceLayer(currentLayer, replacement);
+                        statusLabel.setText(countText(count, total));
+                        applyButton.setEnabled(true);
+                        clearButton.setEnabled(true);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    SwingUtilities.invokeLater(() -> {
+                        statusLabel.setForeground(UIManager.getColor("Component.error.focusedBorderColor") != null
+                                ? UIManager.getColor("Component.error.focusedBorderColor")
+                                : Color.RED);
+                        statusLabel.setText("Wrong filter: " + errorText(e));
+                        applyButton.setEnabled(true);
+                        clearButton.setEnabled(true);
+                    });
+                }
+            }, "hm-vector-layer-filter").start();
+        };
+        applyButton.addActionListener(e -> apply.run());
+        filterField.addActionListener(e -> apply.run());
+        clearButton.addActionListener(e -> {
+            filterField.setText("");
+            if (LayerSource.of(context.getLatest(layer)).filter() != null) {
+                apply.run();
+            } else {
+                // only an error of a filter not applied to clear
+                statusLabel.setForeground(UIManager.getColor("Label.foreground"));
+                statusLabel.setText(countText(total, total));
+            }
+        });
+
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
+        buttonsPanel.add(applyButton);
+        buttonsPanel.add(clearButton);
+        JPanel fieldPanel = new JPanel(new BorderLayout(4, 0));
+        fieldPanel.add(filterField, BorderLayout.CENTER);
+        fieldPanel.add(buttonsPanel, BorderLayout.EAST);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Filter"));
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(2, 4, 2, 4);
+        c.gridx = 0;
+        c.weightx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        c.anchor = GridBagConstraints.WEST;
+        c.gridy = 0;
+        panel.add(fieldPanel, c);
+        c.gridy = 1;
+        panel.add(hintLabel, c);
+        c.gridy = 2;
+        panel.add(statusLabel, c);
+        return panel;
+    }
+
+    /**
+     * @param count the features shown, -1 if not known.
+     * @param total all the features.
+     */
+    private static String countText( long count, long total ) {
+        if (count < 0) {
+            return "Filtered";
+        }
+        if (count == total) {
+            return String.format(Locale.ROOT, "Showing all the %,d features", total);
+        }
+        return String.format(Locale.ROOT, "Showing %,d of %,d features", count, total);
+    }
+
+    /**
+     * @return the message of the deepest cause, which tells what is wrong in the filter.
+     */
+    private static String errorText( Throwable e ) {
+        Throwable cause = e;
+        while( cause.getCause() != null && cause.getCause() != cause ) {
+            cause = cause.getCause();
+        }
+        String message = cause.getMessage() != null ? cause.getMessage() : cause.getClass().getSimpleName();
+        // the ECQL parser lists all the tokens it expected, too many to be of help
+        int expectingIndex = message.indexOf("Was expecting");
+        if (expectingIndex > 0) {
+            message = message.substring(0, expectingIndex);
+        }
+        // the parser messages span lines
+        return message.replaceAll("\\s+", " ").trim();
+    }
+
+    /**
+     * Count the features that match a filter, which fails if the filter is wrong.
+     */
+    private static long countFeatures( LayerSource source, String where ) throws Exception {
+        if (source.isGeopackageTable()) {
+            try (GeopackageCommonDb db = new GeopackageDb()) {
+                db.open(source.file().getAbsolutePath());
+                String sql = "select count(*) from " + SqlName.m(source.table()).fixedDoubleName + " where " + where;
+                return db.execOnConnection(connection -> {
+                    try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
+                        return rs.next() ? rs.getLong(1) : 0L;
+                    }
+                });
+            }
+        }
+        FileDataStore store = FileDataStoreFinder.getDataStore(source.file());
+        try {
+            SimpleFeatureSource featureSource = store.getFeatureSource();
+            Filter filter = ECQL.toFilter(where);
+            int count = featureSource.getCount(new Query(featureSource.getSchema().getTypeName(), filter));
+            return count >= 0 ? count : featureSource.getFeatures(filter).size();
+        } finally {
+            store.dispose();
+        }
     }
 
     private static VectorInfo readShapefile( File file ) throws Exception {
         Map<String, String> properties = new LinkedHashMap<>();
         List<String[]> columns = new ArrayList<>();
+        int count;
         FileDataStore store = FileDataStoreFinder.getDataStore(file);
         try {
             SimpleFeatureSource featureSource = store.getFeatureSource();
@@ -121,7 +285,7 @@ public class VectorLayerTool implements INwwLayerTool {
             GeometryDescriptor geometry = schema.getGeometryDescriptor();
             properties.put("Geometry", geometry == null ? "none" : geometry.getType().getBinding().getSimpleName());
             properties.put("CRS", crsText(schema.getCoordinateReferenceSystem()));
-            int count = featureSource.getCount(Query.ALL);
+            count = featureSource.getCount(Query.ALL);
             if (count < 0) {
                 count = featureSource.getFeatures().size();
             }
@@ -138,12 +302,13 @@ public class VectorLayerTool implements INwwLayerTool {
         } finally {
             store.dispose();
         }
-        return new VectorInfo(properties, columns, false);
+        return new VectorInfo(properties, columns, false, count);
     }
 
     private static VectorInfo readGeopackageTable( LayerSource source ) throws Exception {
         Map<String, String> properties = new LinkedHashMap<>();
         List<String[]> columns = new ArrayList<>();
+        long count;
         try (GeopackageCommonDb db = new GeopackageDb()) {
             db.open(source.file().getAbsolutePath());
             SqlName table = SqlName.m(source.table());
@@ -155,7 +320,8 @@ public class VectorLayerTool implements INwwLayerTool {
                 properties.put("Geometry", geometry + " (column " + entry.getGeometryColumn() + ")");
                 properties.put("CRS", entry.getSrid() == null ? "unknown" : sridText(entry.getSrid()));
             }
-            properties.put("Features", String.format(Locale.ROOT, "%,d", db.getCount(table)));
+            count = db.getCount(table);
+            properties.put("Features", String.format(Locale.ROOT, "%,d", count));
             Envelope bounds = entry != null && entry.getBounds() != null ? entry.getBounds() : db.getTableBounds(table);
             properties.put("Extent", envelopeText(bounds));
             properties.put("Spatial index", db.hasSpatialIndex(table) ? "yes" : "no");
@@ -164,7 +330,7 @@ public class VectorLayerTool implements INwwLayerTool {
                 columns.add(new String[]{column[0], column[1], primaryKey ? "yes" : ""});
             }
         }
-        return new VectorInfo(properties, columns, true);
+        return new VectorInfo(properties, columns, true, count);
     }
 
     static String crsText( CoordinateReferenceSystem crs ) {
@@ -228,7 +394,10 @@ public class VectorLayerTool implements INwwLayerTool {
         return panel;
     }
 
-    private static JComponent columnsPanel( VectorInfo info ) {
+    /**
+     * @param filterField the field into which a double click inserts the name of the column.
+     */
+    private static JComponent columnsPanel( VectorInfo info, JTextField filterField ) {
         String[] headers = info.withPrimaryKey() ? new String[]{"Column", "Type", "Primary key"} : new String[]{"Column", "Type"};
         DefaultTableModel model = new DefaultTableModel(headers, 0){
             private static final long serialVersionUID = 1L;
@@ -244,6 +413,22 @@ public class VectorLayerTool implements INwwLayerTool {
         JTable table = new JTable(model);
         table.setAutoCreateRowSorter(true);
         table.setFillsViewportHeight(true);
+        table.setToolTipText("Double click a column to add its name to the filter");
+        table.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                int row = table.rowAtPoint(e.getPoint());
+                if (e.getClickCount() != 2 || row < 0) {
+                    return;
+                }
+                String name = (String) model.getValueAt(table.convertRowIndexToModel(row), 0);
+                // always quoted, which both SQL and ECQL take: needed for the names that aren't
+                // plain words and for those that are keywords, as ID in ECQL
+                String text = "\"" + name.replace("\"", "\"\"") + "\"";
+                filterField.replaceSelection(text);
+                filterField.requestFocusInWindow();
+            }
+        });
         JScrollPane scroll = new JScrollPane(table);
         scroll.setBorder(BorderFactory.createTitledBorder("Columns (" + info.columns().size() + ")"));
         return scroll;

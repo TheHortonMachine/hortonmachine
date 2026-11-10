@@ -9,7 +9,10 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -18,6 +21,8 @@ import javax.swing.JSlider;
 import javax.swing.UIManager;
 
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 
 import org.hortonmachine.nww.gui.actions.DeleteLayerAction;
 import org.hortonmachine.nww.gui.actions.SelectLayerAction;
@@ -40,7 +45,14 @@ public class LayerListRowPanel extends JPanel {
     private final JPanel eastPanel;
     private final JPanel buttonsPanel;
 
-    public LayerListRowPanel(LayerEventsListener layerListener, final NwwPanel wwdPanel, final Layer layer) {
+    /**
+     * @param layerListener told of the changes of the layer.
+     * @param wwdPanel the map.
+     * @param layer the layer of the row.
+     * @param onStyle what the style button does, <code>null</code> to have the simple style dialog
+     *          of the 3D vector layers, and no button for the other layers.
+     */
+    public LayerListRowPanel(LayerEventsListener layerListener, final NwwPanel wwdPanel, final Layer layer, Runnable onStyle) {
         super(new BorderLayout(4, 0));
         this.layer = layer;
 
@@ -92,26 +104,29 @@ public class LayerListRowPanel extends JPanel {
         // vector and marker layers ignore the layer opacity, theirs is in the style
         JSlider opacitySlider = null;
         if (!(layer instanceof RenderableLayer) && !(layer instanceof MarkerLayer)) {
-            int opacity = (int) Math.round(layer.getOpacity() * 100);
-            opacitySlider = new JSlider(0, 100, opacity);
-            opacitySlider.setPreferredSize(new Dimension(70, opacitySlider.getPreferredSize().height));
-            opacitySlider.setFocusable(false);
-            opacitySlider.setOpaque(false);
-            opacitySlider.setToolTipText("Opacity: " + opacity + "%");
-            JSlider slider = opacitySlider;
-            slider.addChangeListener(e -> {
-                int value = slider.getValue();
-                slider.setToolTipText("Opacity: " + value + "%");
-                layer.setOpacity(value / 100.0);
+            opacitySlider = new JSlider();
+            GuiUtilities.setupOpacitySlider(opacitySlider, layer.getOpacity(), opacity -> {
+                layer.setOpacity(opacity);
                 wwdPanel.getWwd().redraw();
             });
-            eastPanel.add(slider, BorderLayout.WEST);
+            opacitySlider.setPreferredSize(new Dimension(70, opacitySlider.getPreferredSize().height));
+            eastPanel.add(opacitySlider, BorderLayout.WEST);
         }
 
-        if (layer instanceof NwwVectorLayer) {
-            StyleVectorLayerAction styleVectorLayerAction = new StyleVectorLayerAction(wwdPanel,
-                    (NwwVectorLayer) layer);
-            JButton styleButton = new JButton(styleVectorLayerAction);
+        Action styleAction = null;
+        if (onStyle != null) {
+            styleAction = new AbstractAction("", ImageCache.get(ImageCache.PALETTE)){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    onStyle.run();
+                }
+            };
+            styleAction.putValue(Action.SHORT_DESCRIPTION, "Style");
+        } else if (layer instanceof NwwVectorLayer) {
+            styleAction = new StyleVectorLayerAction(wwdPanel, (NwwVectorLayer) layer);
+        }
+        if (styleAction != null) {
+            JButton styleButton = new JButton(styleAction);
             styleButton.setBorderPainted(false);
             styleButton.setFocusPainted(false);
             styleButton.setContentAreaFilled(false);
@@ -135,11 +150,12 @@ public class LayerListRowPanel extends JPanel {
         buttonsPanel.add(deleteButton);
 
         if (opacitySlider != null) {
-            // rows with a slider have at most two buttons (zoom and delete): reserve the space
-            // of both, so that the sliders of all rows are aligned
-            int twoButtonsWidth = deleteButton.getPreferredSize().width * 2;
+            // rows with a slider have at most three buttons (style of the rasterized vectors,
+            // zoom and delete): reserve the space of all, so that the sliders of all rows are
+            // aligned
+            int threeButtonsWidth = deleteButton.getPreferredSize().width * 3;
             Dimension size = buttonsPanel.getPreferredSize();
-            buttonsPanel.setPreferredSize(new Dimension(Math.max(size.width, twoButtonsWidth), size.height));
+            buttonsPanel.setPreferredSize(new Dimension(Math.max(size.width, threeButtonsWidth), size.height));
         }
     }
 

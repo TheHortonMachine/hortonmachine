@@ -31,13 +31,26 @@ import gov.nasa.worldwind.layers.Layer;
  *
  * @param file the file of the data.
  * @param table the table in the file, or <code>null</code> for single layer files.
+ * @param filter the filter of the features shown by the layer, as a SQL WHERE condition for
+ *          the database tables and as ECQL for the shapefiles, or <code>null</code> if all are
+ *          shown.
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public record LayerSource( File file, String table ) {
+public record LayerSource( File file, String table, String filter ) {
 
     /** The key of the source in the attributes of the layers. */
     public static final String KEY = "org.hortonmachine.nww.tools.LayerSource";
+
+    /**
+     * The source of a layer showing all the features.
+     *
+     * @param file the file of the data.
+     * @param table the table in the file, or <code>null</code> for single layer files.
+     */
+    public LayerSource( File file, String table ) {
+        this(file, table, null);
+    }
 
     /**
      * @param layer the layer.

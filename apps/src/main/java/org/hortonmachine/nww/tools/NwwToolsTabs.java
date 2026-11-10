@@ -33,8 +33,12 @@ import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 
 /**
- * The tabs at the side of the map of the viewer: the general tools first, then one tab per
- * {@link INwwTool}, whose panel is created the first time the tab is selected.
+ * The tabs at the side of the map of the viewer: one tab per {@link INwwTool}, whose panel is
+ * created the first time the tab is selected.
+ *
+ * <p>After them come the tabs of the current layer: the layer tab, shown when a layer is
+ * selected in the layers panel, and the style tab, shown when the style button of a layer is
+ * pressed.</p>
  *
  * @author Andrea Antonello (www.hydrologis.com)
  */
@@ -42,34 +46,136 @@ public class NwwToolsTabs extends JTabbedPane {
     private static final long serialVersionUID = 1L;
 
     private final NwwContext context;
-    /** The tools, at the index of their tab minus one. */
+    /** The tools, at the index of their tab. */
     private final List<INwwTool> tools = new ArrayList<>();
     /** If the panel of the tool at the same index has been created. */
     private final List<Boolean> created = new ArrayList<>();
-    /** The tool of the selected tab, <code>null</code> for the general tools. */
+    /** The tool of the selected tab, <code>null</code> for the layer tabs. */
     private INwwTool activeTool;
 
-    private final List<INwwLayerTool> layerTools = new ArrayList<>();
-    /** The panels of the layers, with the tool that made them. */
-    private final Map<Layer, LayerPanel> layerPanels = new IdentityHashMap<>();
-    /** The content of the layer tab, which shows the panel of the current layer. */
-    private final JPanel layerHolder = new JPanel(new BorderLayout());
+    /** The tab with the panel of the current layer, as its info and filter. */
+    private final LayerTab layerTab = new LayerTab();
+    /** The tab with the style of a layer. */
+    private final LayerTab styleTab = new LayerTab();
 
     private record LayerPanel( INwwLayerTool tool, JComponent panel ) {
     }
 
     /**
-     * @param generalTools the panel of the general tools, in the first tab.
+     * A tab showing the panel of a layer, made by the first of its tools that handles the layer.
+     * Each layer gets a panel of its own, kept while the layer is in the viewer.
+     */
+    private class LayerTab {
+        private final List<INwwLayerTool> tools = new ArrayList<>();
+        private final Map<Layer, LayerPanel> panels = new IdentityHashMap<>();
+        /** The content of the tab, which shows the panel of the layer. */
+        private final JPanel holder = new JPanel(new BorderLayout());
+        /** The layer whose panel is shown. */
+        private Layer shownLayer;
+
+        boolean isOpen() {
+            return indexOfComponent(holder) >= 0;
+        }
+
+        /**
+         * Show the panel of a layer, opening the tab if needed. The tab is closed if no tool
+         * handles the layer.
+         *
+         * @param layer the layer, or <code>null</code> to close the tab.
+         * @param select if <code>true</code>, the tab is selected.
+         * @return <code>true</code> if the panel is shown.
+         */
+        boolean show( Layer layer, boolean select ) {
+            LayerPanel layerPanel = layer == null ? null : panels.get(layer);
+            if (layer != null && layerPanel == null) {
+                for( INwwLayerTool tool : tools ) {
+                    if (tool.canHandle(layer)) {
+                        layerPanel = new LayerPanel(tool, tool.createPanel(context, layer));
+                        panels.put(layer, layerPanel);
+                        break;
+                    }
+                }
+            }
+            if (layerPanel == null) {
+                close();
+                return false;
+            }
+            shownLayer = layer;
+            holder.removeAll();
+            holder.add(layerPanel.panel(), BorderLayout.CENTER);
+            holder.revalidate();
+            holder.repaint();
+            int tabIndex = indexOfComponent(holder);
+            if (tabIndex < 0) {
+                addTab(layerPanel.tool().getName(), holder);
+                tabIndex = indexOfComponent(holder);
+            } else {
+                setTitleAt(tabIndex, layerPanel.tool().getName());
+            }
+            setToolTipTextAt(tabIndex, layer.getName());
+            if (select) {
+                setSelectedIndex(tabIndex);
+            }
+            return true;
+        }
+
+        void close() {
+            shownLayer = null;
+            int tabIndex = indexOfComponent(holder);
+            if (tabIndex >= 0) {
+                if (getSelectedIndex() == tabIndex) {
+                    setSelectedIndex(0);
+                }
+                removeTabAt(tabIndex);
+            }
+        }
+
+        void replaceLayer( Layer layer, Layer replacement ) {
+            LayerPanel layerPanel = panels.remove(layer);
+            if (layerPanel != null) {
+                panels.put(replacement, layerPanel);
+            }
+            if (shownLayer == layer) {
+                shownLayer = replacement;
+            }
+        }
+
+        void dropRemovedLayers( LayerList layers ) {
+            Iterator<Map.Entry<Layer, LayerPanel>> iterator = panels.entrySet().iterator();
+            while( iterator.hasNext() ) {
+                Map.Entry<Layer, LayerPanel> entry = iterator.next();
+                // read before the removal, which invalidates the entries of an IdentityHashMap
+                Layer layer = entry.getKey();
+                if (!layers.contains(layer)) {
+                    entry.getValue().tool().onClose(layer);
+                    iterator.remove();
+                    if (shownLayer == layer) {
+                        close();
+                    }
+                }
+            }
+        }
+
+        void closeAll() {
+            for( Map.Entry<Layer, LayerPanel> entry : panels.entrySet() ) {
+                entry.getValue().tool().onClose(entry.getKey());
+            }
+            panels.clear();
+        }
+    }
+
+    /**
      * @param context the access to the viewer given to the tools.
      */
-    public NwwToolsTabs( Component generalTools, NwwContext context ) {
+    public NwwToolsTabs( NwwContext context ) {
         this.context = context;
-        addTab("Tools", generalTools);
+        context.setToolsTabs(this);
         addChangeListener(e -> onTabSelected());
     }
 
     /**
-     * Add the tab of a tool, its panel is created when the tab is first selected.
+     * Add the tab of a tool, its panel is created when the tab is first selected. The tools
+     * are added before the layer tabs are shown.
      *
      * @param tool the tool to add.
      */
@@ -85,49 +191,71 @@ public class NwwToolsTabs extends JTabbedPane {
      * @param tool the tool to add.
      */
     public void addLayerTool( INwwLayerTool tool ) {
-        layerTools.add(tool);
+        layerTab.tools.add(tool);
+    }
+
+    /**
+     * Add a tool for the style of a kind of layers, whose panel is shown in the style tab.
+     *
+     * @param tool the tool to add.
+     */
+    public void addStyleTool( INwwLayerTool tool ) {
+        styleTab.tools.add(tool);
     }
 
     /**
      * Show the panel of a layer in the layer tab and select it. The tab is removed if no tool
      * handles the layer.
      *
+     * <p>An open style tab follows the current layer, it is closed if no style tool handles
+     * it. If it is the selected tab and it shows the new layer, it stays selected.</p>
+     *
      * @param layer the current layer, or <code>null</code> if there is none.
      */
     public void showLayer( Layer layer ) {
         dropRemovedLayers();
-        LayerPanel layerPanel = layer == null ? null : layerPanels.get(layer);
-        if (layer != null && layerPanel == null) {
-            for( INwwLayerTool tool : layerTools ) {
-                if (tool.canHandle(layer)) {
-                    layerPanel = new LayerPanel(tool, tool.createPanel(context, layer));
-                    layerPanels.put(layer, layerPanel);
-                    break;
-                }
+        boolean styleSelected = styleTab.isOpen() && getSelectedComponent() == styleTab.holder;
+        boolean styleShown = styleTab.isOpen() && (styleTab.shownLayer == layer || styleTab.show(layer, false));
+        layerTab.show(layer, !(styleSelected && styleShown));
+        if (styleSelected && styleShown) {
+            setSelectedComponent(styleTab.holder);
+        }
+    }
+
+    /**
+     * Show the style panel of a layer in the style tab and select it.
+     *
+     * @param layer the layer.
+     * @return <code>true</code> if a style tool handles the layer.
+     */
+    public boolean showStyle( Layer layer ) {
+        dropRemovedLayers();
+        return styleTab.show(layer, true);
+    }
+
+    /**
+     * @param layer a layer.
+     * @return <code>true</code> if a style tool handles the layer.
+     */
+    public boolean hasStyleTool( Layer layer ) {
+        for( INwwLayerTool tool : styleTab.tools ) {
+            if (tool.canHandle(layer)) {
+                return true;
             }
         }
-        int layerTabIndex = indexOfComponent(layerHolder);
-        if (layerPanel == null) {
-            if (layerTabIndex >= 0) {
-                if (getSelectedIndex() == layerTabIndex) {
-                    setSelectedIndex(0);
-                }
-                removeTabAt(layerTabIndex);
-            }
-            return;
-        }
-        layerHolder.removeAll();
-        layerHolder.add(layerPanel.panel(), BorderLayout.CENTER);
-        layerHolder.revalidate();
-        layerHolder.repaint();
-        if (layerTabIndex < 0) {
-            addTab(layerPanel.tool().getName(), layerHolder);
-            layerTabIndex = indexOfComponent(layerHolder);
-        } else {
-            setTitleAt(layerTabIndex, layerPanel.tool().getName());
-        }
-        setToolTipTextAt(layerTabIndex, layer.getName());
-        setSelectedIndex(layerTabIndex);
+        return false;
+    }
+
+    /**
+     * Give the panels of a layer to the layer that replaces it, as a filtered version of it, so
+     * that the panels are not created again.
+     *
+     * @param layer the replaced layer.
+     * @param replacement the layer that replaces it.
+     */
+    public void replaceLayer( Layer layer, Layer replacement ) {
+        layerTab.replaceLayer(layer, replacement);
+        styleTab.replaceLayer(layer, replacement);
     }
 
     /**
@@ -135,22 +263,16 @@ public class NwwToolsTabs extends JTabbedPane {
      */
     private void dropRemovedLayers() {
         LayerList layers = context.getNwwPanel().getWwd().getModel().getLayers();
-        Iterator<Map.Entry<Layer, LayerPanel>> iterator = layerPanels.entrySet().iterator();
-        while( iterator.hasNext() ) {
-            Map.Entry<Layer, LayerPanel> entry = iterator.next();
-            if (!layers.contains(entry.getKey())) {
-                entry.getValue().tool().onClose(entry.getKey());
-                iterator.remove();
-            }
-        }
+        layerTab.dropRemovedLayers(layers);
+        styleTab.dropRemovedLayers(layers);
     }
 
     private void onTabSelected() {
         int index = getSelectedIndex();
-        // the general tools and the layer tab have no tool
-        INwwTool selected = index > 0 && index - 1 < tools.size() && getComponentAt(index) != layerHolder
-                ? tools.get(index - 1)
-                : null;
+        // the layer tabs have no tool
+        Component component = index >= 0 ? getComponentAt(index) : null;
+        INwwTool selected = index >= 0 && index < tools.size() && component != layerTab.holder
+                && component != styleTab.holder ? tools.get(index) : null;
         if (selected == activeTool) {
             return;
         }
@@ -161,8 +283,8 @@ public class NwwToolsTabs extends JTabbedPane {
         if (selected == null) {
             return;
         }
-        if (!created.get(index - 1)) {
-            created.set(index - 1, true);
+        if (!created.get(index)) {
+            created.set(index, true);
             JComponent panel = selected.createPanel(context);
             setComponentAt(index, panel);
         }
@@ -178,9 +300,7 @@ public class NwwToolsTabs extends JTabbedPane {
                 tools.get(i).onClose();
             }
         }
-        for( Map.Entry<Layer, LayerPanel> entry : layerPanels.entrySet() ) {
-            entry.getValue().tool().onClose(entry.getKey());
-        }
-        layerPanels.clear();
+        layerTab.closeAll();
+        styleTab.closeAll();
     }
 }

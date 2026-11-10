@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.function.DoubleConsumer;
 
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
@@ -64,6 +65,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -516,6 +518,33 @@ public class GuiUtilities {
         gr.dispose();
 
         button.setIcon(new ImageIcon(bi));
+        // the background shows the color too, with a text readable on it
+        button.setBackground(color);
+        double luminance = (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+        button.setForeground(luminance > 0.5 ? Color.BLACK : Color.WHITE);
+    }
+
+    /**
+     * Make a slider of an opacity, from 0 to 100%, the value shown in the tooltip, as the ones
+     * of the layers of the viewer.
+     *
+     * @param slider the slider to set up.
+     * @param opacity the initial opacity, from 0 to 1.
+     * @param onChange told of the new opacity, from 0 to 1, when the slider moves.
+     */
+    public static void setupOpacitySlider( JSlider slider, double opacity, DoubleConsumer onChange ) {
+        slider.setMinimum(0);
+        slider.setMaximum(100);
+        int value = (int) Math.round(Math.max(0, Math.min(1, opacity)) * 100);
+        slider.setValue(value);
+        slider.setToolTipText("Opacity: " + value + "%");
+        slider.setFocusable(false);
+        slider.setOpaque(false);
+        slider.addChangeListener(e -> {
+            int newValue = slider.getValue();
+            slider.setToolTipText("Opacity: " + newValue + "%");
+            onChange.accept(newValue / 100.0);
+        });
     }
 
     /**

@@ -19,7 +19,7 @@ public class LineSymbolizerController extends LineSymbolizerView {
     * Default constructor
      * @param mainController 
     */
-    public LineSymbolizerController( LineSymbolizerWrapper symbolizerWrapper, MainController mainController ) {
+    public LineSymbolizerController( LineSymbolizerWrapper symbolizerWrapper, IStyleChangeListener mainController ) {
         this.symbolizerWrapper = symbolizerWrapper;
         _applyButton.addActionListener(e -> {
             // all round until they are not an option, by default they would be butt
@@ -29,6 +29,14 @@ public class LineSymbolizerController extends LineSymbolizerView {
             mainController.applyStyle();
         });
         init();
+    }
+
+    /**
+     * @param visible <code>false</code> to hide the Apply button, as when the panel is part of
+     *          a panel with its own.
+     */
+    public void setApplyButtonVisible( boolean visible ) {
+        _applyButton.setVisible(visible);
     }
 
     private void init() {
@@ -42,24 +50,12 @@ public class LineSymbolizerController extends LineSymbolizerView {
             symbolizerWrapper.setStrokeWidth(_widthSpinner.getValue().toString(), false);
         });
 
-        SpinnerModel opacityBorderModel = new SpinnerNumberModel(255, // initial value
-                0, // minimum value
-                255, // maximum value
-                5); // step
-        _opacityBorderSpinner.setModel(opacityBorderModel);
-        double borderOpacity = Double.parseDouble(symbolizerWrapper.getStrokeOpacity());
-        borderOpacity *= 255;
-        _opacityBorderSpinner.setValue((int) borderOpacity);
-        _opacityBorderSpinner.addChangeListener(e -> {
-            int intValue = ((Number) _opacityBorderSpinner.getValue()).intValue();
-            float opacity = intValue / 255f;
-            symbolizerWrapper.setStrokeOpacity(opacity + "", false);
-        });
+        GuiUtilities.setupOpacitySlider(_opacityBorderSlider, OpacityValues.parse(symbolizerWrapper.getStrokeOpacity()),
+                opacity -> symbolizerWrapper.setStrokeOpacity(OpacityValues.text(opacity), false));
 
         String borderColorStr = symbolizerWrapper.getStrokeColor();
         Color borderColor = ColorUtilities.fromHex(borderColorStr);
         GuiUtilities.colorButton(_colorBorderButton, borderColor, MainController.COLOR_IMAGE_SIZE);
-        _colorBorderButton.setBackground(borderColor);
         _colorBorderButton.addActionListener(e -> {
             Color initialBackground = _colorBorderButton.getBackground();
             Color background = JColorChooser.showDialog(null, "Border Color Chooser", initialBackground);

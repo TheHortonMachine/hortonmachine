@@ -10,6 +10,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -23,7 +24,7 @@ public class LineSymbolizerView extends JPanel
    JLabel _widthLabel = new JLabel();
    JSpinner _widthSpinner = new JSpinner();
    JLabel _opacityBorderLabel = new JLabel();
-   JSpinner _opacityBorderSpinner = new JSpinner();
+   JSlider _opacityBorderSlider = new JSlider();
    JLabel _colorBorderLabel = new JLabel();
    JLabel _dashLabel = new JLabel();
    JLabel _dashOffsetLabel = new JLabel();
@@ -156,8 +157,8 @@ public class LineSymbolizerView extends JPanel
       _opacityBorderLabel.setText("opacity");
       jpanel1.add(_opacityBorderLabel,cc.xy(2,5));
 
-      _opacityBorderSpinner.setName("opacityBorderSpinner");
-      jpanel1.add(_opacityBorderSpinner,cc.xy(4,5));
+      _opacityBorderSlider.setName("opacityBorderSlider");
+      jpanel1.add(_opacityBorderSlider,cc.xy(4,5));
 
       _colorBorderLabel.setName("colorBorderLabel");
       _colorBorderLabel.setText("color");

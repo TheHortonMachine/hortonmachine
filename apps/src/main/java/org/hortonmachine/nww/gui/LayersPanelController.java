@@ -16,15 +16,21 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+
+import org.hortonmachine.nww.gui.actions.StyleVectorLayerAction;
+import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
+import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
@@ -52,6 +58,9 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
     /** The layer selected with a click on its row, or <code>null</code>. */
     private Layer currentLayer;
     private final List<Consumer<Layer>> currentLayerListeners = new ArrayList<>();
+
+    private Predicate<Layer> canShowStyle;
+    private Consumer<Layer> showStyle;
 
     /**
     * Default constructor
@@ -91,13 +100,43 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
         _layersGridView.setToolTipText(tooltip);
     }
 
+    /**
+     * Set what the style button of a vector layer row does. Without a handler, or for the layers
+     * it can't style, the button opens the simple style dialog of the 3D vector layers.
+     *
+     * @param canShowStyle tells if the handler can show the style of a layer.
+     * @param showStyle shows the style of a layer, after it has been made the current one.
+     */
+    public void setStyleHandler( Predicate<Layer> canShowStyle, Consumer<Layer> showStyle ) {
+        this.canShowStyle = canShowStyle;
+        this.showStyle = showStyle;
+        refreshLayersList();
+    }
+
     public void refreshLayersList() {
         rowsPanel.removeAll();
         rows.clear();
 
         boolean currentShown = false;
         for( Layer layer : getShownLayers() ) {
-            LayerListRowPanel row = new LayerListRowPanel(this, wwdPanel, layer);
+            Runnable onStyle = null;
+            if (canShowStyle != null && (layer instanceof NwwVectorLayer || layer instanceof RasterizedFeatureCollectionLayer)) {
+                // checked at the click: the loaders tell where the data come from after adding the
+                // layer, which makes the row
+                onStyle = () -> {
+                    if (canShowStyle.test(layer)) {
+                        if (currentLayer != layer) {
+                            setCurrentLayer(layer);
+                        }
+                        showStyle.accept(layer);
+                    } else if (layer instanceof NwwVectorLayer) {
+                        new StyleVectorLayerAction(wwdPanel, (NwwVectorLayer) layer).actionPerformed(null);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "The style of this layer can't be changed.");
+                    }
+                };
+            }
+            LayerListRowPanel row = new LayerListRowPanel(this, wwdPanel, layer, onStyle);
             row.setBorder(ROW_BORDER);
             for( Component handle : row.getDragHandles() ) {
                 handle.addMouseListener(rowDragHandler);
@@ -198,6 +237,25 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
     @Override
     public void onLayerRemoved(Layer removeLayer) {
         refreshLayersList();
+    }
+
+    /**
+     * Tell the panel that a layer has been replaced in the layer list by another, as a filtered
+     * version of it: if it was the current layer, the replacement becomes the current one.
+     *
+     * @param layer the replaced layer.
+     * @param replacement the layer that replaced it.
+     */
+    public void onLayerReplaced( Layer layer, Layer replacement ) {
+        boolean wasCurrent = currentLayer == layer;
+        if (wasCurrent) {
+            // set before the refresh, which else drops the removed current layer
+            currentLayer = replacement;
+        }
+        refreshLayersList();
+        if (wasCurrent) {
+            setCurrentLayer(replacement);
+        }
     }
 
     @Override

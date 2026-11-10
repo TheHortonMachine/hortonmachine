@@ -26,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
 
@@ -37,6 +38,7 @@ import org.geotools.map.MapContent;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
@@ -64,6 +66,8 @@ public class RasterizedFeatureCollectionLayer extends BasicMercatorTiledImageLay
     private String layerName = "unknown layer";
 
     private static final int TILESIZE = 512;
+    /** Makes the cache folders of the layers created in the same millisecond different. */
+    private static final AtomicInteger LAYER_COUNTER = new AtomicInteger();
 
     private Coordinate centre;
 
@@ -100,7 +104,21 @@ public class RasterizedFeatureCollectionLayer extends BasicMercatorTiledImageLay
 
         int finalTileSize = tileSize;
 
-        String cacheRelativePath = "rasterized_featurecollections/" + title + "-tiles";
+        /*
+         * the tiles drawn for an earlier layer with the same title, as an earlier version of the
+         * data or another filter of them, must not be reused: they are deleted and each layer
+         * gets its own folder, also because the textures are cached in memory by its name
+         */
+        String titleRelativePath = "rasterized_featurecollections/" + title + "-tiles";
+        File titleFolder = new File(CacheUtils.getCacheRoot(), titleRelativePath);
+        if (titleFolder.exists()) {
+            try {
+                FileUtilities.deleteFileOrDir(titleFolder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        String cacheRelativePath = titleRelativePath + "/" + System.currentTimeMillis() + "-" + LAYER_COUNTER.incrementAndGet();
         // String urlString = folderFile.toURI().toURL().toExternalForm();
         // params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, finalTileSize);

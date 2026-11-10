@@ -109,7 +109,7 @@ import org.joda.time.DateTime;
 import org.locationtech.jts.geom.Geometry;
 
 @SuppressWarnings("serial")
-public class MainController extends MainView implements IOnCloseListener, TreeSelectionListener {
+public class MainController extends MainView implements IOnCloseListener, TreeSelectionListener, IStyleChangeListener {
     public static final String VECTOR_BOUNDS = "Vector bounds";
     public static final String RASTER_BOUNDS = "Raster Bounds";
     public static final String PROJECTION = "Projection: ";
@@ -879,6 +879,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
         _stylePanel.repaint();
     }
 
+    @Override
     public void applyStyle() {
         if (styleWrapper == null) {
             return;

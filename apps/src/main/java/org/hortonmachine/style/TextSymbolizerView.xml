@@ -185,13 +185,13 @@
               <at name="componentclass">com.jeta.forms.gui.form.StandardComponent</at>
              </super>
              <at name="jetabeanclass">com.jeta.forms.gui.beans.JETABean</at>
-             <at name="beanclass">javax.swing.JSpinner</at>
+             <at name="beanclass">javax.swing.JSlider</at>
              <at name="beanproperties">
               <object classname="com.jeta.forms.store.memento.PropertiesMemento">
-               <at name="classname">javax.swing.JSpinner</at>
+               <at name="classname">javax.swing.JSlider</at>
                <at name="properties">
                 <object classname="com.jeta.forms.store.support.PropertyMap">
-                 <at name="name">opacitySpinner</at>
+                 <at name="name">opacitySlider</at>
                  <at name="width">609</at>
                  <at name="height">28</at>
                 </object>

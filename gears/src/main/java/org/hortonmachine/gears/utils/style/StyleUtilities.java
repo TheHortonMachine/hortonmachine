@@ -35,6 +35,7 @@ import org.geotools.api.style.Style;
 import org.geotools.api.style.StyleFactory;
 import org.geotools.api.style.StyledLayerDescriptor;
 import org.geotools.api.style.Symbolizer;
+import org.geotools.api.style.TextSymbolizer;
 import org.geotools.api.style.UserLayer;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.factory.CommonFactoryFinder;
@@ -49,6 +50,7 @@ import org.geotools.xml.styling.SLDParser;
 import org.geotools.xml.styling.SLDTransformer;
 import org.hortonmachine.dbs.utils.BasicStyle;
 import org.hortonmachine.gears.utils.SldUtilities;
+import org.hortonmachine.gears.utils.colors.ColorUtilities;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 
 /**
@@ -447,6 +449,126 @@ public class StyleUtilities {
 
     public static Stroke createDefaultStroke() {
         return sf.createStroke(ff.literal("#" + Integer.toHexString(Color.BLACK.getRGB() & 0xffffff)), ff.literal(1));
+    }
+
+    /**
+     * Creates a default {@link Rule} for a geometry type.
+     *
+     * @param geometryType the geometry type, multi types included.
+     * @return the default rule.
+     */
+    public static Rule createDefaultRule( EGeometryType geometryType ) {
+        if (geometryType.isCompatibleWith(EGeometryType.MULTIPOINT)) {
+            return createDefaultPointRule();
+        } else if (geometryType.isCompatibleWith(EGeometryType.MULTILINESTRING)) {
+            return createDefaultLineRule();
+        } else if (geometryType.isCompatibleWith(EGeometryType.MULTIPOLYGON)) {
+            return createDefaultPolygonRule();
+        }
+        throw new IllegalArgumentException("No default rule for the geometry type: " + geometryType);
+    }
+
+    /**
+     * Creates a default label: black text with a thin white halo, centered on points and
+     * polygons and along lines.
+     *
+     * @param fieldName the field whose value is the label.
+     * @param geometryType the geometry type of the labelled features.
+     * @return the label symbolizer.
+     */
+    public static TextSymbolizer createDefaultTextSymbolizer( String fieldName, EGeometryType geometryType ) {
+        TextSymbolizer textSymbolizer = sb.createTextSymbolizer(Color.BLACK, sb.createFont("SansSerif", 12), fieldName);
+        textSymbolizer.setHalo(sb.createHalo(Color.WHITE, 1));
+        if (geometryType != null && geometryType.isCompatibleWith(EGeometryType.MULTILINESTRING)) {
+            textSymbolizer.setLabelPlacement(sb.createLinePlacement(0));
+        } else {
+            textSymbolizer.setLabelPlacement(sb.createPointPlacement(0.5, 0.5, 0));
+        }
+        return textSymbolizer;
+    }
+
+    /**
+     * Get the main color of a rule: the fill of polygons and point marks, the stroke of lines.
+     *
+     * @param rule the rule.
+     * @return the color, or <code>null</code> if the rule has none or it depends on the features.
+     */
+    public static Color getRuleColor( Rule rule ) {
+        Expression colorExpression = null;
+        for( Symbolizer symbolizer : rule.symbolizers() ) {
+            if (symbolizer instanceof PolygonSymbolizer) {
+                Fill fill = ((PolygonSymbolizer) symbolizer).getFill();
+                colorExpression = fill != null ? fill.getColor() : null;
+            } else if (symbolizer instanceof LineSymbolizer) {
+                Stroke stroke = ((LineSymbolizer) symbolizer).getStroke();
+                colorExpression = stroke != null ? stroke.getColor() : null;
+            } else if (symbolizer instanceof PointSymbolizer) {
+                Mark mark = firstMark((PointSymbolizer) symbolizer);
+                colorExpression = mark != null && mark.getFill() != null ? mark.getFill().getColor() : null;
+            } else {
+                continue;
+            }
+            break;
+        }
+        if (colorExpression == null) {
+            return null;
+        }
+        try {
+            return colorExpression.evaluate(null, Color.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Set the main color of a rule: the fill of polygons and point marks, the stroke of lines.
+     *
+     * <p>A missing fill or stroke is created.</p>
+     *
+     * @param rule the rule.
+     * @param color the new color.
+     */
+    public static void setRuleColor( Rule rule, Color color ) {
+        String hex = ColorUtilities.asHex(color);
+        for( Symbolizer symbolizer : rule.symbolizers() ) {
+            if (symbolizer instanceof PolygonSymbolizer) {
+                PolygonSymbolizer polygonSymbolizer = (PolygonSymbolizer) symbolizer;
+                if (polygonSymbolizer.getFill() == null) {
+                    polygonSymbolizer.setFill(createDefaultFill());
+                }
+                polygonSymbolizer.getFill().setColor(ff.literal(hex));
+                return;
+            } else if (symbolizer instanceof LineSymbolizer) {
+                LineSymbolizer lineSymbolizer = (LineSymbolizer) symbolizer;
+                if (lineSymbolizer.getStroke() == null) {
+                    lineSymbolizer.setStroke(createDefaultStroke());
+                }
+                lineSymbolizer.getStroke().setColor(ff.literal(hex));
+                return;
+            } else if (symbolizer instanceof PointSymbolizer) {
+                Mark mark = firstMark((PointSymbolizer) symbolizer);
+                if (mark != null) {
+                    if (mark.getFill() == null) {
+                        mark.setFill(createDefaultFill());
+                    }
+                    mark.getFill().setColor(ff.literal(hex));
+                }
+                return;
+            }
+        }
+    }
+
+    private static Mark firstMark( PointSymbolizer pointSymbolizer ) {
+        Graphic graphic = pointSymbolizer.getGraphic();
+        if (graphic == null) {
+            return null;
+        }
+        for( GraphicalSymbol symbol : graphic.graphicalSymbols() ) {
+            if (symbol instanceof Mark) {
+                return (Mark) symbol;
+            }
+        }
+        return null;
     }
 
     // /**

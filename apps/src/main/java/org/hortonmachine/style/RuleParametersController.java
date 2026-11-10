@@ -17,7 +17,7 @@ public class RuleParametersController extends RuleParametersView {
     * Default constructor
      * @param mainController 
     */
-    public RuleParametersController( RuleWrapper ruleWrapper, MainController mainController ) {
+    public RuleParametersController( RuleWrapper ruleWrapper, IStyleChangeListener mainController ) {
         this.ruleWrapper = ruleWrapper;
         _applyButton.addActionListener(e -> {
             try {

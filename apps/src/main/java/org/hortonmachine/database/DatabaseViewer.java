@@ -269,7 +269,7 @@ public class DatabaseViewer extends DatabaseController {
         if (toolsPanelController == null) {
             return;
         }
-        Window nwwWindow = SwingUtilities.getWindowAncestor(toolsPanelController);
+        Window nwwWindow = SwingUtilities.getWindowAncestor(toolsPanelController.getWwjPanel());
         if (nwwWindow != null) {
             nwwWindow.addWindowListener(new WindowAdapter(){
                 @Override

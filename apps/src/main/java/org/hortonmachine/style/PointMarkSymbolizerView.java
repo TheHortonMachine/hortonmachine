@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -25,11 +26,11 @@ public class PointMarkSymbolizerView extends JPanel
    JLabel _widthLabel = new JLabel();
    JSpinner _widthSpinner = new JSpinner();
    JLabel _opacityBorderLabel = new JLabel();
-   JSpinner _opacityBorderSpinner = new JSpinner();
+   JSlider _opacityBorderSlider = new JSlider();
    JLabel _colorBorderLabel = new JLabel();
    JButton _colorBorderButton = new JButton();
    JLabel _opacityFillLabel = new JLabel();
-   JSpinner _opacityFillSpinner = new JSpinner();
+   JSlider _opacityFillSlider = new JSlider();
    JLabel _colorFillLabel = new JLabel();
    JButton _colorFilleButton = new JButton();
    JComboBox _wkmarkCombo = new JComboBox();
@@ -171,8 +172,8 @@ public class PointMarkSymbolizerView extends JPanel
       _opacityBorderLabel.setText("opacity");
       jpanel1.add(_opacityBorderLabel,cc.xy(2,4));
 
-      _opacityBorderSpinner.setName("opacityBorderSpinner");
-      jpanel1.add(_opacityBorderSpinner,cc.xy(4,4));
+      _opacityBorderSlider.setName("opacityBorderSlider");
+      jpanel1.add(_opacityBorderSlider,cc.xy(4,4));
 
       _colorBorderLabel.setName("colorBorderLabel");
       _colorBorderLabel.setText("color");
@@ -200,8 +201,8 @@ public class PointMarkSymbolizerView extends JPanel
       _opacityFillLabel.setText("opacity");
       jpanel1.add(_opacityFillLabel,cc.xy(2,2));
 
-      _opacityFillSpinner.setName("opacityFillSpinner");
-      jpanel1.add(_opacityFillSpinner,cc.xy(4,2));
+      _opacityFillSlider.setName("opacityFillSlider");
+      jpanel1.add(_opacityFillSlider,cc.xy(4,2));
 
       _colorFillLabel.setName("colorFillLabel");
       _colorFillLabel.setText("color");

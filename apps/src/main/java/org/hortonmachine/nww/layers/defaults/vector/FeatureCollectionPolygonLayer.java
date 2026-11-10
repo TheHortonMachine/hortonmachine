@@ -21,12 +21,17 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.utils.style.FeatureStyler;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.shapes.FeatureExtrudedPolygon;
 import org.hortonmachine.nww.shapes.FeaturePolygon;
@@ -40,10 +45,12 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
+import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.BasicShapeAttributes;
 import gov.nasa.worldwind.render.Material;
+import gov.nasa.worldwind.render.Renderable;
 
 /**
  * A simple polygons layer.
@@ -72,6 +79,13 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
     private String title;
     private FeatureStoreInfo featureStoreInfo;
     private SimpleFeatureStore featureStore;
+
+    /** The SLD style, <code>null</code> to draw all features with the simple style. */
+    private volatile FeatureStyler styler;
+    /** The attributes of the looks given by the SLD style, shared by the features. */
+    private final Map<FeatureStyler.Symbol, BasicShapeAttributes[]> stylerAttributes = new ConcurrentHashMap<>();
+    /** Incremented at each load, so that an older load stops and doesn't replace a newer one. */
+    private final AtomicInteger loadGeneration = new AtomicInteger();
 
     /**
      * Build the layer.
@@ -154,25 +168,106 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         t.start();
     }
 
+    @Override
+    public void setSldStyle( Style style ) {
+        styler = style != null ? new FeatureStyler(style) : null;
+        stylerAttributes.clear();
+        loadData();
+    }
+
+    @Override
+    public Style getSldStyle() {
+        return styler != null ? styler.getStyle() : null;
+    }
+
+    /**
+     * Get the attributes of a feature, adding its label if the style has one.
+     *
+     * @param feature the feature.
+     * @param labels the labels to add to, <code>null</code> to add none.
+     * @return the normal and the side attributes, <code>null</code> if the feature is not drawn.
+     */
+    private BasicShapeAttributes[] getAttributes( SimpleFeature feature, FeatureLabels labels ) {
+        if (styler == null) {
+            return new BasicShapeAttributes[]{mNormalShapeAttributes, mSideShapeAttributes};
+        }
+        FeatureStyler.Styled styled = styler.style(feature);
+        if (styled == null) {
+            return null;
+        }
+        if (styled.label() != null && labels != null) {
+            labels.add((Geometry) feature.getDefaultGeometry(), styled.label());
+        }
+        if (styled.symbol() == null) {
+            return null;
+        }
+        return stylerAttributes.computeIfAbsent(styled.symbol(), symbol -> {
+            BasicShapeAttributes normal = new BasicShapeAttributes();
+            BasicShapeAttributes side = new BasicShapeAttributes();
+            Color fill = symbol.fill();
+            normal.setDrawInterior(fill != null && symbol.fillOpacity() > 0);
+            side.setDrawInterior(fill != null && symbol.fillOpacity() > 0);
+            if (fill != null) {
+                normal.setInteriorMaterial(new Material(fill));
+                normal.setInteriorOpacity(symbol.fillOpacity());
+                side.setInteriorMaterial(new Material(NwwUtilities.darkenColor(fill)));
+                side.setInteriorOpacity(symbol.fillOpacity());
+            }
+            Color stroke = symbol.stroke();
+            normal.setDrawOutline(stroke != null && symbol.strokeWidth() > 0 && symbol.strokeOpacity() > 0);
+            if (stroke != null) {
+                normal.setOutlineMaterial(new Material(stroke));
+                normal.setOutlineOpacity(symbol.strokeOpacity());
+                normal.setOutlineWidth(symbol.strokeWidth());
+            }
+            return new BasicShapeAttributes[]{normal, side};
+        });
+    }
+
     public class WorkerThread extends Thread {
 
         public void run() {
-            removeAllRenderables();
+            int generation = loadGeneration.incrementAndGet();
+            List<Renderable> renderables = new ArrayList<>();
+            FeatureLabels labels = new FeatureLabels();
             SimpleFeatureIterator featureIterator = featureCollectionLL.features();
-            while( featureIterator.hasNext() ) {
-                SimpleFeature polygonAreaFeature = featureIterator.next();
-                if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
-                    addExtrudedPolygon(polygonAreaFeature);
-                } else {
-                    addPolygon(polygonAreaFeature);
+            try {
+                while( featureIterator.hasNext() ) {
+                    if (generation != loadGeneration.get()) {
+                        // a newer load started, as for a new style
+                        return;
+                    }
+                    SimpleFeature polygonAreaFeature = featureIterator.next();
+                    BasicShapeAttributes[] attributes = getAttributes(polygonAreaFeature, labels);
+                    if (attributes == null) {
+                        continue;
+                    }
+                    if (mApplyExtrusion && (mHeightFieldName != null || mHasConstantHeight)) {
+                        addExtrudedPolygon(polygonAreaFeature, attributes, renderables);
+                    } else {
+                        addPolygon(polygonAreaFeature, attributes[0], renderables);
+                    }
+                }
+            } finally {
+                featureIterator.close();
+            }
+            synchronized (loadGeneration) {
+                if (generation == loadGeneration.get()) {
+                    removeAllRenderables();
+                    addRenderables(renderables);
+                    if (!labels.isEmpty()) {
+                        addRenderable(labels);
+                    }
                 }
             }
-            featureIterator.close();
+            // the map was drawn when the load started: draw it again with the new shapes
+            firePropertyChange(AVKey.LAYER, null, FeatureCollectionPolygonLayer.this);
         }
 
     }
 
-    private void addExtrudedPolygon( SimpleFeature polygonAreaFeature ) {
+    private void addExtrudedPolygon( SimpleFeature polygonAreaFeature, BasicShapeAttributes[] attributes,
+            List<Renderable> renderables ) {
         try {
             Geometry geometry = (Geometry) polygonAreaFeature.getDefaultGeometry();
             if (geometry == null) {
@@ -245,10 +340,10 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                     }
 
                     extrudedPolygon.setAltitudeMode(mElevationMode);
-                    extrudedPolygon.setAttributes(mNormalShapeAttributes);
-                    extrudedPolygon.setSideAttributes(mSideShapeAttributes);
+                    extrudedPolygon.setAttributes(attributes[0]);
+                    extrudedPolygon.setSideAttributes(attributes[1]);
 
-                    addRenderable(extrudedPolygon);
+                    renderables.add(extrudedPolygon);
                 }
             }
 
@@ -257,7 +352,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         }
     }
 
-    private void addPolygon( SimpleFeature polygonAreaFeature ) {
+    private void addPolygon( SimpleFeature polygonAreaFeature, BasicShapeAttributes attributes,
+            List<Renderable> renderables ) {
         Geometry geometry = (Geometry) polygonAreaFeature.getDefaultGeometry();
         if (geometry == null) {
             return;
@@ -334,8 +430,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                     for( List<Position> innerVerticesList : innerVerticesLists ) {
                         polygon.addInnerBoundary(innerVerticesList);
                     }
-                    polygon.setAttributes(mNormalShapeAttributes);
-                    addRenderable(polygon);
+                    polygon.setAttributes(attributes);
+                    renderables.add(polygon);
                 } else {
                     FeaturePolygon polygon = new FeaturePolygon(featureStoreInfo);
                     polygon.setFeature(polygonAreaFeature);
@@ -344,8 +440,8 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
                         polygon.addInnerBoundary(innerVerticesList);
                     }
                     polygon.setAltitudeMode(mElevationMode);
-                    polygon.setAttributes(mNormalShapeAttributes);
-                    addRenderable(polygon);
+                    polygon.setAttributes(attributes);
+                    renderables.add(polygon);
                 }
             }
         }
@@ -360,10 +456,12 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         return mElevationMode != WorldWind.ABSOLUTE && mHeightFieldName == null;
     }
 
+    /**
+     * @return the collection given to the layer, not the whole feature store, since it can be a
+     *          filtered view of it. Collections read from a store read it again at each use, so
+     *          they show the edited attributes.
+     */
     private SimpleFeatureCollection getfeatureCollection() throws Exception {
-        if (featureStore != null) {
-            return NwwUtilities.readAndReproject(featureStore);
-        }
         return featureCollectionLL;
     }
 
@@ -410,7 +508,13 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
 
     @Override
     public void add( SimpleFeature feature ) {
-        addPolygon(feature);
+        // the label of an added feature is shown at the next reload
+        BasicShapeAttributes[] attributes = getAttributes(feature, null);
+        if (attributes != null) {
+            List<Renderable> renderables = new ArrayList<>();
+            addPolygon(feature, attributes[0], renderables);
+            addRenderables(renderables);
+        }
     }
 
     @Override

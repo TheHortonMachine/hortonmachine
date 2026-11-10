@@ -11,6 +11,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -23,7 +24,7 @@ public class TextSymbolizerView extends JPanel
 {
    JButton _applyButton = new JButton();
    JLabel _opacityLabel = new JLabel();
-   JSpinner _opacitySpinner = new JSpinner();
+   JSlider _opacitySlider = new JSlider();
    JLabel _rotationLabel = new JLabel();
    JSpinner _rotationSpinner = new JSpinner();
    JLabel _fontLabel = new JLabel();
@@ -179,8 +180,8 @@ public class TextSymbolizerView extends JPanel
       _opacityLabel.setText("opacity");
       jpanel1.add(_opacityLabel,cc.xy(2,4));
 
-      _opacitySpinner.setName("opacitySpinner");
-      jpanel1.add(_opacitySpinner,cc.xy(4,4));
+      _opacitySlider.setName("opacitySlider");
+      jpanel1.add(_opacitySlider,cc.xy(4,4));
 
       _rotationLabel.setName("rotationLabel");
       _rotationLabel.setText("rotation");

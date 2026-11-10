@@ -23,7 +23,7 @@ public class TextSymbolizerController extends TextSymbolizerView {
     * Default constructor
      * @param mainController 
     */
-    public TextSymbolizerController( TextSymbolizerWrapper symbolizerWrapper, String[] fields, MainController mainController ) {
+    public TextSymbolizerController( TextSymbolizerWrapper symbolizerWrapper, String[] fields, IStyleChangeListener mainController ) {
         this.symbolizerWrapper = symbolizerWrapper;
         this.fields = fields;
         _applyButton.addActionListener(e -> {
@@ -52,22 +52,8 @@ public class TextSymbolizerController extends TextSymbolizerView {
             symbolizerWrapper.setLabelName(defFieldName, true);
         }
 
-        SpinnerModel opacityModel = new SpinnerNumberModel(255, // initial value
-                0, // minimum value
-                255, // maximum value
-                5); // step
-        _opacitySpinner.setModel(opacityModel);
-        String opacityStr = symbolizerWrapper.getOpacity();
-        if (opacityStr == null)
-            opacityStr = "1";
-        double opacity = Double.parseDouble(opacityStr);
-        opacity *= 255;
-        _opacitySpinner.setValue((int) opacity);
-        _opacitySpinner.addChangeListener(e -> {
-            int intValue = ((Number) _opacitySpinner.getValue()).intValue();
-            float newOpacity = intValue / 255f;
-            symbolizerWrapper.setOpacity(newOpacity + "", false);
-        });
+        GuiUtilities.setupOpacitySlider(_opacitySlider, OpacityValues.parse(symbolizerWrapper.getOpacity()),
+                opacity -> symbolizerWrapper.setOpacity(OpacityValues.text(opacity), false));
 
         SpinnerModel rotationModel = new SpinnerNumberModel(0, // initial value
                 0, // minimum value

@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.nww.layers.defaults;
 
+import org.geotools.api.style.Style;
 import org.hortonmachine.style.SimpleStyle;
 
 /**
@@ -33,6 +34,25 @@ public interface NwwVectorLayer extends NwwLayer {
     public GEOMTYPE getType();
 
     public void setStyle(SimpleStyle style);
-    
+
     public SimpleStyle getStyle();
+
+    /**
+     * Draw the features with an SLD style: each with the look of the rule it matches, with the
+     * labels of the style. The features are loaded again.
+     *
+     * @param style the style, <code>null</code> to go back to the one simple style of
+     *          {@link #setStyle(SimpleStyle)}.
+     * @throws UnsupportedOperationException if the layer can't draw SLD styles.
+     */
+    default void setSldStyle( Style style ) {
+        throw new UnsupportedOperationException("The layer can't draw SLD styles: " + this);
+    }
+
+    /**
+     * @return the SLD style given with {@link #setSldStyle(Style)}, or <code>null</code>.
+     */
+    default Style getSldStyle() {
+        return null;
+    }
 }

@@ -9,19 +9,21 @@ package org.hortonmachine.nww;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ContainerAdapter;
+import java.awt.event.ContainerEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BorderFactory;
 import javax.swing.JFrame;
-import javax.swing.JScrollPane;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.nww.gui.LayersPanelController;
+import org.hortonmachine.nww.gui.NwwMenuBar;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.layers.defaults.raster.EsriSatellite;
@@ -31,8 +33,15 @@ import org.hortonmachine.gears.assistant.Assistants;
 import org.hortonmachine.gears.assistant.IAssistantBackend;
 import org.hortonmachine.gears.assistant.IScriptAssistant;
 import org.hortonmachine.nww.tools.INwwLayerTool;
+import org.hortonmachine.nww.tools.INwwMapMode;
 import org.hortonmachine.nww.tools.INwwTool;
+import org.hortonmachine.nww.tools.NwwMapModesBar;
+import org.hortonmachine.nww.tools.modes.IdentifyMode;
+import org.hortonmachine.nww.tools.modes.PanMode;
+import org.hortonmachine.nww.tools.modes.SelectByBoxMode;
+import org.hortonmachine.nww.tools.modes.ZoomByBoxMode;
 import org.hortonmachine.nww.tools.layers.RasterLayerTool;
+import org.hortonmachine.nww.tools.layers.StyleLayerTool;
 import org.hortonmachine.nww.tools.layers.VectorLayerTool;
 import org.hortonmachine.nww.tools.assistant.AssistantTool;
 import org.hortonmachine.nww.tools.NwwContext;
@@ -84,8 +93,91 @@ public class SimpleNwwViewer {
         return tools;
     }
 
-    /**A way to open the NWW viewer and get the tools panel, which has reference to the rest.
-     * 
+    /**
+     * @return new instances of the tools of the styles of the kinds of layers, whose panel is
+     *          shown when the style button of a layer is pressed: the first that handles a layer
+     *          is used.
+     */
+    public static List<INwwLayerTool> createDefaultStyleTools() {
+        List<INwwLayerTool> tools = new ArrayList<>();
+        tools.add(new StyleLayerTool());
+        return tools;
+    }
+
+    /**
+     * @return new instances of the modes of interaction with the map, in the toolbar at its
+     *          side: the first one is the default.
+     */
+    public static List<INwwMapMode> createDefaultMapModes() {
+        List<INwwMapMode> modes = new ArrayList<>();
+        modes.add(new PanMode());
+        modes.add(new IdentifyMode());
+        modes.add(new SelectByBoxMode());
+        modes.add(new ZoomByBoxMode());
+        return modes;
+    }
+
+    /**
+     * A side of a split pane that can be hidden, giving its space to the other side.
+     *
+     * <p>A side hidden by the user stays hidden; otherwise it is shown only while it has
+     * content, as the tabs of the tools, which are none without tools and current layer.</p>
+     */
+    private static class SplitSide {
+        private final JSplitPane split;
+        private final Component side;
+        /** The divider is drawn even if a side is hidden, so it is shrunk to nothing. */
+        private final int dividerSize;
+        private int lastDividerLocation = -1;
+        private boolean hiddenByUser = false;
+
+        SplitSide( JSplitPane split, Component side ) {
+            this.split = split;
+            this.side = side;
+            this.dividerSize = split.getDividerSize();
+        }
+
+        boolean isShown() {
+            return side.isVisible();
+        }
+
+        /** Show or hide the side, as asked by the user. */
+        void setShown( boolean shown ) {
+            hiddenByUser = !shown;
+            apply(shown);
+        }
+
+        /** Show the side if it has content and the user did not hide it, hide it if it has none. */
+        void update( boolean hasContent ) {
+            apply(hasContent && !hiddenByUser);
+        }
+
+        private void apply( boolean shown ) {
+            if (shown == side.isVisible()) {
+                return;
+            }
+            if (shown) {
+                side.setVisible(true);
+                split.setDividerSize(dividerSize);
+                if (lastDividerLocation > 0) {
+                    split.setDividerLocation(lastDividerLocation);
+                } else {
+                    split.resetToPreferredSizes();
+                }
+            } else {
+                if (split.isShowing()) {
+                    lastDividerLocation = split.getDividerLocation();
+                }
+                side.setVisible(false);
+                split.setDividerSize(0);
+            }
+            split.revalidate();
+            split.repaint();
+        }
+    }
+
+    /**A way to open the NWW viewer and get the general actions, which have reference to the rest.
+     *
      * @param appName
      * @return
      */
@@ -104,6 +196,7 @@ public class SimpleNwwViewer {
             LayersPanelController layerPanel = null;
             ToolsPanelController toolsPanel = null;
             NwwToolsTabs toolsTabs = null;
+            NwwMapModesBar modesBar = null;
 
             if (nwwComponent instanceof NwwPanel) {
                 wwjPanel = (NwwPanel) nwwComponent;
@@ -128,26 +221,39 @@ public class SimpleNwwViewer {
             GuiUtilities.setDefaultFrameIcon(nwwFrame);
 
             if (layerPanel != null && toolsPanel != null) {
-                // resizable panels: layers | map | tools, the map gets the extra space
+                // resizable panels: layers | modes + map | tools, the map gets the extra space
                 Dimension small = new Dimension(100, 100);
                 nwwComponent.setMinimumSize(small);
                 ((Component) wwjPanel.getWwd()).setMinimumSize(small);
                 layerPanel.setMinimumSize(small);
-                JScrollPane toolsScroll = new JScrollPane(toolsPanel);
-                toolsScroll.setBorder(BorderFactory.createEmptyBorder());
-                toolsScroll.getVerticalScrollBar().setUnitIncrement(16);
+                // the initial widths of the sides, only the width counts
+                layerPanel.setPreferredSize(new Dimension(260, 500));
                 NwwContext context = new NwwContext(wwjPanel, layerPanel, toolsPanel);
-                toolsTabs = new NwwToolsTabs(toolsScroll, context);
+                toolsTabs = new NwwToolsTabs(context);
                 for( INwwTool tool : createDefaultTools() ) {
                     toolsTabs.addTool(tool);
                 }
                 for( INwwLayerTool layerTool : createDefaultLayerTools() ) {
                     toolsTabs.addLayerTool(layerTool);
                 }
+                for( INwwLayerTool styleTool : createDefaultStyleTools() ) {
+                    toolsTabs.addStyleTool(styleTool);
+                }
                 layerPanel.addCurrentLayerListener(toolsTabs::showLayer);
+                layerPanel.setStyleHandler(toolsTabs::hasStyleTool, toolsTabs::showStyle);
                 toolsTabs.setMinimumSize(small);
+                toolsTabs.setPreferredSize(new Dimension(360, 500));
 
-                JSplitPane mapToolsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, nwwComponent, toolsTabs);
+                modesBar = new NwwMapModesBar(context);
+                for( INwwMapMode mode : createDefaultMapModes() ) {
+                    modesBar.addMode(mode);
+                }
+                JPanel mapPanel = new JPanel(new BorderLayout());
+                mapPanel.add(modesBar, BorderLayout.WEST);
+                mapPanel.add(nwwComponent, BorderLayout.CENTER);
+                mapPanel.setMinimumSize(small);
+
+                JSplitPane mapToolsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, mapPanel, toolsTabs);
                 mapToolsSplit.setResizeWeight(1.0);
                 mapToolsSplit.setContinuousLayout(true);
                 mapToolsSplit.setOneTouchExpandable(true);
@@ -158,6 +264,28 @@ public class SimpleNwwViewer {
                 mainSplit.setOneTouchExpandable(true);
                 mainSplit.setBorder(null);
                 nwwFrame.getContentPane().add(mainSplit, BorderLayout.CENTER);
+
+                SplitSide layersSide = new SplitSide(mainSplit, layerPanel);
+                SplitSide toolsSide = new SplitSide(mapToolsSplit, toolsTabs);
+                // the tabs come and go with the tools and the current layer
+                NwwToolsTabs tabs = toolsTabs;
+                toolsSide.update(tabs.getTabCount() > 0);
+                tabs.addContainerListener(new ContainerAdapter(){
+                    @Override
+                    public void componentAdded( ContainerEvent e ) {
+                        toolsSide.update(tabs.getTabCount() > 0);
+                    }
+
+                    @Override
+                    public void componentRemoved( ContainerEvent e ) {
+                        toolsSide.update(tabs.getTabCount() > 0);
+                    }
+                });
+
+                NwwMenuBar menuBar = new NwwMenuBar(nwwFrame, toolsPanel);
+                menuBar.addPanelToggle("Layers panel", layersSide::isShown, layersSide::setShown);
+                menuBar.addPanelToggle("Tools panel", toolsSide::isShown, toolsSide::setShown);
+                nwwFrame.setJMenuBar(menuBar);
             } else {
                 nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);
             }
@@ -215,9 +343,11 @@ public class SimpleNwwViewer {
             nwwFrame.setDefaultCloseOperation(onCloseAction);
             if (toolsTabs != null) {
                 NwwToolsTabs tabs = toolsTabs;
+                NwwMapModesBar modes = modesBar;
                 nwwFrame.addWindowListener(new WindowAdapter(){
                     @Override
                     public void windowClosing( WindowEvent e ) {
+                        modes.close();
                         tabs.closeTools();
                     }
                 });

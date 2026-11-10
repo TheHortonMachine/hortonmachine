@@ -21,7 +21,7 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
     * Default constructor
      * @param mainController 
     */
-    public PointMarkSymbolizerController( PointSymbolizerWrapper symbolizerWrapper, MainController mainController ) {
+    public PointMarkSymbolizerController( PointSymbolizerWrapper symbolizerWrapper, IStyleChangeListener mainController ) {
         this.symbolizerWrapper = symbolizerWrapper;
         _applyButton.addActionListener(e -> {
             // all round until they are not an option, by default they would be butt
@@ -33,15 +33,31 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
         init();
     }
 
+    /**
+     * @param visible <code>false</code> to hide the Apply button, as when the panel is part of
+     *          a panel with its own.
+     */
+    public void setApplyButtonVisible( boolean visible ) {
+        _applyButton.setVisible(visible);
+    }
+
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void init() {
         String[] wkmarknames = StyleUtilities.wkMarkDefs;
         _wkmarkCombo.setModel(new DefaultComboBoxModel(wkmarknames));
         String markName = symbolizerWrapper.getMarkName();
         try {
+            // the path is empty, not null, if there is no graphic
             String externalGraphicPath = symbolizerWrapper.getExternalGraphicPath();
-            setExternalGraphics(externalGraphicPath);
-            if (externalGraphicPath == null) {
+            boolean hasGraphic = externalGraphicPath != null && !externalGraphicPath.isEmpty();
+            if (hasGraphic) {
+                setExternalGraphics(externalGraphicPath);
+            } else {
+                // setting an empty path would replace the mark with an empty graphic
+                _graphicPathField.setText("");
+            }
+            if (!hasGraphic && (markName == null || markName.isEmpty())) {
+                // no mark and no graphic: show the circle
                 markName = wkmarknames[2];
             }
             if (markName != null) {
@@ -74,6 +90,10 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
 
         GuiUtilities.setFileBrowsingOnWidgets(_graphicPathField, _browseGraphicButton, null, () -> {
             String externalGraphicPath = _graphicPathField.getText();
+            if (externalGraphicPath == null || externalGraphicPath.isBlank()) {
+                // no graphic chosen: an empty one would replace the mark
+                return;
+            }
             try {
                 symbolizerWrapper.setExternalGraphicPath(externalGraphicPath);
             } catch (MalformedURLException e1) {
@@ -135,21 +155,8 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
             setStrokeWidth();
         });
 
-        SpinnerModel opacityBorderModel = new SpinnerNumberModel(255, // initial value
-                0, // minimum value
-                255, // maximum value
-                5); // step
-        _opacityBorderSpinner.setModel(opacityBorderModel);
-        String strokeOpacity = symbolizerWrapper.getStrokeOpacity();
-        if (strokeOpacity == null) {
-            strokeOpacity = "1";
-        }
-        double borderOpacity = Double.parseDouble(strokeOpacity);
-        borderOpacity *= 255;
-        _opacityBorderSpinner.setValue((int) borderOpacity);
-        _opacityBorderSpinner.addChangeListener(e -> {
-            setStrokeOpacity();
-        });
+        GuiUtilities.setupOpacitySlider(_opacityBorderSlider, OpacityValues.parse(symbolizerWrapper.getStrokeOpacity()),
+                opacity -> setStrokeOpacity());
 
         String borderColorStr = symbolizerWrapper.getStrokeColor();
         if (borderColorStr == null) {
@@ -157,7 +164,6 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
         }
         Color borderColor = ColorUtilities.fromHex(borderColorStr);
         GuiUtilities.colorButton(_colorBorderButton, borderColor, MainController.COLOR_IMAGE_SIZE);
-        _colorBorderButton.setBackground(borderColor);
         _colorBorderButton.addActionListener(e -> {
             Color initialBackground = _colorBorderButton.getBackground();
             Color background = JColorChooser.showDialog(null, "Border Color Chooser", initialBackground);
@@ -167,21 +173,8 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
             }
         });
 
-        SpinnerModel opacityFillModel = new SpinnerNumberModel(255, // initial value
-                0, // minimum value
-                255, // maximum value
-                5); // step
-        _opacityFillSpinner.setModel(opacityFillModel);
-        String fillOpacityStr = symbolizerWrapper.getFillOpacity();
-        if (fillOpacityStr == null) {
-            fillOpacityStr = "1";
-        }
-        double fillOpacity = Double.parseDouble(fillOpacityStr);
-        fillOpacity *= 255;
-        _opacityFillSpinner.setValue((int) fillOpacity);
-        _opacityFillSpinner.addChangeListener(e -> {
-            setFillOpacity();
-        });
+        GuiUtilities.setupOpacitySlider(_opacityFillSlider, OpacityValues.parse(symbolizerWrapper.getFillOpacity()),
+                opacity -> setFillOpacity());
 
         String fillColorStr = symbolizerWrapper.getFillColor();
         if (fillColorStr == null) {
@@ -189,7 +182,6 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
         }
         Color fillColor = ColorUtilities.fromHex(fillColorStr);
         GuiUtilities.colorButton(_colorFilleButton, fillColor, MainController.COLOR_IMAGE_SIZE);
-        _colorFilleButton.setBackground(fillColor);
         _colorFilleButton.addActionListener(e -> {
             Color initialBackground = _colorFilleButton.getBackground();
             Color background = JColorChooser.showDialog(null, "Fill Color Chooser", initialBackground);
@@ -208,9 +200,7 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
     }
 
     private void setFillOpacity() {
-        int intValue = ((Number) _opacityFillSpinner.getValue()).intValue();
-        float opacity = intValue / 255f;
-        symbolizerWrapper.setFillOpacity(opacity + "", false);
+        symbolizerWrapper.setFillOpacity(OpacityValues.text(_opacityFillSlider.getValue() / 100.0), false);
     }
 
     private void setBorderColor( Color background ) {
@@ -220,9 +210,7 @@ public class PointMarkSymbolizerController extends PointMarkSymbolizerView {
     }
 
     private void setStrokeOpacity() {
-        int intValue = ((Number) _opacityBorderSpinner.getValue()).intValue();
-        float opacity = intValue / 255f;
-        symbolizerWrapper.setStrokeOpacity(opacity + "", false);
+        symbolizerWrapper.setStrokeOpacity(OpacityValues.text(_opacityBorderSlider.getValue() / 100.0), false);
     }
 
     private void setStrokeWidth() {

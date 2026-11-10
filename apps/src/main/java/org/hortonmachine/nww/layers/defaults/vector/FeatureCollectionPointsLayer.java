@@ -17,18 +17,23 @@
  */
 package org.hortonmachine.nww.layers.defaults.vector;
 
+import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.utils.style.FeatureStyler;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.shapes.FeaturePoint;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
-import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.style.SimpleStyle;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
@@ -40,6 +45,7 @@ import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.RenderableLayer;
 import gov.nasa.worldwind.render.Material;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
+import gov.nasa.worldwind.render.Renderable;
 import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 
 /**
@@ -63,6 +69,11 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
     private FeatureStoreInfo featureStoreInfo;
 
     private SimpleFeatureStore featureStore;
+
+    /** The SLD style, <code>null</code> to draw all features with the simple style. */
+    private FeatureStyler styler;
+    /** The attributes of the looks given by the SLD style, shared by the features. */
+    private final Map<FeatureStyler.Symbol, PointPlacemarkAttributes> stylerAttributes = new HashMap<>();
 
     public FeatureCollectionPointsLayer( String title, SimpleFeatureCollection featureCollectionLL,
             SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap, Object imageObject ) {
@@ -92,27 +103,84 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
         }
     }
 
-    private void loadData() throws Exception {
+    private synchronized void loadData() throws Exception {
+        List<Renderable> renderables = new ArrayList<>();
+        FeatureLabels labels = new FeatureLabels();
         SimpleFeatureIterator featureIterator = getfeatureCollection().features();
         try {
-            removeAllRenderables();
             while( featureIterator.hasNext() ) {
                 SimpleFeature pointFeature = featureIterator.next();
-                addPoint(pointFeature);
+                PointPlacemarkAttributes attributes = getAttributes(pointFeature, labels);
+                if (attributes != null) {
+                    addPoint(pointFeature, attributes, renderables);
+                }
             }
         } finally {
             featureIterator.close();
         }
+        removeAllRenderables();
+        addRenderables(renderables);
+        if (!labels.isEmpty()) {
+            addRenderable(labels);
+        }
     }
 
-    private SimpleFeatureCollection getfeatureCollection() throws Exception {
-        if (featureStore != null) {
-            return NwwUtilities.readAndReproject(featureStore);
+    @Override
+    public void setSldStyle( Style style ) {
+        styler = style != null ? new FeatureStyler(style) : null;
+        stylerAttributes.clear();
+        reload();
+    }
+
+    @Override
+    public Style getSldStyle() {
+        return styler != null ? styler.getStyle() : null;
+    }
+
+    /**
+     * Get the attributes of a feature, adding its label if the style has one.
+     *
+     * @param feature the feature.
+     * @param labels the labels to add to, <code>null</code> to add none.
+     * @return the attributes, <code>null</code> if the feature is not drawn.
+     */
+    private PointPlacemarkAttributes getAttributes( SimpleFeature feature, FeatureLabels labels ) {
+        if (styler == null) {
+            return basicMarkerAttributes;
         }
+        FeatureStyler.Styled styled = styler.style(feature);
+        if (styled == null) {
+            return null;
+        }
+        if (styled.label() != null && labels != null) {
+            labels.add((Geometry) feature.getDefaultGeometry(), styled.label());
+        }
+        if (styled.symbol() == null) {
+            return null;
+        }
+        return stylerAttributes.computeIfAbsent(styled.symbol(), symbol -> {
+            // the points are drawn with the fill color, or with the border one if not filled
+            Color color = symbol.fill() != null ? symbol.fill() : symbol.stroke();
+            Material material = new Material(color != null ? color : Color.GRAY);
+            PointPlacemarkAttributes attributes = new PointPlacemarkAttributes();
+            attributes.setLabelMaterial(material);
+            attributes.setLineMaterial(material);
+            attributes.setUsePointAsDefaultImage(true);
+            attributes.setScale(symbol.size());
+            return attributes;
+        });
+    }
+
+    /**
+     * @return the collection given to the layer, not the whole feature store, since it can be a
+     *          filtered view of it. Collections read from a store read it again at each use, so
+     *          they show the edited attributes.
+     */
+    private SimpleFeatureCollection getfeatureCollection() throws Exception {
         return featureCollectionLL;
     }
 
-    private void addPoint( SimpleFeature pointFeature ) {
+    private void addPoint( SimpleFeature pointFeature, PointPlacemarkAttributes attributes, List<Renderable> renderables ) {
         Geometry geometry = (Geometry) pointFeature.getDefaultGeometry();
         if (geometry == null) {
             return;
@@ -125,8 +193,8 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
                 FeaturePoint marker = new FeaturePoint(Position.fromDegrees(point.getY(), point.getX(), 0), featureStoreInfo);
                 marker.setFeature(pointFeature);
                 marker.setAltitudeMode(WorldWind.CLAMP_TO_GROUND);
-                marker.setAttributes(basicMarkerAttributes);
-                addRenderable(marker);
+                marker.setAttributes(attributes);
+                renderables.add(marker);
             }
         }
     }
@@ -216,7 +284,13 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
 
     @Override
     public void add( SimpleFeature feature ) {
-        addPoint(feature);
+        // the label of an added feature is shown at the next reload
+        PointPlacemarkAttributes attributes = getAttributes(feature, null);
+        if (attributes != null) {
+            List<Renderable> renderables = new ArrayList<>();
+            addPoint(feature, attributes, renderables);
+            addRenderables(renderables);
+        }
     }
 
     @Override
