@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.compat;
 /**
  * Different table types.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum ETableType {
     OTHER, TABLE, VIEW, EXTERNAL;

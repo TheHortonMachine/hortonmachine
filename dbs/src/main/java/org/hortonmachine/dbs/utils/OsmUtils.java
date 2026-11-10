@@ -25,7 +25,7 @@ import org.hortonmachine.dbs.compat.EDb;
 /**
  * Utilities to handle OSM data.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class OsmUtils {

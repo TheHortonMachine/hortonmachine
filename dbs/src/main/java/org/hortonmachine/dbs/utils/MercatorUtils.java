@@ -13,7 +13,7 @@ import org.locationtech.jts.geom.Envelope;
  *  and adapted.</p>
  * 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class MercatorUtils {
 

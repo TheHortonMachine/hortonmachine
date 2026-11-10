@@ -49,7 +49,7 @@ import org.locationtech.jts.geom.LineString;
 /**
  * A simple utils class to collect common db queries as functions.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class CommonQueries {
 

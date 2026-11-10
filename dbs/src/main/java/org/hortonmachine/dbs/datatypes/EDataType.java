@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Common Data Types.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public enum EDataType {

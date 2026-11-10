@@ -35,7 +35,7 @@ import com.jcraft.jsch.Session;
 /**
  * SSH utilities methods.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SshUtilities {
     private static final String PREFS_NODE_NAME = "HM_SSH_TOOLS";

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * A log db interface.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface ILogDb {
 

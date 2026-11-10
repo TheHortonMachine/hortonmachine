@@ -27,7 +27,7 @@ import org.hortonmachine.dbs.utils.SqlName;
 /**
  * Import and export utilities for hortonmachine.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMImportExportUtils {
 

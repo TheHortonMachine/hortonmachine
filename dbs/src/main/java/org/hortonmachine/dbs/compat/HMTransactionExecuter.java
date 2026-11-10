@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.compat;
 /**
  * The transaction executor for the hortonmachine part.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class HMTransactionExecuter implements ITransactionExecuter {
 

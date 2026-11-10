@@ -24,7 +24,7 @@ import com.jcraft.jsch.Session;
 /**
  * An ssh tunneling manager.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class SshTunnelHandler implements AutoCloseable {

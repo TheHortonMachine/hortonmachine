@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.log;
 /**
  * An enumeration of message types for logging.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum EMessageType {
     ALL(0), INFO(1), WARNING(2), ERROR(3), ACCESS(4), DEBUG(5);

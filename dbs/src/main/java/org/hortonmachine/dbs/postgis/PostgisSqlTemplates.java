@@ -29,7 +29,7 @@ import org.hortonmachine.dbs.utils.SqlName;
 /**
  * Simple queries templates.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PostgisSqlTemplates extends ASqlTemplates {
     @Override

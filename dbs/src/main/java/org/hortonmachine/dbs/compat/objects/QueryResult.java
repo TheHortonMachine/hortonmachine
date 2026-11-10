@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Geometry;
  * 
  * <p>If performance is needed, this should not be used.</p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class QueryResult {
     /**

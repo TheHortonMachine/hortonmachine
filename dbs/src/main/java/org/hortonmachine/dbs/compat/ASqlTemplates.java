@@ -26,7 +26,7 @@ import org.hortonmachine.dbs.utils.SqlName;
 /**
  * Simple queries templates interface.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ASqlTemplates {
 

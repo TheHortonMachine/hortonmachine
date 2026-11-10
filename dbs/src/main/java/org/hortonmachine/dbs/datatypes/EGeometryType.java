@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Geometry types used by the utility.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum EGeometryType {
     POINT(Point.class, MultiPoint.class, "Point"), //

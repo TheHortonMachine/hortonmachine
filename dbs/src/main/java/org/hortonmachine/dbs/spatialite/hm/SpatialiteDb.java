@@ -57,7 +57,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * A spatialite database.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SpatialiteDb extends ASpatialDb {
     private SqliteDb sqliteDb;

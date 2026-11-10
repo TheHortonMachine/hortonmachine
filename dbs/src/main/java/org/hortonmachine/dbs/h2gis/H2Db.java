@@ -47,7 +47,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 /**
  * An H2 database.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class H2Db extends ADb {
     private static final String DRIVER_CLASS = "org.h2.Driver";

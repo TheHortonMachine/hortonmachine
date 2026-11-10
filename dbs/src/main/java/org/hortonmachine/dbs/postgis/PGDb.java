@@ -54,7 +54,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 /**
  * An postgresql database.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PGDb extends ADb {
     private static final String DRIVER_CLASS = "org.postgresql.Driver";

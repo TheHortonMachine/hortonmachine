@@ -25,7 +25,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * A threadsafe spatialite database in which writing is blocking.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SpatialiteThreadsafeDb extends SpatialiteDb {
     private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true);

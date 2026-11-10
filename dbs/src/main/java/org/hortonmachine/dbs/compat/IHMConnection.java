@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 /**
  * Interface wrapping db connections.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public interface IHMConnection extends AutoCloseable {

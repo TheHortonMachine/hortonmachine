@@ -62,7 +62,7 @@ import org.locationtech.jts.io.WKBReader;
  *  <p>Specifications can be found here: https://www.gaia-gis.it/gaia-sins/BLOB-Geometry.html
  * 
  *  @author JTS developers
- *  @author Andrea Antonello (www.hydrologis.com)
+ *  @author Andrea Antonello (https://g-ant.eu)
  *  @see WKBReader
  */
 public class SpatialiteWKBReader {

@@ -22,7 +22,7 @@ import com.jcraft.jsch.UserInfo;
 /**
  * {@link UserInfo} object to use for connections.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMUserInfo implements UserInfo {
 

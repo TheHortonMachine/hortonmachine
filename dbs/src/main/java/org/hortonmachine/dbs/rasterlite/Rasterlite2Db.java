@@ -29,7 +29,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 /**
  * An rasterlite2 wrapper class to only read rl2 databases.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Rasterlite2Db {
 

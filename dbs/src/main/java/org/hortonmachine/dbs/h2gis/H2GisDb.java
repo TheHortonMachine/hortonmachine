@@ -57,7 +57,7 @@ import org.locationtech.jts.geom.Polygon;
  * Geometry columns in h2gis 2 carry type and srid in the column type, ex. <code>GEOMETRY(POINT, 4326)</code>.
  * The short form <code>the_geom POINT</code> is converted.</p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class H2GisDb extends ASpatialDb {
     /**

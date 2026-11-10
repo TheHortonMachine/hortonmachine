@@ -7,7 +7,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
  * 
  *  <p>This is necessary to make the android part compatible.</p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @FunctionalInterface
 public interface ResultSetToObjectFunction {

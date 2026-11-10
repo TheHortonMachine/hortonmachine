@@ -33,7 +33,7 @@ import org.hortonmachine.dbs.utils.SqlName;
 /**
  * The available databases.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum EDb {
     SQLITE(0, ".sqlite", "sqlite", "org.hortonmachine.dbs.spatialite.hm.SqliteDb", false,

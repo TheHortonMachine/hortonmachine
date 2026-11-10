@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.compat.objects;
 /**
  * Class representing a foreign key.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class ForeignKey {

@@ -50,7 +50,7 @@ import org.sqlite.SQLiteConfig;
 /**
  * A sqlite database.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SqliteDb extends ADb {
     private static final String DRIVER_CLASS = "org.sqlite.JDBC";

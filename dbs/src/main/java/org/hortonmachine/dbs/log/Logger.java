@@ -29,7 +29,7 @@ import org.hortonmachine.dbs.compat.EDb;
  * 
  * <p>If the database is not initialized, it can either not log or to standard out and err.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public enum Logger implements ILogDb {

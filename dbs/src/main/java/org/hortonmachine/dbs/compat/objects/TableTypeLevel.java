@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Class representing a db table type (table, view, etc) level.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TableTypeLevel {
     public SchemaLevel parent;

@@ -36,7 +36,7 @@ import org.hortonmachine.dbs.utils.TableName;
 /**
  * Class representing a db level.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class DbLevel {
     public ADb parent;

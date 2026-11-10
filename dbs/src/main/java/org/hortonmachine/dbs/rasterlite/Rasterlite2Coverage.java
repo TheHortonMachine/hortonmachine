@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Class representing a raster_coverages record.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Rasterlite2Coverage {
 

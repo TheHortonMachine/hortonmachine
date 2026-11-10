@@ -8,7 +8,7 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 /**
  * Class representing a generic leaf.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LeafLevel {
 

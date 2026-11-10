@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.compat;
 /**
  * Database Syntax Compatibility Helper class.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ADatabaseSyntaxHelper {
     public static final String COMPAT_TEXT = "TEXT";

@@ -24,7 +24,7 @@ import org.hortonmachine.dbs.utils.DbsUtilities;
 /**
  * A message to be used for logging.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class Message {

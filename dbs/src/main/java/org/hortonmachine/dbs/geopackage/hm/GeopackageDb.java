@@ -28,7 +28,7 @@ import org.sqlite.Function;
 /**
  * A spatialite database.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GeopackageDb extends GeopackageCommonDb {
     public GeopackageDb() {

@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Envelope;
  *
  * @author Justin Deoliveira
  * @author Niels Charlier
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TileEntry extends Entry {
 

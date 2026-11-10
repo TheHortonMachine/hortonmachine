@@ -32,7 +32,7 @@ import org.locationtech.jts.geom.Envelope;
 /**
  * An mbtiles wrapper class to read and write mbtiles databases.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class MBTilesDb {
 

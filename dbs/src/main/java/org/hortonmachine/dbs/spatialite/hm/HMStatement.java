@@ -27,7 +27,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 /**
  * Statement wrapper for standard jdbc java.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HMStatement implements IHMStatement {

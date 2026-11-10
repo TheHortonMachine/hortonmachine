@@ -26,7 +26,7 @@ import org.hortonmachine.dbs.datatypes.EGeometryType;
 /**
  * Class representing a db column.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ColumnLevel {
     public TableLevel parent;

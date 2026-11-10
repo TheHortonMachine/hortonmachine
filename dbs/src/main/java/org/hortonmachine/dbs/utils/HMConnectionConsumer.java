@@ -22,7 +22,7 @@ import org.hortonmachine.dbs.compat.IHMConnection;
 /**
  * A functional interface on {@link IHMConnection} that also throw exceptions.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  * @param the connection to use.
  * @param the exception.

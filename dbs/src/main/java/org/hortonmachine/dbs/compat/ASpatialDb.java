@@ -33,7 +33,7 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 /**
  * Abstract spatial db class.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public abstract class ASpatialDb extends ADb {

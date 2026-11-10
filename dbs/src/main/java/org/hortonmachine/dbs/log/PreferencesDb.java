@@ -33,7 +33,7 @@ import org.hortonmachine.dbs.utils.SqlName;
 /**
  * A preferences database.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum PreferencesDb implements AutoCloseable {
     INSTANCE("preferences_hortonmachine.sqlite"), TESTINSTANCE("test_java_preferences_hm.sqlite");

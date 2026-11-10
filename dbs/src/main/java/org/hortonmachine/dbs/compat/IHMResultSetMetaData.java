@@ -20,7 +20,7 @@ package org.hortonmachine.dbs.compat;
 /**
  * Interface wrapping a resultset metadata.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public interface IHMResultSetMetaData {

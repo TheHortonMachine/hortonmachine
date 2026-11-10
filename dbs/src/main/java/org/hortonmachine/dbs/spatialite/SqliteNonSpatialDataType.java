@@ -22,7 +22,7 @@ import org.hortonmachine.dbs.compat.ADatabaseSyntaxHelper;
 /**
  * Non spatial data types and small syntax for the sqlite db.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SqliteNonSpatialDataType extends ADatabaseSyntaxHelper {
 

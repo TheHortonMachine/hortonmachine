@@ -38,7 +38,7 @@ import org.hortonmachine.dbs.utils.TableName;
 /**
  * Abstract non spatial db class.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public abstract class ADb implements AutoCloseable, IVisitableDb {

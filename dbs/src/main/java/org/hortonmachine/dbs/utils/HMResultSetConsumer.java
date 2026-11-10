@@ -22,7 +22,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 /**
  * A functional interface on {@link IHMResultSet} that also throw exceptions.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  * @param the connection to use.
  * @param the exception.

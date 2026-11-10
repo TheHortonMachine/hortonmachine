@@ -26,7 +26,7 @@ import org.hortonmachine.dbs.utils.TableName;
 /**
  * Class representing a db table level.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TableLevel {
     public TableTypeLevel parent;

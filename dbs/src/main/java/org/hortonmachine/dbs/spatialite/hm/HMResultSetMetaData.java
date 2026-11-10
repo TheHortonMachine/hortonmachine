@@ -24,7 +24,7 @@ import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 /**
  * Resultset metadata wrapper for standard jdbc java.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HMResultSetMetaData implements IHMResultSetMetaData {

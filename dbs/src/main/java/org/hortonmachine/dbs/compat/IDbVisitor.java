@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 /**
  * A database visitor.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface IDbVisitor {
     /**

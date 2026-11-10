@@ -23,7 +23,7 @@ import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 /**
  * Class representing a geometry_columns record.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class GeometryColumn {
     // VARIABLES

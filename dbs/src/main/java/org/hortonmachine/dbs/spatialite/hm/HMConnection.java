@@ -31,7 +31,7 @@ import org.hortonmachine.dbs.compat.IHMStatement;
 /**
  * Connection wrapper for standard jdbc java.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HMConnection implements IHMConnection {

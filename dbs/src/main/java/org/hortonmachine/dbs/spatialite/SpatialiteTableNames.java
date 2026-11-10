@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Spatialite table namse and groups.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class SpatialiteTableNames  {

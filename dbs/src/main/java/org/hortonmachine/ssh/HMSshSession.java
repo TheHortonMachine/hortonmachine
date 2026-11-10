@@ -27,7 +27,7 @@ import com.jcraft.jsch.UserInfo;
 /**
  * An ssh session.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HMSshSession implements AutoCloseable {

@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * Class representing a db schema level.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SchemaLevel {
     public static final String FALLBACK_SCHEMA = "schema";

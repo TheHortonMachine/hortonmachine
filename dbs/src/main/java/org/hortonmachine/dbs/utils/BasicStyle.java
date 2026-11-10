@@ -27,7 +27,7 @@ import org.json.JSONObject;
 /**
  * Simple style for shapes.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class BasicStyle implements Serializable {
     private static final long serialVersionUID = 1L;

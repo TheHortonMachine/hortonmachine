@@ -37,7 +37,7 @@ import org.hortonmachine.dbs.utils.SqlName;
  * 
  * <p>The database contains a table with [id, timestamp, message type, tag, log message]</p>.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LogDb implements AutoCloseable, ILogDb {
     public static final String TABLE_MESSAGES = "logmessages";

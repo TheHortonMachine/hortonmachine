@@ -28,7 +28,7 @@ import org.hortonmachine.dbs.compat.IHMResultSet;
 /**
  * Prepared Statement wrapper for standard jdbc java.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HMPreparedStatement implements IHMPreparedStatement {

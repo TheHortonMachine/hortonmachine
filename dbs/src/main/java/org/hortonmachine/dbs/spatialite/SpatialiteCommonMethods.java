@@ -49,7 +49,7 @@ import org.locationtech.jts.io.ParseException;
 /**
  * Common methods for spatialite (android and java).
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class SpatialiteCommonMethods {

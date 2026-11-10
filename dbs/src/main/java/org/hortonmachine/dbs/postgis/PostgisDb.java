@@ -62,7 +62,7 @@ import org.postgresql.util.PGobject;
  * {@link PostgisDb#createSpatialIndex(String, String)};
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
     private PGDb pgDb;
