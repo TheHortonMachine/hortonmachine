@@ -33,7 +33,7 @@ import org.hortonmachine.gui.utils.ImageCache;
 /**
  * Executor swingworker with an progress monitor that allows for messages and progress updates.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ExecutorProgressGui extends HMExecutor {
 

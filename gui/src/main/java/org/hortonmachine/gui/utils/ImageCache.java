@@ -51,7 +51,7 @@ import org.hortonmachine.gui.utils.MaterialIcon.IconColor;
  * <p>Keys mapped in {@link #GLYPHS} are drawn as Material Symbols ({@link MaterialIcon}),
  * all others (and all keys, if the icon font is not available) are loaded from the bitmap files.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class ImageCache {

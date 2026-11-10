@@ -31,7 +31,7 @@ import oms3.annotations.Unit;
 /**
  * Utilities for the omsbox plugin.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SpatialToolboxUtils {
     private static final String NO_DOCUMENTATION_AVAILABLE = "<b>NO DOCUMENTATION AVAILABLE</b>";

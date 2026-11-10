@@ -30,7 +30,7 @@ import javax.swing.filechooser.FileFilter;
  * 
  * <p>Implementing apps need to create the wrapper for this bridge</p>.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public interface GuiBridgeHandler {

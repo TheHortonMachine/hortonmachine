@@ -20,7 +20,7 @@ package org.hortonmachine.gui.spatialtoolbox.core;
 /**
  * A modules wrapper.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ViewerModule {
     private final ModuleDescription moduleDescription;

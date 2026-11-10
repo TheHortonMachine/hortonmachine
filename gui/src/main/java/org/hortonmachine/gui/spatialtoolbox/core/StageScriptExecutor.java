@@ -44,7 +44,7 @@ import groovy.ui.GroovyMain;
 /**
  * Executor of OMS scripts.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class StageScriptExecutor {

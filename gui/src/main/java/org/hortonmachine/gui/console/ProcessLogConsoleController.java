@@ -42,7 +42,7 @@ import org.hortonmachine.gui.utils.ImageCache;
 /**
  * A console for logging processes.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class ProcessLogConsoleController extends ProcessLogConsoleView implements IProcessListener {

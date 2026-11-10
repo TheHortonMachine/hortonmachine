@@ -46,7 +46,7 @@ import oms3.annotations.Unit;
 /**
  * Singleton in which the modules discovery and load/unload occurrs.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class HortonmachineModulesManager {

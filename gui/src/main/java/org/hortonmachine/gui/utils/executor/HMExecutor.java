@@ -27,7 +27,7 @@ import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 /**
  * An swingworker executor helper to work with a progress printer.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class HMExecutor extends SwingWorker<Void, ProgressUpdate> implements IProgressPrinter {
     protected int w = 600;

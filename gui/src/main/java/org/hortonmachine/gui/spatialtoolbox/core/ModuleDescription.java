@@ -28,7 +28,7 @@ import oms3.annotations.Name;
  * 
  * <p>This is used to describe completely a module, so that a gui can be generated from it.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class ModuleDescription {

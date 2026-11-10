@@ -41,7 +41,7 @@ import org.hortonmachine.gears.utils.PreferencesHandler;
 /**
  * JGT implementation of the {@link GuiBridgeHandler}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class DefaultGuiBridgeImpl implements GuiBridgeHandler {
 

@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 /**
  * Utility to help filter out messages from the console.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ConsoleMessageFilter {
 

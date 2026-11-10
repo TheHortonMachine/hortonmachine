@@ -46,7 +46,7 @@ import org.hortonmachine.gears.utils.images.ImageUtilities;
 /**
  * A quick image viewer component.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("serial")
 public class ImageViewer extends JComponent {

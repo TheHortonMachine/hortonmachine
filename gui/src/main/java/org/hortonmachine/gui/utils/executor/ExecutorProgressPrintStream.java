@@ -25,7 +25,7 @@ import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 /**
  * Executor swingworker with an {@link PrintStream} that allows for messages.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ExecutorProgressPrintStream extends HMExecutor {
 

@@ -65,7 +65,7 @@ import com.formdev.flatlaf.util.UIScale;
 /**
  * A simple map frame where layers can be set or added with default styles.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("serial")
 public class HMMapframe extends JMapFrame {

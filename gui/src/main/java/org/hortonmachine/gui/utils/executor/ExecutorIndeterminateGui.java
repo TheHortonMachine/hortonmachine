@@ -33,7 +33,7 @@ import org.hortonmachine.gui.utils.ImageCache;
 /**
  * Executor swingworker with an indetermined monitor that allows for messages.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ExecutorIndeterminateGui extends HMExecutor {
 

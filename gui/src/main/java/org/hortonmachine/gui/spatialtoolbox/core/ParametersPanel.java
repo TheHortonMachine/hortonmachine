@@ -79,7 +79,7 @@ import com.jgoodies.forms.layout.FormLayout;
  * (see {@link HMParameterKind}). Each field has its description above the editor and, if available,
  * its unit and range next to it.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class ParametersPanel extends JPanel implements MouseListener, Scrollable {

@@ -31,7 +31,7 @@ import oms3.annotations.Status;
 /**
  * Utilities to handle annotations.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class AnnotationUtilities {

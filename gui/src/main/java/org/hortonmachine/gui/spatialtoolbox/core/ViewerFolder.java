@@ -28,7 +28,7 @@ import java.util.TreeMap;
 /**
  * A folder for the treeviewer of the modules.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ViewerFolder {
     private final String name;

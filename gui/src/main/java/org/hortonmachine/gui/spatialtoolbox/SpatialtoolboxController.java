@@ -100,7 +100,7 @@ import oms3.annotations.Out;
 /**
  * The spatialtoolbox view controller.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class SpatialtoolboxController extends SpatialtoolboxView implements IOnCloseListener {

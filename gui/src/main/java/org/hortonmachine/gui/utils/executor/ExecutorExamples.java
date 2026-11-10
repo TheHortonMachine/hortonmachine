@@ -24,7 +24,7 @@ import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 /**
  * Usage examples for the executor.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ExecutorExamples {
 
