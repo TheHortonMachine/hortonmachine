@@ -15,7 +15,7 @@ import org.joda.time.DateTime;
 /**
  * Test las utils.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestLasUtilities extends HMTestCase {
 

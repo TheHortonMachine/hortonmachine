@@ -5,7 +5,7 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 /**
  * Test OmsFileIterator.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestFileUtilities extends HMTestCase {
 

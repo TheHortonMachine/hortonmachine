@@ -30,7 +30,7 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Test {@link GeometryUtilities}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestGeometryUtilities extends HMTestCase {
 

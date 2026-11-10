@@ -17,7 +17,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 /**
  * Test OmsFileIterator.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class TestFlowNGUtils extends HMTestCase {

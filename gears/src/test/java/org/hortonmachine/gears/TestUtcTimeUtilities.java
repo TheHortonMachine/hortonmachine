@@ -7,7 +7,7 @@ import org.joda.time.DateTime;
 /**
  * Test time.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestUtcTimeUtilities extends HMTestCase {
 

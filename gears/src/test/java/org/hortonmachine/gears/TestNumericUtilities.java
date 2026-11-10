@@ -15,7 +15,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 /**
  * Test numerics.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestNumericUtilities extends HMTestCase {
 

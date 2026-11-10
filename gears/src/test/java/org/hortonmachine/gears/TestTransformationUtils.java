@@ -14,7 +14,7 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 /**
  * Test transformations.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestTransformationUtils extends HMTestCase {
 

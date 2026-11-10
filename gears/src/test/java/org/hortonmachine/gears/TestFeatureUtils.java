@@ -24,7 +24,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Test FeatureUtils.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestFeatureUtils extends HMTestCase {
 

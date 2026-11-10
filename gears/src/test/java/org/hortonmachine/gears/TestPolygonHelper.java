@@ -20,7 +20,7 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Test {@link TestPolygonHelper}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestPolygonHelper extends HMTestCase {
     double DELTA = 0.000001;

@@ -21,7 +21,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test OmsFileIterator.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class TestFlowUtils extends HMTestCase {

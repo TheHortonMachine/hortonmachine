@@ -7,7 +7,7 @@ import org.hortonmachine.gears.utils.processes.CommandExecutor;
 /**
  * Test process utils.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestProcessUtils extends HMTestCase {
 

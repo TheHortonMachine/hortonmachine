@@ -21,7 +21,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test HMRaster.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestHMRaster extends HMTestCase {
     private static final double NaN = HMConstants.doubleNovalue;

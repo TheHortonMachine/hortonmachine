@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * Test {@link CoverageUtilities}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestCoverageUtilities extends HMTestCase {
 

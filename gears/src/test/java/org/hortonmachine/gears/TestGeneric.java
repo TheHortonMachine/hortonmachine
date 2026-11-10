@@ -25,7 +25,7 @@ import org.hortonmachine.gears.utils.colors.ColorUtilities;
 /**
  * Generic tests.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestGeneric extends HMTestCase {
 

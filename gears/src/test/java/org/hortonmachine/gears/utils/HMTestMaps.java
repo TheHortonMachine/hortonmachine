@@ -37,7 +37,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * The grass map named test and its values to be used in tests.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMTestMaps {
     private static final double NaN = HMConstants.doubleNovalue;

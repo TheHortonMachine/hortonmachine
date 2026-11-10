@@ -6,7 +6,7 @@ import org.hortonmachine.gears.utils.HMTestCase;
 /**
  * Test {@link DynamicDoubleArray}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestDoubleArray extends HMTestCase {
 
