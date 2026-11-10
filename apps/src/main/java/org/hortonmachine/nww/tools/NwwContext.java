@@ -19,6 +19,7 @@ package org.hortonmachine.nww.tools;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Consumer;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -53,6 +54,7 @@ public class NwwContext {
     private final LayerEventsListener layerEventsListener;
     private final ToolsPanelController toolsPanel;
     private NwwToolsTabs toolsTabs;
+    private Consumer<INwwTool> toolOpener;
 
     /**
      * @param nwwPanel the map.
@@ -71,6 +73,42 @@ public class NwwContext {
      */
     void setToolsTabs( NwwToolsTabs toolsTabs ) {
         this.toolsTabs = toolsTabs;
+    }
+
+    /**
+     * @param toolOpener opens the tab of a tool as the menu of the viewer does, also showing the
+     *          panel of the tabs if hidden; without it the tab is only opened.
+     */
+    public void setToolOpener( Consumer<INwwTool> toolOpener ) {
+        this.toolOpener = toolOpener;
+    }
+
+    /**
+     * Open the tab of a tool and select it, as from the menu of the viewer.
+     *
+     * @param tool a tool of the viewer.
+     */
+    public void openTool( INwwTool tool ) {
+        if (toolOpener != null) {
+            toolOpener.accept(tool);
+        } else if (toolsTabs != null) {
+            toolsTabs.openTool(tool);
+        }
+    }
+
+    /**
+     * @param type the class of a tool.
+     * @return the first tool of the viewer of the class, open or not, or <code>null</code>.
+     */
+    public <T extends INwwTool> T findTool( Class<T> type ) {
+        if (toolsTabs != null) {
+            for( INwwTool tool : toolsTabs.getTools() ) {
+                if (type.isInstance(tool)) {
+                    return type.cast(tool);
+                }
+            }
+        }
+        return null;
     }
 
     /**

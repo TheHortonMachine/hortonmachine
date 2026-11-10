@@ -32,6 +32,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.utils.style.FeatureStyler;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
+import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.hortonmachine.nww.shapes.FeaturePoint;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
 import org.hortonmachine.style.SimpleStyle;
@@ -53,7 +54,7 @@ import gov.nasa.worldwind.render.markers.BasicMarkerShape;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class FeatureCollectionPointsLayer extends RenderableLayer implements NwwEditableVectorLayer {
+public class FeatureCollectionPointsLayer extends RenderableLayer implements NwwEditableVectorLayer, NwwFeatureLayer {
 
     private PointPlacemarkAttributes basicMarkerAttributes;
 
@@ -178,6 +179,16 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
      */
     private SimpleFeatureCollection getfeatureCollection() throws Exception {
         return featureCollectionLL;
+    }
+
+    @Override
+    public SimpleFeatureCollection getFeatureCollection() {
+        return featureCollectionLL;
+    }
+
+    @Override
+    public SimpleFeatureStore getFeatureStore() {
+        return featureStore;
     }
 
     private void addPoint( SimpleFeature pointFeature, PointPlacemarkAttributes attributes, List<Renderable> renderables ) {

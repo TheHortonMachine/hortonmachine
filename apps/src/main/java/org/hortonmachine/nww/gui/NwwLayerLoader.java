@@ -858,6 +858,8 @@ public class NwwLayerLoader {
                 style = createDefaultStyle(readFC.getSchema(), simpleStyle != null ? simpleStyle.strokeColor : nextDefaultColor());
             RasterizedFeatureCollectionLayer collectionLayer = new RasterizedFeatureCollectionLayer(name, readFC, style, null,
                     true);
+            // to edit the attributes of the identified features
+            collectionLayer.setFeatureStore(featureStore);
             // kept to draw the layer again with the same style
             collectionLayer.setValue(RASTERIZED_STYLE_KEY, style);
             return collectionLayer;

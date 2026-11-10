@@ -256,6 +256,9 @@ public class NwwToolsTabs extends JTabbedPane {
         if (index >= 0) {
             removeTabAt(index);
             onTabSelected();
+            if (created.contains(tool)) {
+                tool.onTabClosed();
+            }
         }
     }
 

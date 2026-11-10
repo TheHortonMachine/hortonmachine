@@ -33,6 +33,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.utils.style.FeatureStyler;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
+import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.hortonmachine.nww.shapes.FeatureExtrudedPolygon;
 import org.hortonmachine.nww.shapes.FeaturePolygon;
 import org.hortonmachine.nww.shapes.FeatureStoreInfo;
@@ -57,7 +58,7 @@ import gov.nasa.worldwind.render.Renderable;
  * 
  * @author Andrea Antonello andrea.antonello@gmail.com
  */
-public class FeatureCollectionPolygonLayer extends RenderableLayer implements NwwEditableVectorLayer {
+public class FeatureCollectionPolygonLayer extends RenderableLayer implements NwwEditableVectorLayer, NwwFeatureLayer {
 
     private String mHeightFieldName;
     private double mVerticalExageration = 1.0;
@@ -463,6 +464,16 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
      */
     private SimpleFeatureCollection getfeatureCollection() throws Exception {
         return featureCollectionLL;
+    }
+
+    @Override
+    public SimpleFeatureCollection getFeatureCollection() {
+        return featureCollectionLL;
+    }
+
+    @Override
+    public SimpleFeatureStore getFeatureStore() {
+        return featureStore;
     }
 
     @Override

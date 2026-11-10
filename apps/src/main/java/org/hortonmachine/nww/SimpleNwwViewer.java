@@ -15,6 +15,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -36,6 +37,7 @@ import org.hortonmachine.nww.tools.INwwLayerTool;
 import org.hortonmachine.nww.tools.INwwMapMode;
 import org.hortonmachine.nww.tools.INwwTool;
 import org.hortonmachine.nww.tools.NwwMapModesBar;
+import org.hortonmachine.nww.tools.features.FeatureInfoTool;
 import org.hortonmachine.nww.tools.modes.IdentifyMode;
 import org.hortonmachine.nww.tools.modes.PanMode;
 import org.hortonmachine.nww.tools.modes.SelectByBoxMode;
@@ -73,6 +75,8 @@ public class SimpleNwwViewer {
      */
     public static List<INwwTool> createDefaultTools() {
         List<INwwTool> tools = new ArrayList<>();
+        // opened by the identify mode
+        tools.add(new FeatureInfoTool());
         // not available, so greyed out in the menu, if no module providing it is installed
         IAssistantBackend backend = Assistants.getBackend().orElse(null);
         IScriptAssistant scriptAssistant = backend == null ? null : backend.getScriptAssistant().orElse(null);
@@ -283,12 +287,16 @@ public class SimpleNwwViewer {
                 NwwMenuBar menuBar = new NwwMenuBar(nwwFrame, toolsPanel);
                 menuBar.addPanelToggle("Layers panel", layersSide::isShown, layersSide::setShown);
                 menuBar.addPanelToggle("Tools panel", toolsSide::isShown, toolsSide::setShown);
+                Consumer<INwwTool> toolOpener = tool -> {
+                    tabs.openTool(tool);
+                    // also if the user hid the panel before
+                    toolsSide.setShown(true);
+                };
+                context.setToolOpener(toolOpener);
                 for( INwwTool tool : tabs.getTools() ) {
                     menuBar.addToolToggle(tool, () -> tabs.isToolOpen(tool), open -> {
                         if (open) {
-                            tabs.openTool(tool);
-                            // also if the user hid the panel before
-                            toolsSide.setShown(true);
+                            toolOpener.accept(tool);
                         } else {
                             tabs.closeTool(tool);
                         }

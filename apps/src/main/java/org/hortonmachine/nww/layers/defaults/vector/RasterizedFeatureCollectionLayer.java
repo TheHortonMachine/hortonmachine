@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
@@ -39,6 +40,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.BasicMercatorTiledImageLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
@@ -61,9 +63,13 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
  * 
  * @author Andrea Antonello (www.hydrologis.com)
  */
-public class RasterizedFeatureCollectionLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
+public class RasterizedFeatureCollectionLayer extends BasicMercatorTiledImageLayer implements NwwLayer, NwwFeatureLayer {
 
     private String layerName = "unknown layer";
+    /** The features drawn, kept to query them. */
+    private final SimpleFeatureCollection featureCollectionLL;
+    /** The store of the features, to edit them, or <code>null</code>. */
+    private SimpleFeatureStore featureStore;
 
     private static final int TILESIZE = 512;
     /** Makes the cache folders of the layers created in the same millisecond different. */
@@ -75,11 +81,30 @@ public class RasterizedFeatureCollectionLayer extends BasicMercatorTiledImageLay
             Integer tileSize, boolean transparentBackground ) throws Exception {
         super(makeLevels(title, getRenderer(featureCollectionLL, style), tileSize, transparentBackground));
         this.layerName = title;
+        this.featureCollectionLL = featureCollectionLL;
         this.setUseTransparentTextures(true);
 
         centre = featureCollectionLL.getBounds().centre();
         // geometryType = NwwUtilities.getGeometryType(featureCollectionLL);
 
+    }
+
+    @Override
+    public SimpleFeatureCollection getFeatureCollection() {
+        return featureCollectionLL;
+    }
+
+    @Override
+    public SimpleFeatureStore getFeatureStore() {
+        return featureStore;
+    }
+
+    /**
+     * @param featureStore the store the features are read from, to edit their attributes, or
+     *          <code>null</code>.
+     */
+    public void setFeatureStore( SimpleFeatureStore featureStore ) {
+        this.featureStore = featureStore;
     }
 
     private static GTRenderer getRenderer( SimpleFeatureCollection featureCollectionLL, Style style ) {

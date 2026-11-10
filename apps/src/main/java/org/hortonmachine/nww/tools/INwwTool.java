@@ -79,6 +79,13 @@ public interface INwwTool {
     }
 
     /**
+     * Called when the tab of the tool is closed, only if the panel had been created. The panel
+     * is kept for when the tab is opened again.
+     */
+    default void onTabClosed() {
+    }
+
+    /**
      * Called when the viewer is closed, only if the panel had been created.
      */
     default void onClose() {
