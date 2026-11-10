@@ -102,7 +102,7 @@ public class NwwMenuBar extends JMenuBar {
         menu.add(open);
         JCheckBoxMenuItem rasterized = new JCheckBoxMenuItem("Open vectors rasterized");
         rasterized.setToolTipText("Draw the vectors opened from now on as image tiles, instead of shapes");
-        rasterized.addActionListener(e -> tools.setPreferRasterized(rasterized.isSelected()));
+        rasterized.addActionListener(e -> tools.getLayerLoader().setPreferRasterized(rasterized.isSelected()));
         menu.add(rasterized);
         menu.addSeparator();
 
@@ -113,7 +113,7 @@ public class NwwMenuBar extends JMenuBar {
 
         menu.add(item("Close", null, e -> window.dispatchEvent(new WindowEvent(window, WindowEvent.WINDOW_CLOSING))));
 
-        menu.addMenuListener(onSelected(() -> rasterized.setSelected(tools.isPreferRasterized())));
+        menu.addMenuListener(onSelected(() -> rasterized.setSelected(tools.getLayerLoader().isPreferRasterized())));
         return menu;
     }
 

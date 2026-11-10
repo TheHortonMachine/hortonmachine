@@ -104,7 +104,7 @@ import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.hortonmachine.nww.gui.ToolsPanelController;
+import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.tools.INwwLayerTool;
@@ -480,7 +480,7 @@ public class StyleLayerTool implements INwwLayerTool {
          *          without SLD style.
          */
         private Style initialStyle() {
-            Style style = ToolsPanelController.getSldStyle(layer);
+            Style style = NwwLayerLoader.getSldStyle(layer);
             if (style != null) {
                 return copy(style);
             }
@@ -1067,8 +1067,8 @@ public class StyleLayerTool implements INwwLayerTool {
             Layer current = context.getLatest(layer);
             new Thread(() -> {
                 try {
-                    Layer styled = context.getToolsPanel().restyleVectorLayer(current, style);
-                    File savedTo = save ? ToolsPanelController.saveStyle(source, style) : null;
+                    Layer styled = context.getLayerLoader().restyleVectorLayer(current, style);
+                    File savedTo = save ? NwwLayerLoader.saveStyle(source, style) : null;
                     SwingUtilities.invokeLater(() -> {
                         if (styled != current) {
                             context.replaceLayer(current, styled);

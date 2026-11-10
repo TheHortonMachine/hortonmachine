@@ -27,6 +27,7 @@ import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.nww.gui.LayerEventsListener;
 import org.hortonmachine.nww.gui.LayersPanelController;
+import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.utils.NwwUtilities;
@@ -80,10 +81,17 @@ public class NwwContext {
     }
 
     /**
-     * @return the general actions of the viewer, which load and reload the layers.
+     * @return the general actions of the viewer, as globe mode, terrain and background.
      */
     public ToolsPanelController getToolsPanel() {
         return toolsPanel;
+    }
+
+    /**
+     * @return the loader of the layers, which also reloads and restyles them.
+     */
+    public NwwLayerLoader getLayerLoader() {
+        return toolsPanel.getLayerLoader();
     }
 
     /**
@@ -179,7 +187,7 @@ public class NwwContext {
         if (crs != null && !HMCrsRegistry.crsEquals(crs, NwwUtilities.GPS_CRS)) {
             featureCollection = new HMCrsTransformer(crs, NwwUtilities.GPS_CRS).transform(featureCollection);
         }
-        toolsPanel.loadFeatureCollection(name, featureCollection);
+        getLayerLoader().loadFeatureCollection(name, featureCollection);
     }
 
     /**
@@ -188,7 +196,7 @@ public class NwwContext {
      * @param files the files and folders to load.
      */
     public void loadFiles( List<File> files ) {
-        toolsPanel.loadFiles(files);
+        getLayerLoader().loadFiles(files);
     }
 
     /**

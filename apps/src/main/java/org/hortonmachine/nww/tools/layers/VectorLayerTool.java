@@ -158,7 +158,7 @@ public class VectorLayerTool implements INwwLayerTool {
                 try {
                     // counting first also checks the filter, before the layer is rebuilt
                     long count = where == null ? total : countFeatures(source, where);
-                    Layer replacement = context.getToolsPanel().reloadVectorLayer(currentLayer, where);
+                    Layer replacement = context.getLayerLoader().reloadVectorLayer(currentLayer, where);
                     SwingUtilities.invokeLater(() -> {
                         context.replaceLayer(currentLayer, replacement);
                         statusLabel.setText(countText(count, total));
