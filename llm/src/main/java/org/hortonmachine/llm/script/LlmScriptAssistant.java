@@ -361,6 +361,10 @@ public class LlmScriptAssistant implements IScriptAssistant {
             sb.append("\nThe HM helper class, with static methods called as HM.name(...):\n")
                     .append(context.helperReference().strip()).append("\n");
         }
+        if (context.hostReference() != null && !context.hostReference().isBlank()) {
+            sb.append("\nWhere the scripts run, and the objects ready for them:\n").append(context.hostReference().strip())
+                    .append("\n");
+        }
         String overview = catalog.getKinds().overview();
         if (!overview.isEmpty()) {
             sb.append("\nThe kinds of maps the modules chain with: a field inXxx reads, and outXxx writes, the kind Xxx.\n")

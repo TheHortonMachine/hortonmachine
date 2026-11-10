@@ -27,7 +27,11 @@ import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.layers.defaults.raster.EsriSatellite;
 import org.hortonmachine.nww.layers.defaults.raster.OepnvkarteLayer;
 import org.hortonmachine.nww.layers.defaults.raster.OpenTopoLayer;
+import org.hortonmachine.gears.assistant.Assistants;
+import org.hortonmachine.gears.assistant.IAssistantBackend;
+import org.hortonmachine.gears.assistant.IScriptAssistant;
 import org.hortonmachine.nww.tools.INwwTool;
+import org.hortonmachine.nww.tools.assistant.AssistantTool;
 import org.hortonmachine.nww.tools.NwwContext;
 import org.hortonmachine.nww.tools.NwwToolsTabs;
 
@@ -57,6 +61,12 @@ public class SimpleNwwViewer {
      */
     public static List<INwwTool> createDefaultTools() {
         List<INwwTool> tools = new ArrayList<>();
+        // the assistant only if a module providing it is installed
+        IAssistantBackend backend = Assistants.getBackend().orElse(null);
+        IScriptAssistant scriptAssistant = backend == null ? null : backend.getScriptAssistant().orElse(null);
+        if (scriptAssistant != null) {
+            tools.add(new AssistantTool(backend, scriptAssistant));
+        }
         return tools;
     }
 

@@ -188,6 +188,28 @@ public class TestScriptAssistant {
     }
 
     @Test
+    public void testHostReference() throws Exception {
+        ScriptContext console = context(new ArrayList<>());
+        assertNull(console.hostReference());
+        String consoleReference = LlmScriptAssistant.reference(console, ModuleCatalog.getDefault());
+        assertFalse(consoleReference.contains("Where the scripts run"));
+
+        ScriptContext viewer = new ScriptContext(console.imports(), console.helperReference(), console.examples(),
+                console.variables(), console.checker(), null, "The scripts run in the 3D viewer.\nviewer.addLayer( fc, name )");
+        // kept when the editor script is added
+        assertEquals(viewer.hostReference(), viewer.withEditorScript("println 1").hostReference());
+        String reference = LlmScriptAssistant.reference(viewer, ModuleCatalog.getDefault());
+        assertTrue(reference.contains(
+                "\nWhere the scripts run, and the objects ready for them:\nThe scripts run in the 3D viewer.\nviewer.addLayer( fc, name )\n"));
+
+        // in the reference, which every request starts with
+        ScriptedProvider provider = new ScriptedProvider();
+        provider.answer = "Use viewer.addLayer.";
+        assistant(provider).ask(viewer, "How do I show a layer?", List.of(), ScriptAssistOptions.defaults(), null, null);
+        assertTrue(provider.requests.get(0).get(0).content().startsWith(reference));
+    }
+
+    @Test
     public void testAskWithoutScript() throws Exception {
         ScriptedProvider provider = new ScriptedProvider();
         provider.answer = "Pitfiller fills the pits, see [the manual](https://www.hortonmachine.org).";

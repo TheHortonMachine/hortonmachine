@@ -32,17 +32,28 @@ import java.util.Map;
  * @param editorScript the script the user is working on, which the answers continue, or
  *          <code>null</code> to not send it: unlike the variables it holds values (paths, hosts),
  *          so it is sent only if the user wants.
+ * @param hostReference where the scripts run, if not in the plain scripting console, and the
+ *          objects bound for them with their methods, as text, or <code>null</code>. It must be
+ *          the same for every request of the host, as the helper reference.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public record ScriptContext( String imports, String helperReference, Map<String, String> examples,
-        Map<String, String> variables, IScriptChecker checker, String editorScript ) {
+        Map<String, String> variables, IScriptChecker checker, String editorScript, String hostReference ) {
+
+    /**
+     * A context of the plain scripting console, without a host reference.
+     */
+    public ScriptContext( String imports, String helperReference, Map<String, String> examples, Map<String, String> variables,
+            IScriptChecker checker, String editorScript ) {
+        this(imports, helperReference, examples, variables, checker, editorScript, null);
+    }
 
     /**
      * @param script the script of the editor, or <code>null</code>.
      * @return the same context with that editor script.
      */
     public ScriptContext withEditorScript( String script ) {
-        return new ScriptContext(imports, helperReference, examples, variables, checker, script);
+        return new ScriptContext(imports, helperReference, examples, variables, checker, script, hostReference);
     }
 }

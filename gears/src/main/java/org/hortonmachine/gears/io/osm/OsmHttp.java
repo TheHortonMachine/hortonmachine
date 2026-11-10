@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.LinkedHashMap;
@@ -55,6 +56,9 @@ class OsmHttp {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IOException(serviceName + " request interrupted.", e);
+        } catch (HttpTimeoutException e) {
+            throw new IOException(serviceName + " did not answer in time: it is too busy or the request is too big, "
+                    + "retry later, ask for less data or use another server.", e);
         }
         int status = response.statusCode();
         if (status == 200) {
