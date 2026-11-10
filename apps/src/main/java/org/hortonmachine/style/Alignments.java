@@ -5,7 +5,7 @@ import org.geotools.styling.SLD;
 /**
  * Enumeration of possible vendor options.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum Alignments {
     TOP("top"), //

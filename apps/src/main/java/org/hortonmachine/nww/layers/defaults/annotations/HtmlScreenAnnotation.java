@@ -29,7 +29,7 @@ import gov.nasa.worldwind.render.ScreenAnnotation;
 /**
  * Html text screen annotation builder.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HtmlScreenAnnotation extends ScreenAnnotation {

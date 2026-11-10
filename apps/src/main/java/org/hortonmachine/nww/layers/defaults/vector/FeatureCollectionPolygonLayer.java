@@ -122,8 +122,9 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         if (mNormalShapeAttributes == null)
             mNormalShapeAttributes = new BasicShapeAttributes();
         mNormalShapeAttributes.setInteriorMaterial(mFillMaterial);
-        mNormalShapeAttributes.setInteriorOpacity(mFillOpacity);
+        mNormalShapeAttributes.setInteriorOpacity(mFillOpacity * getOpacity());
         mNormalShapeAttributes.setOutlineMaterial(mStrokeMaterial);
+        mNormalShapeAttributes.setOutlineOpacity(getOpacity());
         mNormalShapeAttributes.setOutlineWidth(mStrokeWidth);
         // a zero opacity fill and a zero width border are not drawn at all
         mNormalShapeAttributes.setDrawInterior(mFillOpacity > 0);
@@ -132,15 +133,35 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
         if (mSideShapeAttributes == null)
             mSideShapeAttributes = new BasicShapeAttributes();
         mSideShapeAttributes.setInteriorMaterial(mSideFillMaterial);
-        mSideShapeAttributes.setInteriorOpacity(mFillOpacity);
+        mSideShapeAttributes.setInteriorOpacity(mFillOpacity * getOpacity());
         mSideShapeAttributes.setDrawInterior(mFillOpacity > 0);
+    }
+
+    /**
+     * The opacity of the whole layer, which multiplies the ones of the style, without changing
+     * the style.
+     */
+    @Override
+    public void setOpacity( double opacity ) {
+        super.setOpacity(opacity);
+        if (mNormalShapeAttributes != null) {
+            mNormalShapeAttributes.setInteriorOpacity(mFillOpacity * opacity);
+            mNormalShapeAttributes.setOutlineOpacity(opacity);
+            mSideShapeAttributes.setInteriorOpacity(mFillOpacity * opacity);
+        }
+        stylerAttributes.forEach(( symbol, attributes ) -> {
+            attributes[0].setInteriorOpacity(symbol.fillOpacity() * opacity);
+            attributes[0].setOutlineOpacity(symbol.strokeOpacity() * opacity);
+            attributes[1].setInteriorOpacity(symbol.fillOpacity() * opacity);
+        });
     }
 
     @Override
     public SimpleStyle getStyle() {
         SimpleStyle simpleStyle = new SimpleStyle();
         simpleStyle.fillColor = mNormalShapeAttributes.getInteriorMaterial().getDiffuse();
-        simpleStyle.fillOpacity = mNormalShapeAttributes.getInteriorOpacity();
+        // the one of the style, without the opacity of the layer
+        simpleStyle.fillOpacity = mFillOpacity;
         simpleStyle.strokeColor = mNormalShapeAttributes.getOutlineMaterial().getDiffuse();
         simpleStyle.strokeWidth = mNormalShapeAttributes.getOutlineWidth();
         return simpleStyle;
@@ -208,17 +229,18 @@ public class FeatureCollectionPolygonLayer extends RenderableLayer implements Nw
             Color fill = symbol.fill();
             normal.setDrawInterior(fill != null && symbol.fillOpacity() > 0);
             side.setDrawInterior(fill != null && symbol.fillOpacity() > 0);
+            double layerOpacity = getOpacity();
             if (fill != null) {
                 normal.setInteriorMaterial(new Material(fill));
-                normal.setInteriorOpacity(symbol.fillOpacity());
+                normal.setInteriorOpacity(symbol.fillOpacity() * layerOpacity);
                 side.setInteriorMaterial(new Material(NwwUtilities.darkenColor(fill)));
-                side.setInteriorOpacity(symbol.fillOpacity());
+                side.setInteriorOpacity(symbol.fillOpacity() * layerOpacity);
             }
             Color stroke = symbol.stroke();
             normal.setDrawOutline(stroke != null && symbol.strokeWidth() > 0 && symbol.strokeOpacity() > 0);
             if (stroke != null) {
                 normal.setOutlineMaterial(new Material(stroke));
-                normal.setOutlineOpacity(symbol.strokeOpacity());
+                normal.setOutlineOpacity(symbol.strokeOpacity() * layerOpacity);
                 normal.setOutlineWidth(symbol.strokeWidth());
             }
             return new BasicShapeAttributes[]{normal, side};

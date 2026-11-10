@@ -66,7 +66,7 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * Procedural layer for geotools imagemosaic files
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ImageMosaicNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 

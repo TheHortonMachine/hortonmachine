@@ -54,7 +54,7 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * Procedural layer for rasterlite2 files
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RL2NwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 

@@ -24,7 +24,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
  * A layer drawn from a feature collection, as 3D shapes or as image tiles, whose features can be
  * queried, as by the identify mode of the viewer.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface NwwFeatureLayer {
 

@@ -28,7 +28,7 @@ import gov.nasa.worldwind.geom.Sector;
 /**
  * Box selector with listeners.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class SectorByBoxSelector extends SectorSelector {

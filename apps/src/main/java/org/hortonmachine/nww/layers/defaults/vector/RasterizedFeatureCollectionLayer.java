@@ -61,7 +61,7 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * Procedural layer for shapefiles folder.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RasterizedFeatureCollectionLayer extends BasicMercatorTiledImageLayer implements NwwLayer, NwwFeatureLayer {
 

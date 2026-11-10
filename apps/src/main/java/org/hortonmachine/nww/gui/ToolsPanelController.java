@@ -65,7 +65,7 @@ import gov.nasa.worldwind.layers.RenderableLayer;
  * The general actions of the viewer, called from its menu bar: opening files, globe mode,
  * terrain and background. The layers are loaded by its {@link #getLayerLoader() loader}.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class ToolsPanelController {

@@ -24,7 +24,7 @@ package org.hortonmachine.style;
  * <p>Implemented by the style editor and by the style tab of the viewer, which both show the
  * same panels.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface IStyleChangeListener {
 

@@ -165,7 +165,7 @@ import groovy.lang.Script;
 /**
  * Scripting support class.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("rawtypes")
 public class HM {

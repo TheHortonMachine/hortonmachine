@@ -44,7 +44,7 @@ import gov.nasa.worldwind.render.UserFacingText;
  * <p>Each label is placed on its point, at the middle of the longest line, or inside the largest
  * polygon of its feature.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureLabels implements Renderable {
 

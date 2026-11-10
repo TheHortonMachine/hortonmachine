@@ -28,7 +28,7 @@ import gov.nasa.worldwind.layers.Layer;
  *
  * <p>Each layer gets a panel of its own, kept while the layer is in the viewer.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface INwwLayerTool {
 

@@ -27,7 +27,7 @@ import org.hortonmachine.nww.utils.CursorUtils;
 /**
  * The default mode: the map is only navigated, with the WorldWind mouse controls.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PanMode implements INwwMapMode {
 

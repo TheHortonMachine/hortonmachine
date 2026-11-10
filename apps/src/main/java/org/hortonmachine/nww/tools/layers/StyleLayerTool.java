@@ -130,7 +130,7 @@ import gov.nasa.worldwind.layers.Layer;
  * <p>Apply draws the layer with the style, Save also writes it into the data, in the geopackage
  * table or in the .sld file next to the shapefile.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class StyleLayerTool implements INwwLayerTool {
 

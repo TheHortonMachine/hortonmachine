@@ -168,7 +168,7 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * The database view controller.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public abstract class DatabaseController extends DatabaseView implements IOnCloseListener {

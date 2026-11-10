@@ -33,6 +33,7 @@ import org.hortonmachine.nww.layers.defaults.raster.OSMMapnikLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
 
 import gov.nasa.worldwind.BasicModel;
+import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.Model;
 import gov.nasa.worldwind.View;
 import gov.nasa.worldwind.WorldWind;
@@ -61,7 +62,7 @@ import gov.nasa.worldwind.view.orbit.OrbitViewLimits;
 /**
  * The main NWW panel.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("serial")
 public class NwwPanel extends JPanel {
@@ -109,6 +110,9 @@ public class NwwPanel extends JPanel {
         // Configuration.setValue(AVKey.INITIAL_LONGITUDE, gpsLogShps[0].x);
         // Configuration.setValue(AVKey.INITIAL_ALTITUDE, 1000);
         // Configuration.setValue(AVKey.INITIAL_PITCH, 45);
+
+        // set before the window is created, which creates its scene controller and listens to it
+        Configuration.setValue(AVKey.SCENE_CONTROLLER_CLASS_NAME, NwwSceneController.class.getName());
 
         long t1 = System.currentTimeMillis();
         if (useWwGlCanvas) {

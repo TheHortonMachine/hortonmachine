@@ -26,7 +26,7 @@ import javax.swing.Icon;
  * <p>The mode owns the listeners and the cursor it sets on the map: it adds them when activated
  * and removes them when deactivated.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface INwwMapMode {
 

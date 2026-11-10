@@ -125,7 +125,7 @@ import gov.nasa.worldwind.layers.Layer;
  * <p>The loading of some formats asks the user, as for the tables of a geopackage or the sampling
  * of a point cloud, so the methods are called from the event dispatch thread.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NwwLayerLoader {
 
@@ -496,7 +496,7 @@ public class NwwLayerLoader {
         String name = FileUtilities.getNameWithoutExtention(selectedFile);
         String lowerName = selectedFile.getName().toLowerCase();
         try {
-            if (lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif")) {
+            if (isRasterFile(selectedFile)) {
                 GridCoverageNwwLayer coverageNwwLayer = new GridCoverageNwwLayer(selectedFile, null, Color.WHITE);
                 new LayerSource(selectedFile, null).attachTo(coverageNwwLayer);
                 addLayer(coverageNwwLayer);
@@ -799,10 +799,33 @@ public class NwwLayerLoader {
     }
 
     /**
-     * Save the style of a layer in its data: in the geopackage table, or in the .sld file next to
-     * the shapefile, which is replaced. The style is used when the data are loaded again.
+     * Make a new layer of a raster file, drawn with a style. The layer is not added to the viewer:
+     * it is meant to replace the given one, as with
+     * {@link org.hortonmachine.nww.tools.NwwContext#replaceLayer(Layer, Layer)}.
      *
-     * @param source the source of the layer, a shapefile or a geopackage table.
+     * @param layer the raster layer, which needs a {@link LayerSource}.
+     * @param style the style, <code>null</code> for the one of the .sld file next to the raster,
+     *          if there is one, else the default one.
+     * @return the new layer, with the same source.
+     * @throws Exception if the raster can't be read.
+     */
+    public Layer restyleRasterLayer( Layer layer, Style style ) throws Exception {
+        LayerSource source = LayerSource.of(layer);
+        if (source == null || !(layer instanceof GridCoverageNwwLayer)) {
+            throw new IllegalArgumentException("The layer is not read from a raster file: " + layer.getName());
+        }
+        GridCoverageNwwLayer replacement = new GridCoverageNwwLayer(source.file(), null, Color.WHITE, style);
+        replacement.setName(layer.getName());
+        source.attachTo(replacement);
+        return replacement;
+    }
+
+    /**
+     * Save the style of a layer in its data: in the geopackage table, or in the .sld file next to
+     * the shapefile or raster file, which is replaced. The style is used when the data are loaded
+     * again.
+     *
+     * @param source the source of the layer, a shapefile, a geopackage table or a raster file.
      * @param style the style.
      * @return the file written: the geopackage or the .sld file.
      * @throws Exception if the style can't be written.
@@ -815,13 +838,24 @@ public class NwwLayerLoader {
                 db.updateSldStyle(SqlName.m(source.table()), sld);
             }
             return source.file();
-        } else if (source.isShapefile()) {
+        } else if (source.isShapefile() || isRasterFile(source.file())) {
             File sldFile = new File(source.file().getParentFile(),
                     FileUtilities.getNameWithoutExtention(source.file()) + "." + SldUtilities.SLD_EXTENSION);
             FileUtilities.writeFile(sld, sldFile);
             return sldFile;
         }
-        throw new IllegalArgumentException("The style can be saved only for shapefiles and geopackage tables: " + source.path());
+        throw new IllegalArgumentException(
+                "The style can be saved only for shapefiles, geopackage tables and raster files: " + source.path());
+    }
+
+    /**
+     * @param file a file.
+     * @return <code>true</code> for the raster files loaded as {@link GridCoverageNwwLayer}:
+     *          GeoTIFF and ESRI ASCII grids.
+     */
+    public static boolean isRasterFile( File file ) {
+        String lowerName = file.getName().toLowerCase();
+        return lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif");
     }
 
     /**

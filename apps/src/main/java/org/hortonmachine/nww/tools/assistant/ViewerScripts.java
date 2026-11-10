@@ -26,7 +26,7 @@ import org.hortonmachine.geoscript.console.ConsoleExamples;
  * What the script assistant of the viewer is told: the imports, the objects bound for the
  * scripts and the example scripts.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ViewerScripts {
 
@@ -57,6 +57,10 @@ public class ViewerScripts {
             	ReferencedEnvelope visibleArea() - the area shown, in lon/lat, null when the whole globe is visible
             	String overpassBbox() - the area shown as an Overpass bbox "(south,west,north,east)"
             	void loadFile( String path ) - load a file as a layer: shapefile, geopackage, geotiff, las...
+            	SimpleFeatureCollection selection() - the features the user selected on a layer (with a click or
+            	    a box), in lon/lat, null when nothing is selected; use it when the user says "the selected ..."
+            	String selectionLayer() - the name of the layer of the selection, null when nothing is selected
+            	void clearSelection()
 
             osm, the OpenStreetMap services:
             	OverpassResult query( String overpassQl ) - run an Overpass QL query on the server chosen in the viewer

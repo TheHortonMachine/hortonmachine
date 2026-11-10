@@ -73,7 +73,7 @@ import gov.nasa.worldwind.layers.Layer;
  * The panel of the vector layers read from a shapefile or a geopackage table: what the data
  * are, as their geometry type, CRS, number of features, extent and columns.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class VectorLayerTool implements INwwLayerTool {
 

@@ -40,7 +40,7 @@ import org.hortonmachine.gui.utils.ImageCache;
 /**
  * Database tree cell renderer.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {

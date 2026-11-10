@@ -30,7 +30,7 @@ import gov.nasa.worldwind.WorldWindow;
 /**
  * Box selector with listeners.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class ObjectsOnScreenByBoxSelector extends ScreenSelector {
@@ -90,6 +90,10 @@ public class ObjectsOnScreenByBoxSelector extends ScreenSelector {
         if (wasDragged) {
             List<?> selectedObjs = getSelectedObjects();
             Geometry screenPointsPolygon = NwwUtilities.getScreenPointsPolygon(wwd, startX, startY, endX, endY);
+            if (screenPointsPolygon == null) {
+                // a corner of the box is outside of the globe
+                return;
+            }
             for (IBoxScreenSelectionListener iBoxSelectionListener : listeners) {
                 iBoxSelectionListener.onSelectionFinished(screenPointsPolygon, selectedObjs);
             }

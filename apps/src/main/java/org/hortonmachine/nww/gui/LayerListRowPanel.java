@@ -30,6 +30,9 @@ import org.hortonmachine.nww.gui.actions.StyleVectorLayerAction;
 import org.hortonmachine.nww.gui.actions.ZoomToLayerAction;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
+import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
+import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
+import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
 
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.MarkerLayer;
@@ -101,9 +104,8 @@ public class LayerListRowPanel extends JPanel {
         eastPanel.add(buttonsPanel, BorderLayout.EAST);
         add(eastPanel, BorderLayout.EAST);
 
-        // vector and marker layers ignore the layer opacity, theirs is in the style
         JSlider opacitySlider = null;
-        if (!(layer instanceof RenderableLayer) && !(layer instanceof MarkerLayer)) {
+        if (hasLayerOpacity(layer)) {
             opacitySlider = new JSlider();
             GuiUtilities.setupOpacitySlider(opacitySlider, layer.getOpacity(), opacity -> {
                 layer.setOpacity(opacity);
@@ -157,6 +159,19 @@ public class LayerListRowPanel extends JPanel {
             Dimension size = buttonsPanel.getPreferredSize();
             buttonsPanel.setPreferredSize(new Dimension(Math.max(size.width, threeButtonsWidth), size.height));
         }
+    }
+
+    /**
+     * @return <code>true</code> if the layer is drawn with its opacity: the image layers and
+     *          the 3D feature layers, whose opacity multiplies the one of their style. The other
+     *          vector and marker layers ignore it, theirs is only in the style.
+     */
+    private static boolean hasLayerOpacity( Layer layer ) {
+        if (layer instanceof FeatureCollectionPolygonLayer || layer instanceof FeatureCollectionLinesLayer
+                || layer instanceof FeatureCollectionPointsLayer) {
+            return true;
+        }
+        return !(layer instanceof RenderableLayer) && !(layer instanceof MarkerLayer);
     }
 
     public Layer getLayer() {

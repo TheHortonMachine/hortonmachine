@@ -33,7 +33,7 @@ import javax.swing.KeyStroke;
  * The toolbar at the side of the map with the {@link INwwMapMode}s, of which a single one is
  * active. The first mode added is the default one, to which Esc goes back.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NwwMapModesBar extends JToolBar {
     private static final long serialVersionUID = 1L;

@@ -79,7 +79,7 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * Procedural layer for spatialite las tables folder.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RasterizedSpatialiteLasLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 

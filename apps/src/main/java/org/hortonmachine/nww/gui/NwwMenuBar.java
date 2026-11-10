@@ -51,13 +51,14 @@ import org.hortonmachine.nww.utils.cache.CacheUtils;
  * <p>The state of the check and radio items is read again each time their menu opens, since it
  * can change from elsewhere, as the globe mode switched to 3D terrain by a terrain DEM.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NwwMenuBar extends JMenuBar {
     private static final long serialVersionUID = 1L;
     private static final String RESET_TERRAIN = "Reset to Copernicus terrain";
 
     private final ToolsPanelController tools;
+    private final JMenu editMenu;
     private final JMenu viewMenu;
     private final JMenu toolsMenu;
     /** The index in the view menu where the next panel toggle goes. */
@@ -72,11 +73,26 @@ public class NwwMenuBar extends JMenuBar {
     public NwwMenuBar( Window window, ToolsPanelController tools ) {
         this.tools = tools;
         add(createFileMenu(window));
-        add(createEditMenu());
+        editMenu = createEditMenu();
+        add(editMenu);
         viewMenu = createViewMenu();
         add(viewMenu);
         toolsMenu = createToolsMenu();
         add(toolsMenu);
+    }
+
+    /**
+     * Add an item to the edit menu.
+     *
+     * @param text the text of the item.
+     * @param iconKey the {@link ImageCache} key of its icon, or <code>null</code>.
+     * @param isEnabled tells if the item can be used, checked when the menu opens.
+     * @param action the action of the item.
+     */
+    public void addEditAction( String text, String iconKey, BooleanSupplier isEnabled, Runnable action ) {
+        JMenuItem item = item(text, iconKey, e -> action.run());
+        editMenu.add(item);
+        editMenu.addMenuListener(onSelected(() -> item.setEnabled(isEnabled.getAsBoolean())));
     }
 
     /**

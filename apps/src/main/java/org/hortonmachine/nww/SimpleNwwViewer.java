@@ -23,6 +23,7 @@ import javax.swing.JSplitPane;
 
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwMenuBar;
 import org.hortonmachine.nww.gui.NwwPanel;
@@ -38,11 +39,11 @@ import org.hortonmachine.nww.tools.INwwMapMode;
 import org.hortonmachine.nww.tools.INwwTool;
 import org.hortonmachine.nww.tools.NwwMapModesBar;
 import org.hortonmachine.nww.tools.features.FeatureInfoTool;
-import org.hortonmachine.nww.tools.modes.IdentifyMode;
 import org.hortonmachine.nww.tools.modes.PanMode;
-import org.hortonmachine.nww.tools.modes.SelectByBoxMode;
+import org.hortonmachine.nww.tools.modes.SelectMode;
 import org.hortonmachine.nww.tools.modes.ZoomByBoxMode;
 import org.hortonmachine.nww.tools.layers.RasterLayerTool;
+import org.hortonmachine.nww.tools.layers.RasterStyleLayerTool;
 import org.hortonmachine.nww.tools.layers.StyleLayerTool;
 import org.hortonmachine.nww.tools.layers.VectorLayerTool;
 import org.hortonmachine.nww.tools.assistant.AssistantTool;
@@ -103,6 +104,7 @@ public class SimpleNwwViewer {
     public static List<INwwLayerTool> createDefaultStyleTools() {
         List<INwwLayerTool> tools = new ArrayList<>();
         tools.add(new StyleLayerTool());
+        tools.add(new RasterStyleLayerTool());
         return tools;
     }
 
@@ -113,8 +115,7 @@ public class SimpleNwwViewer {
     public static List<INwwMapMode> createDefaultMapModes() {
         List<INwwMapMode> modes = new ArrayList<>();
         modes.add(new PanMode());
-        modes.add(new IdentifyMode());
-        modes.add(new SelectByBoxMode());
+        modes.add(new SelectMode());
         modes.add(new ZoomByBoxMode());
         return modes;
     }
@@ -293,6 +294,8 @@ public class SimpleNwwViewer {
                     toolsSide.setShown(true);
                 };
                 context.setToolOpener(toolOpener);
+                menuBar.addEditAction("Clear selection", ImageCache.TRASH, () -> context.getSelection() != null,
+                        context::clearSelection);
                 for( INwwTool tool : tabs.getTools() ) {
                     menuBar.addToolToggle(tool, () -> tabs.isToolOpen(tool), open -> {
                         if (open) {

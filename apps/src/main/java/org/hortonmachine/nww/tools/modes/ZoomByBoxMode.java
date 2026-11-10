@@ -33,7 +33,7 @@ import gov.nasa.worldwind.geom.Sector;
 /**
  * Drag a box on the map to zoom to it.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ZoomByBoxMode implements INwwMapMode {
 

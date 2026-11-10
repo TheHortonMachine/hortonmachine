@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.geotools.api.data.SimpleFeatureStore;
 import org.geotools.api.feature.simple.SimpleFeature;
@@ -52,7 +53,7 @@ import gov.nasa.worldwind.render.markers.BasicMarkerShape;
 /**
  * A layer of points.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureCollectionPointsLayer extends RenderableLayer implements NwwEditableVectorLayer, NwwFeatureLayer {
 
@@ -74,7 +75,7 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
     /** The SLD style, <code>null</code> to draw all features with the simple style. */
     private FeatureStyler styler;
     /** The attributes of the looks given by the SLD style, shared by the features. */
-    private final Map<FeatureStyler.Symbol, PointPlacemarkAttributes> stylerAttributes = new HashMap<>();
+    private final Map<FeatureStyler.Symbol, PointPlacemarkAttributes> stylerAttributes = new ConcurrentHashMap<>();
 
     public FeatureCollectionPointsLayer( String title, SimpleFeatureCollection featureCollectionLL,
             SimpleFeatureStore featureStore, HashMap<String, String[]> field2ValuesMap, Object imageObject ) {
@@ -160,16 +161,48 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
             return null;
         }
         return stylerAttributes.computeIfAbsent(styled.symbol(), symbol -> {
-            // the points are drawn with the fill color, or with the border one if not filled
-            Color color = symbol.fill() != null ? symbol.fill() : symbol.stroke();
-            Material material = new Material(color != null ? color : Color.GRAY);
+            Color color = symbolColor(symbol);
             PointPlacemarkAttributes attributes = new PointPlacemarkAttributes();
-            attributes.setLabelMaterial(material);
-            attributes.setLineMaterial(material);
+            attributes.setLabelMaterial(new Material(color));
+            applyOpacity(attributes, color, getOpacity());
             attributes.setUsePointAsDefaultImage(true);
             attributes.setScale(symbol.size());
             return attributes;
         });
+    }
+
+    /**
+     * @return the color of the points of a look of the SLD style: the fill color, or the border
+     *          one if not filled.
+     */
+    private static Color symbolColor( FeatureStyler.Symbol symbol ) {
+        Color color = symbol.fill() != null ? symbol.fill() : symbol.stroke();
+        return color != null ? color : Color.GRAY;
+    }
+
+    /**
+     * Draw the points, and the images of the markers, with the opacity of the layer.
+     *
+     * @param attributes the attributes to change.
+     * @param color the color of the points, without opacity.
+     * @param opacity the opacity of the layer.
+     */
+    private static void applyOpacity( PointPlacemarkAttributes attributes, Color color, double opacity ) {
+        int alpha = (int) Math.round(255 * Math.max(0, Math.min(1, opacity)));
+        attributes.setLineMaterial(new Material(new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha)));
+        attributes.setImageColor(new Color(255, 255, 255, alpha));
+    }
+
+    /**
+     * The opacity of the whole layer, which doesn't change the style.
+     */
+    @Override
+    public void setOpacity( double opacity ) {
+        super.setOpacity(opacity);
+        if (basicMarkerAttributes != null) {
+            applyOpacity(basicMarkerAttributes, mFillMaterial.getDiffuse(), opacity);
+        }
+        stylerAttributes.forEach(( symbol, attributes ) -> applyOpacity(attributes, symbolColor(symbol), opacity));
     }
 
     /**
@@ -219,7 +252,7 @@ public class FeatureCollectionPointsLayer extends RenderableLayer implements Nww
         }
 
         basicMarkerAttributes.setLabelMaterial(mFillMaterial);
-        basicMarkerAttributes.setLineMaterial(mFillMaterial);
+        applyOpacity(basicMarkerAttributes, mFillMaterial.getDiffuse(), getOpacity());
         basicMarkerAttributes.setUsePointAsDefaultImage(true);
         basicMarkerAttributes.setScale(mMarkerSize);
     }

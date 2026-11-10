@@ -73,7 +73,7 @@ import gov.nasa.worldwind.util.TileUrlBuilder;
 /**
  * Procedural layer for geotools imagemosaic files
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
 
@@ -84,14 +84,37 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     private Coordinate centerCoordinate;
     private Envelope boundsLL;
 
+    /** The style the tiles are drawn with. */
+    private final Style style;
+
     /**
-     * The renderer of the tiles, with a key of its style for the tiles cache.
+     * The renderer of the tiles, with its style and a key of the style for the tiles cache.
      */
-    private record StyledRenderer( GTRenderer renderer, String styleKey ) {
+    private record StyledRenderer( GTRenderer renderer, Style style, String styleKey ) {
     }
 
     public GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent ) throws Exception {
-        super(makeLevels(gridCoverageFile, getRenderer(gridCoverageFile), tileSize, colorToMakeTransparent));
+        this(gridCoverageFile, tileSize, colorToMakeTransparent, (Style) null);
+    }
+
+    /**
+     * @param gridCoverageFile the raster file.
+     * @param tileSize the size of the tiles, <code>null</code> for the default.
+     * @param colorToMakeTransparent if not <code>null</code>, the empty parts of the tiles are
+     *          transparent.
+     * @param style the style to draw the raster with, <code>null</code> for the one of the .sld
+     *          file next to the raster, if there is one, else a default one.
+     * @throws Exception
+     */
+    public GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent, Style style )
+            throws Exception {
+        this(gridCoverageFile, tileSize, colorToMakeTransparent, getRenderer(gridCoverageFile, style));
+    }
+
+    private GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent,
+            StyledRenderer styledRenderer ) throws Exception {
+        super(makeLevels(gridCoverageFile, styledRenderer, tileSize, colorToMakeTransparent));
+        this.style = styledRenderer.style();
         this.layerName = FileUtilities.getNameWithoutExtention(gridCoverageFile);
 
         ReferencedEnvelope envelope = OmsRasterReader.readEnvelope(gridCoverageFile.getAbsolutePath());
@@ -112,24 +135,30 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
 
     }
 
-    private static StyledRenderer getRenderer( File rasterFile ) {
+    private static StyledRenderer getRenderer( File rasterFile, Style givenStyle ) {
 
         AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
         AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
 
         MapContent mapContent = new MapContent();
         String styleKey = "default";
+        Style rasterStyle = givenStyle;
         try {
-            Style rasterStyle = SldUtilities.getStyleFromFile(rasterFile);
             if (rasterStyle != null) {
-                styleKey = "sld";
+                // the same style gets the same tiles
+                styleKey = "style" + Integer.toHexString(SldUtilities.styleToString(rasterStyle).hashCode());
             } else {
-                rasterStyle = makeFullRangeStyle(coverageReader, rasterFile);
+                rasterStyle = SldUtilities.getStyleFromFile(rasterFile);
                 if (rasterStyle != null) {
-                    styleKey = "auto";
+                    styleKey = "sld";
                 } else {
-                    RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
-                    rasterStyle = SLD.wrapSymbolizers(sym);
+                    rasterStyle = makeFullRangeStyle(coverageReader, rasterFile);
+                    if (rasterStyle != null) {
+                        styleKey = "auto";
+                    } else {
+                        RasterSymbolizer sym = SldUtilities.sf.getDefaultRasterSymbolizer();
+                        rasterStyle = SLD.wrapSymbolizers(sym);
+                    }
                 }
             }
 
@@ -141,7 +170,63 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         }
         GTRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(mapContent);
-        return new StyledRenderer(renderer, styleKey);
+        return new StyledRenderer(renderer, rasterStyle, styleKey);
+    }
+
+    /**
+     * @return the style the raster is drawn with.
+     */
+    public Style getStyle() {
+        return style;
+    }
+
+    /**
+     * The style a raster without .sld file is drawn with: for single band rasters of non byte
+     * data, as for example DEMs, an elevation colortable on the value range of the whole raster,
+     * else the default raster style, which shows well RGB and palette images.
+     *
+     * @param rasterFile the raster file.
+     * @return the style.
+     */
+    public static Style createDefaultStyle( File rasterFile ) {
+        AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
+        AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
+        try {
+            Style style = makeFullRangeStyle(coverageReader, rasterFile);
+            if (style != null) {
+                return style;
+            }
+            return SLD.wrapSymbolizers(SldUtilities.sf.getDefaultRasterSymbolizer());
+        } finally {
+            coverageReader.dispose();
+        }
+    }
+
+    /**
+     * @param rasterFile a raster file.
+     * @return <code>true</code> if the raster has a single band of values that a colortable can
+     *          show, <code>false</code> for RGB, byte and palette images, which have their own
+     *          colors.
+     */
+    public static boolean isColortableRaster( File rasterFile ) {
+        AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
+        AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
+        try {
+            return isColortableImage(coverageReader);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            coverageReader.dispose();
+        }
+    }
+
+    private static boolean isColortableImage( AbstractGridCoverage2DReader coverageReader ) throws Exception {
+        // the image is read lazily, only its structure is used here
+        RenderedImage image = coverageReader.read((GeneralParameterValue[]) null).getRenderedImage();
+        SampleModel sampleModel = image.getSampleModel();
+        return sampleModel.getNumBands() == 1 && sampleModel.getDataType() != DataBuffer.TYPE_BYTE
+                && !(image.getColorModel() instanceof IndexColorModel);
     }
 
     /**
@@ -154,11 +239,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      */
     private static Style makeFullRangeStyle( AbstractGridCoverage2DReader coverageReader, File rasterFile ) {
         try {
-            // the image is read lazily, only its structure is used here
-            RenderedImage image = coverageReader.read((GeneralParameterValue[]) null).getRenderedImage();
-            SampleModel sampleModel = image.getSampleModel();
-            if (sampleModel.getNumBands() != 1 || sampleModel.getDataType() == DataBuffer.TYPE_BYTE
-                    || image.getColorModel() instanceof IndexColorModel) {
+            if (!isColortableImage(coverageReader)) {
                 return null;
             }
             double[] stats;
@@ -173,7 +254,10 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
             if (max <= min) {
                 max = min + 1;
             }
-            return RasterStyleUtilities.createStyleForColortable(EColorTables.elev.name(), min, max, 1.0);
+            Style style = RasterStyleUtilities.createStyleForColortable(EColorTables.elev.name(), min, max, 1.0);
+            // the name of the colortable, as the style editor does
+            style.featureTypeStyles().get(0).rules().get(0).setName(EColorTables.elev.name());
+            return style;
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -193,7 +277,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         // a changed raster or style gets new tiles
         long stamp = imsf.lastModified();
         File styleFile = SldUtilities.getStyleFile(imsf);
-        if (styleFile != null && styleFile.exists()) {
+        if ("sld".equals(styledRenderer.styleKey()) && styleFile != null && styleFile.exists()) {
             stamp = Math.max(stamp, styleFile.lastModified());
         }
         String cacheRelativePath = "imagemosaics/" + imsf.getName() + "-" + stamp + tilesPart;

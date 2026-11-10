@@ -123,7 +123,7 @@ import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 /**
  * The spatialtoolbox view controller.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public abstract class GeopaparazziController extends GeopaparazziView implements IOnCloseListener {

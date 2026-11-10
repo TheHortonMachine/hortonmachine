@@ -18,6 +18,7 @@
 package org.hortonmachine.nww.tools;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -31,6 +32,7 @@ import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
+import org.hortonmachine.nww.tools.features.FeatureSelection;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.locationtech.jts.geom.Envelope;
 
@@ -41,7 +43,7 @@ import gov.nasa.worldwind.layers.LayerList;
 /**
  * The access of the {@link INwwTool}s to the viewer: its map, layers and loaders.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NwwContext {
 
@@ -55,6 +57,9 @@ public class NwwContext {
     private final ToolsPanelController toolsPanel;
     private NwwToolsTabs toolsTabs;
     private Consumer<INwwTool> toolOpener;
+    /** The selected features, <code>null</code> if none. */
+    private FeatureSelection selection;
+    private final List<Consumer<FeatureSelection>> selectionListeners = new ArrayList<>();
 
     /**
      * @param nwwPanel the map.
@@ -93,6 +98,51 @@ public class NwwContext {
             toolOpener.accept(tool);
         } else if (toolsTabs != null) {
             toolsTabs.openTool(tool);
+        }
+    }
+
+    /**
+     * @return the selected features, <code>null</code> if none.
+     */
+    public FeatureSelection getSelection() {
+        return selection;
+    }
+
+    /**
+     * Replace the selected features and tell the selection listeners.
+     *
+     * @param selection the new selection, <code>null</code> to clear it.
+     */
+    public void setSelection( FeatureSelection selection ) {
+        this.selection = selection;
+        for( Consumer<FeatureSelection> listener : new ArrayList<>(selectionListeners) ) {
+            listener.accept(selection);
+        }
+    }
+
+    /**
+     * Clear the selected features.
+     */
+    public void clearSelection() {
+        setSelection(null);
+    }
+
+    /**
+     * @param listener told of each new selection, <code>null</code> when it is cleared.
+     */
+    public void addSelectionListener( Consumer<FeatureSelection> listener ) {
+        selectionListeners.add(listener);
+    }
+
+    /**
+     * Make the panel of a layer in the layer tab again, as after a change of the layer made
+     * outside of the panel, as its filter.
+     *
+     * @param layer the layer.
+     */
+    public void refreshLayerPanel( Layer layer ) {
+        if (toolsTabs != null) {
+            toolsTabs.refreshLayerPanel(layer);
         }
     }
 
@@ -160,6 +210,9 @@ public class NwwContext {
     public void removeLayer( Layer layer ) {
         nwwPanel.removeLayer(layer);
         layerEventsListener.onLayerRemoved(layer);
+        if (selection != null && selection.getLayer() == layer) {
+            clearSelection();
+        }
     }
 
     /**
@@ -195,6 +248,10 @@ public class NwwContext {
         // after the disposal, which might clear the values of the layer
         layer.setValue(REPLACED_BY_KEY, replacement);
         nwwPanel.getWwd().redraw();
+        if (selection != null && selection.getLayer() == layer) {
+            // the same features, if the replacement still has them
+            setSelection(selection.onReplacement(replacement));
+        }
     }
 
     /**

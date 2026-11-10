@@ -44,7 +44,7 @@ import gov.nasa.worldwind.layers.LayerList;
  * selected in the layers panel, and the style tab, shown when the style button of a layer is
  * pressed.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NwwToolsTabs extends JTabbedPane {
     private static final long serialVersionUID = 1L;
@@ -164,6 +164,18 @@ public class NwwToolsTabs extends JTabbedPane {
                         close();
                     }
                 }
+            }
+        }
+
+        /** Drop the panel of a layer and, if shown, make it again. */
+        void refresh( Layer layer ) {
+            LayerPanel layerPanel = panels.remove(layer);
+            if (layerPanel == null) {
+                return;
+            }
+            layerPanel.tool().onClose(layer);
+            if (shownLayer == layer) {
+                show(layer, getSelectedComponent() == holder);
             }
         }
 
@@ -345,6 +357,16 @@ public class NwwToolsTabs extends JTabbedPane {
     public void replaceLayer( Layer layer, Layer replacement ) {
         layerTab.replaceLayer(layer, replacement);
         styleTab.replaceLayer(layer, replacement);
+    }
+
+    /**
+     * Make the panel of a layer in the layer tab again, as after a change of the layer made
+     * outside of the panel, as its filter.
+     *
+     * @param layer the layer.
+     */
+    public void refreshLayerPanel( Layer layer ) {
+        layerTab.refresh(layer);
     }
 
     /**

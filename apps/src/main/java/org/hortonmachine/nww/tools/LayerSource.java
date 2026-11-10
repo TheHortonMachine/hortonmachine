@@ -35,7 +35,7 @@ import gov.nasa.worldwind.layers.Layer;
  *          the database tables and as ECQL for the shapefiles, or <code>null</code> if all are
  *          shown.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public record LayerSource( File file, String table, String filter ) {
 

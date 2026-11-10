@@ -20,7 +20,7 @@ package org.hortonmachine.style;
 /**
  * The opacities of the symbolizer panels, which the wrappers give as text.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 final class OpacityValues {
 

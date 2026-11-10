@@ -53,7 +53,7 @@ import gov.nasa.worldwind.layers.Layer;
  * The panel of the raster layers read from a GeoTIFF or an ESRI ASCII grid: what the data are,
  * as their CRS, grid, resolution, bands and novalue, and on request the statistics of the bands.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RasterLayerTool implements INwwLayerTool {
 
@@ -219,7 +219,7 @@ public class RasterLayerTool implements INwwLayerTool {
     /**
      * @return whole numbers without decimals, the others with up to 6 decimals.
      */
-    private static String numberText( double value ) {
+    static String numberText( double value ) {
         if (Double.isNaN(value) || Double.isInfinite(value)) {
             return String.valueOf(value);
         }

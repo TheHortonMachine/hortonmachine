@@ -35,7 +35,7 @@ import gov.nasa.worldwind.render.markers.Marker;
 /**
  * An updatable GPS position layer.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class CurrentGpsPointLayer extends MarkerLayer {
 

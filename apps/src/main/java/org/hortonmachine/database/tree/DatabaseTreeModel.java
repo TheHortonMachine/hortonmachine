@@ -36,7 +36,7 @@ import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 /**
  * Database tree model.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class DatabaseTreeModel implements TreeModel {

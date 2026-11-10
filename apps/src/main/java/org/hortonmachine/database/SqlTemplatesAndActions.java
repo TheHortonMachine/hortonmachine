@@ -114,7 +114,7 @@ import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 /**
  * Simple queries templates.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("serial")
 public class SqlTemplatesAndActions {

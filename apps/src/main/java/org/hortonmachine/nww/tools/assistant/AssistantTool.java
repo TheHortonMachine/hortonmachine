@@ -69,7 +69,7 @@ import groovy.transform.ThreadInterrupt;
  * the user puts in the editor of the tab and runs. The scripts get the map as
  * <code>viewer</code> and the OpenStreetMap services as <code>osm</code>.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class AssistantTool implements INwwTool {
 

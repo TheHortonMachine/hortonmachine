@@ -28,7 +28,7 @@ import org.hortonmachine.gears.io.osm.OverpassResult;
 /**
  * The OpenStreetMap services for the scripts of the viewer, bound as <code>osm</code>.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class OsmApi {
     private static final int SEARCH_LIMIT = 5;

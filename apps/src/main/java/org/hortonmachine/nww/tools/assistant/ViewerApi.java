@@ -30,6 +30,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.osm.OverpassResult;
 import org.hortonmachine.nww.tools.NwwContext;
+import org.hortonmachine.nww.tools.features.FeatureSelection;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.locationtech.jts.geom.Envelope;
 
@@ -39,7 +40,7 @@ import org.locationtech.jts.geom.Envelope;
  * <p>The scripts run in a thread of their own, the changes of the map are made in the event
  * thread.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ViewerApi {
 
@@ -180,6 +181,42 @@ public class ViewerApi {
         }
         onEdt(() -> {
             context.loadFiles(List.of(file));
+            return null;
+        });
+    }
+
+    /**
+     * @return the features selected by the user, with a click or a box, in longitude/latitude,
+     *          <code>null</code> if none is selected.
+     * @throws Exception
+     */
+    public SimpleFeatureCollection selection() throws Exception {
+        return onEdt(() -> {
+            FeatureSelection selection = context.getSelection();
+            return selection == null ? null : selection.toFeatureCollection();
+        });
+    }
+
+    /**
+     * @return the name of the layer of the selected features, <code>null</code> if none is
+     *          selected.
+     * @throws Exception
+     */
+    public String selectionLayer() throws Exception {
+        return onEdt(() -> {
+            FeatureSelection selection = context.getSelection();
+            return selection == null || selection.isEmpty() ? null : selection.getLayer().getName();
+        });
+    }
+
+    /**
+     * Clear the selected features.
+     *
+     * @throws Exception
+     */
+    public void clearSelection() throws Exception {
+        onEdt(() -> {
+            context.clearSelection();
             return null;
         });
     }

@@ -39,7 +39,7 @@ import org.hortonmachine.gears.utils.style.StyleWrapper;
 /**
  * Simple styles generator.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class SimpleStyleUtilities {

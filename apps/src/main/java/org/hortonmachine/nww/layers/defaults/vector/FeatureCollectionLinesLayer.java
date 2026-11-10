@@ -142,8 +142,22 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
         if (mNormalShapeAttributes == null)
             mNormalShapeAttributes = new BasicShapeAttributes();
         mNormalShapeAttributes.setOutlineMaterial(mStrokeMaterial);
+        mNormalShapeAttributes.setOutlineOpacity(getOpacity());
         mNormalShapeAttributes.setOutlineWidth(mStrokeWidth);
         mNormalShapeAttributes.setDrawOutline(mStrokeWidth > 0);
+    }
+
+    /**
+     * The opacity of the whole layer, which multiplies the one of the style, without changing
+     * the style.
+     */
+    @Override
+    public void setOpacity( double opacity ) {
+        super.setOpacity(opacity);
+        if (mNormalShapeAttributes != null) {
+            mNormalShapeAttributes.setOutlineOpacity(opacity);
+        }
+        stylerAttributes.forEach(( symbol, attributes ) -> attributes.setOutlineOpacity(symbol.strokeOpacity() * opacity));
     }
 
     @Override
@@ -213,7 +227,7 @@ public class FeatureCollectionLinesLayer extends RenderableLayer implements NwwE
         return stylerAttributes.computeIfAbsent(styled.symbol(), symbol -> {
             BasicShapeAttributes attributes = new BasicShapeAttributes();
             attributes.setOutlineMaterial(new Material(symbol.stroke()));
-            attributes.setOutlineOpacity(symbol.strokeOpacity());
+            attributes.setOutlineOpacity(symbol.strokeOpacity() * getOpacity());
             attributes.setOutlineWidth(symbol.strokeWidth());
             attributes.setDrawOutline(symbol.strokeWidth() > 0 && symbol.strokeOpacity() > 0);
             return attributes;

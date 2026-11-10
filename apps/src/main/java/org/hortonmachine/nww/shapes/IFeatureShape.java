@@ -33,7 +33,7 @@ import org.geotools.util.factory.GeoTools;
 /**
  * A NWW shape holding a {@link SimpleFeature} and if editable, also a store.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public interface IFeatureShape {

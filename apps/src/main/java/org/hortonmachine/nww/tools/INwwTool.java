@@ -28,7 +28,7 @@ import javax.swing.JComponent;
  * time its tab is selected, and the tool reaches the viewer through the {@link NwwContext} it
  * gets then.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface INwwTool {
 

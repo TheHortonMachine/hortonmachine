@@ -16,12 +16,12 @@ import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.utils.features.ConcurrentReprojectingFeatureCollection;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer.GEOMTYPE;
@@ -38,7 +38,9 @@ import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
 import gov.nasa.worldwind.geom.Angle;
+import gov.nasa.worldwind.geom.Intersection;
 import gov.nasa.worldwind.geom.LatLon;
+import gov.nasa.worldwind.geom.Line;
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.geom.Sector;
 import gov.nasa.worldwind.layers.CompassLayer;
@@ -51,6 +53,7 @@ import gov.nasa.worldwind.render.Path;
 import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 import gov.nasa.worldwind.render.Polygon;
+import gov.nasa.worldwind.terrain.SectorGeometryList;
 
 public class NwwUtilities {
 
@@ -86,7 +89,8 @@ public class NwwUtilities {
         CoordinateReferenceSystem crs = bounds.getCoordinateReferenceSystem();
         if (!CRS.equalsIgnoreMetadata(crs, GPS_CRS)) {
             try {
-                fc = new ReprojectingFeatureCollection(fc, GPS_CRS);
+                // read by more threads at the same time: the drawing of the layer, the queries
+                fc = new ConcurrentReprojectingFeatureCollection(fc, GPS_CRS, null);
             } catch (Exception e) {
                 throw new IllegalArgumentException("The data need to be of WGS84 lat/lon projection.", e);
             }
@@ -240,14 +244,16 @@ public class NwwUtilities {
      *            the second point screen x.
      * @param y2
      *            the second point screen y.
-     * @return the world geomnetry.
+     * @return the world geomnetry, <code>null</code> if a corner is outside of the globe.
      */
     public static Geometry getScreenPointsPolygon( WorldWindow wwd, int x1, int y1, int x2, int y2 ) {
-        View view = wwd.getView();
-        Position p1 = view.computePositionFromScreenPoint(x1, y1);
-        Position p2 = view.computePositionFromScreenPoint(x1, y2);
-        Position p3 = view.computePositionFromScreenPoint(x2, y2);
-        Position p4 = view.computePositionFromScreenPoint(x2, y1);
+        Position p1 = getTerrainPosition(wwd, x1, y1);
+        Position p2 = getTerrainPosition(wwd, x1, y2);
+        Position p3 = getTerrainPosition(wwd, x2, y2);
+        Position p4 = getTerrainPosition(wwd, x2, y1);
+        if (p1 == null || p2 == null || p3 == null || p4 == null) {
+            return null;
+        }
 
         Coordinate[] coords = { //
                 new Coordinate(p1.longitude.degrees, p1.latitude.degrees), //
@@ -257,6 +263,28 @@ public class NwwUtilities {
         };
         Geometry convexHull = GeometryUtilities.gf().createMultiPoint(coords).convexHull();
         return convexHull;
+    }
+
+    /**
+     * Get the position of the map at a screen point: on the terrain drawn there, else, as when
+     * the terrain is not drawn there yet, on the ellipsoid.
+     *
+     * @param wwd the {@link WorldWindow} instance.
+     * @param x the screen x.
+     * @param y the screen y.
+     * @return the position, <code>null</code> outside of the globe.
+     */
+    public static Position getTerrainPosition( WorldWindow wwd, int x, int y ) {
+        View view = wwd.getView();
+        SectorGeometryList terrain = wwd.getSceneController().getTerrain();
+        if (terrain != null) {
+            Line ray = view.computeRayFromScreenPoint(x, y);
+            Intersection[] intersections = ray == null ? null : terrain.intersect(ray);
+            if (intersections != null && intersections.length > 0) {
+                return wwd.getModel().getGlobe().computePositionFromPoint(intersections[0].getIntersectionPoint());
+            }
+        }
+        return view.computePositionFromScreenPoint(x, y);
     }
 
     public static Point getScreenPoint( WorldWindow wwd, int x1, int y1 ) {

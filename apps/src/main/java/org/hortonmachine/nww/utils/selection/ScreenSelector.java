@@ -351,7 +351,10 @@ public class ScreenSelector extends WWObjectImpl implements MouseListener, Mouse
     }
 
     protected Layer createLayer() {
-        return new RenderableLayer();
+        RenderableLayer layer = new RenderableLayer();
+        // not listed in the layers panel
+        layer.setName("hide screen selector");
+        return layer;
     }
 
     protected SelectionRectangle createSelectionRectangle() {
