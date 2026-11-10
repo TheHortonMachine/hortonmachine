@@ -20,10 +20,13 @@ package org.hortonmachine.nww.tools;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.IntConsumer;
 
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -33,8 +36,9 @@ import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.LayerList;
 
 /**
- * The tabs at the side of the map of the viewer: one tab per {@link INwwTool}, whose panel is
- * created the first time the tab is selected.
+ * The tabs at the side of the map of the viewer: the tabs of the {@link INwwTool}s that are
+ * open, as from the menu of the viewer, whose panel is created the first time the tab is
+ * selected. The tools start closed.
  *
  * <p>After them come the tabs of the current layer: the layer tab, shown when a layer is
  * selected in the layers panel, and the style tab, shown when the style button of a layer is
@@ -46,10 +50,17 @@ public class NwwToolsTabs extends JTabbedPane {
     private static final long serialVersionUID = 1L;
 
     private final NwwContext context;
-    /** The tools, at the index of their tab. */
+    /** FlatLaf client property that gives a tab a close button. */
+    private static final String TAB_CLOSABLE = "JTabbedPane.tabClosable";
+    /** FlatLaf client property of the action of the close buttons of the tabs. */
+    private static final String TAB_CLOSE_CALLBACK = "JTabbedPane.tabCloseCallback";
+
+    /** The tools, in the order of their tabs. */
     private final List<INwwTool> tools = new ArrayList<>();
-    /** If the panel of the tool at the same index has been created. */
-    private final List<Boolean> created = new ArrayList<>();
+    /** The content of the tab of each tool, which holds its panel once created. */
+    private final Map<INwwTool, JPanel> holders = new IdentityHashMap<>();
+    /** The tools whose panel has been created. */
+    private final Set<INwwTool> created = Collections.newSetFromMap(new IdentityHashMap<>());
     /** The tool of the selected tab, <code>null</code> for the layer tabs. */
     private INwwTool activeTool;
 
@@ -171,18 +182,93 @@ public class NwwToolsTabs extends JTabbedPane {
         this.context = context;
         context.setToolsTabs(this);
         addChangeListener(e -> onTabSelected());
+        putClientProperty(TAB_CLOSE_CALLBACK, (IntConsumer) index -> {
+            INwwTool tool = getTool(getComponentAt(index));
+            if (tool != null) {
+                closeTool(tool);
+            }
+        });
     }
 
     /**
-     * Add the tab of a tool, its panel is created when the tab is first selected. The tools
-     * are added before the layer tabs are shown.
+     * Add a tool, closed: its tab is shown by {@link #openTool(INwwTool)} and its panel is
+     * created when the tab is first selected.
      *
      * @param tool the tool to add.
      */
     public void addTool( INwwTool tool ) {
         tools.add(tool);
-        created.add(false);
-        addTab(tool.getName(), tool.getIcon(), new JPanel());
+        JPanel holder = new JPanel(new BorderLayout());
+        holder.putClientProperty(TAB_CLOSABLE, true);
+        holders.put(tool, holder);
+    }
+
+    /**
+     * @return the tools added, open or not.
+     */
+    public List<INwwTool> getTools() {
+        return Collections.unmodifiableList(tools);
+    }
+
+    /**
+     * @param tool a tool added.
+     * @return <code>true</code> if its tab is shown.
+     */
+    public boolean isToolOpen( INwwTool tool ) {
+        JPanel holder = holders.get(tool);
+        return holder != null && indexOfComponent(holder) >= 0;
+    }
+
+    /**
+     * Show the tab of a tool, after the tabs of the open tools added before it, and select it.
+     * Tools not {@link INwwTool#isAvailable() available} are not opened.
+     *
+     * @param tool a tool added.
+     */
+    public void openTool( INwwTool tool ) {
+        JPanel holder = holders.get(tool);
+        if (holder == null || !tool.isAvailable()) {
+            return;
+        }
+        if (indexOfComponent(holder) < 0) {
+            int index = 0;
+            for( INwwTool other : tools ) {
+                if (other == tool) {
+                    break;
+                }
+                if (isToolOpen(other)) {
+                    index++;
+                }
+            }
+            insertTab(tool.getName(), tool.getIcon(), holder, null, index);
+        }
+        setSelectedComponent(holder);
+    }
+
+    /**
+     * Remove the tab of a tool. Its panel is kept, for when it is opened again.
+     *
+     * @param tool a tool added.
+     */
+    public void closeTool( INwwTool tool ) {
+        JPanel holder = holders.get(tool);
+        int index = holder == null ? -1 : indexOfComponent(holder);
+        if (index >= 0) {
+            removeTabAt(index);
+            onTabSelected();
+        }
+    }
+
+    /**
+     * @return the tool whose tab has the component, or <code>null</code>.
+     */
+    private INwwTool getTool( Component component ) {
+        for( INwwTool tool : tools ) {
+            if (holders.get(tool) == component) {
+                return tool;
+            }
+        }
+        return null;
     }
 
     /**
@@ -268,11 +354,8 @@ public class NwwToolsTabs extends JTabbedPane {
     }
 
     private void onTabSelected() {
-        int index = getSelectedIndex();
         // the layer tabs have no tool
-        Component component = index >= 0 ? getComponentAt(index) : null;
-        INwwTool selected = index >= 0 && index < tools.size() && component != layerTab.holder
-                && component != styleTab.holder ? tools.get(index) : null;
+        INwwTool selected = getTool(getSelectedComponent());
         if (selected == activeTool) {
             return;
         }
@@ -283,10 +366,11 @@ public class NwwToolsTabs extends JTabbedPane {
         if (selected == null) {
             return;
         }
-        if (!created.get(index)) {
-            created.set(index, true);
+        if (created.add(selected)) {
+            JPanel holder = holders.get(selected);
             JComponent panel = selected.createPanel(context);
-            setComponentAt(index, panel);
+            holder.add(panel, BorderLayout.CENTER);
+            holder.revalidate();
         }
         selected.onActivated();
     }
@@ -295,9 +379,9 @@ public class NwwToolsTabs extends JTabbedPane {
      * Tell the tools whose panel has been created that the viewer closes.
      */
     public void closeTools() {
-        for( int i = 0; i < tools.size(); i++ ) {
-            if (created.get(i)) {
-                tools.get(i).onClose();
+        for( INwwTool tool : tools ) {
+            if (created.contains(tool)) {
+                tool.onClose();
             }
         }
         layerTab.closeAll();

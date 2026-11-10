@@ -43,6 +43,21 @@ public interface INwwTool {
     ImageIcon getIcon();
 
     /**
+     * @return <code>true</code> if the tool can be opened, else it is shown greyed out, as the
+     *          assistant without an assistant module installed.
+     */
+    default boolean isAvailable() {
+        return true;
+    }
+
+    /**
+     * @return why the tool is not available, shown to the user, or <code>null</code>.
+     */
+    default String getUnavailableReason() {
+        return null;
+    }
+
+    /**
      * Create the panel of the tool, called once, the first time its tab is selected.
      *
      * @param context the access to the viewer.

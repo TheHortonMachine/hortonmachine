@@ -68,17 +68,15 @@ public class SimpleNwwViewer {
     public static String APPNAME = "SIMPLE NWW VIEWER";
 
     /**
-     * @return new instances of the tools docked in the tabs at the side of the map, each viewer
-     *          gets its own.
+     * @return new instances of the tools docked in the tabs at the side of the map, opened from
+     *          the tools menu, each viewer gets its own.
      */
     public static List<INwwTool> createDefaultTools() {
         List<INwwTool> tools = new ArrayList<>();
-        // the assistant only if a module providing it is installed
+        // not available, so greyed out in the menu, if no module providing it is installed
         IAssistantBackend backend = Assistants.getBackend().orElse(null);
         IScriptAssistant scriptAssistant = backend == null ? null : backend.getScriptAssistant().orElse(null);
-        if (scriptAssistant != null) {
-            tools.add(new AssistantTool(backend, scriptAssistant));
-        }
+        tools.add(new AssistantTool(backend, scriptAssistant));
         return tools;
     }
 
@@ -285,6 +283,17 @@ public class SimpleNwwViewer {
                 NwwMenuBar menuBar = new NwwMenuBar(nwwFrame, toolsPanel);
                 menuBar.addPanelToggle("Layers panel", layersSide::isShown, layersSide::setShown);
                 menuBar.addPanelToggle("Tools panel", toolsSide::isShown, toolsSide::setShown);
+                for( INwwTool tool : tabs.getTools() ) {
+                    menuBar.addToolToggle(tool, () -> tabs.isToolOpen(tool), open -> {
+                        if (open) {
+                            tabs.openTool(tool);
+                            // also if the user hid the panel before
+                            toolsSide.setShown(true);
+                        } else {
+                            tabs.closeTool(tool);
+                        }
+                    });
+                }
                 nwwFrame.setJMenuBar(menuBar);
             } else {
                 nwwFrame.getContentPane().add(nwwComponent, BorderLayout.CENTER);

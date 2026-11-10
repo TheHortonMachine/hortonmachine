@@ -41,6 +41,7 @@ import javax.swing.event.MenuListener;
 
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.utils.ImageCache;
+import org.hortonmachine.nww.tools.INwwTool;
 import org.hortonmachine.nww.utils.EGlobeModes;
 import org.hortonmachine.nww.utils.cache.CacheUtils;
 
@@ -58,8 +59,11 @@ public class NwwMenuBar extends JMenuBar {
 
     private final ToolsPanelController tools;
     private final JMenu viewMenu;
+    private final JMenu toolsMenu;
     /** The index in the view menu where the next panel toggle goes. */
     private int panelTogglesIndex = -1;
+    /** The index in the tools menu where the next tool toggle goes. */
+    private int toolTogglesIndex = -1;
 
     /**
      * @param window the window of the viewer, closed by the close item.
@@ -71,7 +75,33 @@ public class NwwMenuBar extends JMenuBar {
         add(createEditMenu());
         viewMenu = createViewMenu();
         add(viewMenu);
-        add(createToolsMenu());
+        toolsMenu = createToolsMenu();
+        add(toolsMenu);
+    }
+
+    /**
+     * Add a check item at the top of the tools menu, to open and close the tab of a tool. A tool
+     * not {@link INwwTool#isAvailable() available} gets a disabled item, telling why.
+     *
+     * @param tool the tool.
+     * @param isOpen tells if the tab of the tool is open.
+     * @param setOpen opens or closes the tab of the tool.
+     */
+    public void addToolToggle( INwwTool tool, BooleanSupplier isOpen, Consumer<Boolean> setOpen ) {
+        if (toolTogglesIndex < 0) {
+            toolsMenu.insertSeparator(0);
+            toolTogglesIndex = 0;
+        }
+        JCheckBoxMenuItem item = new JCheckBoxMenuItem(tool.getName(), tool.getIcon());
+        if (tool.isAvailable()) {
+            item.setToolTipText("Open or close the " + tool.getName() + " tab");
+            item.addActionListener(e -> setOpen.accept(item.isSelected()));
+            toolsMenu.addMenuListener(onSelected(() -> item.setSelected(isOpen.getAsBoolean())));
+        } else {
+            item.setEnabled(false);
+            item.setToolTipText(tool.getUnavailableReason());
+        }
+        toolsMenu.insert(item, toolTogglesIndex++);
     }
 
     /**

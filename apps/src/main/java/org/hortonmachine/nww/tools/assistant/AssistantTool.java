@@ -107,8 +107,9 @@ public class AssistantTool implements INwwTool {
     private volatile String lastError;
 
     /**
-     * @param backend the assistant backend.
-     * @param scriptAssistant the script assistant of the backend.
+     * @param backend the assistant backend, <code>null</code> if no assistant module is
+     *          installed, which makes the tool not available.
+     * @param scriptAssistant the script assistant of the backend, or <code>null</code>.
      */
     public AssistantTool( IAssistantBackend backend, IScriptAssistant scriptAssistant ) {
         this.backend = backend;
@@ -123,6 +124,16 @@ public class AssistantTool implements INwwTool {
     @Override
     public ImageIcon getIcon() {
         return ImageCache.get(ImageCache.NOTE);
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return backend != null && scriptAssistant != null;
+    }
+
+    @Override
+    public String getUnavailableReason() {
+        return isAvailable() ? null : "No assistant module (hm-llm) is installed";
     }
 
     @Override
