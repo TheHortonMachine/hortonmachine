@@ -32,7 +32,7 @@ package org.hortonmachine.gears.modules;
 ///**
 // * Test for the {@link OmsDwgConverter}
 // * 
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //public class TestDwgConverter extends HMTestCase {
 //

@@ -36,7 +36,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for {@link OmsMapcalc}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class TestMapcalc extends HMTestCase {

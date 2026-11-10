@@ -36,7 +36,7 @@ import org.locationtech.jts.geom.MultiPoint;
 /**
  * Test for the {@link OmsVectorReshaper}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestVectorReshaper extends HMTestCase {
 

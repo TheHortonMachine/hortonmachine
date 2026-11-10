@@ -34,7 +34,7 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Test {@link Quadtree} serialization.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestJtsQuadtreeSerialization extends HMTestCase {
 

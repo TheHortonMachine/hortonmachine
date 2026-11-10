@@ -32,7 +32,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Test for the transformer module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestFeatureTransformer extends HMTestCase {
 

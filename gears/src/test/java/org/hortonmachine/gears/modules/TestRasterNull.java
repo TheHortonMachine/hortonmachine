@@ -30,7 +30,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link OmsRasterNull}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRasterNull extends HMTestCase {
     

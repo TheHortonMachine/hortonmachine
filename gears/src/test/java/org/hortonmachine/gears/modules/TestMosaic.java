@@ -30,7 +30,7 @@ import org.hortonmachine.gears.utils.HMTestCase;
 /**
  * Test for the mosaic modules.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestMosaic extends HMTestCase {
     static double[][] mapData = new double[][]{//

@@ -40,7 +40,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Test for the {@link OmsScanLineRasterizer}
  * <
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestScanLineRasterizer extends HMTestCase {
     private CoordinateReferenceSystem crs = HMTestMaps.getCrs();

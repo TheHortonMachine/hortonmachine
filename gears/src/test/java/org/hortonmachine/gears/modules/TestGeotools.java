@@ -45,7 +45,7 @@ package org.hortonmachine.gears.modules;
 ///**
 // * Test for the reprojection modules.
 // * 
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //public class TestGeotools extends HMTestCase {
 //

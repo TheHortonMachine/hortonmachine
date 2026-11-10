@@ -32,7 +32,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Test for {@link OmsRasterTransformer}.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRasterTransformer extends HMTestCase {
     private static final double NV = HMConstants.doubleNovalue;

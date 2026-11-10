@@ -38,7 +38,7 @@ import org.locationtech.jts.geom.Point;
 /**
  * Test {@link OmsVectorFieldRounder}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestVectorFieldRounder extends HMTestCase {
 

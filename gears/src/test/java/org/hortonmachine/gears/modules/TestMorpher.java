@@ -31,7 +31,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for {@link OmsMorpher}
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestMorpher extends HMTestCase {
     private double NaN = HMConstants.doubleNovalue;

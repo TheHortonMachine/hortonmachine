@@ -38,7 +38,7 @@ import org.locationtech.jts.io.WKTReader;
 /**
  * Test {@link OmsLineSmootherMcMaster}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestLineSmootherJaitools extends HMTestCase {
 

@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.LineString;
 /**
  * Test for the {@link OmsProfile}
  * <
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestProfile extends HMTestCase {
     private Coordinate westNorth = HMTestMaps.getWestNorth();

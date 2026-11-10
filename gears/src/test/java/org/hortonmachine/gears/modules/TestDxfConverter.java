@@ -34,7 +34,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Test for the {@link OmsDxfConverter}
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestDxfConverter extends HMTestCase {
 

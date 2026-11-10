@@ -37,7 +37,7 @@ package org.hortonmachine.gears.modules;
 //import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 //
 ///**
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //public class TestMarchingSquaresAndRasterizer extends HMTestCase {
 //

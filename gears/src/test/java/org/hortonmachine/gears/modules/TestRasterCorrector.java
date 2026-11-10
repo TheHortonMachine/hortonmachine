@@ -35,7 +35,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for {@link OmsRasterCorrector}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRasterCorrector extends HMTestCase {
     private double NaN = HMConstants.doubleNovalue;

@@ -14,7 +14,7 @@ package org.hortonmachine.gears.modules;
 ///**
 // * Test ExifReader.
 // * 
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //public class TestExifReaderWriter extends HMTestCase {
 //

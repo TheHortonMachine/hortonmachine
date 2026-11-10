@@ -35,7 +35,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for the {@link OmsContourExtractor}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestContourExtractor extends HMTestCase {
     public void testCountourExtractor() throws Exception {

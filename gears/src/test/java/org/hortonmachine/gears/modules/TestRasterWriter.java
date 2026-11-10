@@ -31,7 +31,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link OmsRasterWriter}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRasterWriter extends HMTestCase {
 

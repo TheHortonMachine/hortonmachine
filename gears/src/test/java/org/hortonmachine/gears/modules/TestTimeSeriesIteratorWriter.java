@@ -27,7 +27,7 @@ import org.hortonmachine.gears.utils.HMTestCase;
 /**
  * Test {@link OmsTimeSeriesIteratorWriter}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestTimeSeriesIteratorWriter extends HMTestCase {
 

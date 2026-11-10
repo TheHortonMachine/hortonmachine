@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Test for the {@link OmsVectorReprojector}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestVectorReprojector extends HMTestCase {
     private double delta = 0.0000001;

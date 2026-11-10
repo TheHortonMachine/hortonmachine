@@ -29,7 +29,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for {@link OmsCutOut}
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestCutOut extends HMTestCase {
 

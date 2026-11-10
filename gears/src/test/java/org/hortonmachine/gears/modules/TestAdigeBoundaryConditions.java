@@ -11,7 +11,7 @@ import org.hortonmachine.gears.utils.HMTestCase;
 /**
  * Test AdigeBoundaryConditions reader and writer.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestAdigeBoundaryConditions extends HMTestCase {
 

@@ -34,7 +34,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for {@link OmsVectorizer}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestVectorizer extends HMTestCase {
     public void testVectorizer1() throws Exception {

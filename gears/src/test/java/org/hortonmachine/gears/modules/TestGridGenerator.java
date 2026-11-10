@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Test for {@link OmsGridsGenerator}
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestGridGenerator extends HMTestCase {
 

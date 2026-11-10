@@ -34,7 +34,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for the {@link OmsZonalStats}
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestZonalStats extends HMTestCase {
     private CoordinateReferenceSystem crs = HMTestMaps.getCrs();

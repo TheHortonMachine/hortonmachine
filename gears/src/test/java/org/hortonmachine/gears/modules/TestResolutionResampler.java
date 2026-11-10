@@ -39,7 +39,7 @@ package org.hortonmachine.gears.modules;
 ///**
 // * Test for the reprojection modules.
 // * 
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //public class TestResolutionResampler extends HMTestCase {
 //    public void testCoverageReprojector() throws Exception {

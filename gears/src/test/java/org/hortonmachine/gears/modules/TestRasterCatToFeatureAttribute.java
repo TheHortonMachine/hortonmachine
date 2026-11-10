@@ -35,7 +35,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test for {@link OmsRasterCatToFeatureAttribute}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRasterCatToFeatureAttribute extends HMTestCase {
     public void testRasterCatToFeatureAttribute() throws Exception {

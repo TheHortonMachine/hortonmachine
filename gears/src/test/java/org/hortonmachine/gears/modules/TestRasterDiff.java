@@ -30,7 +30,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 /**
  * Test for {@link OmsRasterDiff}
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRasterDiff extends HMTestCase {
     private static final double NV = HMConstants.doubleNovalue;

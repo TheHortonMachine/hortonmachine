@@ -24,7 +24,7 @@ import org.locationtech.jts.geom.Point;
 /**
  * Test {@link OmsVectorReader}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestVectorReader extends HMTestCase {
 
