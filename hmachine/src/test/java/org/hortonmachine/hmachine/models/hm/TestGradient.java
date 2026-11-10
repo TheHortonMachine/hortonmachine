@@ -11,7 +11,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * It test the {@link OmsGradient} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestGradient extends HMTestCase {
 

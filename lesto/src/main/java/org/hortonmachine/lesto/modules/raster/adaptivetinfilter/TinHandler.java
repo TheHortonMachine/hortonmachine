@@ -57,7 +57,7 @@ import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 /**
  * A helper class for tin handling.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class TinHandler {

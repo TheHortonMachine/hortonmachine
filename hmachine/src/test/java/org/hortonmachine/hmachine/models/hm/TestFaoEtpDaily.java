@@ -13,7 +13,7 @@ import org.hortonmachine.hmachine.utils.HMTestCase;
 /**
  * Test FAO daily evapotranspiration.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class TestFaoEtpDaily extends HMTestCase {

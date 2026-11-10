@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * A comparator for 3d distance from a given coordinate.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PointsToCoordinateComparator implements Comparator<Coordinate> {
     private final Coordinate coordinate;

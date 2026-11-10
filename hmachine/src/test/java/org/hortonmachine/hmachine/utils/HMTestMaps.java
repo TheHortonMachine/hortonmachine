@@ -35,7 +35,7 @@ import org.hortonmachine.hmachine.modules.network.extractnetwork.OmsExtractNetwo
 /**
  * The grass map named test and its values to be used in tests.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMTestMaps {
 	public static final double N = -9999.0;

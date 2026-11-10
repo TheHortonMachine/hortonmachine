@@ -35,7 +35,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * It test the {@link OmsExtractNetwork} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestExtractNetwork extends HMTestCase {
     

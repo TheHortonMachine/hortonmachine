@@ -20,7 +20,7 @@ package org.hortonmachine.hmachine.modules.networktools.epanet.core;
 /**
  * The attributes for the creation feature.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
 @SuppressWarnings("nls")

@@ -28,7 +28,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test the {@link OmsSplitSubbasins} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestSplitsubbasins extends HMTestCase {
     @SuppressWarnings("nls")

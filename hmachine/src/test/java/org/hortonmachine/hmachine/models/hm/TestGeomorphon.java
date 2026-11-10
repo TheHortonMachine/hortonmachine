@@ -33,7 +33,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * Test for {@link OmsGeomorphon}
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestGeomorphon extends HMTestCase {
 

@@ -20,7 +20,7 @@ import org.hortonmachine.gears.io.las.core.LasRecord;
 import org.hortonmachine.gears.utils.clustering.GvmSimpleKeyer;
 
 /**
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class LasClusterElevationKeyer extends GvmSimpleKeyer<LasRecord> {

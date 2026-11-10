@@ -31,7 +31,7 @@ import org.joda.time.Duration;
 
 /**
  * @author Silvia franceschi (www.hydrologis.com)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class QReal implements DischargeCalculator {
 

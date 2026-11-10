@@ -27,7 +27,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Tests the {@link OmsTc} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Daniele Andreis
  */
 public class TestTc extends HMTestCase {

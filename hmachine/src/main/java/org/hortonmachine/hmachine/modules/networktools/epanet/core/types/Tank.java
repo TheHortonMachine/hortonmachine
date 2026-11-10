@@ -23,7 +23,7 @@ import org.joda.time.DateTime;
 /**
  * A class representing Tank data for a given time instant.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Tank {
     /**

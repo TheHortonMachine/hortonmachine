@@ -22,7 +22,7 @@ import org.geotools.coverage.grid.GridCoverage2D;
 /**
  * A wrapper for {@link org.hortonmachine.gears.utils.colors.RasterStyle} to be used in scripting.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RasterStyle {
 

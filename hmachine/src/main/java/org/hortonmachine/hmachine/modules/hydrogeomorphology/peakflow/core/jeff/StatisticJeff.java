@@ -22,7 +22,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 
 /**
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class StatisticJeff {
 

@@ -24,7 +24,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterBox;
 /**
  * @author Silvia Franceschi (www.hydrologis.com)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * 
  * @deprecated THIS IS NOT WORKING!!! It is here just for future reference.
  */

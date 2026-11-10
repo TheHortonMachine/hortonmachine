@@ -20,7 +20,7 @@ package org.hortonmachine.hmachine.models.hm;
 ///**
 // * Test {@link OmsEnergyIndexCalculator}.
 // * 
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //public class TestEnergyIndexCalculatorRealMaps extends HMTestCase {
 //

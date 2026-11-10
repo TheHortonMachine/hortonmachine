@@ -27,7 +27,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link OmsTopIndex}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestTopIndex extends HMTestCase {
 

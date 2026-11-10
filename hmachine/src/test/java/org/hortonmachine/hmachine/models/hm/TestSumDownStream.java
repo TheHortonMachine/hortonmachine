@@ -27,7 +27,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * It test the {@link TestSumDownStream} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestSumDownStream extends HMTestCase {
     public void testSumDownstream() throws Exception {

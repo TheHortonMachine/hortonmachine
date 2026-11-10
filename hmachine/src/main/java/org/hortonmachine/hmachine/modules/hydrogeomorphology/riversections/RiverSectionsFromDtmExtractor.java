@@ -45,7 +45,7 @@ import org.locationtech.jts.linearref.LengthIndexedLine;
 /**
  * An extractor of river sections from dtm.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
 public class RiverSectionsFromDtmExtractor extends ARiverSectionsExtractor {

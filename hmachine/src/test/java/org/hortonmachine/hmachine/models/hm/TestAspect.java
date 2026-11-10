@@ -29,7 +29,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test the {@link OmsAspect} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestAspect extends HMTestCase {
     public void testAspectDegrees() throws Exception {

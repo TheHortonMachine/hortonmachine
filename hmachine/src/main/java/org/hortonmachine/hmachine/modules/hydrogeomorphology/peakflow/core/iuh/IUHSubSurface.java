@@ -26,7 +26,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.ParameterB
 
 /**
  * @author Silvia Franceschi (www.hydrologis.com)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvano Pisoni
  */
 public class IUHSubSurface {

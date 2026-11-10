@@ -218,7 +218,7 @@ public class OmsTca extends HMModel {
     /**
      * Class to check if the downstream trip gets into a loop.
      * 
-     * @author Andrea Antonello (www.hydrologis.com)
+     * @author Andrea Antonello (https://g-ant.eu)
      */
     public class CheckPoint implements Comparable<CheckPoint> {
         public int col;

@@ -10,7 +10,7 @@ import org.hortonmachine.hmachine.utils.HMTestCase;
 /**
  * Test {@link OmsEpanetFeaturesSynchronizer}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestEpanetSynchronizer extends HMTestCase {
 

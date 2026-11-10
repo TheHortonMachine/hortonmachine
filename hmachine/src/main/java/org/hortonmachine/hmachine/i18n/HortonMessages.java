@@ -22,7 +22,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.*;
 /**
  * Messages for the Horton machine.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HortonMessages {
     public static final String DUFFYINPUTS_DESCRIPTION = "Inputs for the duffy model";

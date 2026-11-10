@@ -16,7 +16,7 @@ package org.hortonmachine.hmachine.models.hm;
 ///**
 // * Test Penman Evapotranspiration..
 // * 
-// * @author Andrea Antonello (www.hydrologis.com)
+// * @author Andrea Antonello (https://g-ant.eu)
 // */
 //@SuppressWarnings("nls")
 //public class TestPenmanEtp extends HMTestCase {

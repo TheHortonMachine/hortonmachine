@@ -17,7 +17,7 @@ import org.hortonmachine.hmachine.modules.networktools.trento_p.utils.Constants;
  * </p>
  * 
  * @author Daniele Andreis (www.hydrologis.com)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 

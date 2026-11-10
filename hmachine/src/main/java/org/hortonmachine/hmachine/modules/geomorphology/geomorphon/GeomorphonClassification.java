@@ -34,7 +34,7 @@ package org.hortonmachine.hmachine.modules.geomorphology.geomorphon;
  * <li>pit = 1009</li>
  * </ul>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum GeomorphonClassification {
     FLAT(1000, "flat"), //

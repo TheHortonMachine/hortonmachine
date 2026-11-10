@@ -28,7 +28,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test the {@link OmsLeastCostFlowDirections} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestFlowDirectionsLeastCost extends HMTestCase {
 

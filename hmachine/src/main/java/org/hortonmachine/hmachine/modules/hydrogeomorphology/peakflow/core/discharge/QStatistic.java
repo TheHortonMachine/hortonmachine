@@ -26,7 +26,7 @@ import org.hortonmachine.hmachine.modules.hydrogeomorphology.peakflow.core.jeff.
 
 /**
  * @author Silvia Franceschi (www.hydrologis.com)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvano Pisoni
  */
 public class QStatistic implements DischargeCalculator {

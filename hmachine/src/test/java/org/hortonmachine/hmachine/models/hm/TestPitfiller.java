@@ -35,7 +35,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test the {@link OmsPitfiller} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestPitfiller extends HMTestCase {
     public void testPitfiller() throws Exception {

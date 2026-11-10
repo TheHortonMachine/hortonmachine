@@ -28,7 +28,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test ab.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestAb extends HMTestCase {
 

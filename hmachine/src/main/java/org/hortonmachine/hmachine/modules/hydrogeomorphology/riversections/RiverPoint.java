@@ -29,7 +29,7 @@ import org.locationtech.jts.geom.LineString;
  * <p>RiverPoints are comparable by progressive distance.
  * 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
 public class RiverPoint implements Comparable<RiverPoint> {

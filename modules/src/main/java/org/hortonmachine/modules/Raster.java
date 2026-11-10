@@ -43,7 +43,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * A simple raster wrapper for scripting environment.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Raster {
 

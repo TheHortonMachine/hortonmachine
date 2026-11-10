@@ -42,7 +42,7 @@ import org.locationtech.jts.linearref.LengthIndexedLine;
 /**
  * An extractor of geometries from dtm through features for Hecras.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
 public class RiverSectionsFromFeaturesExtractor extends ARiverSectionsExtractor {

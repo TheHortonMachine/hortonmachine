@@ -29,7 +29,7 @@ import org.hortonmachine.hmachine.utils.HMTestMaps;
 /**
  * Test for the {@link OmsKernelDensity} module.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestKernelDensity extends HMTestCase {
     public void testKernelDensity() throws Exception {

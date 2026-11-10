@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * A netwrok class that permits net navigation.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NetworkChannel {
     public static final String PFAFNAME = "pfaf";

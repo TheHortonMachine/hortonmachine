@@ -12,7 +12,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link Raster}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TestRaster extends HMTestCase {
 

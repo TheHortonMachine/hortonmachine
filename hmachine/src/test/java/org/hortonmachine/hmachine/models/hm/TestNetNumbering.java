@@ -31,7 +31,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Test {@link OmsNetNumbering}.
  * 
- * @author Andrea Antonello (www.hydrologis.com), Daniele Andreis
+ * @author Andrea Antonello (https://g-ant.eu), Daniele Andreis
  */
 public class TestNetNumbering extends HMTestCase {
 

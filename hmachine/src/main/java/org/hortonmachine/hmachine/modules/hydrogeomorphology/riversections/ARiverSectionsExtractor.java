@@ -46,7 +46,7 @@ import org.locationtech.jts.geom.Point;
 /**
  * Abstract class for river extractors.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvia Franceschi (www.hydrologis.com)
  */
 public abstract class ARiverSectionsExtractor {
