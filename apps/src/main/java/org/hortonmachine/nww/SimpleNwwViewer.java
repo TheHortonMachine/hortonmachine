@@ -9,6 +9,10 @@ package org.hortonmachine.nww;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -23,6 +27,9 @@ import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.layers.defaults.raster.EsriSatellite;
 import org.hortonmachine.nww.layers.defaults.raster.OepnvkarteLayer;
 import org.hortonmachine.nww.layers.defaults.raster.OpenTopoLayer;
+import org.hortonmachine.nww.tools.INwwTool;
+import org.hortonmachine.nww.tools.NwwContext;
+import org.hortonmachine.nww.tools.NwwToolsTabs;
 
 import gov.nasa.worldwind.Configuration;
 import gov.nasa.worldwind.avlist.AVKey;
@@ -44,6 +51,15 @@ public class SimpleNwwViewer {
 
     public static String APPNAME = "SIMPLE NWW VIEWER";
 
+    /**
+     * @return new instances of the tools docked in the tabs at the side of the map, each viewer
+     *          gets its own.
+     */
+    public static List<INwwTool> createDefaultTools() {
+        List<INwwTool> tools = new ArrayList<>();
+        return tools;
+    }
+
     /**A way to open the NWW viewer and get the tools panel, which has reference to the rest.
      * 
      * @param appName
@@ -63,6 +79,7 @@ public class SimpleNwwViewer {
 
             LayersPanelController layerPanel = null;
             ToolsPanelController toolsPanel = null;
+            NwwToolsTabs toolsTabs = null;
 
             if (nwwComponent instanceof NwwPanel) {
                 wwjPanel = (NwwPanel) nwwComponent;
@@ -95,9 +112,14 @@ public class SimpleNwwViewer {
                 JScrollPane toolsScroll = new JScrollPane(toolsPanel);
                 toolsScroll.setBorder(BorderFactory.createEmptyBorder());
                 toolsScroll.getVerticalScrollBar().setUnitIncrement(16);
-                toolsScroll.setMinimumSize(small);
+                NwwContext context = new NwwContext(wwjPanel, layerPanel, toolsPanel);
+                toolsTabs = new NwwToolsTabs(toolsScroll, context);
+                for( INwwTool tool : createDefaultTools() ) {
+                    toolsTabs.addTool(tool);
+                }
+                toolsTabs.setMinimumSize(small);
 
-                JSplitPane mapToolsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, nwwComponent, toolsScroll);
+                JSplitPane mapToolsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, nwwComponent, toolsTabs);
                 mapToolsSplit.setResizeWeight(1.0);
                 mapToolsSplit.setContinuousLayout(true);
                 mapToolsSplit.setOneTouchExpandable(true);
@@ -163,6 +185,15 @@ public class SimpleNwwViewer {
 //            }
 
             nwwFrame.setDefaultCloseOperation(onCloseAction);
+            if (toolsTabs != null) {
+                NwwToolsTabs tabs = toolsTabs;
+                nwwFrame.addWindowListener(new WindowAdapter(){
+                    @Override
+                    public void windowClosing( WindowEvent e ) {
+                        tabs.closeTools();
+                    }
+                });
+            }
 
             java.awt.EventQueue.invokeLater(new Runnable(){
                 public void run() {

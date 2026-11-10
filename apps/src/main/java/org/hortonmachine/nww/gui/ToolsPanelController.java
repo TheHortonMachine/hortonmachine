@@ -1065,6 +1065,18 @@ public class ToolsPanelController extends ToolsPanelView {
         loadFeatureCollection(null, name, null, readFC, null, null, simpleStyle);
     }
 
+    /**
+     * Load a feature collection to layer with the next of the default colors, as the layers
+     * without a style.
+     *
+     * @param name name of the layer.
+     * @param readFC the feature collection to load, in WGS84 lon/lat.
+     * @throws Exception
+     */
+    public void loadFeatureCollection( String name, SimpleFeatureCollection readFC ) throws Exception {
+        loadFeatureCollection(null, name, null, readFC, null, null, null);
+    }
+
     private void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
             SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap, Style sldStyle,
             SimpleStyle simpleStyle ) throws Exception {
@@ -1182,7 +1194,8 @@ public class ToolsPanelController extends ToolsPanelView {
      */
     private void compactLayout() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder("Tools"));
+        // no title: the panel is in the "Tools" tab of the viewer
+        panel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 2));
         GridBagConstraints c = new GridBagConstraints();
         c.gridx = 0;
         c.gridy = 0;
