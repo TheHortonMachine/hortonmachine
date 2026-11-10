@@ -20,8 +20,10 @@ package org.hortonmachine.gears.utils.colors;
 import java.awt.Color;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.geotools.api.filter.expression.Expression;
 import org.geotools.api.style.ColorMap;
@@ -39,7 +41,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 /**
  * A class to help with raster styling. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RasterStyleUtilities {
 
@@ -345,12 +347,32 @@ public class RasterStyleUtilities {
      */
     public static Style createStyleForColortable( String colorTableName, double min, double max, double[] values, double opacity )
             throws Exception {
-
-        List<Color> colorList = new ArrayList<Color>();
         String tableString = new DefaultTables().getTableString(colorTableName);
         if (tableString == null) {
             return null;
         }
+        return createStyleForColortableString(tableString, min, max, values, opacity);
+    }
+
+    /**
+     * Create a style for the text of a colortable, as given by {@link DefaultTables#getTableString(String)}.
+     *
+     * <p>The lines of the text are colors as <code>r g b</code>, spread evenly between min and
+     * max, or colors with their value, as <code>value r g b</code> or
+     * <code>value1 r1 g1 b1 value2 r2 g2 b2</code>, which ignore min and max. Lines starting
+     * with # are comments.</p>
+     *
+     * @param tableString the text of the colortable.
+     * @param min the value of the first color.
+     * @param max the value of the last color.
+     * @param values the values of the colors, <code>null</code> to spread them between min and max.
+     * @param opacity the opacity.
+     * @return the style.
+     * @throws Exception if the text is not a valid colortable.
+     */
+    public static Style createStyleForColortableString( String tableString, double min, double max, double[] values,
+            double opacity ) throws Exception {
+        List<Color> colorList = new ArrayList<Color>();
         String[] split = tableString.split("\n");
         List<Double> newValues = null; // if necessary
         for( String line : split ) {
@@ -404,6 +426,9 @@ public class RasterStyleUtilities {
         }
 
         Color[] colorsArray = colorList.toArray(new Color[0]);
+        if (colorsArray.length < 2) {
+            throw new IllegalArgumentException("A colortable needs at least two colors.");
+        }
         if (newValues != null) {
             // redefine values
             values = new double[newValues.size()];
@@ -413,6 +438,108 @@ public class RasterStyleUtilities {
         }
 
         return createRasterStyle(min, max, values, colorsArray, opacity);
+    }
+
+    /**
+     * @param tableString the text of a colortable.
+     * @return <code>true</code> if the colortable gives the values of its colors, so that a min and
+     *          max are not used.
+     */
+    public static boolean colortableHasValues( String tableString ) {
+        for( String line : tableString.split("\n") ) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                continue;
+            }
+            int count = trimmed.split("\\s+").length;
+            if (count == 4 || count == 8) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param tableString the text of a colortable.
+     * @return the colors of the colortable, in their order, as for a preview of it.
+     */
+    public static List<Color> getColortableColors( String tableString ) {
+        List<Color> colors = new ArrayList<>();
+        for( String line : tableString.split("\n") ) {
+            String trimmed = line.trim();
+            if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                continue;
+            }
+            String[] split = trimmed.split("\\s+");
+            try {
+                if (split.length == 3) {
+                    colors.add(new Color(Integer.parseInt(split[0]), Integer.parseInt(split[1]), Integer.parseInt(split[2])));
+                } else if (split.length == 4 || split.length == 8) {
+                    colors.add(new Color(Integer.parseInt(split[1]), Integer.parseInt(split[2]), Integer.parseInt(split[3])));
+                    if (split.length == 8) {
+                        colors.add(
+                                new Color(Integer.parseInt(split[5]), Integer.parseInt(split[6]), Integer.parseInt(split[7])));
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                // not a color line
+            }
+        }
+        return colors;
+    }
+
+    /**
+     * Write the color map of a raster symbolizer as the text of a colortable with values, one
+     * <code>value r g b</code> line per entry, leaving out the fully transparent entries, which
+     * mark the novalue.
+     *
+     * @param colorMap the color map.
+     * @return the text, empty if the map has no entry with a literal value and color.
+     */
+    public static String toColortableString( ColorMap colorMap ) {
+        StringBuilder sb = new StringBuilder();
+        DecimalFormat format = new DecimalFormat("0.##########", DecimalFormatSymbols.getInstance(Locale.ROOT));
+        for( ColorMapEntry entry : colorMap.getColorMapEntries() ) {
+            Double opacity = entry.getOpacity() == null ? null : entry.getOpacity().evaluate(null, Double.class);
+            if (opacity != null && opacity == 0.0) {
+                continue;
+            }
+            Double quantity = entry.getQuantity() == null ? null : entry.getQuantity().evaluate(null, Double.class);
+            Color color = entry.getColor() == null ? null : entry.getColor().evaluate(null, Color.class);
+            if (quantity == null || color == null) {
+                continue;
+            }
+            sb.append(format.format(quantity)).append(' ').append(color.getRed()).append(' ').append(color.getGreen())
+                    .append(' ').append(color.getBlue()).append('\n');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * @param colorMap the color map of a raster symbolizer.
+     * @return the values of the first and last entries, leaving out the fully transparent entries,
+     *          which mark the novalue, <code>null</code> if there are not two of them.
+     */
+    public static double[] getColorMapRange( ColorMap colorMap ) {
+        Double first = null;
+        Double last = null;
+        for( ColorMapEntry entry : colorMap.getColorMapEntries() ) {
+            Double opacity = entry.getOpacity() == null ? null : entry.getOpacity().evaluate(null, Double.class);
+            if (opacity != null && opacity == 0.0) {
+                continue;
+            }
+            Double quantity = entry.getQuantity() == null ? null : entry.getQuantity().evaluate(null, Double.class);
+            if (quantity != null) {
+                if (first == null) {
+                    first = quantity;
+                }
+                last = quantity;
+            }
+        }
+        if (first == null || last.equals(first)) {
+            return null;
+        }
+        return new double[]{first, last};
     }
 
     public static String styleToString( Style style ) throws Exception {

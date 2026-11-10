@@ -70,7 +70,7 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 /**
  * A generic HM single band raster object.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMRaster implements AutoCloseable {
     private String name;

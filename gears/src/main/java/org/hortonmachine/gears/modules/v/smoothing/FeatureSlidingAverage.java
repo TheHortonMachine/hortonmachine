@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Geometry;
  * See: http://grass.osgeo.org/wiki/V.generalize_tutorial
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureSlidingAverage {
 

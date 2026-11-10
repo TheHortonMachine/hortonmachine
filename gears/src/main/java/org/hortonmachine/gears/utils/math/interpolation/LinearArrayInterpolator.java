@@ -23,7 +23,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 /**
  * A class for doing linear interpolations on arrays of X and Y.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LinearArrayInterpolator implements Interpolator {
 

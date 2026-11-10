@@ -34,7 +34,7 @@ import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
  * This class makes it easier to create a reader for GRASS rasters.
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 1.1.0
  */
 public class JGrassRasterMapReader {

@@ -31,7 +31,7 @@ import org.locationtech.jts.geom.Envelope;
  * @param lat the latitude of the place.
  * @param bbox the bounding box of the place in longitude/latitude, or <code>null</code>.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public record NominatimPlace( String displayName, String osmType, long osmId, String category, String type, double lon,
         double lat, Envelope bbox ) {

@@ -42,7 +42,7 @@ import org.locationtech.jts.geom.Coordinate;
  * its progressive value.
  * </p> 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ProfilePoint implements Comparable<ProfilePoint> {
     private double progressive = doubleNovalue;

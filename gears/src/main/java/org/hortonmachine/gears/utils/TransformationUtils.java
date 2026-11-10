@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.util.NoninvertibleTransformationException;
 /**
  * Utils to do transformations.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TransformationUtils {
 

@@ -33,7 +33,7 @@ import org.geotools.api.feature.type.GeometryDescriptor;
 /**
  * Utility to clone features by modify only the geometry.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureGeometrySubstitutor {
     private SimpleFeatureType newFeatureType;

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 /**
  * A net channel helper class to order netnumbering in a hierarchy. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NetLink {
 

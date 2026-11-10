@@ -25,7 +25,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 /**
  * Sorts a {@link List} of features by one of the fields.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureSorter implements Comparator<SimpleFeature> {
     private final String fieldName;

@@ -19,7 +19,7 @@ import org.hortonmachine.gears.utils.geometry.EGeometryType;
 /**
  * A wrapper for the {@link Rule} object to ease gui use.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RuleWrapper {
 

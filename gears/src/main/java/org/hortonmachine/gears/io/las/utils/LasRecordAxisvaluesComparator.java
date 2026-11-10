@@ -24,7 +24,7 @@ import org.hortonmachine.gears.io.las.core.LasRecord;
 /**
  * Comparator for x or y values to sort in x or y direction.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasRecordAxisvaluesComparator implements Comparator<LasRecord> {
 

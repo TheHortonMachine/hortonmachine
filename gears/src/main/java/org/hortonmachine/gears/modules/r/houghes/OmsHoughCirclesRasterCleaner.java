@@ -91,7 +91,7 @@ public class OmsHoughCirclesRasterCleaner extends HMModel {
     // VARS DESCR START
     public static final String NAME = "houghcirclesrastercleaner";
     public static final String KEYWORDS = "Hough, circle, cleaner";
-    public static final String AUTHORS = "Andrea Antonello (www.hydrologis.com)";
+    public static final String AUTHORS = "Andrea Antonello (https://g-ant.eu)";
     public static final String DESCRIPTIO = "Module to remove circles after the HoughCirclesRaster module.";
 
     public static final String inVector_DESCR = "The input circles vector.";

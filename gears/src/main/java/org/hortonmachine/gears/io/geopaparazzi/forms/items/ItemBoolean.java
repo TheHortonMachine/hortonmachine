@@ -20,7 +20,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
 /**
  * A boolean item.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ItemBoolean implements Item {
 

@@ -45,7 +45,7 @@ import oms3.annotations.UI;
 /**
  * Superclass for modules.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMModel {
 

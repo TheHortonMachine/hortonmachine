@@ -20,7 +20,7 @@ package org.hortonmachine.gears.libs.modules.multiprocessing;
 /**
  * A multiprocessing class for grid loops (nested for over matrix).
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class GridMultiProcessing extends MultiProcessing {
 

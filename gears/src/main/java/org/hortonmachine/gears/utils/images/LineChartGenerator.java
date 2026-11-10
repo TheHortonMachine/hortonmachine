@@ -35,7 +35,7 @@ import org.jfree.data.xy.XYSeriesCollection;
 /**
  * An utility class for simple chart image generation. 
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.3
  */
 public class LineChartGenerator {

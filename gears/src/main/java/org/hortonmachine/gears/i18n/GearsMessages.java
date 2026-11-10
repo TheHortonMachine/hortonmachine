@@ -36,7 +36,7 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.VECTORPROCESSING;
 /**
  * Messages for the JGrassGears.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GearsMessages {
     public static final String OMSHYDRO_LICENSE = "http://www.gnu.org/licenses/gpl-3.0.html";

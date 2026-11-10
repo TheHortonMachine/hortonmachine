@@ -22,7 +22,7 @@ import java.util.BitSet;
 /**
  * A matrix object that is backed by a bitmap.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class BitMatrix {
 

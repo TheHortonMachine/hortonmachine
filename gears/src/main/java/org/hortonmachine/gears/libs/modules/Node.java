@@ -23,7 +23,7 @@ import org.eclipse.imagen.iterator.WritableRandomIter;
 /**
  * A superclass representing a node. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class Node {
 

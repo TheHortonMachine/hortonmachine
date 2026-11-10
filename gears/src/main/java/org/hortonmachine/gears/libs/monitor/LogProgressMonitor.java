@@ -27,7 +27,7 @@ import java.io.PrintStream;
  * If size is set to -1, instead of printing percentages from 0-100,
  * the count of teh items is given in 10 intervals.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LogProgressMonitor implements IHMProgressMonitor {
 

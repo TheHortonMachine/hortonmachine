@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils.images;
 /**
  * Enumeration of dimensions of the A series paper sizes, as defined by ISO 216.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.6
  *
  */

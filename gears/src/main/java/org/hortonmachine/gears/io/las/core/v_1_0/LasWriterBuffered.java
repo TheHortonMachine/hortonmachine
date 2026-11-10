@@ -41,7 +41,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * A las writer.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasWriterBuffered extends ALasWriter {
     private static final String OPEN_METHOD_MSG = "This needs to be called before the open method.";

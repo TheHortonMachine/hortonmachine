@@ -27,7 +27,7 @@ import org.locationtech.jts.geom.Coordinate;
  * This is adapted from: http://www.cse.unsw.edu.au/~lambert/splines/Bspline.html
  * 
  * @author Tim Lambert (http://www.cse.unsw.edu.au/~lambert/)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Bspline extends ControlCurve {
 

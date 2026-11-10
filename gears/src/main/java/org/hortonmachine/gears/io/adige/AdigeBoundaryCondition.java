@@ -21,7 +21,7 @@ package org.hortonmachine.gears.io.adige;
 /**
  * Initial conditions for the Adige model.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class AdigeBoundaryCondition {
     private int basinId = -1;

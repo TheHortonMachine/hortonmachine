@@ -30,7 +30,7 @@ import static org.hortonmachine.dbs.utils.BasicStyle.*;
 /**
  * geopaparazzi related database utilities.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GeopaparazziDatabaseProperties implements ISpatialiteTableAndFieldsNames {
 

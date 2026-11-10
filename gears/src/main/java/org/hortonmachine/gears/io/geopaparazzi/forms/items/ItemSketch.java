@@ -20,7 +20,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
 /**
  * A sketch item.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ItemSketch implements Item {
 

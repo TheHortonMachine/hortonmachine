@@ -26,7 +26,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Las header object for las spec 1.0. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasHeader implements ILasHeader {
 

@@ -28,7 +28,7 @@ import org.hortonmachine.gears.io.las.core.LasRecord;
  * <p>The default use in {@link Collections#sort(java.util.List)} orders 
  * the points from the nearest to the farest from a given point.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasRecordDistanceComparator implements Comparator<LasRecord> {
 

@@ -72,7 +72,7 @@ import org.locationtech.jts.operation.union.CascadedPolygonUnion;
 /**
  * Utilities related to {@link Geometry}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GeometryUtilities {
 

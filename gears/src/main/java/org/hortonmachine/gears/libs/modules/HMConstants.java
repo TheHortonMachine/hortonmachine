@@ -34,7 +34,7 @@ import org.joda.time.format.DateTimeFormatter;
 /**
  * Constant values and novalues handling.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMConstants {
     /*

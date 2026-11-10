@@ -74,7 +74,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Import utilities.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SpatialDbsImportUtils {
     private static final String FID = "fid";

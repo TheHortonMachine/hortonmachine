@@ -27,7 +27,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 /**
  * Multithreading util class.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ThreadedRunnable<E> {
 

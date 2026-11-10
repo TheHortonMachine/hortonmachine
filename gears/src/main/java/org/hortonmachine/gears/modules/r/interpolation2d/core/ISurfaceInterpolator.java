@@ -24,7 +24,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * Simple interface for surface interpolation.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface ISurfaceInterpolator {
     /**

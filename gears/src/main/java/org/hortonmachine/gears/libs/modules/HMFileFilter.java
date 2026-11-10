@@ -24,7 +24,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * A custom file filter base.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMFileFilter extends FileFilter {
 

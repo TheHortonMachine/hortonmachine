@@ -23,7 +23,7 @@ import java.util.Date;
 /**
  * A date item.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ItemDate implements Item {
 

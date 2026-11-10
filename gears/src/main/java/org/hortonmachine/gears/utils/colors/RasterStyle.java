@@ -26,7 +26,7 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 /**
  * A simple raster styling utility for scripting environment.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class RasterStyle {
 

@@ -25,7 +25,7 @@ import org.geotools.styling.SLD;
 /**
  * A wrapper for a {@link PointSymbolizer} to ease interaction with gui.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PointSymbolizerWrapper extends SymbolizerWrapper {
 

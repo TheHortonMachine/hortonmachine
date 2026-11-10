@@ -34,7 +34,7 @@ import org.locationtech.jts.geom.Envelope;
 /**
  * An utility class for tile handling. 
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.9.7
  */
 public class TileUtilities {

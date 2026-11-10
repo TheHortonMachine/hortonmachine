@@ -26,7 +26,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
  * 
  * Class representing a particle in the swarm.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Particle {
     /**

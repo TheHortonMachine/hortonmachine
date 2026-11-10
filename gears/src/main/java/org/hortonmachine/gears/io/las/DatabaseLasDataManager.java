@@ -54,7 +54,7 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 /**
  * A class that manages las databases.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 class DatabaseLasDataManager extends ALasDataManager {
     private File databaseFile;

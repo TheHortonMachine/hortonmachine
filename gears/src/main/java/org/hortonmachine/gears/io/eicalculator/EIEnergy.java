@@ -22,7 +22,7 @@ package org.hortonmachine.gears.io.eicalculator;
 /**
  * Container for Energy data in the {@link EnergyIndexCalculator}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class EIEnergy {
 

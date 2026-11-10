@@ -28,7 +28,7 @@ import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
  * eclipse environment.
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface IHMProgressMonitor {
     /**

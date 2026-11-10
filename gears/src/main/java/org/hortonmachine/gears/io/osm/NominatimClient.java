@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.Envelope;
  * <p>The requests are sent with the project's {@link Version#USER_AGENT} and at most one per
  * second, as asked by the usage policy of the public server, and the last results are cached.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NominatimClient {
     /** The public server of OpenStreetMap. */

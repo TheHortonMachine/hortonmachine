@@ -23,7 +23,7 @@ import java.io.IOException;
 /**
  * Interface for las readers.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ALasReader extends Las implements AutoCloseable{
 

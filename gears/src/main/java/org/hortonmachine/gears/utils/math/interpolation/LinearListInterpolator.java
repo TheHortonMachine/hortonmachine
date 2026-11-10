@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * A class for doing linear interpolations on lists of X and Y.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LinearListInterpolator implements Interpolator {
 

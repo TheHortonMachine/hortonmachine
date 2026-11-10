@@ -50,7 +50,7 @@ import org.locationtech.jts.geom.Polygon;
  * <p>This is used to create the data manager, being it 
  * from single las file or index folder.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class ALasDataManager implements AutoCloseable {
     protected GeometryFactory gf = GeometryUtilities.gf();

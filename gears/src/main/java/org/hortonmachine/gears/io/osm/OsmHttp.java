@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * The http requests and the small caches shared by the OpenStreetMap clients.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 class OsmHttp {
     private static final int MAX_ERROR_LENGTH = 500;

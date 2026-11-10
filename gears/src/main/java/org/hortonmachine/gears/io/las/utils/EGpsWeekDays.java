@@ -20,7 +20,7 @@ package org.hortonmachine.gears.io.las.utils;
 /**
  * A simple enumeration of the days of the week.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum EGpsWeekDays {
     SUNDAY(0, 0, 86400), //

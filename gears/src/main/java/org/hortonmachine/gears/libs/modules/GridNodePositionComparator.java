@@ -22,7 +22,7 @@ import java.util.Comparator;
 /**
  * A simple comparator to sort {@link GridNode}s left to right order.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GridNodePositionComparator implements Comparator<GridNode> {
 

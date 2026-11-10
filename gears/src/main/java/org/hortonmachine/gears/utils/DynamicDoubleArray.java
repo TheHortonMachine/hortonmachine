@@ -22,7 +22,7 @@ import static java.lang.Math.max;
 /**
  * A wrapper for a dynamic growing array.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.3
  */
 public class DynamicDoubleArray {

@@ -20,7 +20,7 @@ package org.hortonmachine.gears.io.geopaparazzi.geopap4;
 /**
  * Represents an image.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Image  {
     /**

@@ -30,13 +30,12 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
-import org.geotools.data.store.ReprojectingFeatureCollection;
-import org.geotools.geometry.jts.GeometryCoordinateSequenceTransformer;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.operation.projection.ProjectionException;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.utils.features.ConcurrentReprojectingFeatureCollection;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -160,15 +159,18 @@ public class HMCrsTransformer {
 		return JTS.transform(envelope, null, mathTransform, numDensificationPoints);
 	}
 	
+	/**
+	 * Reproject a feature collection on the fly, with the transform of this transformer, lenient
+	 * or not. The result can be read by more threads at the same time.
+	 *
+	 * @param featureCollection the features.
+	 * @return the reprojected features, read again from the given ones at each use.
+	 * @throws Exception
+	 */
 	public SimpleFeatureCollection transform(SimpleFeatureCollection featureCollection) throws Exception {
 		init();
-		ReprojectingFeatureCollection reprojected = new ReprojectingFeatureCollection(featureCollection, toCrs);
-		// the collection finds a lenient transform by itself: use this one, lenient or not
-		GeometryCoordinateSequenceTransformer transformer = new GeometryCoordinateSequenceTransformer();
-		transformer.setMathTransform(mathTransform);
-		transformer.setCoordinateReferenceSystem(toCrs);
-		reprojected.setTransformer(transformer);
-		return reprojected;
+		// the plain reprojecting collection finds a lenient transform by itself: use this one
+		return new ConcurrentReprojectingFeatureCollection(featureCollection, toCrs, mathTransform);
 	}
 	
 	public SimpleFeature transform(SimpleFeature feature) throws Exception {

@@ -30,7 +30,7 @@ import org.geotools.filter.function.FilterFunction_startPoint;
 /**
  * A wrapper for a {@link LineSymbolizer} to ease interaction with gui.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LineSymbolizerWrapper extends SymbolizerWrapper {
 

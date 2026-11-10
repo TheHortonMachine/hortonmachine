@@ -34,7 +34,7 @@ import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 /**
  * A simple category boxplot chart.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class CategoryBoxplot implements IChart {
 

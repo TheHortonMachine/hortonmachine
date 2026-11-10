@@ -56,7 +56,7 @@ import org.geotools.styling.visitor.DuplicatingStyleVisitor;
  * <p>The rules are the ones of the style, not copies, so the symbolizer panels of the style
  * editor can edit them in place.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class StyleRules {
 

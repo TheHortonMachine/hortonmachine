@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils;
 /**
  * Utilities to handle data.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class DataUtilities {

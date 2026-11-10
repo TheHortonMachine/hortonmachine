@@ -30,7 +30,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
  * (see http://www.apropos-logic.com/books.html).
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PolynomialInterpolator implements Interpolator {
     private int n;

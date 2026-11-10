@@ -26,7 +26,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * A linear distance weighted Interpolation.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LinearDWInterpolator implements ISurfaceInterpolator {
 

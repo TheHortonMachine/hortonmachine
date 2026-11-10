@@ -33,7 +33,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * Table to hold all the table sources.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasSourcesTable {
     public static final SqlName TABLENAME = SqlName.m("lassources");

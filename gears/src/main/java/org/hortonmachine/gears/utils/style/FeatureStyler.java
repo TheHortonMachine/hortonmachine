@@ -51,7 +51,7 @@ import org.geotools.api.style.TextSymbolizer;
  * the scale. Values given by expressions, as a color read from a field, are evaluated for each
  * feature.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureStyler {
 

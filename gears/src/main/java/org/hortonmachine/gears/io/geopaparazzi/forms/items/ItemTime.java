@@ -23,7 +23,7 @@ import java.util.Date;
 /**
  * A time item.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ItemTime implements Item {
 

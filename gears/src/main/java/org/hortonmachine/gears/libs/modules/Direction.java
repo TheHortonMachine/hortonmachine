@@ -51,7 +51,7 @@ import static java.lang.Math.sqrt;
  * <p>
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum Direction {
     E(1, 0, 1, 5), //

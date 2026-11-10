@@ -35,7 +35,7 @@ import org.locationtech.jts.io.ParseException;
 /**
  * Table to hold all the table sources.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasCellsTable {
     public static final SqlName TABLENAME = SqlName.m("lascells");

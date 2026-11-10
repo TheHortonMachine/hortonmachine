@@ -28,7 +28,7 @@ import com.github.mreutegg.laszip4j.LASHeader;
 /**
  * Las header object for las spec 1.0. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LaszipHeader implements ILasHeader {
 

@@ -20,7 +20,7 @@ package org.hortonmachine.gears.io.geopaparazzi.geopap4;
 /**
  * Enumerations containing the database fields.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TableDescriptions {
 

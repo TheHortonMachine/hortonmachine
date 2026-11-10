@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils;
 /**
  * A point with a fast hash.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class CheckPoint {
     public final int x;

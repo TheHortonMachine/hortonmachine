@@ -36,7 +36,7 @@ import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 /**
  * A wrapper for features that helps out with lots of stuff.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureMate {
 

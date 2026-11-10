@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.Envelope;
 /**
  * Map containing a region definition, having utility methods to get the values.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.2
  */
 public class RegionMap {

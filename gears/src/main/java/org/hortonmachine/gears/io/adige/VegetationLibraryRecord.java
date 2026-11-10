@@ -25,7 +25,7 @@ import java.util.Arrays;
  * 
  * <p><b>Note that months start from 1 (jan=1, dec=12).</b></p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class VegetationLibraryRecord {  
     private final int id;

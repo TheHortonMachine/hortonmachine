@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * A connected combos item.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ItemConnectedCombo implements Item {
 

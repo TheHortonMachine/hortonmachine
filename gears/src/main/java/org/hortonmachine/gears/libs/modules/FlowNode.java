@@ -27,7 +27,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
 /**
  * A node in the grid environment of a digital elevation model. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.6
  */
 public class FlowNode extends Node {

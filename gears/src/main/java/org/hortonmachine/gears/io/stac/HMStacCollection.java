@@ -49,7 +49,7 @@ import com.github.davidmoten.aws.lw.client.Client;
 /**
  * A stac collection.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class HMStacCollection {

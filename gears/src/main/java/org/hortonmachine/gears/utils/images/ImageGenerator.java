@@ -107,7 +107,7 @@ import org.locationtech.jts.geom.Envelope;
  * <p>Layers are drawn in this order: wms, coverage paths, in memory coverages, feature
  * paths, in memory features. Inside each group the order of addition is kept.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.3
  */
 public class ImageGenerator {

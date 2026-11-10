@@ -47,7 +47,7 @@ import org.geotools.parameter.Parameter;
 /**
  * An utility class image handling. 
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.9
  */
 public class ImageUtilities {

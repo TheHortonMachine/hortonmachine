@@ -25,7 +25,7 @@ import org.hortonmachine.gears.libs.monitor.LogProgressMonitor;
 /**
  * Sorting of a double array with an array of objects following.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class QuickSortAlgorithmObjects {

@@ -19,7 +19,7 @@ import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 /**
  * The entrypoint to work with stac in HM.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 @SuppressWarnings("rawtypes")

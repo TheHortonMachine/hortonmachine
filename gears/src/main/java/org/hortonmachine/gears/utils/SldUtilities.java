@@ -50,7 +50,7 @@ import org.hortonmachine.gears.utils.style.sld.SLDHandler;
 /**
  * Utilities to handle style.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.0
  */
 public class SldUtilities {

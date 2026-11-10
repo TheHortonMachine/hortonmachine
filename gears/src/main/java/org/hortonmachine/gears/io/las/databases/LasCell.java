@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * A cell of las data.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasCell {
     public long id;

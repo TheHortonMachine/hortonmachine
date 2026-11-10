@@ -31,7 +31,7 @@ import org.locationtech.jts.index.strtree.STRtree;
 /**
  * Writer for the quadtree disk index.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @see IDiskTree
  */
 public class DiskTreeWriter implements IDiskTree {

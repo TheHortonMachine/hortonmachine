@@ -35,7 +35,7 @@ import org.locationtech.jts.geom.Coordinate;
  * <p><b>Note that this implementation works only with metric data.</b>
  *
  * @author jezekjan
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TPSInterpolator implements ISurfaceInterpolator {
 

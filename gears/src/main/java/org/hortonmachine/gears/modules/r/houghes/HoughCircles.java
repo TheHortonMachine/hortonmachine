@@ -39,7 +39,7 @@ import org.locationtech.jts.geom.Coordinate;
  * 
  * @author Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa
  * @author Mark A. Schulze applet (http://www.markschulze.net/)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HoughCircles {
 

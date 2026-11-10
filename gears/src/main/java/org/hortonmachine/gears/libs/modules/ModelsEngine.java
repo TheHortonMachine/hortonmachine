@@ -72,7 +72,7 @@ import org.locationtech.jts.geom.MultiLineString;
  *
  * <p>The methods are not static for usage in multithreading environment.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @author Silvia Franceschi (www.hydrologis.com)
  * @author Erica Ghesla
  * @author Daniele Andreis

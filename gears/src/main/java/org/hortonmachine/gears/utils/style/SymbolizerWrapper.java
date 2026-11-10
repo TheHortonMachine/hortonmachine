@@ -22,7 +22,7 @@ import org.geotools.util.factory.GeoTools;
 /**
  * An abstract wrapper for a {@link Symbolizer} to ease interaction with gui.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class SymbolizerWrapper {
 

@@ -31,7 +31,7 @@ import org.eclipse.imagen.iterator.RandomIterFactory;
  * the foreground and background edge pixels in hash tables for efficiency.
  *
  * @author Simon Horne.
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class BinaryFast {
 

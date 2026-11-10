@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * Helper class for simple filter constructions.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class FilterUtilities {

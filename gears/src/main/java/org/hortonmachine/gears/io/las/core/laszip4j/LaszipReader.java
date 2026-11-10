@@ -33,7 +33,7 @@ import com.github.mreutegg.laszip4j.LASReader;
 /**
  * Las reader based on laszip4j. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LaszipReader extends ALasReader {
 

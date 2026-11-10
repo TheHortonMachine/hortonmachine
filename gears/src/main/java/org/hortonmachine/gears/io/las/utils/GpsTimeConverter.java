@@ -40,7 +40,7 @@ import org.joda.time.format.DateTimeFormatter;
  * from this instant. The weeks begin at the Saturday/Sunday transition. 
  * The days of the week are numbered, with Sunday being 0, Saturday is day 6
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class GpsTimeConverter {

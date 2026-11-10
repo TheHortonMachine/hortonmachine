@@ -36,7 +36,7 @@ import org.locationtech.jts.geom.Polygon;
  * 
  * <p>Based on work of: Michael Michaud</p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class DxfUtils {
     public static final String SUFFIX = "_";

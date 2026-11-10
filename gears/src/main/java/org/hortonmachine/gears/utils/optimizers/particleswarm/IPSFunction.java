@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils.optimizers.particleswarm;
 /**
  * Interface for a particle swarm fitting function that is supposed to return a value to minimize. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface IPSFunction {
 

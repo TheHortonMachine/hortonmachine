@@ -25,7 +25,7 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.Item;
 /**
  * A form object.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class Form {
 

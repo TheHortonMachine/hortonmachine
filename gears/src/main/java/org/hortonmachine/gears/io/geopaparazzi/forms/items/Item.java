@@ -20,7 +20,7 @@ package org.hortonmachine.gears.io.geopaparazzi.forms.items;
 /**
  * The form item interface.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface Item {
     String getKey();

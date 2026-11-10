@@ -51,7 +51,7 @@ import org.locationtech.jts.index.strtree.STRtree;
 /**
  * A class that manages single las files.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 class LasFileDataManager extends ALasDataManager {
     private File lasFile;

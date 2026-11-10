@@ -25,7 +25,7 @@ import org.hortonmachine.gears.io.geopaparazzi.forms.items.Item;
 /**
  * The main frame.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class MainFrame {
 

@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * A color interpolation helper class.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ColorInterpolator {
 

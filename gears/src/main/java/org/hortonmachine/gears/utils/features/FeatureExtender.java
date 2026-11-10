@@ -33,7 +33,7 @@ import org.geotools.api.feature.type.FeatureType;
 /**
  * Utility to add attributes to existing features.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureExtender {
     private SimpleFeatureType newFeatureType;

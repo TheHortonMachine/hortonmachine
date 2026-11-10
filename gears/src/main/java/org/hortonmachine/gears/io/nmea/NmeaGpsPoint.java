@@ -65,7 +65,7 @@ import org.joda.time.format.DateTimeFormatter;
  *      *47          the checksum data, always begins with *
  * </pre>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NmeaGpsPoint {
     public static final String GPGGA = "$GPGGA";

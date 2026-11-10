@@ -45,7 +45,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Database spatial helper methods.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class DbsHelper {
     private static final Logger logger = Logger.INSTANCE;

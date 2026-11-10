@@ -29,7 +29,7 @@ import org.joda.time.format.DateTimeFormatter;
  * format YYYY-MM-DD HH:MM:SS. If not explicitly defined, 
  * that format, with or without seconds, is used. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @since 0.7.0
  */
 public class UtcTimeUtilities {

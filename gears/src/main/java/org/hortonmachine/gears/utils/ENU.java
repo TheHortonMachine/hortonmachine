@@ -50,7 +50,7 @@ import org.locationtech.jts.geom.Polygon;
  * 
  * <p>Note that all coordinates need to have a Z available. If the Z is NaN, then it is set to 0.</p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ENU {
 

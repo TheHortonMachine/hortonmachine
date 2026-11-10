@@ -63,7 +63,7 @@ import org.locationtech.jts.operation.linemerge.LineMerger;
  * {@value #MAX_TAG_COLUMNS} most frequent of each geometry type, while the others go into
  * <code>other_tags</code>, as <code>key=value;key=value</code>.</p>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class OverpassResult {
     /** The maximum number of tags that get their own column. */

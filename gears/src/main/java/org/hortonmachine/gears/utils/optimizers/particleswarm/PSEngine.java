@@ -33,7 +33,7 @@ import org.hortonmachine.gears.utils.math.NumericsUtilities;
  * Biblio: http://ncra.ucd.ie/COMP30290/crc2006/Olapeju_Ayoola_03304281.pdf ?
  * </p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PSEngine {
 

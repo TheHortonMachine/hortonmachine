@@ -30,7 +30,7 @@ import org.locationtech.jts.index.strtree.STRtree;
 /**
  * Reader for the Sort-Tile-Recursive disk index.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  * @see IDiskTree
  */
 public class DiskTreeReader implements IDiskTree {

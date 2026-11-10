@@ -20,7 +20,7 @@ package org.hortonmachine.gears.utils.simplereport;
 /**
  * An html report helper.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HtmlReport implements ISimpleReport {
     @Override

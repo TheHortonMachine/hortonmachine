@@ -27,7 +27,7 @@ import java.io.PrintStream;
  * {@link IProgressMonitor} in order to be used also in the part of
  * the code that needs to stay clean of rcp code.</p>
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class PrintStreamProgressMonitor implements IHMProgressMonitor {
 

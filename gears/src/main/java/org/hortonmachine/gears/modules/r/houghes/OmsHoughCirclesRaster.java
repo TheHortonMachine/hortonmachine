@@ -101,7 +101,7 @@ public class OmsHoughCirclesRaster extends HMModel {
     // VARS DESCR START
     public static final String NAME = "houghcirclesraster";
     public static final String KEYWORDS = "Hough, circle";
-    public static final String AUTHORS = "Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa, Mark A. Schulze (http://www.markschulze.net/), Andrea Antonello (www.hydrologis.com)";
+    public static final String AUTHORS = "Hemerson Pistori (pistori@ec.ucdb.br) and Eduardo Rocha Costa, Mark A. Schulze (http://www.markschulze.net/), Andrea Antonello (https://g-ant.eu)";
     public static final String DESCRIPTIO = "Hough Transform implementation.";
 
     public static final String outCircles_DESCR = "The output circles.";

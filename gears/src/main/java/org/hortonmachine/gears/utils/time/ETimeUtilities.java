@@ -25,7 +25,7 @@ import java.util.TimeZone;
 /**
  * Singleton utility for time management.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum ETimeUtilities {
     /**

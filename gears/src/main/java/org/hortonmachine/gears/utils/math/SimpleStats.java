@@ -22,7 +22,7 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 /**
  * A simple statistics class that wraps DescriptiveStatistics.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class SimpleStats {
     private DescriptiveStatistics stats = new DescriptiveStatistics();

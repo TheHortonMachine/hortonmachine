@@ -42,7 +42,7 @@ import org.hortonmachine.Version;
  * out geom;
  * </pre>
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class OverpassClient {
     /** The main public server. */

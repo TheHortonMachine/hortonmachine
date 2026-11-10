@@ -56,7 +56,7 @@ import org.locationtech.jts.index.strtree.ItemBoundable;
 /**
  * A class that manages las folder data.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 class LasFolderIndexDataManager extends ALasDataManager implements AutoCloseable {
     private WeakValueHashMap<String, Pair> fileName2LasReaderMap;

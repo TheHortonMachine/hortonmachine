@@ -63,7 +63,7 @@ import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
 /**
  * Utilities for Las handling classes.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasUtils {
     private static final GeometryFactory gf = GeometryUtilities.gf();

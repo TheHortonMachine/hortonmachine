@@ -22,7 +22,7 @@ package org.hortonmachine.gears.utils.math.interpolation.splines;
  * This is adapted from: http://www.cse.unsw.edu.au/~lambert/splines/natcubicclosed.html
  * 
  * @author Tim Lambert (http://www.cse.unsw.edu.au/~lambert/)
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NatCubicClosed extends NatCubic {
 

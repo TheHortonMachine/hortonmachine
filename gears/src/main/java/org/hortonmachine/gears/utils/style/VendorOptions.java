@@ -12,7 +12,7 @@ package org.hortonmachine.gears.utils.style;
 /**
  * Enumeration of possible vendor options.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public enum VendorOptions {
     VENDOROPTION_MAXDISPLACEMENT("maxDisplacement"), // //$NON-NLS-1$

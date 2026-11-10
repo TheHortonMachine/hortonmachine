@@ -36,7 +36,7 @@ import org.jfree.data.time.TimeSeriesCollection;
 /**
  * A simple timeseries chart plotter.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class TimeSeries implements IChart {
 

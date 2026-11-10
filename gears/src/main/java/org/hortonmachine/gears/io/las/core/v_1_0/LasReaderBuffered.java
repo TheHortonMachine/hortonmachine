@@ -33,7 +33,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Las record reader for las spec 1.0. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasReaderBuffered extends ALasReader {
     private final byte[] doubleDataArray = new byte[8];

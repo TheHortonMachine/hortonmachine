@@ -39,7 +39,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTa
 /**
  * Data access object for images.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class DaoImages {

@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * A list that also holds a name.
  *
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class NamedList<T> {
     public String name = "";

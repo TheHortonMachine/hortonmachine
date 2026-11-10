@@ -26,7 +26,7 @@ import org.geotools.api.util.ProgressListener;
 /**
  * Wrapper for geotools' {@link ProgressListener}.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GeotoolsProgressMonitorAdapter implements IHMProgressMonitor {
 

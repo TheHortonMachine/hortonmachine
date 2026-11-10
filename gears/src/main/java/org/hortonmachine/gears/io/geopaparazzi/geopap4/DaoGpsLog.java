@@ -44,7 +44,7 @@ import org.hortonmachine.gears.io.geopaparazzi.geopap4.TableDescriptions.ImageTa
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
 
 /**
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class DaoGpsLog {

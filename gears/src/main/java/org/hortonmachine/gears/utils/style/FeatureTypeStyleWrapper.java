@@ -10,7 +10,7 @@ import org.geotools.api.style.Rule;
 /**
  * A wrapper for the {@link FeatureTypeStyle} object to ease gui use.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureTypeStyleWrapper {
 

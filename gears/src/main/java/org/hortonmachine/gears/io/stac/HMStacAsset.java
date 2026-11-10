@@ -10,7 +10,7 @@ import tools.jackson.databind.JsonNode;
 /**
  * An asset from a stac item.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMStacAsset {
 

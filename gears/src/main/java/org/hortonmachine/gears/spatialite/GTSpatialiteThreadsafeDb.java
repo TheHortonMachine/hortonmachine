@@ -38,7 +38,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * A spatialite database threadsafe on writing (see package javadoc for more info).
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  *
  */
 public class GTSpatialiteThreadsafeDb extends SpatialiteThreadsafeDb {

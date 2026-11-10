@@ -36,7 +36,7 @@ import org.joda.time.DateTime;
 /**
  * Executor of os commands.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class CommandExecutor {
     private static String nl = "\n";

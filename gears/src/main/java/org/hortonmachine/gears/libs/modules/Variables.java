@@ -20,7 +20,7 @@ package org.hortonmachine.gears.libs.modules;
 /**
  * Variable names that also need translations and used in the modules.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface Variables {
     public String DEFAULT = "default";

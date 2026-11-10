@@ -21,7 +21,7 @@ package org.hortonmachine.gears.utils.math.integration;
 import org.hortonmachine.gears.libs.modules.ModelsEngine;
 
 /**
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class ConvolutionDiffusionWidth extends SimpsonIntegral implements IntegrableFunction {
 

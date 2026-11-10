@@ -29,7 +29,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Las superclass.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public abstract class Las {
     private static boolean isLaz( String name ) {

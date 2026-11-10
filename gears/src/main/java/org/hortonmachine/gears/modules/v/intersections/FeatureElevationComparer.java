@@ -28,7 +28,7 @@ import org.locationtech.jts.geom.Geometry;
 /**
  * A wrapper for {@link SimpleFeature}s so that they are sorted by a numeric field.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class FeatureElevationComparer implements Comparable<FeatureElevationComparer> {
 

@@ -22,7 +22,7 @@ import org.locationtech.jts.geom.Polygon;
 /**
  * A level of las average data.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class LasLevel {
     public long id;

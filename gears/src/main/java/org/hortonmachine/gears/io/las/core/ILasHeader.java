@@ -23,7 +23,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
  * Las header interface. 
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public interface ILasHeader {
 

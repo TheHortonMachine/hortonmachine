@@ -25,7 +25,7 @@ import tools.jackson.databind.node.ObjectNode;
 /**
  * The items from a collection.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("unchecked")
 public class HMStacItem {

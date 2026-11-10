@@ -31,7 +31,7 @@ import java.util.HashMap;
 import org.hortonmachine.gears.utils.time.ETimeUtilities;
 
 /**
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 @SuppressWarnings("nls")
 public class DaoMetadata {

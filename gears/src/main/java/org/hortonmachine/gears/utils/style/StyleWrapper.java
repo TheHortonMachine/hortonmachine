@@ -16,7 +16,7 @@ import org.geotools.xml.styling.SLDTransformer;
 /**
  * A wrapper for the {@link Style} object to ease gui use.
  * 
- * @author Andrea Antonello (www.hydrologis.com)
+ * @author Andrea Antonello (https://g-ant.eu)
  */
 public class StyleWrapper {
 
