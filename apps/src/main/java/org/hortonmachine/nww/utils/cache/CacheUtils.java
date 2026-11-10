@@ -28,7 +28,6 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 
 import gov.nasa.worldwind.cache.BasicDataFileStore;
 import gov.nasa.worldwind.cache.FileStore;
-import gov.nasa.worldwindx.hm.FileStoreDataSet;
 
 /**
  * Utils related to data caches.

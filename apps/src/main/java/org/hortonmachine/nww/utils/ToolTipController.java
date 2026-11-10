@@ -4,9 +4,7 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.hm;
-
-import org.hortonmachine.nww.utils.NwwUtilities;
+package org.hortonmachine.nww.utils;
 
 import gov.nasa.worldwind.*;
 import gov.nasa.worldwind.avlist.*;

@@ -51,7 +51,6 @@ import gov.nasa.worldwind.render.Path;
 import gov.nasa.worldwind.render.PointPlacemark;
 import gov.nasa.worldwind.render.PointPlacemarkAttributes;
 import gov.nasa.worldwind.render.Polygon;
-import gov.nasa.worldwindx.hm.ToolTipController;
 
 public class NwwUtilities {
 

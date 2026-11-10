@@ -4,7 +4,7 @@
  * All Rights Reserved.
  */
 
-package gov.nasa.worldwindx.hm;
+package org.hortonmachine.nww.utils;
 
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.render.*;

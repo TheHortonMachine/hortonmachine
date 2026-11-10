@@ -22,7 +22,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumn;
 
 import gov.nasa.worldwind.util.WWUtil;
-import gov.nasa.worldwindx.hm.FileStoreDataSet;
 
 /**
  * @author tag

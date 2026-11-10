@@ -5,7 +5,6 @@ import org.hortonmachine.nww.layers.objects.BasicMarkerWithInfo;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.avlist.AVKey;
 import gov.nasa.worldwind.event.SelectEvent;
-import gov.nasa.worldwindx.hm.ToolTipController;
 
 public class ToolTipsUtils {
 
