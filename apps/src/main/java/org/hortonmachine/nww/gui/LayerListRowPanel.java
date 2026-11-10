@@ -83,6 +83,9 @@ public class LayerListRowPanel extends JPanel {
 
         eastPanel = new JPanel(new BorderLayout(4, 0));
         buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        // transparent, so that the background of the current row shows through
+        eastPanel.setOpaque(false);
+        buttonsPanel.setOpaque(false);
         eastPanel.add(buttonsPanel, BorderLayout.EAST);
         add(eastPanel, BorderLayout.EAST);
 
@@ -93,6 +96,7 @@ public class LayerListRowPanel extends JPanel {
             opacitySlider = new JSlider(0, 100, opacity);
             opacitySlider.setPreferredSize(new Dimension(70, opacitySlider.getPreferredSize().height));
             opacitySlider.setFocusable(false);
+            opacitySlider.setOpaque(false);
             opacitySlider.setToolTipText("Opacity: " + opacity + "%");
             JSlider slider = opacitySlider;
             slider.addChangeListener(e -> {
@@ -141,6 +145,23 @@ public class LayerListRowPanel extends JPanel {
 
     public Layer getLayer() {
         return layer;
+    }
+
+    /**
+     * Highlight the row of the current layer, the one selected with a click.
+     *
+     * @param current <code>true</code> to highlight the row.
+     */
+    public void setCurrent( boolean current ) {
+        Color background = UIManager.getColor("List.selectionInactiveBackground");
+        if (background == null) {
+            background = UIManager.getColor("List.selectionBackground");
+        }
+        setOpaque(current && background != null);
+        if (current && background != null) {
+            setBackground(background);
+        }
+        repaint();
     }
 
     /**

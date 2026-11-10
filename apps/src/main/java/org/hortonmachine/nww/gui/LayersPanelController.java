@@ -49,6 +49,10 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
 
     private Consumer<List<File>> fileDropHandler;
 
+    /** The layer selected with a click on its row, or <code>null</code>. */
+    private Layer currentLayer;
+    private final List<Consumer<Layer>> currentLayerListeners = new ArrayList<>();
+
     /**
     * Default constructor
      * @param wwdPanel
@@ -91,6 +95,7 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
         rowsPanel.removeAll();
         rows.clear();
 
+        boolean currentShown = false;
         for( Layer layer : getShownLayers() ) {
             LayerListRowPanel row = new LayerListRowPanel(this, wwdPanel, layer);
             row.setBorder(ROW_BORDER);
@@ -98,12 +103,46 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
                 handle.addMouseListener(rowDragHandler);
                 handle.addMouseMotionListener(rowDragHandler);
             }
+            if (layer == currentLayer) {
+                row.setCurrent(true);
+                currentShown = true;
+            }
             rows.add(row);
             rowsPanel.add(row);
         }
 
         rowsPanel.revalidate();
         rowsPanel.repaint();
+
+        if (currentLayer != null && !currentShown) {
+            // removed
+            setCurrentLayer(null);
+        }
+    }
+
+    /**
+     * @return the layer selected with a click on its row, or <code>null</code>.
+     */
+    public Layer getCurrentLayer() {
+        return currentLayer;
+    }
+
+    /**
+     * @param listener told of the layer selected with a click on its row, with
+     *          <code>null</code> when the selected layer is removed.
+     */
+    public void addCurrentLayerListener( Consumer<Layer> listener ) {
+        currentLayerListeners.add(listener);
+    }
+
+    private void setCurrentLayer( Layer layer ) {
+        currentLayer = layer;
+        for( LayerListRowPanel row : rows ) {
+            row.setCurrent(row.getLayer() == layer);
+        }
+        for( Consumer<Layer> listener : currentLayerListeners ) {
+            listener.accept(layer);
+        }
     }
 
     /**
@@ -236,7 +275,12 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
             dragging = false;
             setDropSlot(-1);
             rowsPanel.setCursor(null);
-            if (!wasDragging || slot < 0) {
+            if (!wasDragging) {
+                // a click: the layer becomes the current one
+                setCurrentLayer(row.getLayer());
+                return;
+            }
+            if (slot < 0) {
                 return;
             }
             int fromRow = rows.indexOf(row);

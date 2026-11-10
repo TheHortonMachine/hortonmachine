@@ -26,6 +26,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.nww.gui.LayerEventsListener;
+import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
 import org.hortonmachine.nww.utils.NwwUtilities;
@@ -65,6 +66,16 @@ public class NwwContext {
      */
     public NwwPanel getNwwPanel() {
         return nwwPanel;
+    }
+
+    /**
+     * @return the layer selected with a click in the layers panel, or <code>null</code>.
+     */
+    public Layer getCurrentLayer() {
+        if (layerEventsListener instanceof LayersPanelController) {
+            return ((LayersPanelController) layerEventsListener).getCurrentLayer();
+        }
+        return null;
     }
 
     /**

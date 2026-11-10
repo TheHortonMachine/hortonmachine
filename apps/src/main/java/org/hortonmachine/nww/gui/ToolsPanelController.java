@@ -112,6 +112,7 @@ import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPolygonLaye
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
 import org.hortonmachine.nww.layers.defaults.vector.ShapefilesFolderLayer;
+import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.utils.CursorUtils;
 import org.hortonmachine.nww.utils.EGlobeModes;
 import org.hortonmachine.nww.utils.FakeGps;
@@ -713,7 +714,10 @@ public class ToolsPanelController extends ToolsPanelView {
                 }
             }
             String layerName = gpkgFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName;
-            loadFeatureCollection(null, layerName, null, readFC, null, sldStyle);
+            Layer layer = loadFeatureCollection(null, layerName, null, readFC, null, sldStyle, null);
+            if (layer != null) {
+                new LayerSource(gpkgFile, tableName).attachTo(layer);
+            }
         }
     }
 
@@ -859,9 +863,10 @@ public class ToolsPanelController extends ToolsPanelView {
                                     "No point read from " + layerName);
                             return;
                         }
+                        new LayerSource(lasFile, null).attachTo(layer);
                         wwjPanel.getWwd().getModel().getLayers().add(layer);
                         layerEventsListener.onLayerAdded(layer);
-                                        org.locationtech.jts.geom.Envelope bounds = layer.getBounds();
+                        org.locationtech.jts.geom.Envelope bounds = layer.getBounds();
                         wwjPanel.goTo(Sector.fromDegrees(bounds.getMinY(), bounds.getMaxY(), bounds.getMinX(), bounds.getMaxX()),
                                 true);
                     });
@@ -881,6 +886,7 @@ public class ToolsPanelController extends ToolsPanelView {
         try {
             if (lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif")) {
                 GridCoverageNwwLayer coverageNwwLayer = new GridCoverageNwwLayer(selectedFile, null, Color.WHITE);
+                new LayerSource(selectedFile, null).attachTo(coverageNwwLayer);
                 wwjPanel.getWwd().getModel().getLayers().add(coverageNwwLayer);
                 layerEventsListener.onLayerAdded(coverageNwwLayer);
             } else if (lowerName.endsWith(".shp")) {
@@ -930,7 +936,10 @@ public class ToolsPanelController extends ToolsPanelView {
                     featureStore = (SimpleFeatureStore) featureSource;
                 }
                 SimpleFeatureCollection readFC = NwwUtilities.readAndReproject(featureSource);
-                loadFeatureCollection(selectedFile, name, featureStore, readFC, field2ValuesMap);
+                Layer layer = loadFeatureCollection(selectedFile, name, featureStore, readFC, field2ValuesMap, null, null);
+                if (layer != null) {
+                    new LayerSource(selectedFile, null).attachTo(layer);
+                }
             } else if (lowerName.endsWith(".las") || lowerName.endsWith(".laz")) {
                 loadLasFile(selectedFile);
             } else if (lowerName.endsWith(".mbtiles")) {
@@ -1077,7 +1086,10 @@ public class ToolsPanelController extends ToolsPanelView {
         loadFeatureCollection(null, name, null, readFC, null, null, null);
     }
 
-    private void loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
+    /**
+     * @return the layer added, or <code>null</code> for an unknown geometry type.
+     */
+    private Layer loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
             SimpleFeatureCollection readFC, HashMap<String, String[]> field2ValuesMap, Style sldStyle,
             SimpleStyle simpleStyle ) throws Exception {
         if (_useRasterizedCheckbox.isSelected()) {
@@ -1091,6 +1103,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
             wwjPanel.getWwd().getModel().getLayers().add(collectionLayer);
             layerEventsListener.onLayerAdded(collectionLayer);
+            return collectionLayer;
         } else {
 
             GeometryDescriptor geometryDescriptor = readFC.getSchema().getGeometryDescriptor();
@@ -1112,6 +1125,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPolygonLayer);
                 layerEventsListener.onLayerAdded(featureCollectionPolygonLayer);
+                return featureCollectionPolygonLayer;
             } else if (EGeometryType.isLine(geometryDescriptor)) {
                 FeatureCollectionLinesLayer featureCollectionLinesLayer = new FeatureCollectionLinesLayer(name, readFC,
                         featureStore, field2ValuesMap);
@@ -1126,6 +1140,7 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 wwjPanel.getWwd().getModel().getLayers().add(featureCollectionLinesLayer);
                 layerEventsListener.onLayerAdded(featureCollectionLinesLayer);
+                return featureCollectionLinesLayer;
             } else if (EGeometryType.isPoint(geometryDescriptor)) {
                 String imagePath = null;
                 if (selectedFile != null) {
@@ -1147,9 +1162,10 @@ public class ToolsPanelController extends ToolsPanelView {
 
                 wwjPanel.getWwd().getModel().getLayers().add(featureCollectionPointsLayer);
                 layerEventsListener.onLayerAdded(featureCollectionPointsLayer);
-
+                return featureCollectionPointsLayer;
             } else {
                 System.err.println("?????");
+                return null;
             }
         }
     }

@@ -30,7 +30,10 @@ import org.hortonmachine.nww.layers.defaults.raster.OpenTopoLayer;
 import org.hortonmachine.gears.assistant.Assistants;
 import org.hortonmachine.gears.assistant.IAssistantBackend;
 import org.hortonmachine.gears.assistant.IScriptAssistant;
+import org.hortonmachine.nww.tools.INwwLayerTool;
 import org.hortonmachine.nww.tools.INwwTool;
+import org.hortonmachine.nww.tools.layers.RasterLayerTool;
+import org.hortonmachine.nww.tools.layers.VectorLayerTool;
 import org.hortonmachine.nww.tools.assistant.AssistantTool;
 import org.hortonmachine.nww.tools.NwwContext;
 import org.hortonmachine.nww.tools.NwwToolsTabs;
@@ -67,6 +70,17 @@ public class SimpleNwwViewer {
         if (scriptAssistant != null) {
             tools.add(new AssistantTool(backend, scriptAssistant));
         }
+        return tools;
+    }
+
+    /**
+     * @return new instances of the tools of the kinds of layers, whose panel is shown when a
+     *          layer is selected in the layers panel: the first that handles a layer is used.
+     */
+    public static List<INwwLayerTool> createDefaultLayerTools() {
+        List<INwwLayerTool> tools = new ArrayList<>();
+        tools.add(new VectorLayerTool());
+        tools.add(new RasterLayerTool());
         return tools;
     }
 
@@ -127,6 +141,10 @@ public class SimpleNwwViewer {
                 for( INwwTool tool : createDefaultTools() ) {
                     toolsTabs.addTool(tool);
                 }
+                for( INwwLayerTool layerTool : createDefaultLayerTools() ) {
+                    toolsTabs.addLayerTool(layerTool);
+                }
+                layerPanel.addCurrentLayerListener(toolsTabs::showLayer);
                 toolsTabs.setMinimumSize(small);
 
                 JSplitPane mapToolsSplit = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, nwwComponent, toolsTabs);
