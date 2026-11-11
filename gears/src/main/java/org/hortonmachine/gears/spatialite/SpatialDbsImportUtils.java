@@ -534,41 +534,16 @@ public class SpatialDbsImportUtils {
         if (latIndex != -1 && lonIndex != -1) {
             b.add(GEOMFIELD_FOR_SHAPEFILE, Point.class);
         }
+        // the fields read as text, which get the text of values of other types, as the
+        // timestamps, uuids or json objects of PostgreSQL
+        boolean[] isTextField = new boolean[names.size()];
         for( int i = 0; i < names.size(); i++ ) {
             if (geometryIndex != -1 && i == geometryIndex) {
                 b.add(geometryColumn.geometryColumnName, geometryClass);
                 continue;
             }
-            Class< ? > fieldClass = null;
-            String typeStr = types.get(i);
-            EDataType type = EDataType.getType4Name(typeStr);
-            switch( type ) {
-            case DOUBLE:
-                fieldClass = Double.class;
-                break;
-            case FLOAT:
-                fieldClass = Float.class;
-                break;
-            case INTEGER:
-                fieldClass = Integer.class;
-                break;
-            case LONG:
-                fieldClass = Long.class;
-                break;
-            case BOOLEAN:
-                fieldClass = Integer.class;
-                break;
-            case DATE:
-            case DATETIME:
-                fieldClass = String.class;
-                break;
-            case TEXT:
-                fieldClass = String.class;
-                break;
-            default:
-                fieldClass = String.class;
-                break;
-            }
+            Class< ? > fieldClass = getFieldClass(types.get(i));
+            isTextField[i] = fieldClass == String.class;
             b.add(names.get(i), fieldClass);
         }
         SimpleFeatureType type = b.buildFeatureType();
@@ -577,6 +552,13 @@ public class SpatialDbsImportUtils {
         int count = tableRecords.data.size();
         for( int i = 0; i < count; i++ ) {
             Object[] objects = tableRecords.data.get(i);
+            for( int j = 0; j < objects.length; j++ ) {
+                Object value = objects[j];
+                if (isTextField[j] && value != null && !(value instanceof String)) {
+                    // binary data have no meaningful text
+                    objects[j] = value instanceof byte[] ? null : value.toString();
+                }
+            }
 
             if (latIndex != -1 && lonIndex != -1) {
                 double lat = ((Number) objects[latIndex]).doubleValue();
@@ -597,6 +579,60 @@ public class SpatialDbsImportUtils {
             fc.add(feature);
         }
         return fc;
+    }
+
+    /**
+     * The class of the attribute of a column of a database table.
+     *
+     * <p>The PostgreSQL types whose names {@link EDataType} doesn't tell apart, as int8 or float8,
+     * are resolved first; the types {@link EDataType} doesn't know, as timestamp, uuid or json, are
+     * read as text.</p>
+     *
+     * @param typeName the type of the column, as given by the database.
+     * @return the class of the attribute.
+     */
+    static Class< ? > getFieldClass( String typeName ) {
+        String name = typeName == null ? "" : typeName.trim().toUpperCase();
+        switch( name ) {
+        case "INT8":
+        case "BIGSERIAL":
+        case "SERIAL8":
+            return Long.class;
+        case "INT4":
+        case "INT2":
+        case "SERIAL":
+        case "SERIAL4":
+        case "SMALLSERIAL":
+        case "SERIAL2":
+            return Integer.class;
+        case "FLOAT8":
+            return Double.class;
+        case "FLOAT4":
+            return Float.class;
+        case "BOOL":
+            return Boolean.class;
+        default:
+            break;
+        }
+        EDataType type;
+        try {
+            type = EDataType.getType4Name(name);
+        } catch (IllegalArgumentException e) {
+            return String.class;
+        }
+        switch( type ) {
+        case DOUBLE:
+            return Double.class;
+        case FLOAT:
+            return Float.class;
+        case INTEGER:
+        case BOOLEAN:
+            return Integer.class;
+        case LONG:
+            return Long.class;
+        default:
+            return String.class;
+        }
     }
 
     /**
