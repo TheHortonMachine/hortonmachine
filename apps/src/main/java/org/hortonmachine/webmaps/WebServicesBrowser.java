@@ -76,6 +76,7 @@ import javax.swing.SwingWorker;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.utils.PreferencesHandler;
@@ -778,6 +779,7 @@ public class WebServicesBrowser extends JPanel implements IOnCloseListener {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         WebServicesBrowser browser = new WebServicesBrowser();

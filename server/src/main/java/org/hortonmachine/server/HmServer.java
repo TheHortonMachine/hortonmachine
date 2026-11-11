@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hortonmachine.Version;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.server.db.ServerDb;
 import org.hortonmachine.server.files.FileOrigin;
 import org.hortonmachine.server.files.FileOrigins;
@@ -98,6 +99,7 @@ public class HmServer {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         ServerConfig config;
         try {
             config = ServerConfig.fromArguments(args, System.out);

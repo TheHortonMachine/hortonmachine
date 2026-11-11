@@ -51,13 +51,13 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
-import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.gears.utils.crs.CrsUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.utils.NwwUtilities;
@@ -197,7 +197,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      */
     private static AbstractGridCoverage2DReader fileReader( File rasterFile ) {
         AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
-        return format.getReader(rasterFile, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));
+        return format.getReader(rasterFile, HMCrsRegistry.longitudeFirstHints());
     }
 
     /**

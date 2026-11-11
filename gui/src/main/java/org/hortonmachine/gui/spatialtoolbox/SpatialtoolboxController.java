@@ -70,6 +70,7 @@ import org.geotools.map.Layer;
 import org.geotools.styling.SLD;
 import org.geotools.swing.JMapFrame.Tool;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -956,6 +957,7 @@ public class SpatialtoolboxController extends SpatialtoolboxView implements IOnC
     }
 
     public static void main( String[] args ) throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         File libsFile = null;

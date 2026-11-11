@@ -280,7 +280,7 @@ public class StacFiles {
         if (format == null || format instanceof UnknownFormat) {
             return null;
         }
-        AbstractGridCoverage2DReader reader = format.getReader(file);
+        AbstractGridCoverage2DReader reader = format.getReader(file, HMCrsRegistry.longitudeFirstHints());
         if (reader == null) {
             return null;
         }

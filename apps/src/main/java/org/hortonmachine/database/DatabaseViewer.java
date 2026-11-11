@@ -39,6 +39,7 @@ import org.geotools.data.store.ReprojectingFeatureCollection;
 import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
@@ -463,6 +464,7 @@ public class DatabaseViewer extends DatabaseController {
     }
 
     public static void main( String[] args ) throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();

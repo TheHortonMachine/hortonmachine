@@ -11,6 +11,7 @@ import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
 import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.cs.AxisDirection;
 import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
@@ -394,6 +395,46 @@ public class TestCrs {
         assertEquals(transformedRaster.getCols(), transformedRasterWithGrid.getCols());
         assertEquals(transformedRaster.getRows(), transformedRasterWithGrid.getRows());
         assertEquals(transformedValue, transformedRasterWithGrid.getValue(targetCoordinate), 0.1);
+    }
+
+    private static AxisDirection firstAxis( CoordinateReferenceSystem crs ) {
+        return crs.getCoordinateSystem().getAxis(0).getDirection();
+    }
+
+    @Test
+    public void testAxisOrder_longitudeFirstByDefault() throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
+        assertEquals(AxisDirection.EAST, firstAxis(HMCrsRegistry.INSTANCE.getCrs("EPSG:4326")));
+        assertEquals(AxisDirection.EAST, firstAxis(HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", true)));
+        // the global order reaches the plain GeoTools decoding too
+        assertEquals(AxisDirection.EAST, firstAxis(CRS.decode("EPSG:4326")));
+    }
+
+    @Test
+    public void testAxisOrder_authorityOrderWithGlobalLongitudeFirst() throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
+        CoordinateReferenceSystem latFirst = HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", false);
+        assertEquals(AxisDirection.NORTH, firstAxis(latFirst));
+        // the same EPSG code, but not the same CRS for the comparisons
+        assertEquals("EPSG:4326", CRS.lookupIdentifier(latFirst, true));
+        assertTrue(!HMCrsRegistry.crsEquals(latFirst, HMCrsRegistry.INSTANCE.getCrs("EPSG:4326", true)));
+        // projected CRSs have the easting first in both orders
+        assertEquals(AxisDirection.EAST, firstAxis(HMCrsRegistry.INSTANCE.getCrs("EPSG:32632", false)));
+        assertEquals(AxisDirection.EAST, firstAxis(HMCrsRegistry.INSTANCE.getCrs("EPSG:32632", true)));
+    }
+
+    @Test
+    public void testAxisOrder_authorityOrderOfOtherAuthorities() throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
+        CoordinateReferenceSystem esri;
+        try {
+            esri = HMCrsRegistry.INSTANCE.getCrs("ESRI:102700", false);
+        } catch (FactoryException e) {
+            assumeNoException("ESRI authority not available", e);
+            return;
+        }
+        assertNotNull(esri);
+        assertEquals(AxisDirection.EAST, firstAxis(esri));
     }
 
 }

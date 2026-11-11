@@ -3142,6 +3142,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();
         StacBrowser browser = new StacBrowser();

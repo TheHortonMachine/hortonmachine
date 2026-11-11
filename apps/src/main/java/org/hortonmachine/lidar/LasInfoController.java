@@ -1341,6 +1341,7 @@ public class LasInfoController extends LasInfoView implements IOnCloseListener, 
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();

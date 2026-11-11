@@ -1048,6 +1048,7 @@ public class RockfallViewer extends JPanel {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
         SwingUtilities.invokeLater(() -> {
             RockfallViewer viewer = new RockfallViewer();

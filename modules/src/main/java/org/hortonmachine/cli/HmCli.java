@@ -28,6 +28,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.hortonmachine.Version;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.cli.ModuleDescriptor.DataType;
 import org.hortonmachine.cli.ModuleDescriptor.Parameter;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -83,6 +84,7 @@ public class HmCli {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         checkGdalQuietly();
         System.exit(new HmCli(System.out, System.err).run(args));
     }

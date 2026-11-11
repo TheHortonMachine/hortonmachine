@@ -335,7 +335,7 @@ public class ImageGenerator {
                 try {
                     // first try a format that gives back a reader
                     AbstractGridFormat format = GridFormatFinder.findFormat(file);
-                    reader = format.getReader(file);
+                    reader = format.getReader(file, HMCrsRegistry.longitudeFirstHints());
                     if (reader instanceof GrassCoverageReader) {
                         reader = null;
                     }
@@ -381,7 +381,7 @@ public class ImageGenerator {
                 // try with available readers
                 try {
                     AbstractGridFormat format = GridFormatFinder.findFormat(file);
-                    reader = format.getReader(file);
+                    reader = format.getReader(file, HMCrsRegistry.longitudeFirstHints());
                     // if (crs == null) {
                     // crs = reader.getCrs();
                     // }

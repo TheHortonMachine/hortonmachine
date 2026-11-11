@@ -68,6 +68,7 @@ import org.geotools.swing.action.ZoomInAction;
 import org.geotools.swing.action.ZoomOutAction;
 import org.geotools.swing.tool.ScrollWheelTool;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
 import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.log.Logger;
@@ -1253,6 +1254,7 @@ public class MainController extends MainView implements IOnCloseListener, TreeSe
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();

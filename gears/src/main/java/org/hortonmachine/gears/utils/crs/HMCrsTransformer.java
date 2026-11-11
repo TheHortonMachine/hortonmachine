@@ -86,14 +86,15 @@ public class HMCrsTransformer {
 
 	/**
 	 * Creates a new HMCrsTransformer for transforming between the specified source and target CRS.
-	 * The CRS will be retrieved with the default axis order.
-	 * 
+	 * The CRSs are retrieved with the longitude (easting) first, the axis order HortonMachine works
+	 * with, as {@link HMCrsRegistry#getCrs(String)}.
+	 *
 	 * @param fromEpsgCode
 	 * @param toEpsgCode
 	 * @throws Exception
 	 */
 	public HMCrsTransformer(String fromEpsgCode, String toEpsgCode) throws Exception {
-		this(fromEpsgCode, toEpsgCode, false, false);
+		this(fromEpsgCode, toEpsgCode, true, true);
 	}
 	
 	/**

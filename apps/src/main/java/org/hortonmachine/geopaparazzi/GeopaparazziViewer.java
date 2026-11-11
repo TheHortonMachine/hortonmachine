@@ -37,6 +37,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.dbs.spatialite.hm.SqliteDb;
 import org.hortonmachine.gears.io.geopaparazzi.geopap4.DaoGpsLog.GpsLog;
 import org.hortonmachine.gears.utils.PreferencesHandler;
@@ -204,6 +205,7 @@ public class GeopaparazziViewer extends GeopaparazziController {
     }
 
     public static void main( String[] args ) throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();

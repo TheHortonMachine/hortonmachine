@@ -22,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.LayersPanelController;
@@ -386,6 +387,7 @@ public class SimpleNwwViewer {
     }
 
     public static void main( String[] args ) throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
         if (Configuration.isMacOS() && APPNAME != null) {
             System.setProperty("com.apple.mrj.application.apple.menu.about.name", APPNAME);
         }

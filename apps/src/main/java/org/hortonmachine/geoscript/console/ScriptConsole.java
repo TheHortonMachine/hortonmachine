@@ -103,6 +103,7 @@ import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 import org.hortonmachine.HM;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.assistant.Assistants;
 import org.hortonmachine.gears.assistant.IAssistantBackend;
@@ -1479,6 +1480,7 @@ public class ScriptConsole {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         try {
             if (args.length == 1 && !args[0].trim().isEmpty() && new File(args[0]).isFile()) {
                 // run a script headless

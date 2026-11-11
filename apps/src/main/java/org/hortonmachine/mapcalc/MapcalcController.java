@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 
 import org.hortonmachine.database.SqlHistoryDialog;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.database.SqlTemplatesDialog;
 import org.hortonmachine.dbs.log.Logger;
 import org.hortonmachine.gears.libs.modules.HMConstants;
@@ -512,6 +513,7 @@ public class MapcalcController extends MapcalcView implements IOnCloseListener {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         File libsFile = null;

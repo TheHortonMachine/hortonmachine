@@ -29,6 +29,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.io.vectorwriter.OmsVectorWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.exceptions.ModelsUserCancelException;
@@ -51,7 +52,8 @@ public class HMModel {
 
     private static boolean doLogging = false;
     static {
-        System.setProperty("org.geotools.referencing.forceXY", "true");
+        // the modules work with the longitude first, also when started on their own
+        HMCrsRegistry.initLongitudeFirst();
 
         // remove nasty error message if jai has no native backbone
         // JAI.getDefaultInstance().setImagingListener(new ImagingListener(){

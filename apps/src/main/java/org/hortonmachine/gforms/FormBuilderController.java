@@ -45,6 +45,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.hortonmachine.gears.io.geopaparazzi.forms.Form;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Section;
 import org.hortonmachine.gears.io.geopaparazzi.forms.Utilities;
 import org.hortonmachine.gears.io.geopaparazzi.forms.items.ItemBoolean;
@@ -1288,6 +1289,7 @@ public class FormBuilderController extends FormBuilderView implements IOnCloseLi
     }
 
     public static void main( String[] args ) throws Exception {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
 
         DefaultGuiBridgeImpl gBridge = new DefaultGuiBridgeImpl();

@@ -38,6 +38,7 @@ public class HMTestCase extends TestCase {
 
     static {
         Locale.setDefault(Locale.ENGLISH);
+        org.hortonmachine.gears.utils.crs.HMCrsRegistry.initLongitudeFirst();
     }
 
     /**

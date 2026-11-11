@@ -422,7 +422,7 @@ public class HMStacCollection {
                                 DefaultGeographicCRS.WGS84).transform(outputCrs, true);
 
                         roiGeometryFirstAssetCrs = GeometryUtilities.createPolygonFromEnvelope(roiEnvelopeFirstAssetCrs);
-                        firstAssetCRS = CRS.decode("EPSG:" + firstAssetSrid);
+                        firstAssetCRS = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + firstAssetSrid, true);
                         cols = latLongRegionMap.getCols();
                         rows = latLongRegionMap.getRows();
 

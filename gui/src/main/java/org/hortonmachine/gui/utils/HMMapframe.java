@@ -441,6 +441,7 @@ public class HMMapframe extends JMapFrame {
     }
 
     public static void main( String[] args ) {
+        HMCrsRegistry.initLongitudeFirst();
         GuiUtilities.setDefaultLookAndFeel();
         List<File> files = new ArrayList<>();
         for( String filePath : args ) {
