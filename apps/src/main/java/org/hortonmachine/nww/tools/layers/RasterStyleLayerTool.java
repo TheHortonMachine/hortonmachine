@@ -66,6 +66,7 @@ import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer.RasterInfo;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer.RasterKind;
+import org.hortonmachine.nww.layers.defaults.raster.TemporalRasterNwwLayer;
 import org.hortonmachine.nww.tools.INwwLayerTool;
 import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.tools.NwwContext;
@@ -100,6 +101,9 @@ public class RasterStyleLayerTool implements INwwLayerTool {
 
     @Override
     public boolean canHandle( Layer layer ) {
+        if (layer instanceof TemporalRasterNwwLayer) {
+            return true;
+        }
         LayerSource source = LayerSource.of(layer);
         if (source == null || !(layer instanceof GridCoverageNwwLayer)) {
             return false;
@@ -114,19 +118,24 @@ public class RasterStyleLayerTool implements INwwLayerTool {
     @Override
     public JComponent createPanel( NwwContext context, Layer layer ) {
         LayerSource source = LayerSource.of(layer);
+        // the series of rasters have no source, their structure is the one of their files
+        TemporalRasterNwwLayer temporalLayer = layer instanceof TemporalRasterNwwLayer t ? t : null;
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        JLabel reading = new JLabel("Reading " + source.path() + " ...");
+        JLabel reading = new JLabel("Reading " + (temporalLayer != null ? temporalLayer.getFolder() : source.path()) + " ...");
         panel.add(reading, BorderLayout.NORTH);
 
-        GridCoverageNwwLayer rasterLayer = (GridCoverageNwwLayer) layer;
         new Thread(() -> {
             RasterInfo readInfo;
             String error = null;
             try {
-                readInfo = rasterLayer.isRemote()
-                        ? GridCoverageNwwLayer.readRasterInfo(rasterLayer.getRemoteReader())
-                        : GridCoverageNwwLayer.readRasterInfo(source.file());
+                if (temporalLayer != null) {
+                    readInfo = GridCoverageNwwLayer.readRasterInfo(temporalLayer.getCurrentFile());
+                } else if (((GridCoverageNwwLayer) layer).isRemote()) {
+                    readInfo = GridCoverageNwwLayer.readRasterInfo(((GridCoverageNwwLayer) layer).getRemoteReader());
+                } else {
+                    readInfo = GridCoverageNwwLayer.readRasterInfo(source.file());
+                }
             } catch (Exception e) {
                 e.printStackTrace();
                 readInfo = null;
@@ -220,10 +229,18 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private final NwwContext context;
         /** The layer of the panel when it is created, it is replaced at each change. */
         private final Layer layer;
-        /** The source of the raster: a file, or a remote raster of a web service. */
+        /**
+         * The source of the raster: a file, or a remote raster of a web service, <code>null</code>
+         * for the series of rasters.
+         */
         private final LayerSource source;
         /** If the raster is remote, as a cloud optimized GeoTIFF, read by the reader of the layer. */
         private final boolean remote;
+        /**
+         * The series of rasters, styled all together and not replaced, <code>null</code> for the
+         * single rasters.
+         */
+        private final TemporalRasterNwwLayer temporal;
         /** The structure of the raster, with its bands. */
         private final RasterInfo info;
 
@@ -256,7 +273,8 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             this.context = context;
             this.layer = layer;
             this.source = source;
-            this.remote = ((GridCoverageNwwLayer) layer).isRemote();
+            this.temporal = layer instanceof TemporalRasterNwwLayer t ? t : null;
+            this.remote = temporal == null && ((GridCoverageNwwLayer) layer).isRemote();
             this.info = info;
 
             for( String bandName : info.bandNames() ) {
@@ -281,11 +299,17 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             });
             tableCombo.setMaximumRowCount(16);
             tableCombo.addActionListener(e -> onTableChanged());
-            fromDataButton.setToolTipText(remote
-                    ? "Use the minimum and maximum of the raster, read at a low resolution, as from an overview"
-                    : "Use the minimum and maximum of the raster, reading all its cells, or, for the rasters larger "
-                            + "than " + GridCoverageNwwLayer.EXACT_STATISTICS_MAX_CELLS / 1_000_000
-                            + " million cells, at a low resolution, as from an overview");
+            if (temporal != null) {
+                fromDataButton.setToolTipText("Use the minimum and maximum of all the dates, reading all their cells, or, for the "
+                        + "rasters larger than " + GridCoverageNwwLayer.EXACT_STATISTICS_MAX_CELLS / 1_000_000
+                        + " million cells, at a low resolution");
+            } else {
+                fromDataButton.setToolTipText(remote
+                        ? "Use the minimum and maximum of the raster, read at a low resolution, as from an overview"
+                        : "Use the minimum and maximum of the raster, reading all its cells, or, for the rasters larger "
+                                + "than " + GridCoverageNwwLayer.EXACT_STATISTICS_MAX_CELLS / 1_000_000
+                                + " million cells, at a low resolution, as from an overview");
+            }
             fromDataButton.addActionListener(e -> readRangeFromData());
             tableArea.setToolTipText("<html>One color per line, as <code>r g b</code>, spread on the range, or with its value, "
                     + "as <code>value r g b</code>.<br>Editing the colors makes a custom colortable.</html>");
@@ -363,7 +387,14 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             add(content, BorderLayout.CENTER);
             add(buttonsPanel(), BorderLayout.SOUTH);
 
-            showStyle(((GridCoverageNwwLayer) layer).getStyle());
+            showStyle(styleOf(layer));
+        }
+
+        /**
+         * @return the style a raster layer or a series is drawn with.
+         */
+        private static Style styleOf( Layer layer ) {
+            return layer instanceof TemporalRasterNwwLayer t ? t.getStyle() : ((GridCoverageNwwLayer) layer).getStyle();
         }
 
         private static String tableString( String name ) {
@@ -512,24 +543,38 @@ public class RasterStyleLayerTool implements INwwLayerTool {
          */
         private void readRangeFromData() {
             fromDataButton.setEnabled(false);
-            setStatus("Reading the range of the values...", false);
+            setStatus(temporal != null
+                    ? "Reading the range of the values of all the " + temporal.getFiles().size() + " dates, it can take a while..."
+                    : "Reading the range of the values...", false);
             int band = selectedBand();
             // only the last read is shown, as when the band is changed while reading
             int request = ++rangeRequest;
             // the reader of the layer drawn now, the layer is replaced at each style
-            GridCoverageNwwLayer current = (GridCoverageNwwLayer) context.getLatest(layer);
+            Layer current = context.getLatest(layer);
             new Thread(() -> {
                 try {
                     double[] stats;
                     boolean lowResolution;
-                    if (remote) {
-                        stats = GridCoverageNwwLayer.readLowResolutionStatistics(current.getRemoteReader(), band);
+                    String note = "Range read at a low resolution, the extremes can be a little wider.";
+                    if (temporal != null) {
+                        TemporalRasterNwwLayer.Range range = TemporalRasterNwwLayer.readRange(temporal.getFiles(), band,
+                                Integer.MAX_VALUE);
+                        stats = range == null ? null : new double[]{range.min(), range.max()};
+                        // the note tells the dates read also for the small rasters, read exactly
+                        lowResolution = true;
+                        if (range != null) {
+                            note = range.note();
+                        }
+                    } else if (remote) {
+                        stats = GridCoverageNwwLayer.readLowResolutionStatistics(((GridCoverageNwwLayer) current).getRemoteReader(),
+                                band);
                         lowResolution = true;
                     } else {
                         // the large rasters at a low resolution, reading all their cells would take long
                         lowResolution = GridCoverageNwwLayer.isLargeRaster(source.file());
                         stats = GridCoverageNwwLayer.readStatistics(source.file(), band);
                     }
+                    String rangeNote = note;
                     SwingUtilities.invokeLater(() -> {
                         if (request != rangeRequest) {
                             return;
@@ -539,8 +584,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                         } else {
                             minField.setText(RasterLayerTool.numberText(stats[0]));
                             maxField.setText(RasterLayerTool.numberText(stats[1]));
-                            setStatus(lowResolution ? "Range read at a low resolution, the extremes can be a little wider."
-                                    : " ", false);
+                            setStatus(lowResolution ? rangeNote : " ", false);
                         }
                         updateRangeState();
                     });
@@ -559,7 +603,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
 
         private JPanel buttonsPanel() {
             applyButton.setToolTipText("Draw the raster with the style");
-            saveButton.setToolTipText(remote
+            saveButton.setToolTipText(remote || temporal != null
                     ? "Draw the raster with the style and save it locally, used when it is loaded again"
                     : "Draw the raster with the style and save it in the .sld file next to it, used when it is loaded again");
             resetButton.setToolTipText("Go back to the saved style, or to the default style if none is saved");
@@ -655,6 +699,10 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private void restyle( Style style, boolean save, String message, String doneMessage ) {
             setButtonsEnabled(false);
             setStatus(message, false);
+            if (temporal != null) {
+                restyleTemporal(style, save, doneMessage);
+                return;
+            }
             Layer current = context.getLatest(layer);
             LayerSource source = LayerSource.of(current);
             new Thread(() -> {
@@ -680,10 +728,50 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         }
 
         /**
+         * Draw all the dates of the series with a style: the layer is not replaced, it draws its
+         * dates again. The styles of the series are saved locally.
+         *
+         * @param style the style, <code>null</code> for the saved or default one, then shown.
+         */
+        private void restyleTemporal( Style style, boolean save, String doneMessage ) {
+            new Thread(() -> {
+                try {
+                    Style newStyle = style;
+                    if (newStyle == null) {
+                        newStyle = LocalStyleStore.readTemporal(temporal.getFolder());
+                        if (newStyle == null) {
+                            newStyle = TemporalRasterNwwLayer.createDefaultStyle(temporal.getFiles());
+                        }
+                    }
+                    temporal.setStyle(newStyle);
+                    File savedTo = save ? LocalStyleStore.saveTemporal(temporal.getFolder(), newStyle) : null;
+                    SwingUtilities.invokeLater(() -> {
+                        if (style == null) {
+                            showStyle(temporal.getStyle());
+                        }
+                        setStatus(savedTo != null ? "Applied to all dates and saved locally" : doneMessage, false);
+                        setButtonsEnabled(true);
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    SwingUtilities.invokeLater(() -> {
+                        setStatus("Unable to apply the style: " + e.getMessage(), true);
+                        setButtonsEnabled(true);
+                    });
+                }
+            }, "hm-raster-style-apply").start();
+        }
+
+        /**
          * Go back to the style of the .sld file, else to the default one.
          */
         private void reset() {
-            boolean saved = remote ? LocalStyleStore.read(source) != null : SldUtilities.getStyleFile(source.file()) != null;
+            boolean saved;
+            if (temporal != null) {
+                saved = LocalStyleStore.getTemporalStyleFile(temporal.getFolder()).exists();
+            } else {
+                saved = remote ? LocalStyleStore.read(source) != null : SldUtilities.getStyleFile(source.file()) != null;
+            }
             restyle(null, false, "Reading the saved style...",
                     saved ? "Back to the saved style" : "No saved style, the default one is used");
         }

@@ -131,6 +131,53 @@ public class LocalStyleStore {
     }
 
     /**
+     * @param folder the folder of the files of a time series of rasters, as shown by a
+     *          {@link org.hortonmachine.nww.layers.defaults.raster.TemporalRasterNwwLayer}.
+     * @return the style file of the series, which may not exist:
+     *          <code>styles/temporal/&lt;folder path&gt;.sld</code>, so that nothing is written in
+     *          the folder of the data.
+     */
+    public static File getTemporalStyleFile( File folder ) {
+        File temporalFolder = new File(getStylesFolder(), "temporal");
+        return new File(temporalFolder, safeName(folder.getAbsolutePath()) + "." + SldUtilities.SLD_EXTENSION);
+    }
+
+    /**
+     * @param folder the folder of the files of a time series of rasters.
+     * @return the saved style of the series, or <code>null</code> if there is none.
+     */
+    public static Style readTemporal( File folder ) {
+        File styleFile = getTemporalStyleFile(folder);
+        if (!styleFile.exists()) {
+            return null;
+        }
+        try {
+            return SldUtilities.getStyleFromSldString(FileUtilities.readFile(styleFile));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    /**
+     * Save the style of a time series of rasters, replacing the one saved before.
+     *
+     * @param folder the folder of the files of the series.
+     * @param style the style.
+     * @return the file written.
+     * @throws Exception if the file can't be written.
+     */
+    public static File saveTemporal( File folder, Style style ) throws Exception {
+        File styleFile = getTemporalStyleFile(folder);
+        File stylesFolder = styleFile.getParentFile();
+        if (!stylesFolder.exists() && !stylesFolder.mkdirs()) {
+            throw new IllegalArgumentException("Unable to create the folder of the styles: " + stylesFolder);
+        }
+        FileUtilities.writeFile(SldUtilities.styleToString(style), styleFile);
+        return styleFile;
+    }
+
+    /**
      * @return the name with the characters that are not safe in file names replaced by
      *          underscores.
      */

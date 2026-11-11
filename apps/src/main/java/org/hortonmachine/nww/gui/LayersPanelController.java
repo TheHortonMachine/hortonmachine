@@ -31,6 +31,7 @@ import javax.swing.border.Border;
 import org.hortonmachine.nww.gui.actions.StyleVectorLayerAction;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
+import org.hortonmachine.nww.layers.defaults.raster.TemporalRasterNwwLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 
 import gov.nasa.worldwind.layers.Layer;
@@ -122,7 +123,7 @@ public class LayersPanelController extends LayersPanelView implements LayerEvent
         for( Layer layer : getShownLayers() ) {
             Runnable onStyle = null;
             if (canShowStyle != null && (layer instanceof NwwVectorLayer || layer instanceof RasterizedFeatureCollectionLayer
-                    || layer instanceof GridCoverageNwwLayer)) {
+                    || layer instanceof GridCoverageNwwLayer || layer instanceof TemporalRasterNwwLayer)) {
                 // checked at the click: the loaders tell where the data come from after adding the
                 // layer, which makes the row
                 onStyle = () -> {

@@ -115,6 +115,12 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     private final AbstractGridCoverage2DReader remoteReader;
 
     /**
+     * The reader the tiles are drawn from, the remote one or the one of the file, disposed with
+     * the layer.
+     */
+    private final AbstractGridCoverage2DReader tilesReader;
+
+    /**
      * The start of the paths in the cache of the tiles folders of the raster, of all its styles,
      * the same for the layers of the same raster.
      */
@@ -123,7 +129,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     /**
      * The renderer of the tiles, with its style and a key of the style for the tiles cache.
      */
-    private record StyledRenderer( GTRenderer renderer, Style style, String styleKey ) {
+    private record StyledRenderer( GTRenderer renderer, Style style, String styleKey, AbstractGridCoverage2DReader reader ) {
     }
 
     public GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent ) throws Exception {
@@ -182,6 +188,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         this.style = styledRenderer.style();
         this.layerName = name;
         this.remoteReader = remoteReader;
+        this.tilesReader = styledRenderer.reader();
         this.cachePrefix = cachePrefix;
 
         ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
@@ -248,7 +255,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         }
         GTRenderer renderer = new StreamingRenderer();
         renderer.setMapContent(mapContent);
-        return new StyledRenderer(renderer, rasterStyle, styleKey);
+        return new StyledRenderer(renderer, rasterStyle, styleKey, coverageReader);
     }
 
     /**
@@ -602,6 +609,21 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      * @return the number of deleted folders.
      */
     public int clearCache() {
+        return clearCache(cachePrefix);
+    }
+
+    /**
+     * Delete the tiles of a raster file from the cache, of all its styles, as for the files of a
+     * {@link TemporalRasterNwwLayer}.
+     *
+     * @param rasterFile the raster file.
+     * @return the number of deleted folders.
+     */
+    public static int clearFileCache( File rasterFile ) {
+        return clearCache(fileCachePrefix(rasterFile));
+    }
+
+    private static int clearCache( String cachePrefix ) {
         File cacheRoot = CacheUtils.getCacheRoot();
         int slash = cachePrefix.lastIndexOf('/');
         File folder = new File(cacheRoot, cachePrefix.substring(0, slash));
@@ -630,7 +652,20 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      * @param layers the layers still in the viewer.
      */
     public static void clearCacheOfRemoved( Layer removed, Iterable<Layer> layers ) {
-        if (!(removed instanceof GridCoverageNwwLayer rasterLayer) || !CacheUtils.isClearRasterCacheOnRemove()) {
+        if (!CacheUtils.isClearRasterCacheOnRemove()) {
+            return;
+        }
+        if (removed instanceof TemporalRasterNwwLayer temporalLayer) {
+            for( Layer layer : layers ) {
+                if (layer != removed && layer instanceof TemporalRasterNwwLayer other
+                        && other.getFolder().equals(temporalLayer.getFolder())) {
+                    return;
+                }
+            }
+            new Thread(temporalLayer::clearCache, "hm-raster-cache-clear").start();
+            return;
+        }
+        if (!(removed instanceof GridCoverageNwwLayer rasterLayer)) {
             return;
         }
         for( Layer layer : layers ) {
@@ -645,8 +680,9 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     @Override
     public void dispose() {
         super.dispose();
-        if (remoteReader != null) {
-            remoteReader.dispose();
+        // the remote reader, or the one of the file
+        if (tilesReader != null) {
+            tilesReader.dispose();
         }
     }
 

@@ -164,6 +164,17 @@ public class ToolsPanelController {
     }
 
     /**
+     * Choose a folder of rasters with a date in their names, as monthly GeoTIFFs, and load them
+     * as a time series.
+     */
+    public void openTemporalRasters() {
+        TemporalRasterDialog.Choice choice = TemporalRasterDialog.choose(SwingUtilities.getWindowAncestor(wwjPanel));
+        if (choice != null) {
+            layerLoader.loadTemporalRasters(choice.name(), choice.folder(), choice.pattern(), choice.files());
+        }
+    }
+
+    /**
      * Choose files and folders of the supported formats and load them as layers.
      */
     public void openFiles() {

@@ -148,6 +148,18 @@ public class NwwContext {
     }
 
     /**
+     * Show the panel of a layer in the layer tab and select the tab, as when the layer is
+     * clicked in the layers panel.
+     *
+     * @param layer the layer.
+     */
+    public void showLayerPanel( Layer layer ) {
+        if (toolsTabs != null) {
+            toolsTabs.showLayer(layer);
+        }
+    }
+
+    /**
      * @param type the class of a tool.
      * @return the first tool of the viewer of the class, open or not, or <code>null</code>.
      */

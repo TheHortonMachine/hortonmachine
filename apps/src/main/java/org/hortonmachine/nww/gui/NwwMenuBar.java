@@ -161,6 +161,9 @@ public class NwwMenuBar extends JMenuBar {
         JMenuItem openStac = item("Open STAC assets...", ImageCache.GLOBE, e -> tools.openStac());
         openStac.setToolTipText("Open the STAC browser: the assets selected there are added to the viewer from their context menu");
         menu.add(openStac);
+        JMenuItem openTemporal = item("Open temporal raster folder...", ImageCache.OPEN, e -> tools.openTemporalRasters());
+        openTemporal.setToolTipText("Open a folder of rasters with a date in their names, as monthly GeoTIFFs, as a time series");
+        menu.add(openTemporal);
         JCheckBoxMenuItem rasterized = new JCheckBoxMenuItem("Open vectors rasterized");
         rasterized.setToolTipText("Draw the vectors opened from now on as image tiles, instead of shapes");
         rasterized.addActionListener(e -> tools.getLayerLoader().setPreferRasterized(rasterized.isSelected()));

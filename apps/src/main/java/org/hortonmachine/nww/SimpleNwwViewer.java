@@ -46,6 +46,7 @@ import org.hortonmachine.nww.tools.modes.ZoomByBoxMode;
 import org.hortonmachine.nww.tools.layers.RasterLayerTool;
 import org.hortonmachine.nww.tools.layers.RasterStyleLayerTool;
 import org.hortonmachine.nww.tools.layers.StyleLayerTool;
+import org.hortonmachine.nww.tools.layers.TemporalLayerTool;
 import org.hortonmachine.nww.tools.layers.VectorLayerTool;
 import org.hortonmachine.nww.tools.assistant.AssistantTool;
 import org.hortonmachine.nww.tools.NwwContext;
@@ -94,6 +95,7 @@ public class SimpleNwwViewer {
         List<INwwLayerTool> tools = new ArrayList<>();
         tools.add(new VectorLayerTool());
         tools.add(new RasterLayerTool());
+        tools.add(new TemporalLayerTool());
         return tools;
     }
 

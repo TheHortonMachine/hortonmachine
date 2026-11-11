@@ -34,6 +34,7 @@ import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.listeners.GenericSelectListener;
 import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
+import org.hortonmachine.nww.layers.defaults.raster.TemporalRasterNwwLayer;
 import org.hortonmachine.nww.shapes.IFeatureShape;
 import org.hortonmachine.nww.shapes.IInfoShape;
 import org.hortonmachine.nww.tools.INwwMapMode;
@@ -177,6 +178,15 @@ public class SelectMode implements INwwMapMode {
     private void onClick( NwwContext context, MouseEvent mouseEvent, boolean add ) {
         WorldWindow wwd = context.getNwwPanel().getWwd();
         Layer layer = context.getCurrentLayer();
+        if (layer instanceof TemporalRasterNwwLayer temporalLayer) {
+            // the values through time, charted in the panel of the layer
+            Position position = NwwUtilities.getTerrainPosition(wwd, mouseEvent.getX(), mouseEvent.getY());
+            if (position != null) {
+                context.showLayerPanel(layer);
+                temporalLayer.askPoint(position);
+            }
+            return;
+        }
         if (isRasterLayer(layer)) {
             Position position = NwwUtilities.getTerrainPosition(wwd, mouseEvent.getX(), mouseEvent.getY());
             if (position != null) {
@@ -216,7 +226,7 @@ public class SelectMode implements INwwMapMode {
 
     private void onBox( NwwContext context, int x1, int y1, int x2, int y2, boolean add ) {
         Layer layer = context.getCurrentLayer();
-        if (isRasterLayer(layer)) {
+        if (isRasterLayer(layer) || layer instanceof TemporalRasterNwwLayer) {
             FeatureInfoTool tool = context.findTool(FeatureInfoTool.class);
             if (tool != null) {
                 context.openTool(tool);

@@ -89,6 +89,8 @@ import org.hortonmachine.nww.layers.defaults.raster.ImageMosaicNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.MBTilesNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.MapsforgeNwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.RL2NwwLayer;
+import org.hortonmachine.nww.layers.defaults.raster.TemporalRasterNwwLayer;
+import org.hortonmachine.gears.utils.time.DatedFilesScanner.DatedFile;
 import org.hortonmachine.nww.layers.defaults.spatialite.RasterizedSpatialiteLasLayer;
 import org.hortonmachine.nww.layers.defaults.spatialite.RasterizedSpatialiteLayer;
 import org.hortonmachine.nww.layers.defaults.spatialite.SpatialiteLinesLayer;
@@ -353,6 +355,41 @@ public class NwwLayerLoader {
                 GridCoverageNwwLayer rasterLayer = new GridCoverageNwwLayer(rasterFile, null, Color.WHITE);
                 new LayerSource(rasterFile, null).attachTo(rasterLayer);
                 layer = rasterLayer;
+            }
+
+            @Override
+            public void done() {
+                super.done();
+                if (layer != null) {
+                    addLayer(layer);
+                }
+            }
+        }.execute();
+    }
+
+    /**
+     * Load the dated rasters of a folder as a time series, in the background: the style of the
+     * series saved before is used, else a default one on the value range of a sample of the
+     * files, the same for all dates.
+     *
+     * @param name the name of the layer.
+     * @param folder the folder of the files.
+     * @param pattern the pattern of the dates in the names of the files.
+     * @param files the files, sorted by date.
+     */
+    public void loadTemporalRasters( String name, File folder, String pattern, List<DatedFile> files ) {
+        new ExecutorProgressGui(1){
+            private TemporalRasterNwwLayer layer;
+
+            @Override
+            public void backGroundWork() throws Exception {
+                Style style = LocalStyleStore.readTemporal(folder);
+                if (style == null) {
+                    publish(new ProgressUpdate("Reading the value range of " + name + " ...", 0));
+                    style = TemporalRasterNwwLayer.createDefaultStyle(files);
+                }
+                publish(new ProgressUpdate("Reading " + files.get(0).file().getName() + " ...", 0));
+                layer = new TemporalRasterNwwLayer(name, folder, pattern, files, style);
             }
 
             @Override
