@@ -1,5 +1,6 @@
 package org.hortonmachine.gears.libs.modules;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -7,6 +8,7 @@ import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
+import org.hortonmachine.gears.io.vrt.VrtImageMosaic;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Coordinate;
@@ -20,7 +22,20 @@ public class HMImageMosaic implements AutoCloseable {
 
 	private AbstractGridCoverage2DReader reader;
 
+	/**
+	 * @param mosaicPath the shapefile of the mosaic index or a GDAL VRT file, served through the
+	 *                   mosaic of {@link VrtImageMosaic}.
+	 */
 	public HMImageMosaic(String mosaicPath) {
+		if (mosaicPath.toLowerCase().endsWith(".vrt")) {
+			try {
+				mosaicPath = VrtImageMosaic.getIndex(new File(mosaicPath)).getAbsolutePath();
+			} catch (UnsupportedOperationException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new IllegalArgumentException("Cannot make the mosaic of the VRT: " + mosaicPath, e);
+			}
+		}
 		AbstractGridFormat format = GridFormatFinder.findFormat(mosaicPath);
 		if (format == null) {
 			throw new IllegalArgumentException("Cannot find ImageMosaicReader for path: " + mosaicPath);
