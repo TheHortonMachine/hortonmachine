@@ -18,7 +18,9 @@
 package org.hortonmachine.nww.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,18 +36,23 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.style.Style;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.io.wcs.ICoverageSummary;
+import org.hortonmachine.gears.io.wcs.Wcs;
+import org.hortonmachine.gears.io.wcs.readers.CoverageReaderParameters;
 import org.hortonmachine.gears.io.wfs.Wfs;
 import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.executor.ExecutorProgressGui;
+import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.hortonmachine.webmaps.WebServicesBrowser;
 import org.locationtech.jts.geom.Envelope;
 
 import gov.nasa.worldwind.avlist.AVKey;
+import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.avlist.AVList;
 import gov.nasa.worldwind.avlist.AVListImpl;
 import gov.nasa.worldwind.ogc.wms.WMSCapabilities;
@@ -60,6 +67,8 @@ import gov.nasa.worldwind.wms.WMSTiledImageLayer;
  * <li>WMS: the layers are images requested from the service as the map moves.</li>
  * <li>WFS: the features are read once, whole or in the current map view, and drawn as the other
  * vector layers, with the style saved in the {@link LocalStyleStore}, if any.</li>
+ * <li>WCS: the coverages are downloaded once in the current map view, at about the resolution
+ * of the screen, to temporary GeoTIFFs drawn as the raster files.</li>
  * </ul>
  *
  * @author Andrea Antonello (https://g-ant.eu)
@@ -68,6 +77,11 @@ public class NwwWebServicesLoader {
 
     private static final String WMS = "WMS";
     private static final String WFS = "WFS";
+    private static final String WCS = "WCS";
+
+    /** The fewest and most cells across a downloaded coverage. */
+    private static final int MIN_COVERAGE_CELLS = 64;
+    private static final int MAX_COVERAGE_CELLS = 4096;
 
     /** The timeouts of the requests to the WMS services, some are slow. */
     private static final int WMS_TIMEOUT_MILLIS = 30000;
@@ -344,6 +358,197 @@ public class NwwWebServicesLoader {
                 }
             }
         }.execute();
+    }
+
+    // ==================== WCS ====================
+
+    /**
+     * A coverage of a WCS service, as listed in its capabilities.
+     *
+     * @param id the id of the coverage.
+     * @param title the title, empty if it has none.
+     * @param wgs84 the extent in WGS84 lon/lat, <code>null</code> if not given.
+     * @param srid the native srid, <code>null</code> if not given.
+     */
+    private record WcsCoverage( String id, String title, Envelope wgs84, Integer srid ) {
+    }
+
+    /**
+     * A coverage downloaded in the map view, drawn as a raster file.
+     */
+    private record ReadCoverage( WcsCoverage coverage, Layer layer ) {
+    }
+
+    /**
+     * Let the user choose a WCS service and its coverages, and download them in the current map
+     * view, at about the resolution of the screen, to temporary GeoTIFFs drawn as raster files.
+     *
+     * <p>To be called from the event dispatch thread.</p>
+     */
+    public void openWcs() {
+        String url = chooseService(WCS);
+        if (url == null) {
+            return;
+        }
+        new ExecutorProgressGui(1){
+            private Wcs wcs;
+            private List<WcsCoverage> coverages;
+
+            @Override
+            public void backGroundWork() throws Exception {
+                publish(new ProgressUpdate("Reading the capabilities of " + LayerSource.serviceHost(url) + " ...", 0));
+                Wcs service = new Wcs(url);
+                List<WcsCoverage> list = new ArrayList<>();
+                for( String id : service.ids() ) {
+                    ICoverageSummary summary = service.summary(id);
+                    String title = summary != null && summary.getTitle() != null && !summary.getTitle().equals(id)
+                            ? summary.getTitle()
+                            : "";
+                    Envelope wgs84 = null;
+                    if (summary != null && summary.getWgs84BoundingBox() != null && !summary.getWgs84BoundingBox().isEmpty()) {
+                        ReferencedEnvelope b = summary.getWgs84BoundingBox();
+                        wgs84 = new Envelope(b.getMinX(), b.getMaxX(), b.getMinY(), b.getMaxY());
+                    }
+                    list.add(new WcsCoverage(id, title, wgs84, summary != null ? summary.getBoundingBoxSrid() : null));
+                }
+                coverages = list;
+                wcs = service;
+            }
+
+            @Override
+            public void done() {
+                super.done();
+                if (coverages != null) {
+                    WebServicesBrowser.saveUrl(WCS, url);
+                    chooseAndDownloadCoverages(url, wcs, coverages);
+                }
+            }
+        }.execute();
+    }
+
+    private void chooseAndDownloadCoverages( String url, Wcs wcs, List<WcsCoverage> coverages ) {
+        if (coverages.isEmpty()) {
+            GuiUtilities.showWarningMessage(wwjPanel, "WARNING", "The service has no coverages: " + url);
+            return;
+        }
+        ReferencedEnvelope view = wwjPanel.getViewportBounds();
+        if (view == null) {
+            GuiUtilities.showWarningMessage(wwjPanel, "WARNING", "The coverages are downloaded in the map view, whose extent "
+                    + "can't be computed, as when the sky is visible.\nTilt the view down and try again.");
+            return;
+        }
+        List<String> ids = coverages.stream().map(WcsCoverage::id).toList();
+        List<String> titles = coverages.stream().map(WcsCoverage::title).toList();
+        TablesSelectionDialog.Result result = TablesSelectionDialog.show(wwjPanel, "WCS coverages",
+                "<html>Select the coverages to download from " + LayerSource.serviceHost(url)
+                        + ".<br>They are read in the current map view, at about the resolution of the screen.</html>",
+                "Coverage", ids, "Title", titles, false, null, null, false);
+        if (result == null || !result.hasSelection()) {
+            return;
+        }
+        List<WcsCoverage> selected = new ArrayList<>();
+        for( int i = 0; i < coverages.size(); i++ ) {
+            if (result.selected()[i]) {
+                selected.add(coverages.get(i));
+            }
+        }
+        // the cells across the view, as the pixels of the map
+        int viewCols = Math.max(1, wwjPanel.getWidth());
+
+        new ExecutorProgressGui(selected.size()){
+            private final List<ReadCoverage> read = new ArrayList<>();
+            private final List<String> problems = new ArrayList<>();
+
+            @Override
+            public void backGroundWork() throws Exception {
+                List<String> formats = wcs.formats();
+                String tiffFormat = formats == null ? null
+                        : formats.stream().filter(f -> f.toLowerCase().contains("tif")).findFirst().orElse(null);
+                for( int i = 0; i < selected.size(); i++ ) {
+                    WcsCoverage coverage = selected.get(i);
+                    publish(new ProgressUpdate(
+                            "Downloading " + coverage.id() + " (" + (i + 1) + "/" + selected.size() + ") ...", i));
+                    try {
+                        Layer layer = downloadCoverage(url, wcs, coverage, view, viewCols, tiffFormat);
+                        if (layer == null) {
+                            problems.add(coverage.id() + ": not in the map view");
+                        } else {
+                            read.add(new ReadCoverage(coverage, layer));
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        problems.add(coverage.id() + ": " + e.getMessage());
+                    }
+                }
+            }
+
+            @Override
+            public void done() {
+                super.done();
+                for( ReadCoverage coverage : read ) {
+                    layerLoader.addLayer(coverage.layer());
+                }
+                if (!problems.isEmpty()) {
+                    GuiUtilities.showWarningMessage(wwjPanel, "WARNING",
+                            "Some coverages were not added:\n" + String.join("\n", problems));
+                }
+            }
+        }.execute();
+    }
+
+    /**
+     * Download a coverage in the part of the map view it covers, at about the resolution of the
+     * screen, to a temporary GeoTIFF, and make its layer.
+     *
+     * @return the layer, not added to the map, or <code>null</code> if the coverage is not in the
+     *          view.
+     */
+    private static Layer downloadCoverage( String url, Wcs wcs, WcsCoverage coverage, Envelope view, int viewCols,
+            String tiffFormat ) throws Exception {
+        Envelope area = coverage.wgs84() != null ? view.intersection(coverage.wgs84()) : view;
+        if (area.isNull() || area.getWidth() <= 0 || area.getHeight() <= 0) {
+            return null;
+        }
+        // the region in the native CRS, if known, else in WGS84
+        int srid = 4326;
+        Envelope subset = area;
+        if (coverage.srid() != null && coverage.srid() != 4326) {
+            try {
+                CoordinateReferenceSystem nativeCrs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + coverage.srid(), true);
+                subset = new HMCrsTransformer(NwwUtilities.GPS_CRS, nativeCrs).transformDensified(area,
+                        ENVELOPE_DENSIFICATION_POINTS);
+                srid = coverage.srid();
+            } catch (Exception e) {
+                // unknown to HM: the region is sent in WGS84
+            }
+        }
+        int cols = (int) Math.round(viewCols * area.getWidth() / view.getWidth());
+        cols = Math.max(MIN_COVERAGE_CELLS, Math.min(MAX_COVERAGE_CELLS, cols));
+        int rows = Math.max(1, (int) Math.round(cols * subset.getHeight() / subset.getWidth()));
+        rows = Math.min(MAX_COVERAGE_CELLS, rows);
+
+        CoverageReaderParameters parameters = wcs.getReaderParameters(coverage.id());
+        if (tiffFormat != null) {
+            parameters.format(tiffFormat);
+        }
+        parameters.bbox(subset, srid);
+        parameters.rowsCols(rows, cols);
+
+        File folder = new File(System.getProperty("java.io.tmpdir"), "hm-wcs");
+        if (!folder.exists() && !folder.mkdirs()) {
+            throw new IllegalArgumentException("Unable to create the folder of the downloads: " + folder);
+        }
+        // a name per coverage and area, so that each download is its own raster and tiles cache
+        String key = url + "|" + coverage.id() + "|" + subset + "|" + cols + "x" + rows;
+        File file = new File(folder,
+                coverage.id().replaceAll("[^A-Za-z0-9._-]", "_") + "_" + Integer.toHexString(key.hashCode()) + ".tif");
+        wcs.dumpCoverage(file.getAbsolutePath(), parameters);
+
+        GridCoverageNwwLayer layer = new GridCoverageNwwLayer(file, null, Color.WHITE);
+        layer.setName(coverage.id() + " (" + LayerSource.serviceHost(url) + ")");
+        // a raster file, which the raster tools handle
+        new LayerSource(file, null).attachTo(layer);
+        return layer;
     }
 
     /**

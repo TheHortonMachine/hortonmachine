@@ -19,11 +19,13 @@ package org.hortonmachine.nww.tools.features;
 
 import java.io.File;
 
+import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoordinates2D;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -35,7 +37,7 @@ import org.locationtech.jts.geom.Coordinate;
 /**
  * The values of the bands of a raster at a point.
  *
- * @param file the raster file.
+ * @param file the raster file, <code>null</code> for the remote rasters.
  * @param x the easting of the point, in the CRS of the raster.
  * @param y the northing of the point, in the CRS of the raster.
  * @param col the column of the cell, from 0.
@@ -63,10 +65,12 @@ public record RasterValues( File file, double x, double y, int col, int row, dou
 
     /**
      * Reads the values of rasters at points, keeping the last raster open, since the cells are read
-     * lazily: only the tile of the point is read.
+     * lazily: only the tile of the point is read, also of the remote rasters, as the cloud
+     * optimized GeoTIFFs.
      */
     public static class Reader {
-        private File file;
+        /** The raster open: its file, or the reader of a remote raster. */
+        private Object key;
         private GridCoverage2D coverage;
         private HMCrsTransformer transformer;
 
@@ -78,15 +82,39 @@ public record RasterValues( File file, double x, double y, int col, int row, dou
          * @throws Exception if the raster can't be read.
          */
         public synchronized RasterValues read( File rasterFile, double lon, double lat ) throws Exception {
-            if (!rasterFile.equals(file)) {
-                close();
-                coverage = OmsRasterReader.readRaster(rasterFile.getAbsolutePath());
-                file = rasterFile;
-                CoordinateReferenceSystem crs = coverage.getCoordinateReferenceSystem();
-                transformer = crs == null || HMCrsRegistry.crsEquals(crs, NwwUtilities.GPS_CRS)
-                        ? null
-                        : new HMCrsTransformer(NwwUtilities.GPS_CRS, crs);
+            if (!rasterFile.equals(key)) {
+                open(rasterFile, OmsRasterReader.readRaster(rasterFile.getAbsolutePath()));
             }
+            return evaluate(rasterFile, lon, lat);
+        }
+
+        /**
+         * @param remoteReader the reader of a remote raster, as the one of a layer.
+         * @param lon the longitude of the point.
+         * @param lat the latitude of the point.
+         * @return the values at the point, without file.
+         * @throws Exception if the raster can't be read.
+         */
+        public synchronized RasterValues read( AbstractGridCoverage2DReader remoteReader, double lon, double lat )
+                throws Exception {
+            if (remoteReader != key) {
+                // read lazily: the cells of the point are read when evaluated
+                open(remoteReader, remoteReader.read((GeneralParameterValue[]) null));
+            }
+            return evaluate(null, lon, lat);
+        }
+
+        private void open( Object newKey, GridCoverage2D newCoverage ) throws Exception {
+            close();
+            coverage = newCoverage;
+            key = newKey;
+            CoordinateReferenceSystem crs = coverage.getCoordinateReferenceSystem();
+            transformer = crs == null || HMCrsRegistry.crsEquals(crs, NwwUtilities.GPS_CRS)
+                    ? null
+                    : new HMCrsTransformer(NwwUtilities.GPS_CRS, crs);
+        }
+
+        private RasterValues evaluate( File rasterFile, double lon, double lat ) throws Exception {
             Coordinate point = new Coordinate(lon, lat);
             if (transformer != null) {
                 point = transformer.transform(point);
@@ -110,7 +138,7 @@ public record RasterValues( File file, double x, double y, int col, int row, dou
                 coverage.dispose(true);
             }
             coverage = null;
-            file = null;
+            key = null;
             transformer = null;
         }
     }

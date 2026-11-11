@@ -129,13 +129,16 @@ class WcsServicePanel extends ServicePanel {
         return new String[]{"auto", "2.0.1", "1.1.1", "1.1.0", "1.0.0"};
     }
 
+    /** The services proposed before any is used. */
+    static final String[] PRESETS = {//
+            "https://maps.isric.org/mapserv?map=/map/nitrogen.map", //
+            "https://geo.hazi.eus/S2GEOEUSKADI_RGB/wcs", //
+            "https://www.wcs.nrw.de/geobasis/wcs_nw_dgm"//
+    };
+
     @Override
     String[] getPresets() {
-        return new String[]{//
-                "https://maps.isric.org/mapserv?map=/map/nitrogen.map", //
-                "https://geo.hazi.eus/S2GEOEUSKADI_RGB/wcs", //
-                "https://www.wcs.nrw.de/geobasis/wcs_nw_dgm"//
-        };
+        return PRESETS;
     }
 
     // ==================== ui ====================

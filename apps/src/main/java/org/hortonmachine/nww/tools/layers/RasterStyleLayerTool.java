@@ -61,6 +61,7 @@ import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.DefaultTables;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
+import org.hortonmachine.nww.gui.LocalStyleStore;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.hortonmachine.nww.tools.INwwLayerTool;
@@ -70,9 +71,10 @@ import org.hortonmachine.nww.tools.NwwContext;
 import gov.nasa.worldwind.layers.Layer;
 
 /**
- * The style of the raster layers read from a GeoTIFF or an ESRI ASCII grid, shown in the style
- * tab: one of the colortables of the style editor, or one written by hand, on a range of values,
- * with an optional shaded relief.
+ * The style of the raster layers read from a GeoTIFF or an ESRI ASCII grid, or from a remote
+ * cloud optimized GeoTIFF, shown in the style tab: one of the colortables of the style editor, or
+ * one written by hand, on a range of values, with an optional shaded relief. The styles of the
+ * remote rasters are saved locally, in the {@link LocalStyleStore}.
  *
  * <p>Known issue: the tiles are drawn one by one, so the shaded relief of each is computed on its
  * own and shows dark borders.</p>
@@ -96,24 +98,33 @@ public class RasterStyleLayerTool implements INwwLayerTool {
     @Override
     public boolean canHandle( Layer layer ) {
         LayerSource source = LayerSource.of(layer);
-        return source != null && source.table() == null && layer instanceof GridCoverageNwwLayer
-                && NwwLayerLoader.isRasterFile(source.file());
+        if (source == null || !(layer instanceof GridCoverageNwwLayer)) {
+            return false;
+        }
+        if (((GridCoverageNwwLayer) layer).isRemote()) {
+            // the remote rasters, as the cloud optimized GeoTIFFs of the STAC catalogs
+            return source.isWebService();
+        }
+        return source.table() == null && NwwLayerLoader.isRasterFile(source.file());
     }
 
     @Override
     public JComponent createPanel( NwwContext context, Layer layer ) {
-        File file = LayerSource.of(layer).file();
+        LayerSource source = LayerSource.of(layer);
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-        JLabel reading = new JLabel("Reading " + file.getAbsolutePath() + " ...");
+        JLabel reading = new JLabel("Reading " + source.path() + " ...");
         panel.add(reading, BorderLayout.NORTH);
 
+        GridCoverageNwwLayer rasterLayer = (GridCoverageNwwLayer) layer;
         new Thread(() -> {
-            boolean colortable = GridCoverageNwwLayer.isColortableRaster(file);
+            boolean colortable = rasterLayer.isRemote()
+                    ? GridCoverageNwwLayer.isColortableRaster(rasterLayer.getRemoteReader())
+                    : GridCoverageNwwLayer.isColortableRaster(source.file());
             SwingUtilities.invokeLater(() -> {
                 panel.removeAll();
                 if (colortable) {
-                    panel.add(new RasterStylePanel(context, layer, file), BorderLayout.CENTER);
+                    panel.add(new RasterStylePanel(context, layer, source), BorderLayout.CENTER);
                 } else {
                     panel.add(new JLabel("<html>The raster has its own colors, as an RGB or palette image: it is drawn "
                             + "as it is. Its opacity is set in the layers panel.</html>"), BorderLayout.NORTH);
@@ -191,7 +202,10 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private final NwwContext context;
         /** The layer of the panel when it is created, it is replaced at each change. */
         private final Layer layer;
-        private final File file;
+        /** The source of the raster: a file, or a remote raster of a web service. */
+        private final LayerSource source;
+        /** If the raster is remote, as a cloud optimized GeoTIFF, read by the reader of the layer. */
+        private final boolean remote;
 
         /** If the components are being filled, so that their listeners do nothing. */
         private boolean updating;
@@ -212,11 +226,12 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private final JButton resetButton = new JButton("Reset");
         private final JLabel statusLabel = new JLabel(" ");
 
-        RasterStylePanel( NwwContext context, Layer layer, File file ) {
+        RasterStylePanel( NwwContext context, Layer layer, LayerSource source ) {
             super(new BorderLayout(0, 6));
             this.context = context;
             this.layer = layer;
-            this.file = file;
+            this.source = source;
+            this.remote = ((GridCoverageNwwLayer) layer).isRemote();
 
             tableCombo.setRenderer(new DefaultListCellRenderer(){
                 private static final long serialVersionUID = 1L;
@@ -234,7 +249,11 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             });
             tableCombo.setMaximumRowCount(16);
             tableCombo.addActionListener(e -> onTableChanged());
-            fromDataButton.setToolTipText("Use the minimum and maximum of the raster, reading all its cells");
+            fromDataButton.setToolTipText(remote
+                    ? "Use the minimum and maximum of the raster, read at a low resolution, as from an overview"
+                    : "Use the minimum and maximum of the raster, reading all its cells, or, for the rasters larger "
+                            + "than " + GridCoverageNwwLayer.EXACT_STATISTICS_MAX_CELLS / 1_000_000
+                            + " million cells, at a low resolution, as from an overview");
             fromDataButton.addActionListener(e -> readRangeFromData());
             tableArea.setToolTipText("<html>One color per line, as <code>r g b</code>, spread on the range, or with its value, "
                     + "as <code>value r g b</code>.<br>Editing the colors makes a custom colortable.</html>");
@@ -420,16 +439,25 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         }
 
         /**
-         * Put the minimum and maximum of the raster in the range, reading all its cells.
+         * Put the minimum and maximum of the raster in the range, reading all its cells, or, for
+         * the remote rasters, reading it at a low resolution.
          */
         private void readRangeFromData() {
             fromDataButton.setEnabled(false);
             setStatus("Reading the range of the values...", false);
+            // the reader of the layer drawn now, the layer is replaced at each style
+            GridCoverageNwwLayer current = (GridCoverageNwwLayer) context.getLatest(layer);
             new Thread(() -> {
                 try {
                     double[] stats;
-                    try (HMRaster raster = HMRaster.fromFile(file)) {
-                        stats = raster.getStatistics();
+                    boolean lowResolution;
+                    if (remote) {
+                        stats = GridCoverageNwwLayer.readLowResolutionStatistics(current.getRemoteReader());
+                        lowResolution = true;
+                    } else {
+                        // the large rasters at a low resolution, reading all their cells would take long
+                        lowResolution = GridCoverageNwwLayer.isLargeRaster(source.file());
+                        stats = GridCoverageNwwLayer.readStatistics(source.file());
                     }
                     SwingUtilities.invokeLater(() -> {
                         if (stats == null) {
@@ -437,7 +465,8 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                         } else {
                             minField.setText(RasterLayerTool.numberText(stats[0]));
                             maxField.setText(RasterLayerTool.numberText(stats[1]));
-                            setStatus(" ", false);
+                            setStatus(lowResolution ? "Range read at a low resolution, the extremes can be a little wider."
+                                    : " ", false);
                         }
                         updateRangeState();
                     });
@@ -453,8 +482,9 @@ public class RasterStyleLayerTool implements INwwLayerTool {
 
         private JPanel buttonsPanel() {
             applyButton.setToolTipText("Draw the raster with the style");
-            saveButton.setToolTipText("Draw the raster with the style and save it in the .sld file next to it, "
-                    + "used when it is loaded again");
+            saveButton.setToolTipText(remote
+                    ? "Draw the raster with the style and save it locally, used when it is loaded again"
+                    : "Draw the raster with the style and save it in the .sld file next to it, used when it is loaded again");
             resetButton.setToolTipText("Go back to the saved style, or to the default style if none is saved");
             applyButton.addActionListener(e -> apply(false));
             saveButton.addActionListener(e -> apply(true));
@@ -573,7 +603,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
          * Go back to the style of the .sld file, else to the default one.
          */
         private void reset() {
-            boolean saved = SldUtilities.getStyleFile(file) != null;
+            boolean saved = remote ? LocalStyleStore.read(source) != null : SldUtilities.getStyleFile(source.file()) != null;
             restyle(null, false, "Reading the saved style...",
                     saved ? "Back to the saved style" : "No saved style, the default one is used");
         }

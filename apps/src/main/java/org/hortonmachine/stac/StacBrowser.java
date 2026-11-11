@@ -260,6 +260,18 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         int supported;
     }
 
+    /**
+     * A raster or vector asset chosen to be added to another application, as the 3D viewer.
+     *
+     * @param name the name of the asset for the user: the name of its item and its id.
+     * @param asset the asset, with its handler and access.
+     * @param href the address of the asset.
+     * @param raster <code>true</code> for a raster, <code>false</code> for a vector.
+     * @param style the style asset of a raster, with the same file name, or <code>null</code>.
+     */
+    public record SelectedAsset( String name, HMStacAsset asset, String href, boolean raster, HMStacAsset style ) {
+    }
+
     /** A single asset that would be downloaded. */
     private static class DownloadRow {
         ItemRow itemRow;
@@ -269,6 +281,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         String size = "";
         long bytes = -1;
     }
+
+    /** The application the selected assets can be added to, as the 3D viewer, or <code>null</code>. */
+    private Consumer<List<SelectedAsset>> assetsConsumer;
+    private String assetsConsumerName;
 
     private HMStacManager manager;
     private HMStacCollection currentCollection;
@@ -871,6 +887,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         removeAllFromMapItem.addActionListener(e -> mapPanel.removeAllLayers());
         JMenuItem viewTableItem = new JMenuItem("View table...");
         viewTableItem.addActionListener(e -> viewCsv(getSelectedDownloads().get(0)));
+        // shown only if the browser was opened by an application that takes the assets
+        JMenuItem addToConsumerItem = new JMenuItem();
+        addToConsumerItem.addActionListener(e -> addSelectedToConsumer());
+        downloadsPopup.add(addToConsumerItem);
+        JPopupMenu.Separator consumerSeparator = new JPopupMenu.Separator();
+        downloadsPopup.add(consumerSeparator);
         downloadsPopup.add(downloadItem);
         downloadsPopup.add(clipItem);
         downloadsPopup.addSeparator();
@@ -911,6 +933,11 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     removeFromMapItem.setEnabled(selected.stream().anyMatch(r -> mapPanel.hasLayer(mapLayerId(r))));
                     removeAllFromMapItem.setEnabled(mapPanel.hasLayers());
                     viewTableItem.setEnabled(!busy && selected.size() == 1 && isCsvAsset(first));
+                    long addableCount = selected.stream().filter(r -> isRasterAsset(r.asset) || isVectorAsset(r.asset)).count();
+                    addToConsumerItem.setVisible(assetsConsumer != null);
+                    consumerSeparator.setVisible(assetsConsumer != null);
+                    addToConsumerItem.setText("Add " + addableCount + " raster/vector asset(s) to the " + assetsConsumerName);
+                    addToConsumerItem.setEnabled(!busy && addableCount > 0);
                     downloadsPopup.show(downloadsTable, e.getX(), e.getY());
                 }
             }
@@ -1850,6 +1877,34 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             return "clipped " + outRaster.getCols() + " x " + outRaster.getRows();
         } finally {
             coverage.dispose(true);
+        }
+    }
+
+    /**
+     * Let another application take the assets selected, as the 3D viewer: the context menu of
+     * the assets gets an action that hands them over.
+     *
+     * @param consumerName the name of the application, as "3D viewer", for the action.
+     * @param consumer takes the raster and vector assets selected, called on the event dispatch
+     *          thread.
+     */
+    public void setAssetsConsumer( String consumerName, Consumer<List<SelectedAsset>> consumer ) {
+        assetsConsumerName = consumerName;
+        assetsConsumer = consumer;
+    }
+
+    private void addSelectedToConsumer() {
+        List<SelectedAsset> assets = new ArrayList<>();
+        for( DownloadRow row : getSelectedDownloads() ) {
+            boolean raster = isRasterAsset(row.asset);
+            if (raster || isVectorAsset(row.asset)) {
+                assets.add(new SelectedAsset(row.itemRow.name() + " / " + row.asset.getId(), row.asset, row.href, raster,
+                        raster ? findSameNameSld(row.itemRow, row.asset) : null));
+            }
+        }
+        if (!assets.isEmpty() && assetsConsumer != null) {
+            log("Added " + assets.size() + " asset(s) to the " + assetsConsumerName);
+            assetsConsumer.accept(assets);
         }
     }
 

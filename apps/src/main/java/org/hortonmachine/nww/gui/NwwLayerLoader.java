@@ -61,12 +61,15 @@ import org.hortonmachine.dbs.rasterlite.Rasterlite2Coverage;
 import org.hortonmachine.dbs.rasterlite.Rasterlite2Db;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.dbs.utils.TableName;
+import org.geotools.gce.geotiff.GeoTiffReader;
 import org.hortonmachine.gears.io.las.core.ALasReader;
+import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
 import org.hortonmachine.gears.io.las.core.ILasHeader;
 import org.hortonmachine.gears.io.las.core.Las;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.spatialite.GTSpatialiteThreadsafeDb;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
+import org.hortonmachine.gears.ui.progress.ProgressUpdate;
 import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
@@ -336,6 +339,33 @@ public class NwwLayerLoader {
     }
 
     /**
+     * Load a raster file in the background: the layer reads the header and, without .sld file,
+     * the value range of the default style, which can take a while on large rasters or slow
+     * disks. The tiles are then read when the map shows them.
+     */
+    private void loadRasterFile( File rasterFile ) {
+        new ExecutorProgressGui(1){
+            private GridCoverageNwwLayer layer;
+
+            @Override
+            public void backGroundWork() throws Exception {
+                publish(new ProgressUpdate("Reading " + rasterFile.getName() + " ...", 0));
+                GridCoverageNwwLayer rasterLayer = new GridCoverageNwwLayer(rasterFile, null, Color.WHITE);
+                new LayerSource(rasterFile, null).attachTo(rasterLayer);
+                layer = rasterLayer;
+            }
+
+            @Override
+            public void done() {
+                super.done();
+                if (layer != null) {
+                    addLayer(layer);
+                }
+            }
+        }.execute();
+    }
+
+    /**
      * Load a las/laz file as point cloud, asking sampling and coloring, and the CRS if the file has
      * none. The points are read in the background.
      */
@@ -451,9 +481,7 @@ public class NwwLayerLoader {
         String lowerName = selectedFile.getName().toLowerCase();
         try {
             if (isRasterFile(selectedFile)) {
-                GridCoverageNwwLayer coverageNwwLayer = new GridCoverageNwwLayer(selectedFile, null, Color.WHITE);
-                new LayerSource(selectedFile, null).attachTo(coverageNwwLayer);
-                addLayer(coverageNwwLayer);
+                loadRasterFile(selectedFile);
             } else if (lowerName.endsWith(".shp")) {
                 // shp or image mosaic?
 
@@ -808,13 +836,14 @@ public class NwwLayerLoader {
     }
 
     /**
-     * Make a new layer of a raster file, drawn with a style. The layer is not added to the viewer:
-     * it is meant to replace the given one, as with
+     * Make a new layer of a raster file, or of a remote cloud optimized GeoTIFF, drawn with a
+     * style. The layer is not added to the viewer: it is meant to replace the given one, as with
      * {@link org.hortonmachine.nww.tools.NwwContext#replaceLayer(Layer, Layer)}.
      *
      * @param layer the raster layer, which needs a {@link LayerSource}.
      * @param style the style, <code>null</code> for the one of the .sld file next to the raster,
-     *          if there is one, else the default one.
+     *          or saved in the {@link LocalStyleStore} for the remote rasters, if there is one,
+     *          else the default one.
      * @return the new layer, with the same source.
      * @throws Exception if the raster can't be read.
      */
@@ -822,6 +851,17 @@ public class NwwLayerLoader {
         LayerSource source = LayerSource.of(layer);
         if (source == null || !(layer instanceof GridCoverageNwwLayer)) {
             throw new IllegalArgumentException("The layer is not read from a raster file: " + layer.getName());
+        }
+        if (((GridCoverageNwwLayer) layer).isRemote() && source.isWebService()) {
+            // a new reader, since the replaced layer disposes its own; without style, the one
+            // saved locally, else the default one
+            Style remoteStyle = style != null ? style : LocalStyleStore.read(source);
+            GeoTiffReader reader = GeotiffHandler.createCogReader(source.service(), null, null);
+            GridCoverageNwwLayer replacement = new GridCoverageNwwLayer(reader, source.table(), source.service(), null,
+                    Color.WHITE, remoteStyle);
+            replacement.setName(layer.getName());
+            source.attachTo(replacement);
+            return replacement;
         }
         GridCoverageNwwLayer replacement = new GridCoverageNwwLayer(source.file(), null, Color.WHITE, style);
         replacement.setName(layer.getName());

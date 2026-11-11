@@ -691,7 +691,7 @@ public class WebServicesBrowser extends JPanel implements IOnCloseListener {
      *
      * @param type the type of the services: WMS, WFS or WCS.
      * @return the addresses of the services used, the last first, followed by the presets of the
-     *          WMS and WFS services.
+     *          type.
      */
     public static List<String> getSavedUrls( String type ) {
         LinkedHashSet<String> urls = new LinkedHashSet<>();
@@ -703,6 +703,8 @@ public class WebServicesBrowser extends JPanel implements IOnCloseListener {
             urls.addAll(List.of(WmsServicePanel.PRESETS));
         } else if ("WFS".equals(type)) {
             urls.addAll(List.of(WfsServicePanel.PRESETS));
+        } else if ("WCS".equals(type)) {
+            urls.addAll(List.of(WcsServicePanel.PRESETS));
         }
         return new ArrayList<>(urls);
     }

@@ -33,9 +33,14 @@ import java.net.URL;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.coverage.grid.GridEnvelope;
 import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.parameter.ParameterValue;
 import org.geotools.api.style.RasterSymbolizer;
 import org.geotools.api.style.Style;
+import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
@@ -46,6 +51,7 @@ import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
+import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.SldUtilities;
@@ -71,8 +77,12 @@ import gov.nasa.worldwind.util.Tile;
 import gov.nasa.worldwind.util.TileUrlBuilder;
 
 /**
- * Procedural layer for geotools imagemosaic files
- * 
+ * A raster drawn as image tiles, made when the map shows them and kept in the tiles cache.
+ *
+ * <p>The raster is read by a GeoTools reader: of a file, or of a remote raster, as a cloud
+ * optimized GeoTIFF read with range requests, of which each tile reads only the blocks of the
+ * overview of its zoom.</p>
+ *
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implements NwwLayer {
@@ -81,11 +91,23 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
 
     private static final int TILESIZE = 256;
 
+    /** The cells across the read of a remote or large raster that gives its value range. */
+    private static final int STATISTICS_READ_SIZE = 512;
+
+    /**
+     * The most cells of a raster file whose statistics are read exactly, from all its cells: the
+     * larger ones are read at a low resolution, as from an overview.
+     */
+    public static final long EXACT_STATISTICS_MAX_CELLS = 25_000_000L;
+
     private Coordinate centerCoordinate;
     private Envelope boundsLL;
 
     /** The style the tiles are drawn with. */
     private final Style style;
+
+    /** The reader of a remote raster, disposed with the layer, <code>null</code> for the files. */
+    private final AbstractGridCoverage2DReader remoteReader;
 
     /**
      * The renderer of the tiles, with its style and a key of the style for the tiles cache.
@@ -108,16 +130,48 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      */
     public GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent, Style style )
             throws Exception {
-        this(gridCoverageFile, tileSize, colorToMakeTransparent, getRenderer(gridCoverageFile, style));
+        this(gridCoverageFile, tileSize, colorToMakeTransparent, getRenderer(fileReader(gridCoverageFile), gridCoverageFile, style));
     }
 
     private GridCoverageNwwLayer( File gridCoverageFile, Integer tileSize, Color colorToMakeTransparent,
             StyledRenderer styledRenderer ) throws Exception {
-        super(makeLevels(gridCoverageFile, styledRenderer, tileSize, colorToMakeTransparent));
-        this.style = styledRenderer.style();
-        this.layerName = FileUtilities.getNameWithoutExtention(gridCoverageFile);
+        this(FileUtilities.getNameWithoutExtention(gridCoverageFile), OmsRasterReader.readEnvelope(gridCoverageFile.getAbsolutePath()),
+                styledRenderer, fileCachePath(gridCoverageFile, styledRenderer),
+                gridCoverageFile.toURI().toURL().toExternalForm(), tileSize, colorToMakeTransparent, null);
+    }
 
-        ReferencedEnvelope envelope = OmsRasterReader.readEnvelope(gridCoverageFile.getAbsolutePath());
+    /**
+     * A layer of a raster read by a reader, as a remote cloud optimized GeoTIFF.
+     *
+     * @param reader the reader, disposed with the layer.
+     * @param name the name of the layer.
+     * @param cacheKey what tells the raster apart in the tiles cache, as its address.
+     * @param tileSize the size of the tiles, <code>null</code> for the default.
+     * @param colorToMakeTransparent if not <code>null</code>, the empty parts of the tiles are
+     *          transparent.
+     * @param style the style to draw the raster with, <code>null</code> for a default one: for
+     *          single band rasters of values, a colortable on their range, read from an overview.
+     * @throws Exception
+     */
+    public GridCoverageNwwLayer( AbstractGridCoverage2DReader reader, String name, String cacheKey, Integer tileSize,
+            Color colorToMakeTransparent, Style style ) throws Exception {
+        this(reader, name, cacheKey, tileSize, colorToMakeTransparent, getRenderer(reader, null, style));
+    }
+
+    private GridCoverageNwwLayer( AbstractGridCoverage2DReader reader, String name, String cacheKey, Integer tileSize,
+            Color colorToMakeTransparent, StyledRenderer styledRenderer ) throws Exception {
+        this(name, ReferencedEnvelope.reference(reader.getOriginalEnvelope()), styledRenderer,
+                remoteCachePath(name, cacheKey, styledRenderer), cacheKey, tileSize, colorToMakeTransparent, reader);
+    }
+
+    private GridCoverageNwwLayer( String name, ReferencedEnvelope envelope, StyledRenderer styledRenderer,
+            String cacheRelativePath, String url, Integer tileSize, Color colorToMakeTransparent,
+            AbstractGridCoverage2DReader remoteReader ) throws Exception {
+        super(makeLevels(cacheRelativePath, url, styledRenderer, tileSize, colorToMakeTransparent));
+        this.style = styledRenderer.style();
+        this.layerName = name;
+        this.remoteReader = remoteReader;
+
         ReferencedEnvelope envelopeLL = envelope.transform(DefaultGeographicCRS.WGS84, true);
         
         double w = envelopeLL.getMinX();
@@ -135,11 +189,23 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
 
     }
 
-    private static StyledRenderer getRenderer( File rasterFile, Style givenStyle ) {
-
+    /**
+     * @return the reader of a raster file, with the longitude first axis order, as
+     *          {@link OmsRasterReader} does: without the hint, the geographic CRSs, as EPSG:4326,
+     *          are read with the latitude first if the forceXY setting was not made before, and
+     *          the raster is not found where the map draws it.
+     */
+    private static AbstractGridCoverage2DReader fileReader( File rasterFile ) {
         AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
-        AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
+        return format.getReader(rasterFile, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));
+    }
 
+    /**
+     * @param rasterFile the raster file, for its .sld file and statistics, <code>null</code> for
+     *          the remote rasters.
+     */
+    private static StyledRenderer getRenderer( AbstractGridCoverage2DReader coverageReader, File rasterFile,
+            Style givenStyle ) {
         MapContent mapContent = new MapContent();
         String styleKey = "default";
         Style rasterStyle = givenStyle;
@@ -148,7 +214,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
                 // the same style gets the same tiles
                 styleKey = "style" + Integer.toHexString(SldUtilities.styleToString(rasterStyle).hashCode());
             } else {
-                rasterStyle = SldUtilities.getStyleFromFile(rasterFile);
+                rasterStyle = rasterFile != null ? SldUtilities.getStyleFromFile(rasterFile) : null;
                 if (rasterStyle != null) {
                     styleKey = "sld";
                 } else {
@@ -181,6 +247,36 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
     }
 
     /**
+     * @return <code>true</code> for a remote raster, read by a reader given to the layer, as a
+     *          cloud optimized GeoTIFF.
+     */
+    public boolean isRemote() {
+        return remoteReader != null;
+    }
+
+    /**
+     * @return the reader of a remote raster, closed when the layer is disposed, or
+     *          <code>null</code> for the files.
+     */
+    public AbstractGridCoverage2DReader getRemoteReader() {
+        return remoteReader;
+    }
+
+    /**
+     * @param coverageReader the reader of a raster.
+     * @return <code>true</code> if the raster has a single band of values that a colortable can
+     *          show, as {@link #isColortableRaster(File)}.
+     */
+    public static boolean isColortableRaster( AbstractGridCoverage2DReader coverageReader ) {
+        try {
+            return isColortableImage(coverageReader);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
      * The style a raster without .sld file is drawn with: for single band rasters of non byte
      * data, as for example DEMs, an elevation colortable on the value range of the whole raster,
      * else the default raster style, which shows well RGB and palette images.
@@ -189,8 +285,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      * @return the style.
      */
     public static Style createDefaultStyle( File rasterFile ) {
-        AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
-        AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
+        AbstractGridCoverage2DReader coverageReader = fileReader(rasterFile);
         try {
             Style style = makeFullRangeStyle(coverageReader, rasterFile);
             if (style != null) {
@@ -209,8 +304,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      *          colors.
      */
     public static boolean isColortableRaster( File rasterFile ) {
-        AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
-        AbstractGridCoverage2DReader coverageReader = format.getReader(rasterFile);
+        AbstractGridCoverage2DReader coverageReader = fileReader(rasterFile);
         try {
             return isColortableImage(coverageReader);
         } catch (Exception e) {
@@ -234,6 +328,10 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      * of non byte data, as for example DEMs. With the default style, each tile would be
      * stretched on its own values range.
      *
+     * @param rasterFile the raster file, whose statistics are read whole if it is not larger
+     *          than {@link #EXACT_STATISTICS_MAX_CELLS}, <code>null</code> for the remote rasters.
+     *          The remote and large rasters have their range read at a low resolution, as from an
+     *          overview.
      * @return the style or <code>null</code> if the raster is shown well by the default style,
      *          as RGB or palette images.
      */
@@ -243,8 +341,13 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
                 return null;
             }
             double[] stats;
-            try (HMRaster raster = HMRaster.fromFile(rasterFile)) {
-                stats = raster.getStatistics();
+            if (rasterFile != null && !isLargeRaster(coverageReader)) {
+                try (HMRaster raster = HMRaster.fromFile(rasterFile)) {
+                    stats = raster.getStatistics();
+                }
+            } else {
+                // remote and large rasters: read at a low resolution, as from an overview
+                stats = readLowResolutionStatistics(coverageReader);
             }
             if (stats == null) {
                 return null;
@@ -264,7 +367,110 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         }
     }
 
-    private static LevelSet makeLevels( File imsf, StyledRenderer styledRenderer, Integer tileSize, Color colorToMakeTransparent ) throws MalformedURLException {
+    /**
+     * @param coverageReader the reader of a raster.
+     * @return <code>true</code> if the raster has more cells than
+     *          {@link #EXACT_STATISTICS_MAX_CELLS}, so that its statistics are read at a low
+     *          resolution.
+     */
+    private static boolean isLargeRaster( AbstractGridCoverage2DReader coverageReader ) {
+        GridEnvelope gridRange = coverageReader.getOriginalGridRange();
+        return (long) gridRange.getSpan(0) * gridRange.getSpan(1) > EXACT_STATISTICS_MAX_CELLS;
+    }
+
+    /**
+     * @param rasterFile a raster file.
+     * @return <code>true</code> if the raster has more cells than
+     *          {@link #EXACT_STATISTICS_MAX_CELLS}, so that {@link #readStatistics(File)} reads
+     *          it at a low resolution.
+     */
+    public static boolean isLargeRaster( File rasterFile ) {
+        AbstractGridCoverage2DReader coverageReader = fileReader(rasterFile);
+        try {
+            return isLargeRaster(coverageReader);
+        } finally {
+            coverageReader.dispose();
+        }
+    }
+
+    /**
+     * The statistics of a raster file: exact, reading all the cells, for the rasters up to
+     * {@link #EXACT_STATISTICS_MAX_CELLS}, else read at a low resolution, as from an overview of
+     * a cloud optimized GeoTIFF, since reading all the cells of a large raster can take hours.
+     *
+     * @param rasterFile the raster file.
+     * @return the statistics, as {@link HMRaster#getStatistics()}.
+     * @throws Exception if the raster can't be read.
+     */
+    public static double[] readStatistics( File rasterFile ) throws Exception {
+        AbstractGridCoverage2DReader coverageReader = fileReader(rasterFile);
+        try {
+            if (isLargeRaster(coverageReader)) {
+                return readLowResolutionStatistics(coverageReader);
+            }
+        } finally {
+            coverageReader.dispose();
+        }
+        try (HMRaster raster = HMRaster.fromFile(rasterFile)) {
+            return raster.getStatistics();
+        }
+    }
+
+    /**
+     * The value range of a raster read at a low resolution, which the readers of cloud optimized
+     * GeoTIFFs read from an overview, without reading the whole raster.
+     *
+     * @return the statistics, as {@link HMRaster#getStatistics()}.
+     */
+    public static double[] readLowResolutionStatistics( AbstractGridCoverage2DReader coverageReader ) throws Exception {
+        GridEnvelope gridRange = coverageReader.getOriginalGridRange();
+        int cols = gridRange.getSpan(0);
+        int rows = gridRange.getSpan(1);
+        double scale = Math.min(1.0, (double) STATISTICS_READ_SIZE / Math.max(cols, rows));
+        int readCols = Math.max(1, (int) Math.round(cols * scale));
+        int readRows = Math.max(1, (int) Math.round(rows * scale));
+        ParameterValue<GridGeometry2D> gridGeometry = AbstractGridFormat.READ_GRIDGEOMETRY2D.createValue();
+        gridGeometry.setValue(new GridGeometry2D(new GridEnvelope2D(0, 0, readCols, readRows), coverageReader.getOriginalEnvelope()));
+        GridCoverage2D coverage = coverageReader.read(new GeneralParameterValue[]{gridGeometry});
+        try (HMRaster raster = HMRaster.fromGridCoverage(coverage)) {
+            return raster.getStatistics();
+        }
+    }
+
+    /**
+     * @return the folder of the tiles of a raster file in the cache, named after the file and
+     *          the style, with the times of the file and of its .sld, so that a changed raster or
+     *          style gets new tiles.
+     */
+    private static String fileCachePath( File imsf, StyledRenderer styledRenderer ) {
+        long stamp = imsf.lastModified();
+        File styleFile = SldUtilities.getStyleFile(imsf);
+        if ("sld".equals(styledRenderer.styleKey()) && styleFile != null && styleFile.exists()) {
+            stamp = Math.max(stamp, styleFile.lastModified());
+        }
+        return "imagemosaics/" + imsf.getName() + "-" + stamp + "-" + styledRenderer.styleKey() + "-tiles";
+    }
+
+    /**
+     * @return the folder of the tiles of a remote raster in the cache, named after the layer, a
+     *          hash of the key of the raster, as its address, and the style.
+     */
+    private static String remoteCachePath( String name, String cacheKey, StyledRenderer styledRenderer ) {
+        String safeName = name.replaceAll("[^A-Za-z0-9._-]", "_");
+        return "remoterasters/" + safeName + "-" + Integer.toHexString(cacheKey.hashCode()) + "-" + styledRenderer.styleKey()
+                + "-tiles";
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+        if (remoteReader != null) {
+            remoteReader.dispose();
+        }
+    }
+
+    private static LevelSet makeLevels( String cacheRelativePath, String urlString, StyledRenderer styledRenderer,
+            Integer tileSize, Color colorToMakeTransparent ) throws MalformedURLException {
         GTRenderer renderer = styledRenderer.renderer();
         AVList params = new AVListImpl();
         if (tileSize == null || tileSize < 256) {
@@ -273,16 +479,6 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
 
         int finalTileSize = tileSize;
 
-        String tilesPart = "-" + styledRenderer.styleKey() + "-tiles";
-        // a changed raster or style gets new tiles
-        long stamp = imsf.lastModified();
-        File styleFile = SldUtilities.getStyleFile(imsf);
-        if ("sld".equals(styledRenderer.styleKey()) && styleFile != null && styleFile.exists()) {
-            stamp = Math.max(stamp, styleFile.lastModified());
-        }
-        String cacheRelativePath = "imagemosaics/" + imsf.getName() + "-" + stamp + tilesPart;
-
-        String urlString = imsf.toURI().toURL().toExternalForm();
         params.setValue(AVKey.URL, urlString);
         params.setValue(AVKey.TILE_WIDTH, finalTileSize);
         params.setValue(AVKey.TILE_HEIGHT, finalTileSize);

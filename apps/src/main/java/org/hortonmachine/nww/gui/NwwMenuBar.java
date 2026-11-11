@@ -155,6 +155,12 @@ public class NwwMenuBar extends JMenuBar {
         JMenuItem openWfs = item("Open WFS layers...", ImageCache.GLOBE, e -> tools.openWfs());
         openWfs.setToolTipText("Load the features of the layers of a WFS service, as those used in the web services browser");
         menu.add(openWfs);
+        JMenuItem openWcs = item("Open WCS coverages...", ImageCache.GLOBE, e -> tools.openWcs());
+        openWcs.setToolTipText("Download the coverages of a WCS service in the map view, at about the resolution of the screen");
+        menu.add(openWcs);
+        JMenuItem openStac = item("Open STAC assets...", ImageCache.GLOBE, e -> tools.openStac());
+        openStac.setToolTipText("Open the STAC browser: the assets selected there are added to the viewer from their context menu");
+        menu.add(openStac);
         JCheckBoxMenuItem rasterized = new JCheckBoxMenuItem("Open vectors rasterized");
         rasterized.setToolTipText("Draw the vectors opened from now on as image tiles, instead of shapes");
         rasterized.addActionListener(e -> tools.getLayerLoader().setPreferRasterized(rasterized.isSelected()));

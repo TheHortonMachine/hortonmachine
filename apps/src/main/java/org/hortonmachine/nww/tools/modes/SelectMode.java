@@ -270,6 +270,9 @@ public class SelectMode implements INwwMapMode {
     }
 
     private static boolean isRasterLayer( Layer layer ) {
+        if (layer instanceof GridCoverageNwwLayer && ((GridCoverageNwwLayer) layer).isRemote()) {
+            return true;
+        }
         LayerSource source = LayerSource.of(layer);
         return layer instanceof GridCoverageNwwLayer && source != null && NwwLayerLoader.isRasterFile(source.file());
     }
@@ -282,10 +285,16 @@ public class SelectMode implements INwwMapMode {
         if (tool == null) {
             return;
         }
-        File file = LayerSource.of(layer).file();
+        // the remote rasters, as the cloud optimized GeoTIFFs, are read by the reader of the layer
+        GridCoverageNwwLayer rasterLayer = (GridCoverageNwwLayer) layer;
+        File file = rasterLayer.isRemote() ? null : LayerSource.of(layer).file();
         new Thread(() -> {
             try {
-                RasterValues values = rasterReader.read(file, position.getLongitude().degrees, position.getLatitude().degrees);
+                double lon = position.getLongitude().degrees;
+                double lat = position.getLatitude().degrees;
+                RasterValues values = file != null
+                        ? rasterReader.read(file, lon, lat)
+                        : rasterReader.read(rasterLayer.getRemoteReader(), lon, lat);
                 SwingUtilities.invokeLater(() -> {
                     context.openTool(tool);
                     tool.showRasterValues(layer, position, values);

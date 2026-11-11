@@ -35,7 +35,6 @@ import it.geosolutions.imageioimpl.plugins.cog.CogImageReader;
 import it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi;
 import it.geosolutions.imageioimpl.plugins.cog.CogSourceSPIProvider;
 import it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader;
-import it.geosolutions.imageioimpl.plugins.cog.RangeReader;
 import tools.jackson.databind.JsonNode;
 
 public class GeotiffHandler implements IHMStacAssetRasterHandler {
@@ -174,13 +173,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		if (assetUrl.startsWith("s3://") || (access != null && access.isAuthenticated(assetUrl))) {
 			return null;
 		}
-		BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
-		if (PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)) {
-			cogUri = new BasicAuthURI(PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl), false);
-		}
-		CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
-				new CogImageInputStreamSpi(), HttpRangeReader.class.getName());
-		GeoTiffReader reader = new GeoTiffReader(inputProvider);
+		GeoTiffReader reader = createCogReader(assetUrl, null, null);
 		try {
 			if (resolution <= 0) {
 				int cols = reader.getOriginalGridRange().getSpan(0);
@@ -256,15 +249,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			InputStream inputProvider = readS3Raster(cogUri, client);
 			reader = new GeoTiffReader(inputProvider);
 		} else {
-			if (PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)) {
-				String accessibleHref = PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl);
-				cogUri = new BasicAuthURI(accessibleHref, false);
-			}
-
-			RangeReader rangeReader = new HttpRangeReader(cogUri.getUri(), CogImageReadParam.DEFAULT_HEADER_LENGTH);
-			CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
-					new CogImageInputStreamSpi(), rangeReader.getClass().getName());
-			reader = new GeoTiffReader(inputProvider);
+			reader = createCogReader(assetUrl, user, password);
 		}
 		CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
 
@@ -275,6 +260,31 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
         return reader.read(generalParameter);
 	}
 	
+	/**
+	 * Create a reader of a cloud optimized GeoTIFF served over http(s), which reads with range
+	 * requests only the header and the blocks of the parts and overviews asked, as the tiles of a
+	 * map at a given zoom.
+	 *
+	 * <p>The blobs of the Microsoft Planetary Computer get their access token.</p>
+	 *
+	 * @param url      the http(s) address of the GeoTIFF.
+	 * @param user     an optional user for basic authentication, or <code>null</code>.
+	 * @param password an optional password for basic authentication, or <code>null</code>.
+	 * @return the reader, which has read the header.
+	 * @throws Exception if the header can't be read.
+	 */
+	public static GeoTiffReader createCogReader(String url, String user, String password) throws Exception {
+		String href = PlanetaryComputerMicrosoft.isAzureBlob(url) ? PlanetaryComputerMicrosoft.getHrefWithToken(url) : url;
+		BasicAuthURI cogUri = new BasicAuthURI(href, false);
+		if (user != null && password != null) {
+			cogUri.setUser(user);
+			cogUri.setPassword(password);
+		}
+		CogSourceSPIProvider inputProvider = new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(),
+				new CogImageInputStreamSpi(), HttpRangeReader.class.getName());
+		return new GeoTiffReader(inputProvider);
+	}
+
 	/**
 	 * Static helper method to read a cog on a specific geographic region, without needing to read the whole coverage.
 	 * 

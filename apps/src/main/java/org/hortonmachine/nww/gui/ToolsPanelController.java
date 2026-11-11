@@ -86,6 +86,8 @@ public class ToolsPanelController {
     /** If a DEM is being read to be used as terrain. */
     private boolean terrainDemLoading = false;
     private boolean opaqueBackground = true;
+    /** The loader of the STAC assets, which keeps its browser window, made when first used. */
+    private NwwStacLoader stacLoader;
 
     public ToolsPanelController( final NwwPanel wwjPanel, LayerEventsListener layerEventsListener ) {
         this.wwjPanel = wwjPanel;
@@ -141,6 +143,24 @@ public class ToolsPanelController {
      */
     public void openWfs() {
         new NwwWebServicesLoader(wwjPanel, layerLoader).openWfs();
+    }
+
+    /**
+     * Choose a WCS service, as those used in the web services browser, and download its
+     * coverages in the map view.
+     */
+    public void openWcs() {
+        new NwwWebServicesLoader(wwjPanel, layerLoader).openWcs();
+    }
+
+    /**
+     * Open the STAC browser, to add the assets of STAC catalogs to the viewer.
+     */
+    public void openStac() {
+        if (stacLoader == null) {
+            stacLoader = new NwwStacLoader(wwjPanel, layerLoader);
+        }
+        stacLoader.openBrowser();
     }
 
     /**
