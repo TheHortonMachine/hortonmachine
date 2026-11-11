@@ -24,6 +24,7 @@ import java.util.List;
 
 import javax.swing.JFrame;
 
+import org.hortonmachine.gears.utils.PreferencesHandler;
 import org.hortonmachine.gui.utils.GuiUtilities;
 
 import gov.nasa.worldwind.cache.BasicDataFileStore;
@@ -36,6 +37,25 @@ import gov.nasa.worldwind.cache.FileStore;
  *
  */
 public class CacheUtils {
+
+    /** The preference of {@link #isClearRasterCacheOnRemove()}. */
+    private static final String PREF_CLEAR_RASTER_CACHE = "NWW_CLEAR_RASTER_CACHE";
+
+    /**
+     * @return <code>true</code> if the tiles of a raster layer, of a file or remote, are deleted
+     *          from the cache when the layer is removed, the default.
+     */
+    public static boolean isClearRasterCacheOnRemove() {
+        return Boolean.parseBoolean(PreferencesHandler.getPreference(PREF_CLEAR_RASTER_CACHE, "true"));
+    }
+
+    /**
+     * @param clear if <code>true</code>, the tiles of a raster layer are deleted from the cache
+     *          when the layer is removed.
+     */
+    public static void setClearRasterCacheOnRemove( boolean clear ) {
+        PreferencesHandler.setPreference(PREF_CLEAR_RASTER_CACHE, String.valueOf(clear));
+    }
 
     public static void clearCacheBySourceName( String sourceName ) {
         try {

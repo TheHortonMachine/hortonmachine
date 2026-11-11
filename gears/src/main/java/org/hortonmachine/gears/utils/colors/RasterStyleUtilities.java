@@ -26,11 +26,17 @@ import java.util.List;
 import java.util.Locale;
 
 import org.geotools.api.filter.expression.Expression;
+import org.geotools.api.style.ChannelSelection;
 import org.geotools.api.style.ColorMap;
 import org.geotools.api.style.ColorMapEntry;
+import org.geotools.api.style.ContrastEnhancement;
+import org.geotools.api.style.FeatureTypeStyle;
 import org.geotools.api.style.RasterSymbolizer;
+import org.geotools.api.style.Rule;
+import org.geotools.api.style.SelectedChannelType;
 import org.geotools.api.style.Style;
 import org.geotools.api.style.StyleFactory;
+import org.geotools.api.style.Symbolizer;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
@@ -540,6 +546,58 @@ public class RasterStyleUtilities {
             return null;
         }
         return new double[]{first, last};
+    }
+
+    /**
+     * Set the band that the raster symbolizers of a style draw, as the gray channel of their
+     * channel selection, so that the colortable of a multi band raster shows one of its bands.
+     *
+     * @param style the style to change.
+     * @param band the 0 based index of the band, written as the 1 based channel name of SLD, or a
+     *          negative value to remove the channel selection.
+     */
+    public static void setGrayChannel( Style style, int band ) {
+        for( FeatureTypeStyle featureTypeStyle : style.featureTypeStyles() ) {
+            for( Rule rule : featureTypeStyle.rules() ) {
+                for( Symbolizer symbolizer : rule.symbolizers() ) {
+                    if (symbolizer instanceof RasterSymbolizer rasterSymbolizer) {
+                        if (band < 0) {
+                            rasterSymbolizer.setChannelSelection(null);
+                        } else {
+                            SelectedChannelType gray = sf.createSelectedChannelType(String.valueOf(band + 1),
+                                    (ContrastEnhancement) null);
+                            rasterSymbolizer.setChannelSelection(sf.channelSelection(gray));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param style a raster style.
+     * @return the 0 based index of the band set as gray channel in the first raster symbolizer of
+     *          the style, -1 if it has none.
+     */
+    public static int getGrayChannel( Style style ) {
+        if (style == null) {
+            return -1;
+        }
+        for( FeatureTypeStyle featureTypeStyle : style.featureTypeStyles() ) {
+            for( Rule rule : featureTypeStyle.rules() ) {
+                for( Symbolizer symbolizer : rule.symbolizers() ) {
+                    if (symbolizer instanceof RasterSymbolizer rasterSymbolizer) {
+                        ChannelSelection channelSelection = rasterSymbolizer.getChannelSelection();
+                        SelectedChannelType gray = channelSelection == null ? null : channelSelection.getGrayChannel();
+                        Integer channel = gray == null || gray.getChannelName() == null
+                                ? null
+                                : gray.getChannelName().evaluate(null, Integer.class);
+                        return channel == null ? -1 : channel - 1;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 
     public static String styleToString( Style style ) throws Exception {

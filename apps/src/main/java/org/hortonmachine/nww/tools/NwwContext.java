@@ -32,6 +32,7 @@ import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
+import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.hortonmachine.nww.tools.features.FeatureSelection;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.locationtech.jts.geom.Envelope;
@@ -213,6 +214,8 @@ public class NwwContext {
         if (selection != null && selection.getLayer() == layer) {
             clearSelection();
         }
+        // the tiles of the rasters, if the setting is on
+        GridCoverageNwwLayer.clearCacheOfRemoved(layer, nwwPanel.getWwd().getModel().getLayers());
     }
 
     /**

@@ -24,6 +24,7 @@ import javax.swing.AbstractAction;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.gui.LayerEventsListener;
 import org.hortonmachine.nww.layers.defaults.NwwLayer;
+import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.layers.Layer;
@@ -58,6 +59,8 @@ public class DeleteLayerAction extends AbstractAction {
             // e.g. the graphics memory of point clouds
             ((NwwLayer) layer).freeResources();
         }
+        // the tiles of the rasters, if the setting is on
+        GridCoverageNwwLayer.clearCacheOfRemoved(layer, layers);
         wwd.redraw();
     }
 }

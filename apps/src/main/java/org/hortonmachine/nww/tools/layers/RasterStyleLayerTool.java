@@ -64,6 +64,8 @@ import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
 import org.hortonmachine.nww.gui.LocalStyleStore;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
+import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer.RasterInfo;
+import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer.RasterKind;
 import org.hortonmachine.nww.tools.INwwLayerTool;
 import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.tools.NwwContext;
@@ -81,7 +83,8 @@ import gov.nasa.worldwind.layers.Layer;
  *
  * <p>Apply draws the layer with the style, Save also writes it into the .sld file next to the
  * raster, used when it is loaded again. RGB and palette images have their own colors and are
- * drawn as they are.</p>
+ * drawn as they are. Of the rasters with more bands of values, as the classes of a land cover,
+ * the colortable shows the chosen band.</p>
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
@@ -118,15 +121,30 @@ public class RasterStyleLayerTool implements INwwLayerTool {
 
         GridCoverageNwwLayer rasterLayer = (GridCoverageNwwLayer) layer;
         new Thread(() -> {
-            boolean colortable = rasterLayer.isRemote()
-                    ? GridCoverageNwwLayer.isColortableRaster(rasterLayer.getRemoteReader())
-                    : GridCoverageNwwLayer.isColortableRaster(source.file());
+            RasterInfo readInfo;
+            String error = null;
+            try {
+                readInfo = rasterLayer.isRemote()
+                        ? GridCoverageNwwLayer.readRasterInfo(rasterLayer.getRemoteReader())
+                        : GridCoverageNwwLayer.readRasterInfo(source.file());
+            } catch (Exception e) {
+                e.printStackTrace();
+                readInfo = null;
+                error = e.getMessage();
+            }
+            RasterInfo info = readInfo;
+            String readError = error;
             SwingUtilities.invokeLater(() -> {
                 panel.removeAll();
-                if (colortable) {
-                    panel.add(new RasterStylePanel(context, layer, source), BorderLayout.CENTER);
+                if (info == null) {
+                    JLabel label = new JLabel("<html>Unable to read the raster: " + readError + "</html>");
+                    label.setForeground(errorColor());
+                    panel.add(label, BorderLayout.NORTH);
+                } else if (info.kind() == RasterKind.VALUES) {
+                    panel.add(new RasterStylePanel(context, layer, source, info), BorderLayout.CENTER);
                 } else {
-                    panel.add(new JLabel("<html>The raster has its own colors, as an RGB or palette image: it is drawn "
+                    String what = info.kind() == RasterKind.PALETTE ? "a palette image" : "an RGB image";
+                    panel.add(new JLabel("<html>The raster has its own colors, as " + what + ": it is drawn "
                             + "as it is. Its opacity is set in the layers panel.</html>"), BorderLayout.NORTH);
                 }
                 panel.revalidate();
@@ -194,7 +212,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
     }
 
     /**
-     * The panel of the style of a single band raster.
+     * The panel of the style of a raster of values, of one of its bands.
      */
     private static class RasterStylePanel extends JPanel {
         private static final long serialVersionUID = 1L;
@@ -206,11 +224,18 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private final LayerSource source;
         /** If the raster is remote, as a cloud optimized GeoTIFF, read by the reader of the layer. */
         private final boolean remote;
+        /** The structure of the raster, with its bands. */
+        private final RasterInfo info;
+
+        /** The band the colortable shows, if the raster has more of them. */
+        private final JComboBox<String> bandCombo = new JComboBox<>();
 
         /** If the components are being filled, so that their listeners do nothing. */
         private boolean updating;
         /** The opacity of the colors of the style, kept as read. */
         private double opacity = 1.0;
+        /** The count of the reads of the range, of which only the last is shown. */
+        private int rangeRequest;
 
         private final JComboBox<String> tableCombo = new JComboBox<>();
         private final JTextField minField = new JTextField(10);
@@ -226,12 +251,19 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private final JButton resetButton = new JButton("Reset");
         private final JLabel statusLabel = new JLabel(" ");
 
-        RasterStylePanel( NwwContext context, Layer layer, LayerSource source ) {
+        RasterStylePanel( NwwContext context, Layer layer, LayerSource source, RasterInfo info ) {
             super(new BorderLayout(0, 6));
             this.context = context;
             this.layer = layer;
             this.source = source;
             this.remote = ((GridCoverageNwwLayer) layer).isRemote();
+            this.info = info;
+
+            for( String bandName : info.bandNames() ) {
+                bandCombo.addItem(bandName);
+            }
+            bandCombo.setToolTipText("The band of the raster that the colortable shows");
+            bandCombo.addActionListener(e -> onBandChanged());
 
             tableCombo.setRenderer(new DefaultListCellRenderer(){
                 private static final long serialVersionUID = 1L;
@@ -264,6 +296,19 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             c.insets = new Insets(2, 4, 2, 4);
             c.anchor = GridBagConstraints.WEST;
             c.gridy = 0;
+            if (info.bandsCount() > 1) {
+                c.gridx = 0;
+                content.add(new JLabel("Band"), c);
+                c.gridx = 1;
+                c.gridwidth = 3;
+                c.fill = GridBagConstraints.HORIZONTAL;
+                c.weightx = 1;
+                content.add(bandCombo, c);
+                c.gridwidth = 1;
+                c.weightx = 0;
+                c.fill = GridBagConstraints.NONE;
+            }
+            c.gridy = 1;
             c.gridx = 0;
             content.add(new JLabel("Colortable"), c);
             c.gridx = 1;
@@ -273,7 +318,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             content.add(tableCombo, c);
             c.gridwidth = 1;
             c.weightx = 0;
-            c.gridy = 1;
+            c.gridy = 2;
             c.gridx = 0;
             c.fill = GridBagConstraints.NONE;
             content.add(new JLabel("Min"), c);
@@ -289,7 +334,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1;
             content.add(maxField, c);
-            c.gridy = 2;
+            c.gridy = 3;
             c.gridx = 1;
             c.gridwidth = 3;
             c.weightx = 0;
@@ -298,7 +343,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             rangePanel.add(fromDataButton);
             rangePanel.add(rangeNote);
             content.add(rangePanel, c);
-            c.gridy = 3;
+            c.gridy = 4;
             c.gridx = 0;
             c.gridwidth = 4;
             c.weightx = 1;
@@ -307,7 +352,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             JScrollPane tableScroll = new JScrollPane(tableArea);
             tableScroll.setBorder(BorderFactory.createTitledBorder("Colors"));
             content.add(tableScroll, c);
-            c.gridy = 4;
+            c.gridy = 5;
             c.weighty = 0;
             c.fill = GridBagConstraints.NONE;
             JPanel reliefPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -364,6 +409,8 @@ public class RasterStyleLayerTool implements INwwLayerTool {
 
             updating = true;
             try {
+                int band = RasterStyleUtilities.getGrayChannel(style);
+                bandCombo.setSelectedIndex(band < 0 || band >= info.bandsCount() ? 0 : band);
                 if (known) {
                     fillTables(false);
                     tableCombo.setSelectedItem(ruleName);
@@ -439,12 +486,36 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         }
 
         /**
-         * Put the minimum and maximum of the raster in the range, reading all its cells, or, for
-         * the remote rasters, reading it at a low resolution.
+         * A new band has a range of its own: it is read again.
+         */
+        private void onBandChanged() {
+            if (updating) {
+                return;
+            }
+            minField.setText("");
+            maxField.setText("");
+            if (!hasValues()) {
+                readRangeFromData();
+            }
+        }
+
+        /**
+         * @return the 0 based index of the band the colortable shows.
+         */
+        private int selectedBand() {
+            return Math.max(0, bandCombo.getSelectedIndex());
+        }
+
+        /**
+         * Put the minimum and maximum of the band of the raster in the range, reading all its
+         * cells, or, for the remote rasters, reading it at a low resolution.
          */
         private void readRangeFromData() {
             fromDataButton.setEnabled(false);
             setStatus("Reading the range of the values...", false);
+            int band = selectedBand();
+            // only the last read is shown, as when the band is changed while reading
+            int request = ++rangeRequest;
             // the reader of the layer drawn now, the layer is replaced at each style
             GridCoverageNwwLayer current = (GridCoverageNwwLayer) context.getLatest(layer);
             new Thread(() -> {
@@ -452,14 +523,17 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                     double[] stats;
                     boolean lowResolution;
                     if (remote) {
-                        stats = GridCoverageNwwLayer.readLowResolutionStatistics(current.getRemoteReader());
+                        stats = GridCoverageNwwLayer.readLowResolutionStatistics(current.getRemoteReader(), band);
                         lowResolution = true;
                     } else {
                         // the large rasters at a low resolution, reading all their cells would take long
                         lowResolution = GridCoverageNwwLayer.isLargeRaster(source.file());
-                        stats = GridCoverageNwwLayer.readStatistics(source.file());
+                        stats = GridCoverageNwwLayer.readStatistics(source.file(), band);
                     }
                     SwingUtilities.invokeLater(() -> {
+                        if (request != rangeRequest) {
+                            return;
+                        }
                         if (stats == null) {
                             setStatus("The raster has no valid values.", true);
                         } else {
@@ -473,6 +547,9 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                 } catch (Exception e) {
                     e.printStackTrace();
                     SwingUtilities.invokeLater(() -> {
+                        if (request != rangeRequest) {
+                            return;
+                        }
                         setStatus("Unable to read the values: " + e.getMessage(), true);
                         updateRangeState();
                     });
@@ -532,6 +609,9 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                 relief.setBrightnessOnly(false);
                 relief.setReliefFactor(ff.literal(((Number) reliefSpinner.getValue()).doubleValue()));
                 ((RasterSymbolizer) rule.symbolizers().get(0)).setShadedRelief(relief);
+            }
+            if (info.bandsCount() > 1) {
+                RasterStyleUtilities.setGrayChannel(style, selectedBand());
             }
             return style;
         }

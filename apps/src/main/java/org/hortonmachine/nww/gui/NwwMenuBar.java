@@ -255,6 +255,12 @@ public class NwwMenuBar extends JMenuBar {
         JMenuItem cache = item("Cache manager...", ImageCache.MEMORY, e -> CacheUtils.openCacheManager());
         cache.setToolTipText("See and clear the cache of the downloaded map tiles and elevations");
         menu.add(cache);
+        JCheckBoxMenuItem clearRasterCache = new JCheckBoxMenuItem("Clear the tiles of removed rasters");
+        clearRasterCache.setToolTipText("When a raster layer, of a file or remote, is removed, delete its map tiles from the cache, "
+                + "unless another layer shows the same raster");
+        clearRasterCache.addActionListener(e -> CacheUtils.setClearRasterCacheOnRemove(clearRasterCache.isSelected()));
+        menu.add(clearRasterCache);
+        menu.addMenuListener(onSelected(() -> clearRasterCache.setSelected(CacheUtils.isClearRasterCacheOnRemove())));
         return menu;
     }
 
