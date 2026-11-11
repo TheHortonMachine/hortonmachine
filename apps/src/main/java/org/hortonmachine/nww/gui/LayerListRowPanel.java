@@ -33,6 +33,7 @@ import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
+import org.hortonmachine.nww.tools.LayerSource;
 
 import gov.nasa.worldwind.layers.Layer;
 import gov.nasa.worldwind.layers.MarkerLayer;
@@ -72,8 +73,12 @@ public class LayerListRowPanel extends JPanel {
         textPanel = new JPanel(new GridLayout(0, 1, 0, 0));
         textPanel.setOpaque(false);
         int separatorIndex = layerName.lastIndexOf(HMConstants.DB_TABLE_PATH_SEPARATOR);
-        if (separatorIndex > 0 && layerName.substring(0, separatorIndex).toLowerCase().endsWith("." + HMConstants.GPKG)) {
-            // geopackage table: the table name, with the geopackage name smaller below
+        LayerSource source = LayerSource.of(layer);
+        boolean isTable = layerName.substring(0, Math.max(0, separatorIndex)).toLowerCase().endsWith("." + HMConstants.GPKG)
+                || (source != null && source.isDatabaseTable());
+        if (separatorIndex > 0 && isTable) {
+            // geopackage or database table: the table name, with the geopackage or connection name
+            // smaller below
             nameLabel = new JLabel(layerName.substring(separatorIndex + HMConstants.DB_TABLE_PATH_SEPARATOR.length()));
             sourceLabel = new JLabel(layerName.substring(0, separatorIndex));
             Font font = nameLabel.getFont();

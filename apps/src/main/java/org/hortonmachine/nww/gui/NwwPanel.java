@@ -378,23 +378,25 @@ public class NwwPanel extends JPanel {
         wwd.redraw();
     }
 
+    /**
+     * @return the WGS84 lon/lat envelope of the four corners of the view, which covers the view
+     *          also if rotated, or <code>null</code> if a corner is not on the globe, as when the
+     *          sky is visible.
+     */
     public ReferencedEnvelope getViewportBounds() {
         View view = wwd.getView();
-        Position posUL = view.computePositionFromScreenPoint(0, 0);
-        Position posLR = view.computePositionFromScreenPoint(getWidth(), getHeight());
-
-        if (posLR != null && posUL != null) {
-            double west = posUL.longitude.degrees;
-            double north = posUL.latitude.degrees;
-            double east = posLR.longitude.degrees;
-            double south = posLR.latitude.degrees;
-
-            ReferencedEnvelope env = new ReferencedEnvelope(west, east, south, north, DefaultGeographicCRS.WGS84);
-            return env;
-        } else {
-            return null;// new ReferencedEnvelope(-180, 180, -90, 90,
-                        // DefaultGeographicCRS.WGS84);
+        int w = getWidth();
+        int h = getHeight();
+        Position[] corners = {view.computePositionFromScreenPoint(0, 0), view.computePositionFromScreenPoint(w, 0),
+                view.computePositionFromScreenPoint(w, h), view.computePositionFromScreenPoint(0, h)};
+        ReferencedEnvelope env = new ReferencedEnvelope(DefaultGeographicCRS.WGS84);
+        for( Position corner : corners ) {
+            if (corner == null) {
+                return null;
+            }
+            env.expandToInclude(corner.longitude.degrees, corner.latitude.degrees);
         }
+        return env;
     }
 
     public WorldWindow getWwd() {

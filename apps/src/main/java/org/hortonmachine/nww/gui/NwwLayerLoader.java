@@ -17,13 +17,9 @@
  */
 package org.hortonmachine.nww.gui;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.io.File;
 import java.util.ArrayList;
@@ -31,14 +27,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
@@ -275,33 +267,38 @@ public class NwwLayerLoader {
     private void loadGeopackage( File gpkgFile ) throws Exception {
         List<String> tilesTables = new ArrayList<>();
         List<String> featureTables = new ArrayList<>();
-        List<String> labels = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        List<String> types = new ArrayList<>();
         try (GeopackageCommonDb db = new GeopackageDb()) {
             db.open(gpkgFile.getAbsolutePath());
             for( TileEntry tileEntry : db.tiles() ) {
                 tilesTables.add(tileEntry.getTableName());
-                labels.add(tileEntry.getTableName() + "  (tiles)");
+                names.add(tileEntry.getTableName());
+                types.add("tiles");
             }
             for( FeatureEntry featureEntry : db.features() ) {
                 featureTables.add(featureEntry.getTableName());
                 String type = featureEntry.getGeometryType() != null
                         ? featureEntry.getGeometryType().name().toLowerCase()
                         : "vector";
-                labels.add(featureEntry.getTableName() + "  (" + type + ")");
+                names.add(featureEntry.getTableName());
+                types.add(type);
             }
         }
-        if (labels.isEmpty()) {
+        if (names.isEmpty()) {
             GuiUtilities.showWarningMessage(wwjPanel, "WARNING", "The geopackage contains no tiles or vector table.");
             return;
         }
 
-        boolean[] selected = new boolean[labels.size()];
+        boolean[] selected = new boolean[names.size()];
         Arrays.fill(selected, true);
-        if (labels.size() > 1) {
-            selected = showTablesSelectionDialog(gpkgFile.getName(), labels);
-            if (selected == null) {
+        if (names.size() > 1) {
+            TablesSelectionDialog.Result result = TablesSelectionDialog.show(wwjPanel, "Geopackage layers",
+                    "Select the layers to load from " + gpkgFile.getName() + ":", names, types, true, null, null, false);
+            if (result == null) {
                 return;
             }
+            selected = result.selected();
         }
 
         for( int i = 0; i < tilesTables.size(); i++ ) {
@@ -333,52 +330,6 @@ public class NwwLayerLoader {
                 new LayerSource(gpkgFile, tableName).attachTo(layer);
             }
         }
-    }
-
-    /**
-     * Let the user select the tables of a geopackage to load, all selected at the start.
-     *
-     * @param fileName the name of the geopackage.
-     * @param labels the labels of the tables.
-     * @return the selection state of each table or <code>null</code> if cancelled.
-     */
-    private boolean[] showTablesSelectionDialog( String fileName, List<String> labels ) {
-        JPanel checksPanel = new JPanel(new GridLayout(0, 1));
-        List<JCheckBox> checks = new ArrayList<>();
-        for( String label : labels ) {
-            JCheckBox check = new JCheckBox(label, true);
-            checks.add(check);
-            checksPanel.add(check);
-        }
-        JScrollPane scrollPane = new JScrollPane(checksPanel);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        Dimension size = scrollPane.getPreferredSize();
-        scrollPane.setPreferredSize(new Dimension(Math.max(size.width + 20, 300), Math.min(size.height, 400)));
-
-        JButton allButton = new JButton("Select all");
-        allButton.addActionListener(e -> checks.forEach(c -> c.setSelected(true)));
-        JButton noneButton = new JButton("Select none");
-        noneButton.addActionListener(e -> checks.forEach(c -> c.setSelected(false)));
-        JPanel selectionButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-        selectionButtons.add(allButton);
-        selectionButtons.add(noneButton);
-
-        JPanel panel = new JPanel(new BorderLayout(0, 8));
-        panel.add(new JLabel("Select the layers to load from " + fileName + ":"), BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
-        panel.add(selectionButtons, BorderLayout.SOUTH);
-
-        int result = JOptionPane.showConfirmDialog(wwjPanel, panel, "Geopackage layers", JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE);
-        if (result != JOptionPane.OK_OPTION) {
-            return null;
-        }
-        boolean[] selected = new boolean[checks.size()];
-        for( int i = 0; i < selected.length; i++ ) {
-            selected[i] = checks.get(i).isSelected();
-        }
-        return selected;
     }
 
     /**
@@ -666,6 +617,32 @@ public class NwwLayerLoader {
     }
 
     /**
+     * Load a feature collection to layer, keeping where its data come from, as for the tables of
+     * a database connection.
+     *
+     * <p>The source is attached before the layer is added, so that the layers panel can show the
+     * name as the one of a table.</p>
+     *
+     * @param name name of the layer.
+     * @param readFC the feature collection to load, in WGS84 lon/lat.
+     * @param source the source of the data, attached to the layer.
+     * @param sldStyle the style of the layer, <code>null</code> for the next of the default colors.
+     * @return the layer added, or <code>null</code> for an unknown geometry type.
+     * @throws Exception
+     */
+    public Layer loadFeatureCollection( String name, SimpleFeatureCollection readFC, LayerSource source, Style sldStyle )
+            throws Exception {
+        Layer layer = createFeatureCollectionLayer(preferRasterized, null, name, null, readFC, null, sldStyle, null);
+        if (layer != null) {
+            if (source != null) {
+                source.attachTo(layer);
+            }
+            addLayer(layer);
+        }
+        return layer;
+    }
+
+    /**
      * @return the layer added, or <code>null</code> for an unknown geometry type.
      */
     private Layer loadFeatureCollection( File selectedFile, String name, SimpleFeatureStore featureStore,
@@ -680,16 +657,18 @@ public class NwwLayerLoader {
     }
 
     /**
-     * Read again the data of a vector layer loaded from a shapefile or a geopackage table, keeping
-     * only the features that match a filter, and make a new layer of the same kind, with the same
-     * name and style.
+     * Read again the data of a vector layer loaded from a shapefile, a geopackage table or a table
+     * of a database connection, keeping only the features that match a filter, and make a new
+     * layer of the same kind, with the same name and style. The database tables are read in the
+     * same extent as before, if they were read in one, as the map view.
      *
      * <p>The new layer is not added to the viewer: it is meant to replace the given one, as with
      * {@link org.hortonmachine.nww.tools.NwwContext#replaceLayer(Layer, Layer)}.</p>
      *
      * @param layer the layer, which needs a {@link LayerSource}.
-     * @param filter the filter of the features, as a SQL WHERE condition for the geopackage tables
-     *          and as ECQL for the shapefiles, <code>null</code> or blank to keep all of them.
+     * @param filter the filter of the features, as a SQL WHERE condition for the geopackage and
+     *          database tables and as ECQL for the shapefiles, <code>null</code> or blank to keep
+     *          all of them.
      * @return the new layer, with its {@link LayerSource} giving the filter.
      * @throws Exception if the data can't be read, as for a wrong filter.
      */
@@ -709,8 +688,9 @@ public class NwwLayerLoader {
      */
     public Layer reloadVectorLayer( Layer layer, String filter, Style style ) throws Exception {
         LayerSource source = LayerSource.of(layer);
-        if (source == null || !(source.isShapefile() || source.isGeopackageTable())) {
-            throw new IllegalArgumentException("The layer is not read from a shapefile or a geopackage table: " + layer.getName());
+        if (source == null || !(source.isShapefile() || source.isGeopackageTable() || source.isDatabaseTable())) {
+            throw new IllegalArgumentException(
+                    "The layer is not read from a shapefile, a geopackage table or a database table: " + layer.getName());
         }
         String where = filter == null || filter.isBlank() ? null : filter.trim();
         boolean rasterized = layer instanceof RasterizedFeatureCollectionLayer;
@@ -730,6 +710,22 @@ public class NwwLayerLoader {
             readFC = where == null ? featureSource.getFeatures() : featureSource.getFeatures(ECQL.toFilter(where));
             field2ValuesMap = readCodes(source.file());
             styleFile = source.file();
+        } else if (source.isDatabaseTable()) {
+            // read in the same extent as before, as the map view the table was loaded in
+            try (ASpatialDb db = NwwDatabaseLoader.openDb(source.connection())) {
+                SqlName table = SqlName.m(source.table());
+                readFC = NwwDatabaseLoader.readFeatures(db, table, source.extent(), where);
+                if (readFC.getSchema() == null) {
+                    // no feature matches: the type of a record read without conditions makes an
+                    // empty layer
+                    SimpleFeatureType schema = SpatialDbsImportUtils.tableToFeatureFCollection(db, table, 1, -1, null)
+                            .getSchema();
+                    if (schema == null) {
+                        throw new IllegalArgumentException("The table has no features: " + source.path());
+                    }
+                    readFC = new ListFeatureCollection(schema);
+                }
+            }
         } else {
             try (GeopackageCommonDb db = new GeopackageDb()) {
                 db.open(source.file().getAbsolutePath());
@@ -757,7 +753,7 @@ public class NwwLayerLoader {
         if (replacement == null) {
             throw new IllegalArgumentException("Unsupported geometry type in: " + source.path());
         }
-        new LayerSource(source.file(), source.table(), where).attachTo(replacement);
+        source.withFilter(where).attachTo(replacement);
         return replacement;
     }
 
@@ -795,6 +791,15 @@ public class NwwLayerLoader {
             return layer;
         }
         LayerSource source = LayerSource.of(layer);
+        if (source != null && source.isDatabaseTable() && layer instanceof RasterizedFeatureCollectionLayer) {
+            // the features in memory are drawn again: reading the table again would lose the
+            // extent they were loaded in, as the map view, and the round trip to the server
+            RasterizedFeatureCollectionLayer rasterized = (RasterizedFeatureCollectionLayer) layer;
+            Layer replacement = createFeatureCollectionLayer(true, null, layer.getName(), rasterized.getFeatureStore(),
+                    rasterized.getFeatureCollection(), null, style, null);
+            source.attachTo(replacement);
+            return replacement;
+        }
         return reloadVectorLayer(layer, source != null ? source.filter() : null, style);
     }
 
@@ -822,15 +827,20 @@ public class NwwLayerLoader {
 
     /**
      * Save the style of a layer in its data: in the geopackage table, or in the .sld file next to
-     * the shapefile or raster file, which is replaced. The style is used when the data are loaded
-     * again.
+     * the shapefile or raster file, which is replaced. The styles of the tables of database
+     * connections are not saved in the database, but in the local {@link DatabaseStyleStore}.
+     * The style is used when the data are loaded again.
      *
-     * @param source the source of the layer, a shapefile, a geopackage table or a raster file.
+     * @param source the source of the layer, a shapefile, a geopackage table, a table of a
+     *          database connection or a raster file.
      * @param style the style.
      * @return the file written: the geopackage or the .sld file.
      * @throws Exception if the style can't be written.
      */
     public static File saveStyle( LayerSource source, Style style ) throws Exception {
+        if (source.isDatabaseTable()) {
+            return DatabaseStyleStore.save(source, style);
+        }
         String sld = SldUtilities.styleToString(style);
         if (source.isGeopackageTable()) {
             try (GeopackageCommonDb db = new GeopackageDb()) {
@@ -849,11 +859,14 @@ public class NwwLayerLoader {
     }
 
     /**
-     * @param file a file.
+     * @param file a file, or <code>null</code>.
      * @return <code>true</code> for the raster files loaded as {@link GridCoverageNwwLayer}:
      *          GeoTIFF and ESRI ASCII grids.
      */
     public static boolean isRasterFile( File file ) {
+        if (file == null) {
+            return false;
+        }
         String lowerName = file.getName().toLowerCase();
         return lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif");
     }

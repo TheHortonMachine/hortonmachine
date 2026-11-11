@@ -146,6 +146,9 @@ public class NwwMenuBar extends JMenuBar {
         open.setToolTipText("Open files and folders of the supported formats as layers");
         open.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx()));
         menu.add(open);
+        JMenuItem openDb = item("Open from saved connection...", ImageCache.CONNECT, e -> tools.openFromSavedConnection());
+        openDb.setToolTipText("Open the spatial tables of a database connection saved in the database viewer, as PostGIS");
+        menu.add(openDb);
         JCheckBoxMenuItem rasterized = new JCheckBoxMenuItem("Open vectors rasterized");
         rasterized.setToolTipText("Draw the vectors opened from now on as image tiles, instead of shapes");
         rasterized.addActionListener(e -> tools.getLayerLoader().setPreferRasterized(rasterized.isSelected()));

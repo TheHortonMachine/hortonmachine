@@ -19,37 +19,87 @@ package org.hortonmachine.nww.tools;
 
 import java.io.File;
 
+import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.gears.libs.modules.HMConstants;
+import org.locationtech.jts.geom.Envelope;
 
 import gov.nasa.worldwind.layers.Layer;
 
 /**
- * Where the data of a layer come from: a file and, for databases as geopackages, a table.
+ * Where the data of a layer come from: a file and, for databases as geopackages, a table, or a
+ * table of a database connection, as the ones saved in the database viewer.
  *
  * <p>It is kept in the attributes of the layer, so that the {@link INwwLayerTool}s can read
  * more of the data than the layer holds.</p>
  *
- * @param file the file of the data.
- * @param table the table in the file, or <code>null</code> for single layer files.
+ * @param file the file of the data, <code>null</code> for the tables of a database connection.
+ * @param table the table in the file or in the database, or <code>null</code> for single layer
+ *          files.
  * @param filter the filter of the features shown by the layer, as a SQL WHERE condition for
  *          the database tables and as ECQL for the shapefiles, or <code>null</code> if all are
  *          shown.
+ * @param connection the database connection of the table, <code>null</code> for the files.
+ * @param extent the WGS84 lon/lat extent the features were read in, as the map view, for the
+ *          tables of database connections, <code>null</code> if all were read. Reading the data
+ *          again, as with a new filter, keeps the extent.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public record LayerSource( File file, String table, String filter ) {
+public record LayerSource( File file, String table, String filter, ConnectionData connection, Envelope extent ) {
 
     /** The key of the source in the attributes of the layers. */
     public static final String KEY = "org.hortonmachine.nww.tools.LayerSource";
 
     /**
-     * The source of a layer showing all the features.
+     * The source of a layer read from a file.
+     *
+     * @param file the file of the data.
+     * @param table the table in the file, or <code>null</code> for single layer files.
+     * @param filter the filter of the features shown by the layer, or <code>null</code> if all
+     *          are shown.
+     */
+    public LayerSource( File file, String table, String filter ) {
+        this(file, table, filter, null, null);
+    }
+
+    /**
+     * The source of a layer read from a file, showing all the features.
      *
      * @param file the file of the data.
      * @param table the table in the file, or <code>null</code> for single layer files.
      */
     public LayerSource( File file, String table ) {
-        this(file, table, null);
+        this(file, table, null, null, null);
+    }
+
+    /**
+     * The source of a layer read from a table of a database connection.
+     *
+     * @param connection the connection.
+     * @param table the table, with its schema if not the default one.
+     * @param filter the filter of the features as a SQL WHERE condition, or <code>null</code>
+     *          if all are shown.
+     * @param extent the WGS84 lon/lat extent the features were read in, <code>null</code> if
+     *          all were read.
+     * @return the source.
+     */
+    public static LayerSource ofDatabase( ConnectionData connection, String table, String filter, Envelope extent ) {
+        return new LayerSource(null, table, filter, connection, extent);
+    }
+
+    /**
+     * @param newFilter the new filter, <code>null</code> to show all the features.
+     * @return the same source, with another filter.
+     */
+    public LayerSource withFilter( String newFilter ) {
+        return new LayerSource(file, table, newFilter, connection, extent);
+    }
+
+    /**
+     * @return <code>true</code> for a table of a database connection.
+     */
+    public boolean isDatabaseTable() {
+        return connection != null;
     }
 
     /**
@@ -71,9 +121,13 @@ public record LayerSource( File file, String table, String filter ) {
     }
 
     /**
-     * @return the extension of the file, lower case and without the dot.
+     * @return the extension of the file, lower case and without the dot, empty if there is no
+     *          file.
      */
     public String extension() {
+        if (file == null) {
+            return "";
+        }
         String name = file.getName();
         int dot = name.lastIndexOf('.');
         return dot < 0 ? "" : name.substring(dot + 1).toLowerCase();
@@ -95,9 +149,14 @@ public record LayerSource( File file, String table, String filter ) {
 
     /**
      * @return the path of the data as the readers of HortonMachine take it: the file, followed
-     *          by the table if there is one.
+     *          by the table if there is one. For the database connections, which have no file,
+     *          the label of the connection followed by the table.
      */
     public String path() {
+        if (file == null) {
+            String label = connection == null ? "" : connection.connectionLabel;
+            return table == null ? label : label + HMConstants.DB_TABLE_PATH_SEPARATOR + table;
+        }
         return table == null ? file.getAbsolutePath() : file.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + table;
     }
 }

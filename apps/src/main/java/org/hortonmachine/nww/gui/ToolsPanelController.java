@@ -119,6 +119,14 @@ public class ToolsPanelController {
     }
 
     /**
+     * Choose a database connection saved in the database viewer and load its spatial tables as
+     * layers.
+     */
+    public void openFromSavedConnection() {
+        new NwwDatabaseLoader(wwjPanel, layerLoader).openSavedConnection();
+    }
+
+    /**
      * Choose files and folders of the supported formats and load them as layers.
      */
     public void openFiles() {

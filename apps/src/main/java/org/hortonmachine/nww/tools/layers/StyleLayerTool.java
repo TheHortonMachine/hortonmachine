@@ -24,6 +24,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -84,6 +85,7 @@ import org.geotools.api.style.Symbolizer;
 import org.geotools.api.style.TextSymbolizer;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.styling.visitor.DuplicatingStyleVisitor;
+import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
@@ -104,6 +106,8 @@ import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
+import org.hortonmachine.nww.gui.DatabaseStyleStore;
+import org.hortonmachine.nww.gui.NwwDatabaseLoader;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
@@ -118,17 +122,24 @@ import org.hortonmachine.style.PolygonSymbolizerController;
 import org.hortonmachine.style.SimpleStyle;
 import org.hortonmachine.style.TextSymbolizerController;
 
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.ConstantSize;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.Sizes;
+
 import gov.nasa.worldwind.layers.Layer;
 
 /**
- * The style of the vector layers read from a shapefile or a geopackage table, shown in the style
- * tab: a single symbol for all the features, or one per value of a field, with labels.
+ * The style of the vector layers read from a shapefile, a geopackage table or a table of a
+ * database connection, shown in the style tab: a single symbol for all the features, or one per
+ * value of a field, with labels.
  *
  * <p>The symbols and labels are edited with the panels of the style editor. Styles with other
  * rules, as ranges, are kept as they are and can be edited in the style editor.</p>
  *
  * <p>Apply draws the layer with the style, Save also writes it into the data, in the geopackage
- * table or in the .sld file next to the shapefile.</p>
+ * table or in the .sld file next to the shapefile. The styles of the tables of database
+ * connections are not saved in the database, but locally in the {@link DatabaseStyleStore}.</p>
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
@@ -136,6 +147,9 @@ public class StyleLayerTool implements INwwLayerTool {
 
     /** The most values that get a symbol of their own. */
     private static final int MAX_VALUES = 100;
+
+    /** The widest fixed column of the forms kept as it is, as a gap between label and value. */
+    private static final int FIXED_GAP_MAX_PIXELS = 30;
 
     private static final String SINGLE = "Single symbol";
     private static final String UNIQUE = "Unique values";
@@ -153,7 +167,7 @@ public class StyleLayerTool implements INwwLayerTool {
     @Override
     public boolean canHandle( Layer layer ) {
         LayerSource source = LayerSource.of(layer);
-        return source != null && (source.isShapefile() || source.isGeopackageTable())
+        return source != null && (source.isShapefile() || source.isGeopackageTable() || source.isDatabaseTable())
                 && (layer instanceof RasterizedFeatureCollectionLayer || layer instanceof NwwVectorLayer);
     }
 
@@ -198,11 +212,23 @@ public class StyleLayerTool implements INwwLayerTool {
     private record ValueCounts( Map<Object, Long> counts, long nullCount ) {
     }
 
+    /**
+     * @return the open database of a geopackage table or of a table of a database connection, to
+     *          be closed by the caller.
+     */
+    private static ASpatialDb openDb( LayerSource source ) throws Exception {
+        if (source.isDatabaseTable()) {
+            return NwwDatabaseLoader.openDb(source.connection());
+        }
+        GeopackageCommonDb db = new GeopackageDb();
+        db.open(source.file().getAbsolutePath());
+        return db;
+    }
+
     private static DataInfo readDataInfo( LayerSource source ) throws Exception {
         SimpleFeatureType schema;
-        if (source.isGeopackageTable()) {
-            try (GeopackageCommonDb db = new GeopackageDb()) {
-                db.open(source.file().getAbsolutePath());
+        if (source.isGeopackageTable() || source.isDatabaseTable()) {
+            try (ASpatialDb db = openDb(source)) {
                 schema = SpatialDbsImportUtils.tableToFeatureFCollection(db, SqlName.m(source.table()), 1, -1, null).getSchema();
             }
             if (schema == null) {
@@ -255,12 +281,11 @@ public class StyleLayerTool implements INwwLayerTool {
         };
         TreeMap<Object, Long> counts = new TreeMap<>(comparator);
         long nullCount = 0;
-        if (source.isGeopackageTable()) {
+        if (source.isGeopackageTable() || source.isDatabaseTable()) {
             String column = "\"" + field.replace("\"", "\"\"") + "\"";
             String sql = "select " + column + ", count(*) from " + SqlName.m(source.table()).fixedDoubleName + " group by "
                     + column;
-            try (GeopackageCommonDb db = new GeopackageDb()) {
-                db.open(source.file().getAbsolutePath());
+            try (ASpatialDb db = openDb(source)) {
                 nullCount = db.execOnConnection(connection -> {
                     long nulls = 0;
                     try (IHMStatement stmt = connection.createStatement(); IHMResultSet rs = stmt.executeQuery(sql)) {
@@ -296,9 +321,13 @@ public class StyleLayerTool implements INwwLayerTool {
     }
 
     /**
-     * @return the style saved in the data, <code>null</code> if there is none.
+     * @return the style saved in the data, or locally for the tables of database connections,
+     *          <code>null</code> if there is none.
      */
     private static Style readSavedStyle( LayerSource source ) throws Exception {
+        if (source.isDatabaseTable()) {
+            return DatabaseStyleStore.read(source);
+        }
         if (source.isGeopackageTable()) {
             try (GeopackageCommonDb db = new GeopackageDb()) {
                 db.open(source.file().getAbsolutePath());
@@ -306,6 +335,40 @@ public class StyleLayerTool implements INwwLayerTool {
             }
         }
         return SldUtilities.getStyleFromFile(source.file());
+    }
+
+    /**
+     * Let the panels of the style editor shrink to the width of the tab: their forms have label
+     * columns of a fixed width, as 6 cm, which push the values out of a narrow tab. These columns
+     * get the size of their labels instead; the small fixed gaps are kept.
+     *
+     * @param component the panel, changed in place.
+     * @return the same panel.
+     */
+    private static <T extends Container> T compactForms( T component ) {
+        if (component.getLayout() instanceof FormLayout) {
+            FormLayout layout = (FormLayout) component.getLayout();
+            for( int column = 1; column <= layout.getColumnCount(); column++ ) {
+                ColumnSpec spec = layout.getColumnSpec(column);
+                if (spec.getSize() instanceof ConstantSize
+                        && ((ConstantSize) spec.getSize()).getPixelSize(component) > FIXED_GAP_MAX_PIXELS) {
+                    layout.setColumnSpec(column, new ColumnSpec(spec.getDefaultAlignment(), Sizes.DEFAULT, spec.getResizeWeight()));
+                }
+            }
+        }
+        for( Component child : component.getComponents() ) {
+            if (child instanceof Container) {
+                compactForms((Container) child);
+            }
+        }
+        return component;
+    }
+
+    /**
+     * Let a combo box get narrower than its longest item, as the field names, in a narrow tab.
+     */
+    private static void shrinkable( JComboBox< ? > combo ) {
+        combo.setMinimumSize(new Dimension(60, combo.getPreferredSize().height));
     }
 
     private static Style copy( Style style ) {
@@ -405,7 +468,22 @@ public class StyleLayerTool implements INwwLayerTool {
 
         private final JComboBox<String> modeCombo = new JComboBox<>();
         private final CardLayout cards = new CardLayout();
-        private final JPanel cardsPanel = new JPanel(cards);
+        /** The panels of the modes, only as high as the one shown, not as the highest one. */
+        private final JPanel cardsPanel = new JPanel(cards){
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Dimension getPreferredSize() {
+                for( Component component : getComponents() ) {
+                    if (component.isVisible()) {
+                        Dimension size = component.getPreferredSize();
+                        Insets insets = getInsets();
+                        return new Dimension(size.width + insets.left + insets.right, size.height + insets.top + insets.bottom);
+                    }
+                }
+                return super.getPreferredSize();
+            }
+        };
         private final JPanel singleHolder = new JPanel(new BorderLayout());
 
         private final JComboBox<String> fieldCombo = new JComboBox<>();
@@ -555,6 +633,9 @@ public class StyleLayerTool implements INwwLayerTool {
                     cards.show(cardsPanel, CUSTOM);
                     break;
                 }
+                // the height follows the card shown
+                cardsPanel.revalidate();
+                cardsPanel.repaint();
 
                 TextSymbolizer label = rules.getKind() == StyleRules.Kind.CUSTOM ? null : rules.getLabel();
                 labelsCheck.setSelected(label != null);
@@ -851,6 +932,7 @@ public class StyleLayerTool implements INwwLayerTool {
             tableScroll.setPreferredSize(new Dimension(300, 220));
 
             JPanel panel = new JPanel(new GridBagLayout());
+            shrinkable(fieldCombo);
             GridBagConstraints c = new GridBagConstraints();
             c.insets = new Insets(2, 4, 2, 4);
             c.anchor = GridBagConstraints.WEST;
@@ -897,6 +979,11 @@ public class StyleLayerTool implements INwwLayerTool {
                     + "press Reset to use it, or start a new style.</html>");
             JButton editorButton = new JButton("Open in the style editor");
             editorButton.addActionListener(e -> openStyleEditor());
+            if (source.isDatabaseTable()) {
+                // the editor works on the files and geopackage tables
+                editorButton.setEnabled(false);
+                editorButton.setToolTipText("The style editor can't open the tables of database connections");
+            }
             JButton singleButton = new JButton("New single symbol style");
             singleButton.addActionListener(e -> modeCombo.setSelectedItem(SINGLE));
             JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -963,13 +1050,27 @@ public class StyleLayerTool implements INwwLayerTool {
                         this);
                 GuiUtilities.openDialogWithPanel(controller, "Labels of " + layer.getName(), null, false);
             });
-            JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+            // two rows, which fit a narrow tab: a flow layout would wrap them without growing
+            JPanel panel = new JPanel(new GridBagLayout());
             panel.setBorder(BorderFactory.createTitledBorder("Labels"));
-            panel.add(labelsCheck);
-            panel.add(labelFieldCombo);
-            panel.add(new JLabel("size"));
-            panel.add(labelSizeSpinner);
-            panel.add(labelEditButton);
+            shrinkable(labelFieldCombo);
+            GridBagConstraints c = new GridBagConstraints();
+            c.gridy = 0;
+            c.anchor = GridBagConstraints.WEST;
+            c.insets = new Insets(0, 2, 2, 2);
+            panel.add(labelsCheck, c);
+            c.gridwidth = GridBagConstraints.REMAINDER;
+            c.fill = GridBagConstraints.HORIZONTAL;
+            c.weightx = 1;
+            panel.add(labelFieldCombo, c);
+
+            JPanel sizePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+            sizePanel.add(new JLabel("size"));
+            sizePanel.add(labelSizeSpinner);
+            sizePanel.add(labelEditButton);
+            c.gridy = 1;
+            c.insets = new Insets(0, 0, 0, 0);
+            panel.add(sizePanel, c);
             return panel;
         }
 
@@ -977,6 +1078,10 @@ public class StyleLayerTool implements INwwLayerTool {
             applyButton.setToolTipText("Draw the layer with the style");
             saveButton.setToolTipText("Draw the layer with the style and save it in the data, used when they are loaded again");
             resetButton.setToolTipText("Go back to the saved style, or to a default style if none is saved");
+            if (source.isDatabaseTable()) {
+                saveButton.setToolTipText("Draw the layer with the style and save it locally, not in the database: it is "
+                        + "used when the table is loaded again from the same saved connection");
+            }
             applyButton.addActionListener(e -> apply(false));
             saveButton.addActionListener(e -> apply(true));
             resetButton.addActionListener(e -> reset());
@@ -1003,16 +1108,16 @@ public class StyleLayerTool implements INwwLayerTool {
                     PolygonSymbolizerController controller = new PolygonSymbolizerController((PolygonSymbolizerWrapper) wrapper,
                             this);
                     controller.setApplyButtonVisible(withApplyButton);
-                    return controller;
+                    return compactForms(controller);
                 } else if (wrapper instanceof LineSymbolizerWrapper) {
                     LineSymbolizerController controller = new LineSymbolizerController((LineSymbolizerWrapper) wrapper, this);
                     controller.setApplyButtonVisible(withApplyButton);
-                    return controller;
+                    return compactForms(controller);
                 } else if (wrapper instanceof PointSymbolizerWrapper) {
                     PointMarkSymbolizerController controller = new PointMarkSymbolizerController((PointSymbolizerWrapper) wrapper,
                             this);
                     controller.setApplyButtonVisible(withApplyButton);
-                    return controller;
+                    return compactForms(controller);
                 }
             } catch (Exception e) {
                 // as for values the panels can't read, given by expressions

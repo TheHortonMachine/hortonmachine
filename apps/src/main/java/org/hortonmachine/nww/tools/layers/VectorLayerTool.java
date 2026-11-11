@@ -54,6 +54,9 @@ import org.geotools.api.feature.type.GeometryDescriptor;
 import org.geotools.api.filter.Filter;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.filter.text.ecql.ECQL;
+import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.ConnectionData;
+import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.geopackage.FeatureEntry;
@@ -62,6 +65,7 @@ import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.nww.gui.NwwDatabaseLoader;
 import org.hortonmachine.nww.tools.INwwLayerTool;
 import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.tools.NwwContext;
@@ -70,8 +74,9 @@ import org.locationtech.jts.geom.Envelope;
 import gov.nasa.worldwind.layers.Layer;
 
 /**
- * The panel of the vector layers read from a shapefile or a geopackage table: what the data
- * are, as their geometry type, CRS, number of features, extent and columns.
+ * The panel of the vector layers read from a shapefile, a geopackage table or a table of a
+ * database connection: what the data are, as their geometry type, CRS, number of features, extent
+ * and columns, with a filter of the features shown.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
@@ -85,7 +90,7 @@ public class VectorLayerTool implements INwwLayerTool {
     @Override
     public boolean canHandle( Layer layer ) {
         LayerSource source = LayerSource.of(layer);
-        return source != null && (source.isShapefile() || source.isGeopackageTable());
+        return source != null && (source.isShapefile() || source.isGeopackageTable() || source.isDatabaseTable());
     }
 
     @Override
@@ -98,7 +103,14 @@ public class VectorLayerTool implements INwwLayerTool {
 
         new Thread(() -> {
             try {
-                VectorInfo info = source.isGeopackageTable() ? readGeopackageTable(source) : readShapefile(source.file());
+                VectorInfo info;
+                if (source.isDatabaseTable()) {
+                    info = readDatabaseTable(source);
+                } else if (source.isGeopackageTable()) {
+                    info = readGeopackageTable(source);
+                } else {
+                    info = readShapefile(source.file());
+                }
                 SwingUtilities.invokeLater(() -> {
                     JTextField filterField = new JTextField(source.filter() == null ? "" : source.filter());
                     JPanel northPanel = new JPanel(new BorderLayout(0, 6));
@@ -136,7 +148,7 @@ public class VectorLayerTool implements INwwLayerTool {
     private static JPanel filterPanel( NwwContext context, Layer layer, long total, JTextField filterField ) {
         LayerSource source = LayerSource.of(layer);
 
-        String hint = source.isGeopackageTable()
+        String hint = source.isGeopackageTable() || source.isDatabaseTable()
                 ? "SQL WHERE condition, e.g.  \"ID\" > 10 AND \"name\" LIKE 'A%'"
                 : "ECQL condition, e.g.  \"AREA\" > 1000 AND \"NAME\" LIKE 'A%'  (quote ID, a keyword)";
         JLabel hintLabel = new JLabel(hint);
@@ -251,6 +263,12 @@ public class VectorLayerTool implements INwwLayerTool {
      * Count the features that match a filter, which fails if the filter is wrong.
      */
     private static long countFeatures( LayerSource source, String where ) throws Exception {
+        if (source.isDatabaseTable()) {
+            // in the extent the table was loaded in, as the map view
+            try (ASpatialDb db = NwwDatabaseLoader.openDb(source.connection())) {
+                return NwwDatabaseLoader.countFeatures(db, SqlName.m(source.table()), source.extent(), where);
+            }
+        }
         if (source.isGeopackageTable()) {
             try (GeopackageCommonDb db = new GeopackageDb()) {
                 db.open(source.file().getAbsolutePath());
@@ -325,6 +343,53 @@ public class VectorLayerTool implements INwwLayerTool {
             Envelope bounds = entry != null && entry.getBounds() != null ? entry.getBounds() : db.getTableBounds(table);
             properties.put("Extent", envelopeText(bounds));
             properties.put("Spatial index", db.hasSpatialIndex(table) ? "yes" : "no");
+            for( String[] column : db.getTableColumns(table) ) {
+                boolean primaryKey = column.length > 2 && "1".equals(column[2]);
+                columns.add(new String[]{column[0], column[1], primaryKey ? "yes" : ""});
+            }
+        }
+        return new VectorInfo(properties, columns, true, count);
+    }
+
+    /**
+     * The properties of a table of a database connection. For the tables loaded in an extent, as
+     * the map view, the number of features is the one in the extent, the filter works in it.
+     */
+    private static VectorInfo readDatabaseTable( LayerSource source ) throws Exception {
+        Map<String, String> properties = new LinkedHashMap<>();
+        List<String[]> columns = new ArrayList<>();
+        long count;
+        ConnectionData connection = source.connection();
+        try (ASpatialDb db = NwwDatabaseLoader.openDb(connection)) {
+            SqlName table = SqlName.m(source.table());
+            properties.put("Connection", connection.connectionLabel);
+            properties.put("Database", db.getType().name() + ", " + connection.connectionUrl);
+            properties.put("Table", source.table());
+            GeometryColumn geometryColumn = db.getGeometryColumnsForTable(table);
+            if (geometryColumn != null) {
+                String geometry = geometryColumn.geometryType == null ? "unknown" : geometryColumn.geometryType.name();
+                properties.put("Geometry", geometry + " (column " + geometryColumn.geometryColumnName + ")");
+                properties.put("CRS", geometryColumn.srid > 0 ? sridText(geometryColumn.srid) : "unknown");
+            }
+            long tableCount = db.getCount(table);
+            properties.put("Features", String.format(Locale.ROOT, "%,d", tableCount));
+            if (source.extent() != null) {
+                count = NwwDatabaseLoader.countFeatures(db, table, source.extent(), null);
+                properties.put("Loaded", String.format(Locale.ROOT, "%,d features, in the map view of the loading", count));
+                properties.put("Loaded extent", envelopeText(source.extent()));
+            } else {
+                count = tableCount;
+            }
+            Envelope bounds;
+            try {
+                bounds = db.getTableBounds(table);
+            } catch (Exception e) {
+                bounds = null;
+            }
+            properties.put("Extent", bounds == null ? "unknown" : envelopeText(bounds));
+            if (geometryColumn != null) {
+                properties.put("Spatial index", geometryColumn.isSpatialIndexEnabled == 1 ? "yes" : "no");
+            }
             for( String[] column : db.getTableColumns(table) ) {
                 boolean primaryKey = column.length > 2 && "1".equals(column[2]);
                 columns.add(new String[]{column[0], column[1], primaryKey ? "yes" : ""});
