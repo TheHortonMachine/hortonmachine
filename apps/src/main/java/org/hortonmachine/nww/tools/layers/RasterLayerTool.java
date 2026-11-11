@@ -57,7 +57,7 @@ import gov.nasa.worldwind.layers.Layer;
  */
 public class RasterLayerTool implements INwwLayerTool {
 
-    private static final List<String> EXTENSIONS = List.of("tif", "tiff", "asc");
+    private static final List<String> EXTENSIONS = List.of("tif", "tiff", "asc", "vrt");
 
     @Override
     public String getName() {
@@ -105,7 +105,9 @@ public class RasterLayerTool implements INwwLayerTool {
         try {
             RegionMap region = RegionMap.fromGridGeometry(coverage.getGridGeometry());
             properties.put("File", file.getAbsolutePath());
-            properties.put("Format", file.getName().toLowerCase().endsWith(".asc") ? "ESRI ASCII grid" : "GeoTIFF");
+            String lowerName = file.getName().toLowerCase();
+            properties.put("Format", lowerName.endsWith(".asc") ? "ESRI ASCII grid"
+                    : lowerName.endsWith(".vrt") ? "GDAL virtual raster, read as image mosaic" : "GeoTIFF");
             properties.put("CRS", VectorLayerTool.crsText(coverage.getCoordinateReferenceSystem()));
             properties.put("Size", String.format(Locale.ROOT, "%,d cols x %,d rows", region.getCols(), region.getRows()));
             properties.put("Resolution", String.format(Locale.ROOT, "x %s, y %s", numberText(region.getXres()),

@@ -56,6 +56,7 @@ import org.geotools.renderer.GTRenderer;
 import org.geotools.renderer.lite.StreamingRenderer;
 import org.geotools.styling.SLD;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.vrt.VrtImageMosaic;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.EColorTables;
@@ -215,6 +216,16 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      *          the raster is not found where the map draws it.
      */
     private static AbstractGridCoverage2DReader fileReader( File rasterFile ) {
+        if (VrtImageMosaic.isVrt(rasterFile)) {
+            // a GDAL VRT is read as an image mosaic of its sources
+            try {
+                return VrtImageMosaic.getReader(rasterFile);
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new IllegalArgumentException("Unable to read the VRT " + rasterFile + ": " + e.getMessage(), e);
+            }
+        }
         AbstractGridFormat format = GridFormatFinder.findFormat(rasterFile);
         return format.getReader(rasterFile, HMCrsRegistry.longitudeFirstHints());
     }

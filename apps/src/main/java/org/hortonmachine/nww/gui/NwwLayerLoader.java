@@ -942,14 +942,15 @@ public class NwwLayerLoader {
     /**
      * @param file a file, or <code>null</code>.
      * @return <code>true</code> for the raster files loaded as {@link GridCoverageNwwLayer}:
-     *          GeoTIFF and ESRI ASCII grids.
+     *          GeoTIFF, ESRI ASCII grids and GDAL VRTs, read as image mosaics.
      */
     public static boolean isRasterFile( File file ) {
         if (file == null) {
             return false;
         }
         String lowerName = file.getName().toLowerCase();
-        return lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif");
+        return lowerName.endsWith(".asc") || lowerName.endsWith(".tiff") || lowerName.endsWith(".tif")
+                || lowerName.endsWith(".vrt");
     }
 
     /**

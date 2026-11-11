@@ -48,10 +48,12 @@ import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.JGrassRegion;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
+import org.hortonmachine.gears.io.vrt.VrtImageMosaic;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
@@ -140,7 +142,7 @@ public class OmsRasterReader extends HMModel {
     public static final String OMSRASTERREADER_LICENSE = "General Public License Version 3 (GPLv3)";
     public static final String OMSRASTERREADER_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSRASTERREADER_AUTHORCONTACTS = "http://www.hydrologis.com";
-    public static final String OMSRASTERREADER_FILE_DESCRIPTION = "The raster file to read with extension (supported are: asc, tiff, grass).";
+    public static final String OMSRASTERREADER_FILE_DESCRIPTION = "The raster file to read with extension (supported are: asc, tiff, grass, vrt).";
     public static final String OMSRASTERREADER_P_NORTH_DESCRIPTION = "The optional requested boundary north coordinate.";
     public static final String OMSRASTERREADER_P_SOUTH_DESCRIPTION = "The optional requested boundary south coordinate.";
     public static final String OMSRASTERREADER_P_WEST_DESCRIPTION = "The optional requested boundary west coordinate.";
@@ -196,6 +198,10 @@ public class OmsRasterReader extends HMModel {
         }
 
         File mapFile = new File(file);
+        if (VrtImageMosaic.isVrt(mapFile)) {
+            readVrt(mapFile);
+            return;
+        }
         AbstractGridFormat format = null;
 		try {
 			if(mapFile.exists()) {
@@ -255,6 +261,35 @@ public class OmsRasterReader extends HMModel {
                     this.getClass().getSimpleName(), pm);
         }
 
+    }
+
+    /**
+     * Read a GDAL VRT through the image mosaic of {@link VrtImageMosaic}: a requested region is
+     * read as such, not cut out of the whole mosaic.
+     */
+    private void readVrt( File vrtFile ) throws Exception {
+        try {
+            pm.beginTask("Reading coverage: " + vrtFile.getName(), IHMProgressMonitor.UNKNOWN);
+            ImageMosaicReader rasterReader = VrtImageMosaic.getReader(vrtFile);
+            originalEnvelope = rasterReader.getOriginalEnvelope();
+            if (doEnvelope) {
+                rasterReader.dispose();
+                return;
+            }
+            CoordinateReferenceSystem crs = rasterReader.getCoordinateReferenceSystem();
+            if (pBoundsNSWE != null && pRowcol != null) {
+                generalParameter = createGridGeometryGeneralParameter(pRowcol[1], pRowcol[0], pBoundsNSWE[0], pBoundsNSWE[1],
+                        pBoundsNSWE[3], pBoundsNSWE[2], crs);
+            } else if (pBoundsNSWE != null && pResXY != null) {
+                generalParameter = createGridGeometryGeneralParameter(pResXY[0], pResXY[1], pBoundsNSWE[0], pBoundsNSWE[1],
+                        pBoundsNSWE[3], pBoundsNSWE[2], crs);
+            }
+            // the reader stays open: the pixels of the mosaic are read when used
+            outRaster = rasterReader.read(generalParameter);
+            resample();
+        } finally {
+            pm.done();
+        }
     }
 
     private void readGrass( File mapFile ) throws Exception {

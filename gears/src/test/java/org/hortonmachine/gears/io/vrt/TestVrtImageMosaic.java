@@ -24,7 +24,10 @@ import java.util.List;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMImageMosaic;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestCase;
@@ -32,6 +35,7 @@ import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
 /**
@@ -202,6 +206,122 @@ public class TestVrtImageMosaic extends HMTestCase {
                     }
                 }
             }
+
+            // a window not aligned with the grid of the mosaic: its image doesn't start at 0, 0
+            Envelope shifted = new Envelope(window);
+            shifted.translate(region.getXres() / 4.0, -region.getYres() / 4.0);
+            raster = mosaic.read(shifted);
+            // the cells wholly in the window
+            Envelope inner = new Envelope(shifted);
+            inner.expandBy(-region.getXres() / 2.0, -region.getYres() / 2.0);
+            int checked = 0;
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    Coordinate center = new Coordinate(region.getWest() + (startCol + c + 0.5) * region.getXres(),
+                            region.getNorth() - (r + 0.5) * region.getYres());
+                    if (!inner.contains(center)) {
+                        continue;
+                    }
+                    checked++;
+                    double expected = data[r][startCol + c];
+                    double value = raster.getValue(center);
+                    if (!Double.isNaN(expected)) {
+                        assertEquals("col " + (startCol + c) + " row " + r, expected, value, DELTA);
+                    }
+                }
+            }
+            assertTrue(checked > 0);
+        }
+    }
+
+    /**
+     * The value at a point of the mosaic, on both tiles.
+     */
+    public void testGetValueAt() throws Exception {
+        File vrtFile = writeVrt("mosaic.vrt", mosaicVrt());
+        double[][] data = HMTestMaps.mapData;
+        try (HMImageMosaic mosaic = new HMImageMosaic(vrtFile.getAbsolutePath())) {
+            int[][] cells = {{1, 1}, {half + 1, 3}, {0, 0}, {data[0].length - 1, data.length - 1}};
+            for( int[] cell : cells ) {
+                int col = cell[0];
+                int row = cell[1];
+                Coordinate center = new Coordinate(region.getWest() + (col + 0.5) * region.getXres(),
+                        region.getNorth() - (row + 0.5) * region.getYres());
+                double expected = data[row][col];
+                double value = mosaic.getValueAt(center);
+                if (Double.isNaN(expected)) {
+                    assertTrue(Double.isNaN(value) || value == HMConstants.doubleNovalue);
+                } else {
+                    assertEquals("col " + col + " row " + row, expected, value, DELTA);
+                }
+            }
+        }
+    }
+
+    /**
+     * The raster reader of HortonMachine reads the VRT whole or on a region.
+     */
+    public void testOmsRasterReader() throws Exception {
+        File vrtFile = writeVrt("mosaic.vrt", mosaicVrt());
+        GridCoverage2D whole = OmsRasterReader.readRaster(vrtFile.getAbsolutePath());
+        checkMatrixEqual(whole.getRenderedImage(), HMTestMaps.mapData, DELTA);
+
+        ReferencedEnvelope envelope = OmsRasterReader.readEnvelope(vrtFile.getAbsolutePath());
+        assertEquals(region.getWest(), envelope.getMinX(), DELTA);
+        assertEquals(region.getEast(), envelope.getMaxX(), DELTA);
+        assertEquals(region.getSouth(), envelope.getMinY(), DELTA);
+        assertEquals(region.getNorth(), envelope.getMaxY(), DELTA);
+
+        // a region across the two tiles, at the native resolution
+        int startCol = half - 1;
+        int cols = 3;
+        int rows = 2;
+        OmsRasterReader reader = new OmsRasterReader();
+        reader.file = vrtFile.getAbsolutePath();
+        reader.pNorth = region.getNorth();
+        reader.pSouth = region.getNorth() - rows * region.getYres();
+        reader.pWest = region.getWest() + startCol * region.getXres();
+        reader.pEast = region.getWest() + (startCol + cols) * region.getXres();
+        reader.pXres = region.getXres();
+        reader.pYres = region.getYres();
+        reader.process();
+        GridCoverage2D part = reader.outRaster;
+        double[][] expected = new double[rows][cols];
+        for( int r = 0; r < rows; r++ ) {
+            System.arraycopy(HMTestMaps.mapData[r], startCol, expected[r], 0, cols);
+        }
+        checkMatrixEqual(part.getRenderedImage(), expected, DELTA);
+    }
+
+    /**
+     * The /vsicurl/ sources are remote GeoTIFFs, the other virtual paths are refused.
+     */
+    public void testVsicurlSources() throws Exception {
+        String url = "https://example.com/dem/tile_1.tif";
+        String xml = mosaicVrt().replace("<SourceFilename relativeToVRT=\"1\">tiles/west.tif</SourceFilename>",
+                "<SourceFilename relativeToVRT=\"0\">/vsicurl/" + url + "</SourceFilename>")
+                .replace("<SourceFilename relativeToVRT=\"1\">tiles/east.tif</SourceFilename>",
+                        "<SourceFilename relativeToVRT=\"0\">/vsicurl/https://example.com/dem/tile_2.tif</SourceFilename>");
+        VrtDataset vrt = VrtDataset.parse(xml, new File(folder, "remote.vrt"));
+        VrtDataset.Source first = vrt.bands.get(0).sources().get(0);
+        assertTrue(first.isVirtualPath());
+        assertEquals(url, VrtImageMosaic.location(first));
+        // remote files are not checked for existence
+        assertTrue(VrtImageMosaic.checkSupported(vrt).toString(), VrtImageMosaic.checkSupported(vrt).isEmpty());
+
+        // mixed with a local file
+        String mixed = mosaicVrt().replace("<SourceFilename relativeToVRT=\"1\">tiles/west.tif</SourceFilename>",
+                "<SourceFilename relativeToVRT=\"0\">/vsicurl/" + url + "</SourceFilename>");
+        List<String> problems = VrtImageMosaic.checkSupported(VrtDataset.parse(mixed, new File(folder, "mixed.vrt")));
+        assertEquals(problems.toString(), 1, problems.size());
+        assertTrue(problems.get(0).contains("mixed"));
+
+        // not a GeoTIFF, or another virtual file system
+        for( String path : List.of("/vsicurl/https://example.com/a.jp2", "/vsis3/bucket/a.tif", "/vsizip/a.zip/a.tif",
+                "/vsicurl?url=https://example.com/a.tif") ) {
+            String other = mixed.replace("/vsicurl/" + url, path);
+            problems = VrtImageMosaic.checkSupported(VrtDataset.parse(other, new File(folder, "other.vrt")));
+            assertTrue(path + " " + problems, problems.stream().anyMatch(p -> p.contains("virtual path")));
         }
     }
 

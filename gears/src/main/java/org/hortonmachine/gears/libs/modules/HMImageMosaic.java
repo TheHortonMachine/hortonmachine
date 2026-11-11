@@ -1,13 +1,20 @@
 package org.hortonmachine.gears.libs.modules;
 
+import java.awt.image.Raster;
+import java.awt.image.RenderedImage;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 
+import org.geotools.api.coverage.PointOutsideCoverageException;
+import org.geotools.api.geometry.Position;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.coverage.grid.io.GridFormatFinder;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
+import org.geotools.geometry.Position2D;
 import org.hortonmachine.gears.io.vrt.VrtImageMosaic;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
@@ -79,7 +86,25 @@ public class HMImageMosaic implements AutoCloseable {
 				envelope.getMinX(), reader.getCoordinateReferenceSystem());
 
 		GridCoverage2D gridCoverage2D = reader.read(readParameters);
-		return HMRaster.fromGridCoverage(gridCoverage2D);
+		return HMRaster.fromGridCoverage(toZeroOrigin(gridCoverage2D));
+	}
+
+	/**
+	 * The mosaic reader gives the windows that are not aligned with its grid as images that don't
+	 * start at 0, 0, while {@link HMRaster} reads its cells from 0, 0: the cells are moved there.
+	 */
+	private static GridCoverage2D toZeroOrigin(GridCoverage2D coverage) {
+		RenderedImage image = coverage.getRenderedImage();
+		if (image.getMinX() == 0 && image.getMinY() == 0) {
+			return coverage;
+		}
+		Raster data = image.getData();
+		WritableRaster raster = data.createCompatibleWritableRaster(image.getWidth(), image.getHeight());
+		raster.setRect(-image.getMinX(), -image.getMinY(), data);
+		RegionMap region = RegionMap.fromGridGeometry(coverage.getGridGeometry());
+		Double novalue = CoverageUtilities.getNovalue(coverage);
+		return CoverageUtilities.buildCoverageWithNovalue(coverage.getName().toString(), raster, region,
+				coverage.getCoordinateReferenceSystem(), novalue != null ? novalue : HMConstants.doubleNovalue);
 	}
 	
 	/**
@@ -90,11 +115,27 @@ public class HMImageMosaic implements AutoCloseable {
 	 * @throws IOException if no coverage is found for the coordinate
 	 */
 	public double getValueAt(Coordinate coordinate) throws IOException {
-		HMRaster raster = read(new Envelope(coordinate.x, coordinate.x, coordinate.y, coordinate.y));
-		if (raster == null) {
+		// a window of a few cells around the point: an empty envelope has no grid to read
+		RegionMap regionMap = CoverageUtilities.getRegionParamsFromImageMosaicReader((ImageMosaicReader) reader);
+		double xres = regionMap.getXres();
+		double yres = regionMap.getYres();
+		CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
+		GeneralParameterValue[] readParameters = CoverageUtilities.createGridGeometryGeneralParameter(xres, yres,
+				coordinate.y + yres, coordinate.y - yres, coordinate.x + xres, coordinate.x - xres, crs);
+		GridCoverage2D coverage = reader.read(readParameters);
+		if (coverage == null) {
 			throw new IOException("No coverage found for coordinate: " + coordinate);
 		}
-		return raster.getValue(0, 0);	
+		try {
+			// the coverage finds the cell also when its image doesn't start at 0, 0
+			double[] values = coverage.evaluate((Position) new Position2D(crs, coordinate.x, coordinate.y),
+					(double[]) null);
+			return values[0];
+		} catch (PointOutsideCoverageException e) {
+			throw new IOException("No coverage found for coordinate: " + coordinate, e);
+		} finally {
+			coverage.dispose(true);
+		}
 	}
 
 	@Override

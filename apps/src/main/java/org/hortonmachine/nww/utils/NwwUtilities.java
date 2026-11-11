@@ -57,7 +57,7 @@ import gov.nasa.worldwind.terrain.SectorGeometryList;
 
 public class NwwUtilities {
 
-    public static final String[] SUPPORTED_EXTENSIONS = {"shp", "mbtiles", "map", "rl2", "sqlite", "asc", "tif", "tiff", "gpkg",
+    public static final String[] SUPPORTED_EXTENSIONS = {"shp", "mbtiles", "map", "rl2", "sqlite", "asc", "tif", "tiff", "vrt", "gpkg",
             "las", "laz"};
 
     public static final CoordinateReferenceSystem GPS_CRS = DefaultGeographicCRS.WGS84;

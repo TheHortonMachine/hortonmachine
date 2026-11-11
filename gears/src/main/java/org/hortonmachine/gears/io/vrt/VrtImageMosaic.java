@@ -43,9 +43,12 @@ import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
+import org.geotools.gce.imagemosaic.ImageMosaicFormat;
+import org.geotools.gce.imagemosaic.ImageMosaicReader;
 import org.geotools.gce.imagemosaic.Utils;
 import org.geotools.referencing.CRS;
 import org.geotools.util.factory.Hints;
+import org.hortonmachine.gears.io.stac.assets.handlers.GeotiffHandler;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.features.FeatureUtilities;
 import org.hortonmachine.gears.utils.files.FileUtilities;
@@ -62,12 +65,17 @@ import org.locationtech.jts.geom.Polygon;
  * the VRT gives it and its absolute path, so the files stay where they are. The index is made
  * once and made again only when the VRT is newer.</p>
  *
+ * <p>The sources can be local files or remote GeoTIFFs given as
+ * <code>/vsicurl/https://...</code>: these are read as cloud optimized GeoTIFFs, with http range
+ * requests, and making the index reads only the header of the first one. Local and remote
+ * sources can't be mixed.</p>
+ *
  * <p>Only the VRTs that are plain mosaics can be served, as the ones of
  * <code>gdalbuildvrt</code>: every band reads the same band of the same files, with the values
  * as they are. Warped, pansharpened and derived datasets, value transforms (scale, offset,
  * lookup tables), bands taken from different files (<code>gdalbuildvrt -separate</code>) or in
- * another order and GDAL virtual paths (as /vsicurl/) are refused with the list of what is not
- * supported.</p>
+ * another order and the other GDAL virtual paths (as /vsis3/ or /vsizip/) are refused with the
+ * list of what is not supported.</p>
  *
  * <p>The mosaic places each file by its own georeferencing, the VRT by its window in the
  * dataset: for the VRTs made by <code>gdalbuildvrt</code> they are the same thing.</p>
@@ -81,7 +89,12 @@ public class VrtImageMosaic {
     /** The maximum length of a dbf text field. */
     private static final int MAX_LOCATION_LENGTH = 254;
 
+    /** The GDAL prefix of the files read over http(s). */
+    private static final String VSICURL = "/vsicurl/";
+
     private static final String TIFF_SPI = "it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi";
+    private static final String COG_SPI = "it.geosolutions.imageioimpl.plugins.cog.CogImageReaderSpi";
+    private static final String COG_RANGE_READER = "it.geosolutions.imageioimpl.plugins.cog.HttpRangeReader";
     private static final String GEOTIFF_FORMAT = "org.geotools.gce.geotiff.GeoTiffFormat";
 
     private VrtImageMosaic() {
@@ -140,21 +153,23 @@ public class VrtImageMosaic {
         VrtDataset.Band firstBand = vrt.bands.get(0);
 
         // the granules, once per file even if the VRT draws a file more times
-        List<String> paths = new ArrayList<>();
+        List<String> locations = new ArrayList<>();
         List<Envelope> footprints = new ArrayList<>();
         Set<String> seen = new LinkedHashSet<>();
         boolean heterogeneous = false;
         for( VrtDataset.Source source : firstBand.sources() ) {
-            if (!seen.add(source.path())) {
+            String location = location(source);
+            if (!seen.add(location)) {
                 continue;
             }
-            paths.add(source.path());
+            locations.add(location);
             footprints.add(footprint(vrt, source));
             heterogeneous = heterogeneous || isResampled(source);
         }
+        boolean remote = isRemote(locations.get(0));
 
         // sample model and color model of the first file stand for all
-        SampleImage sample = readSampleImage(new File(paths.get(0)));
+        SampleImage sample = readSampleImage(locations.get(0));
         int sampleBands = sample.sampleModel().getNumBands();
         if (sampleBands != vrt.bands.size()) {
             throw new UnsupportedOperationException("The VRT has " + vrt.bands.size() + " bands, its source files "
@@ -168,11 +183,36 @@ public class VrtImageMosaic {
         deleteIndex(indexFolder, name);
 
         File shpFile = new File(indexFolder, name + ".shp");
-        writeShapefile(shpFile, name, crs, paths, footprints);
+        writeShapefile(shpFile, name, crs, locations, footprints);
         Utils.storeSampleImage(new File(indexFolder, name + Utils.SAMPLE_IMAGE_NAME), sample.sampleModel(),
                 sample.colorModel());
-        writeProperties(new File(indexFolder, name + ".properties"), name, vrt, paths, heterogeneous);
+        writeProperties(new File(indexFolder, name + ".properties"), name, vrt, locations, remote, heterogeneous);
         return shpFile;
+    }
+
+    /**
+     * @param file a file.
+     * @return <code>true</code> if it has the .vrt extension.
+     */
+    public static boolean isVrt( File file ) {
+        return file != null && file.getName().toLowerCase(Locale.ROOT).endsWith(".vrt");
+    }
+
+    /**
+     * Get the reader of the mosaic of a VRT, making its index if needed, with the longitude first
+     * axis order as the other raster readers of HortonMachine.
+     *
+     * @param vrtFile the VRT file.
+     * @return the reader, to dispose when done.
+     * @throws Exception if the VRT can't be read or is not supported.
+     */
+    public static ImageMosaicReader getReader( File vrtFile ) throws Exception {
+        File shpFile = getIndex(vrtFile);
+        ImageMosaicReader reader = new ImageMosaicFormat().getReader(shpFile, HMCrsRegistry.longitudeFirstHints());
+        if (reader == null) {
+            throw new IllegalArgumentException("Can't open the mosaic of the VRT: " + vrtFile);
+        }
+        return reader;
     }
 
     /**
@@ -233,6 +273,13 @@ public class VrtImageMosaic {
                 }
             }
         }
+
+        // the mosaic reads all the granules in the same way, as files or as remote GeoTIFFs
+        long remoteCount = firstSources.stream().map(VrtImageMosaic::location).filter(l -> l != null && isRemote(l))
+                .count();
+        if (remoteCount > 0 && remoteCount < firstSources.size()) {
+            problems.add("local files and /vsicurl/ sources are mixed");
+        }
         return problems;
     }
 
@@ -244,13 +291,52 @@ public class VrtImageMosaic {
         if (source.transformsValues()) {
             problems.add("the values of " + source.path() + " are transformed");
         }
-        if (source.isVirtualPath()) {
-            problems.add("the GDAL virtual path " + source.path() + " is not supported");
-        } else if (!new File(source.path()).exists()) {
-            problems.add("the source file " + source.path() + " doesn't exist");
-        } else if (new File(source.path()).getAbsolutePath().length() > MAX_LOCATION_LENGTH) {
-            problems.add("the path of " + source.path() + " is longer than " + MAX_LOCATION_LENGTH + " characters");
+        String location = location(source);
+        if (location == null) {
+            problems.add("the GDAL virtual path " + source.path() + " is not supported, only /vsicurl/ to http(s) GeoTIFFs");
+            return;
         }
+        if (location.length() > MAX_LOCATION_LENGTH) {
+            problems.add("the location of " + source.path() + " is longer than " + MAX_LOCATION_LENGTH + " characters");
+        }
+        if (!isRemote(location) && !new File(location).exists()) {
+            problems.add("the source file " + source.path() + " doesn't exist");
+        }
+    }
+
+    /**
+     * Get where the mosaic reads a source from.
+     *
+     * @param source the source.
+     * @return the absolute path of a file, or the http(s) address of a
+     *          <code>/vsicurl/</code> GeoTIFF, or <code>null</code> for the other GDAL virtual
+     *          paths, which can't be read.
+     */
+    static String location( VrtDataset.Source source ) {
+        String path = source.path();
+        if (!source.isVirtualPath()) {
+            return new File(path).getAbsolutePath();
+        }
+        if (!path.startsWith(VSICURL)) {
+            return null;
+        }
+        String url = path.substring(VSICURL.length());
+        String lowerUrl = url.toLowerCase(Locale.ROOT);
+        if (!lowerUrl.startsWith("http://") && !lowerUrl.startsWith("https://")) {
+            // also the /vsicurl?url=...&options form
+            return null;
+        }
+        int queryIndex = lowerUrl.indexOf('?');
+        String lowerPath = queryIndex < 0 ? lowerUrl : lowerUrl.substring(0, queryIndex);
+        if (!lowerPath.endsWith(".tif") && !lowerPath.endsWith(".tiff")) {
+            // the remote granules are read by the reader of the cloud optimized GeoTIFFs
+            return null;
+        }
+        return url;
+    }
+
+    private static boolean isRemote( String location ) {
+        return location.startsWith("http://") || location.startsWith("https://");
     }
 
     /**
@@ -325,17 +411,24 @@ public class VrtImageMosaic {
     }
 
     /**
-     * The layout of the image of a source file: the reader decodes no pixels for it.
+     * The layout of the image of a source: the reader decodes no pixels for it, of a remote
+     * GeoTIFF it reads only the header.
      */
-    private static SampleImage readSampleImage( File file ) throws Exception {
-        Hints hints = HMCrsRegistry.longitudeFirstHints();
-        AbstractGridFormat format = GridFormatFinder.findFormat(file, hints);
-        if (format == null || format.getClass().getSimpleName().equals("UnknownFormat")) {
-            throw new IllegalArgumentException("No reader for the source file: " + file);
+    private static SampleImage readSampleImage( String location ) throws Exception {
+        AbstractGridCoverage2DReader reader;
+        if (isRemote(location)) {
+            reader = GeotiffHandler.createCogReader(location, null, null);
+        } else {
+            File file = new File(location);
+            Hints hints = HMCrsRegistry.longitudeFirstHints();
+            AbstractGridFormat format = GridFormatFinder.findFormat(file, hints);
+            if (format == null || format.getClass().getSimpleName().equals("UnknownFormat")) {
+                throw new IllegalArgumentException("No reader for the source file: " + file);
+            }
+            reader = format.getReader(file, hints);
         }
-        AbstractGridCoverage2DReader reader = format.getReader(file, hints);
         if (reader == null) {
-            throw new IllegalArgumentException("No reader for the source file: " + file);
+            throw new IllegalArgumentException("No reader for the source: " + location);
         }
         try {
             GridCoverage2D coverage = reader.read((GeneralParameterValue[]) null);
@@ -348,7 +441,7 @@ public class VrtImageMosaic {
         }
     }
 
-    private static void writeShapefile( File shpFile, String name, CoordinateReferenceSystem crs, List<String> paths,
+    private static void writeShapefile( File shpFile, String name, CoordinateReferenceSystem crs, List<String> locations,
             List<Envelope> footprints ) throws Exception {
         SimpleFeatureTypeBuilder typeBuilder = new SimpleFeatureTypeBuilder();
         typeBuilder.setName(name);
@@ -360,9 +453,9 @@ public class VrtImageMosaic {
         // the mosaic draws the first granule on top, the VRT the last source
         ListFeatureCollection collection = new ListFeatureCollection(type);
         SimpleFeatureBuilder builder = new SimpleFeatureBuilder(type);
-        for( int i = paths.size() - 1; i >= 0; i-- ) {
+        for( int i = locations.size() - 1; i >= 0; i-- ) {
             builder.add(FeatureUtilities.envelopeToPolygon(footprints.get(i)));
-            builder.add(new File(paths.get(i)).getAbsolutePath());
+            builder.add(locations.get(i));
             collection.add(builder.buildFeature(null));
         }
 
@@ -386,8 +479,8 @@ public class VrtImageMosaic {
         }
     }
 
-    private static void writeProperties( File propertiesFile, String name, VrtDataset vrt, List<String> paths,
-            boolean heterogeneous ) throws Exception {
+    private static void writeProperties( File propertiesFile, String name, VrtDataset vrt, List<String> locations,
+            boolean remote, boolean heterogeneous ) throws Exception {
         double xRes = Math.abs(vrt.geoTransform[1]);
         double yRes = Math.abs(vrt.geoTransform[5]);
         List<String> lines = new ArrayList<>();
@@ -395,8 +488,15 @@ public class VrtImageMosaic {
         lines.add("Name=" + name);
         lines.add("TypeName=" + name);
         lines.add("LocationAttribute=" + LOCATION_FIELD);
-        lines.add("PathType=ABSOLUTE");
-        lines.add("AbsolutePath=true");
+        if (remote) {
+            // remote cloud optimized GeoTIFFs, read with http range requests
+            lines.add("PathType=URL");
+            lines.add("Cog=true");
+            lines.add("CogRangeReader=" + COG_RANGE_READER);
+        } else {
+            lines.add("PathType=ABSOLUTE");
+            lines.add("AbsolutePath=true");
+        }
         lines.add("LevelsNum=1");
         lines.add("Levels=" + xRes + "," + yRes);
         lines.add("Heterogeneous=" + heterogeneous);
@@ -404,9 +504,12 @@ public class VrtImageMosaic {
         lines.add("ExpandToRGB=false");
         lines.add("Caching=false");
         lines.add("CheckAuxiliaryMetadata=false");
-        boolean allTiff = paths.stream().map(p -> p.toLowerCase(Locale.ROOT))
+        boolean allTiff = locations.stream().map(p -> p.toLowerCase(Locale.ROOT))
                 .allMatch(p -> p.endsWith(".tif") || p.endsWith(".tiff"));
-        if (allTiff) {
+        if (remote) {
+            lines.add("SuggestedSPI=" + COG_SPI);
+            lines.add("SuggestedFormat=" + GEOTIFF_FORMAT);
+        } else if (allTiff) {
             lines.add("SuggestedSPI=" + TIFF_SPI);
             lines.add("SuggestedFormat=" + GEOTIFF_FORMAT);
         }
