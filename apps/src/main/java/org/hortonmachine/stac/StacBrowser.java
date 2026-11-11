@@ -325,6 +325,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private String httpAuthServer;
     /** The access context of the current catalog, null for public ones. */
     private HMStacAccess access;
+    /** The url of the connected catalog, for the code that gets an asset with the HM stac library. */
+    private String connectedUrl;
+    /**
+     * The code that sets the access of the connected catalog in that code, secrets left as placeholders, or
+     * <code>null</code> for public catalogs.
+     */
+    private String accessCode;
 
     // collections
     private JTextField collectionsFilterField;
@@ -589,6 +596,35 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         }
     }
 
+    /**
+     * @return the code that creates the access of the http authentication chosen for a catalog, the secret left as a
+     *         placeholder, so that it never ends up in the clipboard; <code>null</code> for none.
+     */
+    private String httpAccessCode( String url ) {
+        String type = String.valueOf(httpAuthTypeCombo.getSelectedItem());
+        String name = javaString(httpAuthNameField.getText().trim());
+        String user = javaString(httpAuthUserField.getText().trim());
+        String server = javaString(url);
+        String authentication;
+        switch( type ) {
+        case AUTH_BEARER:
+            authentication = "HMHttpAuthentication.bearer(" + server + ", \"<token>\")";
+            break;
+        case AUTH_BASIC:
+            authentication = "HMHttpAuthentication.basic(" + server + ", " + user + ", \"<password>\")";
+            break;
+        case AUTH_HEADER:
+            authentication = "HMHttpAuthentication.header(" + server + ", " + name + ", \"<key>\")";
+            break;
+        case AUTH_PARAMETER:
+            authentication = "HMHttpAuthentication.queryParameter(" + server + ", " + name + ", \"<key>\")";
+            break;
+        default:
+            return null;
+        }
+        return "new HMStacAccess(" + authentication + ")";
+    }
+
     private JComponent createCollectionsPanel() {
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -832,6 +868,43 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         thumbnailPanel = new ThumbnailPanel();
         itemTabs.addTab("Preview", thumbnailPanel);
         JTable itemAssetsTable = table(itemAssetsModel);
+        JPopupMenu itemAssetsPopup = new JPopupMenu();
+        JMenuItem itemAssetCodeItem = new JMenuItem("Copy HM stac code");
+        itemAssetCodeItem.setToolTipText("Copy the catalog, collection, item and asset ids with the code that gets the asset "
+                + "with the stac library of the HortonMachine");
+        JMenuItem itemAssetUrlItem = new JMenuItem("Copy URL");
+        itemAssetsPopup.add(itemAssetCodeItem);
+        itemAssetsPopup.add(itemAssetUrlItem);
+        itemAssetsTable.addMouseListener(new MouseAdapter(){
+            @Override
+            public void mousePressed( MouseEvent e ) {
+                showPopup(e);
+            }
+
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                showPopup(e);
+            }
+
+            private void showPopup( MouseEvent e ) {
+                if (!e.isPopupTrigger())
+                    return;
+                int row = itemAssetsTable.rowAtPoint(e.getPoint());
+                ItemRow itemRow = getSelectedItemRow();
+                if (row < 0 || itemRow == null)
+                    return;
+                itemAssetsTable.setRowSelectionInterval(row, row);
+                HMStacAsset asset = itemAssetsModel.getRow(itemAssetsTable.convertRowIndexToModel(row));
+                // the listeners of the last popup are replaced with those of this asset
+                for( JMenuItem menuItem : new JMenuItem[]{itemAssetCodeItem, itemAssetUrlItem} ) {
+                    for( var l : menuItem.getActionListeners() )
+                        menuItem.removeActionListener(l);
+                }
+                itemAssetCodeItem.addActionListener(ev -> copyHmStacCode(itemRow, asset));
+                itemAssetUrlItem.addActionListener(ev -> GuiUtilities.copyToClipboard(href(asset)));
+                itemAssetsPopup.show(itemAssetsTable, e.getX(), e.getY());
+            }
+        });
         JPanel itemAssetsPanel = new JPanel(new BorderLayout(0, 4));
         itemAssetsPanel.add(filterPanel(itemAssetsTable, "Filter the assets by the text of any column"), BorderLayout.NORTH);
         itemAssetsPanel.add(new JScrollPane(itemAssetsTable), BorderLayout.CENTER);
@@ -877,6 +950,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         JMenuItem copyUrlItem = new JMenuItem("Copy URL");
         copyUrlItem.addActionListener(e -> GuiUtilities
                 .copyToClipboard(getSelectedDownloads().stream().map(r -> r.href).collect(Collectors.joining("\n"))));
+        JMenuItem copyCodeItem = new JMenuItem("Copy HM stac code");
+        copyCodeItem.setToolTipText("Copy the catalog, collection, item and asset ids with the code that gets the asset "
+                + "with the stac library of the HortonMachine");
+        copyCodeItem.addActionListener(e -> {
+            DownloadRow row = getSelectedDownloads().get(0);
+            copyHmStacCode(row.itemRow, row.asset);
+        });
         JMenuItem showOnMapItem = new JMenuItem("Show on map");
         showOnMapItem.setToolTipText(
                 "Rasters are read on the part of their item visible in the map, at screen resolution; vectors are read whole");
@@ -901,6 +981,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         downloadsPopup.add(removeAllFromMapItem);
         downloadsPopup.add(viewTableItem);
         downloadsPopup.addSeparator();
+        downloadsPopup.add(copyCodeItem);
         downloadsPopup.add(copyUrlItem);
         downloadsTable.addMouseListener(new MouseAdapter(){
             @Override
@@ -933,6 +1014,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     removeFromMapItem.setEnabled(selected.stream().anyMatch(r -> mapPanel.hasLayer(mapLayerId(r))));
                     removeAllFromMapItem.setEnabled(mapPanel.hasLayers());
                     viewTableItem.setEnabled(!busy && selected.size() == 1 && isCsvAsset(first));
+                    copyCodeItem.setEnabled(selected.size() == 1);
                     long addableCount = selected.stream().filter(r -> isRasterAsset(r.asset) || isVectorAsset(r.asset)).count();
                     addToConsumerItem.setVisible(assetsConsumer != null);
                     consumerSeparator.setVisible(assetsConsumer != null);
@@ -1014,6 +1096,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         // catalogs on S3 are read with the credentials of the chosen profile, limited to the catalog bucket
         HMStacAccess newAccess = null;
         String authInfo = "none";
+        String newAccessCode = null;
         HMS3Location s3Location = HMS3Location.parse(url);
         if (s3Location != null) {
             String profile = String.valueOf(awsProfileCombo.getEditor().getItem()).trim();
@@ -1031,6 +1114,9 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 String usedRegion = s3Location.getRegion() != null ? s3Location.getRegion() : authentication.getRegion();
                 authInfo = "AWS S3, profile " + (profile.isEmpty() ? "default" : profile) + ", region " + usedRegion + ", bucket "
                         + s3Location.getBucket();
+                newAccessCode = "new HMStacAccess(HMS3Authentication.fromProfile(" + (profile.isEmpty() ? "null" : javaString(profile))
+                        + ").forBuckets(" + javaString(s3Location.getBucket()) + ")"
+                        + (region.isEmpty() ? "" : ".setRegion(" + javaString(region) + ")") + ")";
                 PreferencesHandler.setPreference(PREF_AWS_PROFILE, profile);
                 PreferencesHandler.setPreference(PREF_AWS_REGION, region);
             } catch (Exception e) {
@@ -1043,6 +1129,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 if (authentication != null) {
                     newAccess = new HMStacAccess(authentication);
                     authInfo = authentication.toString();
+                    newAccessCode = httpAccessCode(url);
                 }
             } catch (IllegalArgumentException e) {
                 GuiUtilities.showWarningMessage(this, "Unable to use the authentication: " + e.getMessage());
@@ -1051,6 +1138,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         }
         HMStacAccess fAccess = newAccess;
         String fAuthInfo = authInfo;
+        String fAccessCode = newAccessCode;
         HMStacManager oldManager = manager;
         boolean forceLatLon = latLonCheck.isSelected();
         runTask("Connecting to " + url, () -> {
@@ -1079,6 +1167,8 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         }, result -> {
             manager = (HMStacManager) result[0];
             access = fAccess;
+            connectedUrl = url;
+            accessCode = fAccessCode;
             @SuppressWarnings("unchecked")
             List<HMStacCollection> collections = (List<HMStacCollection>) result[2];
             allCollections = collections;
@@ -2369,15 +2459,22 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
      * @return the file name part of the asset href, or the asset id if not available.
      */
     private static String hrefFileName( DownloadRow row ) {
+        return hrefFileName(row.href, row.asset);
+    }
+
+    /**
+     * @return the file name of an asset address, without the query, or the asset id if it has none.
+     */
+    private static String hrefFileName( String href, HMStacAsset asset ) {
         String name = null;
-        if (row.href != null) {
-            String path = row.href;
+        if (href != null) {
+            String path = href;
             int queryIndex = path.indexOf('?');
             if (queryIndex > 0)
                 path = path.substring(0, queryIndex);
             name = path.substring(path.lastIndexOf('/') + 1);
         }
-        return name == null || name.isBlank() ? row.asset.getId() : name;
+        return name == null || name.isBlank() ? asset.getId() : name;
     }
 
     /**
@@ -2730,6 +2827,105 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private static String href( HMStacAsset asset ) {
         JsonNode hrefNode = asset.getAssetNode().get("href");
         return hrefNode != null ? hrefNode.asString("") : null;
+    }
+
+    /**
+     * @return a string as a java and groovy literal, with its quotes; the $ as unicode escape, not to start a groovy
+     *         interpolation, since \$ isn't valid in java.
+     */
+    private static String javaString( String text ) {
+        return "\"" + text.replace("\\", "\\\\").replace("\"", "\\\"").replace("$", "\\u0024").replace("\n", "\\n") + "\"";
+    }
+
+    /**
+     * Create the code that gets an asset with the stac library of the HortonMachine, valid in java and groovy: the
+     * catalog, collection, item and asset ids in a comment and the calls to search the item and take the asset.
+     *
+     * <p>The library can't get an item by id, so the item is searched in a short time window around its datetime and
+     * taken by id; items without datetime are searched by a CQL filter on the id, which needs the filter extension.</p>
+     *
+     * @param itemRow the item of the asset, of the current collection.
+     * @param asset the asset.
+     * @return the code.
+     */
+    private String hmStacCode( ItemRow itemRow, HMStacAsset asset ) {
+        String collectionId = currentCollection.getId();
+        String itemId = itemRow.item.getId();
+        String timestamp = itemRow.item.getTimestamp();
+        StringBuilder sb = new StringBuilder();
+        sb.append("// STAC asset, to get with the stac library of the HortonMachine\n");
+        sb.append("// catalog:    ").append(connectedUrl).append("\n");
+        sb.append("// collection: ").append(collectionId).append("\n");
+        sb.append("// item:       ").append(itemId).append("\n");
+        sb.append("// asset:      ").append(asset.getId()).append("\n");
+        if (timestamp != null)
+            sb.append("// datetime:   ").append(timestamp).append(" (UTC)\n");
+        sb.append("// href:       ").append(href(asset)).append("\n");
+        sb.append("// HM handler: ").append(handlerName(asset)).append("\n\n");
+
+        sb.append("import java.nio.file.*;\n");
+        sb.append("import java.util.Date;\n");
+        sb.append("import org.hortonmachine.gears.io.stac.*;\n");
+        sb.append("import org.hortonmachine.gears.io.stac.auth.*;\n");
+        sb.append("import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;\n");
+        if (timestamp != null)
+            sb.append("import org.hortonmachine.gears.utils.time.ETimeUtilities;\n");
+        sb.append("\n");
+
+        sb.append("try (HMStacManager manager = new HMStacManager(").append(javaString(connectedUrl))
+                .append(", new DummyProgressMonitor())) {\n");
+        if (accessCode != null) {
+            sb.append("    // insert the secret, it isn't copied\n");
+            sb.append("    manager.setAccess(").append(accessCode).append(");\n");
+        }
+        if (latLonCheck.isSelected())
+            sb.append("    manager.setForceLatLon(true);\n");
+        sb.append("    manager.open();\n");
+        sb.append("    HMStacCollection collection = manager.getCollectionById(").append(javaString(collectionId)).append(");\n");
+        if (timestamp != null) {
+            // the timestamp is to the second, the window takes the fractions of the datetime of the item
+            SimpleDateFormat utc = utcFormat("yyyy-MM-dd HH:mm:ss");
+            String from = timestamp;
+            String to = timestamp;
+            try {
+                long millis = utc.parse(timestamp).getTime();
+                from = utc.format(new Date(millis - 1000));
+                to = utc.format(new Date(millis + 1000));
+            } catch (ParseException e) {
+                // keep the timestamp itself
+            }
+            sb.append("    Date from = ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.parse(").append(javaString(from)).append(");\n");
+            sb.append("    Date to = ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.parse(").append(javaString(to)).append(");\n");
+            sb.append("    collection.setTimestampFilter(from, to);\n");
+        } else {
+            sb.append("    // the item has no datetime: the id filter needs the filter extension of the catalog\n");
+            sb.append("    collection.setCqlFilter(").append(javaString("id = '" + itemId.replace("'", "''") + "'")).append(");\n");
+        }
+        sb.append("    HMStacItem item = collection.searchItems().stream()\n");
+        sb.append("            .filter(i -> i.getId().equals(").append(javaString(itemId)).append(")).findFirst().orElseThrow();\n");
+        sb.append("    HMStacAsset asset = item.getAllAssets().stream()\n");
+        sb.append("            .filter(a -> a.getId().equals(").append(javaString(asset.getId())).append(")).findFirst().orElseThrow();\n");
+        sb.append("    // e.g. asset.getHandler() to read it, asset.getAssetNode() for its metadata\n\n");
+        // the same name as the downloads of the browser, many catalogs reuse file names like B02.tif in each item
+        String fileName = safeFileName(itemId + "_" + hrefFileName(href(asset), asset));
+        sb.append("    // dump the whole asset file to disk, with authentication if the catalog needs it\n");
+        sb.append("    HMStacAccess access = asset.getAccess() != null ? asset.getAccess() : new HMStacAccess();\n");
+        sb.append("    try (HMStacResponse response = access.get(asset.getAssetNode().get(\"href\").asString(\"\"))) {\n");
+        sb.append("        Files.copy(response.getInputStream(), Paths.get(").append(javaString(fileName))
+                .append("), StandardCopyOption.REPLACE_EXISTING);\n");
+        sb.append("    }\n");
+        sb.append("}\n");
+        return sb.toString();
+    }
+
+    /**
+     * Copy the code that gets an asset with the stac library of the HortonMachine to the clipboard.
+     */
+    private void copyHmStacCode( ItemRow itemRow, HMStacAsset asset ) {
+        if (itemRow == null || asset == null || currentCollection == null || connectedUrl == null)
+            return;
+        GuiUtilities.copyToClipboard(hmStacCode(itemRow, asset));
+        statusLabel.setText("Copied the HM stac code of the asset " + asset.getId() + " of " + itemRow.name() + ".");
     }
 
     private static String toJson( Object object ) {
