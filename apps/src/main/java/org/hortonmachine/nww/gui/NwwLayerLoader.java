@@ -187,9 +187,12 @@ public class NwwLayerLoader {
     }
 
     /**
-     * Add a layer on top of the map and to the layers panel.
+     * Add a layer on top of the map and to the layers panel. A {@link LayerSource} is attached
+     * before, for the layers panel to show the name as the one of a table or a service layer.
+     *
+     * @param layer the layer.
      */
-    private void addLayer( Layer layer ) {
+    public void addLayer( Layer layer ) {
         wwjPanel.getWwd().getModel().getLayers().add(layer);
         layerEventsListener.onLayerAdded(layer);
     }
@@ -791,9 +794,10 @@ public class NwwLayerLoader {
             return layer;
         }
         LayerSource source = LayerSource.of(layer);
-        if (source != null && source.isDatabaseTable() && layer instanceof RasterizedFeatureCollectionLayer) {
-            // the features in memory are drawn again: reading the table again would lose the
-            // extent they were loaded in, as the map view, and the round trip to the server
+        if (source != null && (source.isDatabaseTable() || source.isWebService())
+                && layer instanceof RasterizedFeatureCollectionLayer) {
+            // the features in memory are drawn again: reading the table or the service again
+            // would cost the round trip to the server
             RasterizedFeatureCollectionLayer rasterized = (RasterizedFeatureCollectionLayer) layer;
             Layer replacement = createFeatureCollectionLayer(true, null, layer.getName(), rasterized.getFeatureStore(),
                     rasterized.getFeatureCollection(), null, style, null);
@@ -828,7 +832,7 @@ public class NwwLayerLoader {
     /**
      * Save the style of a layer in its data: in the geopackage table, or in the .sld file next to
      * the shapefile or raster file, which is replaced. The styles of the tables of database
-     * connections are not saved in the database, but in the local {@link DatabaseStyleStore}.
+     * connections and of the web service layers are saved in the {@link LocalStyleStore}.
      * The style is used when the data are loaded again.
      *
      * @param source the source of the layer, a shapefile, a geopackage table, a table of a
@@ -838,8 +842,8 @@ public class NwwLayerLoader {
      * @throws Exception if the style can't be written.
      */
     public static File saveStyle( LayerSource source, Style style ) throws Exception {
-        if (source.isDatabaseTable()) {
-            return DatabaseStyleStore.save(source, style);
+        if (LocalStyleStore.handles(source)) {
+            return LocalStyleStore.save(source, style);
         }
         String sld = SldUtilities.styleToString(style);
         if (source.isGeopackageTable()) {

@@ -127,6 +127,20 @@ public class ToolsPanelController {
     }
 
     /**
+     * Choose a WMS service, as those used in the web services browser, and add its layers.
+     */
+    public void openWms() {
+        new NwwWebServicesLoader(wwjPanel, layerLoader).openWms();
+    }
+
+    /**
+     * Choose a WFS service, as those used in the web services browser, and load its layers.
+     */
+    public void openWfs() {
+        new NwwWebServicesLoader(wwjPanel, layerLoader).openWfs();
+    }
+
+    /**
      * Choose files and folders of the supported formats and load them as layers.
      */
     public void openFiles() {

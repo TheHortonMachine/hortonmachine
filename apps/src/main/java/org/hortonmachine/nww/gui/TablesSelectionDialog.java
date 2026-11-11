@@ -98,7 +98,31 @@ public class TablesSelectionDialog {
      */
     public static Result show( Component parent, String title, String message, List<String> names, List<String> types,
             boolean selectedAtStart, String optionText, String optionTooltip, boolean optionAtStart ) {
-        TablesModel model = new TablesModel(names, types, selectedAtStart);
+        return show(parent, title, message, "Table", names, "Type", types, selectedAtStart, optionText, optionTooltip,
+                optionAtStart);
+    }
+
+    /**
+     * Let the user select tables or layers, with the headers of the columns given, as for the
+     * layers of a web service.
+     *
+     * @param parent the parent of the dialog.
+     * @param title the title of the dialog.
+     * @param message the message above the tables.
+     * @param namesHeader the header of the names, which the filter is applied to.
+     * @param names the names of the tables.
+     * @param typesHeader the header of the second column.
+     * @param types the values of the second column, one per name.
+     * @param selectedAtStart if <code>true</code>, all the tables are selected at the start.
+     * @param optionText the text of the option check box, <code>null</code> for none.
+     * @param optionTooltip the tooltip of the option check box, or <code>null</code>.
+     * @param optionAtStart the state of the option check box at the start.
+     * @return the choice, or <code>null</code> if cancelled.
+     */
+    public static Result show( Component parent, String title, String message, String namesHeader, List<String> names,
+            String typesHeader, List<String> types, boolean selectedAtStart, String optionText, String optionTooltip,
+            boolean optionAtStart ) {
+        TablesModel model = new TablesModel(names, types, selectedAtStart, namesHeader, typesHeader);
         JTable table = new JTable(model);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.setFillsViewportHeight(true);
@@ -226,15 +250,16 @@ public class TablesSelectionDialog {
      */
     private static class TablesModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
-        private static final String[] COLUMNS = {"Load", "Table", "Type"};
 
+        private final String[] columns;
         private final List<String> names;
         private final List<String> types;
         private final boolean[] selected;
 
-        TablesModel( List<String> names, List<String> types, boolean selectedAtStart ) {
+        TablesModel( List<String> names, List<String> types, boolean selectedAtStart, String namesHeader, String typesHeader ) {
             this.names = names;
             this.types = types;
+            columns = new String[]{"Load", namesHeader, typesHeader};
             selected = new boolean[names.size()];
             Arrays.fill(selected, selectedAtStart);
         }
@@ -256,12 +281,12 @@ public class TablesSelectionDialog {
 
         @Override
         public int getColumnCount() {
-            return COLUMNS.length;
+            return columns.length;
         }
 
         @Override
         public String getColumnName( int column ) {
-            return COLUMNS[column];
+            return columns[column];
         }
 
         @Override

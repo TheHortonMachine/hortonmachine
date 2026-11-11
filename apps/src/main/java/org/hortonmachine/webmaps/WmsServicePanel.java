@@ -123,12 +123,15 @@ class WmsServicePanel extends ServicePanel {
         return new String[]{"auto"};
     }
 
+    /** The services proposed before any is used. */
+    static final String[] PRESETS = {//
+            "https://ows.terrestris.de/osm/service?SERVICE=WMS&REQUEST=GetCapabilities", //
+            "https://ows.mundialis.de/services/service?SERVICE=WMS&REQUEST=GetCapabilities"//
+    };
+
     @Override
     String[] getPresets() {
-        return new String[]{//
-                "https://ows.terrestris.de/osm/service?SERVICE=WMS&REQUEST=GetCapabilities", //
-                "https://ows.mundialis.de/services/service?SERVICE=WMS&REQUEST=GetCapabilities"//
-        };
+        return PRESETS;
     }
 
     // ==================== ui ====================

@@ -57,7 +57,7 @@ import org.locationtech.jts.geom.Envelope;
  * <p>The user chooses a connection and, in a list that can be filtered by name, the tables to
  * load: whole, or only the features in the current map view. The tables are read in the
  * background and drawn as the other vector layers, with the style saved in the
- * {@link DatabaseStyleStore}, else with the next of the default colors.</p>
+ * {@link LocalStyleStore}, else with the next of the default colors.</p>
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
@@ -247,7 +247,7 @@ public class NwwDatabaseLoader {
                     LayerSource source = LayerSource.ofDatabase(connection, readTable.table().label(), null, _viewEnvelope);
                     try {
                         // the style saved locally, if any: the styles are not saved in the database
-                        Style style = DatabaseStyleStore.read(source);
+                        Style style = LocalStyleStore.read(source);
                         if (layerLoader.loadFeatureCollection(source.path(), readTable.features(), source, style) == null) {
                             problems.add(readTable.table().label() + ": unsupported geometry type");
                         }

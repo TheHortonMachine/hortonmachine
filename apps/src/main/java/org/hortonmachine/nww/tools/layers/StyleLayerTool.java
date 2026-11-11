@@ -83,6 +83,7 @@ import org.geotools.api.style.Stroke;
 import org.geotools.api.style.Style;
 import org.geotools.api.style.Symbolizer;
 import org.geotools.api.style.TextSymbolizer;
+import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.styling.visitor.DuplicatingStyleVisitor;
 import org.hortonmachine.dbs.compat.ASpatialDb;
@@ -106,9 +107,10 @@ import org.hortonmachine.gears.utils.style.SymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.TextSymbolizerWrapper;
 import org.hortonmachine.gui.utils.DefaultGuiBridgeImpl;
 import org.hortonmachine.gui.utils.GuiUtilities;
-import org.hortonmachine.nww.gui.DatabaseStyleStore;
+import org.hortonmachine.nww.gui.LocalStyleStore;
 import org.hortonmachine.nww.gui.NwwDatabaseLoader;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
+import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.tools.INwwLayerTool;
@@ -139,7 +141,8 @@ import gov.nasa.worldwind.layers.Layer;
  *
  * <p>Apply draws the layer with the style, Save also writes it into the data, in the geopackage
  * table or in the .sld file next to the shapefile. The styles of the tables of database
- * connections are not saved in the database, but locally in the {@link DatabaseStyleStore}.</p>
+ * connections are not saved in the database, but locally in the {@link LocalStyleStore}, as are
+ * those of the WFS layers, whose fields and values are read from the features in memory.</p>
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
@@ -167,8 +170,11 @@ public class StyleLayerTool implements INwwLayerTool {
     @Override
     public boolean canHandle( Layer layer ) {
         LayerSource source = LayerSource.of(layer);
-        return source != null && (source.isShapefile() || source.isGeopackageTable() || source.isDatabaseTable())
-                && (layer instanceof RasterizedFeatureCollectionLayer || layer instanceof NwwVectorLayer);
+        return source != null
+                && (source.isShapefile() || source.isGeopackageTable() || source.isDatabaseTable() || source.isWebService())
+                && (layer instanceof RasterizedFeatureCollectionLayer || layer instanceof NwwVectorLayer)
+                // the web service layers are styled from their features in memory
+                && (!source.isWebService() || layer instanceof NwwFeatureLayer);
     }
 
     @Override
@@ -181,7 +187,7 @@ public class StyleLayerTool implements INwwLayerTool {
 
         new Thread(() -> {
             try {
-                DataInfo info = readDataInfo(source);
+                DataInfo info = readDataInfo(source, layer);
                 SwingUtilities.invokeLater(() -> {
                     panel.removeAll();
                     panel.add(new StylePanel(context, layer, source, info), BorderLayout.CENTER);
@@ -225,9 +231,15 @@ public class StyleLayerTool implements INwwLayerTool {
         return db;
     }
 
-    private static DataInfo readDataInfo( LayerSource source ) throws Exception {
+    /**
+     * @param layer the layer, whose features in memory are read for the web services, which
+     *          can't be queried as the files and databases.
+     */
+    private static DataInfo readDataInfo( LayerSource source, Layer layer ) throws Exception {
         SimpleFeatureType schema;
-        if (source.isGeopackageTable() || source.isDatabaseTable()) {
+        if (source.isWebService()) {
+            schema = ((NwwFeatureLayer) layer).getFeatureCollection().getSchema();
+        } else if (source.isGeopackageTable() || source.isDatabaseTable()) {
             try (ASpatialDb db = openDb(source)) {
                 schema = SpatialDbsImportUtils.tableToFeatureFCollection(db, SqlName.m(source.table()), 1, -1, null).getSchema();
             }
@@ -266,7 +278,7 @@ public class StyleLayerTool implements INwwLayerTool {
      * Count the features of each value of a field, in all the data, also those hidden by a
      * filter, which may be shown later.
      */
-    private static ValueCounts readValueCounts( LayerSource source, String field ) throws Exception {
+    private static ValueCounts readValueCounts( LayerSource source, Layer layer, String field ) throws Exception {
         // the values sorted as numbers or texts, mixed types as texts
         Comparator<Object> comparator = ( a, b ) -> {
             if (a instanceof Number && b instanceof Number) {
@@ -301,18 +313,13 @@ public class StyleLayerTool implements INwwLayerTool {
                     return nulls;
                 });
             }
+        } else if (source.isWebService()) {
+            // the features loaded, the service is not read again
+            nullCount = countValues(((NwwFeatureLayer) layer).getFeatureCollection(), field, counts);
         } else {
             FileDataStore store = FileDataStoreFinder.getDataStore(source.file());
-            try (SimpleFeatureIterator iterator = store.getFeatureSource().getFeatures().features()) {
-                while( iterator.hasNext() ) {
-                    SimpleFeature feature = iterator.next();
-                    Object value = feature.getAttribute(field);
-                    if (value == null) {
-                        nullCount++;
-                    } else {
-                        counts.merge(value, 1L, Long::sum);
-                    }
-                }
+            try {
+                nullCount = countValues(store.getFeatureSource().getFeatures(), field, counts);
             } finally {
                 store.dispose();
             }
@@ -321,12 +328,36 @@ public class StyleLayerTool implements INwwLayerTool {
     }
 
     /**
-     * @return the style saved in the data, or locally for the tables of database connections,
-     *          <code>null</code> if there is none.
+     * Count the features of each value of a field.
+     *
+     * @param features the features.
+     * @param field the field.
+     * @param counts the counts of the values, added to.
+     * @return the number of features without value.
+     */
+    private static long countValues( SimpleFeatureCollection features, String field, Map<Object, Long> counts ) {
+        long nullCount = 0;
+        try (SimpleFeatureIterator iterator = features.features()) {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                Object value = feature.getAttribute(field);
+                if (value == null) {
+                    nullCount++;
+                } else {
+                    counts.merge(value, 1L, Long::sum);
+                }
+            }
+        }
+        return nullCount;
+    }
+
+    /**
+     * @return the style saved in the data, or locally for the tables of database connections and
+     *          the layers of web services, <code>null</code> if there is none.
      */
     private static Style readSavedStyle( LayerSource source ) throws Exception {
-        if (source.isDatabaseTable()) {
-            return DatabaseStyleStore.read(source);
+        if (LocalStyleStore.handles(source)) {
+            return LocalStyleStore.read(source);
         }
         if (source.isGeopackageTable()) {
             try (GeopackageCommonDb db = new GeopackageDb()) {
@@ -777,7 +808,7 @@ public class StyleLayerTool implements INwwLayerTool {
             valuesStatus.setText("Reading the values of " + field + "...");
             new Thread(() -> {
                 try {
-                    ValueCounts counts = readValueCounts(source, field);
+                    ValueCounts counts = readValueCounts(source, context.getLatest(layer), field);
                     SwingUtilities.invokeLater(() -> {
                         valueCounts = counts;
                         if (classify) {
@@ -979,10 +1010,10 @@ public class StyleLayerTool implements INwwLayerTool {
                     + "press Reset to use it, or start a new style.</html>");
             JButton editorButton = new JButton("Open in the style editor");
             editorButton.addActionListener(e -> openStyleEditor());
-            if (source.isDatabaseTable()) {
+            if (LocalStyleStore.handles(source)) {
                 // the editor works on the files and geopackage tables
                 editorButton.setEnabled(false);
-                editorButton.setToolTipText("The style editor can't open the tables of database connections");
+                editorButton.setToolTipText("The style editor can open only files and geopackage tables");
             }
             JButton singleButton = new JButton("New single symbol style");
             singleButton.addActionListener(e -> modeCombo.setSelectedItem(SINGLE));
@@ -1081,6 +1112,9 @@ public class StyleLayerTool implements INwwLayerTool {
             if (source.isDatabaseTable()) {
                 saveButton.setToolTipText("Draw the layer with the style and save it locally, not in the database: it is "
                         + "used when the table is loaded again from the same saved connection");
+            } else if (source.isWebService()) {
+                saveButton.setToolTipText("Draw the layer with the style and save it locally: it is used when the layer "
+                        + "is loaded again from the same service");
             }
             applyButton.addActionListener(e -> apply(false));
             saveButton.addActionListener(e -> apply(true));

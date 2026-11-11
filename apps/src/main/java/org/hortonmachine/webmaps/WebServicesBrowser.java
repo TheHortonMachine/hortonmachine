@@ -686,14 +686,45 @@ public class WebServicesBrowser extends JPanel implements IOnCloseListener {
         return new ArrayList<>(urls);
     }
 
-    private void addToHistory( ServicePanel panel, String url ) {
+    /**
+     * The services used in the browser, as other applications propose them.
+     *
+     * @param type the type of the services: WMS, WFS or WCS.
+     * @return the addresses of the services used, the last first, followed by the presets of the
+     *          WMS and WFS services.
+     */
+    public static List<String> getSavedUrls( String type ) {
+        LinkedHashSet<String> urls = new LinkedHashSet<>();
+        for( String u : PreferencesHandler.getPreference(PREF_HISTORY + type, new String[0]) ) {
+            if (u != null && !u.isBlank())
+                urls.add(u);
+        }
+        if ("WMS".equals(type)) {
+            urls.addAll(List.of(WmsServicePanel.PRESETS));
+        } else if ("WFS".equals(type)) {
+            urls.addAll(List.of(WfsServicePanel.PRESETS));
+        }
+        return new ArrayList<>(urls);
+    }
+
+    /**
+     * Put a service first in the history of the browser, as when used by another application.
+     *
+     * @param type the type of the service: WMS, WFS or WCS.
+     * @param url the address of the service.
+     */
+    public static void saveUrl( String type, String url ) {
         List<String> history = new ArrayList<>();
         history.add(url);
-        for( String u : PreferencesHandler.getPreference(PREF_HISTORY + panel.getType(), new String[0]) ) {
+        for( String u : PreferencesHandler.getPreference(PREF_HISTORY + type, new String[0]) ) {
             if (u != null && !u.isBlank() && !u.equals(url) && history.size() < MAX_HISTORY)
                 history.add(u);
         }
-        PreferencesHandler.setPreference(PREF_HISTORY + panel.getType(), history.toArray(new String[0]));
+        PreferencesHandler.setPreference(PREF_HISTORY + type, history.toArray(new String[0]));
+    }
+
+    private void addToHistory( ServicePanel panel, String url ) {
+        saveUrl(panel.getType(), url);
         if (panel == current && ((DefaultComboBoxModel<String>) urlCombo.getModel()).getIndexOf(url) < 0)
             urlCombo.insertItemAt(url, 0);
     }

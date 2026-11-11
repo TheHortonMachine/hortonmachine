@@ -149,6 +149,12 @@ public class NwwMenuBar extends JMenuBar {
         JMenuItem openDb = item("Open from saved connection...", ImageCache.CONNECT, e -> tools.openFromSavedConnection());
         openDb.setToolTipText("Open the spatial tables of a database connection saved in the database viewer, as PostGIS");
         menu.add(openDb);
+        JMenuItem openWms = item("Open WMS layers...", ImageCache.GLOBE, e -> tools.openWms());
+        openWms.setToolTipText("Add the image layers of a WMS service, as those used in the web services browser");
+        menu.add(openWms);
+        JMenuItem openWfs = item("Open WFS layers...", ImageCache.GLOBE, e -> tools.openWfs());
+        openWfs.setToolTipText("Load the features of the layers of a WFS service, as those used in the web services browser");
+        menu.add(openWfs);
         JCheckBoxMenuItem rasterized = new JCheckBoxMenuItem("Open vectors rasterized");
         rasterized.setToolTipText("Draw the vectors opened from now on as image tiles, instead of shapes");
         rasterized.addActionListener(e -> tools.getLayerLoader().setPreferRasterized(rasterized.isSelected()));

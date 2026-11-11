@@ -75,10 +75,10 @@ public class LayerListRowPanel extends JPanel {
         int separatorIndex = layerName.lastIndexOf(HMConstants.DB_TABLE_PATH_SEPARATOR);
         LayerSource source = LayerSource.of(layer);
         boolean isTable = layerName.substring(0, Math.max(0, separatorIndex)).toLowerCase().endsWith("." + HMConstants.GPKG)
-                || (source != null && source.isDatabaseTable());
+                || (source != null && (source.isDatabaseTable() || source.isWebService()));
         if (separatorIndex > 0 && isTable) {
-            // geopackage or database table: the table name, with the geopackage or connection name
-            // smaller below
+            // geopackage, database table or service layer: the table or layer name, with the
+            // geopackage, connection or service host smaller below
             nameLabel = new JLabel(layerName.substring(separatorIndex + HMConstants.DB_TABLE_PATH_SEPARATOR.length()));
             sourceLabel = new JLabel(layerName.substring(0, separatorIndex));
             Font font = nameLabel.getFont();

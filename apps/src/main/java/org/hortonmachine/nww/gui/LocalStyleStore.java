@@ -18,6 +18,7 @@
 package org.hortonmachine.nww.gui;
 
 import java.io.File;
+import java.net.URI;
 
 import org.geotools.api.style.Style;
 import org.hortonmachine.dbs.log.PreferencesDb;
@@ -26,18 +27,27 @@ import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.nww.tools.LayerSource;
 
 /**
- * The styles of the tables of database connections, which are not saved in the databases but in
- * local .sld files, one folder per connection, in the folder of the HortonMachine preferences:
- * <code>.hortonmachine/styles/&lt;connection&gt;/&lt;table&gt;.sld</code>.
+ * The styles of the layers whose data can't hold a style: the tables of database connections,
+ * whose styles are not saved in the databases, and the layers of web services, as WFS. They are
+ * saved in local .sld files, in the folder of the HortonMachine preferences:
+ * <code>.hortonmachine/styles/&lt;source&gt;/&lt;layer&gt;.sld</code>, where the source is the
+ * label of the connection or the host and path of the service.
  *
- * <p>The files are named after the label of the connection, so renaming the connection in the
- * database viewer leaves its styles behind.</p>
+ * <p>Renaming a connection in the database viewer leaves its styles behind.</p>
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
-public class DatabaseStyleStore {
+public class LocalStyleStore {
 
-    private DatabaseStyleStore() {
+    private LocalStyleStore() {
+    }
+
+    /**
+     * @param source the source of a layer.
+     * @return <code>true</code> if the styles of the layer are saved here.
+     */
+    public static boolean handles( LayerSource source ) {
+        return source != null && (source.isDatabaseTable() || source.isWebService()) && source.table() != null;
     }
 
     /**
@@ -52,22 +62,43 @@ public class DatabaseStyleStore {
     }
 
     /**
-     * @param source the source of a layer read from a table of a database connection.
-     * @return the style file of the table, which may not exist.
+     * @param source the source of a layer read from a table of a database connection or from a
+     *          web service.
+     * @return the style file of the layer, which may not exist.
      */
     public static File getStyleFile( LayerSource source ) {
-        if (!source.isDatabaseTable()) {
-            throw new IllegalArgumentException("Not a table of a database connection: " + source.path());
+        if (!handles(source)) {
+            throw new IllegalArgumentException("Not a table of a database connection or a web service layer: " + source.path());
         }
-        File connectionFolder = new File(getStylesFolder(), safeName(source.connection().connectionLabel));
-        return new File(connectionFolder, safeName(source.table()) + "." + SldUtilities.SLD_EXTENSION);
+        String folderName = source.isDatabaseTable() ? source.connection().connectionLabel : serviceFolderName(source.service());
+        File sourceFolder = new File(getStylesFolder(), safeName(folderName));
+        return new File(sourceFolder, safeName(source.table()) + "." + SldUtilities.SLD_EXTENSION);
     }
 
     /**
-     * @param source the source of a layer read from a table of a database connection.
-     * @return the saved style of the table, or <code>null</code> if there is none.
+     * @return the host and path of a service, which tell apart the services of a server, as
+     *          the workspaces of a GeoServer, without the parameters of the request.
+     */
+    private static String serviceFolderName( String service ) {
+        try {
+            URI uri = new URI(service.trim());
+            if (uri.getHost() != null) {
+                return uri.getHost() + (uri.getPath() != null ? uri.getPath() : "");
+            }
+        } catch (Exception e) {
+            // the whole address
+        }
+        return service;
+    }
+
+    /**
+     * @param source the source of a layer.
+     * @return the saved style of the layer, or <code>null</code> if there is none.
      */
     public static Style read( LayerSource source ) {
+        if (!handles(source)) {
+            return null;
+        }
         File styleFile = getStyleFile(source);
         if (!styleFile.exists()) {
             return null;
@@ -81,9 +112,10 @@ public class DatabaseStyleStore {
     }
 
     /**
-     * Save the style of a table, replacing the one saved before.
+     * Save the style of a layer, replacing the one saved before.
      *
-     * @param source the source of a layer read from a table of a database connection.
+     * @param source the source of a layer read from a table of a database connection or from a
+     *          web service.
      * @param style the style.
      * @return the file written.
      * @throws Exception if the file can't be written.
