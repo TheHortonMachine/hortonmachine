@@ -211,7 +211,11 @@ public class NwwMenuBar extends JMenuBar {
         menu.add(terrainMenu);
         menu.addSeparator();
 
-        JCheckBoxMenuItem white = new JCheckBoxMenuItem("White background");
+        JCheckBoxMenuItem whiteSpace = new JCheckBoxMenuItem("White background");
+        whiteSpace.setToolTipText("Paint the space around the globe white instead of black");
+        whiteSpace.addActionListener(e -> tools.setWhiteSpace(whiteSpace.isSelected()));
+        menu.add(whiteSpace);
+        JCheckBoxMenuItem white = new JCheckBoxMenuItem("White globe");
         white.setToolTipText("Show a white layer below all the others");
         white.addActionListener(e -> tools.setWhiteBackground(white.isSelected()));
         menu.add(white);
@@ -231,6 +235,7 @@ public class NwwMenuBar extends JMenuBar {
             resetTerrain.setEnabled(demFile != null && !loading);
             resetTerrain.setText(demFile == null ? RESET_TERRAIN
                     : RESET_TERRAIN + " (now " + FileUtilities.getNameWithoutExtention(demFile) + ")");
+            whiteSpace.setSelected(tools.isWhiteSpace());
             white.setSelected(tools.isWhiteBackground());
             opaque.setSelected(tools.isOpaqueBackground());
         }));

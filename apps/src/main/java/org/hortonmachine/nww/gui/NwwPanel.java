@@ -18,6 +18,7 @@
 package org.hortonmachine.nww.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 
 import javax.swing.BorderFactory;
@@ -397,6 +398,28 @@ public class NwwPanel extends JPanel {
             env.expandToInclude(corner.longitude.degrees, corner.latitude.degrees);
         }
         return env;
+    }
+
+    /**
+     * Set the color of the space around the globe.
+     *
+     * @param color the color, or <code>null</code> for the default black.
+     */
+    public void setBackgroundColor( Color color ) {
+        if (wwd.getSceneController() instanceof NwwSceneController) {
+            ((NwwSceneController) wwd.getSceneController()).setBackgroundColor(color);
+            wwd.redraw();
+        }
+    }
+
+    /**
+     * @return the color of the space around the globe, or <code>null</code> for the default black.
+     */
+    public Color getBackgroundColor() {
+        if (wwd.getSceneController() instanceof NwwSceneController) {
+            return ((NwwSceneController) wwd.getSceneController()).getBackgroundColor();
+        }
+        return null;
     }
 
     public WorldWindow getWwd() {

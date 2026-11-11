@@ -17,6 +17,7 @@
  */
 package org.hortonmachine.nww.gui;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.io.File;
@@ -71,6 +72,7 @@ import gov.nasa.worldwind.layers.RenderableLayer;
 public class ToolsPanelController {
 
     private static final String PREF_GLOBE_MODE = "NWW_GLOBE_MODE";
+    private static final String PREF_WHITE_SPACE = "NWW_WHITE_SPACE";
 
     private final WhiteNwwLayer whiteLayer = new WhiteNwwLayer();
 
@@ -101,6 +103,7 @@ public class ToolsPanelController {
                 setGlobeMode(mode);
             }
         }
+        setWhiteSpace(Boolean.parseBoolean(PreferencesHandler.getPreference(PREF_WHITE_SPACE, "true")));
     }
 
     /**
@@ -396,6 +399,24 @@ public class ToolsPanelController {
             layers.remove(whiteLayer);
             layerEventsListener.onLayerRemoved(whiteLayer);
         }
+    }
+
+    /**
+     * @return <code>true</code> if the space around the globe is white instead of black.
+     */
+    public boolean isWhiteSpace() {
+        return Color.WHITE.equals(wwjPanel.getBackgroundColor());
+    }
+
+    /**
+     * Paint the space around the globe white instead of black, the choice is kept for the next
+     * session.
+     *
+     * @param white <code>true</code> for white.
+     */
+    public void setWhiteSpace( boolean white ) {
+        PreferencesHandler.setPreference(PREF_WHITE_SPACE, String.valueOf(white));
+        wwjPanel.setBackgroundColor(white ? Color.WHITE : null);
     }
 
     /**
