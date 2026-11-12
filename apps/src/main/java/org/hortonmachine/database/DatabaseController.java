@@ -127,6 +127,7 @@ import org.hortonmachine.dbs.compat.objects.LeafLevel;
 import org.hortonmachine.dbs.compat.objects.QueryResult;
 import org.hortonmachine.dbs.compat.objects.SchemaLevel;
 import org.hortonmachine.dbs.compat.objects.TableLevel;
+import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 import org.hortonmachine.dbs.datatypes.ESpatialiteGeometryType;
 import org.hortonmachine.dbs.log.Logger;
@@ -362,6 +363,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             };
             table.setShowGrid(true);
             table.setGridColor(Color.LIGHT_GRAY);
+            // also empty tables get the right click, to add a first record
+            table.setFillsViewportHeight(true);
             JScrollPane dataTablesScrollpane = new JScrollPane(table);
             panel1.add(dataTablesScrollpane, BorderLayout.CENTER);
             if (i == 0) {
@@ -1672,6 +1675,56 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                 });
                 item.setHorizontalTextPosition(JMenuItem.RIGHT);
                 popupMenu.add(item);
+
+                SqlName insertTableName = getDataTableInsertTarget(table);
+                if (insertTableName != null) {
+                    popupMenu.add(new JSeparator());
+                    JMenuItem newRecordItem = new JMenuItem(
+                            new AbstractAction("Add new record...", ImageCache.get(ImageCache.NEW)){
+                                private static final long serialVersionUID = 1L;
+                                @Override
+                                public void actionPerformed( ActionEvent e ) {
+                                    openNewRecordDialog(insertTableName, null);
+                                }
+                            });
+                    newRecordItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+                    popupMenu.add(newRecordItem);
+                    if (selectedRows.length == 1) {
+                        int row = selectedRows[0];
+                        JMenuItem duplicateItem = new JMenuItem(new AbstractAction("Add new record from selected row..."){
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public void actionPerformed( ActionEvent e ) {
+                                Map<String, String> prefill = new HashMap<>();
+                                for( int c = 0; c < table.getModel().getColumnCount(); c++ ) {
+                                    Object value = table.getModel().getValueAt(row, c);
+                                    if (value != null && !(value instanceof byte[]) && !(value instanceof JdbcBlob)) {
+                                        prefill.put(table.getModel().getColumnName(c), value.toString());
+                                    }
+                                }
+                                openNewRecordDialog(insertTableName, prefill);
+                            }
+                        });
+                        duplicateItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        popupMenu.add(duplicateItem);
+                    }
+                    if (selectedRows.length > 0 && currentQueryResult != null && currentQueryResult.pkIndex >= 0) {
+                        String label = selectedRows.length == 1
+                                ? "Delete selected record..."
+                                : "Delete " + selectedRows.length + " selected records...";
+                        JMenuItem deleteItem = new JMenuItem(new AbstractAction(label){
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public void actionPerformed( ActionEvent e ) {
+                                deleteRecordsInDb(table, selectedRows);
+                            }
+                        });
+                        deleteItem.setHorizontalTextPosition(JMenuItem.RIGHT);
+                        popupMenu.add(deleteItem);
+                    }
+                    popupMenu.add(new JSeparator());
+                }
+
                 if (isBinary) {
                     JMenuItem item1 = new JMenuItem(new AbstractAction("View as image"){
                         private static final long serialVersionUID = 1L;
@@ -1859,15 +1912,10 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             return;
         }
 
-        if (dataTableView._formatDatesCheckbox.isSelected()) {
-            String[] patternSplit = dataTableView._formatDatesPatternTextField.getText().split(",");
-            for( String pattern : patternSplit ) {
-                if (pkColName.toLowerCase().contains(pattern.trim().toLowerCase())) {
-                    GuiUtilities.showWarningMessage(this, null,
-                            "Cannot edit: primary key '" + pkColName + "' is displayed as a formatted date.\nDisable date formatting to allow editing.");
-                    return;
-                }
-            }
+        if (isPkShownAsFormattedDate(pkColName)) {
+            GuiUtilities.showWarningMessage(this, null,
+                    "Cannot edit: primary key '" + pkColName + "' is displayed as a formatted date.\nDisable date formatting to allow editing.");
+            return;
         }
 
         String currentValueStr = (currentValue == null || "NULL".equals(currentValue.toString())) ? "" : currentValue.toString();
@@ -1930,6 +1978,119 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
         } catch (Exception ex) {
             GuiUtilities.showErrorMessage(this, "Error updating value: " + ex.getMessage());
             Logger.INSTANCE.insertError("", "Error updating cell value", ex);
+        }
+    }
+
+    /**
+     * @return <code>true</code> if the primary key column is shown as a formatted date, in which
+     *          case its values can't be used to identify the records.
+     */
+    private boolean isPkShownAsFormattedDate( String pkColName ) {
+        if (dataTableView._formatDatesCheckbox.isSelected()) {
+            String[] patternSplit = dataTableView._formatDatesPatternTextField.getText().split(",");
+            for( String pattern : patternSplit ) {
+                if (pkColName.toLowerCase().contains(pattern.trim().toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Delete the selected records of the data viewer by primary key, after confirmation.
+     */
+    private void deleteRecordsInDb( JTable table, int[] selectedRows ) {
+        if (currentDataTableName == null || currentQueryResult == null || currentQueryResult.pkIndex < 0) {
+            return;
+        }
+        int modelPkCol = table.convertColumnIndexToModel(currentQueryResult.pkIndex);
+        String pkColName = table.getModel().getColumnName(modelPkCol);
+        if (isPkShownAsFormattedDate(pkColName)) {
+            GuiUtilities.showWarningMessage(this, null,
+                    "Cannot delete: primary key '" + pkColName + "' is displayed as a formatted date.\nDisable date formatting to allow deleting.");
+            return;
+        }
+
+        List<Object[]> pkParams = new ArrayList<>();
+        for( int r : selectedRows ) {
+            Object pkValue = table.getModel().getValueAt(table.convertRowIndexToModel(r), modelPkCol);
+            if (pkValue != null && !"NULL".equals(pkValue.toString())) {
+                pkParams.add(new Object[]{pkValue});
+            }
+        }
+        if (pkParams.isEmpty()) {
+            GuiUtilities.showWarningMessage(this, null, "Cannot delete: the selected records have no primary key value.");
+            return;
+        }
+
+        StringBuilder pkList = new StringBuilder();
+        int shown = Math.min(pkParams.size(), 10);
+        for( int i = 0; i < shown; i++ ) {
+            pkList.append(i == 0 ? "" : ", ").append(pkParams.get(i)[0]);
+        }
+        if (pkParams.size() > shown) {
+            pkList.append(", ... (").append(pkParams.size() - shown).append(" more)");
+        }
+        String message = "Delete " + pkParams.size() + (pkParams.size() == 1 ? " record" : " records") + " from "
+                + currentDataTableName + "?\n" + pkColName + " = " + pkList + "\n\nThis can't be undone.";
+        int answer = JOptionPane.showConfirmDialog(this, message, "Delete records", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE);
+        if (answer != JOptionPane.OK_OPTION) {
+            return;
+        }
+
+        String sql = "DELETE FROM " + currentDataTableName + " WHERE \"" + pkColName + "\" = ?";
+        try {
+            currentConnectedSqlDatabase.executeBatchPreparedSql(sql, pkParams);
+            refreshCurrentTableView();
+        } catch (Exception ex) {
+            GuiUtilities.showErrorMessage(this, "Error deleting records: " + ex.getMessage());
+            Logger.INSTANCE.insertError("", "Error deleting records", ex);
+        }
+    }
+
+    /**
+     * @return the table the data viewer shows, if records can be inserted into it (a table
+     *          selected in the tree or a simple single-table select), else <code>null</code>.
+     */
+    private SqlName getDataTableInsertTarget( JTable table ) {
+        if (table != currentDataTable || currentConnectedSqlDatabase == null) {
+            return null;
+        }
+        if (currentDataTableLevel != null) {
+            if (currentDataTableLevel.tableType != ETableType.TABLE) {
+                return null;
+            }
+            return currentDataTableLevel.tableName.toSqlName();
+        } else if (currentDataTableName != null) {
+            return SqlName.m(currentDataTableName);
+        }
+        return null;
+    }
+
+    /**
+     * Open the form to insert a new record and, if the inserted table is the one shown in the
+     * data viewer, refresh it.
+     *
+     * @param tableName the table to insert into.
+     * @param prefill optional initial values by column name, can be <code>null</code>.
+     */
+    protected void openNewRecordDialog( SqlName tableName, Map<String, String> prefill ) {
+        if (currentConnectedSqlDatabase == null) {
+            return;
+        }
+        try {
+            boolean inserted = NewRecordDialog.showDialog(this, currentConnectedSqlDatabase, tableName, prefill);
+            if (inserted) {
+                SqlName shownTable = getDataTableInsertTarget(currentDataTable);
+                if (shownTable != null && shownTable.equals(tableName)) {
+                    refreshCurrentTableView();
+                }
+            }
+        } catch (Exception ex) {
+            GuiUtilities.showErrorMessage(this, "Error opening the new record form: " + ex.getMessage());
+            Logger.INSTANCE.insertError("", "Error opening the new record form", ex);
         }
     }
 

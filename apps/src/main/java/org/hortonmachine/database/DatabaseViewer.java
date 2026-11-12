@@ -20,12 +20,14 @@ package org.hortonmachine.database;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -42,6 +44,7 @@ import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.dbs.compat.ConnectionData;
 import org.hortonmachine.dbs.compat.EDb;
+import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.objects.ColumnLevel;
 import org.hortonmachine.dbs.compat.objects.DbLevel;
 import org.hortonmachine.dbs.compat.objects.LeafLevel;
@@ -398,6 +401,14 @@ public class DatabaseViewer extends DatabaseController {
         addIfNotNull(actions, sqlTemplatesAndActions.getSelectAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getInsertAction(selectedTable, this));
         addIfNotNull(actions, sqlTemplatesAndActions.getGenerateInsertExportAction(selectedTable, this));
+        if (selectedTable.tableType == ETableType.TABLE) {
+            actions.add(new AbstractAction("Add new record...", ImageCache.get(ImageCache.NEW)){
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    openNewRecordDialog(selectedTable.tableName.toSqlName(), null);
+                }
+            });
+        }
         addSeparator(actions);
         addIfNotNull(actions, sqlTemplatesAndActions.getDropAction(selectedTable, this));
         addSeparator(actions);
