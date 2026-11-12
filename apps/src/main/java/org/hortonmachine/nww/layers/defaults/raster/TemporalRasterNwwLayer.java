@@ -223,6 +223,31 @@ public class TemporalRasterNwwLayer extends AbstractLayer implements NwwLayer {
         return new Range(min, max, read.size(), files.size(), lowResolution);
     }
 
+    /**
+     * The distinct values of a band of the files of a series, all together, as
+     * {@link GridCoverageNwwLayer#readUniqueValues(File, int, int)}: reading all the cells of each
+     * file, or at a low resolution for the large ones.
+     *
+     * @param files the files of the series.
+     * @param band the 0 based index of the band.
+     * @param maxCount the most distinct values of interest.
+     * @param maxFiles the most files read, spread over the dates with the first and the last.
+     * @return the sorted values, as {@link org.hortonmachine.gears.libs.modules.HMRaster#getUniqueValues(int)}.
+     * @throws Exception if a file can't be read.
+     */
+    public static double[] readUniqueValues( List<DatedFile> files, int band, int maxCount, int maxFiles ) throws Exception {
+        java.util.TreeSet<Double> unique = new java.util.TreeSet<>();
+        for( File file : sample(files, maxFiles) ) {
+            for( double value : GridCoverageNwwLayer.readUniqueValues(file, band, maxCount) ) {
+                unique.add(value);
+            }
+            if (unique.size() > maxCount) {
+                break;
+            }
+        }
+        return unique.stream().limit(maxCount + 1L).mapToDouble(Double::doubleValue).toArray();
+    }
+
     private static List<File> sample( List<DatedFile> files, int maxFiles ) {
         List<File> sample = new ArrayList<>();
         int count = files.size();

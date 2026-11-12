@@ -1665,6 +1665,51 @@ public class HMRaster implements AutoCloseable {
         return new double[]{min, max, sum / count, sum, count};
     }
 
+    /**
+     * The distinct valid values of the raster, as the classes of a land cover, stopping as soon
+     * as there are more than a given count of them, as for a continuous raster.
+     *
+     * @param maxCount the most distinct values of interest.
+     * @return the sorted distinct values, leaving out the novalues, empty if there are no valid
+     *          cells, or with <code>maxCount + 1</code> values if the raster has more than
+     *          <code>maxCount</code> of them, the scan being then stopped.
+     */
+    public double[] getUniqueValues( int maxCount ) {
+        java.util.TreeSet<Double> unique = new java.util.TreeSet<>();
+        // read by blocks aligned to the image tiles, as getStatistics
+        RenderedImage image = getRenderedImage();
+        int tileWidth = image != null ? image.getTileWidth() : cols;
+        int tileHeight = image != null ? image.getTileHeight() : rows;
+        int xOffset = image != null ? image.getTileGridXOffset() : 0;
+        int yOffset = image != null ? image.getTileGridYOffset() : 0;
+        int blockTiles = Math.max(1, (int) (16_000_000L / ((long) tileWidth * tileHeight)));
+        int toRow = startRow + rows - 1;
+        int toCol = startCol + cols - 1;
+        double[] buffer = null;
+        for( int r0 = startRow; r0 <= toRow; ) {
+            int h = Math.min(tileHeight - Math.floorMod(r0 - yOffset, tileHeight), toRow - r0 + 1);
+            for( int c0 = startCol; c0 <= toCol; ) {
+                int w = Math.min(blockTiles * tileWidth - Math.floorMod(c0 - xOffset, tileWidth), toCol - c0 + 1);
+                if (buffer == null || buffer.length < w * h) {
+                    buffer = new double[w * h];
+                }
+                double[] values = getValues(c0, r0, w, h, buffer);
+                for( int i = 0; i < w * h; i++ ) {
+                    double value = values[i];
+                    if (isNovalue(value)) {
+                        continue;
+                    }
+                    if (unique.add(value) && unique.size() > maxCount) {
+                        return unique.stream().mapToDouble(Double::doubleValue).toArray();
+                    }
+                }
+                c0 += w;
+            }
+            r0 += h;
+        }
+        return unique.stream().mapToDouble(Double::doubleValue).toArray();
+    }
+
     public void printData() {
         for( int row = startRow; row < rows + startRow; row++ ) {
             for( int col = startCol; col < cols + startCol; col++ ) {

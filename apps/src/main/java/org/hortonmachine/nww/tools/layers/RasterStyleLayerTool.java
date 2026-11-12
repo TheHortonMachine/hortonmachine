@@ -28,8 +28,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
@@ -38,6 +41,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -48,6 +52,7 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.geotools.api.style.ColorMap;
 import org.geotools.api.style.RasterSymbolizer;
@@ -61,6 +66,8 @@ import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.DefaultTables;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities.ValueClass;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.nww.gui.LocalStyleStore;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
@@ -93,6 +100,13 @@ public class RasterStyleLayerTool implements INwwLayerTool {
 
     /** The item of a colortable written by hand or read from a style made elsewhere. */
     private static final String CUSTOM = "custom";
+
+    /** The classification that spreads the colors on a range of values. */
+    private static final String CONTINUOUS = "Continuous";
+    /** The classification that gives each distinct value its color. */
+    private static final String UNIQUE_VALUES = "Unique values";
+    /** The most distinct values of a unique values classification. */
+    private static final int MAX_UNIQUE_VALUES = 256;
 
     @Override
     public String getName() {
@@ -255,9 +269,12 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private int rangeRequest;
 
         private final JComboBox<String> tableCombo = new JComboBox<>();
+        private final JComboBox<String> classificationCombo = new JComboBox<>(new String[]{CONTINUOUS, UNIQUE_VALUES});
         private final JTextField minField = new JTextField(10);
         private final JTextField maxField = new JTextField(10);
         private final JButton fromDataButton = new JButton("From data");
+        private final JButton readValuesButton = new JButton("Read values");
+        private final JButton importButton = new JButton("Import...");
         private final JLabel rangeNote = new JLabel(" ");
         private final JTextArea tableArea = new JTextArea(8, 20);
         private final JCheckBox reliefCheck = new JCheckBox("Shaded relief, factor");
@@ -292,7 +309,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                     super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                     String name = (String) value;
                     String table = CUSTOM.equals(name) ? tableArea.getText() : tableString(name);
-                    setIcon(table == null ? null : new GradientIcon(RasterStyleUtilities.getColortableColors(table)));
+                    setIcon(table == null ? null : new GradientIcon(previewColors(name, table)));
                     setIconTextGap(8);
                     return this;
                 }
@@ -311,8 +328,21 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                                 + " million cells, at a low resolution, as from an overview");
             }
             fromDataButton.addActionListener(e -> readRangeFromData());
-            tableArea.setToolTipText("<html>One color per line, as <code>r g b</code>, spread on the range, or with its value, "
-                    + "as <code>value r g b</code>.<br>Editing the colors makes a custom colortable.</html>");
+            classificationCombo.setToolTipText("<html>Continuous: the colors spread on a range of values.<br>Unique values: "
+                    + "each distinct value, as a class of a land cover, gets its own color, at most " + MAX_UNIQUE_VALUES
+                    + " of them.</html>");
+            classificationCombo.addActionListener(e -> onClassificationChanged());
+            readValuesButton.setToolTipText("<html>Read the distinct values of the raster and give them the colors of the "
+                    + "colortable.<br>The rasters larger than " + GridCoverageNwwLayer.EXACT_STATISTICS_MAX_CELLS / 1_000_000
+                    + " million cells" + (remote ? " and the remote ones" : "")
+                    + " are read at a low resolution:<br>the classes covering few cells can be missing.</html>");
+            readValuesButton.addActionListener(e -> readUniqueValues(true));
+            readValuesButton.setVisible(false);
+            importButton.setToolTipText("<html>Read the classes from a CSV or a properties file, one per line, as<br>"
+                    + "<code>value,label</code>, <code>value,r,g,b,label</code>, <code>value,label,#rrggbb</code> or "
+                    + "<code>value=label</code>.<br>The classes without a color get the colors of the colortable.</html>");
+            importButton.addActionListener(e -> importClasses());
+            importButton.setVisible(false);
             reliefCheck.addActionListener(e -> reliefSpinner.setEnabled(reliefCheck.isSelected()));
 
             JPanel content = new JPanel(new GridBagLayout());
@@ -345,6 +375,13 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             c.gridy = 2;
             c.gridx = 0;
             c.fill = GridBagConstraints.NONE;
+            content.add(new JLabel("Classes"), c);
+            c.gridx = 1;
+            c.gridwidth = 3;
+            content.add(classificationCombo, c);
+            c.gridwidth = 1;
+            c.gridy = 3;
+            c.gridx = 0;
             content.add(new JLabel("Min"), c);
             c.gridx = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
@@ -358,16 +395,18 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             c.fill = GridBagConstraints.HORIZONTAL;
             c.weightx = 1;
             content.add(maxField, c);
-            c.gridy = 3;
+            c.gridy = 4;
             c.gridx = 1;
             c.gridwidth = 3;
             c.weightx = 0;
             c.fill = GridBagConstraints.NONE;
             JPanel rangePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
             rangePanel.add(fromDataButton);
+            rangePanel.add(readValuesButton);
+            rangePanel.add(importButton);
             rangePanel.add(rangeNote);
             content.add(rangePanel, c);
-            c.gridy = 4;
+            c.gridy = 5;
             c.gridx = 0;
             c.gridwidth = 4;
             c.weightx = 1;
@@ -376,7 +415,7 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             JScrollPane tableScroll = new JScrollPane(tableArea);
             tableScroll.setBorder(BorderFactory.createTitledBorder("Colors"));
             content.add(tableScroll, c);
-            c.gridy = 5;
+            c.gridy = 6;
             c.weighty = 0;
             c.fill = GridBagConstraints.NONE;
             JPanel reliefPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -395,6 +434,27 @@ public class RasterStyleLayerTool implements INwwLayerTool {
          */
         private static Style styleOf( Layer layer ) {
             return layer instanceof TemporalRasterNwwLayer t ? t.getStyle() : ((GridCoverageNwwLayer) layer).getStyle();
+        }
+
+        /**
+         * @return the colors of a colortable for its preview: the custom classes of a unique values
+         *          style, with their labels, are read as classes.
+         */
+        private List<Color> previewColors( String name, String table ) {
+            if (CUSTOM.equals(name) && isUniqueValues()) {
+                try {
+                    List<Color> colors = new ArrayList<>();
+                    for( ValueClass valueClass : RasterStyleUtilities.parseValueClasses(table) ) {
+                        if (valueClass.color() != null) {
+                            colors.add(valueClass.color());
+                        }
+                    }
+                    return colors;
+                } catch (IllegalArgumentException e) {
+                    // not classes
+                }
+            }
+            return RasterStyleUtilities.getColortableColors(table);
         }
 
         private static String tableString( String name ) {
@@ -434,15 +494,29 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                 }
             }
             ColorMap colorMap = symbolizer == null ? null : symbolizer.getColorMap();
-            String customTable = colorMap == null ? "" : RasterStyleUtilities.toColortableString(colorMap);
-            double[] range = colorMap == null ? null : RasterStyleUtilities.getColorMapRange(colorMap);
+            boolean unique = RasterStyleUtilities.isUniqueValues(colorMap);
+            String customTable;
+            if (colorMap == null) {
+                customTable = "";
+            } else if (unique) {
+                customTable = RasterStyleUtilities.toUniqueValuesString(RasterStyleUtilities.getValueClasses(colorMap));
+            } else {
+                customTable = RasterStyleUtilities.toColortableString(colorMap);
+            }
+            double[] range = colorMap == null || unique ? null : RasterStyleUtilities.getColorMapRange(colorMap);
             boolean known = ruleName != null && tableString(ruleName) != null;
 
             updating = true;
             try {
                 int band = RasterStyleUtilities.getGrayChannel(style);
                 bandCombo.setSelectedIndex(band < 0 || band >= info.bandsCount() ? 0 : band);
-                if (known) {
+                classificationCombo.setSelectedItem(unique ? UNIQUE_VALUES : CONTINUOUS);
+                if (unique) {
+                    // the classes as they are, the colortable they took their colors from if known
+                    fillTables(!known);
+                    tableCombo.setSelectedItem(known ? ruleName : CUSTOM);
+                    tableArea.setText(customTable);
+                } else if (known) {
                     fillTables(false);
                     tableCombo.setSelectedItem(ruleName);
                     tableArea.setText(tableString(ruleName));
@@ -487,18 +561,70 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         }
 
         private boolean hasValues() {
-            return RasterStyleUtilities.colortableHasValues(tableArea.getText());
+            return isUniqueValues() || RasterStyleUtilities.colortableHasValues(tableArea.getText());
+        }
+
+        private boolean isUniqueValues() {
+            return UNIQUE_VALUES.equals(classificationCombo.getSelectedItem());
         }
 
         /**
-         * The range is used only by the colortables without values.
+         * The range is used only by the continuous colortables without values.
          */
         private void updateRangeState() {
+            boolean unique = isUniqueValues();
             boolean usesRange = !hasValues();
             minField.setEnabled(usesRange);
             maxField.setEnabled(usesRange);
             fromDataButton.setEnabled(usesRange);
-            rangeNote.setText(usesRange ? " " : "The colortable gives the values of its colors.");
+            fromDataButton.setVisible(!unique);
+            readValuesButton.setVisible(unique);
+            importButton.setVisible(unique);
+            if (unique) {
+                rangeNote.setText(" ");
+                tableArea.setToolTipText("<html>One class per line, as <code>value r g b label</code>, the label being "
+                        + "optional.<br>The values not listed are not drawn.</html>");
+            } else {
+                rangeNote.setText(usesRange ? " " : "The colortable gives the values of its colors.");
+                tableArea.setToolTipText("<html>One color per line, as <code>r g b</code>, spread on the range, or with its "
+                        + "value, as <code>value r g b</code>.<br>Editing the colors makes a custom colortable.</html>");
+            }
+        }
+
+        /**
+         * Switching to unique values reads the values of the raster, back to continuous shows the
+         * colortable again.
+         */
+        private void onClassificationChanged() {
+            if (updating) {
+                return;
+            }
+            String name = (String) tableCombo.getSelectedItem();
+            if (isUniqueValues()) {
+                updateRangeState();
+                // the text is a continuous colortable, not classes with labels
+                readUniqueValues(false);
+                return;
+            }
+            if (name != null && !CUSTOM.equals(name)) {
+                tableArea.setText(tableString(name));
+                tableArea.setCaretPosition(0);
+            } else {
+                // the custom classes have no colortable to go back to: start from the elevation one
+                updating = true;
+                try {
+                    fillTables(false);
+                    tableCombo.setSelectedItem(EColorTables.elev.name());
+                    tableArea.setText(tableString(EColorTables.elev.name()));
+                    tableArea.setCaretPosition(0);
+                } finally {
+                    updating = false;
+                }
+            }
+            updateRangeState();
+            if (minField.getText().isBlank() || maxField.getText().isBlank()) {
+                readRangeFromData();
+            }
         }
 
         private void onTableChanged() {
@@ -506,6 +632,22 @@ public class RasterStyleLayerTool implements INwwLayerTool {
                 return;
             }
             String name = (String) tableCombo.getSelectedItem();
+            if (isUniqueValues()) {
+                // the same classes with the colors of the new colortable
+                if (name != null && !CUSTOM.equals(name)) {
+                    try {
+                        List<ValueClass> classes = RasterStyleUtilities.parseValueClasses(tableArea.getText());
+                        if (classes.isEmpty()) {
+                            readUniqueValues(true);
+                        } else {
+                            showClasses(recolor(classes, true));
+                        }
+                    } catch (IllegalArgumentException e) {
+                        setStatus(e.getMessage(), true);
+                    }
+                }
+                return;
+            }
             if (name != null && !CUSTOM.equals(name)) {
                 tableArea.setText(tableString(name));
                 tableArea.setCaretPosition(0);
@@ -525,8 +667,146 @@ public class RasterStyleLayerTool implements INwwLayerTool {
             }
             minField.setText("");
             maxField.setText("");
-            if (!hasValues()) {
+            if (isUniqueValues()) {
+                readUniqueValues(true);
+            } else if (!hasValues()) {
                 readRangeFromData();
+            }
+        }
+
+        /**
+         * @return the colors of the colortable chosen, or, for the custom one, of the colors text.
+         */
+        private String colorsSource() {
+            String name = (String) tableCombo.getSelectedItem();
+            return name == null || CUSTOM.equals(name) ? tableArea.getText() : tableString(name);
+        }
+
+        /**
+         * Give classes the colors of the colortable.
+         *
+         * @param all if <code>true</code> all the classes get new colors, else only the ones
+         *          without a color.
+         */
+        private List<ValueClass> recolor( List<ValueClass> classes, boolean all ) {
+            Color[] colors = RasterStyleUtilities.getClassColors(colorsSource(), classes.size());
+            List<ValueClass> recolored = new ArrayList<>();
+            for( int i = 0; i < classes.size(); i++ ) {
+                ValueClass valueClass = classes.get(i);
+                recolored.add(all || valueClass.color() == null ? valueClass.withColor(colors[i]) : valueClass);
+            }
+            return recolored;
+        }
+
+        private void showClasses( List<ValueClass> classes ) {
+            tableArea.setText(RasterStyleUtilities.toUniqueValuesString(classes));
+            tableArea.setCaretPosition(0);
+        }
+
+        /**
+         * Put the distinct values of the band of the raster in the colors text, with the colors of
+         * the colortable. The large and remote rasters are read at a low resolution.
+         *
+         * @param keepLabels if <code>true</code>, the values keep the labels of the classes of the
+         *          colors text.
+         */
+        private void readUniqueValues( boolean keepLabels ) {
+            readValuesButton.setEnabled(false);
+            setStatus(temporal != null
+                    ? "Reading the values of all the " + temporal.getFiles().size() + " dates, it can take a while..."
+                    : "Reading the values...", false);
+            int band = selectedBand();
+            int request = ++rangeRequest;
+            Layer current = context.getLatest(layer);
+            new Thread(() -> {
+                try {
+                    double[] values;
+                    boolean lowResolution;
+                    if (temporal != null) {
+                        values = TemporalRasterNwwLayer.readUniqueValues(temporal.getFiles(), band, MAX_UNIQUE_VALUES,
+                                Integer.MAX_VALUE);
+                        lowResolution = GridCoverageNwwLayer.isLargeRaster(temporal.getCurrentFile());
+                    } else if (remote) {
+                        values = GridCoverageNwwLayer.readLowResolutionUniqueValues(
+                                ((GridCoverageNwwLayer) current).getRemoteReader(), band, MAX_UNIQUE_VALUES);
+                        lowResolution = true;
+                    } else {
+                        lowResolution = GridCoverageNwwLayer.isLargeRaster(source.file());
+                        values = GridCoverageNwwLayer.readUniqueValues(source.file(), band, MAX_UNIQUE_VALUES);
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        if (request != rangeRequest) {
+                            return;
+                        }
+                        readValuesButton.setEnabled(true);
+                        if (values.length == 0) {
+                            setStatus("The raster has no valid values.", true);
+                        } else if (values.length > MAX_UNIQUE_VALUES) {
+                            setStatus("More than " + MAX_UNIQUE_VALUES + " distinct values: use a continuous colortable.",
+                                    true);
+                        } else {
+                            showClasses(recolor(withKnownLabels(values, keepLabels), true));
+                            setStatus(values.length + " values" + (lowResolution
+                                    ? ", read at a low resolution: the classes covering few cells can be missing."
+                                    : "."), false);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    SwingUtilities.invokeLater(() -> {
+                        if (request != rangeRequest) {
+                            return;
+                        }
+                        readValuesButton.setEnabled(true);
+                        setStatus("Unable to read the values: " + e.getMessage(), true);
+                    });
+                }
+            }, "hm-raster-style-values").start();
+        }
+
+        /**
+         * @return the values as classes, optionally keeping the labels of the classes in the colors
+         *          text.
+         */
+        private List<ValueClass> withKnownLabels( double[] values, boolean keepLabels ) {
+            Map<Double, String> labels = new HashMap<>();
+            if (keepLabels) {
+                try {
+                    for( ValueClass valueClass : RasterStyleUtilities.parseValueClasses(tableArea.getText()) ) {
+                        labels.put(valueClass.value(), valueClass.label());
+                    }
+                } catch (IllegalArgumentException e) {
+                    // not classes
+                }
+            }
+            List<ValueClass> classes = new ArrayList<>();
+            for( double value : values ) {
+                classes.add(new ValueClass(value, null, labels.get(value)));
+            }
+            return classes;
+        }
+
+        /**
+         * Read the classes from a CSV or properties file, the ones without a color get the colors of
+         * the colortable.
+         */
+        private void importClasses() {
+            JFileChooser chooser = new JFileChooser(source != null && source.file() != null ? source.file().getParentFile() : null);
+            chooser.setFileFilter(new FileNameExtensionFilter("Classes (csv, txt, properties)", "csv", "txt", "properties"));
+            if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+                return;
+            }
+            File file = chooser.getSelectedFile();
+            try {
+                List<ValueClass> classes = RasterStyleUtilities.parseValueClasses(FileUtilities.readFile(file));
+                if (classes.isEmpty()) {
+                    setStatus("No classes in " + file.getName(), true);
+                    return;
+                }
+                showClasses(recolor(classes, false));
+                setStatus(classes.size() + " classes read from " + file.getName(), false);
+            } catch (Exception e) {
+                setStatus("Unable to read the classes: " + e.getMessage(), true);
             }
         }
 
@@ -627,6 +907,26 @@ public class RasterStyleLayerTool implements INwwLayerTool {
         private Style buildStyle() throws Exception {
             String table = tableArea.getText();
             String name = (String) tableCombo.getSelectedItem();
+            if (isUniqueValues()) {
+                List<ValueClass> classes = RasterStyleUtilities.parseValueClasses(table);
+                if (classes.size() > MAX_UNIQUE_VALUES) {
+                    throw new IllegalArgumentException("At most " + MAX_UNIQUE_VALUES + " unique values.");
+                }
+                Style style = RasterStyleUtilities.createStyleForUniqueValues(classes, opacity);
+                Rule rule = style.featureTypeStyles().get(0).rules().get(0);
+                // the colortable the colors came from, the classes are read from the color map
+                rule.setName(name == null ? CUSTOM : name);
+                if (reliefCheck.isSelected()) {
+                    ShadedRelief relief = new ShadedReliefImpl();
+                    relief.setBrightnessOnly(false);
+                    relief.setReliefFactor(ff.literal(((Number) reliefSpinner.getValue()).doubleValue()));
+                    ((RasterSymbolizer) rule.symbolizers().get(0)).setShadedRelief(relief);
+                }
+                if (info.bandsCount() > 1) {
+                    RasterStyleUtilities.setGrayChannel(style, selectedBand());
+                }
+                return style;
+            }
             if (name == null || CUSTOM.equals(name) || !table.trim().equals(tableString(name).trim())) {
                 // edited colors
                 name = CUSTOM;

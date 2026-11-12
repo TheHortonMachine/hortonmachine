@@ -24,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.imagen.RasterFactory;
@@ -39,11 +40,13 @@ import org.geotools.map.GridReaderLayer;
 import org.geotools.map.MapContent;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
 import org.geotools.renderer.lite.StreamingRenderer;
+import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.SldUtilities;
 import org.hortonmachine.gears.utils.colors.DefaultTables;
 import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.colors.RasterStyleUtilities;
+import org.hortonmachine.gears.utils.colors.RasterStyleUtilities.ValueClass;
 
 public class TestRasterStyleUtilities extends HMTestCase {
 
@@ -160,6 +163,111 @@ public class TestRasterStyleUtilities extends HMTestCase {
             return image;
         } finally {
             mapContent.dispose();
+        }
+    }
+
+    public void testParseValueClasses() throws Exception {
+        // the text of the style panel, with labels holding commas and colons
+        List<ValueClass> classes = RasterStyleUtilities.parseValueClasses("# comment\n1 255 0 0 Forest, mixed\n2 0 0 255\n3 0 255 0 Note: wet\n");
+        assertEquals(List.of(new ValueClass(1, Color.RED, "Forest, mixed"), new ValueClass(2, Color.BLUE, null),
+                new ValueClass(3, Color.GREEN, "Note: wet")), classes);
+
+        // csv with a header, labels only and colors as hex or components
+        classes = RasterStyleUtilities.parseValueClasses("value,label\n10,Urban\n20,\"Water, lakes\",#0000ff\n30,0,255,0,Grass\n");
+        assertEquals(List.of(new ValueClass(10, null, "Urban"), new ValueClass(20, Color.BLUE, "Water, lakes"),
+                new ValueClass(30, Color.GREEN, "Grass")), classes);
+
+        // semicolons and tabs
+        classes = RasterStyleUtilities.parseValueClasses("1;Rock\n2\tIce sheet\n");
+        assertEquals(List.of(new ValueClass(1, null, "Rock"), new ValueClass(2, null, "Ice sheet")), classes);
+
+        // properties
+        classes = RasterStyleUtilities.parseValueClasses("! comment\n1=Forest\n2 = #ff0000 Burnt area\n3: Bare\n");
+        assertEquals(List.of(new ValueClass(1, null, "Forest"), new ValueClass(2, Color.RED, "Burnt area"),
+                new ValueClass(3, null, "Bare")), classes);
+
+        try {
+            RasterStyleUtilities.parseValueClasses("1 255 0 0\nnot a value\n");
+            fail("only the first line can be a header");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
+    }
+
+    public void testUniqueValuesRoundTrip() throws Exception {
+        List<ValueClass> classes = List.of(new ValueClass(1, Color.RED, "Forest"), new ValueClass(5, Color.BLUE, null),
+                new ValueClass(7.5, Color.GREEN, "Wet, meadow"));
+        Style style = RasterStyleUtilities.createStyleForUniqueValues(classes, 1.0);
+        ColorMap map = colorMap(style);
+        assertTrue(RasterStyleUtilities.isUniqueValues(map));
+        List<ValueClass> read = RasterStyleUtilities.getValueClasses(map);
+        assertEquals(classes, read);
+        String text = RasterStyleUtilities.toUniqueValuesString(read);
+        assertEquals("1 255 0 0 Forest\n5 0 0 255\n7.5 0 255 0 Wet, meadow\n", text);
+        assertEquals(classes, RasterStyleUtilities.parseValueClasses(text));
+
+        assertFalse(RasterStyleUtilities.isUniqueValues(colorMap(RasterStyleUtilities.createStyleForColortable(
+                EColorTables.elev.name(), 0, 100, 1.0))));
+    }
+
+    public void testClassColors() throws Exception {
+        String table = "255 0 0\n0 255 0\n0 0 255\n";
+        // fewer classes than colors: the colors of the table, spread
+        assertEquals(List.of(Color.RED, Color.BLUE), List.of(RasterStyleUtilities.getClassColors(table, 2)));
+        // more classes: interpolated
+        Color[] colors = RasterStyleUtilities.getClassColors(table, 5);
+        assertEquals(Color.RED, colors[0]);
+        assertEquals(new Color(128, 128, 0), colors[1]);
+        assertEquals(Color.GREEN, colors[2]);
+        assertEquals(Color.BLUE, colors[4]);
+    }
+
+    public void testUniqueValuesDrawing() throws Exception {
+        // classes 1, 2 and 3 in columns, 3 is not in the style
+        int size = 3;
+        WritableRaster raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_FLOAT, size, size, 1, null);
+        for( int y = 0; y < size; y++ ) {
+            for( int x = 0; x < size; x++ ) {
+                raster.setSample(x, y, 0, x + 1);
+            }
+        }
+        ReferencedEnvelope envelope = new ReferencedEnvelope(0, size, 0, size, DefaultGeographicCRS.WGS84);
+        GridCoverage2D coverage = new GridCoverageFactory().create("classes", raster, envelope);
+        File tiff = File.createTempFile("hm_uniquevalues_", ".tif");
+        GeoTiffReader reader = null;
+        try {
+            GeoTiffWriter writer = new GeoTiffWriter(tiff);
+            writer.write(coverage, null);
+            writer.dispose();
+            reader = new GeoTiffReader(tiff);
+            Style style = RasterStyleUtilities
+                    .createStyleForUniqueValues(RasterStyleUtilities.parseValueClasses("1 255 0 0 one\n2 0 0 255 two\n"), 1.0);
+            BufferedImage image = draw(reader, style, envelope);
+            assertEquals(Color.RED, new Color(image.getRGB(0, 1)));
+            assertEquals(Color.BLUE, new Color(image.getRGB(1, 1)));
+            assertEquals("not listed, not drawn", 0, new Color(image.getRGB(2, 1), true).getAlpha());
+        } finally {
+            if (reader != null) {
+                reader.dispose();
+            }
+            tiff.delete();
+        }
+    }
+
+    public void testRasterUniqueValues() throws Exception {
+        int size = 4;
+        WritableRaster raster = RasterFactory.createBandedRaster(DataBuffer.TYPE_FLOAT, size, size, 1, null);
+        for( int y = 0; y < size; y++ ) {
+            for( int x = 0; x < size; x++ ) {
+                raster.setSample(x, y, 0, x == 0 ? -9999 : x * 10);
+            }
+        }
+        ReferencedEnvelope envelope = new ReferencedEnvelope(0, size, 0, size, DefaultGeographicCRS.WGS84);
+        GridCoverage2D coverage = new GridCoverageFactory().create("values", raster, envelope);
+        try (HMRaster hmRaster = HMRaster.fromGridCoverage(coverage)) {
+            assertTrue(Arrays.equals(new double[]{10, 20, 30}, hmRaster.getUniqueValues(10)));
+            // more than the given count: the scan stops with one value more
+            assertEquals(3, hmRaster.getUniqueValues(2).length);
         }
     }
 

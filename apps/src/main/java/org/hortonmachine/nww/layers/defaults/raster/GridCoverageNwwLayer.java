@@ -553,6 +553,56 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
      */
     public static double[] readLowResolutionStatistics( AbstractGridCoverage2DReader coverageReader, int band )
             throws Exception {
+        try (HMRaster raster = readLowResolution(coverageReader, band)) {
+            return raster.getStatistics();
+        }
+    }
+
+    /**
+     * The distinct values of a band of a raster file, as {@link HMRaster#getUniqueValues(int)}:
+     * reading all the cells for the rasters up to {@link #EXACT_STATISTICS_MAX_CELLS}, else at a
+     * low resolution, as {@link #readLowResolutionUniqueValues(AbstractGridCoverage2DReader, int, int)}.
+     *
+     * @param rasterFile the raster file.
+     * @param band the 0 based index of the band.
+     * @param maxCount the most distinct values of interest.
+     * @return the values, as {@link HMRaster#getUniqueValues(int)}.
+     * @throws Exception if the raster can't be read.
+     */
+    public static double[] readUniqueValues( File rasterFile, int band, int maxCount ) throws Exception {
+        AbstractGridCoverage2DReader coverageReader = fileReader(rasterFile);
+        try {
+            if (isLargeRaster(coverageReader)) {
+                return readLowResolutionUniqueValues(coverageReader, band, maxCount);
+            }
+        } finally {
+            coverageReader.dispose();
+        }
+        try (HMRaster raster = HMRaster.fromFile(rasterFile, band == 0 ? null : band)) {
+            return raster.getUniqueValues(maxCount);
+        }
+    }
+
+    /**
+     * The distinct values of a band of a raster read at a low resolution, as from an overview: the
+     * classes covering few cells can be missing, and overviews made by averaging have values that
+     * are not classes.
+     *
+     * @param band the 0 based index of the band.
+     * @param maxCount the most distinct values of interest.
+     * @return the values, as {@link HMRaster#getUniqueValues(int)}.
+     */
+    public static double[] readLowResolutionUniqueValues( AbstractGridCoverage2DReader coverageReader, int band, int maxCount )
+            throws Exception {
+        try (HMRaster raster = readLowResolution(coverageReader, band)) {
+            return raster.getUniqueValues(maxCount);
+        }
+    }
+
+    /**
+     * @return a band of the raster read at most {@link #STATISTICS_READ_SIZE} cells wide.
+     */
+    private static HMRaster readLowResolution( AbstractGridCoverage2DReader coverageReader, int band ) throws Exception {
         GridEnvelope gridRange = coverageReader.getOriginalGridRange();
         int cols = gridRange.getSpan(0);
         int rows = gridRange.getSpan(1);
@@ -562,9 +612,7 @@ public class GridCoverageNwwLayer extends BasicMercatorTiledImageLayer implement
         ParameterValue<GridGeometry2D> gridGeometry = AbstractGridFormat.READ_GRIDGEOMETRY2D.createValue();
         gridGeometry.setValue(new GridGeometry2D(new GridEnvelope2D(0, 0, readCols, readRows), coverageReader.getOriginalEnvelope()));
         GridCoverage2D coverage = coverageReader.read(new GeneralParameterValue[]{gridGeometry});
-        try (HMRaster raster = HMRaster.fromGridCoverage(coverage, band == 0 ? null : band)) {
-            return raster.getStatistics();
-        }
+        return HMRaster.fromGridCoverage(coverage, band == 0 ? null : band);
     }
 
     /**
