@@ -99,6 +99,7 @@ import org.hortonmachine.nww.layers.defaults.spatialite.SpatialitePolygonLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionLinesLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPointsLayer;
 import org.hortonmachine.nww.layers.defaults.vector.FeatureCollectionPolygonLayer;
+import org.hortonmachine.nww.layers.defaults.vector.DbTiledFeatureLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedShapefilesFolderNwwLayer;
 import org.hortonmachine.nww.layers.defaults.vector.ShapefilesFolderLayer;
@@ -144,6 +145,12 @@ public class NwwLayerLoader {
             new Color(0xbcbd22), // olive
             new Color(0x8c564b) // brown
     };
+
+    /**
+     * The features of a database table over which it is not loaded in memory, but read only
+     * where the map is drawn, as a {@link DbTiledFeatureLayer}.
+     */
+    public static final int STREAMING_FEATURES_THRESHOLD = 200_000;
 
     /** The points of a las file loaded by default, the sampling proposed keeps under them. */
     private static final long LAS_DEFAULT_MAX_POINTS = 20_000_000;
@@ -300,13 +307,20 @@ public class NwwLayerLoader {
 
         boolean[] selected = new boolean[names.size()];
         Arrays.fill(selected, true);
+        boolean streamAll = false;
         if (names.size() > 1) {
             TablesSelectionDialog.Result result = TablesSelectionDialog.show(wwjPanel, "Geopackage layers",
-                    "Select the layers to load from " + gpkgFile.getName() + ":", names, types, true, null, null, false);
-            if (result == null) {
+                    "Select the layers to load from " + gpkgFile.getName() + ":", names, types, true,
+                    "Read all the vector tables from the file while drawing",
+                    "The tables with more than " + STREAMING_FEATURES_THRESHOLD
+                            + " features are always read only where the map is drawn, as image tiles,"
+                            + " instead of being loaded in memory",
+                    false);
+            if (result == null || !result.hasSelection()) {
                 return;
             }
             selected = result.selected();
+            streamAll = result.optionChecked();
         }
 
         for( int i = 0; i < tilesTables.size(); i++ ) {
@@ -322,6 +336,14 @@ public class NwwLayerLoader {
                 continue;
             }
             String tableName = featureTables.get(i);
+            if (streamAll || isLargeGeopackageTable(gpkgFile, tableName)) {
+                LayerSource source = new LayerSource(gpkgFile, tableName);
+                Layer layer = createTiledLayer(source, gpkgFile.getName() + HMConstants.DB_TABLE_PATH_SEPARATOR
+                        + tableName, null, null);
+                source.attachTo(layer);
+                addLayer(layer);
+                continue;
+            }
             SimpleFeatureCollection readFC = NwwUtilities
                     .readAndReproject(gpkgFile.getAbsolutePath() + HMConstants.DB_TABLE_PATH_SEPARATOR + tableName);
             Style sldStyle = null;
@@ -337,6 +359,78 @@ public class NwwLayerLoader {
             if (layer != null) {
                 new LayerSource(gpkgFile, tableName).attachTo(layer);
             }
+        }
+    }
+
+    /**
+     * @return <code>true</code> if the table has more than {@link #STREAMING_FEATURES_THRESHOLD}
+     *          features, counted on the spatial index up to the threshold.
+     */
+    private static boolean isLargeGeopackageTable( File gpkgFile, String tableName ) throws Exception {
+        try (GeopackageCommonDb db = new GeopackageDb()) {
+            db.open(gpkgFile.getAbsolutePath());
+            return DbTiledFeatureLayer.hasMoreFeaturesThan(db, SqlName.m(tableName), STREAMING_FEATURES_THRESHOLD);
+        }
+    }
+
+    /**
+     * Load a table of a database connection as a layer reading it only where the map is drawn,
+     * as for the tables too big to be loaded in memory.
+     *
+     * @param source the source, a table of a database connection.
+     * @param name the name of the layer.
+     * @param style the style, <code>null</code> for the next of the default colors.
+     * @return the layer added.
+     * @throws Exception if the table can't be read.
+     */
+    public Layer loadTiledTable( LayerSource source, String name, Style style ) throws Exception {
+        DbTiledFeatureLayer layer = createTiledLayer(source, name, source.filter(), style);
+        source.attachTo(layer);
+        addLayer(layer);
+        return layer;
+    }
+
+    /**
+     * Make a layer reading a table only where the map is drawn.
+     *
+     * @param source the source, a geopackage table or a table of a database connection.
+     * @param name the name of the layer.
+     * @param where a SQL WHERE condition of the features, <code>null</code> for all.
+     * @param style the style, <code>null</code> for the one of the geopackage table, else the
+     *          next of the default colors.
+     * @return the layer, without the source attached and not added to the viewer.
+     */
+    private DbTiledFeatureLayer createTiledLayer( LayerSource source, String name, String where, Style style )
+            throws Exception {
+        ASpatialDb db;
+        if (source.isDatabaseTable()) {
+            db = NwwDatabaseLoader.openDb(source.connection());
+        } else {
+            db = new GeopackageDb();
+        }
+        try {
+            if (!source.isDatabaseTable()) {
+                db.open(source.file().getAbsolutePath());
+            }
+            SqlName table = SqlName.m(source.table());
+            if (style == null && db instanceof GeopackageCommonDb) {
+                String sldString = ((GeopackageCommonDb) db).getSldString(table);
+                if (sldString != null) {
+                    style = SldUtilities.getStyleFromSldString(sldString);
+                }
+            }
+            if (style == null) {
+                SimpleFeatureType schema = SpatialDbsImportUtils.tableToFeatureFCollection(db, table, 1, -1, null).getSchema();
+                if (schema == null) {
+                    throw new IllegalArgumentException("The table has no features: " + source.path());
+                }
+                style = createDefaultStyle(schema, nextDefaultColor());
+            }
+            // the layer owns the database from now on
+            return new DbTiledFeatureLayer(name, db, table, where, style);
+        } catch (Exception e) {
+            db.close();
+            throw e;
         }
     }
 
@@ -761,6 +855,14 @@ public class NwwLayerLoader {
                     "The layer is not read from a shapefile, a geopackage table or a database table: " + layer.getName());
         }
         String where = filter == null || filter.isBlank() ? null : filter.trim();
+        if (layer instanceof DbTiledFeatureLayer && (source.isGeopackageTable() || source.isDatabaseTable())) {
+            // read again only where the map is drawn, with a database of its own, since the
+            // replaced layer closes its one
+            Style tiledStyle = style != null ? style : ((DbTiledFeatureLayer) layer).getStyle();
+            DbTiledFeatureLayer replacement = createTiledLayer(source, layer.getName(), where, tiledStyle);
+            source.withFilter(where).attachTo(replacement);
+            return replacement;
+        }
         boolean rasterized = layer instanceof RasterizedFeatureCollectionLayer;
         // the style the layer has now, which may have been changed after the loading
         Style sldStyle = style != null ? style : getSldStyle(layer);
@@ -833,6 +935,8 @@ public class NwwLayerLoader {
     public static Style getSldStyle( Layer layer ) {
         if (layer instanceof RasterizedFeatureCollectionLayer) {
             return (Style) layer.getValue(RASTERIZED_STYLE_KEY);
+        } else if (layer instanceof DbTiledFeatureLayer) {
+            return ((DbTiledFeatureLayer) layer).getStyle();
         } else if (layer instanceof NwwVectorLayer) {
             return ((NwwVectorLayer) layer).getSldStyle();
         }

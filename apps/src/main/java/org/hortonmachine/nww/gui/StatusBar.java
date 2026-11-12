@@ -19,6 +19,8 @@ import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
 
+import org.hortonmachine.nww.utils.LayerActivity;
+
 import gov.nasa.worldwind.WorldWind;
 import gov.nasa.worldwind.WorldWindow;
 import gov.nasa.worldwind.event.PositionEvent;
@@ -71,6 +73,22 @@ public class StatusBar extends JPanel implements PositionListener, RenderingList
         this.add(lonDisplay);
         this.add(eleDisplay);
         this.add(heartBeat);
+
+        // the layers drawing their tiles from local data, as the database tables
+        final JLabel activity = new JLabel(" ");
+        activity.setHorizontalAlignment(SwingConstants.CENTER);
+        this.add(activity);
+        Timer activityTimer = new Timer(250, e -> {
+            String text = LayerActivity.describe();
+            if (text.isEmpty()) {
+                activity.setText(" ");
+                activity.setToolTipText(null);
+            } else {
+                activity.setText("Drawing " + text);
+                activity.setToolTipText("Layers drawing their tiles: " + text);
+            }
+        });
+        activityTimer.start();
 
         heartBeat.setHorizontalAlignment(SwingConstants.CENTER);
         heartBeat.setForeground(new java.awt.Color(255, 0, 0, 0));

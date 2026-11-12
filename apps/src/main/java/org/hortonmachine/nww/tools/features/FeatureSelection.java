@@ -26,12 +26,10 @@ import java.util.Set;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.collection.ListFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.data.simple.SimpleFeatureIterator;
 import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.prep.PreparedGeometry;
-import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
+import org.locationtech.jts.geom.GeometryFactory;
 
 import gov.nasa.worldwind.geom.Position;
 import gov.nasa.worldwind.layers.Layer;
@@ -124,12 +122,20 @@ public class FeatureSelection {
             for( SimpleFeature feature : features ) {
                 ids.add(feature.getID());
             }
-            try (SimpleFeatureIterator iterator = ((NwwFeatureLayer) replacement).getFeatureCollection().features()) {
-                while( iterator.hasNext() ) {
-                    SimpleFeature feature = iterator.next();
-                    if (ids.contains(feature.getID())) {
-                        found.add(feature);
+            // the features are looked for only where the selected ones are, so that the layers
+            // reading from a database don't read all of them
+            Envelope envelope = getEnvelope();
+            if (!envelope.isNull()) {
+                try {
+                    Geometry area = new GeometryFactory().toGeometry(envelope);
+                    for( SimpleFeature feature : ((NwwFeatureLayer) replacement).queryFeatures(area) ) {
+                        if (ids.contains(feature.getID())) {
+                            found.add(feature);
+                        }
                     }
+                } catch (IllegalStateException e) {
+                    // too many features to look among: the selection is cleared
+                    e.printStackTrace();
                 }
             }
         }
@@ -140,21 +146,10 @@ public class FeatureSelection {
      * @param collection features in longitude/latitude.
      * @param area an area in longitude/latitude.
      * @return the features whose geometry touches the area.
+     * @see NwwFeatureLayer#queryFeatures(Geometry), which reads only the features in the area
+     *          for the layers reading from a database.
      */
     public static List<SimpleFeature> query( SimpleFeatureCollection collection, Geometry area ) {
-        Envelope box = area.getEnvelopeInternal();
-        PreparedGeometry prepared = PreparedGeometryFactory.prepare(area);
-        List<SimpleFeature> found = new ArrayList<>();
-        try (SimpleFeatureIterator iterator = collection.features()) {
-            while( iterator.hasNext() ) {
-                SimpleFeature feature = iterator.next();
-                Object geometry = feature.getDefaultGeometry();
-                if (geometry instanceof Geometry && ((Geometry) geometry).getEnvelopeInternal().intersects(box)
-                        && prepared.intersects((Geometry) geometry)) {
-                    found.add(feature);
-                }
-            }
-        }
-        return found;
+        return NwwFeatureLayer.query(collection, area);
     }
 }

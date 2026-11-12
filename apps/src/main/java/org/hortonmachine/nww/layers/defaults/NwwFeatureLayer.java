@@ -17,8 +17,17 @@
  */
 package org.hortonmachine.nww.layers.defaults;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.geotools.api.data.SimpleFeatureStore;
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.prep.PreparedGeometry;
+import org.locationtech.jts.geom.prep.PreparedGeometryFactory;
 
 /**
  * A layer drawn from a feature collection, as 3D shapes or as image tiles, whose features can be
@@ -40,5 +49,39 @@ public interface NwwFeatureLayer {
      */
     default SimpleFeatureStore getFeatureStore() {
         return null;
+    }
+
+    /**
+     * The features touching an area, as for the identify and the selection. The layers reading
+     * from a database read only the features in the area.
+     *
+     * @param area an area in WGS84 longitude/latitude.
+     * @return the features whose geometry touches the area.
+     * @throws IllegalStateException if the features can't be read, as when they are too many.
+     */
+    default List<SimpleFeature> queryFeatures( Geometry area ) {
+        return query(getFeatureCollection(), area);
+    }
+
+    /**
+     * @param collection features in longitude/latitude.
+     * @param area an area in longitude/latitude.
+     * @return the features of the collection whose geometry touches the area.
+     */
+    static List<SimpleFeature> query( SimpleFeatureCollection collection, Geometry area ) {
+        Envelope box = area.getEnvelopeInternal();
+        PreparedGeometry prepared = PreparedGeometryFactory.prepare(area);
+        List<SimpleFeature> found = new ArrayList<>();
+        try (SimpleFeatureIterator iterator = collection.features()) {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                Object geometry = feature.getDefaultGeometry();
+                if (geometry instanceof Geometry && ((Geometry) geometry).getEnvelopeInternal().intersects(box)
+                        && prepared.intersects((Geometry) geometry)) {
+                    found.add(feature);
+                }
+            }
+        }
+        return found;
     }
 }

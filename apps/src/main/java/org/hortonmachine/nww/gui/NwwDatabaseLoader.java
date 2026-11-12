@@ -46,6 +46,7 @@ import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.executor.ExecutorProgressGui;
+import org.hortonmachine.nww.layers.defaults.vector.DbTiledFeatureLayer;
 import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.utils.NwwUtilities;
 import org.locationtech.jts.geom.Envelope;
@@ -191,7 +192,9 @@ public class NwwDatabaseLoader {
         TablesSelectionDialog.Result result = TablesSelectionDialog.show(wwjPanel, "Database layers",
                 "Select the tables to load from " + connection.connectionLabel + ":", names, types, false,
                 "Load only the features in the current map view",
-                "If not selected, all the features of the tables are loaded, which can take long for big tables",
+                "If not selected, all the features of the tables are loaded; the tables with more than "
+                        + NwwLayerLoader.STREAMING_FEATURES_THRESHOLD
+                        + " features are read only where the map is drawn, as image tiles",
                 false);
         if (result == null || !result.hasSelection()) {
             return;
@@ -216,6 +219,8 @@ public class NwwDatabaseLoader {
         Envelope _viewEnvelope = viewEnvelope;
         new ExecutorProgressGui(selectedTables.size()){
             private final List<ReadTable> readTables = new ArrayList<>();
+            /** The tables too big to be loaded in memory, read only where the map is drawn. */
+            private final List<DbTable> tiledTables = new ArrayList<>();
             private final List<String> problems = new ArrayList<>();
 
             @Override
@@ -226,6 +231,11 @@ public class NwwDatabaseLoader {
                         publish(new ProgressUpdate(
                                 "Reading " + table.label() + " (" + (i + 1) + "/" + selectedTables.size() + ") ...", i));
                         try {
+                            if (_viewEnvelope == null && DbTiledFeatureLayer.hasMoreFeaturesThan(db, table.sqlName(),
+                                    NwwLayerLoader.STREAMING_FEATURES_THRESHOLD)) {
+                                tiledTables.add(table);
+                                continue;
+                            }
                             SimpleFeatureCollection features = readTable(db, table, _viewEnvelope);
                             if (features == null) {
                                 problems.add(table.label() + ": no features" + (_viewEnvelope != null ? " in the map view" : ""));
@@ -254,6 +264,15 @@ public class NwwDatabaseLoader {
                     } catch (Exception e) {
                         e.printStackTrace();
                         problems.add(readTable.table().label() + ": " + e.getMessage());
+                    }
+                }
+                for( DbTable table : tiledTables ) {
+                    LayerSource source = LayerSource.ofDatabase(connection, table.label(), null, null);
+                    try {
+                        layerLoader.loadTiledTable(source, source.path(), LocalStyleStore.read(source));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        problems.add(table.label() + ": " + e.getMessage());
                     }
                 }
                 if (!problems.isEmpty()) {

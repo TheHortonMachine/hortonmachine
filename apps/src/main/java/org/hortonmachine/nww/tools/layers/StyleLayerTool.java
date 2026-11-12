@@ -37,10 +37,12 @@ import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.BorderFactory;
@@ -55,12 +57,14 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.Scrollable;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
@@ -87,6 +91,7 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.styling.visitor.DuplicatingStyleVisitor;
 import org.hortonmachine.dbs.compat.ASpatialDb;
+import org.hortonmachine.dbs.compat.HMQueryContext;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMStatement;
 import org.hortonmachine.dbs.geopackage.GeopackageCommonDb;
@@ -94,8 +99,9 @@ import org.hortonmachine.dbs.geopackage.hm.GeopackageDb;
 import org.hortonmachine.dbs.utils.SqlName;
 import org.hortonmachine.gears.spatialite.SpatialDbsImportUtils;
 import org.hortonmachine.gears.utils.SldUtilities;
-import org.hortonmachine.gears.utils.colors.ColorBrewer;
 import org.hortonmachine.gears.utils.colors.ColorUtilities;
+import org.hortonmachine.gears.utils.colors.ECategoricalPalette;
+import org.hortonmachine.gears.utils.colors.EColorTables;
 import org.hortonmachine.gears.utils.geometry.EGeometryType;
 import org.hortonmachine.gears.utils.style.LineSymbolizerWrapper;
 import org.hortonmachine.gears.utils.style.PointSymbolizerWrapper;
@@ -112,6 +118,7 @@ import org.hortonmachine.nww.gui.NwwDatabaseLoader;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
 import org.hortonmachine.nww.layers.defaults.NwwVectorLayer;
+import org.hortonmachine.nww.layers.defaults.vector.DbTiledFeatureLayer;
 import org.hortonmachine.nww.layers.defaults.vector.RasterizedFeatureCollectionLayer;
 import org.hortonmachine.nww.tools.INwwLayerTool;
 import org.hortonmachine.nww.tools.LayerSource;
@@ -149,7 +156,17 @@ import gov.nasa.worldwind.layers.Layer;
 public class StyleLayerTool implements INwwLayerTool {
 
     /** The most values that get a symbol of their own. */
-    private static final int MAX_VALUES = 100;
+    /** The values given a color by default, the others are drawn with the other values. */
+    private static final int DEFAULT_MAX_VALUES = 100;
+    /**
+     * The most values that can get a color: each feature drawn is tested against the rule of
+     * each value, so many values slow down the drawing.
+     */
+    private static final int MAX_VALUES_LIMIT = 10_000;
+    /** The values over which the drawing gets noticeably slower. */
+    private static final int MANY_VALUES = 500;
+    /** The start of the names of the palettes taken along the color tables of the rasters. */
+    private static final String RAMP_PREFIX = "Ramp: ";
 
     /** The widest fixed column of the forms kept as it is, as a gap between label and value. */
     private static final int FIXED_GAP_MAX_PIXELS = 30;
@@ -158,9 +175,20 @@ public class StyleLayerTool implements INwwLayerTool {
     private static final String UNIQUE = "Unique values";
     private static final String CUSTOM = "Custom style";
 
-    private static final String PAIRED = "Paired";
-    private static final String SET3 = "Set3";
-    private static final String MAIN = "Main colors";
+    /**
+     * @return the names of the palettes of the unique values: the categorical ones, then those
+     *          along the color tables of the rasters, for values having an order.
+     */
+    private static String[] paletteNames() {
+        List<String> names = new ArrayList<>();
+        for( ECategoricalPalette palette : ECategoricalPalette.values() ) {
+            names.add(palette.getLabel());
+        }
+        for( EColorTables table : EColorTables.values() ) {
+            names.add(RAMP_PREFIX + table.name());
+        }
+        return names.toArray(new String[0]);
+    }
 
     @Override
     public String getName() {
@@ -172,7 +200,8 @@ public class StyleLayerTool implements INwwLayerTool {
         LayerSource source = LayerSource.of(layer);
         return source != null
                 && (source.isShapefile() || source.isGeopackageTable() || source.isDatabaseTable() || source.isWebService())
-                && (layer instanceof RasterizedFeatureCollectionLayer || layer instanceof NwwVectorLayer)
+                && (layer instanceof RasterizedFeatureCollectionLayer || layer instanceof DbTiledFeatureLayer
+                        || layer instanceof NwwVectorLayer)
                 // the web service layers are styled from their features in memory
                 && (!source.isWebService() || layer instanceof NwwFeatureLayer);
     }
@@ -518,7 +547,9 @@ public class StyleLayerTool implements INwwLayerTool {
         private final JPanel singleHolder = new JPanel(new BorderLayout());
 
         private final JComboBox<String> fieldCombo = new JComboBox<>();
-        private final JComboBox<String> paletteCombo = new JComboBox<>(new String[]{PAIRED, SET3, MAIN});
+        private final JComboBox<String> paletteCombo = new JComboBox<>(paletteNames());
+        private final JSpinner maxValuesSpinner = new JSpinner(
+                new SpinnerNumberModel(DEFAULT_MAX_VALUES, 1, MAX_VALUES_LIMIT, 50));
         private final DefaultTableModel valuesModel = new DefaultTableModel(new String[]{"Color", "Value", "Features"}, 0){
             private static final long serialVersionUID = 1L;
 
@@ -532,6 +563,15 @@ public class StyleLayerTool implements INwwLayerTool {
         private final JCheckBox otherCheck = new JCheckBox("Draw the other values");
         private final JButton otherEditButton = new JButton("Edit...");
         private final JLabel valuesStatus = new JLabel(" ");
+
+        /** Shown while the values of a field are counted, which takes long on big tables. */
+        private final JPanel busyPanel = new JPanel(new BorderLayout(6, 0));
+        private final JLabel busyLabel = new JLabel(" ");
+        private final Timer busyTimer = new Timer(1000, null);
+        /** Increased at each counting started or canceled: the results of the older ones are dropped. */
+        private int valuesGeneration = 0;
+        /** The query counting the values, to cancel it, <code>null</code> if none runs. */
+        private volatile HMQueryContext valuesQuery;
 
         private final JCheckBox labelsCheck = new JCheckBox("Labels from");
         private final JComboBox<String> labelFieldCombo = new JComboBox<>();
@@ -559,6 +599,19 @@ public class StyleLayerTool implements INwwLayerTool {
             modePanel.add(modeCombo);
             modeCombo.addActionListener(e -> onModeChanged());
 
+            JProgressBar busyBar = new JProgressBar();
+            busyBar.setIndeterminate(true);
+            JButton busyCancel = new JButton("Cancel");
+            busyCancel.addActionListener(e -> cancelValueCounts());
+            busyPanel.setBorder(BorderFactory.createEmptyBorder(4, 4, 0, 4));
+            busyPanel.add(busyLabel, BorderLayout.NORTH);
+            busyPanel.add(busyBar, BorderLayout.CENTER);
+            busyPanel.add(busyCancel, BorderLayout.EAST);
+            busyPanel.setVisible(false);
+            JPanel northPanel = new JPanel(new BorderLayout());
+            northPanel.add(modePanel, BorderLayout.NORTH);
+            northPanel.add(busyPanel, BorderLayout.CENTER);
+
             cardsPanel.add(singleHolder, SINGLE);
             cardsPanel.add(uniquePanel(), UNIQUE);
             cardsPanel.add(customPanel(), CUSTOM);
@@ -574,7 +627,7 @@ public class StyleLayerTool implements INwwLayerTool {
             scroll.setBorder(BorderFactory.createEmptyBorder());
             scroll.getVerticalScrollBar().setUnitIncrement(16);
 
-            add(modePanel, BorderLayout.NORTH);
+            add(northPanel, BorderLayout.NORTH);
             add(scroll, BorderLayout.CENTER);
             add(buttonsPanel(), BorderLayout.SOUTH);
 
@@ -770,11 +823,22 @@ public class StyleLayerTool implements INwwLayerTool {
                 return;
             }
             Object mode = modeCombo.getSelectedItem();
-            if (SINGLE.equals(mode) && rules.getKind() != StyleRules.Kind.SINGLE) {
-                TextSymbolizer label = currentLabel();
-                StyleRules single = StyleRules.single(templateRule());
-                single.setLabel(label);
-                setRules(single);
+            if (!UNIQUE.equals(mode)) {
+                // a counting started for the unique values is not needed any more
+                stopValueCounts();
+            }
+            if (SINGLE.equals(mode)) {
+                if (rules.getKind() != StyleRules.Kind.SINGLE) {
+                    TextSymbolizer label = currentLabel();
+                    StyleRules single = StyleRules.single(templateRule());
+                    single.setLabel(label);
+                    setRules(single);
+                } else {
+                    // back from the choice of the field of the unique values
+                    showCard(SINGLE);
+                }
+            } else if (CUSTOM.equals(mode)) {
+                showCard(CUSTOM);
             } else if (UNIQUE.equals(mode) && rules.getKind() != StyleRules.Kind.UNIQUE_VALUES) {
                 if (fieldCombo.getItemCount() == 0) {
                     statusLabel.setText("The data have no fields to classify.");
@@ -783,8 +847,36 @@ public class StyleLayerTool implements INwwLayerTool {
                     updating = false;
                     return;
                 }
-                classify();
+                // the values are counted once the field is chosen: counting those of a field
+                // not wanted can take long on big tables
+                showFieldChoice("Choose the field whose values get a color each.");
             }
+        }
+
+        /**
+         * Show the unique values with no field chosen yet, the style unchanged until one is.
+         *
+         * @param message the text shown in place of the values.
+         */
+        private void showFieldChoice( String message ) {
+            updating = true;
+            try {
+                fieldCombo.setSelectedIndex(-1);
+                valuesModel.setRowCount(0);
+                rowRules.clear();
+                otherEditButton.setEnabled(false);
+            } finally {
+                updating = false;
+            }
+            valuesStatus.setForeground(UIManager.getColor("Label.foreground"));
+            valuesStatus.setText(message);
+            showCard(UNIQUE);
+        }
+
+        private void showCard( String card ) {
+            cards.show(cardsPanel, card);
+            cardsPanel.revalidate();
+            cardsPanel.repaint();
         }
 
         /**
@@ -794,6 +886,9 @@ public class StyleLayerTool implements INwwLayerTool {
             String field = (String) fieldCombo.getSelectedItem();
             if (field != null) {
                 loadValueCounts(field, true);
+            } else {
+                valuesStatus.setForeground(UIManager.getColor("Label.foreground"));
+                valuesStatus.setText("Choose the field whose values get a color each.");
             }
         }
 
@@ -805,44 +900,155 @@ public class StyleLayerTool implements INwwLayerTool {
          *          the counts are shown.
          */
         private void loadValueCounts( String field, boolean classify ) {
+            // a counting still running is not needed any more
+            HMQueryContext previous = valuesQuery;
+            if (previous != null) {
+                previous.cancel();
+            }
+            int generation = ++valuesGeneration;
+            HMQueryContext query = new HMQueryContext(0);
+            valuesQuery = query;
+            showBusy("Counting the values of " + field + " in all the features");
             valuesStatus.setText("Reading the values of " + field + "...");
+            Layer currentLayer = context.getLatest(layer);
             new Thread(() -> {
                 try {
-                    ValueCounts counts = readValueCounts(source, context.getLatest(layer), field);
+                    // in the context, to cancel the query from the panel
+                    ValueCounts counts = query.run(() -> readValueCounts(source, currentLayer, field));
                     SwingUtilities.invokeLater(() -> {
+                        if (generation != valuesGeneration) {
+                            // canceled, or replaced by the counting of another field
+                            return;
+                        }
+                        hideBusy();
                         valueCounts = counts;
                         if (classify) {
                             List<Object> values = new ArrayList<>(counts.counts().keySet());
-                            boolean tooMany = values.size() > MAX_VALUES;
-                            List<Object> classified = tooMany ? values.subList(0, MAX_VALUES) : values;
+                            int maxValues = (Integer) maxValuesSpinner.getValue();
+                            boolean tooMany = values.size() > maxValues;
+                            List<Object> classified = tooMany ? mostFrequent(counts, maxValues) : values;
                             TextSymbolizer label = currentLabel();
                             StyleRules unique = StyleRules.uniqueValues(templateRule(), field, classified,
                                     palette(classified.size()), otherCheck.isSelected() || tooMany || counts.nullCount() > 0);
                             unique.setLabel(label);
                             setRules(unique);
+                            if (tooMany) {
+                                statusLabel.setText(String.format(Locale.ROOT,
+                                        "%,d values: the %,d most frequent get a color, the others are drawn as other values. "
+                                                + "Raise the max to color more.",
+                                        values.size(), maxValues));
+                            } else if (classified.size() > MANY_VALUES) {
+                                statusLabel.setText(String.format(Locale.ROOT,
+                                        "%,d values: the drawing is slower with many values.", classified.size()));
+                            }
                         } else {
                             fillValuesTable();
                         }
                     });
                 } catch (Exception e) {
+                    if (query.isCanceled()) {
+                        // the query interrupted by the cancel
+                        return;
+                    }
                     e.printStackTrace();
                     SwingUtilities.invokeLater(() -> {
+                        if (generation != valuesGeneration) {
+                            return;
+                        }
+                        hideBusy();
+                        statusLabel.setText("Unable to read the values of " + field + ": " + e.getMessage());
+                        if (classify && rules.getKind() != StyleRules.Kind.UNIQUE_VALUES) {
+                            // another field can be chosen
+                            showFieldChoice("Unable to read the values of " + field + ".");
+                        }
                         valuesStatus.setForeground(errorColor());
                         valuesStatus.setText("Unable to read the values: " + e.getMessage());
                     });
+                } finally {
+                    if (valuesQuery == query) {
+                        valuesQuery = null;
+                    }
                 }
             }, "hm-style-values").start();
         }
 
+        /**
+         * Cancel the counting of the values from its button: the style is left as it was, and
+         * another field can be chosen.
+         */
+        private void cancelValueCounts() {
+            stopValueCounts();
+            statusLabel.setText("Counting of the values canceled.");
+            if (rules.getKind() == StyleRules.Kind.UNIQUE_VALUES) {
+                // the values of the style as they were, without new counts
+                fillValuesTable();
+            } else {
+                showFieldChoice("Counting canceled: choose the field whose values get a color each.");
+            }
+        }
+
+        /**
+         * Stop the counting of the values, if one runs: the query is interrupted and its result
+         * dropped.
+         */
+        private void stopValueCounts() {
+            valuesGeneration++;
+            HMQueryContext query = valuesQuery;
+            if (query != null) {
+                query.cancel();
+            }
+            hideBusy();
+        }
+
+        private void showBusy( String text ) {
+            long start = System.currentTimeMillis();
+            busyLabel.setText(text + "...");
+            for( java.awt.event.ActionListener listener : busyTimer.getActionListeners() ) {
+                busyTimer.removeActionListener(listener);
+            }
+            busyTimer.addActionListener(e -> busyLabel
+                    .setText(text + "... " + (System.currentTimeMillis() - start) / 1000 + " s"));
+            busyTimer.restart();
+            busyPanel.setVisible(true);
+            revalidate();
+            repaint();
+        }
+
+        private void hideBusy() {
+            busyTimer.stop();
+            busyPanel.setVisible(false);
+            revalidate();
+            repaint();
+        }
+
+        /**
+         * @return the values with most features, at most a number, in the order of the counts.
+         */
+        private static List<Object> mostFrequent( ValueCounts counts, int max ) {
+            List<Map.Entry<Object, Long>> entries = new ArrayList<>(counts.counts().entrySet());
+            // stable: the values with the same count keep their order
+            entries.sort(( e1, e2 ) -> Long.compare(e2.getValue(), e1.getValue()));
+            Set<Object> kept = new HashSet<>();
+            for( int i = 0; i < max && i < entries.size(); i++ ) {
+                kept.add(entries.get(i).getKey());
+            }
+            List<Object> values = new ArrayList<>();
+            for( Object value : counts.counts().keySet() ) {
+                if (kept.contains(value)) {
+                    values.add(value);
+                }
+            }
+            return values;
+        }
+
         private Color[] palette( int count ) {
             int size = Math.max(1, count);
-            Object palette = paletteCombo.getSelectedItem();
-            if (SET3.equals(palette)) {
-                return ColorBrewer.getSet3Colors(size);
-            } else if (MAIN.equals(palette)) {
-                return ColorBrewer.getMainColors(size);
+            String name = (String) paletteCombo.getSelectedItem();
+            if (name != null && name.startsWith(RAMP_PREFIX)) {
+                return ECategoricalPalette.getRampColors(name.substring(RAMP_PREFIX.length()), size);
             }
-            return ColorBrewer.getPairedColors(size);
+            ECategoricalPalette palette = name != null ? ECategoricalPalette.forLabel(name) : null;
+            return (palette != null ? palette : ECategoricalPalette.PAIRED).getColors(size);
         }
 
         private void fillValuesTable() {
@@ -892,7 +1098,13 @@ public class StyleLayerTool implements INwwLayerTool {
 
         private JPanel uniquePanel() {
             JButton classifyButton = new JButton("Classify");
-            classifyButton.setToolTipText("Give a color to each value of the field, at most " + MAX_VALUES);
+            classifyButton.setToolTipText("Give a color to each value of the field, at most the max given");
+            paletteCombo.setToolTipText("<html>The categorical palettes have distinct colors, continued with generated ones"
+                    + " when the values are more;<br>the ramps follow the color tables of the rasters, for values having an"
+                    + " order.</html>");
+            maxValuesSpinner.setToolTipText("<html>The most values that get a color: with more, the most frequent ones get"
+                    + " it.<br>Up to " + MAX_VALUES_LIMIT + "; with many values the drawing is slower.</html>");
+            shrinkable(paletteCombo);
             classifyButton.addActionListener(e -> classify());
             fieldCombo.addActionListener(e -> {
                 if (!updating && UNIQUE.equals(modeCombo.getSelectedItem())) {
@@ -984,6 +1196,12 @@ public class StyleLayerTool implements INwwLayerTool {
             c.gridx = 1;
             c.fill = GridBagConstraints.HORIZONTAL;
             panel.add(paletteCombo, c);
+            c.gridx = 2;
+            c.fill = GridBagConstraints.NONE;
+            JPanel maxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+            maxPanel.add(new JLabel("max"));
+            maxPanel.add(maxValuesSpinner);
+            panel.add(maxPanel, c);
             c.gridy = 2;
             c.gridx = 0;
             c.gridwidth = 3;

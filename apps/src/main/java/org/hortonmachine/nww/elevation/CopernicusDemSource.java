@@ -35,9 +35,11 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -109,15 +111,41 @@ public class CopernicusDemSource {
             return size() > MAX_BLOCKS_IN_MEMORY;
         }
     });
-    private final Map<String, CogImageReader> readers = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true){
-        protected boolean removeEldestEntry( Map.Entry<String, CogImageReader> eldest ) {
+    /**
+     * The readers of the tiles opened last. The readers removed are not disposed here: another
+     * thread may be reading with them, they are disposed by {@link #getReader(String)} holding
+     * their lock.
+     */
+    private final Map<String, ReaderHandle> readers = Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, true){
+        protected boolean removeEldestEntry( Map.Entry<String, ReaderHandle> eldest ) {
             if (size() > MAX_OPEN_READERS) {
-                eldest.getValue().dispose();
+                readersToDispose.add(eldest.getValue());
                 return true;
             }
             return false;
         }
     });
+    /** The readers removed from {@link #readers}, to dispose, guarded by it. */
+    private final List<ReaderHandle> readersToDispose = new ArrayList<>();
+
+    /**
+     * A reader of a tile, used holding its lock: once disposed, as when it is removed from the
+     * open ones, it can't be used any more.
+     */
+    private static class ReaderHandle {
+        final CogImageReader reader;
+        /** Guarded by the handle. */
+        boolean disposed = false;
+
+        ReaderHandle( CogImageReader reader ) {
+            this.reader = reader;
+        }
+    }
+
+    /** Work done with the reader of a tile. */
+    private interface ReaderWork<T> {
+        T run( CogImageReader reader ) throws Exception;
+    }
     /** Locks to download each block only once, also with concurrent requests. */
     private final Map<String, Object> blockLocks = new ConcurrentHashMap<>();
 
@@ -234,11 +262,7 @@ public class CopernicusDemSource {
         CogImageReadParam param = new CogImageReadParam();
         param.setSourceRegion(new Rectangle(x0, y0, w, h));
         param.setRangeReaderClass(HttpRangeReader.class);
-        Raster raster;
-        CogImageReader reader = getReader(tileName);
-        synchronized (reader) {
-            raster = reader.read(level, param).getRaster();
-        }
+        Raster raster = withReader(tileName, reader -> reader.read(level, param).getRaster());
         float[] data = raster.getSamples(0, 0, w, h, 0, new float[w * h]);
         return new Block(x0, y0, w, h, data);
     }
@@ -261,18 +285,19 @@ public class CopernicusDemSource {
                 info.heights[i] = Integer.parseInt(split[1]);
             }
         } else {
-            CogImageReader reader = getReader(tileName);
             StringBuilder sb = new StringBuilder();
-            synchronized (reader) {
+            TileInfo _info = info;
+            withReader(tileName, reader -> {
                 int count = reader.getNumImages(true);
-                info.widths = new int[count];
-                info.heights = new int[count];
+                _info.widths = new int[count];
+                _info.heights = new int[count];
                 for( int i = 0; i < count; i++ ) {
-                    info.widths[i] = reader.getWidth(i);
-                    info.heights[i] = reader.getHeight(i);
-                    sb.append(info.widths[i]).append("x").append(info.heights[i]).append("\n");
+                    _info.widths[i] = reader.getWidth(i);
+                    _info.heights[i] = reader.getHeight(i);
+                    sb.append(_info.widths[i]).append("x").append(_info.heights[i]).append("\n");
                 }
-            }
+                return null;
+            });
             infoFile.getParentFile().mkdirs();
             Files.writeString(infoFile.toPath(), sb.toString());
         }
@@ -280,19 +305,48 @@ public class CopernicusDemSource {
         return info;
     }
 
-    private CogImageReader getReader( String tileName ) {
+    /**
+     * Do some work with the reader of a tile, holding its lock, so that the reader is not
+     * disposed meanwhile.
+     */
+    private <T> T withReader( String tileName, ReaderWork<T> work ) throws Exception {
+        while( true ) {
+            ReaderHandle handle = getReader(tileName);
+            synchronized (handle) {
+                if (!handle.disposed) {
+                    return work.run(handle.reader);
+                }
+                // removed from the open readers and disposed after it was taken: a new one
+            }
+        }
+    }
+
+    private ReaderHandle getReader( String tileName ) {
+        ReaderHandle handle;
+        List<ReaderHandle> toDispose;
         synchronized (readers) {
-            CogImageReader reader = readers.get(tileName);
-            if (reader == null) {
+            handle = readers.get(tileName);
+            if (handle == null) {
                 URI uri = URI.create(BASE_URL + tileName + "/" + tileName + ".tif");
                 DefaultCogImageInputStream stream = new DefaultCogImageInputStream(uri,
                         new HttpRangeReader(uri, CogImageReadParam.DEFAULT_HEADER_LENGTH));
-                reader = new CogImageReader(new CogImageReaderSpi());
+                CogImageReader reader = new CogImageReader(new CogImageReaderSpi());
                 reader.setInput(stream);
-                readers.put(tileName, reader);
+                handle = new ReaderHandle(reader);
+                readers.put(tileName, handle);
             }
-            return reader;
+            toDispose = new ArrayList<>(readersToDispose);
+            readersToDispose.clear();
         }
+        // outside of the lock of the map: the readers in use are disposed once their reading
+        // is done, without blocking the other tiles
+        for( ReaderHandle removed : toDispose ) {
+            synchronized (removed) {
+                removed.disposed = true;
+                removed.reader.dispose();
+            }
+        }
+        return handle;
     }
 
     /**

@@ -67,6 +67,7 @@ public class LineSymbolizerController extends LineSymbolizerView {
 
         String dash = symbolizerWrapper.getDash();
         _dashTextField.setText(dash);
+        DashHints.setup(_dashLabel, _dashTextField, _dashOffsetLabel, _dashOffsetTextField);
         _dashTextField.addKeyListener(new KeyListener(){
 
             @Override
@@ -93,7 +94,7 @@ public class LineSymbolizerController extends LineSymbolizerView {
 
             @Override
             public void keyReleased( KeyEvent e ) {
-                String tmpDashOfset = _dashTextField.getText();
+                String tmpDashOfset = _dashOffsetTextField.getText();
                 symbolizerWrapper.setDashOffset(tmpDashOfset);
             }
 

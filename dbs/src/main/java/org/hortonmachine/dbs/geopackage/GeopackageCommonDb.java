@@ -451,7 +451,11 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         });
     }
 
-    private String getSpatialIndexName( FeatureEntry feature ) {
+    /**
+     * @param feature the entry of a feature table.
+     * @return the name of the rtree virtual table indexing its geometries.
+     */
+    public String getSpatialIndexName( FeatureEntry feature ) {
         return "rtree_" + SqlName.m(feature.tableName).nameForIndex() + "_" + feature.geometryColumn;
     }
 

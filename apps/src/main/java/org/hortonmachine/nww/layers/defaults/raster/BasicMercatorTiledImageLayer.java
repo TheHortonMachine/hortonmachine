@@ -17,6 +17,8 @@ import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
+import org.hortonmachine.nww.layers.defaults.NwwLayer;
+import org.hortonmachine.nww.utils.LayerActivity;
 import org.hortonmachine.utils.HmHttpRetriever;
 
 import com.jogamp.opengl.util.texture.TextureData;
@@ -112,7 +114,19 @@ public class BasicMercatorTiledImageLayer extends MercatorTiledImageLayer {
                 }
             }
 
-            this.layer.downloadTexture(this.tile);
+            if (!(this.layer instanceof NwwLayer)) {
+                // the web layers, whose downloads the status bar shows by themselves
+                this.layer.downloadTexture(this.tile);
+                return;
+            }
+            // the tiles of the local data are drawn while their url is made: shown in the status bar
+            String name = this.layer.getName() != null ? this.layer.getName() : this.layer.toString();
+            LayerActivity.begin(name);
+            try {
+                this.layer.downloadTexture(this.tile);
+            } finally {
+                LayerActivity.end(name);
+            }
         }
 
         /**

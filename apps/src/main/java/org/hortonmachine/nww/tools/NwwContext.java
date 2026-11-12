@@ -32,6 +32,7 @@ import org.hortonmachine.nww.gui.LayersPanelController;
 import org.hortonmachine.nww.gui.NwwLayerLoader;
 import org.hortonmachine.nww.gui.NwwPanel;
 import org.hortonmachine.nww.gui.ToolsPanelController;
+import org.hortonmachine.nww.layers.defaults.NwwLayer;
 import org.hortonmachine.nww.layers.defaults.raster.GridCoverageNwwLayer;
 import org.hortonmachine.nww.tools.features.FeatureSelection;
 import org.hortonmachine.nww.utils.NwwUtilities;
@@ -225,6 +226,11 @@ public class NwwContext {
         layerEventsListener.onLayerRemoved(layer);
         if (selection != null && selection.getLayer() == layer) {
             clearSelection();
+        }
+        if (layer instanceof NwwLayer) {
+            // as the delete button of the layers panel: the graphics memory of the point clouds,
+            // the databases of the layers drawn from them
+            ((NwwLayer) layer).freeResources();
         }
         // the tiles of the rasters, if the setting is on
         GridCoverageNwwLayer.clearCacheOfRemoved(layer, nwwPanel.getWwd().getModel().getLayers());

@@ -221,7 +221,28 @@ public class SelectMode implements INwwMapMode {
         double lon = position.getLongitude().degrees;
         double lat = position.getLatitude().degrees;
         Geometry area = GF.toGeometry(new Envelope(lon - tolerance, lon + tolerance, lat - tolerance, lat + tolerance));
-        apply(context, layer, FeatureSelection.query(((NwwFeatureLayer) layer).getFeatureCollection(), area), position, add);
+        List<SimpleFeature> found = query(context, layer, area);
+        if (found != null) {
+            apply(context, layer, found, position, add);
+        }
+    }
+
+    /**
+     * @return the features of the layer touching the area, <code>null</code> if they can't be
+     *          read, as when they are too many, which is told to the user.
+     */
+    private static List<SimpleFeature> query( NwwContext context, Layer layer, Geometry area ) {
+        try {
+            return ((NwwFeatureLayer) layer).queryFeatures(area);
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            FeatureInfoTool tool = context.findTool(FeatureInfoTool.class);
+            if (tool != null) {
+                context.openTool(tool);
+                tool.showMessage(e.getMessage());
+            }
+            return null;
+        }
     }
 
     private void onBox( NwwContext context, int x1, int y1, int x2, int y2, boolean add ) {
@@ -243,7 +264,10 @@ public class SelectMode implements INwwMapMode {
             // a corner of the box is outside of the globe
             return;
         }
-        apply(context, layer, FeatureSelection.query(((NwwFeatureLayer) layer).getFeatureCollection(), area), null, add);
+        List<SimpleFeature> found = query(context, layer, area);
+        if (found != null) {
+            apply(context, layer, found, null, add);
+        }
     }
 
     /**

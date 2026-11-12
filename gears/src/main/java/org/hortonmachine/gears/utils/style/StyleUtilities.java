@@ -1082,14 +1082,16 @@ public class StyleUtilities {
     /**
      * Returns a dash array from a dash string.
      * 
-     * @param dashStr the dash string definition. 
+     * @param dashStr the dash string definition, the lengths of the dashes and gaps separated by
+     *          commas or spaces, as <code>6,3</code> or <code>6 3</code>.
      * @return the dash array or null if the definition can't be parsed.
      */
     public static float[] getDash( String dashStr ) {
         if (dashStr == null) {
             return null;
         }
-        String[] dashSplit = dashStr.split(","); //$NON-NLS-1$
+        // separated by commas, or by spaces as in the SLD
+        String[] dashSplit = dashStr.trim().split("[,\\s]+"); //$NON-NLS-1$
         int size = dashSplit.length;
         float[] dash = new float[size];
         try {

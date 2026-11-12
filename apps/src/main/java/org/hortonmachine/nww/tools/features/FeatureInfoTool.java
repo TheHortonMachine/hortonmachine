@@ -65,6 +65,7 @@ import org.hortonmachine.gui.utils.GuiUtilities;
 import org.hortonmachine.gui.utils.ImageCache;
 import org.hortonmachine.nww.layers.defaults.NwwEditableVectorLayer;
 import org.hortonmachine.nww.layers.defaults.NwwFeatureLayer;
+import org.hortonmachine.nww.layers.defaults.vector.DbTiledFeatureLayer;
 import org.hortonmachine.nww.tools.INwwTool;
 import org.hortonmachine.nww.tools.LayerSource;
 import org.hortonmachine.nww.tools.NwwContext;
@@ -72,6 +73,7 @@ import org.hortonmachine.nww.utils.NwwUtilities;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 
 import gov.nasa.worldwind.WorldWind;
@@ -555,10 +557,18 @@ public class FeatureInfoTool implements INwwTool {
             context.replaceLayer(layer, replacement);
             // the layer shows just the selected features, also for the geopackage features, whose
             // ids change at each reading
-            List<SimpleFeature> all = new ArrayList<>();
-            try (SimpleFeatureIterator iterator = ((NwwFeatureLayer) replacement).getFeatureCollection().features()) {
-                while( iterator.hasNext() ) {
-                    all.add(iterator.next());
+            List<SimpleFeature> all;
+            Envelope envelope = selection.getEnvelope();
+            if (replacement instanceof DbTiledFeatureLayer && !envelope.isNull()) {
+                // the layer reads from the database at each use: the filtered features are where
+                // the selected ones were
+                all = ((NwwFeatureLayer) replacement).queryFeatures(new GeometryFactory().toGeometry(envelope));
+            } else {
+                all = new ArrayList<>();
+                try (SimpleFeatureIterator iterator = ((NwwFeatureLayer) replacement).getFeatureCollection().features()) {
+                    while( iterator.hasNext() ) {
+                        all.add(iterator.next());
+                    }
                 }
             }
             context.setSelection(new FeatureSelection(replacement, all, point));
