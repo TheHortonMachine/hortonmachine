@@ -29,13 +29,23 @@ import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreato
 import static org.hortonmachine.gears.modules.r.imagemosaic.OmsImageMosaicCreator.OMSIMAGEMOSAICCREATOR_STATUS;
 
 import java.io.File;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
+import org.geotools.api.feature.simple.SimpleFeature;
+import org.geotools.data.simple.SimpleFeatureCollection;
+import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.gce.imagemosaic.ImageMosaicFormat;
 import org.geotools.gce.imagemosaic.ImageMosaicReader;
+import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
+import org.hortonmachine.gears.io.vrt.VrtWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -64,6 +74,11 @@ public class OmsImageMosaicCreator extends HMModel {
     @In
     public String inFolder;
 
+    @Description(OMSIMAGEMOSAICCREATOR_OUT_VRT_DESCRIPTION)
+    @UI(HMConstants.FILEOUT_UI_HINT)
+    @In
+    public String outVrt;
+
     public static final String OMSIMAGEMOSAICCREATOR_DESCRIPTION = "Creates the index of a GeoTools image mosaic over the georeferenced images of a folder.";
     public static final String OMSIMAGEMOSAICCREATOR_DOCUMENTATION = """
             The index is a shapefile named as the folder, with the footprint of each image and its file \
@@ -75,6 +90,13 @@ public class OmsImageMosaicCreator extends HMModel {
             The index is made only once: if the folder has one already, it is used as it is, and the \
             images added later are not in it. To index them, the shapefile, the properties file and \
             sample_image.dat need to be deleted first.
+
+            Optionally the images of the index are also written as a GDAL virtual raster (VRT), \
+            readable by GDAL, QGIS and HortonMachine, as an input for the modules that take a raster \
+            file, for example to convert the whole mosaic to a Cloud Optimized GeoTIFF without \
+            loading it in memory. The VRT takes the finest resolution of the images, and where \
+            they overlap the images later in the index are drawn over the earlier ones. The images \
+            in the folder of the VRT or below it are written relative to it.
             """;
     public static final String OMSIMAGEMOSAICCREATOR_KEYWORDS = "Imagemosaic, Mosaic, Tiles, Raster";
     public static final String OMSIMAGEMOSAICCREATOR_LABEL = RASTERPROCESSING;
@@ -84,6 +106,7 @@ public class OmsImageMosaicCreator extends HMModel {
     public static final String OMSIMAGEMOSAICCREATOR_AUTHORNAMES = "Andrea Antonello";
     public static final String OMSIMAGEMOSAICCREATOR_AUTHORCONTACTS = "http://www.hydrologis.com";
     public static final String OMSIMAGEMOSAICCREATOR_IN_FOLDER_DESCRIPTION = "The folder containing the images to mosaic.";
+    public static final String OMSIMAGEMOSAICCREATOR_OUT_VRT_DESCRIPTION = "An optional VRT file to write with the images of the mosaic.";
 
     @Execute
     public void process() throws Exception {
@@ -103,5 +126,46 @@ public class OmsImageMosaicCreator extends HMModel {
                     + inFolder, this, pm);
         }
         reader.dispose();
+
+        if (outVrt != null && !outVrt.isBlank()) {
+            List<File> images = getIndexedImages(imageryFolder);
+            VrtWriter.writeMosaic(pm, images, new File(outVrt));
+        }
+    }
+
+    /**
+     * Get the images of the index of the mosaic, in the order of the index.
+     *
+     * @param imageryFolder the folder of the mosaic.
+     * @return the image files.
+     * @throws Exception if the index can't be read.
+     */
+    private List<File> getIndexedImages( File imageryFolder ) throws Exception {
+        String name = imageryFolder.getName();
+        File propertiesFile = new File(imageryFolder, name + ".properties");
+        File shpFile = new File(imageryFolder, name + ".shp");
+        if (!propertiesFile.exists() || !shpFile.exists()) {
+            throw new ModelsIllegalargumentException("The index of the mosaic is missing in: " + imageryFolder, this, pm);
+        }
+        Properties properties = new Properties();
+        properties.load(new StringReader(FileUtilities.readFile(propertiesFile)));
+        String locationAttribute = properties.getProperty("LocationAttribute", "location");
+        boolean absolute = Boolean.parseBoolean(properties.getProperty("AbsolutePath", "false"))
+                || "ABSOLUTE".equalsIgnoreCase(properties.getProperty("PathType"));
+
+        List<File> images = new ArrayList<>();
+        SimpleFeatureCollection index = OmsVectorReader.readVector(shpFile.getAbsolutePath());
+        try (SimpleFeatureIterator iterator = index.features()) {
+            while( iterator.hasNext() ) {
+                SimpleFeature feature = iterator.next();
+                String location = feature.getAttribute(locationAttribute).toString();
+                File image = absolute ? new File(location) : new File(imageryFolder, location);
+                images.add(image.getAbsoluteFile());
+            }
+        }
+        if (images.isEmpty()) {
+            throw new ModelsIllegalargumentException("The index of the mosaic has no images: " + shpFile, this, pm);
+        }
+        return images;
     }
 }
