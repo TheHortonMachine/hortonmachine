@@ -118,6 +118,8 @@ public class Mapcalc extends OmsMapcalc {
 
         mapcalc.inRasters = coverages;
         mapcalc.pFunction = pFunction;
+        mapcalc.doFloat = doFloat;
+        mapcalc.doStream = doStream;
         mapcalc.pm = pm;
         mapcalc.process();
         dumpRaster(mapcalc.outRaster, outRaster);

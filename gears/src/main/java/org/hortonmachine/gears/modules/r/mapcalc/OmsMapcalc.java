@@ -33,17 +33,31 @@ import static org.hortonmachine.gears.i18n.GearsMessages.OMSMAPCALC_STATUS;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
-import java.awt.image.WritableRenderedImage;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
-import org.eclipse.imagen.iterator.RandomIter;
+import org.eclipse.imagen.ImageLayout;
+import org.eclipse.imagen.ImageN;
+import org.eclipse.imagen.PlanarImage;
+import org.eclipse.imagen.PointOpImage;
+import org.eclipse.imagen.SourcelessOpImage;
+import org.eclipse.imagen.TileCache;
+import org.eclipse.imagen.TiledImage;
 import org.eclipse.imagen.media.jiffle.Jiffle;
+import org.eclipse.imagen.media.jiffle.runtime.AbstractJiffleRuntime;
 import org.eclipse.imagen.media.jiffle.runtime.AffineCoordinateTransform;
 import org.eclipse.imagen.media.jiffle.runtime.CoordinateTransform;
 import org.eclipse.imagen.media.jiffle.runtime.JiffleDirectRuntime;
+import org.eclipse.imagen.media.jiffle.runtime.JiffleIndirectRuntime;
 import org.eclipse.imagen.media.jiffle.runtime.NullProgressListener;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
@@ -87,6 +101,16 @@ public class OmsMapcalc extends HMModel {
     @In
     public String pFunction;
 
+    @Description("Store the output as float instead of double, halving its memory. The calculation is still done in double.")
+    @In
+    public boolean doFloat = false;
+
+    @Description("Compute the output only when it is read, a tile at a time, instead of all in memory: "
+            + "for huge maps written to file. Each read of the output computes it again. "
+            + "Scripts that carry values from a cell to the next, like counters, give different results.")
+    @In
+    public boolean doStream = false;
+
     @Description(OMSMAPCALC_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
@@ -113,9 +137,14 @@ public class OmsMapcalc extends HMModel {
         Jiffle jiffle = new Jiffle();
         jiffle.setScript(script);
         jiffle.compile();
-        JiffleDirectRuntime jiffleRuntime = jiffle.getRuntimeInstance();
+        // the direct runtime walks all the map writing into an image, the indirect one gives the
+        // value of a single cell, when asked for it
+        AbstractJiffleRuntime jiffleRuntime = (AbstractJiffleRuntime) (doStream
+                ? jiffle.getRuntimeInstance(Jiffle.RuntimeModel.INDIRECT)
+                : jiffle.getRuntimeInstance());
 
         CoordinateTransform jiffleCRS = null;
+        List<TileCache> sourceCaches = new ArrayList<>();
 
         // gather maps
         for( GridCoverage2D mapGC : inRasters ) {
@@ -137,13 +166,23 @@ public class OmsMapcalc extends HMModel {
                 jiffleRuntime.setWorldByResolution(worldBounds, xRes, yRes);
             }
             // the novalues of the map become NaN, the null of Jiffle
-            RenderedImage renderedImage = novalueToNaN(mapGC);
+            NovalueToNaNOpImage renderedImage = new NovalueToNaNOpImage(mapGC, doStream);
+            sourceCaches.add(renderedImage.getTileCache());
             // add map
             String name = mapGC.getName().toString();
             jiffleRuntime.setSourceImage(name, renderedImage, jiffleCRS);
         }
         if (regionParameters == null) {
             throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName(), pm);
+        }
+        // a map read by the script and not supplied would fail only when evaluated
+        Set<String> suppliedNames = new TreeSet<>(jiffleRuntime.get_images().keySet());
+        for( String sourceName : jiffleRuntime.getSourceVarNames() ) {
+            if (!suppliedNames.contains(sourceName)) {
+                throw new ModelsIllegalargumentException("The script reads the map " + sourceName
+                        + ", which is not among the supplied maps: " + String.join(", ", suppliedNames)
+                        + ". Maps are known by their file name without extension.", this.getClass().getSimpleName(), pm);
+            }
         }
         int nCols = regionParameters.cols;
         int nRows = regionParameters.rows;
@@ -160,22 +199,49 @@ public class OmsMapcalc extends HMModel {
                     + ", which would be all 0. Assign it in the script, as in: " + destName + " = ...;",
                     this.getClass().getSimpleName(), pm);
         }
-        WritableRenderedImage destImg = ImageUtils.createConstantImage(nCols, nRows, 0d);
-        jiffleRuntime.setDestinationImage(destName, destImg, jiffleCRS);
-        
-        jiffleRuntime.evaluateAll(new NullProgressListener());
+        if (doStream) {
+            JiffleIndirectRuntime indirectRuntime = (JiffleIndirectRuntime) jiffleRuntime;
+            indirectRuntime.setDestinationImage(destName, jiffleCRS);
+            StreamOpImage streamImg = new StreamOpImage(indirectRuntime, nCols, nRows, worldBounds,
+                    regionParameters.xres, regionParameters.yres, doFloat);
+            outRaster = CoverageUtilities.buildCoverage(destName, streamImg, regionParameters, crs);
+            return;
+        }
 
-        // the null results of Jiffle become the novalue of the HortonMachine
-        WritableRaster outWR = destImg.getData().createCompatibleWritableRaster();
-        outWR.setRect(destImg.getData());
-        for( int r = 0; r < nRows; r++ ) {
-            for( int c = 0; c < nCols; c++ ) {
-                if (Double.isNaN(outWR.getSampleDouble(c, r, 0))) {
-                    outWR.setSample(c, r, 0, HMConstants.doubleNovalue);
+        // Jiffle writes its double results casting them to the type of the image
+        TiledImage destImg = ImageUtils.createConstantImage(nCols, nRows, doFloat ? (Number) 0f : (Number) 0d);
+        JiffleDirectRuntime directRuntime = (JiffleDirectRuntime) jiffleRuntime;
+        directRuntime.setDestinationImage(destName, destImg, jiffleCRS);
+
+        try {
+            directRuntime.evaluateAll(new NullProgressListener());
+        } finally {
+            // the converted strips of the sources are not needed any more
+            for( TileCache cache : sourceCaches ) {
+                cache.flush();
+            }
+        }
+
+        // the null results of Jiffle become the novalue of the HortonMachine, in place, tile by
+        // tile, so that the output is never copied
+        for( int ty = destImg.getMinTileY(); ty <= destImg.getMaxTileY(); ty++ ) {
+            for( int tx = destImg.getMinTileX(); tx <= destImg.getMaxTileX(); tx++ ) {
+                WritableRaster tile = destImg.getWritableTile(tx, ty);
+                try {
+                    Rectangle tb = tile.getBounds().intersection(destImg.getBounds());
+                    for( int r = tb.y; r < tb.y + tb.height; r++ ) {
+                        for( int c = tb.x; c < tb.x + tb.width; c++ ) {
+                            if (Double.isNaN(tile.getSampleDouble(c, r, 0))) {
+                                tile.setSample(c, r, 0, HMConstants.doubleNovalue);
+                            }
+                        }
+                    }
+                } finally {
+                    destImg.releaseWritableTile(tx, ty);
                 }
             }
         }
-        outRaster = CoverageUtilities.buildCoverage(destName, outWR, regionParameters, crs);
+        outRaster = CoverageUtilities.buildCoverage(destName, destImg, regionParameters, crs);
 
 //        // create the executor
 //        JiffleExecutor executor = new JiffleExecutor();
@@ -281,29 +347,156 @@ public class OmsMapcalc extends HMModel {
     }
 
     /**
-     * @return the image of the map as doubles, with its novalues set to NaN, the null of Jiffle.
+     * The image of a map as doubles, with its novalues set to NaN, the null of Jiffle.
+     *
+     * <p>
+     * The conversion is lazy: the image is made of strips as wide as the map, computed when
+     * Jiffle reads them and kept in a small cache of their own, so that the map is never copied
+     * as a whole. Jiffle walks the map by rows, so the strip in use, and those around it for the
+     * neighbourhood references, stay in the cache.
+     *
+     * <p>
+     * When streaming, the output is computed in tiles of {@link StreamOpImage#TILE_SIZE} rows,
+     * from west to east: the cache then holds a whole band of tiles, plus the strips around it,
+     * so that the strips are not converted again for each tile of the band.
+     *
+     * <p>
+     * The strips follow the rows of tiles of the source, as the blocks of a tiled GeoTIFF read
+     * lazily: each block is then decoded once, instead of once for each strip that crosses it,
+     * since the default tile cache can't hold a whole row of blocks of a huge map.
      */
-    private static RenderedImage novalueToNaN( GridCoverage2D map ) {
-        double novalue = HMConstants.getNovalue(map);
-        RegionMap region = CoverageUtilities.getRegionParamsFromGridCoverage(map);
-        int cols = region.getCols();
-        int rows = region.getRows();
-        WritableRaster outWR = CoverageUtilities.createWritableRaster(cols, rows, Double.class, null, null);
-        RandomIter iter = CoverageUtilities.getRandomIterator(map);
-        try {
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    double value = iter.getSampleDouble(c, r, 0);
-                    if (HMConstants.isNovalue(value, novalue)) {
-                        value = Double.NaN;
-                    }
-                    outWR.setSample(c, r, 0, value);
+    private static class NovalueToNaNOpImage extends PointOpImage {
+        /** The size of a strip, in cells. */
+        private static final long STRIP_CELLS = 512 * 1024;
+        /** The tallest tiles of a source that the strips follow. */
+        private static final int MAX_ALIGNED_TILE_ROWS = 1024;
+        /** The minimum memory of the strips cache of each map, in bytes. */
+        private static final long CACHE_BYTES = 64L * 1024 * 1024;
+
+        private final double novalue;
+
+        NovalueToNaNOpImage( GridCoverage2D map, boolean stream ) {
+            super(map.getRenderedImage(), layout(map.getRenderedImage()), null, true);
+            novalue = HMConstants.getNovalue(map);
+            long stripBytes = (long) getTileHeight() * getWidth() * Double.BYTES;
+            // the strip in use and those around it, for the neighbourhood references
+            long cacheBytes = Math.max(CACHE_BYTES, 3 * stripBytes);
+            if (stream) {
+                // a band of output tiles plus the strips around it
+                long bandRows = StreamOpImage.TILE_SIZE + 2L * getTileHeight();
+                cacheBytes = Math.max(cacheBytes, bandRows * getWidth() * Double.BYTES + stripBytes);
+            }
+            setTileCache(ImageN.createTileCache(cacheBytes));
+        }
+
+        private static ImageLayout layout( RenderedImage source ) {
+            int width = source.getWidth();
+            int stripRows = (int) Math.max(1, STRIP_CELLS / width);
+            int sourceTileRows = source.getTileHeight();
+            int gridYOffset = source.getMinY();
+            if (sourceTileRows <= MAX_ALIGNED_TILE_ROWS) {
+                // whole rows of tiles of the source
+                stripRows = (stripRows + sourceTileRows - 1) / sourceTileRows * sourceTileRows;
+                gridYOffset = source.getTileGridYOffset();
+            }
+            stripRows = Math.min(source.getHeight(), stripRows);
+            SampleModel sm = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, width, stripRows, 1, width, new int[]{0});
+            ImageLayout layout = new ImageLayout(source.getMinX(), source.getMinY(), width, source.getHeight());
+            layout.setTileGridXOffset(source.getMinX());
+            layout.setTileGridYOffset(gridYOffset);
+            layout.setTileWidth(width);
+            layout.setTileHeight(stripRows);
+            layout.setSampleModel(sm);
+            layout.setColorModel(PlanarImage.createColorModel(sm));
+            return layout;
+        }
+
+        @Override
+        protected void computeRect( Raster[] sources, WritableRaster dest, Rectangle destRect ) {
+            Raster source = sources[0];
+            double[] values = source.getSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, (double[]) null);
+            for( int i = 0; i < values.length; i++ ) {
+                if (HMConstants.isNovalue(values[i], novalue)) {
+                    values[i] = Double.NaN;
                 }
             }
-        } finally {
-            iter.done();
+            dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, values);
         }
-        return CoverageUtilities.buildCoverage("map", outWR, region, map.getCoordinateReferenceSystem()).getRenderedImage();
+    }
+
+    /**
+     * The output map computed only when it is read, a tile at a time, through the indirect
+     * runtime of Jiffle, with the null results already set to the novalue.
+     *
+     * <p>
+     * Each cell is evaluated at the world position the direct runtime gives it, walking from the
+     * south-west corner of the map, so that the transform of {@link #getTransform} reads the same
+     * cells of the sources. The runtime keeps the state of the script, so the tiles are computed
+     * one at a time.
+     */
+    private static class StreamOpImage extends SourcelessOpImage {
+        /** The tile size, the same as the tiles of the written GeoTIFFs. */
+        static final int TILE_SIZE = 512;
+
+        private final JiffleIndirectRuntime runtime;
+        private final int rows;
+        private final double minX;
+        private final double minY;
+        private final double xRes;
+        private final double yRes;
+
+        StreamOpImage( JiffleIndirectRuntime runtime, int cols, int rows, Rectangle2D worldBounds, double xRes, double yRes,
+                boolean isFloat ) {
+            super(layout(cols, rows, isFloat), null, sampleModel(cols, rows, isFloat), 0, 0, cols, rows);
+            this.runtime = runtime;
+            this.rows = rows;
+            this.minX = worldBounds.getMinX();
+            this.minY = worldBounds.getMinY();
+            this.xRes = xRes;
+            this.yRes = yRes;
+            // built outside of the operations registry, the image has no tile cache: one band of
+            // tiles keeps the reads by rows from computing the tiles again for each row
+            long bandBytes = (long) getTileHeight() * cols * DataBuffer.getDataTypeSize(getSampleModel().getDataType()) / 8;
+            setTileCache(ImageN.createTileCache(bandBytes + bandBytes / 4));
+        }
+
+        private static SampleModel sampleModel( int cols, int rows, boolean isFloat ) {
+            int tileWidth = Math.min(TILE_SIZE, cols);
+            int tileHeight = Math.min(TILE_SIZE, rows);
+            int dataType = isFloat ? DataBuffer.TYPE_FLOAT : DataBuffer.TYPE_DOUBLE;
+            return new ComponentSampleModel(dataType, tileWidth, tileHeight, 1, tileWidth, new int[]{0});
+        }
+
+        private static ImageLayout layout( int cols, int rows, boolean isFloat ) {
+            SampleModel sm = sampleModel(cols, rows, isFloat);
+            ImageLayout layout = new ImageLayout(0, 0, cols, rows);
+            layout.setTileGridXOffset(0);
+            layout.setTileGridYOffset(0);
+            layout.setTileWidth(sm.getWidth());
+            layout.setTileHeight(sm.getHeight());
+            layout.setSampleModel(sm);
+            layout.setColorModel(PlanarImage.createColorModel(sm));
+            return layout;
+        }
+
+        @Override
+        protected void computeRect( PlanarImage[] sources, WritableRaster dest, Rectangle destRect ) {
+            double[] values = new double[destRect.width * destRect.height];
+            double[] pixel = new double[1];
+            synchronized (runtime) {
+                int i = 0;
+                for( int r = destRect.y; r < destRect.y + destRect.height; r++ ) {
+                    double y = minY + (rows - 1 - r) * yRes;
+                    for( int c = destRect.x; c < destRect.x + destRect.width; c++ ) {
+                        // a cell the script leaves unassigned is 0, as in the direct runtime
+                        pixel[0] = 0;
+                        runtime.evaluate(minX + c * xRes, y, pixel);
+                        values[i++] = Double.isNaN(pixel[0]) ? HMConstants.doubleNovalue : pixel[0];
+                    }
+                }
+            }
+            dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, values);
+        }
     }
 
 }

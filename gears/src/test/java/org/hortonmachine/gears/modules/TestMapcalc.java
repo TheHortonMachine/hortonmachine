@@ -19,13 +19,18 @@ package org.hortonmachine.gears.modules;
 
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
+import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
+import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.imagen.iterator.RandomIter;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
+import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
+import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.modules.r.mapcalc.OmsMapcalc;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
@@ -185,6 +190,153 @@ public class TestMapcalc extends HMTestCase {
     }
 
     /**
+     * A map large enough to be read in several strips: the neighbours across the edges of the
+     * strips and the novalues come out as in a map read at once.
+     */
+    public void testMapcalcStrips() throws Exception {
+        int cols = 1500;
+        int rows = 1200;
+        double[][] data = new double[rows][cols];
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                data[r][c] = (r + c) % 97 == 0 ? HMConstants.doubleNovalue : r * cols + c;
+            }
+        }
+        RegionMap region = RegionMap.fromBoundsAndGrid(0, cols, 0, rows, cols, rows);
+        GridCoverage2D coverage = CoverageUtilities.buildCoverage("ele", data, region, HMTestMaps.getCrs(), true);
+
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(coverage);
+        // the cell itself plus the one to the north
+        mapcalc.pFunction = "options{outside=null;} images{ele=read; dest=write;} dest = ele + ele[0, 1];";
+        mapcalc.process();
+
+        RandomIter iter = CoverageUtilities.getRandomIterator(mapcalc.outRaster);
+        try {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    double value = iter.getSampleDouble(c, r, 0);
+                    if (r == 0 || isNovalue(data[r][c]) || isNovalue(data[r - 1][c])) {
+                        assertTrue("row " + r + " col " + c, isNovalue(value));
+                    } else {
+                        assertEquals("row " + r + " col " + c, data[r][c] + data[r - 1][c], value, 0.0);
+                    }
+                }
+            }
+        } finally {
+            iter.done();
+        }
+    }
+
+    /**
+     * The streamed output, computed a tile at a time when read, is the same as the one computed
+     * in memory, in double and in float, also once written to and read back from a GeoTIFF.
+     */
+    public void testMapcalcStream() throws Exception {
+        int cols = 1500;
+        int rows = 1200;
+        double[][] data = new double[rows][cols];
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                data[r][c] = (r + c) % 97 == 0 ? HMConstants.doubleNovalue : (r * cols + c) / 7.0;
+            }
+        }
+        RegionMap region = RegionMap.fromBoundsAndGrid(1000, 1000 + cols * 2.5, 5000, 5000 + rows * 2.5, cols, rows);
+        GridCoverage2D coverage = CoverageUtilities.buildCoverage("ele", data, region, HMTestMaps.getCrs(), true);
+        String function = "options{outside=null;} images{ele=read; dest=write;} "
+                + "dest = isnull(ele[1, 0]) ? -1 : ele + ele[-2.5, 2.5] * x() / y();";
+
+        for( boolean isFloat : new boolean[]{false, true} ) {
+            OmsMapcalc mapcalc = new OmsMapcalc();
+            mapcalc.inRasters = Arrays.asList(coverage);
+            mapcalc.pFunction = function;
+            mapcalc.doFloat = isFloat;
+            mapcalc.process();
+            GridCoverage2D memoryRaster = mapcalc.outRaster;
+
+            mapcalc = new OmsMapcalc();
+            mapcalc.inRasters = Arrays.asList(coverage);
+            mapcalc.pFunction = function;
+            mapcalc.doFloat = isFloat;
+            mapcalc.doStream = true;
+            mapcalc.process();
+            GridCoverage2D streamRaster = mapcalc.outRaster;
+
+            int expectedType = isFloat ? DataBuffer.TYPE_FLOAT : DataBuffer.TYPE_DOUBLE;
+            assertEquals(expectedType, streamRaster.getRenderedImage().getSampleModel().getDataType());
+            assertSameValues(memoryRaster, streamRaster, cols, rows);
+
+            File file = File.createTempFile("hm_mapcalc_stream_", ".tif");
+            try {
+                OmsRasterWriter.writeRaster(file.getAbsolutePath(), streamRaster);
+                GridCoverage2D readRaster = OmsRasterReader.readRaster(file.getAbsolutePath());
+                assertSameValues(memoryRaster, readRaster, cols, rows);
+            } finally {
+                file.delete();
+            }
+        }
+    }
+
+    private static void assertSameValues( GridCoverage2D expected, GridCoverage2D actual, int cols, int rows ) {
+        RandomIter expectedIter = CoverageUtilities.getRandomIterator(expected);
+        RandomIter actualIter = CoverageUtilities.getRandomIterator(actual);
+        try {
+            for( int r = 0; r < rows; r++ ) {
+                for( int c = 0; c < cols; c++ ) {
+                    assertEquals("row " + r + " col " + c, expectedIter.getSampleDouble(c, r, 0),
+                            actualIter.getSampleDouble(c, r, 0), 0.0);
+                }
+            }
+        } finally {
+            expectedIter.done();
+            actualIter.done();
+        }
+    }
+
+    /**
+     * The float output holds the double results within float precision, and keeps the novalues.
+     */
+    public void testMapcalcFloat() throws Exception {
+        RegionMap envelopeParams = HMTestMaps.getEnvelopeparams();
+        double[][] elevationData = HMTestMaps.pitData;
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", elevationData, envelopeParams,
+                HMTestMaps.getCrs(), true);
+        String function = "images{ele=read; dest=write;} dest = ele / 3;";
+
+        OmsMapcalc mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = function;
+        mapcalc.process();
+        GridCoverage2D doubleRaster = mapcalc.outRaster;
+
+        mapcalc = new OmsMapcalc();
+        mapcalc.inRasters = Arrays.asList(elevationCoverage);
+        mapcalc.pFunction = function;
+        mapcalc.doFloat = true;
+        mapcalc.process();
+        GridCoverage2D floatRaster = mapcalc.outRaster;
+
+        assertEquals(DataBuffer.TYPE_DOUBLE, doubleRaster.getRenderedImage().getSampleModel().getDataType());
+        assertEquals(DataBuffer.TYPE_FLOAT, floatRaster.getRenderedImage().getSampleModel().getDataType());
+
+        RandomIter doubleIter = CoverageUtilities.getRandomIterator(doubleRaster);
+        RandomIter floatIter = CoverageUtilities.getRandomIterator(floatRaster);
+        for( int r = 0; r < elevationData.length; r++ ) {
+            for( int c = 0; c < elevationData[0].length; c++ ) {
+                double expected = doubleIter.getSampleDouble(c, r, 0);
+                double value = floatIter.getSampleDouble(c, r, 0);
+                if (isNovalue(expected)) {
+                    assertTrue(isNovalue(value));
+                } else {
+                    assertEquals((float) expected, value, 0.0);
+                }
+            }
+        }
+        doubleIter.done();
+        floatIter.done();
+    }
+
+    /**
      * A script that never assigns the output map is refused, instead of giving a map of 0.
      */
     public void testMapcalcUnassignedOutput() throws Exception {
@@ -207,6 +359,28 @@ public class TestMapcalc extends HMTestCase {
             fail("The unassigned output map should be refused.");
         } catch (ModelsIllegalargumentException e) {
             assertTrue(e.getMessage().contains("dest"));
+        }
+    }
+
+    /**
+     * A script reading a map that is not supplied is refused, also when streaming, where it
+     * would fail only when the output is read.
+     */
+    public void testMapcalcMissingMap() throws Exception {
+        GridCoverage2D elevationCoverage = CoverageUtilities.buildCoverage("ele", HMTestMaps.pitData,
+                HMTestMaps.getEnvelopeparams(), HMTestMaps.getCrs(), true);
+        for( boolean stream : new boolean[]{false, true} ) {
+            OmsMapcalc mapcalc = new OmsMapcalc();
+            mapcalc.inRasters = Arrays.asList(elevationCoverage);
+            mapcalc.pFunction = "images{other=read; dest=write;} dest = other + 1;";
+            mapcalc.doStream = stream;
+            try {
+                mapcalc.process();
+                fail("The missing map should be refused.");
+            } catch (ModelsIllegalargumentException e) {
+                assertTrue(e.getMessage().contains("other"));
+                assertTrue(e.getMessage().contains("ele"));
+            }
         }
     }
 
