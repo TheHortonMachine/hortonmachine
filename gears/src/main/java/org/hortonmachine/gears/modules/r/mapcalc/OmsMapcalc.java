@@ -39,10 +39,22 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.awt.image.WritableRaster;
+import java.awt.Point;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
 import org.eclipse.imagen.ImageLayout;
@@ -111,6 +123,11 @@ public class OmsMapcalc extends HMModel {
     @In
     public boolean doStream = false;
 
+    @Description("The number of threads computing the output when streaming. More threads are faster, "
+            + "but need more memory: start with 1 and raise it if the memory allows.")
+    @In
+    public int pThreads = 1;
+
     @Description(OMSMAPCALC_OUT_RASTER_DESCRIPTION)
     @Out
     public GridCoverage2D outRaster = null;
@@ -144,7 +161,9 @@ public class OmsMapcalc extends HMModel {
                 : jiffle.getRuntimeInstance());
 
         CoordinateTransform jiffleCRS = null;
+        Rectangle gridBounds = null;
         List<TileCache> sourceCaches = new ArrayList<>();
+        Map<String, RenderedImage> sourceImages = new LinkedHashMap<>();
 
         // gather maps
         for( GridCoverage2D mapGC : inRasters ) {
@@ -157,7 +176,7 @@ public class OmsMapcalc extends HMModel {
 //                TODO check this!
 				worldBounds = new Rectangle2D.Double(envelope2d.getMinX(), envelope2d.getMinY(),
 						envelope2d.getWidth(), envelope2d.getHeight());
-                Rectangle gridBounds = mapGC.getGridGeometry().getGridRange2D().getBounds();
+                gridBounds = mapGC.getGridGeometry().getGridRange2D().getBounds();
 
                 jiffleCRS = getTransform(worldBounds, gridBounds);
 
@@ -166,11 +185,12 @@ public class OmsMapcalc extends HMModel {
                 jiffleRuntime.setWorldByResolution(worldBounds, xRes, yRes);
             }
             // the novalues of the map become NaN, the null of Jiffle
-            NovalueToNaNOpImage renderedImage = new NovalueToNaNOpImage(mapGC, doStream);
+            NovalueToNaNOpImage renderedImage = new NovalueToNaNOpImage(mapGC, doStream, doStream && pThreads > 1);
             sourceCaches.add(renderedImage.getTileCache());
             // add map
             String name = mapGC.getName().toString();
             jiffleRuntime.setSourceImage(name, renderedImage, jiffleCRS);
+            sourceImages.put(name, renderedImage);
         }
         if (regionParameters == null) {
             throw new ModelsIllegalargumentException("No map has been supplied.", this.getClass().getSimpleName(), pm);
@@ -200,10 +220,25 @@ public class OmsMapcalc extends HMModel {
                     this.getClass().getSimpleName(), pm);
         }
         if (doStream) {
-            JiffleIndirectRuntime indirectRuntime = (JiffleIndirectRuntime) jiffleRuntime;
-            indirectRuntime.setDestinationImage(destName, jiffleCRS);
-            StreamOpImage streamImg = new StreamOpImage(indirectRuntime, nCols, nRows, worldBounds,
-                    regionParameters.xres, regionParameters.yres, doFloat);
+            // a runtime keeps the state of the script while evaluating a cell, so each thread
+            // computes its tiles with a runtime of its own, on the same sources
+            int threads = Math.max(1, pThreads);
+            List<JiffleIndirectRuntime> runtimes = new ArrayList<>();
+            ((JiffleIndirectRuntime) jiffleRuntime).setDestinationImage(destName, jiffleCRS);
+            runtimes.add((JiffleIndirectRuntime) jiffleRuntime);
+            for( int i = 1; i < threads; i++ ) {
+                AbstractJiffleRuntime runtime = (AbstractJiffleRuntime) jiffle.getRuntimeInstance(Jiffle.RuntimeModel.INDIRECT);
+                runtime.setWorldByResolution(worldBounds, regionParameters.xres, regionParameters.yres);
+                // the transform keeps the position being transformed: one for each runtime
+                CoordinateTransform runtimeCRS = getTransform(worldBounds, gridBounds);
+                for( Map.Entry<String, RenderedImage> source : sourceImages.entrySet() ) {
+                    runtime.setSourceImage(source.getKey(), source.getValue(), runtimeCRS);
+                }
+                ((JiffleIndirectRuntime) runtime).setDestinationImage(destName, runtimeCRS);
+                runtimes.add((JiffleIndirectRuntime) runtime);
+            }
+            StreamOpImage streamImg = new StreamOpImage(runtimes, nCols, nRows, worldBounds, regionParameters.xres,
+                    regionParameters.yres, doFloat);
             outRaster = CoverageUtilities.buildCoverage(destName, streamImg, regionParameters, crs);
             return;
         }
@@ -364,6 +399,10 @@ public class OmsMapcalc extends HMModel {
      * The strips follow the rows of tiles of the source, as the blocks of a tiled GeoTIFF read
      * lazily: each block is then decoded once, instead of once for each strip that crosses it,
      * since the default tile cache can't hold a whole row of blocks of a huge map.
+     *
+     * <p>
+     * The strips are floats when the type of the source fits a float without losing values, as
+     * bytes, shorts and floats, halving their memory, doubles otherwise.
      */
     private static class NovalueToNaNOpImage extends PointOpImage {
         /** The size of a strip, in cells. */
@@ -372,21 +411,41 @@ public class OmsMapcalc extends HMModel {
         private static final int MAX_ALIGNED_TILE_ROWS = 1024;
         /** The minimum memory of the strips cache of each map, in bytes. */
         private static final long CACHE_BYTES = 64L * 1024 * 1024;
+        /** The rows converted at once, to keep the temporary arrays small. */
+        private static final int CHUNK_CELLS = 1024 * 1024;
 
         private final double novalue;
 
-        NovalueToNaNOpImage( GridCoverage2D map, boolean stream ) {
+        /**
+         * @param map the map.
+         * @param stream if the output is streamed, read by bands of tiles.
+         * @param prefetch if the next band of tiles is computed while the current one is read.
+         */
+        NovalueToNaNOpImage( GridCoverage2D map, boolean stream, boolean prefetch ) {
             super(map.getRenderedImage(), layout(map.getRenderedImage()), null, true);
             novalue = HMConstants.getNovalue(map);
-            long stripBytes = (long) getTileHeight() * getWidth() * Double.BYTES;
+            long cellBytes = DataBuffer.getDataTypeSize(getSampleModel().getDataType()) / 8;
+            long stripBytes = (long) getTileHeight() * getWidth() * cellBytes;
             // the strip in use and those around it, for the neighbourhood references
             long cacheBytes = Math.max(CACHE_BYTES, 3 * stripBytes);
             if (stream) {
-                // a band of output tiles plus the strips around it
-                long bandRows = StreamOpImage.TILE_SIZE + 2L * getTileHeight();
-                cacheBytes = Math.max(cacheBytes, bandRows * getWidth() * Double.BYTES + stripBytes);
+                // the bands of output tiles being computed, plus the strips around them
+                long bandRows = (prefetch ? 2L : 1L) * StreamOpImage.TILE_SIZE + 2L * getTileHeight();
+                cacheBytes = Math.max(CACHE_BYTES, bandRows * getWidth() * cellBytes + stripBytes);
             }
             setTileCache(ImageN.createTileCache(cacheBytes));
+        }
+
+        private static int dataType( RenderedImage source ) {
+            switch( source.getSampleModel().getDataType() ) {
+            case DataBuffer.TYPE_BYTE:
+            case DataBuffer.TYPE_USHORT:
+            case DataBuffer.TYPE_SHORT:
+            case DataBuffer.TYPE_FLOAT:
+                return DataBuffer.TYPE_FLOAT;
+            default:
+                return DataBuffer.TYPE_DOUBLE;
+            }
         }
 
         private static ImageLayout layout( RenderedImage source ) {
@@ -400,7 +459,7 @@ public class OmsMapcalc extends HMModel {
                 gridYOffset = source.getTileGridYOffset();
             }
             stripRows = Math.min(source.getHeight(), stripRows);
-            SampleModel sm = new ComponentSampleModel(DataBuffer.TYPE_DOUBLE, width, stripRows, 1, width, new int[]{0});
+            SampleModel sm = new ComponentSampleModel(dataType(source), width, stripRows, 1, width, new int[]{0});
             ImageLayout layout = new ImageLayout(source.getMinX(), source.getMinY(), width, source.getHeight());
             layout.setTileGridXOffset(source.getMinX());
             layout.setTileGridYOffset(gridYOffset);
@@ -411,16 +470,32 @@ public class OmsMapcalc extends HMModel {
             return layout;
         }
 
+        /**
+         * The threads computing the output in parallel ask for the same strips at once: one
+         * computes a strip, the others wait for it and then find it in the cache, instead of each
+         * converting it again.
+         */
+        @Override
+        public synchronized Raster getTile( int tileX, int tileY ) {
+            return super.getTile(tileX, tileY);
+        }
+
         @Override
         protected void computeRect( Raster[] sources, WritableRaster dest, Rectangle destRect ) {
             Raster source = sources[0];
-            double[] values = source.getSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, (double[]) null);
-            for( int i = 0; i < values.length; i++ ) {
-                if (HMConstants.isNovalue(values[i], novalue)) {
-                    values[i] = Double.NaN;
+            int chunkRows = Math.max(1, Math.min(destRect.height, CHUNK_CELLS / destRect.width));
+            double[] values = null;
+            for( int y = destRect.y; y < destRect.y + destRect.height; y += chunkRows ) {
+                int rows = Math.min(chunkRows, destRect.y + destRect.height - y);
+                values = source.getSamples(destRect.x, y, destRect.width, rows, 0, values);
+                int count = destRect.width * rows;
+                for( int i = 0; i < count; i++ ) {
+                    if (HMConstants.isNovalue(values[i], novalue)) {
+                        values[i] = Double.NaN;
+                    }
                 }
+                dest.setSamples(destRect.x, y, destRect.width, rows, 0, values);
             }
-            dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, values);
         }
     }
 
@@ -431,24 +506,36 @@ public class OmsMapcalc extends HMModel {
      * <p>
      * Each cell is evaluated at the world position the direct runtime gives it, walking from the
      * south-west corner of the map, so that the transform of {@link #getTransform} reads the same
-     * cells of the sources. The runtime keeps the state of the script, so the tiles are computed
-     * one at a time.
+     * cells of the sources.
+     *
+     * <p>
+     * The tiles are computed in parallel, a band of tiles at a time: when a tile of a band is
+     * asked for, all the tiles of the band are computed by a pool of threads, a tile by a thread,
+     * each with a runtime of its own, since a runtime keeps the state of the script. With more
+     * threads, the next band is computed meanwhile, while the tiles of the current one are read,
+     * as by a writer that compresses them.
      */
     private static class StreamOpImage extends SourcelessOpImage {
         /** The tile size, the same as the tiles of the written GeoTIFFs. */
         static final int TILE_SIZE = 512;
 
-        private final JiffleIndirectRuntime runtime;
+        private final BlockingQueue<JiffleIndirectRuntime> runtimes;
+        private final ThreadPoolExecutor pool;
+        /** If the next band is computed while the current one is read. */
+        private final boolean prefetch;
+        /** The tiles of the bands being computed or ready, by band index. */
+        private final Map<Integer, List<Future<Raster>>> bands = new HashMap<>();
         private final int rows;
         private final double minX;
         private final double minY;
         private final double xRes;
         private final double yRes;
 
-        StreamOpImage( JiffleIndirectRuntime runtime, int cols, int rows, Rectangle2D worldBounds, double xRes, double yRes,
-                boolean isFloat ) {
+        StreamOpImage( List<JiffleIndirectRuntime> runtimes, int cols, int rows, Rectangle2D worldBounds, double xRes,
+                double yRes, boolean isFloat ) {
             super(layout(cols, rows, isFloat), null, sampleModel(cols, rows, isFloat), 0, 0, cols, rows);
-            this.runtime = runtime;
+            this.runtimes = new ArrayBlockingQueue<>(runtimes.size(), false, runtimes);
+            this.prefetch = runtimes.size() > 1;
             this.rows = rows;
             this.minX = worldBounds.getMinX();
             this.minY = worldBounds.getMinY();
@@ -458,6 +545,77 @@ public class OmsMapcalc extends HMModel {
             // tiles keeps the reads by rows from computing the tiles again for each row
             long bandBytes = (long) getTileHeight() * cols * DataBuffer.getDataTypeSize(getSampleModel().getDataType()) / 8;
             setTileCache(ImageN.createTileCache(bandBytes + bandBytes / 4));
+
+            // daemon threads that end when idle, so that a forgotten image doesn't keep them
+            AtomicInteger threadCount = new AtomicInteger();
+            pool = new ThreadPoolExecutor(runtimes.size(), runtimes.size(), 10, TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
+                    r -> {
+                        Thread thread = new Thread(r, "hm-mapcalc-" + threadCount.incrementAndGet());
+                        thread.setDaemon(true);
+                        return thread;
+                    });
+            pool.allowCoreThreadTimeOut(true);
+        }
+
+        @Override
+        public Raster computeTile( int tileX, int tileY ) {
+            Future<Raster> tile = takeTile(tileX, tileY);
+            try {
+                return tile.get();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new RuntimeException(e);
+            } catch (ExecutionException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof RuntimeException) {
+                    throw (RuntimeException) cause;
+                }
+                throw new RuntimeException(cause);
+            }
+        }
+
+        /**
+         * Takes a tile out of its band, submitting the band if not yet there, together with the
+         * next band when there are more threads, and forgetting the other bands: once handed out,
+         * a tile is kept only by the tile cache.
+         *
+         * @return the tile being computed or ready.
+         */
+        private synchronized Future<Raster> takeTile( int tileX, int tileY ) {
+            List<Future<Raster>> band = submitBand(tileY);
+            if (prefetch && tileY < getMaxTileY()) {
+                submitBand(tileY + 1);
+            }
+            bands.keySet().removeIf(y -> y < tileY || y > tileY + 1);
+            Future<Raster> tile = band.set(tileX - getMinTileX(), null);
+            if (tile == null) {
+                // handed out already, and then dropped by the tile cache: computed again
+                tile = pool.submit(() -> computeOneTile(tileX, tileY));
+            }
+            return tile;
+        }
+
+        private List<Future<Raster>> submitBand( int tileY ) {
+            return bands.computeIfAbsent(tileY, y -> {
+                List<Future<Raster>> band = new ArrayList<>();
+                for( int tileX = getMinTileX(); tileX <= getMaxTileX(); tileX++ ) {
+                    int tx = tileX;
+                    band.add(pool.submit(() -> computeOneTile(tx, y)));
+                }
+                return band;
+            });
+        }
+
+        private Raster computeOneTile( int tileX, int tileY ) throws InterruptedException {
+            WritableRaster dest = createWritableRaster(getSampleModel(), new Point(tileXToX(tileX), tileYToY(tileY)));
+            Rectangle destRect = getTileRect(tileX, tileY);
+            JiffleIndirectRuntime runtime = runtimes.take();
+            try {
+                compute(runtime, dest, destRect);
+            } finally {
+                runtimes.put(runtime);
+            }
+            return dest;
         }
 
         private static SampleModel sampleModel( int cols, int rows, boolean isFloat ) {
@@ -479,20 +637,17 @@ public class OmsMapcalc extends HMModel {
             return layout;
         }
 
-        @Override
-        protected void computeRect( PlanarImage[] sources, WritableRaster dest, Rectangle destRect ) {
+        private void compute( JiffleIndirectRuntime runtime, WritableRaster dest, Rectangle destRect ) {
             double[] values = new double[destRect.width * destRect.height];
             double[] pixel = new double[1];
-            synchronized (runtime) {
-                int i = 0;
-                for( int r = destRect.y; r < destRect.y + destRect.height; r++ ) {
-                    double y = minY + (rows - 1 - r) * yRes;
-                    for( int c = destRect.x; c < destRect.x + destRect.width; c++ ) {
-                        // a cell the script leaves unassigned is 0, as in the direct runtime
-                        pixel[0] = 0;
-                        runtime.evaluate(minX + c * xRes, y, pixel);
-                        values[i++] = Double.isNaN(pixel[0]) ? HMConstants.doubleNovalue : pixel[0];
-                    }
+            int i = 0;
+            for( int r = destRect.y; r < destRect.y + destRect.height; r++ ) {
+                double y = minY + (rows - 1 - r) * yRes;
+                for( int c = destRect.x; c < destRect.x + destRect.width; c++ ) {
+                    // a cell the script leaves unassigned is 0, as in the direct runtime
+                    pixel[0] = 0;
+                    runtime.evaluate(minX + c * xRes, y, pixel);
+                    values[i++] = Double.isNaN(pixel[0]) ? HMConstants.doubleNovalue : pixel[0];
                 }
             }
             dest.setSamples(destRect.x, destRect.y, destRect.width, destRect.height, 0, values);

@@ -120,6 +120,7 @@ public class Mapcalc extends OmsMapcalc {
         mapcalc.pFunction = pFunction;
         mapcalc.doFloat = doFloat;
         mapcalc.doStream = doStream;
+        mapcalc.pThreads = pThreads;
         mapcalc.pm = pm;
         mapcalc.process();
         dumpRaster(mapcalc.outRaster, outRaster);

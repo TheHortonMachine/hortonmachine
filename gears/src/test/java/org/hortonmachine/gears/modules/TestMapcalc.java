@@ -20,6 +20,7 @@ package org.hortonmachine.gears.modules;
 import static org.hortonmachine.gears.libs.modules.HMConstants.isNovalue;
 
 import java.awt.image.DataBuffer;
+import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.io.File;
 import java.util.Arrays;
@@ -233,8 +234,9 @@ public class TestMapcalc extends HMTestCase {
      * in memory, in double and in float, also once written to and read back from a GeoTIFF.
      */
     public void testMapcalcStream() throws Exception {
-        int cols = 1500;
-        int rows = 1200;
+        // wide, so that many tiles of a band are computed at once by the threads
+        int cols = 6000;
+        int rows = 700;
         double[][] data = new double[rows][cols];
         for( int r = 0; r < rows; r++ ) {
             for( int c = 0; c < cols; c++ ) {
@@ -259,6 +261,7 @@ public class TestMapcalc extends HMTestCase {
             mapcalc.pFunction = function;
             mapcalc.doFloat = isFloat;
             mapcalc.doStream = true;
+            mapcalc.pThreads = 4;
             mapcalc.process();
             GridCoverage2D streamRaster = mapcalc.outRaster;
 
@@ -277,19 +280,18 @@ public class TestMapcalc extends HMTestCase {
         }
     }
 
+    /**
+     * Compares the maps read whole: read by cells, a map read lazily from a file wider than the
+     * default tile cache would decode its tiles again for each row.
+     */
     private static void assertSameValues( GridCoverage2D expected, GridCoverage2D actual, int cols, int rows ) {
-        RandomIter expectedIter = CoverageUtilities.getRandomIterator(expected);
-        RandomIter actualIter = CoverageUtilities.getRandomIterator(actual);
-        try {
-            for( int r = 0; r < rows; r++ ) {
-                for( int c = 0; c < cols; c++ ) {
-                    assertEquals("row " + r + " col " + c, expectedIter.getSampleDouble(c, r, 0),
-                            actualIter.getSampleDouble(c, r, 0), 0.0);
-                }
+        Raster expectedData = expected.getRenderedImage().getData();
+        Raster actualData = actual.getRenderedImage().getData();
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                assertEquals("row " + r + " col " + c, expectedData.getSampleDouble(c, r, 0),
+                        actualData.getSampleDouble(c, r, 0), 0.0);
             }
-        } finally {
-            expectedIter.done();
-            actualIter.done();
         }
     }
 
