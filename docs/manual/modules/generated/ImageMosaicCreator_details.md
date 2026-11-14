@@ -3,3 +3,5 @@
 The index is a shapefile named as the folder, with the footprint of each image and its file in the location field, next to a properties file with the configuration of the mosaic and a sample_image.dat: the images stay as they are. They need to share the coordinate reference system, the number of bands and the data type, while their resolutions can differ: an image of another kind is left out of the index.
 
 The index is made only once: if the folder has one already, it is used as it is, and the images added later are not in it. To index them, the shapefile, the properties file and sample_image.dat need to be deleted first.
+
+Optionally the images of the index are also written as a GDAL virtual raster (VRT), readable by GDAL, QGIS and HortonMachine, as an input for the modules that take a raster file, for example to convert the whole mosaic to a Cloud Optimized GeoTIFF without loading it in memory. The VRT takes the finest resolution of the images, and where they overlap the images later in the index are drawn over the earlier ones. The images in the folder of the VRT or below it are written relative to it.

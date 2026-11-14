@@ -46,7 +46,13 @@ Each module has two fragments: `<Module>_details.md` with the text of its `@Docu
 4. `## Parameters`, with the include of `<Module>.md`;
 5. `## Example`, with the example script and its maps, and the sections that discuss the results.
 
-To change a module reference, change the annotations and regenerate the fragments. The same run regenerates `modules/undocumented.md`, the list of the toolbox modules that have no page yet, by toolbox folder. From the repository root:
+To change a module reference, change the annotations and regenerate the fragments. The same run regenerates `modules/undocumented.md`, the list of the toolbox modules that have no page yet, by toolbox folder. The quickest way is the script in this folder, which runs the commands below (`--maps` also regenerates the maps, `--test` runs `TestModuleDocs` at the end, `--no-install` skips the install):
+
+```sh
+./build_docs.sh --test
+```
+
+Or by hand, from the repository root:
 
 ```sh
 mvn -o install -pl modules -am -DskipTests

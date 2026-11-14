@@ -14,6 +14,9 @@ Raster map algebra with the Jiffle language, created by Michael Bedward: the scr
 |---|---|---|---|---|
 | `inRasters` | List |  |  | The maps used in the script. |
 | `pFunction` | String |  |  | The Jiffle script, with the images block that declares the maps. |
+| `doFloat` | boolean |  | `false` | Store the output as float instead of double, halving its memory. The calculation is still done in double. |
+| `doStream` | boolean |  | `false` | Compute the output only when it is read, a tile at a time, instead of all in memory: for huge maps written to file. Each read of the output computes it again. Scripts that carry values from a cell to the next, like counters, give different results. |
+| `pThreads` | int |  | `1` | The number of threads computing the output when streaming. More threads are faster, but need more memory: start with 1 and raise it if the memory allows. |
 | `inRaster1` | raster file |  |  | A map used in the script, known by its file name without extension. |
 | `inRaster2` | raster file |  |  | An optional map used in the script, known by its file name without extension. |
 | `inRaster3` | raster file |  |  | An optional map used in the script, known by its file name without extension. |
