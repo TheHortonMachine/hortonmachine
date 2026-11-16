@@ -85,20 +85,42 @@ public class HMStacManager implements AutoCloseable {
         try {
             stacClient = new HMSTACClient(new URL(url), http);
         } catch (Exception e) {
-            // static catalogs on object storage (e.g. https://host/bucket/catalog) have no
-            // index document on the folder, the root is the catalog.json inside it
-            if (url.toLowerCase().endsWith(".json")) {
-                throw e;
+            stacClient = null;
+            for( String fallbackUrl : getFallbackUrls(url) ) {
+                try {
+                    stacClient = new HMSTACClient(new URL(fallbackUrl), http);
+                    break;
+                } catch (Exception e2) {
+                    e.addSuppressed(e2);
+                }
             }
-            String staticUrl = (url.endsWith("/") ? url : url + "/") + "catalog.json";
-            try {
-                stacClient = new HMSTACClient(new URL(staticUrl), http);
-            } catch (Exception e2) {
-                e.addSuppressed(e2);
+            if (stacClient == null) {
                 throw e;
             }
         }
         stacClient.setForceLatLon(forceLatLon);
+    }
+
+    /**
+     * The addresses to try when the given one is not a landing page.
+     *
+     * @param url the address given by the user.
+     * @return the list of alternative addresses, in order of preference.
+     */
+    static List<String> getFallbackUrls( String url ) {
+        List<String> urls = new ArrayList<>();
+        String noSlash = url.endsWith("/") ? url.substring(0, url.length() - 1) : url;
+        // the OpenAPI definition (rel=service-desc, e.g. https://host/v1/api) is often
+        // mistaken for the landing page, which is its parent
+        if (noSlash.toLowerCase().endsWith("/api")) {
+            urls.add(noSlash.substring(0, noSlash.length() - "/api".length()));
+        }
+        // static catalogs on object storage (e.g. https://host/bucket/catalog) have no
+        // index document on the folder, the root is the catalog.json inside it
+        if (!noSlash.toLowerCase().endsWith(".json")) {
+            urls.add(noSlash + "/catalog.json");
+        }
+        return urls;
     }
 
     /**

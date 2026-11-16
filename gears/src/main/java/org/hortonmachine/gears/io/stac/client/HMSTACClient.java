@@ -9,11 +9,15 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,10 +48,16 @@ import org.locationtech.jts.geom.Geometry;
 import com.bedatadriven.jackson.datatype.jts.JtsModule;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ValueDeserializer;
 import tools.jackson.databind.cfg.EnumFeature;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.node.ObjectNode;
 
 public class HMSTACClient extends STACClient {
@@ -63,8 +73,59 @@ public class HMSTACClient extends STACClient {
 				.enable(EnumFeature.WRITE_ENUMS_USING_TO_STRING)
 				.enable(EnumFeature.READ_ENUMS_USING_TO_STRING)
 				.addModule(new JtsModule())
+				.addModule(new SimpleModule("hm-stac-lenient-dates").addDeserializer(Date.class, new LenientDateDeserializer()))
 				.changeDefaultPropertyInclusion(incl -> incl.withValueInclusion(JsonInclude.Include.NON_EMPTY))
 				.build();
+	}
+
+	/**
+	 * Date deserializer tolerant to the variants found in real catalogs, e.g. a space instead of
+	 * the 'T' separator ("2026-07-05 05:29:43.467Z"), missing offsets (read as UTC) or date only.
+	 */
+	static class LenientDateDeserializer extends ValueDeserializer<Date> {
+		@Override
+		public Date deserialize(JsonParser p, DeserializationContext ctxt) throws JacksonException {
+			if (p.currentToken() == JsonToken.VALUE_NUMBER_INT) {
+				return new Date(p.getLongValue());
+			}
+			String text = p.getValueAsString();
+			if (text == null || text.isBlank() || text.equals("..") || text.equals("null")) {
+				return null;
+			}
+			Instant instant = parseLenientInstant(text);
+			if (instant == null) {
+				return (Date) ctxt.handleWeirdStringValue(Date.class, text, "not a valid date");
+			}
+			return Date.from(instant);
+		}
+	}
+
+	/**
+	 * Parse a date/time string, tolerating a space as date-time separator, missing offsets (UTC) and dates only.
+	 *
+	 * @param text the string to parse.
+	 * @return the instant or <code>null</code> if it can't be parsed.
+	 */
+	static Instant parseLenientInstant(String text) {
+		String t = text.trim();
+		if (t.length() > 10 && t.charAt(10) == ' ') {
+			t = t.substring(0, 10) + "T" + t.substring(11);
+		}
+		try {
+			return OffsetDateTime.parse(t).toInstant();
+		} catch (DateTimeParseException e) {
+			// go on
+		}
+		try {
+			return LocalDateTime.parse(t).toInstant(ZoneOffset.UTC);
+		} catch (DateTimeParseException e) {
+			// go on
+		}
+		try {
+			return LocalDate.parse(t).atStartOfDay(ZoneOffset.UTC).toInstant();
+		} catch (DateTimeParseException e) {
+			return null;
+		}
 	}
 
 	/** Maximum depth of nested catalogs followed through child links. */
