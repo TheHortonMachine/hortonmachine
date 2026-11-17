@@ -243,9 +243,10 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		GeoTiffReader reader;
 		HMStacAccess access = asset.getAccess();
 		if (client == null && access != null && access.isAuthenticated(assetUrl)) {
-			// protected asset: read through the access context (whole object, no range requests yet)
-			reader = new GeoTiffReader(access.get(assetUrl).getInputStream());
-		} else if (assetUrl.startsWith("s3://")) { // TODO manage multiple S3 servers
+			// protected asset: read through the access context (whole object, no range requests yet),
+			// on the storage declared by the asset if an S3 compatible service
+			reader = new GeoTiffReader(access.get(assetUrl, asset.getStorageEndpoint()).getInputStream());
+		} else if (assetUrl.startsWith("s3://")) {
 			InputStream inputProvider = readS3Raster(cogUri, client);
 			reader = new GeoTiffReader(inputProvider);
 		} else {
@@ -381,6 +382,12 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	}
 
 	public InputStream readS3Raster(BasicAuthURI cogUri, Client client) {
+		if (client == null) {
+			String endpoint = asset.getStorageEndpoint();
+			throw new IllegalStateException("The asset " + assetUrl + " is on S3"
+					+ (endpoint != null ? " (" + endpoint + ")" : "")
+					+ " and needs credentials: set an AWS profile with the access keys of the service.");
+		}
 		String[] bucketAndObject = assetUrl.split("://")[1].split("/", 2);
 
 		return client.path(bucketAndObject[0], bucketAndObject[1]).responseInputStream();

@@ -77,6 +77,13 @@ public class HMStacCollection {
         this.pm = pm;
     }
 
+    /**
+     * @return the wrapped collection, for the manager.
+     */
+    Collection getCollection() {
+        return collection;
+    }
+
     public String getId() {
         return collection.getId();
     }

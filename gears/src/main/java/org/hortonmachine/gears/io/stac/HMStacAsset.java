@@ -26,6 +26,7 @@ public class HMStacAsset {
 	private Integer epsg;
 	private Envelope envelope;
 	private HMStacAccess access;
+	private String storageEndpoint;
 
 	public HMStacAsset(String id, JsonNode assetNode) {
 		this(id, assetNode, null);
@@ -37,9 +38,21 @@ public class HMStacAsset {
 	 * @param access the access context used to read the asset (e.g. with authentication), can be null.
 	 */
 	public HMStacAsset(String id, JsonNode assetNode, HMStacAccess access) {
+		this(id, assetNode, access, null);
+	}
+
+	/**
+	 * @param id the asset id.
+	 * @param assetNode the asset json.
+	 * @param access the access context used to read the asset (e.g. with authentication), can be null.
+	 * @param storageSchemes the <code>storage:schemes</code> of the item or collection (storage extension),
+	 *          to which the <code>storage:refs</code> of the asset refer, can be null.
+	 */
+	public HMStacAsset(String id, JsonNode assetNode, HMStacAccess access, JsonNode storageSchemes) {
 		this.id = id;
 		this.access = access;
 		this.assetNode = assetNode;
+		this.storageEndpoint = findStorageEndpoint(assetNode, storageSchemes);
 		if (assetNode.has("title")) {
 			title = assetNode.get("title").stringValue(null);
 		}
@@ -93,6 +106,43 @@ public class HMStacAsset {
 	 */
 	public HMStacAccess getAccess() {
 		return access;
+	}
+
+	/**
+	 * The endpoint of the S3 compatible service holding the asset, as declared by the storage extension
+	 * (the <code>platform</code> of the first <code>custom-s3</code> scheme the asset refers to, preferring
+	 * the ones that are not requester pays).
+	 *
+	 * @return the endpoint url (e.g. <code>https://eodata.dataspace.copernicus.eu</code>) or null if not declared.
+	 */
+	public String getStorageEndpoint() {
+		return storageEndpoint;
+	}
+
+	private static String findStorageEndpoint(JsonNode assetNode, JsonNode storageSchemes) {
+		JsonNode refs = assetNode.get("storage:refs");
+		if (storageSchemes == null || !storageSchemes.isObject() || refs == null || !refs.isArray()) {
+			return null;
+		}
+		String requesterPaysEndpoint = null;
+		for (JsonNode ref : refs) {
+			JsonNode scheme = storageSchemes.get(ref.asString(""));
+			if (scheme == null || !"custom-s3".equals(scheme.path("type").asString(""))) {
+				continue;
+			}
+			String platform = scheme.path("platform").asString(null);
+			// templated platforms (e.g. https://{bucket}.example.com) are not handled
+			if (platform == null || !platform.startsWith("http") || platform.contains("{")) {
+				continue;
+			}
+			if (!scheme.path("requester_pays").asBoolean(false)) {
+				return platform;
+			}
+			if (requesterPaysEndpoint == null) {
+				requesterPaysEndpoint = platform;
+			}
+		}
+		return requesterPaysEndpoint;
 	}
 
 	public JsonNode getAssetNode() {

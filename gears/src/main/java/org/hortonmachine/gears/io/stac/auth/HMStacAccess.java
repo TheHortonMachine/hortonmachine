@@ -92,9 +92,31 @@ public class HMStacAccess {
      * @throws IOException if the request fails.
      */
     public HMStacResponse get( String href ) throws IOException {
+        return get(href, null);
+    }
+
+    /**
+     * Read an address, with authentication if needed, on the storage the address is declared to be on.
+     *
+     * @param href the address.
+     * @param storageEndpoint the endpoint of the S3 compatible service holding the object, as declared by the
+     *          storage extension of an asset (see {@link org.hortonmachine.gears.io.stac.HMStacAsset#getStorageEndpoint()}),
+     *          used for s3 addresses if the authentication has no endpoint set. Can be null.
+     * @return the response, to be closed after use.
+     * @throws IOException if the request fails.
+     */
+    public HMStacResponse get( String href, String storageEndpoint ) throws IOException {
         IHMStacAuthentication authentication = getAuthentication(href);
+        if (authentication instanceof HMS3Authentication s3Authentication) {
+            return s3Authentication.get(href, storageEndpoint);
+        }
         if (authentication != null) {
             return authentication.get(href);
+        }
+        if (HMS3Location.parse(href) != null && !href.toLowerCase().startsWith("http")) {
+            throw new IOException("The asset " + href + " is on S3"
+                    + (storageEndpoint != null ? " (" + storageEndpoint + ")" : "")
+                    + " and needs credentials: set an AWS profile with the access keys of the service.");
         }
         URLConnection connection = new URL(href).openConnection();
         connection.setConnectTimeout(30_000);

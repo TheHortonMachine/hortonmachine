@@ -20,6 +20,7 @@ package org.hortonmachine.stac;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -62,6 +63,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -91,6 +93,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -149,6 +152,8 @@ import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.CsvfileHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeojsonHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.GeopackageVectorHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.NetcdfHandler;
+import org.hortonmachine.gears.io.stac.assets.handlers.NetcdfHandler.GridInfo;
 import org.hortonmachine.gears.io.stac.assets.handlers.ShapefileHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler;
 import org.hortonmachine.gears.io.stac.assets.handlers.StyleFileHandler.StyleFormat;
@@ -158,6 +163,7 @@ import org.hortonmachine.gears.io.stac.auth.HMS3Location;
 import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.hortonmachine.gears.io.stac.auth.HMStacResponse;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
+import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.libs.modules.HMRaster.HMRasterWritableBuilder;
 import org.hortonmachine.gears.libs.modules.HMRaster.MergeMode;
@@ -197,6 +203,8 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private static final String PREF_CATALOG_LIST = "STAC_BROWSER_CATALOG_LIST";
     private static final String PREF_AWS_PROFILE = "STAC_BROWSER_AWS_PROFILE";
     private static final String PREF_AWS_REGION = "STAC_BROWSER_AWS_REGION";
+    private static final String PREF_ASSET_S3_PROFILE = "STAC_BROWSER_ASSET_S3_PROFILE";
+    private static final String PREF_ASSET_S3_REGION = "STAC_BROWSER_ASSET_S3_REGION";
     // the http authentication of each server (scheme, host and port), followed by a hash of the server:
     // kind, name, user and secret, one per line; the secret in clear text, as the preferences are
     private static final String PREF_HTTP_AUTH_PREFIX = "STAC_BROWSER_HTTP_AUTH_";
@@ -312,6 +320,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private JPanel awsPanel;
     private JComboBox<String> awsProfileCombo;
     private JTextField awsRegionField;
+    /** The AWS profile and region of the s3:// assets of the catalogs served over http(s), empty if none. */
+    private String assetS3Profile = "";
+    private String assetS3Region = "";
+    private JButton s3AssetsButton;
     private JPanel httpAuthPanel;
     private JComboBox<String> httpAuthTypeCombo;
     private JLabel httpAuthNameLabel;
@@ -372,6 +384,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private RowTableModel<DownloadRow> downloadsModel;
     private JTable downloadsTable;
     private JLabel downloadSummaryLabel;
+    /** If selected, the download preview shows only the assets of the items selected in the items table. */
+    private JCheckBox onlySelectedItemsCheck;
+    /**
+     * The download rows of the current results by asset, so that the access and size already checked are kept when the
+     * shown items or keys change.
+     */
+    private final Map<HMStacAsset, DownloadRow> downloadRowsCache = new IdentityHashMap<>();
     private JButton checkAccessButton;
     private JTextArea logArea;
 
@@ -458,6 +477,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         updateHttpAuthFields();
         right.add(httpAuthPanel);
 
+        // credentials of the s3:// assets of the catalogs served over http(s), set in a dialog when needed
+        assetS3Profile = PreferencesHandler.getPreference(PREF_ASSET_S3_PROFILE, "");
+        assetS3Region = PreferencesHandler.getPreference(PREF_ASSET_S3_REGION, "");
+        s3AssetsButton = button("", this::editAssetS3Credentials);
+        updateS3AssetsButton();
+        right.add(s3AssetsButton);
+
         connectButton = new JButton("Connect");
         connectButton.addActionListener(e -> connect());
         right.add(connectButton);
@@ -466,7 +492,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         right.add(catalogsButton);
         panel.add(right, BorderLayout.EAST);
 
-        // the credentials are shown only for catalogs on S3
+        // the S3 credentials are shown only for catalogs on S3, the ones of the assets are in a dialog
         catalogCombo.addActionListener(e -> updateAwsPanel());
         if (catalogCombo.getEditor().getEditorComponent() instanceof JTextField editorField)
             onTextChange(editorField, this::updateAwsPanel);
@@ -477,18 +503,79 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private void updateAwsPanel() {
         Object item = catalogCombo.getEditor().getItem();
         boolean isS3 = item != null && HMS3Location.parse(item.toString().trim()) != null;
+        boolean isHttp = item != null && item.toString().trim().matches("(?i)^https?://.*") && !isS3;
         if (awsPanel.isVisible() != isS3) {
             awsPanel.setVisible(isS3);
             awsPanel.getParent().revalidate();
         }
-        boolean isHttp = item != null && item.toString().trim().matches("(?i)^https?://.*") && !isS3;
         if (httpAuthPanel.isVisible() != isHttp) {
             httpAuthPanel.setVisible(isHttp);
+            s3AssetsButton.setVisible(isHttp);
             httpAuthPanel.getParent().revalidate();
         }
         if (isHttp) {
             loadHttpAuthentication(item.toString().trim());
         }
+    }
+
+    private void updateS3AssetsButton() {
+        boolean set = !assetS3Profile.isEmpty();
+        s3AssetsButton.setText(set ? "S3 assets: " + assetS3Profile : "S3 assets...");
+        s3AssetsButton.setToolTipText(set
+                ? "The s3:// assets are read with the AWS profile " + assetS3Profile
+                        + (assetS3Region.isEmpty() ? "" : ", region " + assetS3Region) + ". Click to change."
+                : "Set the AWS profile to read the s3:// assets of the catalog, as the ones of the Copernicus Data Space");
+    }
+
+    /**
+     * Dialog to set the credentials of the s3:// assets of the catalogs served over http(s), used at the next connection.
+     */
+    private void editAssetS3Credentials() {
+        List<String> profiles = new ArrayList<>();
+        profiles.add("");
+        profiles.addAll(HMS3Authentication.listProfiles());
+        if (!assetS3Profile.isEmpty() && !profiles.contains(assetS3Profile))
+            profiles.add(assetS3Profile);
+        JComboBox<String> profileCombo = new JComboBox<>(profiles.toArray(new String[0]));
+        profileCombo.setEditable(true);
+        profileCombo.setSelectedItem(assetS3Profile);
+        JTextField regionField = new JTextField(assetS3Region, 12);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+        c.insets = new Insets(4, 4, 4, 4);
+        c.anchor = GridBagConstraints.WEST;
+        c.gridx = 0;
+        c.gridy = 0;
+        c.gridwidth = 2;
+        panel.add(new JLabel("<html>Credentials for the s3:// assets of the catalog, from a profile of ~/.aws/credentials<br>"
+                + "(empty = none). For S3 compatible services the endpoint is taken from the storage<br>"
+                + "extension of the assets or from the endpoint_url of the profile.<br>"
+                + "Used at the next connection.</html>"), c);
+        c.gridwidth = 1;
+        c.gridy++;
+        panel.add(new JLabel("AWS profile:"), c);
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(profileCombo, c);
+        c.gridx = 0;
+        c.gridy++;
+        c.fill = GridBagConstraints.NONE;
+        panel.add(new JLabel("Region:"), c);
+        c.gridx = 1;
+        c.fill = GridBagConstraints.HORIZONTAL;
+        regionField.setToolTipText("Only needed for AWS buckets, if not in the profile config (e.g. us-west-2)");
+        panel.add(regionField, c);
+
+        int answer = JOptionPane.showConfirmDialog(this, panel, "S3 assets credentials", JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE);
+        if (answer != JOptionPane.OK_OPTION)
+            return;
+        assetS3Profile = String.valueOf(profileCombo.getEditor().getItem()).trim();
+        assetS3Region = regionField.getText().trim();
+        PreferencesHandler.setPreference(PREF_ASSET_S3_PROFILE, assetS3Profile);
+        PreferencesHandler.setPreference(PREF_ASSET_S3_REGION, assetS3Region);
+        updateS3AssetsButton();
     }
 
     /**
@@ -844,9 +931,14 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                 .col("Assets", Integer.class, r -> r.assets.size())//
                 .col("HM readable", Integer.class, r -> r.supportedCount);
         itemsTable = table(itemsModel);
+        // several items can be selected to see their assets in the download preview, the details show the first
+        itemsTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemsTable.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting())
+            if (!e.getValueIsAdjusting()) {
                 selectItem();
+                if (onlySelectedItemsCheck.isSelected())
+                    refreshDownloads();
+            }
         });
         itemsTable.addMouseListener(new MouseAdapter(){
             @Override
@@ -967,6 +1059,9 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         removeAllFromMapItem.addActionListener(e -> mapPanel.removeAllLayers());
         JMenuItem viewTableItem = new JMenuItem("View table...");
         viewTableItem.addActionListener(e -> viewCsv(getSelectedDownloads().get(0)));
+        JMenuItem netcdfGridsItem = new JMenuItem("NetCDF grids...");
+        netcdfGridsItem.setToolTipText("List the grid variables of the file, to show them on the map or export them as GeoTIFF");
+        netcdfGridsItem.addActionListener(e -> showNetcdfGrids(getSelectedDownloads().get(0)));
         // shown only if the browser was opened by an application that takes the assets
         JMenuItem addToConsumerItem = new JMenuItem();
         addToConsumerItem.addActionListener(e -> addSelectedToConsumer());
@@ -980,6 +1075,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         downloadsPopup.add(removeFromMapItem);
         downloadsPopup.add(removeAllFromMapItem);
         downloadsPopup.add(viewTableItem);
+        downloadsPopup.add(netcdfGridsItem);
         downloadsPopup.addSeparator();
         downloadsPopup.add(copyCodeItem);
         downloadsPopup.add(copyUrlItem);
@@ -1014,6 +1110,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                     removeFromMapItem.setEnabled(selected.stream().anyMatch(r -> mapPanel.hasLayer(mapLayerId(r))));
                     removeAllFromMapItem.setEnabled(mapPanel.hasLayers());
                     viewTableItem.setEnabled(!busy && selected.size() == 1 && isCsvAsset(first));
+                    netcdfGridsItem.setEnabled(!busy && selected.size() == 1 && isNetcdfAsset(first));
                     copyCodeItem.setEnabled(selected.size() == 1);
                     long addableCount = selected.stream().filter(r -> isRasterAsset(r.asset) || isVectorAsset(r.asset)).count();
                     addToConsumerItem.setVisible(assetsConsumer != null);
@@ -1028,6 +1125,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         JPanel downloadTools = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         downloadTools.add(button("Select readable keys", () -> selectAssetKeys(true)));
         downloadTools.add(button("Select none", () -> selectAssetKeys(false)));
+        downloadTools.add(Box.createHorizontalStrut(12));
+        onlySelectedItemsCheck = new JCheckBox("Only selected items", true);
+        onlySelectedItemsCheck.setToolTipText("Show only the assets of the items selected in the Items tab "
+                + "(all items if none is selected)");
+        onlySelectedItemsCheck.addActionListener(e -> refreshDownloads());
+        downloadTools.add(onlySelectedItemsCheck);
         downloadTools.add(Box.createHorizontalStrut(12));
         checkAccessButton = button("Check access", this::checkAccess);
         checkAccessButton.setToolTipText("HTTP HEAD request on the selected assets (or the first " + MAX_ACCESS_CHECKS + ")");
@@ -1134,6 +1237,30 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             } catch (IllegalArgumentException e) {
                 GuiUtilities.showWarningMessage(this, "Unable to use the authentication: " + e.getMessage());
                 return;
+            }
+            // the s3:// assets (e.g. of the Copernicus Data Space) are read with the chosen profile
+            String profile = assetS3Profile;
+            if (!profile.isEmpty()) {
+                String region = assetS3Region;
+                try {
+                    HMS3Authentication s3Authentication = HMS3Authentication.fromProfile(profile);
+                    if (!region.isEmpty())
+                        s3Authentication.setRegion(region);
+                    if (newAccess == null)
+                        newAccess = new HMStacAccess();
+                    newAccess.addAuthentication(s3Authentication);
+                    String s3Info = "S3 assets with profile " + profile
+                            + (s3Authentication.getEndpoint() != null ? ", endpoint " + s3Authentication.getEndpoint() : "")
+                            + (s3Authentication.getRegion() != null ? ", region " + s3Authentication.getRegion() : "");
+                    authInfo = authInfo.equals("none") ? s3Info : authInfo + "; " + s3Info;
+                    String s3Code = "HMS3Authentication.fromProfile(" + javaString(profile) + ")"
+                            + (region.isEmpty() ? "" : ".setRegion(" + javaString(region) + ")");
+                    newAccessCode = newAccessCode == null ? "new HMStacAccess(" + s3Code + ")"
+                            : newAccessCode.substring(0, newAccessCode.length() - 1) + ", " + s3Code + ")";
+                } catch (Exception e) {
+                    GuiUtilities.showWarningMessage(this, "Unable to use the AWS credentials for the S3 assets: " + e.getMessage());
+                    return;
+                }
             }
         }
         HMStacAccess fAccess = newAccess;
@@ -1344,6 +1471,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         // by default preview everything HM is able to read
         keys.values().forEach(k -> k.selected = k.supported > 0);
         assetKeysModel.setRows(new ArrayList<>(keys.values()));
+        downloadRowsCache.clear();
         refreshDownloads();
         zoomToResults();
     }
@@ -1355,6 +1483,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         MetadataTree.setContent(itemTree, null);
         assetKeysModel.setRows(null);
         downloadsModel.setRows(null);
+        downloadRowsCache.clear();
         mapPanel.setFootprints(null);
         mapPanel.removeAllLayers();
         searchInfoLabel.setText(" ");
@@ -1532,16 +1661,21 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private void refreshDownloads() {
         Set<String> selectedKeys = assetKeysModel.getRows().stream().filter(r -> r.selected).map(r -> r.key)
                 .collect(Collectors.toSet());
+        List<ItemRow> selectedItems = getSelectedItemRows();
+        boolean onlySelected = onlySelectedItemsCheck.isSelected() && !selectedItems.isEmpty();
         List<DownloadRow> downloads = new ArrayList<>();
         int readable = 0;
         Set<ItemRow> items = new LinkedHashSet<>();
-        for( ItemRow itemRow : itemRows ) {
+        for( ItemRow itemRow : onlySelected ? selectedItems : itemRows ) {
             for( HMStacAsset asset : itemRow.assets ) {
                 if (selectedKeys.contains(asset.getId())) {
-                    DownloadRow d = new DownloadRow();
-                    d.itemRow = itemRow;
-                    d.asset = asset;
-                    d.href = href(asset);
+                    DownloadRow d = downloadRowsCache.computeIfAbsent(asset, a -> {
+                        DownloadRow r = new DownloadRow();
+                        r.itemRow = itemRow;
+                        r.asset = a;
+                        r.href = href(a);
+                        return r;
+                    });
                     downloads.add(d);
                     items.add(itemRow);
                     if (asset.isValid())
@@ -1550,8 +1684,20 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             }
         }
         downloadsModel.setRows(downloads);
-        downloadSummaryLabel.setText(downloads.size() + " assets from " + items.size() + " items: " + readable
+        String scope = onlySelected ? " selected" : itemRows.size() > 0 && onlySelectedItemsCheck.isSelected() ? " (no item selected, all shown)" : "";
+        downloadSummaryLabel.setText(downloads.size() + " assets from " + items.size() + scope + " items: " + readable
                 + " readable by HM, " + (downloads.size() - readable) + " without handler");
+    }
+
+    /**
+     * @return the items selected in the items table, in the order of the table.
+     */
+    private List<ItemRow> getSelectedItemRows() {
+        List<ItemRow> rows = new ArrayList<>();
+        for( int viewRow : itemsTable.getSelectedRows() ) {
+            rows.add(itemsModel.getRow(itemsTable.convertRowIndexToModel(viewRow)));
+        }
+        return rows;
     }
 
     private void checkAccess() {
@@ -1591,7 +1737,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         for( DownloadRow row : rows ) {
             if (monitor.isCanceled())
                 break;
-            String[] result = checkUrl(client, row.href, access);
+            String[] result = checkUrl(client, row.href, row.asset.getStorageEndpoint(), access);
             row.access = result[0];
             row.size = result[1];
             row.bytes = Long.parseLong(result[2]);
@@ -1624,12 +1770,13 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
      *
      * @return the status and the size.
      */
-    private static String[] checkUrl( HttpClient client, String href, HMStacAccess access ) {
+    private static String[] checkUrl( HttpClient client, String href, String storageEndpoint, HMStacAccess access ) {
         if (href == null)
             return new String[]{"no href", "", "-1"};
         if (access != null && access.isAuthenticated(href)) {
-            // protected: open the object with the credentials, the stream is closed right away
-            try (HMStacResponse response = access.get(href)) {
+            // protected: open the object with the credentials, on the same storage the asset is read from,
+            // the stream is closed right away
+            try (HMStacResponse response = access.get(href, storageEndpoint)) {
                 long size = response.getContentLength();
                 return new String[]{"200 ok (authenticated)", size >= 0 ? humanSize(size) : "?", String.valueOf(size)};
             } catch (IOException e) {
@@ -1747,7 +1894,7 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
                         // the HM way, to see how the handlers behave
                         row.asset.getHandler().downloadAsset(outFile.getAbsolutePath(), monitor);
                     } else {
-                        downloadPlain(client, row.href, outFile, access);
+                        downloadPlain(client, row.href, row.asset.getStorageEndpoint(), outFile, access);
                     }
                     row.access = "saved" + saveStyles(row, outFile, styleKeys);
                     row.size = humanSize(outFile.length());
@@ -2003,6 +2150,267 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             showRasterOnMap(row);
         else if (isVectorAsset(row.asset))
             showVectorOnMap(row);
+    }
+
+    // ==================== netcdf ====================
+
+    private static boolean isNetcdfAsset( HMStacAsset asset ) {
+        return asset.isValid() && asset.getHandler() instanceof NetcdfHandler;
+    }
+
+    /**
+     * List the grids of a NetCDF asset, then open the dialog to show them on the map or export them as GeoTIFFs.
+     */
+    private void showNetcdfGrids( DownloadRow row ) {
+        NetcdfHandler handler = (NetcdfHandler) row.asset.getHandler();
+        String name = row.itemRow.name() + " / " + row.asset.getId();
+        runTask("Listing the grids of " + name, () -> handler.listGrids(monitor), grids -> {
+            if (grids.isEmpty()) {
+                GuiUtilities.showWarningMessage(this, "No grid variables found in " + name + ".");
+                return;
+            }
+            log(grids.size() + " grid(s) in " + name);
+            new NetcdfGridsDialog(row, handler, grids).setVisible(true);
+        });
+    }
+
+    /**
+     * Cut a raster to the query bbox, snapped on its grid.
+     *
+     * @param coverage the raster.
+     * @param bboxLL the bbox in WGS84 lon/lat.
+     * @param name the name of the clipped raster.
+     * @return the clipped raster, or <code>null</code> if the raster doesn't cover the bbox.
+     */
+    private static GridCoverage2D clipToBbox( GridCoverage2D coverage, Envelope bboxLL, String name ) throws Exception {
+        CoordinateReferenceSystem crs = coverage.getCoordinateReferenceSystem();
+        Envelope bbox = new ReferencedEnvelope(bboxLL, DefaultGeographicCRS.WGS84).transform(crs, true);
+        RegionMap region = RegionMap.fromGridGeometry(coverage.getGridGeometry());
+        Envelope cut = bbox.intersection(region.toEnvelope());
+        if (cut.isNull() || cut.getWidth() <= 0 || cut.getHeight() <= 0)
+            return null;
+        RegionMap subRegion = region.toSubRegion(cut);
+        try (HMRaster raster = new HMRasterWritableBuilder().setName(name).setRegion(subRegion).setCrs(crs)
+                .setNoValue(HMConstants.doubleNovalue).build()) {
+            raster.mapRaster(null, HMRaster.fromGridCoverage(coverage), MergeMode.SUBSTITUTE);
+            return raster.buildCoverage();
+        }
+    }
+
+    /**
+     * The grids of a NetCDF asset: one of them can be shown on the map, or a range of its timesteps exported as
+     * GeoTIFFs, optionally clipped to the query bbox. Not modal, to look at the map meanwhile.
+     */
+    private class NetcdfGridsDialog extends JDialog {
+        private final DownloadRow row;
+        private final NetcdfHandler handler;
+        private final RowTableModel<GridInfo> gridsModel;
+        private final JTable gridsTable;
+        private final SpinnerNumberModel fromModel = new SpinnerNumberModel(0, 0, 0, 1);
+        private final SpinnerNumberModel toModel = new SpinnerNumberModel(0, 0, 0, 1);
+        private final JSpinner fromSpinner = new JSpinner(fromModel);
+        private final JSpinner toSpinner = new JSpinner(toModel);
+        private final JLabel fromDateLabel = new JLabel(" ");
+        private final JLabel toDateLabel = new JLabel(" ");
+        private final JLabel noteLabel = new JLabel(" ");
+        private final JCheckBox clipCheck = new JCheckBox("Clip to the query bbox");
+        private final JButton showButton;
+        private final JButton exportButton;
+
+        NetcdfGridsDialog( DownloadRow row, NetcdfHandler handler, List<GridInfo> grids ) {
+            super(SwingUtilities.getWindowAncestor(StacBrowser.this), "NetCDF grids of " + row.itemRow.name() + " / "
+                    + row.asset.getId(), Dialog.ModalityType.MODELESS);
+            this.row = row;
+            this.handler = handler;
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+            gridsModel = new RowTableModel<GridInfo>()//
+                    .col("Grid", String.class, GridInfo::name)//
+                    .col("Description", String.class, GridInfo::description)//
+                    .col("Units", String.class, GridInfo::units)//
+                    .col("Dimensions", String.class, GridInfo::dimensions)//
+                    .col("Timesteps", Integer.class, g -> g.dates().isEmpty() ? null : g.dates().size())//
+                    .col("First date (UTC)", String.class, g -> g.dates().isEmpty() ? "" : formatDate(g.dates().get(0)))//
+                    .col("Last date (UTC)", String.class,
+                            g -> g.dates().isEmpty() ? "" : formatDate(g.dates().get(g.dates().size() - 1)))//
+                    .col("Projection", String.class, GridInfo::projection)//
+                    .col("Note", String.class, g -> g.note() == null ? "" : g.note());
+            gridsModel.setRows(grids);
+            gridsTable = table(gridsModel);
+            gridsTable.getSelectionModel().addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting())
+                    gridSelected();
+            });
+
+            fromModel.addChangeListener(e -> {
+                if ((Integer) toModel.getValue() < (Integer) fromModel.getValue())
+                    toModel.setValue(fromModel.getValue());
+                updateDateLabels();
+            });
+            toModel.addChangeListener(e -> {
+                if ((Integer) toModel.getValue() < (Integer) fromModel.getValue())
+                    fromModel.setValue(toModel.getValue());
+                updateDateLabels();
+            });
+
+            Envelope bbox = readBboxFields();
+            clipCheck.setSelected(bbox != null);
+            clipCheck.setEnabled(bbox != null);
+            clipCheck.setToolTipText(bbox != null ? "Cut the grid to " + bboxString(bbox) : "Needs a valid query bbox");
+
+            JPanel timePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+            timePanel.add(new JLabel("Timesteps from"));
+            timePanel.add(fromSpinner);
+            timePanel.add(fromDateLabel);
+            timePanel.add(Box.createHorizontalStrut(8));
+            timePanel.add(new JLabel("to"));
+            timePanel.add(toSpinner);
+            timePanel.add(toDateLabel);
+            timePanel.add(Box.createHorizontalStrut(12));
+            timePanel.add(clipCheck);
+
+            showButton = button("Show on map", this::showOnMap);
+            showButton.setToolTipText("Show the first timestep of the range on the map");
+            exportButton = button("Export GeoTIFF(s)...", this::export);
+            exportButton.setToolTipText("One GeoTIFF per timestep of the range");
+            JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+            buttons.add(showButton);
+            buttons.add(exportButton);
+            buttons.add(button("Close", this::dispose));
+
+            JPanel bottom = new JPanel(new BorderLayout());
+            noteLabel.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
+            bottom.add(noteLabel, BorderLayout.NORTH);
+            bottom.add(timePanel, BorderLayout.CENTER);
+            bottom.add(buttons, BorderLayout.SOUTH);
+
+            JPanel content = new JPanel(new BorderLayout(0, 4));
+            content.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
+            content.add(new JScrollPane(gridsTable), BorderLayout.CENTER);
+            content.add(bottom, BorderLayout.SOUTH);
+            setContentPane(content);
+            setSize(900, 400);
+            setLocationRelativeTo(StacBrowser.this);
+
+            // the first readable grid
+            for( int i = 0; i < grids.size(); i++ ) {
+                if (grids.get(i).readable()) {
+                    int viewRow = gridsTable.convertRowIndexToView(i);
+                    gridsTable.setRowSelectionInterval(viewRow, viewRow);
+                    break;
+                }
+            }
+            gridSelected();
+        }
+
+        private GridInfo selectedGrid() {
+            int viewRow = gridsTable.getSelectedRow();
+            return viewRow < 0 ? null : gridsModel.getRow(gridsTable.convertRowIndexToModel(viewRow));
+        }
+
+        private void gridSelected() {
+            GridInfo grid = selectedGrid();
+            int last = grid == null ? 0 : grid.timestepsCount() - 1;
+            // the limits first, then the values within them
+            fromModel.setMaximum(last);
+            toModel.setMaximum(last);
+            fromModel.setValue(0);
+            toModel.setValue(0);
+            fromSpinner.setEnabled(last > 0);
+            toSpinner.setEnabled(last > 0);
+            boolean readable = grid != null && grid.readable();
+            showButton.setEnabled(readable);
+            exportButton.setEnabled(readable);
+            noteLabel.setText(grid == null ? "Select a grid." : grid.note() != null ? "Note: " + grid.note() : " ");
+            updateDateLabels();
+        }
+
+        private void updateDateLabels() {
+            GridInfo grid = selectedGrid();
+            fromDateLabel.setText(dateText(grid, (Integer) fromModel.getValue()));
+            toDateLabel.setText(dateText(grid, (Integer) toModel.getValue()));
+        }
+
+        private String dateText( GridInfo grid, int timestep ) {
+            if (grid == null || grid.dates().isEmpty())
+                return grid == null ? " " : "(no time axis)";
+            return "(" + formatDate(grid.dates().get(timestep)) + ")";
+        }
+
+        private Envelope clipBbox() {
+            return clipCheck.isSelected() ? readBboxFields() : null;
+        }
+
+        private void showOnMap() {
+            GridInfo grid = selectedGrid();
+            if (grid == null)
+                return;
+            int timestep = (Integer) fromModel.getValue();
+            Envelope bbox = clipBbox();
+            String title = row.itemRow.name() + " / " + row.asset.getId() + " / " + grid.name()
+                    + (grid.dates().isEmpty() ? "" : " " + formatDate(grid.dates().get(timestep)));
+            runTask("Reading " + title + " for the map", () -> {
+                RasterPreview[] preview = new RasterPreview[1];
+                handler.readGrid(grid.name(), timestep, timestep + 1, monitor, ( t, date, coverage ) -> {
+                    GridCoverage2D shown = bbox != null ? clipToBbox(coverage, bbox, grid.name()) : coverage;
+                    if (shown == null)
+                        throw new IllegalArgumentException("the grid doesn't cover the query bbox");
+                    preview[0] = RasterPreview.create(shown);
+                });
+                return preview[0];
+            }, preview -> {
+                if (preview == null || preview.wgs84Image == null) {
+                    GuiUtilities.showWarningMessage(this,
+                            "Unable to show the grid" + (preview != null ? ": " + preview.note : "."));
+                    return;
+                }
+                // one grid per asset on the map, so that "Remove from map" of the asset works
+                mapPanel.addImageLayer(mapLayerId(row), title, preview.wgs84Image, preview.wgs84Envelope, false);
+                String msg = "Shown on map: " + title + (preview.range != null
+                        ? String.format(Locale.ROOT, " (stretched %.4g - %.4g)", preview.range[0], preview.range[1])
+                        : "");
+                log(msg);
+                statusLabel.setText(msg);
+            });
+        }
+
+        private void export() {
+            GridInfo grid = selectedGrid();
+            if (grid == null)
+                return;
+            int from = (Integer) fromModel.getValue();
+            int to = (Integer) toModel.getValue();
+            Envelope bbox = clipBbox();
+            File folder = askOutputFolder("Folder to export the grid into");
+            if (folder == null)
+                return;
+            SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            f.setTimeZone(TimeZone.getTimeZone("UTC"));
+            String base = row.itemRow.item.getId() + "_" + row.asset.getId();
+            int count = to - from + 1;
+            runTask("Exporting " + count + " timestep(s) of " + grid.name(), () -> {
+                int[] written = {0};
+                handler.readGrid(grid.name(), from, to + 1, monitor, ( t, date, coverage ) -> {
+                    GridCoverage2D out = bbox != null ? clipToBbox(coverage, bbox, grid.name()) : coverage;
+                    if (out == null)
+                        throw new IllegalArgumentException("the grid doesn't cover the query bbox");
+                    // named as NetcdfGridDumper does
+                    String timestamp = date == null ? "" : "__" + f.format(date);
+                    File outFile = new File(folder,
+                            safeFileName(base + timestamp + "__" + grid.name() + (bbox != null ? "_clip" : "") + ".tif"));
+                    OmsRasterWriter.writeRaster(outFile.getAbsolutePath(), out);
+                    log("Written " + outFile.getName());
+                    written[0]++;
+                });
+                return written[0];
+            }, written -> {
+                row.access = "exported " + written + " GeoTIFF(s) of " + grid.name();
+                downloadsModel.fireTableDataChanged();
+                String msg = written + " of " + count + " timestep(s) of " + grid.name() + " exported to " + folder;
+                log(msg);
+                statusLabel.setText(msg);
+            });
+        }
     }
 
     /**
@@ -2484,11 +2892,12 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         return name.replaceAll("[\\\\/:*?\"<>|]", "_");
     }
 
-    private static void downloadPlain( HttpClient client, String href, File outFile, HMStacAccess access ) throws Exception {
+    private static void downloadPlain( HttpClient client, String href, String storageEndpoint, File outFile, HMStacAccess access )
+            throws Exception {
         if (href == null)
             throw new IllegalArgumentException("the asset has no href");
         if (access != null && access.isAuthenticated(href)) {
-            try (HMStacResponse response = access.get(href)) {
+            try (HMStacResponse response = access.get(href, storageEndpoint)) {
                 Files.copy(response.getInputStream(), outFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
             return;
@@ -2549,15 +2958,26 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private void setTimeFromCollection() {
         if (currentCollection == null)
             return;
-        // read again: the extent of the collection grows with its new items, as the outputs of the jobs of a server
-        HMStacCollection collection = currentCollection;
-        try {
-            HMStacCollection current = manager != null ? manager.getCollectionById(currentCollection.getId()) : null;
-            if (current != null)
-                collection = current;
-        } catch (Exception e) {
-            // the extent known since the connection
-        }
+        // read again: the extent of the collection grows with its new items, as the outputs of the jobs of a server.
+        // In the background, since it is a request to the catalog.
+        HMStacCollection known = currentCollection;
+        runTask("Reading the extent of collection " + known.getId(), () -> {
+            try {
+                HMStacCollection current = manager != null ? manager.reloadCollection(known) : null;
+                if (current != null)
+                    return current;
+            } catch (Exception e) {
+                log("Unable to read the collection again, using the extent known since the connection: " + e.getMessage());
+            }
+            return known;
+        }, collection -> {
+            // the user might have selected another collection meanwhile
+            if (currentCollection == known)
+                setTimeFields(collection);
+        });
+    }
+
+    private void setTimeFields( HMStacCollection collection ) {
         try {
             List<Date> bounds = collection.getTemporalBounds();
             Date start = bounds.size() > 0 ? bounds.get(0) : null;
@@ -2841,8 +3261,9 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
      * Create the code that gets an asset with the stac library of the HortonMachine, valid in java and groovy: the
      * catalog, collection, item and asset ids in a comment and the calls to search the item and take the asset.
      *
-     * <p>The library can't get an item by id, so the item is searched in a short time window around its datetime and
-     * taken by id; items without datetime are searched by a CQL filter on the id, which needs the filter extension.</p>
+     * <p>The library can't get an item by id, so if the catalog supports the filter extension the item is searched by
+     * a CQL filter on the id, evaluated by the server. Else it is searched in a short time window around its datetime
+     * and taken by id, which can return many items in collections sharing the same datetime (e.g. mosaics).</p>
      *
      * @param itemRow the item of the asset, of the current collection.
      * @param asset the asset.
@@ -2851,15 +3272,22 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
     private String hmStacCode( ItemRow itemRow, HMStacAsset asset ) {
         String collectionId = currentCollection.getId();
         String itemId = itemRow.item.getId();
-        String timestamp = itemRow.item.getTimestamp();
+        boolean filterById;
+        try {
+            filterById = manager != null && manager.isFilterAvailable();
+        } catch (Exception e) {
+            filterById = false;
+        }
+        // the time window is used only if the server can't filter on the id
+        String timestamp = filterById ? null : itemRow.item.getTimestamp();
         StringBuilder sb = new StringBuilder();
         sb.append("// STAC asset, to get with the stac library of the HortonMachine\n");
         sb.append("// catalog:    ").append(connectedUrl).append("\n");
         sb.append("// collection: ").append(collectionId).append("\n");
         sb.append("// item:       ").append(itemId).append("\n");
         sb.append("// asset:      ").append(asset.getId()).append("\n");
-        if (timestamp != null)
-            sb.append("// datetime:   ").append(timestamp).append(" (UTC)\n");
+        if (itemRow.item.getTimestamp() != null)
+            sb.append("// datetime:   ").append(itemRow.item.getTimestamp()).append(" (UTC)\n");
         sb.append("// href:       ").append(href(asset)).append("\n");
         sb.append("// HM handler: ").append(handlerName(asset)).append("\n\n");
 
@@ -2898,7 +3326,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
             sb.append("    Date to = ETimeUtilities.INSTANCE.TIME_FORMATTER_UTC.parse(").append(javaString(to)).append(");\n");
             sb.append("    collection.setTimestampFilter(from, to);\n");
         } else {
-            sb.append("    // the item has no datetime: the id filter needs the filter extension of the catalog\n");
+            if (filterById)
+                sb.append("    // only the item with this id, filtered by the server\n");
+            else
+                sb.append("    // the item has no datetime: the id filter needs the filter extension of the catalog\n");
             sb.append("    collection.setCqlFilter(").append(javaString("id = '" + itemId.replace("'", "''") + "'")).append(");\n");
         }
         sb.append("    HMStacItem item = collection.searchItems().stream()\n");
@@ -2908,9 +3339,10 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         sb.append("    // e.g. asset.getHandler() to read it, asset.getAssetNode() for its metadata\n\n");
         // the same name as the downloads of the browser, many catalogs reuse file names like B02.tif in each item
         String fileName = safeFileName(itemId + "_" + hrefFileName(href(asset), asset));
-        sb.append("    // dump the whole asset file to disk, with authentication if the catalog needs it\n");
+        sb.append("    // dump the whole asset file to disk, with authentication if the catalog needs it,\n");
+        sb.append("    // from the storage the asset declares (e.g. the S3 endpoint of the Copernicus Data Space)\n");
         sb.append("    HMStacAccess access = asset.getAccess() != null ? asset.getAccess() : new HMStacAccess();\n");
-        sb.append("    try (HMStacResponse response = access.get(asset.getAssetNode().get(\"href\").asString(\"\"))) {\n");
+        sb.append("    try (HMStacResponse response = access.get(asset.getAssetNode().get(\"href\").asString(\"\"), asset.getStorageEndpoint())) {\n");
         sb.append("        Files.copy(response.getInputStream(), Paths.get(").append(javaString(fileName))
                 .append("), StandardCopyOption.REPLACE_EXISTING);\n");
         sb.append("    }\n");
@@ -3350,10 +3782,19 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         if (args.length > 0 && !args[0].isBlank()) {
             SwingUtilities.invokeLater(() -> {
                 browser.catalogCombo.setSelectedItem(args[0]);
-                if (args.length > 1)
-                    browser.awsProfileCombo.setSelectedItem(args[1]);
-                if (args.length > 2)
-                    browser.awsRegionField.setText(args[2]);
+                if (HMS3Location.parse(args[0].trim()) == null) {
+                    // catalog served over http(s): the profile is the one of its s3:// assets
+                    if (args.length > 1)
+                        browser.assetS3Profile = args[1].trim();
+                    if (args.length > 2)
+                        browser.assetS3Region = args[2].trim();
+                    browser.updateS3AssetsButton();
+                } else {
+                    if (args.length > 1)
+                        browser.awsProfileCombo.setSelectedItem(args[1]);
+                    if (args.length > 2)
+                        browser.awsRegionField.setText(args[2]);
+                }
                 browser.connect();
             });
         }

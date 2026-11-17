@@ -355,15 +355,9 @@ public class HMSTACClient extends STACClient {
 	 */
 	public List<SimpleFeature> searchStatic(Collection collection, SearchQuery search, int maxItems, IHMProgressMonitor pm)
 			throws IOException {
-		URL collectionUrl = collectionUrls.get(collection.getId());
-		if (collectionUrl == null) {
-			String self = collection.getLinks() == null ? null
-					: collection.getLinks().stream().filter(l -> "self".equals(l.getRel())).map(Link::getHref).findFirst()
-							.orElse(null);
-			if (self == null)
-				throw new IOException("Unable to find the document of collection " + collection.getId());
-			collectionUrl = resolve(landingPageURL, self);
-		}
+		URL collectionUrl = findCollectionUrl(collection);
+		if (collectionUrl == null)
+			throw new IOException("Unable to find the document of collection " + collection.getId());
 
 		StaticItemFilter filter = new StaticItemFilter(search);
 		List<SimpleFeature> items = new ArrayList<>();
@@ -508,6 +502,39 @@ public class HMSTACClient extends STACClient {
 					return null;
 				}
 			}
+		}
+	}
+
+	/**
+	 * @return the address of the document of a collection: where it was found in a static catalog, else its self link;
+	 *         <code>null</code> if not known.
+	 * @throws IOException if the self link is invalid.
+	 */
+	private URL findCollectionUrl(Collection collection) throws IOException {
+		URL collectionUrl = collectionUrls.get(collection.getId());
+		if (collectionUrl != null)
+			return collectionUrl;
+		String self = collection.getLinks() == null ? null
+				: collection.getLinks().stream().filter(l -> "self".equals(l.getRel())).map(Link::getHref).findFirst()
+						.orElse(null);
+		return self == null ? null : resolve(landingPageURL, self);
+	}
+
+	/**
+	 * Read again a single collection from its own document, to get its current metadata (e.g. an extent grown with new
+	 * items), without listing all the collections of the catalog.
+	 *
+	 * @param collection the collection to read again.
+	 * @return the current collection, or <code>null</code> if the address of its document is not known.
+	 * @throws IOException
+	 */
+	public Collection reloadCollection(Collection collection) throws IOException {
+		URL collectionUrl = findCollectionUrl(collection);
+		if (collectionUrl == null)
+			return null;
+		try (InputStream is = getHttp().get(collectionUrl).getResponseStream()) {
+			// no mime check, static catalogs are often served with generic mime types
+			return OBJECT_MAPPER.readValue(is, Collection.class);
 		}
 	}
 

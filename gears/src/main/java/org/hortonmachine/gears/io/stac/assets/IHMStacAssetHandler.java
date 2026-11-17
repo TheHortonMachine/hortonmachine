@@ -1,13 +1,8 @@
 package org.hortonmachine.gears.io.stac.assets;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -18,6 +13,7 @@ import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
 import org.hortonmachine.gears.io.stac.auth.HMStacResponse;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.NetworkUtilities;
 
 public interface IHMStacAssetHandler {
 
@@ -70,12 +66,9 @@ public interface IHMStacAssetHandler {
 			if (monitor != null) {
 				monitor.beginTask("Downloading asset: " + href, IHMProgressMonitor.UNKNOWN);
 			}
-			if (targetFile.getParent() != null)
-				Files.createDirectories(targetFile.getParent());
-			try (HMStacResponse response = access.get(href);
-					InputStream is = new BufferedInputStream(response.getInputStream());
-					OutputStream os = new BufferedOutputStream(Files.newOutputStream(targetFile))) {
-				copyWithProgress(is, os, response.getContentLength(), monitor);
+			try (HMStacResponse response = access.get(href, asset.getStorageEndpoint());
+					InputStream is = response.getInputStream()) {
+				NetworkUtilities.copyToFile(is, response.getContentLength(), targetFile.toFile(), monitor);
 			} finally {
 				if (monitor != null) {
 					monitor.done();
@@ -99,57 +92,8 @@ public interface IHMStacAssetHandler {
 			return;
 		}
 
-		// else treat as HTTP(S) – same code as above…
-		URL url = new URL(href);
-		URLConnection connection = url.openConnection();
-		connection.setConnectTimeout(30_000);
-		connection.setReadTimeout(60_000);
-
-		long contentLength = connection.getContentLengthLong();
-
-		if (monitor != null) {
-			monitor.beginTask("Downloading asset: " + href, IHMProgressMonitor.UNKNOWN);
-		}
-
-		Files.createDirectories(targetFile.getParent());
-
-		try (InputStream is = new BufferedInputStream(connection.getInputStream());
-				OutputStream os = new BufferedOutputStream(Files.newOutputStream(targetFile))) {
-			copyWithProgress(is, os, contentLength, monitor);
-		} finally {
-			if (monitor != null) {
-				monitor.done();
-			}
-		}
-	}
-
-	/**
-	 * Copy a stream, reporting the progress and stopping if the monitor is canceled.
-	 */
-	private static void copyWithProgress(InputStream is, OutputStream os, long contentLength, IHMProgressMonitor monitor)
-			throws IOException {
-		byte[] buffer = new byte[128 * 1024]; // 128 KB buffer
-		long totalRead = 0;
-		int read;
-		int lastPercent = -1;
-
-		while ((read = is.read(buffer)) != -1) {
-			os.write(buffer, 0, read);
-			totalRead += read;
-
-			if (monitor != null) {
-				if (contentLength > 0) {
-					int percent = (int) (100L * totalRead / contentLength);
-			        if (percent != lastPercent && percent % 10 == 0) {
-			            monitor.message("Downloaded: " + percent + "%...");
-			            lastPercent = percent;
-			        }
-				}
-				if (monitor.isCanceled()) {
-					throw new IOException("Download canceled by user");
-				}
-			}
-		}
+		// else treat as HTTP(S)
+		NetworkUtilities.downloadFile(href, targetFile.toFile(), monitor);
 	}
 
 }

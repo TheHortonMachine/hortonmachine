@@ -43,13 +43,24 @@ import com.github.davidmoten.aws.lw.client.ResponseInputStream;
  *
  * <p>It applies to the given buckets or, if none is given, to all s3 addresses.</p>
  *
+ * <p>For S3 compatible services other than AWS (e.g. the Copernicus Data Space Ecosystem at
+ * <code>https://eodata.dataspace.copernicus.eu</code>) an endpoint can be set, which is then used with
+ * path style addresses (<code>endpoint/bucket/key</code>). The endpoint can also be passed per request,
+ * for example the one declared by the storage extension of an asset.</p>
+ *
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public class HMS3Authentication implements IHMStacAuthentication {
+    /**
+     * The region used with custom endpoints when none is given, as the S3 compatible services usually accept.
+     */
+    public static final String CUSTOM_ENDPOINT_DEFAULT_REGION = "default";
+
     private final Credentials credentials;
     private String region;
+    private String endpoint;
     private final Set<String> buckets = new HashSet<>();
-    private final Map<String, Client> clientsByRegion = new ConcurrentHashMap<>();
+    private final Map<String, Client> clientsByRegionAndEndpoint = new ConcurrentHashMap<>();
 
     /**
      * @param accessKey the access key id.
@@ -85,10 +96,16 @@ public class HMS3Authentication implements IHMStacAuthentication {
         }
         // in the config file the profiles are named "profile name", apart from the default
         String configSection = profile.equals("default") ? "default" : "profile " + profile;
-        String region = readIniSection(new File(awsFolder, "config"), configSection).get("region");
+        Map<String, String> configValues = readIniSection(new File(awsFolder, "config"), configSection);
+        String region = configValues.get("region");
         if (region == null)
             region = credentialValues.get("region");
-        return new HMS3Authentication(accessKey, secretKey, credentialValues.get("aws_session_token"), region);
+        // endpoint_url as used by the AWS cli for S3 compatible services
+        String endpoint = configValues.get("endpoint_url");
+        if (endpoint == null)
+            endpoint = credentialValues.get("endpoint_url");
+        return new HMS3Authentication(accessKey, secretKey, credentialValues.get("aws_session_token"), region)
+                .setEndpoint(endpoint);
     }
 
     /**
@@ -120,8 +137,11 @@ public class HMS3Authentication implements IHMStacAuthentication {
         String region = System.getenv("AWS_REGION");
         if (region == null)
             region = System.getenv("AWS_DEFAULT_REGION");
+        String endpoint = System.getenv("AWS_ENDPOINT_URL_S3");
+        if (endpoint == null)
+            endpoint = System.getenv("AWS_ENDPOINT_URL");
         return new HMS3Authentication(System.getenv("AWS_ACCESS_KEY_ID"), System.getenv("AWS_SECRET_ACCESS_KEY"),
-                System.getenv("AWS_SESSION_TOKEN"), region);
+                System.getenv("AWS_SESSION_TOKEN"), region).setEndpoint(endpoint);
     }
 
     /**
@@ -148,6 +168,25 @@ public class HMS3Authentication implements IHMStacAuthentication {
         return region;
     }
 
+    /**
+     * Set the endpoint of an S3 compatible service other than AWS.
+     *
+     * @param endpoint the endpoint url (e.g. <code>https://eodata.dataspace.copernicus.eu</code>), null or blank
+     *          to use AWS.
+     * @return this authentication.
+     */
+    public HMS3Authentication setEndpoint( String endpoint ) {
+        this.endpoint = normalizeEndpoint(endpoint);
+        return this;
+    }
+
+    /**
+     * @return the endpoint of the S3 compatible service or null for AWS.
+     */
+    public String getEndpoint() {
+        return endpoint;
+    }
+
     @Override
     public boolean appliesTo( String href ) {
         HMS3Location location = HMS3Location.parse(href);
@@ -159,6 +198,8 @@ public class HMS3Authentication implements IHMStacAuthentication {
         HMS3Location location = HMS3Location.parse(href);
         if (location == null)
             return href;
+        if (endpoint != null)
+            return endpoint + "/" + location.getBucket() + "/" + location.getKey();
         if (location.getRegion() == null && region == null)
             throw new IllegalArgumentException("The region is needed to access " + href);
         return location.toHttpsUrl(region);
@@ -166,14 +207,28 @@ public class HMS3Authentication implements IHMStacAuthentication {
 
     @Override
     public HMStacResponse get( String href ) throws IOException {
+        return get(href, null);
+    }
+
+    /**
+     * Perform an authenticated GET request, on a given endpoint.
+     *
+     * @param href the s3 address to read.
+     * @param objectEndpoint the endpoint of the service holding the object (e.g. declared by the storage
+     *          extension of the asset), used if this authentication has no endpoint set. Null for AWS.
+     * @return the response, to be closed after use.
+     * @throws IOException if the request fails.
+     */
+    public HMStacResponse get( String href, String objectEndpoint ) throws IOException {
         HMS3Location location = HMS3Location.parse(href);
         if (location == null)
             throw new IOException("Not an s3 address: " + href);
-        String objectRegion = location.getRegion() != null ? location.getRegion() : region;
-        if (objectRegion == null)
-            throw new IOException("The region is needed to access " + href);
-
-        Client client = getClient(objectRegion);
+        Client client;
+        try {
+            client = getClient(location, objectEndpoint);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e.getMessage(), e);
+        }
         ResponseInputStream stream;
         try {
             stream = client.path(location.getBucket(), location.getKey()).responseInputStream();
@@ -197,10 +252,51 @@ public class HMS3Authentication implements IHMStacAuthentication {
 
     /**
      * @param objectRegion the region.
-     * @return the client signing requests for that region.
+     * @return the client signing requests for that region, on the endpoint of this authentication.
      */
     public Client getClient( String objectRegion ) {
-        return clientsByRegion.computeIfAbsent(objectRegion, r -> Client.s3().region(r).credentials(credentials).build());
+        return getClient(objectRegion, endpoint);
+    }
+
+    /**
+     * Get the client for an object.
+     *
+     * @param location the location of the object.
+     * @param objectEndpoint the endpoint of the service holding the object, used if this authentication has
+     *          no endpoint set. Null for AWS.
+     * @return the client.
+     * @throws IllegalArgumentException if the region is needed and not known.
+     */
+    public Client getClient( HMS3Location location, String objectEndpoint ) {
+        String usedEndpoint = endpoint != null ? endpoint : normalizeEndpoint(objectEndpoint);
+        String objectRegion = location.getRegion() != null ? location.getRegion() : region;
+        if (objectRegion == null) {
+            if (usedEndpoint == null)
+                throw new IllegalArgumentException("The region is needed to access " + location);
+            objectRegion = CUSTOM_ENDPOINT_DEFAULT_REGION;
+        }
+        return getClient(objectRegion, usedEndpoint);
+    }
+
+    private Client getClient( String objectRegion, String usedEndpoint ) {
+        String cacheKey = objectRegion + "|" + (usedEndpoint != null ? usedEndpoint : "");
+        return clientsByRegionAndEndpoint.computeIfAbsent(cacheKey, k -> {
+            var builder = Client.s3().region(objectRegion).credentials(credentials);
+            if (usedEndpoint != null) {
+                // path style requests on the service: endpoint/bucket/key
+                builder = builder.baseUrlFactory(( serviceName, r ) -> usedEndpoint + "/");
+            }
+            return builder.build();
+        });
+    }
+
+    private static String normalizeEndpoint( String endpoint ) {
+        if (endpoint == null || endpoint.isBlank())
+            return null;
+        endpoint = endpoint.trim();
+        while( endpoint.endsWith("/") )
+            endpoint = endpoint.substring(0, endpoint.length() - 1);
+        return endpoint;
     }
 
     /**

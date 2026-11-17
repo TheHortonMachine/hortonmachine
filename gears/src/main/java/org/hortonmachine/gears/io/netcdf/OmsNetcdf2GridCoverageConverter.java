@@ -179,6 +179,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     private double nativeAxisFactor = 1;
 
     private ProjectionImpl netcdfProj = null;
+    private GridDataset gds = null;
     private GridDatatype dumpGrid = null;
 
     private GridGeometry2D outGridGeometry2D;
@@ -221,7 +222,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 pToTimestep = pFromTimestep + 1;
             }
 
-            GridDataset gds = GridDataset.open(inPath);
+            gds = GridDataset.open(inPath);
             List<Attribute> globalAttributes = gds.getGlobalAttributes();
             boolean isHdfEos = false;
             for( Attribute attribute : globalAttributes ) {
@@ -273,6 +274,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 }
             }
             if (dumpGrid == null) {
+                close();
                 throw new ModelsIllegalargumentException("No grid found to dump in: " + inPath, this);
             }
             String gridName = dumpGrid.getFullName();
@@ -289,6 +291,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
             CoordinateAxis xAxis = coordSys.getXHorizAxis();
             CoordinateAxis yAxis = coordSys.getYHorizAxis();
             if (xAxis.getRank() != 1 || yAxis.getRank() != 1) {
+                close();
                 throw new ModelsIllegalargumentException("Only grids with 1D x and y axes are supported.", this);
             }
 
@@ -596,11 +599,28 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                     iter.done();
                 pm.worked(1);
                 doProcess = timestepIterator.hasNext();
+                if (!doProcess)
+                    close();
             }
         } else {
+            close();
             pm.done();
         }
 
+    }
+
+    /**
+     * Close the netcdf file. It is done after the last timestep, call it if the conversion is stopped before.
+     */
+    public void close() {
+        if (gds != null) {
+            try {
+                gds.close();
+            } catch (Exception e) {
+                // nothing to do
+            }
+            gds = null;
+        }
     }
 
 }

@@ -133,6 +133,17 @@ public class HMStacManager implements AutoCloseable {
         return stacClient.supportsItemSearch();
     }
 
+    /**
+     * @return <code>true</code> if the catalog supports item search with the filter extension, so that
+     *          {@link HMStacCollection#setCqlFilter(String)} is evaluated by the server (e.g. on the item id).
+     * @throws Exception
+     */
+    public boolean isFilterAvailable() throws Exception {
+        checkOpen();
+        List<String> conformance = stacClient.getLandingPage().getConformance();
+        return conformance != null && stacClient.supportsItemSearch() && STACConformance.FILTER.matches(conformance);
+    }
+
     public String getConformanceSummary() throws Exception {
         checkOpen();
         STACLandingPage landingPage = stacClient.getLandingPage();
@@ -182,6 +193,24 @@ public class HMStacManager implements AutoCloseable {
             }
         }
         return null;
+    }
+
+    /**
+     * Read again a collection, to get its current metadata, as an extent grown with new items.
+     *
+     * <p>Only the document of the collection is read, if its address is known, else the collections of the catalog are
+     * listed again, which on large catalogs can take long.</p>
+     *
+     * @param collection the collection to read again.
+     * @return the current collection, or <code>null</code> if not found anymore.
+     * @throws Exception
+     */
+    public HMStacCollection reloadCollection( HMStacCollection collection ) throws Exception {
+        checkOpen();
+        Collection current = stacClient.reloadCollection(collection.getCollection());
+        if (current == null)
+            return getCollectionById(collection.getId());
+        return new HMStacCollection(stacClient, current, pm, access);
     }
 
     public HMStacCollection getCollectionByURL(String collectionUrl) throws Exception {

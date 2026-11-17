@@ -53,12 +53,8 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 
 	@Override
 	public boolean supports() {
-		for (String acceptedType : ACCEPTED_TYPES) {
-			if (asset.getType().toLowerCase().contains(acceptedType)) {
-				return true;
-			}
-		}
-		return false;
+		// computed in initialize, which also copes with assets without type
+		return supported;
 	}
 
 	@Override

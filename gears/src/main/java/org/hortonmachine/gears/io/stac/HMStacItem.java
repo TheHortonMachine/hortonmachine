@@ -254,6 +254,18 @@ public class HMStacItem {
         return null;
     }
 
+    /**
+     * @return the <code>storage:schemes</code> of the item (storage extension), from its properties or
+     *          top level, or null if not declared.
+     */
+    private JsonNode getStorageSchemes( Map<String, JsonNode> top ) {
+        Object schemes = getAttributeIfExists("storage:schemes");
+        if (schemes instanceof JsonNode schemesNode && schemesNode.isObject())
+            return schemesNode;
+        JsonNode topSchemes = top.get("storage:schemes");
+        return topSchemes != null && topSchemes.isObject() ? topSchemes : null;
+    }
+
     private Object getAttributeIfExists( String name ) {
         return feature.getFeatureType().getDescriptor(name) != null ? feature.getAttribute(name) : null;
     }
@@ -289,8 +301,9 @@ public class HMStacItem {
                 ObjectNode assets = (ObjectNode) top.get("assets");
 
                 if (assets != null) {
+                    JsonNode storageSchemes = getStorageSchemes(top);
                     for( Map.Entry<String, JsonNode> asset : assets.properties() ) {
-                        assetsList.add(new HMStacAsset(asset.getKey(), asset.getValue(), access));
+                        assetsList.add(new HMStacAsset(asset.getKey(), asset.getValue(), access, storageSchemes));
                     }
                 }
             }
