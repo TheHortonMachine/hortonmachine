@@ -29,6 +29,7 @@ import org.hortonmachine.dbs.compat.ADb;
 import org.hortonmachine.dbs.compat.ASpatialDb;
 import org.hortonmachine.dbs.compat.ETableType;
 import org.hortonmachine.dbs.compat.GeometryColumn;
+import org.hortonmachine.dbs.compat.HMTransactionExecuter;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
 import org.hortonmachine.dbs.compat.IHMPreparedStatement;
@@ -836,5 +837,104 @@ public class SpatialiteCommonMethods {
                 }
             }
         });
+    }
+
+    /**
+     * Change the srid of the geometry column of a spatialite table, without reprojecting.
+     *
+     * <p>The srid is changed in <code>geometry_columns</code> and in the geometries, in one
+     * transaction, with the triggers of the table suspended: the spatial index keeps its bounds.</p>
+     *
+     * @param db the spatialite database.
+     * @param tableName the spatial table.
+     * @param newSrid the srid to set, which has to be in <code>spatial_ref_sys</code>.
+     * @throws Exception
+     */
+    public static void setTableSrid( ASpatialDb db, SqlName tableName, int newSrid ) throws Exception {
+        GeometryColumn gc = db.getGeometryColumnsForTable(tableName);
+        if (gc == null) {
+            throw new IllegalArgumentException("The table has no geometry column: " + tableName.name);
+        }
+        boolean sridExists = db.execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement("SELECT srid FROM spatial_ref_sys WHERE srid = ?")) {
+                pStmt.setInt(1, newSrid);
+                try (IHMResultSet rs = pStmt.executeQuery()) {
+                    return rs.next();
+                }
+            }
+        });
+        if (!sridExists) {
+            throw new IllegalArgumentException("The srid " + newSrid + " is not registered in spatial_ref_sys.");
+        }
+
+        String quotedColumn = "\"" + gc.geometryColumnName.replace("\"", "\"\"") + "\"";
+        new HMTransactionExecuter(db){
+            @Override
+            public void executeInTransaction( IHMConnection conn ) throws Exception {
+                String metadataSql = "UPDATE " + SpatialiteGeometryColumns.TABLENAME + " SET " + SpatialiteGeometryColumns.SRID
+                        + " = ? WHERE lower(" + SpatialiteGeometryColumns.F_TABLE_NAME + ") = lower(?) AND lower("
+                        + SpatialiteGeometryColumns.F_GEOMETRY_COLUMN + ") = lower(?)";
+                try (IHMPreparedStatement pStmt = conn.prepareStatement(metadataSql)) {
+                    pStmt.setInt(1, newSrid);
+                    pStmt.setString(2, tableName.name);
+                    pStmt.setString(3, gc.geometryColumnName);
+                    pStmt.executeUpdate();
+                }
+
+                List<String[]> triggers = dropTableTriggers(conn, tableName.name);
+                String updateSql = "UPDATE " + tableName.fixedDoubleName + " SET " + quotedColumn + " = SetSRID(" + quotedColumn
+                        + ", ?) WHERE " + quotedColumn + " IS NOT NULL";
+                try (IHMPreparedStatement pStmt = conn.prepareStatement(updateSql)) {
+                    pStmt.setInt(1, newSrid);
+                    pStmt.executeUpdate();
+                }
+                restoreTriggers(conn, triggers);
+            }
+        }.execute();
+    }
+
+    /**
+     * Drop the triggers of a sqlite table, as before an update of the geometries that doesn't
+     * change them but their srid and has not to fire the spatial index or constraint triggers.
+     *
+     * <p>Run it in a transaction, together with {@link #restoreTriggers}.</p>
+     *
+     * @param conn the connection.
+     * @param tableName the table name (case insensitive).
+     * @return the dropped triggers as <code>[name, sql]</code>.
+     * @throws Exception
+     */
+    public static List<String[]> dropTableTriggers( IHMConnection conn, String tableName ) throws Exception {
+        List<String[]> triggers = new ArrayList<>();
+        String sql = "SELECT name, sql FROM sqlite_master WHERE type = 'trigger' AND lower(tbl_name) = lower(?)";
+        try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+            pStmt.setString(1, tableName);
+            try (IHMResultSet rs = pStmt.executeQuery()) {
+                while( rs.next() ) {
+                    triggers.add(new String[]{rs.getString(1), rs.getString(2)});
+                }
+            }
+        }
+        try (IHMStatement stmt = conn.createStatement()) {
+            for( String[] trigger : triggers ) {
+                stmt.execute("DROP TRIGGER \"" + trigger[0].replace("\"", "\"\"") + "\"");
+            }
+        }
+        return triggers;
+    }
+
+    /**
+     * Recreate the triggers dropped by {@link #dropTableTriggers}.
+     *
+     * @param conn the connection.
+     * @param triggers the triggers as <code>[name, sql]</code>.
+     * @throws Exception
+     */
+    public static void restoreTriggers( IHMConnection conn, List<String[]> triggers ) throws Exception {
+        try (IHMStatement stmt = conn.createStatement()) {
+            for( String[] trigger : triggers ) {
+                stmt.execute(trigger[1]);
+            }
+        }
     }
 }

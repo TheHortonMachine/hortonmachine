@@ -128,6 +128,22 @@ public abstract class ASpatialDb extends ADb {
 	}
 
     /**
+     * Change the srid of the geometry column of a table, without reprojecting.
+     *
+     * <p>The coordinates are left as they are, only the reference to the coordinate reference
+     * system changes: in the geometry column metadata and in the geometries themselves. Use it
+     * to fix data that declare a wrong srid, as a custom code that is in fact a known EPSG one.</p>
+     *
+     * <p>For a GeoPackage the new srid has to be already registered in
+     * <code>gpkg_spatial_ref_sys</code> (see <code>GeopackageCommonDb#addCRS</code>).</p>
+     *
+     * @param tableName the spatial table.
+     * @param newSrid the srid to set.
+     * @throws Exception if the table has no geometry column or the srid is not usable.
+     */
+    public abstract void setTableSrid( SqlName tableName, int newSrid ) throws Exception;
+
+    /**
      * Get the where query piece based on a geometry intersection.
      * 
      * @param tableName

@@ -684,6 +684,28 @@ public class H2GisDb extends ASpatialDb {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In h2gis the srid is part of the column type, changed with <code>UpdateGeometrySRID</code>.</p>
+     */
+    @Override
+    public void setTableSrid( SqlName tableName, int newSrid ) throws Exception {
+        GeometryColumn gc = getGeometryColumnsForTable(tableName);
+        if (gc == null) {
+            throw new IllegalArgumentException("The table has no geometry column: " + tableName.name);
+        }
+        String realName = getProperColumnNameCase(tableName, gc.geometryColumnName);
+        String realTableName = getProperTableNameCase(tableName);
+        String sql = new H2GisSqlTemplates().updateGeometrySrid(realTableName, realName, newSrid);
+        execOnConnection(connection -> {
+            try (IHMStatement stmt = connection.createStatement()) {
+                stmt.execute(sql);
+            }
+            return null;
+        });
+    }
+
     @Override
     public void accept( IDbVisitor visitor ) throws Exception {
         h2Db.accept(visitor);

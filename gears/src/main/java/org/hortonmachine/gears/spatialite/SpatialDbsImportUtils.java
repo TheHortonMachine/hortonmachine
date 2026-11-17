@@ -220,6 +220,25 @@ public class SpatialDbsImportUtils {
     }
 
     /**
+     * Change the srid of a spatial table without reprojecting, see
+     * {@link ASpatialDb#setTableSrid(SqlName, int)}.
+     *
+     * <p>For a GeoPackage the EPSG definition of the new srid is registered first, if missing.</p>
+     *
+     * @param db the database.
+     * @param tableName the spatial table.
+     * @param newSrid the EPSG code to set.
+     * @throws Exception
+     */
+    public static void setTableSrid( ASpatialDb db, SqlName tableName, int newSrid ) throws Exception {
+        if (db instanceof GeopackageCommonDb gpkgDb && !gpkgDb.hasCrs(newSrid)) {
+            CoordinateReferenceSystem crs = HMCrsRegistry.INSTANCE.getCrs("EPSG:" + newSrid);
+            gpkgDb.addCRS("EPSG", newSrid, crs.toWKT());
+        }
+        db.setTableSrid(tableName, newSrid);
+    }
+
+    /**
      * Import a shapefile into a table.
      * 
      * @param db the database to use.

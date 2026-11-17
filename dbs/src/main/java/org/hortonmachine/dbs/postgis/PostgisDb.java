@@ -33,6 +33,7 @@ import org.hortonmachine.dbs.compat.GeometryColumn;
 import org.hortonmachine.dbs.compat.IDbVisitor;
 import org.hortonmachine.dbs.compat.IGeometryParser;
 import org.hortonmachine.dbs.compat.IHMConnection;
+import org.hortonmachine.dbs.compat.IHMPreparedStatement;
 import org.hortonmachine.dbs.compat.IHMResultSet;
 import org.hortonmachine.dbs.compat.IHMResultSetMetaData;
 import org.hortonmachine.dbs.compat.IHMStatement;
@@ -663,6 +664,50 @@ public class PostgisDb extends ASpatialDb implements IHmExtrasDb{
             return "";
         });
 
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In PostGIS the srid is changed with <code>UpdateGeometrySRID</code>, which keeps the
+     * column type and the spatial index.</p>
+     */
+    @Override
+    public void setTableSrid( SqlName tableName, int newSrid ) throws Exception {
+        String schema = tableName.schema == null ? "public" : tableName.schema;
+        // UpdateGeometrySRID needs the names in their exact case
+        String sql = "SELECT " + PostgisGeometryColumns.F_TABLE_SCHEMA + ", " + PostgisGeometryColumns.F_TABLE_NAME2 + ", "
+                + PostgisGeometryColumns.F_GEOMETRY_COLUMN + " FROM " + PostgisGeometryColumns.TABLENAME + " WHERE lower("
+                + PostgisGeometryColumns.F_TABLE_NAME2 + ") = lower(?) AND lower(" + PostgisGeometryColumns.F_TABLE_SCHEMA
+                + ") = lower(?)";
+        String[] names = execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(sql)) {
+                pStmt.setString(1, tableName.name);
+                pStmt.setString(2, schema);
+                try (IHMResultSet rs = pStmt.executeQuery()) {
+                    if (rs.next()) {
+                        return new String[]{rs.getString(1), rs.getString(2), rs.getString(3)};
+                    }
+                    return null;
+                }
+            }
+        });
+        if (names == null) {
+            throw new IllegalArgumentException("The table has no geometry column: " + tableName.getFullname());
+        }
+        String updateSql = "SELECT UpdateGeometrySRID(?, ?, ?, ?)";
+        execOnConnection(connection -> {
+            try (IHMPreparedStatement pStmt = connection.prepareStatement(updateSql)) {
+                pStmt.setString(1, names[0]);
+                pStmt.setString(2, names[1]);
+                pStmt.setString(3, names[2]);
+                pStmt.setInt(4, newSrid);
+                try (IHMResultSet rs = pStmt.executeQuery()) {
+                    rs.next();
+                }
+            }
+            return null;
+        });
     }
 
     @Override

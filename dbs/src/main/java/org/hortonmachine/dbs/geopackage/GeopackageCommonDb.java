@@ -1732,6 +1732,119 @@ public abstract class GeopackageCommonDb extends ASpatialDb implements IHmExtras
         return env;
     }
 
+    /** The number of geometries read and rewritten at a time by {@link #setTableSrid}. */
+    private static final int SRID_UPDATE_CHUNK = 10000;
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>In a GeoPackage the srid is changed in <code>gpkg_geometry_columns</code>,
+     * <code>gpkg_contents</code> and in the header of every geometry blob, all in one
+     * transaction. The triggers of the table, as the rtree ones, are suspended during the
+     * update, since the geometries don't change. The previous srid is left in
+     * <code>gpkg_spatial_ref_sys</code>.</p>
+     */
+    @Override
+    public void setTableSrid( SqlName tableName, int newSrid ) throws Exception {
+        FeatureEntry feature = feature(tableName);
+        if (feature == null) {
+            throw new IllegalArgumentException("Not a feature table of the geopackage: " + tableName.name);
+        }
+        if (!hasCrs(newSrid)) {
+            throw new IllegalArgumentException(
+                    "The srid " + newSrid + " is not registered in " + SPATIAL_REF_SYS + ", add it first with addCRS.");
+        }
+        String quotedTable = tableName.fixedDoubleName;
+        String quotedColumn = "\"" + feature.getGeometryColumn().replace("\"", "\"\"") + "\"";
+
+        HMTransactionExecuter transactionExecuter = new HMTransactionExecuter(sqliteDb){
+            @Override
+            public void executeInTransaction( IHMConnection conn ) throws Exception {
+                for( String metadataTable : new String[]{GEOMETRY_COLUMNS, GEOPACKAGE_CONTENTS} ) {
+                    String sql = format("UPDATE %s SET srs_id = ? WHERE lower(table_name) = lower(?)", metadataTable);
+                    try (IHMPreparedStatement pStmt = conn.prepareStatement(sql)) {
+                        pStmt.setInt(1, newSrid);
+                        pStmt.setString(2, feature.getTableName());
+                        pStmt.executeUpdate();
+                    }
+                }
+
+                // suspend the triggers of the table: the geometries keep their bounds
+                List<String[]> triggers = SpatialiteCommonMethods.dropTableTriggers(conn, feature.getTableName());
+                patchGeometrySrids(conn, quotedTable, quotedColumn, newSrid);
+                SpatialiteCommonMethods.restoreTriggers(conn, triggers);
+            }
+        };
+        transactionExecuter.execute();
+    }
+
+    /**
+     * Rewrite the srid in the header of all the geometries of a table, by chunks of rowids.
+     */
+    private static void patchGeometrySrids( IHMConnection conn, String quotedTable, String quotedColumn, int newSrid )
+            throws Exception {
+        String selectSql = format("SELECT rowid, %s FROM %s WHERE rowid > ? AND %s IS NOT NULL ORDER BY rowid LIMIT %d",
+                quotedColumn, quotedTable, quotedColumn, SRID_UPDATE_CHUNK);
+        String updateSql = format("UPDATE %s SET %s = ? WHERE rowid = ?", quotedTable, quotedColumn);
+        try (IHMPreparedStatement selectStmt = conn.prepareStatement(selectSql);
+                IHMPreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+            long lastRowid = Long.MIN_VALUE;
+            while( true ) {
+                selectStmt.setLong(1, lastRowid);
+                int read = 0;
+                int changed = 0;
+                try (IHMResultSet rs = selectStmt.executeQuery()) {
+                    while( rs.next() ) {
+                        read++;
+                        lastRowid = rs.getLong(1);
+                        byte[] geometryBytes = rs.getBytes(2);
+                        if (setGeometryBlobSrid(geometryBytes, newSrid)) {
+                            updateStmt.setBytes(1, geometryBytes);
+                            updateStmt.setLong(2, lastRowid);
+                            updateStmt.addBatch();
+                            changed++;
+                        }
+                    }
+                }
+                if (changed > 0) {
+                    updateStmt.executeBatch();
+                }
+                if (read < SRID_UPDATE_CHUNK) {
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * Set the srid in the header of a GeoPackage geometry blob, in the byte order given by its
+     * flags.
+     *
+     * @param geometryBytes the GeoPackage binary geometry, changed in place.
+     * @param srid the srid to set.
+     * @return <code>true</code> if the blob was changed, <code>false</code> if it is not a
+     *         GeoPackage geometry or it has the srid already.
+     */
+    public static boolean setGeometryBlobSrid( byte[] geometryBytes, int srid ) {
+        if (geometryBytes == null || geometryBytes.length < 8 || geometryBytes[0] != 0x47 || geometryBytes[1] != 0x50) {
+            return false;
+        }
+        boolean littleEndian = (geometryBytes[3] & 0x01) == 1;
+        byte[] sridBytes = new byte[4];
+        for( int i = 0; i < 4; i++ ) {
+            int shift = littleEndian ? 8 * i : 8 * (3 - i);
+            sridBytes[i] = (byte) (srid >>> shift);
+        }
+        boolean changed = false;
+        for( int i = 0; i < 4; i++ ) {
+            if (geometryBytes[4 + i] != sridBytes[i]) {
+                geometryBytes[4 + i] = sridBytes[i];
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
     public GeopackageCommonDb() {
         super();
     }

@@ -273,6 +273,11 @@ public class SpatialiteDb extends ASpatialDb {
     }
 
     @Override
+    public void setTableSrid( SqlName tableName, int newSrid ) throws Exception {
+        SpatialiteCommonMethods.setTableSrid(this, tableName, newSrid);
+    }
+
+    @Override
     public List<TableName> getTables() throws Exception {
         return sqliteDb.getTables();
     }
