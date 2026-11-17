@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.utils.LoggingUtils;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
 import org.hortonmachine.gears.utils.files.FileUtilities;
 import org.hortonmachine.gui.settings.SettingsController;
@@ -30,6 +31,7 @@ public class GeoscriptConsole {
 
     public static void main( String[] args ) {
         HMCrsRegistry.initLongitudeFirst();
+        LoggingUtils.hideKnownPluginWarnings();
         try {
             if (args.length == 1 && !args[0].trim().isEmpty()) {
                 GroovyShell shell = new GroovyShell();

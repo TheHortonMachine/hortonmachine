@@ -487,6 +487,8 @@
 					<encoding>${project.build.sourceEncoding}</encoding>
 					<release>${maven.compiler.source}</release>
 					<debug>true</debug>
+					<!-- keep method parameter names, used by the scripting console code completion -->
+					<parameters>true</parameters>
 				</configuration>
 			</plugin>
 			<plugin>

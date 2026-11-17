@@ -1,27 +1,20 @@
 package org.hortonmachine.gears.io.copernicus;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.NetworkUtilities;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -257,7 +250,7 @@ public class OGCProcessesManager implements AutoCloseable {
         if (href == null) {
             throw new IOException("Output '" + outputKey + "' of job '" + jobId + "' has no href to download: " + output);
         }
-        downloadToFile(href, destinationPath);
+        NetworkUtilities.downloadFile(href, new File(destinationPath), pm);
     }
 
     /**
@@ -277,43 +270,6 @@ public class OGCProcessesManager implements AutoCloseable {
             return asString(((Map<String, Object>) value).get("href"));
         }
         return null;
-    }
-
-    private void downloadToFile( String href, String destinationPath ) throws IOException {
-        Path targetFile = Paths.get(destinationPath);
-        URL url = new URL(href);
-        URLConnection connection = url.openConnection();
-        connection.setConnectTimeout(30_000);
-        connection.setReadTimeout(60_000);
-        long contentLength = connection.getContentLengthLong();
-
-        pm.beginTask("Downloading result: " + href, IHMProgressMonitor.UNKNOWN);
-        if (targetFile.getParent() != null) {
-            Files.createDirectories(targetFile.getParent());
-        }
-        try (InputStream is = new BufferedInputStream(connection.getInputStream());
-                OutputStream os = new BufferedOutputStream(Files.newOutputStream(targetFile))) {
-            byte[] buffer = new byte[128 * 1024];
-            long totalRead = 0;
-            int read;
-            int lastPercent = -1;
-            while( (read = is.read(buffer)) != -1 ) {
-                os.write(buffer, 0, read);
-                totalRead += read;
-                if (contentLength > 0) {
-                    int percent = (int) (100L * totalRead / contentLength);
-                    if (percent != lastPercent && percent % 10 == 0) {
-                        pm.message("Downloaded: " + percent + "%...");
-                        lastPercent = percent;
-                    }
-                }
-                if (pm.isCanceled()) {
-                    throw new IOException("Download canceled by user");
-                }
-            }
-        } finally {
-            pm.done();
-        }
     }
 
     private HttpResponse<String> doGet( String url ) throws IOException, InterruptedException {

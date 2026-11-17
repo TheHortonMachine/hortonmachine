@@ -79,6 +79,7 @@ import javax.swing.table.DefaultTableModel;
 
 import org.apache.commons.io.FilenameUtils;
 import org.hortonmachine.dbs.log.Logger;
+import org.hortonmachine.gears.utils.LoggingUtils;
 import org.hortonmachine.gears.utils.OsCheck;
 import org.hortonmachine.gears.utils.OsCheck.OSType;
 import org.hortonmachine.gears.utils.PreferencesHandler;
@@ -295,6 +296,8 @@ public class GuiUtilities {
     }
 
     public static void setDefaultLookAndFeel() {
+    	// called at the start of the applications: hide the harmless plugin warnings of GeoTools
+    	LoggingUtils.hideKnownPluginWarnings();
     	// a scale set in the settings wins, else FlatLaf detects it from the system font and screen
     	String uiScaleString = PreferencesHandler.getPreference(HM_PREF_UISCALE, "");
     	if (uiScaleString != null && !uiScaleString.isBlank()) {
