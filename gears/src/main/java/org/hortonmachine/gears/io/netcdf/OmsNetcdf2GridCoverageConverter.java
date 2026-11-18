@@ -19,14 +19,19 @@ package org.hortonmachine.gears.io.netcdf;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.eclipse.imagen.iterator.WritableRandomIter;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.api.referencing.crs.ProjectedCRS;
+import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridEnvelope2D;
 import org.geotools.coverage.grid.GridGeometry2D;
@@ -143,7 +148,9 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
 
             **Projected grids** whose crs is in the file, as an EPSG code or a WKT in the attributes `epsg_code`, `crs_wkt` or `spatial_ref` of their grid mapping variable, as GDAL and RasterToNetcdf write them, keep their grid and crs: the cells are copied as they are, with the rows ordered from north to south. Set doLatLon to resample them to lat/long anyway.
 
-            **All the other grids**, the lat/long ones and the projected ones without a known crs, as the sinusoidal tiles of MODIS, are resampled to lat/long WGS84. The output has the same number of rows and columns of the grid, over the lat/long bounds of its cells: the center of every output cell is projected back to the grid and takes the value of the cell it falls in, a nearest neighbour resampling with no holes, which matches the one of GDAL. The cells outside the grid, as the corners of the bounds of a sinusoidal tile, are novalue. Longitudes from 0 to 360 are supported.
+            Without those attributes the crs is built from the CF parameters of the grid mapping, for the `grid_mapping_name` lambert_conformal_conic (as the Daymet grids), transverse_mercator, albers_conical_equal_area, lambert_azimuthal_equal_area and polar_stereographic. The shape of the earth is taken from `semi_major_axis` with `inverse_flattening` or `semi_minor_axis`, or from `earth_radius`; if it is not given, the sphere of radius 6371229 m used by netcdf-java is assumed. The crs is used only if it places the center and the corners of the grid where the projection of netcdf-java does, within a tenth of a cell; the false easting and northing corrections replace the values of the file.
+
+            **All the other grids**, the lat/long ones and the projected ones without a known crs, as the sinusoidal tiles of MODIS or the rotated pole grids, are resampled to lat/long WGS84. The output has the same number of rows and columns of the grid, over the lat/long bounds of its cells: the center of every output cell is projected back to the grid and takes the value of the cell it falls in, a nearest neighbour resampling with no holes, which matches the one of GDAL. The cells outside the grid, as the corners of the bounds of a sinusoidal tile, are novalue. Longitudes from 0 to 360 are supported.
 
             The axes of the HDF-EOS grids, as the MODIS tiles, are moved by half a cell: netcdf-java gives the upper left corners of their cells instead of the centers.
 
@@ -165,6 +172,12 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
     public static final String DESCR_pIncludePattern = "In case of no grid name, the first grid whose name contains this text is dumped.";
     public static final String DESCR_pExcludePattern = "In case of no grid name, grids whose name contains this text are skipped.";
     public static final String DESCR_doLatLon = "If true, projected grids are resampled to lat/long WGS84 also when their crs is known.";
+
+    /**
+     * The value of {@link #pToTimestep} to read all the timesteps from the first, clipped to the available ones without
+     * notice.
+     */
+    public static final int ALL_TIMESTEPS = Integer.MAX_VALUE;
 
     public String selectedGridName = null;
 
@@ -306,8 +319,11 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                 pFromTimestep = 0;
                 pToTimestep = 1;
             } else if (pToTimestep > datesList.size()) {
+                if (pToTimestep != ALL_TIMESTEPS) {
+                    pm.errorMessage(
+                            "The dataset contains " + datesList.size() + " time slices. toTimestep has been set accordingly.");
+                }
                 pToTimestep = datesList.size();
-                pm.errorMessage("The dataset contains " + datesList.size() + " time slices. toTimestep has been set accordingly.");
             }
 
             xAxisValues = (double[]) xAxis.read().get1DJavaArray(double.class);
@@ -367,7 +383,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
 
     /**
      * Find the crs of a projected grid, from the epsg code or the wkt of its grid mapping, as GDAL
-     * and the HortonMachine write them.
+     * and the HortonMachine write them, or else from the CF parameters of the grid mapping.
      *
      * @return the crs, or null if it is not known or its units are not those of the axes.
      */
@@ -381,6 +397,7 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
             return null;
         }
         CoordinateReferenceSystem crs = null;
+        boolean fromCfParameters = false;
         try {
             Attribute epsg = gridMapping.findAttribute("epsg_code");
             if (epsg != null && epsg.isString()) {
@@ -392,6 +409,13 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
                         crs = CRS.parseWKT(wkt.getStringValue());
                         break;
                     }
+                }
+            }
+            if (crs == null) {
+                String cfWkt = cfGridMappingToWkt(gridMapping, pFalseEastingCorrection, pFalseNorthingCorrection);
+                if (cfWkt != null) {
+                    crs = CRS.parseWKT(cfWkt);
+                    fromCfParameters = true;
                 }
             }
         } catch (Exception e) {
@@ -413,7 +437,247 @@ public class OmsNetcdf2GridCoverageConverter extends HMModel implements INetcdfU
         } else {
             return null;
         }
+        if (fromCfParameters && !matchesNetcdfProjection(crs)) {
+            pm.errorMessage(
+                    "The crs built from the CF parameters of the grid mapping doesn't match the projection of netcdf-java, the grid is resampled to lat/long.");
+            return null;
+        }
         return crs;
+    }
+
+    /**
+     * Check that a crs places the center and the corners of the grid where the projection of netcdf-java does, within
+     * a tenth of a cell.
+     */
+    private boolean matchesNetcdfProjection( CoordinateReferenceSystem crs ) {
+        if (!(crs instanceof ProjectedCRS)) {
+            return false;
+        }
+        try {
+            // the projection alone, from the lon/lat of the base crs, without datum shifts
+            MathTransform toProjected = ((ProjectedCRS) crs).getConversionFromBase().getMathTransform();
+            double cellX = cols > 1 ? Math.abs(xAxisValues[1] - xAxisValues[0]) * nativeAxisFactor : Double.POSITIVE_INFINITY;
+            double cellY = rows > 1 ? Math.abs(yAxisValues[1] - yAxisValues[0]) * nativeAxisFactor : Double.POSITIVE_INFINITY;
+            int[][] cells = {{cols / 2, rows / 2}, {0, 0}, {cols - 1, rows - 1}};
+            for( int[] cell : cells ) {
+                double x = xAxisValues[cell[0]];
+                double y = yAxisValues[cell[1]];
+                LatLonPoint latLon = netcdfProj.projToLatLon(ProjectionPoint.create(x, y));
+                double[] projected = new double[2];
+                toProjected.transform(new double[]{latLon.getLongitude(), latLon.getLatitude()}, 0, projected, 0, 1);
+                if (Math.abs(projected[0] - x * nativeAxisFactor) > cellX / 10
+                        || Math.abs(projected[1] - y * nativeAxisFactor) > cellY / 10) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * The earth radius netcdf-java uses when the grid mapping doesn't define the shape of the earth.
+     */
+    static final double NETCDF_DEFAULT_EARTH_RADIUS = 6371229.0;
+
+    /**
+     * Build the wkt of the crs of a CF grid mapping, from its <code>grid_mapping_name</code> and parameters.
+     *
+     * <p>Supported are lambert_conformal_conic, transverse_mercator, albers_conical_equal_area,
+     * lambert_azimuthal_equal_area and polar_stereographic. The shape of the earth is taken from semi_major_axis with
+     * inverse_flattening or semi_minor_axis, or from earth_radius; if it is not given, the sphere of netcdf-java is
+     * used.</p>
+     *
+     * @param gridMapping the grid mapping variable.
+     * @param falseEastingCorrection an optional value replacing the false easting, or <code>null</code>.
+     * @param falseNorthingCorrection an optional value replacing the false northing, or <code>null</code>.
+     * @return the wkt, or <code>null</code> if the grid mapping is not supported or misses parameters.
+     */
+    static String cfGridMappingToWkt( Variable gridMapping, Double falseEastingCorrection, Double falseNorthingCorrection ) {
+        Attribute nameAttribute = gridMapping.findAttribute("grid_mapping_name");
+        if (nameAttribute == null || !nameAttribute.isString()) {
+            return null;
+        }
+        String mappingName = nameAttribute.getStringValue().trim();
+        Double primeMeridian = cfDouble(gridMapping, "longitude_of_prime_meridian", 0);
+        if (primeMeridian != null && primeMeridian != 0) {
+            return null;
+        }
+
+        double[] standardParallels = cfDoubles(gridMapping, "standard_parallel");
+        String projection;
+        Map<String, Double> parameters = new LinkedHashMap<>();
+        switch( mappingName ) {
+        case "lambert_conformal_conic": {
+            Double centralMeridian = cfDouble(gridMapping, "longitude_of_central_meridian", 0);
+            Double latitudeOfOrigin = cfDouble(gridMapping, "latitude_of_projection_origin", 0);
+            if (centralMeridian == null || latitudeOfOrigin == null) {
+                return null;
+            }
+            parameters.put("central_meridian", centralMeridian);
+            parameters.put("latitude_of_origin", latitudeOfOrigin);
+            if (standardParallels.length == 1 || standardParallels.length == 2) {
+                // a tangent cone is the 2SP with equal parallels
+                projection = "Lambert_Conformal_Conic_2SP";
+                parameters.put("standard_parallel_1", standardParallels[0]);
+                parameters.put("standard_parallel_2", standardParallels[standardParallels.length - 1]);
+            } else {
+                Double scale = cfDouble(gridMapping, "scale_factor_at_projection_origin", 0);
+                if (scale == null) {
+                    return null;
+                }
+                projection = "Lambert_Conformal_Conic_1SP";
+                parameters.put("scale_factor", scale);
+            }
+            break;
+        }
+        case "transverse_mercator": {
+            Double centralMeridian = cfDouble(gridMapping, "longitude_of_central_meridian", 0);
+            Double latitudeOfOrigin = cfDouble(gridMapping, "latitude_of_projection_origin", 0);
+            Double scale = cfDouble(gridMapping, "scale_factor_at_central_meridian", 0);
+            if (centralMeridian == null || latitudeOfOrigin == null || scale == null) {
+                return null;
+            }
+            projection = "Transverse_Mercator";
+            parameters.put("central_meridian", centralMeridian);
+            parameters.put("latitude_of_origin", latitudeOfOrigin);
+            parameters.put("scale_factor", scale);
+            break;
+        }
+        case "albers_conical_equal_area": {
+            Double centralMeridian = cfDouble(gridMapping, "longitude_of_central_meridian", 0);
+            Double latitudeOfOrigin = cfDouble(gridMapping, "latitude_of_projection_origin", 0);
+            if (centralMeridian == null || latitudeOfOrigin == null
+                    || (standardParallels.length != 1 && standardParallels.length != 2)) {
+                return null;
+            }
+            projection = "Albers_Conic_Equal_Area";
+            parameters.put("central_meridian", centralMeridian);
+            parameters.put("latitude_of_origin", latitudeOfOrigin);
+            parameters.put("standard_parallel_1", standardParallels[0]);
+            parameters.put("standard_parallel_2", standardParallels[standardParallels.length - 1]);
+            break;
+        }
+        case "lambert_azimuthal_equal_area": {
+            Double longitudeOfCenter = cfDouble(gridMapping, "longitude_of_projection_origin", 0);
+            Double latitudeOfCenter = cfDouble(gridMapping, "latitude_of_projection_origin", 0);
+            if (longitudeOfCenter == null || latitudeOfCenter == null) {
+                return null;
+            }
+            projection = "Lambert_Azimuthal_Equal_Area";
+            parameters.put("latitude_of_center", latitudeOfCenter);
+            parameters.put("longitude_of_center", longitudeOfCenter);
+            break;
+        }
+        case "polar_stereographic": {
+            Double centralMeridian = cfDouble(gridMapping, "straight_vertical_longitude_from_pole", 0);
+            if (centralMeridian == null) {
+                centralMeridian = cfDouble(gridMapping, "longitude_of_projection_origin", 0);
+            }
+            Double latitudeOfOrigin = cfDouble(gridMapping, "latitude_of_projection_origin", 0);
+            if (centralMeridian == null || latitudeOfOrigin == null || Math.abs(latitudeOfOrigin) != 90) {
+                return null;
+            }
+            parameters.put("central_meridian", centralMeridian);
+            if (standardParallels.length == 1) {
+                if (Math.signum(standardParallels[0]) != Math.signum(latitudeOfOrigin)) {
+                    return null;
+                }
+                projection = "Polar Stereographic (variant B)";
+                parameters.put("Standard_Parallel_1", standardParallels[0]);
+            } else {
+                Double scale = cfDouble(gridMapping, "scale_factor_at_projection_origin", 0);
+                if (scale == null) {
+                    return null;
+                }
+                projection = "Polar_Stereographic";
+                parameters.put("latitude_of_origin", latitudeOfOrigin);
+                parameters.put("scale_factor", scale);
+            }
+            break;
+        }
+        default:
+            return null;
+        }
+        Double falseEasting = falseEastingCorrection != null
+                ? falseEastingCorrection
+                : cfDouble(gridMapping, "false_easting", 0);
+        Double falseNorthing = falseNorthingCorrection != null
+                ? falseNorthingCorrection
+                : cfDouble(gridMapping, "false_northing", 0);
+        parameters.put("false_easting", falseEasting == null ? 0 : falseEasting);
+        parameters.put("false_northing", falseNorthing == null ? 0 : falseNorthing);
+
+        // the shape of the earth
+        double semiMajor;
+        double inverseFlattening;
+        Double a = cfDouble(gridMapping, "semi_major_axis", 0);
+        Double invF = cfDouble(gridMapping, "inverse_flattening", 0);
+        Double b = cfDouble(gridMapping, "semi_minor_axis", 0);
+        Double radius = cfDouble(gridMapping, "earth_radius", 0);
+        if (a != null && invF != null) {
+            semiMajor = a;
+            inverseFlattening = invF;
+        } else if (a != null && b != null) {
+            semiMajor = a;
+            inverseFlattening = a.equals(b) ? 0 : a / (a - b);
+        } else if (radius != null) {
+            semiMajor = radius;
+            inverseFlattening = 0;
+        } else if (a != null) {
+            semiMajor = a;
+            inverseFlattening = 0;
+        } else {
+            semiMajor = NETCDF_DEFAULT_EARTH_RADIUS;
+            inverseFlattening = 0;
+        }
+        boolean isWgs84 = semiMajor == 6378137.0 && Math.abs(inverseFlattening - 298.257223563) < 1E-6;
+        String datum = isWgs84 ? "DATUM[\"WGS_1984\", SPHEROID[\"WGS 84\", " : "DATUM[\"unknown\", SPHEROID[\"unknown\", ";
+
+        StringBuilder wkt = new StringBuilder();
+        wkt.append("PROJCS[\"").append(mappingName).append("\", ");
+        wkt.append("GEOGCS[\"").append(isWgs84 ? "WGS 84" : "unknown").append("\", ");
+        wkt.append(datum).append(wktNumber(semiMajor)).append(", ").append(wktNumber(inverseFlattening)).append("]], ");
+        wkt.append("PRIMEM[\"Greenwich\", 0.0], UNIT[\"degree\", 0.017453292519943295], ");
+        wkt.append("AXIS[\"Longitude\", EAST], AXIS[\"Latitude\", NORTH]], ");
+        wkt.append("PROJECTION[\"").append(projection).append("\"], ");
+        for( Map.Entry<String, Double> parameter : parameters.entrySet() ) {
+            wkt.append("PARAMETER[\"").append(parameter.getKey()).append("\", ").append(wktNumber(parameter.getValue()))
+                    .append("], ");
+        }
+        wkt.append("UNIT[\"m\", 1.0], AXIS[\"Easting\", EAST], AXIS[\"Northing\", NORTH]]");
+        return wkt.toString();
+    }
+
+    private static String wktNumber( double value ) {
+        return BigDecimal.valueOf(value).toPlainString();
+    }
+
+    /**
+     * @return the numeric value of an attribute at the given index, or <code>null</code> if it is missing.
+     */
+    private static Double cfDouble( Variable variable, String name, int index ) {
+        Attribute attribute = variable.findAttribute(name);
+        if (attribute == null || attribute.isString() || attribute.getLength() <= index) {
+            return null;
+        }
+        return attribute.getNumericValue(index).doubleValue();
+    }
+
+    /**
+     * @return all the numeric values of an attribute, empty if it is missing.
+     */
+    private static double[] cfDoubles( Variable variable, String name ) {
+        Attribute attribute = variable.findAttribute(name);
+        if (attribute == null || attribute.isString()) {
+            return new double[0];
+        }
+        double[] values = new double[attribute.getLength()];
+        for( int i = 0; i < values.length; i++ ) {
+            values[i] = attribute.getNumericValue(i).doubleValue();
+        }
+        return values;
     }
 
     /**

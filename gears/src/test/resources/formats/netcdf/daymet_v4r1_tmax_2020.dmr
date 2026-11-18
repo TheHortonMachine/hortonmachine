@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Dataset xmlns="http://xml.opendap.org/ns/DAP/4.0#" xml:base="https://opendap.earthdata.nasa.gov/collections/C2532426483-ORNL_CLOUD/granules/Daymet_Daily_V4R1.daymet_v4_daily_na_tmax_2020.nc" dapVersion="4.0" dmrVersion="1.0" name="daymet_v4_daily_na_tmax_2020.nc">
+    <Dimension name="y" size="8075"/>
+    <Dimension name="x" size="7814"/>
+    <Dimension name="time" size="365"/>
+    <Dimension name="nv" size="2"/>
+    <Float32 name="y">
+        <Dim name="/y"/>
+        <Attribute name="units" type="String">
+            <Value>m</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>y coordinate of projection</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>projection_y_coordinate</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lon">
+        <Dim name="/y"/>
+        <Dim name="/x"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_east</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>longitude coordinate</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>longitude</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="lat">
+        <Dim name="/y"/>
+        <Dim name="/x"/>
+        <Attribute name="units" type="String">
+            <Value>degrees_north</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>latitude coordinate</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>latitude</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="time">
+        <Dim name="/time"/>
+        <Attribute name="standard_name" type="String">
+            <Value>time</Value>
+        </Attribute>
+        <Attribute name="calendar" type="String">
+            <Value>standard</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>days since 1950-01-01 00:00:00</Value>
+        </Attribute>
+        <Attribute name="bounds" type="String">
+            <Value>time_bnds</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>24-hour day based on local time</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="x">
+        <Dim name="/x"/>
+        <Attribute name="units" type="String">
+            <Value>m</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>x coordinate of projection</Value>
+        </Attribute>
+        <Attribute name="standard_name" type="String">
+            <Value>projection_x_coordinate</Value>
+        </Attribute>
+    </Float32>
+    <Float32 name="tmax">
+        <Dim name="/time"/>
+        <Dim name="/y"/>
+        <Dim name="/x"/>
+        <Attribute name="_FillValue" type="Float32">
+            <Value>-9999.</Value>
+        </Attribute>
+        <Attribute name="long_name" type="String">
+            <Value>daily maximum temperature</Value>
+        </Attribute>
+        <Attribute name="units" type="String">
+            <Value>degrees C</Value>
+        </Attribute>
+        <Attribute name="missing_value" type="Float32">
+            <Value>-9999.</Value>
+        </Attribute>
+        <Attribute name="coordinates" type="String">
+            <Value>lat lon</Value>
+        </Attribute>
+        <Attribute name="grid_mapping" type="String">
+            <Value>lambert_conformal_conic</Value>
+        </Attribute>
+        <Attribute name="cell_methods" type="String">
+            <Value>area: mean time: maximum</Value>
+        </Attribute>
+        <Map name="/lat"/>
+        <Map name="/lon"/>
+        <Map name="/time"/>
+    </Float32>
+    <Int16 name="lambert_conformal_conic">
+        <Attribute name="grid_mapping_name" type="String">
+            <Value>lambert_conformal_conic</Value>
+        </Attribute>
+        <Attribute name="longitude_of_central_meridian" type="Float64">
+            <Value>-100.</Value>
+        </Attribute>
+        <Attribute name="latitude_of_projection_origin" type="Float64">
+            <Value>42.5</Value>
+        </Attribute>
+        <Attribute name="false_easting" type="Float64">
+            <Value>0.</Value>
+        </Attribute>
+        <Attribute name="false_northing" type="Float64">
+            <Value>0.</Value>
+        </Attribute>
+        <Attribute name="standard_parallel" type="Float64">
+            <Value>25.</Value>
+            <Value>60.</Value>
+        </Attribute>
+        <Attribute name="semi_major_axis" type="Float64">
+            <Value>6378137.</Value>
+        </Attribute>
+        <Attribute name="inverse_flattening" type="Float64">
+            <Value>298.25722356300003</Value>
+        </Attribute>
+    </Int16>
+    <Float32 name="time_bnds">
+        <Dim name="/time"/>
+        <Dim name="/nv"/>
+        <Map name="/time"/>
+    </Float32>
+    <Int16 name="yearday">
+        <Dim name="/time"/>
+        <Attribute name="long_name" type="String">
+            <Value>day of year (DOY) starting with day 1 on January 1st</Value>
+        </Attribute>
+        <Map name="/time"/>
+    </Int16>
+    <Attribute name="DODS_EXTRA" type="Container">
+        <Attribute name="Unlimited_Dimension" type="String">
+            <Value>time</Value>
+        </Attribute>
+    </Attribute>
+    <Attribute name="start_year" type="Int16">
+        <Value>2020</Value>
+    </Attribute>
+    <Attribute name="source" type="String">
+        <Value>Daymet Software Version 4.0</Value>
+    </Attribute>
+    <Attribute name="Version_software" type="String">
+        <Value>Daymet Software Version 4.0</Value>
+    </Attribute>
+    <Attribute name="Version_data" type="String">
+        <Value>Daymet Data Version 4.0</Value>
+    </Attribute>
+    <Attribute name="Conventions" type="String">
+        <Value>CF-1.6</Value>
+    </Attribute>
+    <Attribute name="citation" type="String">
+        <Value>Please see http://daymet.ornl.gov/ for current Daymet data citation information</Value>
+    </Attribute>
+    <Attribute name="references" type="String">
+        <Value>Please see http://daymet.ornl.gov/ for current information on Daymet references</Value>
+    </Attribute>
+    <Attribute name="build_dmrpp_metadata" type="Container">
+        <Attribute name="created" type="String">
+            <Value>2026-05-22T21:12:26Z</Value>
+        </Attribute>
+        <Attribute name="build_dmrpp" type="String">
+            <Value>3.21.1-896</Value>
+        </Attribute>
+        <Attribute name="bes" type="String">
+            <Value>3.21.1-896</Value>
+        </Attribute>
+        <Attribute name="libdap" type="String">
+            <Value>libdap-3.21.1-336</Value>
+        </Attribute>
+        <Attribute name="invocation" type="String">
+            <Value>build_dmrpp -f /tmp/tmpq10k2jge/daymet_v4_daily_na_tmax_2020.nc -r daymet_v4_daily_na_tmax_2020.nc.dmr -u OPeNDAP_DMRpp_DATA_ACCESS_URL -M</Value>
+        </Attribute>
+    </Attribute>
+</Dataset>

@@ -38,26 +38,16 @@ import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.CoverageProcessingException;
 import org.geotools.coverage.processing.CoverageProcessor;
 import org.geotools.coverage.processing.Operations;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.CRS;
-import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
-import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
-import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
-import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
-import org.hortonmachine.gears.utils.crs.CrsUtilities;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
-import org.hortonmachine.gears.utils.geometry.GeometryUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.geotools.api.parameter.ParameterValueGroup;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
-import org.geotools.api.referencing.operation.MathTransform;
 
 import org.locationtech.jts.geom.Envelope;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.Polygon;
 
 import oms3.annotations.Author;
 import oms3.annotations.Description;
@@ -111,7 +101,11 @@ public class OmsRasterReprojector extends HMModel {
     public GridCoverage2D outRaster = null;
 
     public static final String OMSRASTERREPROJECTOR_DESCRIPTION = "Reprojects a raster into another coordinate reference system, optionally with a new cell size.";
-    public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = "";
+    public static final String OMSRASTERREPROJECTOR_DOCUMENTATION = """
+            Without cell size the cells are chosen by the resampling, which keeps about the number of cells of the source.
+
+            With a cell size the output has cells of exactly that size, and its bounds are on multiples of it, as with the -tap option of gdalwarp: rasters reprojected with the same cell size share the same grid and line up cell by cell. The bounds cover the whole source, found from its border densified, since straight edges become curves in another projection; the cells outside the source are novalue.
+            """;
     public static final String OMSRASTERREPROJECTOR_KEYWORDS = "Raster, Reprojection, CRS";
     public static final String OMSRASTERREPROJECTOR_LABEL = RASTERPROCESSING;
     public static final String OMSRASTERREPROJECTOR_NAME = "rreproject";
@@ -147,25 +141,7 @@ public class OmsRasterReprojector extends HMModel {
 
         GridGeometry2D gridGeometry = null;
         if (pXres != null && pYres != null) {
-            RegionMap regionMap = CoverageUtilities.getRegionParamsFromGridCoverage(inRaster);
-            double n = regionMap.getNorth();
-            double s = regionMap.getSouth();
-            double e = regionMap.getEast();
-            double w = regionMap.getWest();
-            Polygon polygon = GeometryUtilities.createPolygonFromEnvelope(new Envelope(w, e, s, n));
-
-            MathTransform transform = CRS.findMathTransform(sourceCrs, targetCrs);
-            Geometry targetGeometry = JTS.transform(polygon, transform);
-            Envelope env = targetGeometry.getEnvelopeInternal();
-            n = env.getMaxY();
-            s = env.getMinY();
-            w = env.getMinX();
-            e = env.getMaxX();
-
-            int newCols = (int) Math.round((e - w) / pXres);
-            int newRows = (int) Math.round((n - s) / pYres);
-
-            gridGeometry = CoverageUtilities.gridGeometryFromRegionValues(n, s, e, w, newCols, newRows, targetCrs);
+            gridGeometry = alignedGridGeometry(new Envelope(inRaster.getEnvelope2D()), sourceCrs, targetCrs, pXres, pYres);
             pm.message("Using supplied gridgeometry: " + gridGeometry);
         }
         pm.beginTask("Reprojecting...", IHMProgressMonitor.UNKNOWN);
@@ -194,4 +170,35 @@ public class OmsRasterReprojector extends HMModel {
         pm.done();
 
     }
+
+    /**
+     * The grid of the reprojected raster for a given cell size: it covers the whole source, whose border is densified
+     * since its edges are curved in the target crs, with cells of exactly the given size and the bounds on multiples of
+     * it.
+     *
+     * @param sourceEnvelope the envelope of the source raster.
+     * @param sourceCrs the crs of the source.
+     * @param targetCrs the target crs.
+     * @param xRes the cell size in x.
+     * @param yRes the cell size in y.
+     * @return the grid geometry.
+     * @throws Exception if the envelope can't be transformed.
+     */
+    static GridGeometry2D alignedGridGeometry( Envelope sourceEnvelope, CoordinateReferenceSystem sourceCrs,
+            CoordinateReferenceSystem targetCrs, double xRes, double yRes ) throws Exception {
+        HMCrsTransformer transformer = new HMCrsTransformer(sourceCrs, targetCrs);
+        Envelope env = transformer.transformDensified(sourceEnvelope, DENSIFY_POINTS);
+        // a tolerance, so that bounds already on the grid are not moved by a cell for rounding errors
+        double tolerance = 1E-6;
+        double w = Math.floor(env.getMinX() / xRes + tolerance) * xRes;
+        double e = Math.ceil(env.getMaxX() / xRes - tolerance) * xRes;
+        double s = Math.floor(env.getMinY() / yRes + tolerance) * yRes;
+        double n = Math.ceil(env.getMaxY() / yRes - tolerance) * yRes;
+        int cols = (int) Math.round((e - w) / xRes);
+        int rows = (int) Math.round((n - s) / yRes);
+        return CoverageUtilities.gridGeometryFromRegionValues(n, s, e, w, cols, rows, targetCrs);
+    }
+
+    /** The number of points per side of the source envelope used to find its bounds in the target crs. */
+    private static final int DENSIFY_POINTS = 100;
 }
