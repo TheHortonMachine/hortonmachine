@@ -37,6 +37,7 @@ import java.util.Objects;
 
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
+import org.hortonmachine.gears.utils.files.FileUtilities;
 
 /**
  * Network related utilities, as the download of files.
@@ -245,6 +246,72 @@ public class NetworkUtilities {
         } catch (IOException e) {
             return "";
         }
+    }
+
+    /**
+     * Get the credentials of a host from the <code>.netrc</code> file of the user home.
+     *
+     * @see #getNetrcCredentials(File, String)
+     */
+    public static String[] getNetrcCredentials( String host ) throws IOException {
+        return getNetrcCredentials(new File(System.getProperty("user.home"), ".netrc"), host);
+    }
+
+    /**
+     * Get the credentials of a host from a netrc file, with lines as
+     * <code>machine HOST login USER password PASSWORD</code>.
+     *
+     * <p>If the host has no entry, the <code>default</code> entry is used, if any.</p>
+     *
+     * @param netrcFile the netrc file.
+     * @param host the host.
+     * @return the login and password.
+     * @throws IOException if the file or the credentials of the host are missing.
+     */
+    public static String[] getNetrcCredentials( File netrcFile, String host ) throws IOException {
+        if (!netrcFile.exists()) {
+            throw new IOException("The netrc file doesn't exist: " + netrcFile);
+        }
+        String[] tokens = FileUtilities.readFile(netrcFile).trim().split("\\s+");
+        String[] credentials = netrcCredentials(tokens, host);
+        if (credentials == null) {
+            // the default entry, if any
+            credentials = netrcCredentials(tokens, null);
+        }
+        if (credentials == null || credentials[0] == null || credentials[1] == null) {
+            throw new IOException("No login and password for " + host + " in " + netrcFile);
+        }
+        return credentials;
+    }
+
+    /**
+     * @return the login and password of the entry of the host, or of the default entry if the host is
+     *          <code>null</code>; <code>null</code> if there is no such entry.
+     */
+    private static String[] netrcCredentials( String[] tokens, String host ) {
+        for( int i = 0; i < tokens.length; i++ ) {
+            int entryStart;
+            if (host != null && tokens[i].equals("machine") && i + 1 < tokens.length && tokens[i + 1].equalsIgnoreCase(host)) {
+                entryStart = i + 2;
+            } else if (host == null && tokens[i].equals("default")) {
+                entryStart = i + 1;
+            } else {
+                continue;
+            }
+            String[] credentials = new String[2];
+            for( int j = entryStart; j < tokens.length - 1; j++ ) {
+                if (tokens[j].equals("machine") || tokens[j].equals("default")) {
+                    break;
+                }
+                if (tokens[j].equals("login")) {
+                    credentials[0] = tokens[++j];
+                } else if (tokens[j].equals("password")) {
+                    credentials[1] = tokens[++j];
+                }
+            }
+            return credentials;
+        }
+        return null;
     }
 
 }

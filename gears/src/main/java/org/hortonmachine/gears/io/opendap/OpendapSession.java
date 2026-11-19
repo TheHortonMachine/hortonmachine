@@ -36,7 +36,6 @@ import java.util.Objects;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.NetworkUtilities;
-import org.hortonmachine.gears.utils.files.FileUtilities;
 
 /**
  * An http session for OPeNDAP servers, also those behind a login, as the NASA Earthdata ones.
@@ -130,49 +129,8 @@ public class OpendapSession {
      * @throws IOException if the file or the credentials of the host are missing.
      */
     public static OpendapSession fromNetrc( File netrcFile, String authHost ) throws IOException {
-        if (!netrcFile.exists()) {
-            throw new IOException("The netrc file doesn't exist: " + netrcFile);
-        }
-        String[] tokens = FileUtilities.readFile(netrcFile).trim().split("\\s+");
-        String[] credentials = netrcCredentials(tokens, authHost);
-        if (credentials == null) {
-            // the default entry, if any
-            credentials = netrcCredentials(tokens, null);
-        }
-        if (credentials == null || credentials[0] == null || credentials[1] == null) {
-            throw new IOException("No login and password for " + authHost + " in " + netrcFile);
-        }
+        String[] credentials = NetworkUtilities.getNetrcCredentials(netrcFile, authHost);
         return new OpendapSession(authHost, credentials[0], credentials[1], null);
-    }
-
-    /**
-     * @return the login and password of the entry of the host, or of the default entry if the host is
-     *          <code>null</code>; <code>null</code> if there is no such entry.
-     */
-    private static String[] netrcCredentials( String[] tokens, String host ) {
-        for( int i = 0; i < tokens.length; i++ ) {
-            int entryStart;
-            if (host != null && tokens[i].equals("machine") && i + 1 < tokens.length && tokens[i + 1].equalsIgnoreCase(host)) {
-                entryStart = i + 2;
-            } else if (host == null && tokens[i].equals("default")) {
-                entryStart = i + 1;
-            } else {
-                continue;
-            }
-            String[] credentials = new String[2];
-            for( int j = entryStart; j < tokens.length - 1; j++ ) {
-                if (tokens[j].equals("machine") || tokens[j].equals("default")) {
-                    break;
-                }
-                if (tokens[j].equals("login")) {
-                    credentials[0] = tokens[++j];
-                } else if (tokens[j].equals("password")) {
-                    credentials[1] = tokens[++j];
-                }
-            }
-            return credentials;
-        }
-        return null;
     }
 
     /**

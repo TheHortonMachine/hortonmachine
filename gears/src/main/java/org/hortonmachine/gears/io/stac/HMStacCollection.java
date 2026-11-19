@@ -62,6 +62,7 @@ public class HMStacCollection {
 	private Map<String, Object> otherFields;
     private Integer lastMatchedCount;
     private HMStacAccess access;
+    private boolean reportInvalidAssets = true;
 
     HMStacCollection( STACClient stacClient, Collection collection, IHMProgressMonitor pm, HMStacAccess access ) {
         this(stacClient, collection, pm);
@@ -75,6 +76,14 @@ public class HMStacCollection {
         if (pm == null)
             pm = new DummyProgressMonitor();
         this.pm = pm;
+    }
+
+    /**
+     * @param report whether the items found report their assets without a handler, see
+     *               {@link HMStacManager#setReportInvalidAssets(boolean)}.
+     */
+    void setReportInvalidAssets( boolean report ) {
+        this.reportInvalidAssets = report;
     }
 
     /**
@@ -326,6 +335,7 @@ public class HMStacCollection {
                 	item = HMStacItem.fromSimpleFeature(f);
                 }
                 item.setAccess(access);
+                item.setReportInvalidAssets(reportInvalidAssets);
                 if (item.getId() != null) {
                     stacItems.add(item);
                 } else if (item.getId() == null) {

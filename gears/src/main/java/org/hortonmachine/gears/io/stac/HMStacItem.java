@@ -38,6 +38,7 @@ public class HMStacItem {
     private Date end;
     private Date creationDateCet;
     private String errorMessage;
+    private boolean reportInvalidAssets = true;
     private HMStacAccess access;
 
     private HMStacItem() {
@@ -271,6 +272,17 @@ public class HMStacItem {
     }
 
     /**
+     * Whether the assets without a handler (metadata files, previews, ...) are reported on the error
+     * stream when listing the assets of the item. Default true, set by the manager for the items it
+     * finds, see {@link HMStacManager#setReportInvalidAssets(boolean)}.
+     *
+     * @param report false to not report them.
+     */
+    public void setReportInvalidAssets( boolean report ) {
+        this.reportInvalidAssets = report;
+    }
+
+    /**
      * @return the list of assets that can be handled by an available asset handler.
      */
     public List<HMStacAsset> getAssets() {
@@ -278,7 +290,7 @@ public class HMStacItem {
         for( HMStacAsset hmAsset : getAllAssets() ) {
             if (hmAsset.isValid()) {
                 assetsList.add(hmAsset);
-            } else {
+            } else if (reportInvalidAssets) {
                 String errorMessageTmp = "Asset " + hmAsset.getId() + " is not valid: " + hmAsset.getNonValidReason();
                 if (errorMessage == null || !errorMessage.equals(errorMessageTmp)) {
                     errorMessage = errorMessageTmp;

@@ -74,6 +74,11 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 
 			try {
 				SimpleFeatureCollection featureCollection = OmsVectorReader.readVector(tempFile.getAbsolutePath());
+				if (featureCollection == null || featureCollection.getSchema() == null) {
+					// FeatureJSON gives a schema-less collection for json without features (or plain json)
+					monitor.errorMessage("The asset " + asset.getId() + " contains no GeoJSON features.");
+					return null;
+				}
 				return targetType.cast(featureCollection);
 			} catch (Exception e) {
 				// if unable to read as SimpleFeatureCollection, return null and log error, 

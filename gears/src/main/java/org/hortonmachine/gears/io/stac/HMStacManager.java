@@ -29,6 +29,7 @@ public class HMStacManager implements AutoCloseable {
     private IHMProgressMonitor pm;
     private HMStacAccess access;
     private boolean forceLatLon = false;
+    private boolean reportInvalidAssets = true;
 
     public HMStacManager( String catalogUrl, IHMProgressMonitor pm ) {
         this.catalogUrl = catalogUrl;
@@ -67,6 +68,26 @@ public class HMStacManager implements AutoCloseable {
         if (stacClient != null)
             stacClient.setForceLatLon(forceLatLon);
         return this;
+    }
+
+    /**
+     * Whether the items of the collections of this manager report on the error stream the assets
+     * without a handler (metadata files, previews, ...) when listing their assets. Default true.
+     *
+     * <p>Applies to the collections got from the manager after the call.</p>
+     *
+     * @param report false to not report them.
+     * @return the current manager.
+     */
+    public HMStacManager setReportInvalidAssets( boolean report ) {
+        this.reportInvalidAssets = report;
+        return this;
+    }
+
+    private HMStacCollection newCollection( Collection collection ) {
+        HMStacCollection hmCollection = new HMStacCollection(stacClient, collection, pm, access);
+        hmCollection.setReportInvalidAssets(reportInvalidAssets);
+        return hmCollection;
     }
 
     /**
@@ -177,8 +198,7 @@ public class HMStacManager implements AutoCloseable {
         List<HMStacCollection> hmCollections = new ArrayList<>();
         List<Collection> collections = stacClient.getCollections();
         for( Collection c : collections ) {
-            HMStacCollection hmCollection = new HMStacCollection(stacClient, c, pm, access);
-            hmCollections.add(hmCollection);
+            hmCollections.add(newCollection(c));
         }
         return hmCollections;
     }
@@ -188,8 +208,7 @@ public class HMStacManager implements AutoCloseable {
         List<Collection> collections = stacClient.getCollections();
         for( Collection c : collections ) {
             if (c.getId().equals(id)) {
-                HMStacCollection hmCollection = new HMStacCollection(stacClient, c, pm, access);
-                return hmCollection;
+                return newCollection(c);
             }
         }
         return null;
@@ -210,13 +229,12 @@ public class HMStacManager implements AutoCloseable {
         Collection current = stacClient.reloadCollection(collection.getCollection());
         if (current == null)
             return getCollectionById(collection.getId());
-        return new HMStacCollection(stacClient, current, pm, access);
+        return newCollection(current);
     }
 
     public HMStacCollection getCollectionByURL(String collectionUrl) throws Exception {
         checkOpen();
-        return new HMStacCollection(stacClient,
-                stacClient.getCollectionByURL(access != null ? access.toHttpUrl(collectionUrl) : collectionUrl), pm, access);
+        return newCollection(stacClient.getCollectionByURL(access != null ? access.toHttpUrl(collectionUrl) : collectionUrl));
     }
 
     public void close() throws Exception {

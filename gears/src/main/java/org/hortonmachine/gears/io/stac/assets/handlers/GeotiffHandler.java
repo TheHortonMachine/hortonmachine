@@ -2,6 +2,7 @@ package org.hortonmachine.gears.io.stac.assets.handlers;
 
 import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,10 +12,14 @@ import java.util.Map;
 
 import javax.imageio.stream.ImageInputStream;
 
+import org.eclipse.imagen.media.translate.TranslateDescriptor;
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
+import org.geotools.coverage.grid.GridEnvelope2D;
+import org.geotools.coverage.grid.GridGeometry2D;
+import org.geotools.coverage.processing.Operations;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
@@ -25,6 +30,7 @@ import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.locationtech.jts.geom.Envelope;
 
 import com.github.davidmoten.aws.lw.client.Client;
 
@@ -242,6 +248,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		}
 		GeoTiffReader reader;
 		HMStacAccess access = asset.getAccess();
+		boolean isHttpCog = false;
 		if (client == null && access != null && access.isAuthenticated(assetUrl)) {
 			// protected asset: read through the access context (whole object, no range requests yet),
 			// on the storage declared by the asset if an S3 compatible service
@@ -251,14 +258,53 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			reader = new GeoTiffReader(inputProvider);
 		} else {
 			reader = createCogReader(assetUrl, user, password);
+			isHttpCog = true;
 		}
 		CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
 
-		GeneralParameterValue[] generalParameter = null;
-		if (region != null) {
-			generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(region, crs);
+		if (region == null) {
+			return reader.read(null);
 		}
-        return reader.read(generalParameter);
+		// the reader uses the region only to choose the overview of the resolution asked and
+		// returns the whole image, cropped here to read only the tiles of the region
+		GeneralParameterValue[] generalParameter = CoverageUtilities.createGridGeometryGeneralParameter(region, crs);
+		GridCoverage2D coverage = reader.read(generalParameter);
+		ReferencedEnvelope coverageEnv = new ReferencedEnvelope(coverage.getEnvelope2D());
+		Envelope cropEnv = coverageEnv.intersection(region.toEnvelope());
+		if (cropEnv.isNull() || cropEnv.getWidth() <= 0 || cropEnv.getHeight() <= 0) {
+			// the region is outside of the raster, nothing to crop to
+			return coverage;
+		}
+		GridGeometry2D gridGeometry = coverage.getGridGeometry();
+		if (isHttpCog && gridGeometry.getGridRange2D().width == reader.getOriginalGridRange().getSpan(0)) {
+			// full resolution of a COG over http: the window is read at once, with the range requests of
+			// all its blocks together, about twice as fast as the lazy image reading block after block
+			Rectangle window = gridGeometry.worldToGrid(new ReferencedEnvelope(cropEnv, crs))
+					.intersection(gridGeometry.getGridRange2D());
+			if (!window.isEmpty()) {
+				String href = PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)
+						? PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl)
+						: assetUrl;
+				BasicAuthURI windowUri = new BasicAuthURI(href, false);
+				if (user != null && password != null) {
+					windowUri.setUser(user);
+					windowUri.setPassword(password);
+				}
+				BufferedImage image = readCogWindow(windowUri, window);
+				return new GridCoverageFactory().create(coverage.getName(), image,
+						gridGeometry.gridToWorld(new GridEnvelope2D(window)), coverage.getSampleDimensions(), null,
+						coverage.getProperties());
+			}
+		}
+		GridCoverage2D cropped = (GridCoverage2D) Operations.DEFAULT.crop(coverage, new ReferencedEnvelope(cropEnv, crs));
+		RenderedImage image = cropped.getRenderedImage();
+		if (image.getMinX() == 0 && image.getMinY() == 0) {
+			return cropped;
+		}
+		// the crop keeps the pixel positions of the whole image, moved to start at 0,0 as the rasters of HM expect
+		RenderedImage translated = TranslateDescriptor.create(image, (float) -image.getMinX(), (float) -image.getMinY(), null, null);
+		return new GridCoverageFactory().create(cropped.getName(), translated, cropped.getEnvelope2D(),
+				cropped.getSampleDimensions(), null, cropped.getProperties());
 	}
 	
 	/**
@@ -355,17 +401,7 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 
 	    Rectangle sourceRegion = new Rectangle(x, y, w, h);
 
-	    ImageInputStream cogStream =
-	            new CogImageInputStreamSpi().createInputStreamInstance(cogUri);
-
-	    CogImageReader reader = new CogImageReader(new CogImageReaderSpi());
-	    reader.setInput(cogStream);
-
-	    CogImageReadParam param = new CogImageReadParam();
-	    param.setSourceRegion(sourceRegion);
-	    param.setRangeReaderClass(HttpRangeReader.class);
-
-	    BufferedImage image = reader.read(0, param);
+	    BufferedImage image = readCogWindow(cogUri, sourceRegion);
 
 	    // 4) Build the exact geographic envelope of the cropped rectangle
 	    double croppedWest = west0 + x * cellWidth;
@@ -379,6 +415,29 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	    // 5) Convert BufferedImage -> GridCoverage2D
 	    GridCoverageFactory factory = new GridCoverageFactory();
 	    return factory.create("cog_crop", image, croppedEnv);
+	}
+
+	/**
+	 * Read a window of the full resolution image of a COG over http at once, with the range
+	 * requests of all its blocks together.
+	 *
+	 * @param cogUri the address of the GeoTIFF, with its access token or credentials.
+	 * @param window the window in pixels.
+	 * @return the image of the window, starting at 0,0.
+	 * @throws IOException
+	 */
+	private static BufferedImage readCogWindow(BasicAuthURI cogUri, Rectangle window) throws IOException {
+		ImageInputStream cogStream = new CogImageInputStreamSpi().createInputStreamInstance(cogUri);
+		CogImageReader reader = new CogImageReader(new CogImageReaderSpi());
+		try {
+			reader.setInput(cogStream);
+			CogImageReadParam param = new CogImageReadParam();
+			param.setSourceRegion(window);
+			param.setRangeReaderClass(HttpRangeReader.class);
+			return reader.read(0, param);
+		} finally {
+			reader.dispose();
+		}
 	}
 
 	public InputStream readS3Raster(BasicAuthURI cogUri, Client client) {
