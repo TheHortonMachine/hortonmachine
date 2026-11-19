@@ -25,6 +25,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.crs.GeographicCRS;
 import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
@@ -158,6 +159,51 @@ public class HMCrsTransformer {
 	public Envelope transformDensified(Envelope envelope, int numDensificationPoints) throws Exception {
 		init();
 		return JTS.transform(envelope, null, mathTransform, numDensificationPoints);
+	}
+
+	/**
+	 * Transforms points in place with the transform of this transformer, see
+	 * {@link #transformPoints(MathTransform, double[], int)}.
+	 *
+	 * @param coords the coordinates, x and y of each point one after the other.
+	 * @param numPoints the number of points.
+	 * @throws Exception if the transform can't be created.
+	 */
+	public void transformPoints(double[] coords, int numPoints) throws Exception {
+		init();
+		transformPoints(mathTransform, coords, numPoints);
+	}
+
+	/**
+	 * Transforms points in place, x and y one after the other, all at once.
+	 *
+	 * <p>If the transform fails on some point (some projections throw instead of returning NaN
+	 * outside of their area of use), the points are transformed one by one and those that fail are
+	 * set to NaN.</p>
+	 *
+	 * @param transform a two dimensional transform.
+	 * @param coords the coordinates, x and y of each point one after the other.
+	 * @param numPoints the number of points.
+	 */
+	public static void transformPoints(MathTransform transform, double[] coords, int numPoints) {
+		double[] original = coords.clone();
+		try {
+			transform.transform(coords, 0, coords, 0, numPoints);
+		} catch (TransformException e) {
+			double[] point = new double[2];
+			for (int i = 0; i < numPoints * 2; i += 2) {
+				point[0] = original[i];
+				point[1] = original[i + 1];
+				try {
+					transform.transform(point, 0, point, 0, 1);
+				} catch (TransformException e1) {
+					point[0] = Double.NaN;
+					point[1] = Double.NaN;
+				}
+				coords[i] = point[0];
+				coords[i + 1] = point[1];
+			}
+		}
 	}
 	
 	/**

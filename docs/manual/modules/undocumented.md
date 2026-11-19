@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-40 of the 197 toolbox modules have no manual page yet.
+41 of the 198 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -78,6 +78,12 @@
 | GeopaparazziMapsCreator | draft | A map creator for geopaparazzi. |
 | GeopaparazziProject3To4Converter | draft | Convert a geopaparazzi 3 folder project into a geopaparazzi 4 database. |
 | GeopaparazziSpatialiteCreator | draft | Creates a spatialite database for geopaparazzi from a set of shapefiles or adds to an existing one. |
+
+## NetCDF (1)
+
+| Module | Status | Description |
+|---|---|---|
+| NetcdfTemporalAggregator | certified | Aggregates the timesteps of a NetCDF grid into a single raster: their mean, sum, minimum or maximum, cell by cell. |
 
 ## Statistics (4)
 
