@@ -65,8 +65,11 @@ public class DbsHelper {
      */
     public static DefaultFeatureCollection runRawSqlToFeatureCollection( String name, ASpatialDb db, String simpleSql,
             Polygon roi ) throws Exception {
-        int indexOf = simpleSql.toLowerCase().indexOf("from");
-        String afterFrom = simpleSql.substring(indexOf + 5).trim();
+        int indexOf = indexOfMainFrom(simpleSql);
+        if (indexOf < 0) {
+            throw new RuntimeException("No FROM clause found in the query.");
+        }
+        String afterFrom = simpleSql.substring(indexOf + 4).trim();
 
         String tableName = extractFirstTableToken(afterFrom);
 
@@ -172,6 +175,58 @@ public class DbsHelper {
             return fc;
         });
 
+    }
+
+    /**
+     * Find the FROM keyword of the main query: the first one outside parentheses, quotes and
+     * comments. This skips the FROMs inside a WITH clause (CTE) or a subquery in the select
+     * list, which do not name the table of the returned geometry.
+     *
+     * @param sql the query.
+     * @return the index of the main FROM keyword, or -1 if there is none.
+     */
+    static int indexOfMainFrom( String sql ) {
+        int depth = 0;
+        int n = sql.length();
+        for( int i = 0; i < n; i++ ) {
+            char c = sql.charAt(i);
+            if (c == '\'' || c == '"' || c == '[' || c == '`') {
+                char close = c == '[' ? ']' : c;
+                i++;
+                while( i < n ) {
+                    if (sql.charAt(i) == close) {
+                        // a doubled closing char is an escaped one
+                        if (i + 1 < n && sql.charAt(i + 1) == close) {
+                            i++;
+                        } else {
+                            break;
+                        }
+                    }
+                    i++;
+                }
+            } else if (c == '-' && i + 1 < n && sql.charAt(i + 1) == '-') {
+                int eol = sql.indexOf('\n', i);
+                i = eol < 0 ? n : eol;
+            } else if (c == '/' && i + 1 < n && sql.charAt(i + 1) == '*') {
+                int end = sql.indexOf("*/", i + 2);
+                i = end < 0 ? n : end + 1;
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                depth--;
+            } else if (depth == 0 && (c == 'f' || c == 'F') && sql.regionMatches(true, i, "from", 0, 4)) {
+                boolean startsWord = i == 0 || !isIdentifierChar(sql.charAt(i - 1));
+                boolean endsWord = i + 4 >= n || !isIdentifierChar(sql.charAt(i + 4));
+                if (startsWord && endsWord) {
+                    return i;
+                }
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isIdentifierChar( char c ) {
+        return Character.isLetterOrDigit(c) || c == '_' || c == '$';
     }
 
     static String extractFirstTableToken( String afterFrom ) {

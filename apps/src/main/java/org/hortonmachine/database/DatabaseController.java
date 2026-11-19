@@ -814,7 +814,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             File selectedFile = null;
             String sqlText = currentSqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
-                if (sqlText.toLowerCase().startsWith("select")) {
+                if (isSelectQuery(sqlText)) {
                     File[] saveFiles = guiBridge.showSaveFileDialog("Select shapefile to save to",
                             PreferencesHandler.getLastFile(), HMConstants.vectorFileFilter);
                     if (saveFiles != null && saveFiles.length > 0) {
@@ -834,7 +834,7 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
                     selectedFile = saveFiles[0];
 
                 } else {
-                    JOptionPane.showMessageDialog(this, "Writing to shapefile is allowed only for SELECT statements.", "WARNING",
+                    JOptionPane.showMessageDialog(this, "Writing to a vector file is allowed only for SELECT (or WITH ... SELECT) statements.", "WARNING",
                             JOptionPane.WARNING_MESSAGE, null);
                     return;
                 }
@@ -3124,6 +3124,15 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             sqlEditorView._limitCountTextfield.setText("1000");
         }
         return limit;
+    }
+
+    /**
+     * @param sqlText the query.
+     * @return true if it returns rows of a table: a SELECT, also one prefixed by a WITH clause.
+     */
+    protected boolean isSelectQuery( String sqlText ) {
+        String lower = sqlText.trim().toLowerCase();
+        return lower.startsWith("select") || lower.startsWith("with");
     }
 
     protected boolean isSelectOrPragma( String sqlText ) {

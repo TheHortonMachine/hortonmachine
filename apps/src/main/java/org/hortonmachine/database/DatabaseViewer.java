@@ -104,8 +104,8 @@ public class DatabaseViewer extends DatabaseController {
 
             String sqlText = sqlEditorArea.getText().trim();
             if (sqlText.length() > 0) {
-                if (!sqlText.toLowerCase().startsWith("select")) {
-                    JOptionPane.showMessageDialog(this, "Viewing of data is allowed only for SELECT statements.", "WARNING",
+                if (!isSelectQuery(sqlText)) {
+                    JOptionPane.showMessageDialog(this, "Viewing of data is allowed only for SELECT (or WITH ... SELECT) statements.", "WARNING",
                             JOptionPane.WARNING_MESSAGE, null);
                     return;
                 }
