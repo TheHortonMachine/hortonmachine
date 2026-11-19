@@ -6,17 +6,19 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JSlider;
 import javax.swing.UIManager;
 
@@ -46,8 +48,8 @@ public class LayerListRowPanel extends JPanel {
     private final JLabel nameLabel;
     /** The geopackage name, for geopackage tables, else <code>null</code>. */
     private final JLabel sourceLabel;
-    private final JPanel eastPanel;
-    private final JPanel buttonsPanel;
+    private final JPanel centerPanel;
+    private final JPopupMenu popupMenu;
 
     /**
      * @param layerListener told of the changes of the layer.
@@ -68,7 +70,7 @@ public class LayerListRowPanel extends JPanel {
         add(checkBox, BorderLayout.WEST);
 
         String layerName = layer.getName();
-        String tooltip = layerName + " (drag to change the drawing order)";
+        String tooltip = layerName + " (drag to change the drawing order, right click for the layer actions)";
         Cursor moveCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
         textPanel = new JPanel(new GridLayout(0, 1, 0, 0));
         textPanel.setOpaque(false);
@@ -99,27 +101,29 @@ public class LayerListRowPanel extends JPanel {
         if (sourceLabel != null) {
             textPanel.add(sourceLabel);
         }
-        add(textPanel, BorderLayout.CENTER);
 
-        eastPanel = new JPanel(new BorderLayout(4, 0));
-        buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        // the name, with the opacity slider below it
+        centerPanel = new JPanel(new BorderLayout(0, 0));
         // transparent, so that the background of the current row shows through
-        eastPanel.setOpaque(false);
-        buttonsPanel.setOpaque(false);
-        eastPanel.add(buttonsPanel, BorderLayout.EAST);
-        add(eastPanel, BorderLayout.EAST);
+        centerPanel.setOpaque(false);
+        centerPanel.add(textPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
 
-        JSlider opacitySlider = null;
         if (hasLayerOpacity(layer)) {
-            opacitySlider = new JSlider();
+            JSlider opacitySlider = new JSlider();
             GuiUtilities.setupOpacitySlider(opacitySlider, layer.getOpacity(), opacity -> {
                 layer.setOpacity(opacity);
                 wwdPanel.getWwd().redraw();
             });
-            opacitySlider.setPreferredSize(new Dimension(70, opacitySlider.getPreferredSize().height));
-            eastPanel.add(opacitySlider, BorderLayout.WEST);
+            opacitySlider.setOpaque(false);
+            // small preferred width, so that the slider follows the width of the panel instead
+            // of widening it
+            opacitySlider.setPreferredSize(new Dimension(60, opacitySlider.getPreferredSize().height));
+            centerPanel.add(opacitySlider, BorderLayout.SOUTH);
         }
 
+        // style, zoom to and delete in the right click menu of the row
+        popupMenu = new JPopupMenu();
         Action styleAction = null;
         if (onStyle != null) {
             styleAction = new AbstractAction("", ImageCache.get(ImageCache.PALETTE)){
@@ -133,37 +137,46 @@ public class LayerListRowPanel extends JPanel {
             styleAction = new StyleVectorLayerAction(wwdPanel, (NwwVectorLayer) layer);
         }
         if (styleAction != null) {
-            JButton styleButton = new JButton(styleAction);
-            styleButton.setBorderPainted(false);
-            styleButton.setFocusPainted(false);
-            styleButton.setContentAreaFilled(false);
-            buttonsPanel.add(styleButton);
+            addMenuItem(styleAction, "Style...");
         }
-
         if (layer instanceof NwwLayer) {
-            ZoomToLayerAction zoomToLayerAction = new ZoomToLayerAction(wwdPanel, (NwwLayer) layer);
-            JButton zoomToButton = new JButton(zoomToLayerAction);
-            zoomToButton.setBorderPainted(false);
-            zoomToButton.setFocusPainted(false);
-            zoomToButton.setContentAreaFilled(false);
-            buttonsPanel.add(zoomToButton);
+            addMenuItem(new ZoomToLayerAction(wwdPanel, (NwwLayer) layer), "Zoom to layer");
         }
-
-        DeleteLayerAction deleteAction = new DeleteLayerAction(layerListener, wwdPanel.getWwd(), layer);
-        JButton deleteButton = new JButton(deleteAction);
-        deleteButton.setBorderPainted(false);
-        deleteButton.setFocusPainted(false);
-        deleteButton.setContentAreaFilled(false);
-        buttonsPanel.add(deleteButton);
-
-        if (opacitySlider != null) {
-            // rows with a slider have at most three buttons (style of the rasterized vectors,
-            // zoom and delete): reserve the space of all, so that the sliders of all rows are
-            // aligned
-            int threeButtonsWidth = deleteButton.getPreferredSize().width * 3;
-            Dimension size = buttonsPanel.getPreferredSize();
-            buttonsPanel.setPreferredSize(new Dimension(Math.max(size.width, threeButtonsWidth), size.height));
+        if (popupMenu.getComponentCount() > 0) {
+            popupMenu.addSeparator();
         }
+        addMenuItem(new DeleteLayerAction(layerListener, wwdPanel.getWwd(), layer), "Remove layer");
+
+        MouseAdapter popupListener = new MouseAdapter(){
+            @Override
+            public void mousePressed( MouseEvent e ) {
+                showPopup(e);
+            }
+
+            @Override
+            public void mouseReleased( MouseEvent e ) {
+                // the popup trigger is the press on linux and mac, the release on windows
+                showPopup(e);
+            }
+
+            private void showPopup( MouseEvent e ) {
+                if (e.isPopupTrigger()) {
+                    popupMenu.show(e.getComponent(), e.getX(), e.getY());
+                }
+            }
+        };
+        for( Component component : getDragHandles() ) {
+            component.addMouseListener(popupListener);
+        }
+    }
+
+    /**
+     * Add an item to the popup menu. The actions have only an icon, as they used to be buttons.
+     */
+    private void addMenuItem( Action action, String text ) {
+        JMenuItem item = new JMenuItem(action);
+        item.setText(text);
+        popupMenu.add(item);
     }
 
     /**
@@ -206,9 +219,9 @@ public class LayerListRowPanel extends JPanel {
      */
     public Component[] getDragHandles() {
         if (sourceLabel != null) {
-            return new Component[]{this, textPanel, nameLabel, sourceLabel, eastPanel, buttonsPanel};
+            return new Component[]{this, centerPanel, textPanel, nameLabel, sourceLabel};
         }
-        return new Component[]{this, textPanel, nameLabel, eastPanel, buttonsPanel};
+        return new Component[]{this, centerPanel, textPanel, nameLabel};
     }
 
 }
