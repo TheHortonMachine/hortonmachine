@@ -32,12 +32,16 @@ import static org.hortonmachine.gears.libs.modules.HMConstants.GEOTIF;
 import static org.hortonmachine.gears.libs.modules.HMConstants.GEOTIFF;
 import static org.hortonmachine.gears.libs.modules.HMConstants.GRASS;
 
+import java.awt.RenderingHints;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.io.File;
 
+import org.eclipse.imagen.ImageLayout;
+import org.eclipse.imagen.ImageN;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.io.AbstractGridFormat;
 import org.geotools.gce.arcgrid.ArcGridFormat;
 import org.geotools.gce.arcgrid.ArcGridWriteParams;
@@ -46,6 +50,7 @@ import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffWriteParams;
 import org.geotools.gce.geotiff.GeoTiffWriter;
 import org.geotools.gce.grassraster.GrassCoverageWriter;
+import org.geotools.image.ImageWorker;
 import org.geotools.gce.grassraster.JGrassMapEnvironment;
 import org.geotools.gce.grassraster.format.GrassCoverageFormat;
 import org.geotools.gce.grassraster.format.GrassCoverageFormatFactory;
@@ -162,6 +167,7 @@ public class OmsRasterWriter extends HMModel {
         int tileHeight = Math.min(TIFF_TILE_SIZE, renderedImage.getHeight());
         wp.setTilingMode(GeoTiffWriteParams.MODE_EXPLICIT);
         wp.setTiling(tileWidth, tileHeight);
+        GridCoverage2D coverageToWrite = retileToFileTiles(inRaster, tileWidth, tileHeight);
 
         // explicit set lossless compression
         wp.setCompressionMode(GeoTiffWriteParams.MODE_EXPLICIT);
@@ -175,7 +181,30 @@ public class OmsRasterWriter extends HMModel {
         final ParameterValueGroup paramWrite = format.getWriteParameters();
         paramWrite.parameter(AbstractGridFormat.GEOTOOLS_WRITE_PARAMS.getName().toString()).setValue(wp);
         GeoTiffWriter gtw = new GeoTiffWriter(mapFile, new Hints(Hints.FORCE_LONGITUDE_FIRST_AXIS_ORDER, Boolean.TRUE));// (GeoTiffWriter) format.getWriter(mapFile);
-        gtw.write(inRaster, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
+        gtw.write(coverageToWrite, (GeneralParameterValue[]) paramWrite.values().toArray(new GeneralParameterValue[1]));
+    }
+
+    /**
+     * The GeoTIFF writer scrambles the file tiles lying inside a single larger tile of an operation image
+     * (e.g. the 1013x1013 tiles of a resampled coverage): it reads them from a child raster of the image
+     * tile as if their rows were contiguous. An image with tiles different from the file tiles is therefore
+     * retiled lazily to the file tiles before writing.
+     *
+     * @return the coverage itself if its tiles already are the file tiles, else a coverage on the retiled image.
+     */
+    private static GridCoverage2D retileToFileTiles( GridCoverage2D coverage, int tileWidth, int tileHeight ) {
+        RenderedImage image = coverage.getRenderedImage();
+        boolean sameTiles = image.getTileWidth() == tileWidth && image.getTileHeight() == tileHeight
+                && image.getTileGridXOffset() == image.getMinX() && image.getTileGridYOffset() == image.getMinY();
+        if (sameTiles) {
+            return coverage;
+        }
+        ImageLayout layout = new ImageLayout().setTileWidth(tileWidth).setTileHeight(tileHeight)
+                .setTileGridXOffset(image.getMinX()).setTileGridYOffset(image.getMinY());
+        RenderedImage retiled = new ImageWorker(image).setRenderingHints(new RenderingHints(ImageN.KEY_IMAGE_LAYOUT, layout))
+                .format(image.getSampleModel().getDataType()).getRenderedImage();
+        return new GridCoverageFactory().create(coverage.getName(), retiled, coverage.getGridGeometry(),
+                coverage.getSampleDimensions(), null, coverage.getProperties());
     }
     
     private void writeGrass( File mapFile ) throws Exception {
