@@ -2605,34 +2605,55 @@ public class StacBrowser extends JPanel implements IOnCloseListener {
         String name = row.itemRow.name() + " / " + row.asset.getId();
         runTask("Reading " + name + " for the map", () -> {
             log("Reading " + row.href + " for the map");
-            SimpleFeatureCollection fc = row.asset.getHandler().read(SimpleFeatureCollection.class, monitor);
-            if (fc == null)
+            // all the tables/layers of the asset (e.g. a geopackage), merged into one map layer
+            Map<String, SimpleFeatureCollection> collections = row.asset.getHandler().readAll(SimpleFeatureCollection.class,
+                    monitor);
+            if (collections == null || collections.isEmpty())
                 throw new IllegalArgumentException("the asset could not be read as vector data.");
-            CoordinateReferenceSystem crs = fc.getSchema().getCoordinateReferenceSystem();
-            MathTransform toLonLat = null;
-            if (crs != null && !HMCrsRegistry.crsEquals(crs, DefaultGeographicCRS.WGS84))
-                toLonLat = CRS.findMathTransform(crs, DefaultGeographicCRS.WGS84, true);
             List<Geometry> geometries = new ArrayList<>();
+            List<String> emptyTables = new ArrayList<>();
             int total = 0;
-            try (SimpleFeatureIterator it = fc.features()) {
-                while( it.hasNext() ) {
-                    Object geometry = it.next().getDefaultGeometry();
-                    if (!(geometry instanceof Geometry g) || g.isEmpty())
-                        continue;
-                    total++;
-                    if (geometries.size() < MAX_MAP_FEATURES)
-                        geometries.add(toLonLat != null ? JTS.transform(g, toLonLat) : g);
+            for( Map.Entry<String, SimpleFeatureCollection> entry : collections.entrySet() ) {
+                SimpleFeatureCollection fc = entry.getValue();
+                // empty collections have no schema
+                if (fc == null || fc.getSchema() == null || fc.isEmpty()) {
+                    emptyTables.add(entry.getKey());
+                    log("WARNING: " + name + " / " + entry.getKey() + " contains no features.");
+                    continue;
                 }
+                CoordinateReferenceSystem crs = fc.getSchema().getCoordinateReferenceSystem();
+                MathTransform toLonLat = null;
+                if (crs != null && !HMCrsRegistry.crsEquals(crs, DefaultGeographicCRS.WGS84))
+                    toLonLat = CRS.findMathTransform(crs, DefaultGeographicCRS.WGS84, true);
+                int tableTotal = 0;
+                try (SimpleFeatureIterator it = fc.features()) {
+                    while( it.hasNext() ) {
+                        Object geometry = it.next().getDefaultGeometry();
+                        if (!(geometry instanceof Geometry g) || g.isEmpty())
+                            continue;
+                        tableTotal++;
+                        if (geometries.size() < MAX_MAP_FEATURES)
+                            geometries.add(toLonLat != null ? JTS.transform(g, toLonLat) : g);
+                    }
+                }
+                total += tableTotal;
+                log("Read " + tableTotal + " geometries of " + name + " / " + entry.getKey()
+                        + (crs == null ? " (no CRS, assumed lon/lat)" : ""));
             }
             String note = total > geometries.size() ? ", only the first " + geometries.size() + " of " + total + " shown" : "";
-            log("Read " + total + " geometries of " + name + (crs == null ? " (no CRS, assumed lon/lat)" : "") + note);
-            return new Object[]{geometries, total + " geometries" + note};
+            return new Object[]{geometries, total + " geometries" + note, emptyTables};
         }, result -> {
             @SuppressWarnings("unchecked")
             List<Geometry> geometries = (List<Geometry>) result[0];
+            @SuppressWarnings("unchecked")
+            List<String> emptyTables = (List<String>) result[2];
             if (geometries.isEmpty()) {
                 GuiUtilities.showWarningMessage(this, "The asset contains no geometries.");
                 return;
+            }
+            if (!emptyTables.isEmpty()) {
+                GuiUtilities.showWarningMessage(this,
+                        "These layers of " + name + " contain no features and are not shown: " + String.join(", ", emptyTables));
             }
             mapPanel.addVectorLayer(mapLayerId(row), name, geometries);
             Envelope env = new Envelope();
