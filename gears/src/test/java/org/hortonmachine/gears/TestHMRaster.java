@@ -15,7 +15,10 @@ import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
+import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 /**
@@ -206,7 +209,56 @@ public class TestHMRaster extends HMTestCase {
                 {3, 3, 3, 3, 3, 3, 3, 3, 3, 3}};
         checkMatrixEqual(workingRaster.buildCoverage().getRenderedImage(), expected, DELTA);
     }
-    
+
+    /**
+     * Maps a UTM raster on an Albers raster, rotated by about 10 degrees: each cell has to take the value of the UTM cell
+     * containing its centre.
+     */
+    public void testMappingOtherCrs() throws Exception {
+        CoordinateReferenceSystem utm = HMCrsRegistry.INSTANCE.getCrs("EPSG:32612");
+        CoordinateReferenceSystem albers = HMCrsRegistry.INSTANCE.getCrs("EPSG:5070");
+        int utmCols = 200;
+        int utmRows = 200;
+        RegionMap utmRegion = RegionMap.fromBoundsAndGrid(500000, 506000, 5050000, 5056000, utmCols, utmRows);
+        HMRaster source = new HMRaster.HMRasterWritableBuilder().setRegion(utmRegion).setCrs(utm).build();
+        for( int r = 0; r < utmRows; r++ ) {
+            for( int c = 0; c < utmCols; c++ ) {
+                source.setValue(c, r, c + r * utmCols);
+            }
+        }
+
+        // an albers grid larger than the utm one, so that it also has cells outside of it
+        Envelope env = new HMCrsTransformer(utm, albers).transformDensified(utmRegion.toEnvelope(), 20);
+        env.expandBy(600);
+        int cols = (int) Math.ceil(env.getWidth() / 60);
+        int rows = (int) Math.ceil(env.getHeight() / 60);
+        RegionMap region = RegionMap.fromBoundsAndGrid(env.getMinX(), env.getMinX() + cols * 60, env.getMinY(),
+                env.getMinY() + rows * 60, cols, rows);
+        HMRaster target = new HMRaster.HMRasterWritableBuilder().setRegion(region).setCrs(albers).build();
+        target.mapRaster(null, source, MergeMode.SUBSTITUTE);
+
+        HMCrsTransformer toUtm = new HMCrsTransformer(albers, utm);
+        int inside = 0;
+        int outside = 0;
+        for( int r = 0; r < rows; r++ ) {
+            for( int c = 0; c < cols; c++ ) {
+                Coordinate centre = toUtm.transform(target.getWorld(c, r));
+                int utmCol = (int) Math.floor((centre.x - 500000) / 30);
+                int utmRow = (int) Math.floor((5056000 - centre.y) / 30);
+                double value = target.getValue(c, r);
+                if (utmCol >= 0 && utmCol < utmCols && utmRow >= 0 && utmRow < utmRows) {
+                    assertEquals("cell " + c + "/" + r, utmCol + utmRow * utmCols, value, DELTA);
+                    inside++;
+                } else {
+                    assertTrue("cell " + c + "/" + r + " outside of the utm raster", target.isNovalue(value));
+                    outside++;
+                }
+            }
+        }
+        assertTrue(inside > 9000);
+        assertTrue(outside > 0);
+    }
+
 	public void testSubraster() throws Exception {
 		double[][] expected = new double[][] { //
 				{ 800, 900, 1000, 1000, 1200 }, //

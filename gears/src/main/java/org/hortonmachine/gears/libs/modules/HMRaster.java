@@ -46,9 +46,9 @@ import org.geotools.api.referencing.operation.MathTransform;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridGeometry2D;
 import org.geotools.coverage.processing.Operations;
+import org.geotools.api.metadata.spatial.PixelOrientation;
 import org.geotools.data.simple.SimpleFeatureCollection;
-import org.geotools.geometry.jts.JTS;
-import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.transform.ConcatenatedTransform;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
@@ -57,6 +57,7 @@ import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.modules.r.scanline.OmsScanLineRasterizer;
 import org.hortonmachine.gears.utils.crs.HMCrsRegistry;
+import org.hortonmachine.gears.utils.crs.HMCrsTransformer;
 import org.hortonmachine.gears.utils.RegionMap;
 import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.hortonmachine.gears.utils.math.NumericsUtilities;
@@ -1388,7 +1389,24 @@ public class HMRaster implements AutoCloseable {
 
     /**
      * Writes the values of the coverage into the current raster, summing multiple occurrences.
-     * 
+     *
+     * <p>The other raster can be in a different crs, any for which a transform exists: each cell of
+     * the current raster takes the value of the cell of the other raster containing its centre, with
+     * the centre transformed exactly, cell by cell (nearest neighbour, no approximation of the
+     * projection). Notes:</p>
+     * <ul>
+     * <li>it is a sampling, not an aggregation: if the current raster is much coarser than the other,
+     * most cells of the other are not used;</li>
+     * <li>the transform accepts lenient datum shifts: if no shift parameters are known between two
+     * datums, the shift is ignored (1-2 m between NAD83 and WGS84, up to about a hundred meters
+     * with old local datums);</li>
+     * <li>the cells whose centre can't be transformed (outside of the area of the projection) are
+     * left as they are;</li>
+     * <li>the cells processed are those inside the envelope of the other raster transformed in the
+     * current crs with 20 points per side, which doesn't hold for rasters crossing the antimeridian
+     * or containing a pole.</li>
+     * </ul>
+     *
      * @param pm optional Process monitor.
      * @param otherRaster the raster to map over the current raster.
      * @param valuesCountRaster a bit matrix that tracks how many values per pixels are recorded (they are summed, so the number is needed for averaging).
@@ -1414,23 +1432,28 @@ public class HMRaster implements AutoCloseable {
         CoordinateReferenceSystem sourceCRS = otherRaster.getCrs();
         CoordinateReferenceSystem targetCRS = getCrs();
 
-        if (!CRS.equalsIgnoreMetadata(sourceCRS, targetCRS)) {
-            MathTransform transform = CRS.findMathTransform(sourceCRS, targetCRS);
-            lowerLeftCellCenter = JTS.transform(lowerLeftCellCenter, null, transform);
-            upperRightCellCenter = JTS.transform(upperRightCellCenter, null, transform);
+        // the transform from the cell centres of the current raster to the grid of the other, null if the crs are the same
+        MathTransform toOtherGrid = null;
+        if (sourceCRS != null && targetCRS != null && !HMCrsRegistry.crsEquals(sourceCRS, targetCRS)) {
+            // the cell centres of the other raster, densified since the edges are curved in the current crs
+            Envelope otherEnv = new Envelope(lowerLeftCellCenter, upperRightCellCenter);
+            Envelope env = new HMCrsTransformer(sourceCRS, targetCRS).transformDensified(otherEnv, 20);
+            lowerLeftCellCenter = new Coordinate(env.getMinX(), env.getMinY());
+            upperRightCellCenter = new Coordinate(env.getMaxX(), env.getMaxY());
+            // grid to world of the current raster (affine), crs transform, world to grid of the other (affine)
+            MathTransform toOther = new HMCrsTransformer(targetCRS, sourceCRS).getMathTransform();
+            toOtherGrid = ConcatenatedTransform.create(
+                    ConcatenatedTransform.create(gridGeometry.getGridToCRS2D(PixelOrientation.CENTER), toOther),
+                    otherRaster.gridGeometry.getGridToCRS2D(PixelOrientation.UPPER_LEFT).inverse());
         }
 
         // find grid coordinates in the current region's space
         Point ll = getCell(lowerLeftCellCenter);
-        int fromCol = ll.x;
-        if (fromCol < 0)
-            fromCol = 0;
-        int toRow = ll.y;
+        int fromCol = Math.max(ll.x, startCol);
+        int toRow = Math.min(ll.y, rows - 1);
         Point ur = getCell(upperRightCellCenter);
-        int toCol = ur.x;
-        int fromRow = ur.y;
-        if (fromRow < 0)
-            fromRow = 0;
+        int toCol = Math.min(ur.x, cols - 1);
+        int fromRow = Math.max(ur.y, startRow);
 
         if (_mergeMode == MergeMode.AVG && sumRaster == null) {
             // set the current sum and count to the current raster to start with
@@ -1445,13 +1468,36 @@ public class HMRaster implements AutoCloseable {
         pm.beginTask("Patch raster...", toRow - fromRow); //$NON-NLS-1$
         // the other raster is read row after row, through a strip cache to not decode its tiles again and again
         StripCache otherCache = otherRaster.new StripCache();
+        int rowCells = Math.max(0, toCol - fromCol + 1);
+        double[] rowCoords = new double[rowCells * 2];
         // fill the points of the current raster picking form the
         // other raster via nearest neighbor interpolation
         for( int r = fromRow; r <= toRow; r++ ) {
+            if (toOtherGrid != null) {
+                // the cells of the row, transformed at once to positions in the grid of the other raster
+                for( int c = fromCol; c <= toCol; c++ ) {
+                    int i = (c - fromCol) * 2;
+                    rowCoords[i] = c;
+                    rowCoords[i + 1] = r;
+                }
+                HMCrsTransformer.transformPoints(toOtherGrid, rowCoords, rowCells);
+            }
             for( int c = fromCol; c <= toCol; c++ ) {
                 if (isContained(c, r)) {
-                    Coordinate coordinate = getWorld(c, r);
-                    double otherRasterValue = otherCache.getValue(coordinate);
+                    double otherRasterValue;
+                    if (toOtherGrid != null) {
+                        int i = (c - fromCol) * 2;
+                        double otherCol = rowCoords[i];
+                        double otherRow = rowCoords[i + 1];
+                        if (Double.isNaN(otherCol) || Double.isNaN(otherRow)) {
+                            // outside of the domain of the projection
+                            continue;
+                        }
+                        // the cell containing the position
+                        otherRasterValue = otherCache.getValue((int) Math.floor(otherCol), (int) Math.floor(otherRow));
+                    } else {
+                        otherRasterValue = otherCache.getValue(getWorld(c, r));
+                    }
                     if (!otherRaster.isNovalue(otherRasterValue)) {
                         double thisRasterValue = getValue(c, r);
 

@@ -13,6 +13,7 @@ import org.geotools.api.referencing.FactoryException;
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.cs.AxisDirection;
 import org.geotools.api.referencing.operation.MathTransform;
+import org.geotools.api.referencing.operation.TransformException;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.data.simple.SimpleFeatureIterator;
@@ -20,6 +21,7 @@ import org.geotools.feature.simple.SimpleFeatureBuilder;
 import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
+import org.geotools.referencing.operation.transform.AbstractMathTransform;
 import org.hortonmachine.gears.libs.modules.HMRaster;
 import org.hortonmachine.gears.utils.HMTestMaps;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -203,6 +205,49 @@ public class TestCrs {
 
         assertEquals(source4326.x, roundTrip.x, TOL_DEGREES);
         assertEquals(source4326.y, roundTrip.y, TOL_DEGREES);
+    }
+
+    @Test
+    public void testHMCrsTransformerTransformPoints() throws Exception {
+        HMCrsTransformer transformer = new HMCrsTransformer(HMCrsRegistry.INSTANCE.getCrs("EPSG:32612"),
+                HMCrsRegistry.INSTANCE.getCrs("EPSG:5070"));
+        double[] coords = {500000, 5000000, 510000, 5010000, 520000, 5020000};
+        transformer.transformPoints(coords, 3);
+        for( int i = 0; i < 3; i++ ) {
+            Coordinate expected = transformer.transform(new Coordinate(500000 + i * 10000, 5000000 + i * 10000));
+            assertEquals(expected.x, coords[i * 2], 1E-6);
+            assertEquals(expected.y, coords[i * 2 + 1], 1E-6);
+        }
+
+        // a transform failing on a point: the others are transformed, the failing one is NaN
+        MathTransform failingOnNegativeX = new AbstractMathTransform(){
+            @Override
+            public int getSourceDimensions() {
+                return 2;
+            }
+            @Override
+            public int getTargetDimensions() {
+                return 2;
+            }
+            @Override
+            public void transform( double[] srcPts, int srcOff, double[] dstPts, int dstOff, int numPts )
+                    throws TransformException {
+                for( int i = 0; i < numPts * 2; i += 2 ) {
+                    if (srcPts[srcOff + i] < 0) {
+                        throw new TransformException("negative x");
+                    }
+                    dstPts[dstOff + i] = srcPts[srcOff + i] * 2;
+                    dstPts[dstOff + i + 1] = srcPts[srcOff + i + 1] * 2;
+                }
+            }
+        };
+        double[] points = {1, 2, -3, 4, 5, 6};
+        HMCrsTransformer.transformPoints(failingOnNegativeX, points, 3);
+        assertEquals(2, points[0], 0);
+        assertEquals(4, points[1], 0);
+        assertTrue(Double.isNaN(points[2]) && Double.isNaN(points[3]));
+        assertEquals(10, points[4], 0);
+        assertEquals(12, points[5], 0);
     }
 
     // -----------------------------------------------------------------------
