@@ -38,6 +38,7 @@ import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.exceptions.ModelsIllegalargumentException;
 import org.hortonmachine.gears.libs.modules.HMModel;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.hmraster.HMMBRaster;
 import org.hortonmachine.gears.libs.modules.hmraster.HMRasterStatistics;
 import org.hortonmachine.gears.libs.monitor.DummyProgressMonitor;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -102,6 +103,7 @@ public class HMCogWriter {
     private static final int TAG_PREDICTOR = 317;
     private static final int TAG_TILE_WIDTH = 322;
     private static final int TAG_TILE_LENGTH = 323;
+    private static final int TAG_EXTRA_SAMPLES = 338;
     private static final int TAG_SAMPLE_FORMAT = 339;
     private static final int TAG_GDAL_NODATA = 42113;
     private static final int TAG_GDAL_METADATA = 42112;
@@ -155,7 +157,7 @@ public class HMCogWriter {
     }
 
     /**
-     * Convert a raster file to a COG.
+     * Convert a raster file to a COG, with all its bands.
      *
      * <p>GeoTIFF files are read by windows, so they can be larger than the memory, and their
      * georeferencing tags are copied as they are. Other formats are read in memory.</p>
@@ -167,7 +169,7 @@ public class HMCogWriter {
     public void convert2Cog( IHMProgressMonitor pm, String inPath, String outPath ) throws Exception {
         String lower = inPath.toLowerCase();
         boolean isTiff = lower.endsWith(".tif") || lower.endsWith(".tiff");
-        try (HMRaster raster = isTiff ? HMRaster.fromFileWindowed(inPath) : HMRaster.fromFile(inPath)) {
+        try (HMRaster raster = isTiff ? HMRaster.fromFileWindowed(inPath) : HMMBRaster.fromFile(inPath)) {
             List<Field> geoFields = isTiff ? readGeoFields(new File(inPath)) : null;
             write(pm, raster, geoFields, outPath);
         }
@@ -175,6 +177,8 @@ public class HMCogWriter {
 
     /**
      * Write a raster as COG.
+     *
+     * <p>All the bands of a {@link HMMBRaster} are written, pixel interleaved, else the single band of the raster.</p>
      *
      * @param pm optional progress monitor.
      * @param raster the raster to write.
@@ -197,6 +201,7 @@ public class HMCogWriter {
         }
         int dataType = raster.getRenderedImage().getSampleModel().getDataType();
         CogTileEncoder.bytesPerSample(dataType); // checks the type is supported
+        int bands = raster instanceof HMMBRaster ? ((HMMBRaster) raster).getBandsCount() : 1;
         boolean floatingPoint = CogTileEncoder.isFloatingPoint(dataType);
         Resampling method = resampling;
         if (method == Resampling.AUTO) {
@@ -243,13 +248,16 @@ public class HMCogWriter {
 
         File tempFile = new File(outFile.getParentFile(), outFile.getName() + ".tiles.tmp");
         ExecutorService executor = Executors.newFixedThreadPool(Math.max(1, threads));
-        ThreadLocal<CogTileEncoder> encoders = ThreadLocal
-                .withInitial(() -> new CogTileEncoder(dataType, tileSize, compressionCode, deflateLevel, predictor, fillValue));
+        ThreadLocal<CogTileEncoder> encoders = ThreadLocal.withInitial(
+                () -> new CogTileEncoder(dataType, tileSize, bands, compressionCode, deflateLevel, predictor, fillValue));
         boolean success = false;
         try (CogTileStore store = new CogTileStore(tempFile, tilesPerLevel)) {
-            Pyramid pyramid = new Pyramid(sizes, tilesX, tilesY, method, !floatingPoint, store, encoders, executor, raster,
-                    fillValue);
-            HMRasterStatistics statistics = new HMRasterStatistics();
+            Pyramid pyramid = new Pyramid(sizes, tilesX, tilesY, bands, method, !floatingPoint, store, encoders, executor,
+                    raster, fillValue);
+            HMRasterStatistics[] statistics = new HMRasterStatistics[bands];
+            for( int b = 0; b < bands; b++ ) {
+                statistics[b] = new HMRasterStatistics();
+            }
             pm.beginTask("Compressing tiles and building " + (levelsCount - 1) + " overviews...", tilesY[0]);
             for( int ty = 0; ty < tilesY[0]; ty++ ) {
                 if (pm.isCanceled()) {
@@ -258,8 +266,10 @@ public class HMCogWriter {
                 int _ty = ty;
                 // each full resolution tile is read, compressed and shrunk in the same task, then dropped
                 pyramid.processRow(0, ty, tx -> {
-                    double[] tile = readTile(raster, tx, _ty, tileSize, fillValue);
-                    statistics.merge(tileStatistics(tile, raster, tx, _ty, tileSize, fillValue));
+                    double[][] tile = readTile(raster, bands, tx, _ty, tileSize, fillValue);
+                    for( int b = 0; b < bands; b++ ) {
+                        statistics[b].merge(tileStatistics(tile[b], raster, tx, _ty, tileSize, fillValue));
+                    }
                     return tile;
                 });
                 pm.worked(1);
@@ -275,17 +285,21 @@ public class HMCogWriter {
                 }
                 fields.add(Field.longs(TAG_IMAGE_WIDTH, sizes.get(l)[0]));
                 fields.add(Field.longs(TAG_IMAGE_LENGTH, sizes.get(l)[1]));
-                fields.add(Field.shorts(TAG_BITS_PER_SAMPLE, 8 * CogTileEncoder.bytesPerSample(dataType)));
+                fields.add(Field.shorts(TAG_BITS_PER_SAMPLE, perBand(bands, 8 * CogTileEncoder.bytesPerSample(dataType))));
                 fields.add(Field.shorts(TAG_COMPRESSION, compressionCode));
                 fields.add(Field.shorts(TAG_PHOTOMETRIC, 1));
-                fields.add(Field.shorts(TAG_SAMPLES_PER_PIXEL, 1));
+                fields.add(Field.shorts(TAG_SAMPLES_PER_PIXEL, bands));
                 fields.add(Field.shorts(TAG_PLANAR_CONFIGURATION, 1));
                 if (predictor != CogTileEncoder.PREDICTOR_NONE) {
                     fields.add(Field.shorts(TAG_PREDICTOR, predictor));
                 }
                 fields.add(Field.longs(TAG_TILE_WIDTH, tileSize));
                 fields.add(Field.longs(TAG_TILE_LENGTH, tileSize));
-                fields.add(Field.shorts(TAG_SAMPLE_FORMAT, sampleFormat(dataType)));
+                if (bands > 1) {
+                    // grayscale has one color channel, the other bands are unspecified extra samples
+                    fields.add(Field.shorts(TAG_EXTRA_SAMPLES, new int[bands - 1]));
+                }
+                fields.add(Field.shorts(TAG_SAMPLE_FORMAT, perBand(bands, sampleFormat(dataType))));
                 for( Field geoField : geoFields ) {
                     // georeferencing only in the full resolution image, nodata everywhere
                     if (l == 0 || geoField.tag == TAG_GDAL_NODATA) {
@@ -294,7 +308,8 @@ public class HMCogWriter {
                 }
                 if (l == 0) {
                     // exact statistics, else clients estimate them from a subsample or the smallest overview
-                    String metadata = statistics.toGdalMetadataTag((long) raster.getCols() * raster.getRows());
+                    String metadata = HMRasterStatistics.toGdalMetadataTag(statistics,
+                            (long) raster.getCols() * raster.getRows());
                     if (metadata != null) {
                         fields.add(Field.ascii(TAG_GDAL_METADATA, metadata));
                     }
@@ -337,20 +352,37 @@ public class HMCogWriter {
     }
 
     /**
-     * Read a full resolution tile, with the values as they are and the padding outside the raster.
+     * Read the bands of a full resolution tile, with the values as they are and the padding outside the raster.
      */
-    private static double[] readTile( HMRaster raster, int tx, int ty, int tileSize, double padding ) {
-        double[] tile = new double[tileSize * tileSize];
-        Arrays.fill(tile, padding);
+    private static double[][] readTile( HMRaster raster, int bands, int tx, int ty, int tileSize, double padding ) {
         int col = tx * tileSize;
         int row = ty * tileSize;
         int w = Math.min(tileSize, raster.getCols() - col);
         int h = Math.min(tileSize, raster.getRows() - row);
-        double[] values = raster.getValues(col, row, w, h, null);
-        for( int r = 0; r < h; r++ ) {
-            System.arraycopy(values, r * w, tile, r * tileSize, w);
+        double[][] tile = new double[bands][];
+        double[] values = new double[w * h];
+        for( int b = 0; b < bands; b++ ) {
+            tile[b] = new double[tileSize * tileSize];
+            Arrays.fill(tile[b], padding);
+            if (raster instanceof HMMBRaster) {
+                ((HMMBRaster) raster).getValues(col, row, w, h, b, values);
+            } else {
+                raster.getValues(col, row, w, h, values);
+            }
+            for( int r = 0; r < h; r++ ) {
+                System.arraycopy(values, r * w, tile[b], r * tileSize, w);
+            }
         }
         return tile;
+    }
+
+    /**
+     * @return the value repeated for each band, for the tags with a value per sample.
+     */
+    private static int[] perBand( int bands, int value ) {
+        int[] values = new int[bands];
+        Arrays.fill(values, value);
+        return values;
     }
 
     /**
@@ -370,7 +402,10 @@ public class HMCogWriter {
 
     @FunctionalInterface
     private interface TileSupplier {
-        double[] get( int tx ) throws Exception;
+        /**
+         * @return per band, the values of the tile.
+         */
+        double[][] get( int tx ) throws Exception;
     }
 
     /**
@@ -380,29 +415,32 @@ public class HMCogWriter {
         private final List<int[]> sizes;
         private final int[] tilesX;
         private final int[] tilesY;
+        private final int bands;
         private final Resampling method;
         private final boolean integerData;
         private final CogTileStore store;
         private final ThreadLocal<CogTileEncoder> encoders;
         private final ExecutorService executor;
         /**
-         * Per level, the row of tiles being filled by the level below.
+         * Per level, the row of tiles (each with its bands) being filled by the level below.
          */
-        private final double[][][] pendingRows;
+        private final double[][][][] pendingRows;
         private final HMRaster raster;
         private final double outputNovalue;
 
-        Pyramid( List<int[]> sizes, int[] tilesX, int[] tilesY, Resampling method, boolean integerData, CogTileStore store,
-                ThreadLocal<CogTileEncoder> encoders, ExecutorService executor, HMRaster raster, double outputNovalue ) {
+        Pyramid( List<int[]> sizes, int[] tilesX, int[] tilesY, int bands, Resampling method, boolean integerData,
+                CogTileStore store, ThreadLocal<CogTileEncoder> encoders, ExecutorService executor, HMRaster raster,
+                double outputNovalue ) {
             this.sizes = sizes;
             this.tilesX = tilesX;
             this.tilesY = tilesY;
+            this.bands = bands;
             this.method = method;
             this.integerData = integerData;
             this.store = store;
             this.encoders = encoders;
             this.executor = executor;
-            this.pendingRows = new double[sizes.size()][][];
+            this.pendingRows = new double[sizes.size()][][][];
             this.raster = raster;
             this.outputNovalue = outputNovalue;
         }
@@ -426,15 +464,17 @@ public class HMCogWriter {
             if (hasParent && pendingRows[level + 1] == null) {
                 pendingRows[level + 1] = newRow(level + 1);
             }
-            double[][] parentRow = hasParent ? pendingRows[level + 1] : null;
+            double[][][] parentRow = hasParent ? pendingRows[level + 1] : null;
             List<Future< ? >> tasks = new ArrayList<>();
             for( int tx = 0; tx < tilesX[level]; tx++ ) {
                 int _tx = tx;
                 tasks.add(executor.submit(() -> {
-                    double[] tile = tiles.get(_tx);
+                    double[][] tile = tiles.get(_tx);
                     store.put(level, ty * tilesX[level] + _tx, encoders.get().encode(tile));
                     if (parentRow != null) {
-                        shrinkInto(level, _tx, ty, tile, parentRow[_tx / 2]);
+                        for( int b = 0; b < bands; b++ ) {
+                            shrinkInto(level, _tx, ty, tile[b], parentRow[_tx / 2][b]);
+                        }
                     }
                     return null;
                 }));
@@ -446,11 +486,13 @@ public class HMCogWriter {
             }
         }
 
-        private double[][] newRow( int level ) {
-            double[][] row = new double[tilesX[level]][];
+        private double[][][] newRow( int level ) {
+            double[][][] row = new double[tilesX[level]][bands][];
             for( int tx = 0; tx < row.length; tx++ ) {
-                row[tx] = new double[tileSize * tileSize];
-                Arrays.fill(row[tx], outputNovalue);
+                for( int b = 0; b < bands; b++ ) {
+                    row[tx][b] = new double[tileSize * tileSize];
+                    Arrays.fill(row[tx][b], outputNovalue);
+                }
             }
             return row;
         }

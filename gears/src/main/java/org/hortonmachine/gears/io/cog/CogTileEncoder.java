@@ -23,7 +23,7 @@ import java.util.zip.Deflater;
 
 /**
  * Encoding of a single TIFF tile: packing of the samples in little endian order,
- * optional predictor and lossless compression (Deflate or LZW).
+ * pixel interleaved for multiple bands, optional predictor and lossless compression (Deflate or LZW).
  *
  * <p>Instances are not thread safe, use one per thread.</p>
  */
@@ -43,6 +43,11 @@ class CogTileEncoder {
 
     private final int dataType;
     private final int tileSize;
+    private final int bands;
+    /**
+     * The samples of a row of the tile: tileSize * bands.
+     */
+    private final int rowSamples;
     private final int bytesPerSample;
     private final int compression;
     private final int predictor;
@@ -53,20 +58,24 @@ class CogTileEncoder {
     /**
      * @param dataType the {@link DataBuffer} data type of the samples.
      * @param tileSize the side of the square tiles.
+     * @param bands the number of bands, written pixel interleaved.
      * @param compression {@link #COMPRESSION_DEFLATE} or {@link #COMPRESSION_LZW}.
      * @param deflateLevel the deflate level, 1 to 9.
      * @param predictor the TIFF predictor code.
      * @param fillValue the value written for NaN samples of integer data types.
      */
-    CogTileEncoder( int dataType, int tileSize, int compression, int deflateLevel, int predictor, double fillValue ) {
+    CogTileEncoder( int dataType, int tileSize, int bands, int compression, int deflateLevel, int predictor,
+            double fillValue ) {
         this.dataType = dataType;
         this.tileSize = tileSize;
+        this.bands = bands;
+        this.rowSamples = tileSize * bands;
         this.bytesPerSample = bytesPerSample(dataType);
         this.compression = compression;
         this.predictor = predictor;
         this.fillValue = fillValue;
         this.deflater = compression == COMPRESSION_DEFLATE ? new Deflater(deflateLevel) : null;
-        this.rowBuffer = new byte[tileSize * bytesPerSample];
+        this.rowBuffer = new byte[rowSamples * bytesPerSample];
     }
 
     /**
@@ -99,12 +108,12 @@ class CogTileEncoder {
     /**
      * Encode a tile.
      *
-     * @param values the tileSize*tileSize values in row-major order, NaN for novalues.
+     * @param values per band, the tileSize*tileSize values in row-major order, NaN for novalues.
      * @return the compressed bytes of the tile.
      */
-    byte[] encode( double[] values ) {
-        byte[] raw = new byte[tileSize * tileSize * bytesPerSample];
-        int rowBytes = tileSize * bytesPerSample;
+    byte[] encode( double[][] values ) {
+        byte[] raw = new byte[tileSize * rowSamples * bytesPerSample];
+        int rowBytes = rowSamples * bytesPerSample;
         for( int r = 0; r < tileSize; r++ ) {
             int offset = r * rowBytes;
             packRow(values, r * tileSize, raw, offset);
@@ -121,16 +130,16 @@ class CogTileEncoder {
     }
 
     /**
-     * Pack a row of samples as little endian bytes.
+     * Pack a row of samples as little endian bytes, the bands of a pixel next to each other.
      */
-    private void packRow( double[] values, int from, byte[] raw, int offset ) {
-        for( int c = 0; c < tileSize; c++ ) {
-            double value = values[from + c];
+    private void packRow( double[][] values, int from, byte[] raw, int offset ) {
+        for( int s = 0; s < rowSamples; s++ ) {
+            double value = values[s % bands][from + s / bands];
             if (Double.isNaN(value) && !isFloatingPoint(dataType)) {
                 // integers can't store NaN, floating point data keep it as it is
                 value = fillValue;
             }
-            int o = offset + c * bytesPerSample;
+            int o = offset + s * bytesPerSample;
             switch( dataType ) {
             case DataBuffer.TYPE_BYTE:
                 raw[o] = (byte) (int) value;
@@ -168,29 +177,31 @@ class CogTileEncoder {
     }
 
     /**
-     * TIFF predictor 2 on a row of little endian integer samples, on the values of the sample size.
+     * TIFF predictor 2 on a row of little endian integer samples, on the values of the sample size: each
+     * sample is differenced with the same band of the previous pixel.
      */
     private void horizontalDifferencing( byte[] raw, int offset ) {
         switch( bytesPerSample ) {
         case 1:
-            for( int c = tileSize - 1; c > 0; c-- ) {
-                raw[offset + c] = (byte) (raw[offset + c] - raw[offset + c - 1]);
+            for( int s = rowSamples - 1; s >= bands; s-- ) {
+                raw[offset + s] = (byte) (raw[offset + s] - raw[offset + s - bands]);
             }
             break;
         case 2:
-            for( int c = tileSize - 1; c > 0; c-- ) {
-                int o = offset + 2 * c;
+            for( int s = rowSamples - 1; s >= bands; s-- ) {
+                int o = offset + 2 * s;
+                int po = o - 2 * bands;
                 int v = (raw[o] & 0xff) | ((raw[o + 1] & 0xff) << 8);
-                int p = (raw[o - 2] & 0xff) | ((raw[o - 1] & 0xff) << 8);
+                int p = (raw[po] & 0xff) | ((raw[po + 1] & 0xff) << 8);
                 int d = v - p;
                 raw[o] = (byte) d;
                 raw[o + 1] = (byte) (d >>> 8);
             }
             break;
         case 4:
-            for( int c = tileSize - 1; c > 0; c-- ) {
-                int o = offset + 4 * c;
-                putInt(raw, o, getInt(raw, o) - getInt(raw, o - 4));
+            for( int s = rowSamples - 1; s >= bands; s-- ) {
+                int o = offset + 4 * s;
+                putInt(raw, o, getInt(raw, o) - getInt(raw, o - 4 * bands));
             }
             break;
         default:
@@ -204,18 +215,19 @@ class CogTileEncoder {
 
     /**
      * TIFF predictor 3 (as libtiff fpDiff) on a row of little endian floating point samples: the bytes
-     * are regrouped by significance, most significant first, then differenced byte by byte.
+     * are regrouped by significance, most significant first, then differenced byte by byte with the byte
+     * one pixel before (the number of bands as stride).
      */
     private void floatingPointDifferencing( byte[] raw, int offset ) {
-        int count = tileSize * bytesPerSample;
+        int count = rowSamples * bytesPerSample;
         System.arraycopy(raw, offset, rowBuffer, 0, count);
-        for( int c = 0; c < tileSize; c++ ) {
+        for( int s = 0; s < rowSamples; s++ ) {
             for( int b = 0; b < bytesPerSample; b++ ) {
-                raw[offset + (bytesPerSample - b - 1) * tileSize + c] = rowBuffer[bytesPerSample * c + b];
+                raw[offset + (bytesPerSample - b - 1) * rowSamples + s] = rowBuffer[bytesPerSample * s + b];
             }
         }
-        for( int i = count - 1; i > 0; i-- ) {
-            raw[offset + i] = (byte) (raw[offset + i] - raw[offset + i - 1]);
+        for( int i = count - 1; i >= bands; i-- ) {
+            raw[offset + i] = (byte) (raw[offset + i] - raw[offset + i - bands]);
         }
     }
 

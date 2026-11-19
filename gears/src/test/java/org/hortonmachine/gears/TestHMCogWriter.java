@@ -18,7 +18,9 @@
 package org.hortonmachine.gears;
 
 import java.awt.image.DataBuffer;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +31,8 @@ import javax.imageio.stream.FileImageInputStream;
 
 import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.coverage.grid.GridCoverage2D;
+import org.geotools.coverage.grid.GridCoverageFactory;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.cog.HMCogWriter;
 import org.hortonmachine.gears.io.cog.HMCogWriter.Compression;
 import org.hortonmachine.gears.io.cog.HMCogWriter.Resampling;
@@ -36,6 +40,7 @@ import org.hortonmachine.gears.io.cog.OmsRasterToCog;
 import org.hortonmachine.gears.io.rasterreader.OmsRasterReader;
 import org.hortonmachine.gears.io.rasterwriter.OmsRasterWriter;
 import org.hortonmachine.gears.libs.modules.HMRaster;
+import org.hortonmachine.gears.libs.modules.hmraster.HMMBRaster;
 import org.hortonmachine.gears.libs.modules.hmraster.HMRasterStatistics;
 import org.hortonmachine.gears.utils.HMTestCase;
 import org.hortonmachine.gears.utils.HMTestMaps;
@@ -150,6 +155,117 @@ public class TestHMCogWriter extends HMTestCase {
         }
     }
 
+    /**
+     * All the bands are written, pixel interleaved, with their overviews and statistics: from a GeoTIFF file
+     * (read by windows) and from a multiband raster in memory.
+     */
+    public void testMultiband() throws Exception {
+        for( int dataType : new int[]{DataBuffer.TYPE_BYTE, DataBuffer.TYPE_SHORT, DataBuffer.TYPE_FLOAT} ) {
+            int bands = dataType == DataBuffer.TYPE_FLOAT ? 2 : 3;
+            GridCoverage2D coverage = createMultibandCoverage(dataType, bands);
+            File inFile = File.createTempFile("cog_mb_in_", ".tif");
+            File outFile = File.createTempFile("cog_mb_out_", ".tif");
+            try {
+                OmsRasterWriter.writeRaster(inFile.getAbsolutePath(), coverage);
+                for( Compression compression : Compression.values() ) {
+                    for( boolean predictor : new boolean[]{true, false} ) {
+                        String label = "multiband type " + dataType + " " + compression + " " + predictor;
+                        HMCogWriter writer = new HMCogWriter().setTileSize(TILE).setCompression(compression)
+                                .setUsePredictor(predictor);
+                        writer.convert2Cog(pm, inFile.getAbsolutePath(), outFile.getAbsolutePath());
+                        verifyMultiband(coverage, outFile, label + " from file");
+
+                        try (HMMBRaster raster = HMMBRaster.fromGridCoverage(coverage)) {
+                            writer.write(pm, raster, outFile.getAbsolutePath());
+                        }
+                        verifyMultiband(coverage, outFile, label + " from memory");
+                    }
+                }
+            } finally {
+                inFile.delete();
+                outFile.delete();
+            }
+        }
+    }
+
+    private void verifyMultiband( GridCoverage2D coverage, File cog, String label ) throws Exception {
+        Raster source = coverage.getRenderedImage().getData();
+        int bands = source.getNumBands();
+        int dataType = source.getSampleModel().getDataType();
+        boolean floatingPoint = dataType == DataBuffer.TYPE_FLOAT;
+        Resampling resampling = floatingPoint ? Resampling.AVERAGE : Resampling.MODE;
+        try (FileImageInputStream stream = new FileImageInputStream(cog)) {
+            ImageReader reader = new TIFFImageReaderSpi().createReaderInstance();
+            reader.setInput(stream);
+            TIFFImageMetadata metadata = (TIFFImageMetadata) reader.getImageMetadata(0);
+            assertEquals(label + " samples per pixel", bands, metadata.getTIFFField(277).getAsInt(0));
+            assertEquals(label + " pixel interleaved", 1, metadata.getTIFFField(284).getAsInt(0));
+            String statistics = metadata.getTIFFField(42112).getAsString(0);
+            for( int b = 0; b < bands; b++ ) {
+                double[][] level0 = new double[ROWS][COLS];
+                List<Double> validValues = new ArrayList<>();
+                for( int r = 0; r < ROWS; r++ ) {
+                    for( int c = 0; c < COLS; c++ ) {
+                        level0[r][c] = source.getSampleDouble(c, r, b);
+                        validValues.add(level0[r][c]);
+                    }
+                }
+                List<double[][]> pyramid = referencePyramid(level0, resampling, !floatingPoint);
+                assertEquals(label + " levels", pyramid.size(), reader.getNumImages(true));
+                for( int level = 0; level < pyramid.size(); level++ ) {
+                    double[][] expected = pyramid.get(level);
+                    Raster data = reader.read(level).getRaster();
+                    assertEquals(label + " level " + level + " bands", bands, data.getNumBands());
+                    for( int r = 0; r < expected.length; r++ ) {
+                        for( int c = 0; c < expected[0].length; c++ ) {
+                            double expectedValue = floatingPoint ? (float) expected[r][c] : expected[r][c];
+                            assertEquals(label + " band " + b + " level " + level + " cell " + c + "/" + r, expectedValue,
+                                    data.getSampleDouble(c, r, b), 0.0);
+                        }
+                    }
+                }
+                TestHMRasterTiles.assertStatistics(validValues, (long) COLS * ROWS, statistics,
+                        "Item name=\"%s\" sample=\"" + b + "\">");
+            }
+            reader.dispose();
+        }
+    }
+
+    /**
+     * A multiband coverage, pixel interleaved, with different values in each band and no novalues.
+     */
+    private static GridCoverage2D createMultibandCoverage( int dataType, int bands ) {
+        int[] offsets = new int[bands];
+        for( int b = 0; b < bands; b++ ) {
+            offsets[b] = b;
+        }
+        WritableRaster raster = Raster.createWritableRaster(
+                new PixelInterleavedSampleModel(dataType, COLS, ROWS, bands, COLS * bands, offsets), null);
+        Random random = new Random(dataType + bands);
+        for( int r = 0; r < ROWS; r++ ) {
+            for( int c = 0; c < COLS; c++ ) {
+                for( int b = 0; b < bands; b++ ) {
+                    double value;
+                    switch( dataType ) {
+                    case DataBuffer.TYPE_BYTE:
+                        // repeated values for the mode, the band shifts them
+                        value = random.nextInt(4) * 50 + 10 * b + 1;
+                        break;
+                    case DataBuffer.TYPE_SHORT:
+                        value = random.nextInt(7) - 3 + (r / 10) * 3 - 1000 * b;
+                        break;
+                    default:
+                        value = 1000 * (b + 1) + 50 * Math.sin(c / 20.0) * Math.cos(r / 30.0) + random.nextDouble();
+                    }
+                    raster.setSample(c, r, b, value);
+                }
+            }
+        }
+        ReferencedEnvelope envelope = new ReferencedEnvelope(600000, 600000 + COLS * 5, 5000000, 5000000 + ROWS * 5,
+                HMTestMaps.getCrs());
+        return new GridCoverageFactory().create("multiband", raster, envelope);
+    }
+
     private void checkCog( HMRaster raster, HMCogWriter writer, Resampling resampling, String label ) throws Exception {
         File outFile = File.createTempFile("cog_", ".tif");
         try {
@@ -227,7 +343,6 @@ public class TestHMCogWriter extends HMTestCase {
      * The expected levels, NaN for novalues, computed independently from the writer.
      */
     private List<double[][]> referencePyramid( HMRaster raster, Resampling resampling, boolean integerData ) {
-        List<double[][]> levels = new ArrayList<>();
         int w = raster.getCols();
         int h = raster.getRows();
         double[][] level = new double[h][w];
@@ -237,6 +352,16 @@ public class TestHMCogWriter extends HMTestCase {
                 level[r][c] = raster.isNovalue(value) ? Double.NaN : value;
             }
         }
+        return referencePyramid(level, resampling, integerData);
+    }
+
+    /**
+     * The expected levels from the full resolution values, NaN for novalues.
+     */
+    private List<double[][]> referencePyramid( double[][] level, Resampling resampling, boolean integerData ) {
+        List<double[][]> levels = new ArrayList<>();
+        int h = level.length;
+        int w = level[0].length;
         levels.add(level);
         while( w > TILE || h > TILE ) {
             int pw = (w + 1) / 2;

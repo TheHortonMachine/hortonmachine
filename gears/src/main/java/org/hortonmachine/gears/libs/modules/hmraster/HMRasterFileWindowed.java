@@ -44,9 +44,11 @@ import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi;
  * GeoTools coverage decodes through one reader only, which serializes the decoding of
  * compressed files.</p>
  *
+ * <p>All the bands of the file are accessible through {@link #getValues(int, int, int, int, int, double[])}.</p>
+ *
  * <p>Read blocks aligned to the internal tiles of the file for best performance.</p>
  */
-public class HMRasterFileWindowed extends HMRaster {
+public class HMRasterFileWindowed extends HMMBRaster {
     private final File file;
     private final ThreadLocal<WindowReader> readers;
     private final List<WindowReader> allReaders = new ArrayList<>();
@@ -79,12 +81,11 @@ public class HMRasterFileWindowed extends HMRaster {
     }
 
     @Override
-    public double[] getValues( int col, int row, int width, int height, double[] buffer ) {
+    public double[] getValues( int col, int row, int width, int height, int band, double[] buffer ) {
         try {
-            double[] values = readers.get().read(col, row, width, height, buffer);
-            return values;
+            return readers.get().read(col, row, width, height, band, buffer);
         } catch (IOException e) {
-            throw new RuntimeException("Error reading block " + col + "/" + row + " of " + file, e);
+            throw new RuntimeException("Error reading block " + col + "/" + row + " of band " + band + " of " + file, e);
         }
     }
 
@@ -116,11 +117,11 @@ public class HMRasterFileWindowed extends HMRaster {
             }
         }
 
-        double[] read( int col, int row, int width, int height, double[] buffer ) throws IOException {
+        double[] read( int col, int row, int width, int height, int band, double[] buffer ) throws IOException {
             ImageReadParam param = reader.getDefaultReadParam();
             param.setSourceRegion(new Rectangle(col, row, width, height));
             Raster raster = reader.read(0, param).getRaster();
-            return raster.getSamples(raster.getMinX(), raster.getMinY(), width, height, 0, buffer);
+            return raster.getSamples(raster.getMinX(), raster.getMinY(), width, height, band, buffer);
         }
 
         void close() {

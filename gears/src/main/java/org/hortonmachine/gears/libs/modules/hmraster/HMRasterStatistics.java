@@ -107,14 +107,32 @@ public class HMRasterStatistics {
      *          there are no valid values.
      */
     public synchronized String toGdalMetadataTag( long totalCells ) {
-        if (count == 0) {
-            return null;
-        }
+        return toGdalMetadataTag(new HMRasterStatistics[]{this}, totalCells);
+    }
+
+    /**
+     * @param bandsStatistics the statistics of each band, in band order.
+     * @param totalCells the number of cells of a band of the raster.
+     * @return the GDAL_METADATA tag content with the statistics of all the bands with valid values,
+     *          or <code>null</code> if no band has valid values.
+     */
+    public static String toGdalMetadataTag( HMRasterStatistics[] bandsStatistics, long totalCells ) {
         StringBuilder sb = new StringBuilder("<GDALMetadata>\n");
-        for( String[] item : items(totalCells) ) {
-            sb.append("  <Item name=\"").append(item[0]).append("\" sample=\"0\">").append(item[1]).append("</Item>\n");
+        boolean hasItems = false;
+        for( int band = 0; band < bandsStatistics.length; band++ ) {
+            HMRasterStatistics statistics = bandsStatistics[band];
+            synchronized (statistics) {
+                if (statistics.count == 0) {
+                    continue;
+                }
+                for( String[] item : statistics.items(totalCells) ) {
+                    sb.append("  <Item name=\"").append(item[0]).append("\" sample=\"").append(band).append("\">")
+                            .append(item[1]).append("</Item>\n");
+                    hasItems = true;
+                }
+            }
         }
-        return sb.append("</GDALMetadata>").toString();
+        return hasItems ? sb.append("</GDALMetadata>").toString() : null;
     }
 
     /**
