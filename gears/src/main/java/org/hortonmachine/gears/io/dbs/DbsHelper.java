@@ -131,9 +131,8 @@ public class DbsHelper {
                         if (columnName.toLowerCase().equals("id")) {
                             columnName = "origid";
                         }
-                        if (columnName.length() > 9) {
-                            columnName = columnName.substring(0, 9);
-                        }
+                        // names are kept whole: the shapefile writer cuts them to its 10 chars
+                        // and copies the values by field order
                         if ("INTEGER".equals(columnTypeName) || syntaxHelper.INTEGER().equals(columnTypeName)) {
                             b.add(columnName, Integer.class);
                         } else if (syntaxHelper.LONG().equals(columnTypeName)) {
