@@ -17,7 +17,9 @@
  */
 package org.hortonmachine.gears;
 
+import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.awt.image.IndexColorModel;
 import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
@@ -186,6 +188,91 @@ public class TestHMCogWriter extends HMTestCase {
                 outFile.delete();
             }
         }
+    }
+
+    /**
+     * The color table of a paletted byte raster is kept in all the levels, from a GeoTIFF file and from memory,
+     * and the overviews use the mode even if the average is asked, since averaged indexes are no colors.
+     */
+    public void testColorTable() throws Exception {
+        byte[] reds = new byte[256];
+        byte[] greens = new byte[256];
+        byte[] blues = new byte[256];
+        for( int i = 0; i < 256; i++ ) {
+            reds[i] = (byte) i;
+            greens[i] = (byte) (255 - i);
+            blues[i] = (byte) (i * 3);
+        }
+        IndexColorModel palette = new IndexColorModel(8, 256, reds, greens, blues);
+        BufferedImage image = new BufferedImage(COLS, ROWS, BufferedImage.TYPE_BYTE_INDEXED, palette);
+        WritableRaster values = image.getRaster();
+        double[][] level0 = new double[ROWS][COLS];
+        Random random = new Random(7);
+        for( int r = 0; r < ROWS; r++ ) {
+            for( int c = 0; c < COLS; c++ ) {
+                level0[r][c] = random.nextInt(4) * 50 + 1;
+                values.setSample(c, r, 0, level0[r][c]);
+            }
+        }
+        ReferencedEnvelope envelope = new ReferencedEnvelope(600000, 600000 + COLS * 5, 5000000, 5000000 + ROWS * 5,
+                HMTestMaps.getCrs());
+        GridCoverage2D coverage = new GridCoverageFactory().create("palette", image, envelope);
+
+        File inFile = File.createTempFile("cog_pal_in_", ".tif");
+        File outFile = File.createTempFile("cog_pal_out_", ".tif");
+        try {
+            OmsRasterWriter.writeRaster(inFile.getAbsolutePath(), coverage);
+            try (FileImageInputStream stream = new FileImageInputStream(inFile)) {
+                ImageReader reader = new TIFFImageReaderSpi().createReaderInstance();
+                reader.setInput(stream);
+                TIFFImageMetadata metadata = (TIFFImageMetadata) reader.getImageMetadata(0);
+                assertEquals("the input has to be paletted", 3, metadata.getTIFFField(262).getAsInt(0));
+                reader.dispose();
+            }
+            HMCogWriter writer = new HMCogWriter().setTileSize(TILE).setResampling(Resampling.AVERAGE);
+            writer.convert2Cog(pm, inFile.getAbsolutePath(), outFile.getAbsolutePath());
+            verifyColorTable(level0, palette, outFile, "palette from file");
+
+            try (HMRaster raster = HMRaster.fromGridCoverage(coverage)) {
+                writer.write(pm, raster, outFile.getAbsolutePath());
+            }
+            verifyColorTable(level0, palette, outFile, "palette from memory");
+        } finally {
+            inFile.delete();
+            outFile.delete();
+        }
+    }
+
+    private void verifyColorTable( double[][] level0, IndexColorModel palette, File cog, String label ) throws Exception {
+        List<double[][]> pyramid = referencePyramid(level0, Resampling.MODE, true);
+        try (FileImageInputStream stream = new FileImageInputStream(cog)) {
+            ImageReader reader = new TIFFImageReaderSpi().createReaderInstance();
+            reader.setInput(stream);
+            assertEquals(label + " levels", pyramid.size(), reader.getNumImages(true));
+            for( int level = 0; level < pyramid.size(); level++ ) {
+                TIFFImageMetadata metadata = (TIFFImageMetadata) reader.getImageMetadata(level);
+                assertEquals(label + " level " + level + " photometric", 3, metadata.getTIFFField(262).getAsInt(0));
+                BufferedImage read = reader.read(level);
+                assertTrue(label + " level " + level + " color model", read.getColorModel() instanceof IndexColorModel);
+                IndexColorModel readPalette = (IndexColorModel) read.getColorModel();
+                assertEquals(label + " level " + level + " palette size", 256, readPalette.getMapSize());
+                for( int i = 0; i < 256; i++ ) {
+                    assertEquals(label + " level " + level + " entry " + i, palette.getRGB(i), readPalette.getRGB(i));
+                }
+                double[][] expected = pyramid.get(level);
+                Raster data = read.getRaster();
+                for( int r = 0; r < expected.length; r++ ) {
+                    for( int c = 0; c < expected[0].length; c++ ) {
+                        assertEquals(label + " level " + level + " cell " + c + "/" + r, expected[r][c],
+                                data.getSampleDouble(c, r, 0), 0.0);
+                    }
+                }
+            }
+            reader.dispose();
+        }
+        // and GeoTools sees it
+        GridCoverage2D coverage = OmsRasterReader.readRaster(cog.getAbsolutePath());
+        assertTrue(label + " geotools color model", coverage.getRenderedImage().getColorModel() instanceof IndexColorModel);
     }
 
     private void verifyMultiband( GridCoverage2D coverage, File cog, String label ) throws Exception {

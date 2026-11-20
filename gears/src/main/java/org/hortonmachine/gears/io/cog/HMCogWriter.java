@@ -17,7 +17,9 @@
  */
 package org.hortonmachine.gears.io.cog;
 
+import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +62,8 @@ import it.geosolutions.imageioimpl.plugins.tiff.TIFFImageReaderSpi;
  * <p>Large rasters are supported: the input is read by windows, the compressed tiles go to a
  * temporary file next to the output, and only about a row of tiles per level is kept in memory.
  * BigTIFF is used when needed.</p>
+ *
+ * <p>A color table (palette) of single band 8 or 16 bit unsigned data is kept, in all the levels.</p>
  */
 public class HMCogWriter {
 
@@ -101,6 +105,7 @@ public class HMCogWriter {
     private static final int TAG_SAMPLES_PER_PIXEL = 277;
     private static final int TAG_PLANAR_CONFIGURATION = 284;
     private static final int TAG_PREDICTOR = 317;
+    private static final int TAG_COLORMAP = 320;
     private static final int TAG_TILE_WIDTH = 322;
     private static final int TAG_TILE_LENGTH = 323;
     private static final int TAG_EXTRA_SAMPLES = 338;
@@ -160,7 +165,7 @@ public class HMCogWriter {
      * Convert a raster file to a COG, with all its bands.
      *
      * <p>GeoTIFF files are read by windows, so they can be larger than the memory, and their
-     * georeferencing tags are copied as they are. Other formats are read in memory.</p>
+     * georeferencing and color table tags are copied as they are. Other formats are read in memory.</p>
      *
      * @param pm optional progress monitor.
      * @param inPath the raster to convert.
@@ -171,24 +176,27 @@ public class HMCogWriter {
         boolean isTiff = lower.endsWith(".tif") || lower.endsWith(".tiff");
         try (HMRaster raster = isTiff ? HMRaster.fromFileWindowed(inPath) : HMMBRaster.fromFile(inPath)) {
             List<Field> geoFields = isTiff ? readGeoFields(new File(inPath)) : null;
-            write(pm, raster, geoFields, outPath);
+            Field colorMap = isTiff ? readColorMap(new File(inPath)) : colorMapFromImage(raster);
+            write(pm, raster, geoFields, colorMap, outPath);
         }
     }
 
     /**
      * Write a raster as COG.
      *
-     * <p>All the bands of a {@link HMMBRaster} are written, pixel interleaved, else the single band of the raster.</p>
+     * <p>All the bands of a {@link HMMBRaster} are written, pixel interleaved, else the single band of the raster.
+     * The color table of the image, if it has an {@link IndexColorModel} that is not a plain gray ramp, is kept.</p>
      *
      * @param pm optional progress monitor.
      * @param raster the raster to write.
      * @param outPath the COG file to write.
      */
     public void write( IHMProgressMonitor pm, HMRaster raster, String outPath ) throws Exception {
-        write(pm, raster, null, outPath);
+        write(pm, raster, null, colorMapFromImage(raster), outPath);
     }
 
-    private void write( IHMProgressMonitor pm, HMRaster raster, List<Field> geoFields, String outPath ) throws Exception {
+    private void write( IHMProgressMonitor pm, HMRaster raster, List<Field> geoFields, Field colorMap, String outPath )
+            throws Exception {
         if (pm == null) {
             pm = new DummyProgressMonitor();
         }
@@ -206,6 +214,18 @@ public class HMCogWriter {
         Resampling method = resampling;
         if (method == Resampling.AUTO) {
             method = floatingPoint ? Resampling.AVERAGE : Resampling.MODE;
+        }
+        if (colorMap != null) {
+            // TIFF palettes: one sample, unsigned, at most 16 bits, one RGB entry for each possible value
+            int bits = 8 * CogTileEncoder.bytesPerSample(dataType);
+            boolean supportedType = dataType == DataBuffer.TYPE_BYTE || dataType == DataBuffer.TYPE_USHORT;
+            if (bands != 1 || !supportedType || colorMap.count != 3 * (1 << bits)) {
+                pm.errorMessage("The color table is dropped: it is supported only for single band 8 or 16 bit unsigned data.");
+                colorMap = null;
+            } else if (method == Resampling.AVERAGE) {
+                pm.message("Averaged palette indexes would give meaningless colors: the overviews use mode resampling.");
+                method = Resampling.MODE;
+            }
         }
         int predictor = !usePredictor
                 ? CogTileEncoder.PREDICTOR_NONE
@@ -287,7 +307,12 @@ public class HMCogWriter {
                 fields.add(Field.longs(TAG_IMAGE_LENGTH, sizes.get(l)[1]));
                 fields.add(Field.shorts(TAG_BITS_PER_SAMPLE, perBand(bands, 8 * CogTileEncoder.bytesPerSample(dataType))));
                 fields.add(Field.shorts(TAG_COMPRESSION, compressionCode));
-                fields.add(Field.shorts(TAG_PHOTOMETRIC, 1));
+                // palette or grayscale (min is black)
+                fields.add(Field.shorts(TAG_PHOTOMETRIC, colorMap != null ? 3 : 1));
+                if (colorMap != null) {
+                    // every level is an image of its own and needs its palette
+                    fields.add(colorMap);
+                }
                 fields.add(Field.shorts(TAG_SAMPLES_PER_PIXEL, bands));
                 fields.add(Field.shorts(TAG_PLANAR_CONFIGURATION, 1));
                 if (predictor != CogTileEncoder.PREDICTOR_NONE) {
@@ -623,6 +648,67 @@ public class HMCogWriter {
             }
         }
         return fields;
+    }
+
+    /**
+     * Read the color table of a GeoTIFF, to copy it as it is.
+     *
+     * @return the ColorMap field or <code>null</code> if the file has none.
+     */
+    static Field readColorMap( File tiff ) throws IOException {
+        try (FileImageInputStream stream = new FileImageInputStream(tiff)) {
+            ImageReader reader = new TIFFImageReaderSpi().createReaderInstance();
+            try {
+                reader.setInput(stream, true, false);
+                TIFFImageMetadata metadata = (TIFFImageMetadata) reader.getImageMetadata(0);
+                TIFFField photometric = metadata.getTIFFField(TAG_PHOTOMETRIC);
+                TIFFField colorMap = metadata.getTIFFField(TAG_COLORMAP);
+                if (colorMap == null || photometric == null || photometric.getAsInt(0) != 3) {
+                    return null;
+                }
+                return convert(colorMap);
+            } finally {
+                reader.dispose();
+            }
+        }
+    }
+
+    /**
+     * The color table of the image of a raster, if it has an {@link IndexColorModel}.
+     *
+     * <p>Plain gray ramps (each index mapped to the gray of the same intensity) are not color tables but
+     * the way byte images are often displayed, so they are ignored.</p>
+     *
+     * @return the ColorMap field, with as many entries as the possible values of the data type, or <code>null</code>.
+     */
+    static Field colorMapFromImage( HMRaster raster ) {
+        ColorModel colorModel = raster.getRenderedImage().getColorModel();
+        if (!(colorModel instanceof IndexColorModel)) {
+            return null;
+        }
+        IndexColorModel icm = (IndexColorModel) colorModel;
+        int dataType = raster.getRenderedImage().getSampleModel().getDataType();
+        if (dataType != DataBuffer.TYPE_BYTE && dataType != DataBuffer.TYPE_USHORT) {
+            return null;
+        }
+        // the values are written with the bits of the data type, so the table covers all of them
+        int entries = 1 << (8 * CogTileEncoder.bytesPerSample(dataType));
+        int size = Math.min(icm.getMapSize(), entries);
+        boolean grayRamp = size == 256;
+        for( int i = 0; i < size && grayRamp; i++ ) {
+            grayRamp = icm.getRed(i) == i && icm.getGreen(i) == i && icm.getBlue(i) == i;
+        }
+        if (grayRamp) {
+            return null;
+        }
+        // all the reds, then the greens, then the blues, scaled from 0-255 to 0-65535; missing entries are black
+        int[] values = new int[3 * entries];
+        for( int i = 0; i < size; i++ ) {
+            values[i] = icm.getRed(i) * 257;
+            values[entries + i] = icm.getGreen(i) * 257;
+            values[2 * entries + i] = icm.getBlue(i) * 257;
+        }
+        return Field.shorts(TAG_COLORMAP, values);
     }
 
     private static Field convert( TIFFField field ) {
