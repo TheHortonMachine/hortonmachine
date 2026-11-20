@@ -19,6 +19,7 @@ package org.hortonmachine.gears.io.stac.auth;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -189,13 +190,42 @@ public class HMS3Authentication implements IHMStacAuthentication {
 
     @Override
     public boolean appliesTo( String href ) {
-        HMS3Location location = HMS3Location.parse(href);
+        HMS3Location location = parseLocation(href);
         return location != null && (buckets.isEmpty() || buckets.contains(location.getBucket()));
+    }
+
+    /**
+     * Parse an address as an s3 location, also the https addresses on the endpoint of this authentication
+     * (<code>endpoint/bucket/key</code>), as the ones the s3:// catalogs are converted to and their relative links.
+     *
+     * @param href the address.
+     * @return the location or null if the address is not an s3 one.
+     */
+    private HMS3Location parseLocation( String href ) {
+        HMS3Location location = HMS3Location.parse(href);
+        if (location != null || endpoint == null || href == null)
+            return location;
+        String prefix = endpoint + "/";
+        if (!href.regionMatches(true, 0, prefix, 0, prefix.length()))
+            return null;
+        String path = href.substring(prefix.length());
+        int end = path.length();
+        int query = path.indexOf('?');
+        if (query >= 0)
+            end = query;
+        int fragment = path.indexOf('#');
+        if (fragment >= 0 && fragment < end)
+            end = fragment;
+        path = URLDecoder.decode(path.substring(0, end), StandardCharsets.UTF_8);
+        int slash = path.indexOf('/');
+        if (slash <= 0)
+            return null;
+        return new HMS3Location(path.substring(0, slash), path.substring(slash + 1), null);
     }
 
     @Override
     public String toHttpUrl( String href ) {
-        HMS3Location location = HMS3Location.parse(href);
+        HMS3Location location = parseLocation(href);
         if (location == null)
             return href;
         if (endpoint != null)
@@ -220,7 +250,7 @@ public class HMS3Authentication implements IHMStacAuthentication {
      * @throws IOException if the request fails.
      */
     public HMStacResponse get( String href, String objectEndpoint ) throws IOException {
-        HMS3Location location = HMS3Location.parse(href);
+        HMS3Location location = parseLocation(href);
         if (location == null)
             throw new IOException("Not an s3 address: " + href);
         Client client;
