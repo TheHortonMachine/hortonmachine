@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -47,6 +48,18 @@ public class FileUtilities {
 
     public static void copyFile( File in, File out ) throws IOException {
         copyFile(in.getAbsolutePath(), out.getAbsolutePath());
+    }
+
+    /**
+     * Move a file, replacing the target if it exists.
+     *
+     * @param from the file to move.
+     * @param to   the new file.
+     *
+     * @throws IOException
+     */
+    public static void moveFile( File from, File to ) throws IOException {
+        Files.move(from.toPath(), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
     }
 
     public static long getCreationTimestamp( String path ) throws IOException {
