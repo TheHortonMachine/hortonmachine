@@ -2,7 +2,7 @@
 
 # Undocumented modules
 
-41 of the 198 toolbox modules have no manual page yet.
+42 of the 199 toolbox modules have no manual page yet.
 
 ## Copernicus (5)
 
@@ -84,6 +84,12 @@
 | Module | Status | Description |
 |---|---|---|
 | NetcdfTemporalAggregator | certified | Aggregates the timesteps of a NetCDF grid into a single raster: their mean, sum, minimum or maximum, cell by cell. |
+
+## Raster Processing (1)
+
+| Module | Status | Description |
+|---|---|---|
+| RasterCrsAssigner | experimental | Assigns a coordinate reference system to a raster with a missing or wrong one, without changing its cells: written inside GeoTIFFs, as a .prj file next to the other formats. |
 
 ## Statistics (4)
 
