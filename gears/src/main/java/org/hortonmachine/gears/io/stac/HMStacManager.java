@@ -98,6 +98,10 @@ public class HMStacManager implements AutoCloseable {
     public void open() throws Exception {
         HTTPClient http = new MultithreadedHttpClient();
         String url = catalogUrl;
+        if (access == null && HMStacAccess.isS3Scheme(catalogUrl)) {
+            // a static catalog on a public bucket
+            access = new HMStacAccess();
+        }
         if (access != null) {
             // e.g. s3://bucket/catalog.json to its https address
             url = access.toHttpUrl(catalogUrl);

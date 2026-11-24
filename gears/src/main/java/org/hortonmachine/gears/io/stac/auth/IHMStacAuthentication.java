@@ -68,4 +68,21 @@ public interface IHMStacAuthentication {
      * @throws IOException if the request fails.
      */
     HMStacResponse get( String href ) throws IOException;
+
+    /**
+     * Read a range of bytes with authentication, as the blocks of a cloud optimized GeoTIFF.
+     *
+     * <p>By default an http range request on {@link #toHttpUrl(String)} with the {@link #getHeaders(String)},
+     * which are not sent to the targets of redirects this authentication doesn't apply to.</p>
+     *
+     * @param href the address to read.
+     * @param start the first byte.
+     * @param end the last byte, inclusive.
+     * @return the bytes, fewer than asked if the object ends before.
+     * @throws IOException if the request fails.
+     */
+    default byte[] getRange( String href, long start, long end ) throws IOException {
+        return HMHttpRanges.readRange(toHttpUrl(href), start, end,
+                url -> appliesTo(url) ? getHeaders(url) : Collections.emptyMap());
+    }
 }

@@ -56,6 +56,7 @@ public class HMS3Authentication implements IHMStacAuthentication {
      * The region used with custom endpoints when none is given, as the S3 compatible services usually accept.
      */
     public static final String CUSTOM_ENDPOINT_DEFAULT_REGION = "default";
+    private static final int MAX_ERROR_CHARS = 500;
 
     private final Credentials credentials;
     private String region;
@@ -250,26 +251,25 @@ public class HMS3Authentication implements IHMStacAuthentication {
      * @throws IOException if the request fails.
      */
     public HMStacResponse get( String href, String objectEndpoint ) throws IOException {
+        return get(href, objectEndpoint, null);
+    }
+
+    /**
+     * Perform an authenticated GET request, on a given endpoint and region.
+     *
+     * @param href the s3 address to read.
+     * @param objectEndpoint the endpoint of the service holding the object (e.g. declared by the storage
+     *          extension of the asset), used if this authentication has no endpoint set. Null for AWS.
+     * @param objectRegion the region of the object (e.g. declared by the storage extension of the asset), used
+     *          if the address doesn't contain it, before the region of this authentication. Can be null.
+     * @return the response, to be closed after use.
+     * @throws IOException if the request fails.
+     */
+    public HMStacResponse get( String href, String objectEndpoint, String objectRegion ) throws IOException {
         HMS3Location location = parseLocation(href);
         if (location == null)
             throw new IOException("Not an s3 address: " + href);
-        Client client;
-        try {
-            client = getClient(location, objectEndpoint);
-        } catch (IllegalArgumentException e) {
-            throw new IOException(e.getMessage(), e);
-        }
-        ResponseInputStream stream;
-        try {
-            stream = client.path(location.getBucket(), location.getKey()).responseInputStream();
-        } catch (RuntimeException e) {
-            throw new IOException("Unable to read " + href + ": " + e.getMessage(), e);
-        }
-        if (stream.statusCode() >= 400) {
-            String message = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            stream.close();
-            throw new IOException("HTTP " + stream.statusCode() + " reading " + href + ": " + message);
-        }
+        ResponseInputStream stream = request(href, location, objectEndpoint, objectRegion, null);
         String contentType = stream.header("Content-Type").orElse(null);
         // static catalogs on s3 are often uploaded without a proper content type
         if ((contentType == null || contentType.startsWith("binary/octet-stream") || contentType.startsWith("application/octet-stream"))
@@ -278,6 +278,68 @@ public class HMS3Authentication implements IHMStacAuthentication {
         }
         long length = stream.header("Content-Length").map(Long::parseLong).orElse(-1L);
         return new HMStacResponse(stream, contentType, length);
+    }
+
+    @Override
+    public byte[] getRange( String href, long start, long end ) throws IOException {
+        return getRange(href, null, null, start, end);
+    }
+
+    /**
+     * Read a range of bytes of an object with a signed request, as the blocks of a cloud optimized GeoTIFF.
+     *
+     * @param href the s3 address to read.
+     * @param objectEndpoint the endpoint of the service holding the object, see {@link #get(String, String, String)}.
+     * @param objectRegion the region of the object, see {@link #get(String, String, String)}.
+     * @param start the first byte.
+     * @param end the last byte, inclusive.
+     * @return the bytes, fewer than asked if the object ends before.
+     * @throws IOException if the request fails.
+     */
+    public byte[] getRange( String href, String objectEndpoint, String objectRegion, long start, long end ) throws IOException {
+        HMS3Location location = parseLocation(href);
+        if (location == null)
+            throw new IOException("Not an s3 address: " + href);
+        try (ResponseInputStream stream = request(href, location, objectEndpoint, objectRegion, "bytes=" + start + "-" + end)) {
+            int length = (int) (end - start + 1);
+            if (stream.statusCode() == 206) {
+                return stream.readNBytes(length);
+            }
+            // whole object sent, keep only the part asked
+            stream.skipNBytes(start);
+            return stream.readNBytes(length);
+        } catch (java.io.EOFException e) {
+            return new byte[0];
+        }
+    }
+
+    /**
+     * Perform a signed GET request, failing on the error answers.
+     */
+    private ResponseInputStream request( String href, HMS3Location location, String objectEndpoint, String objectRegion,
+            String range ) throws IOException {
+        Client client;
+        try {
+            client = getClient(location, objectEndpoint, objectRegion);
+        } catch (IllegalArgumentException e) {
+            throw new IOException(e.getMessage(), e);
+        }
+        ResponseInputStream stream;
+        try {
+            var request = client.path(location.getBucket(), location.getKey());
+            if (range != null)
+                request = request.header("Range", range);
+            stream = request.responseInputStream();
+        } catch (RuntimeException e) {
+            throw new IOException("Unable to read " + href + ": " + e.getMessage(), e);
+        }
+        if (stream.statusCode() >= 400) {
+            String message = new String(stream.readNBytes(MAX_ERROR_CHARS), StandardCharsets.UTF_8);
+            stream.close();
+            throw new IOException("HTTP " + stream.statusCode() + " reading " + href
+                    + (range != null ? " (" + range + ")" : "") + ": " + message);
+        }
+        return stream;
     }
 
     /**
@@ -298,8 +360,26 @@ public class HMS3Authentication implements IHMStacAuthentication {
      * @throws IllegalArgumentException if the region is needed and not known.
      */
     public Client getClient( HMS3Location location, String objectEndpoint ) {
+        return getClient(location, objectEndpoint, null);
+    }
+
+    /**
+     * Get the client for an object.
+     *
+     * @param location the location of the object.
+     * @param objectEndpoint the endpoint of the service holding the object, used if this authentication has
+     *          no endpoint set. Null for AWS.
+     * @param objectRegion the region of the object if known from elsewhere than its address (e.g. the
+     *          storage extension), used before the region of this authentication. Can be null.
+     * @return the client.
+     * @throws IllegalArgumentException if the region is needed and not known.
+     */
+    public Client getClient( HMS3Location location, String objectEndpoint, String objectRegion ) {
         String usedEndpoint = endpoint != null ? endpoint : normalizeEndpoint(objectEndpoint);
-        String objectRegion = location.getRegion() != null ? location.getRegion() : region;
+        if (location.getRegion() != null)
+            objectRegion = location.getRegion();
+        else if (objectRegion == null || objectRegion.isBlank())
+            objectRegion = region;
         if (objectRegion == null) {
             if (usedEndpoint == null)
                 throw new IllegalArgumentException("The region is needed to access " + location);

@@ -541,12 +541,19 @@ public class HMSTACClient extends STACClient {
 	public Collection getCollectionByURL(String collectionURL) throws IOException {
 
 		HTTPClient http = getHttp();
-		HTTPResponse response = http.get(new URL(collectionURL));
+		URL url = new URL(collectionURL);
+		HTTPResponse response = http.get(url);
 		checkJSONResponse(response);
 
+		Collection collection;
 		try (InputStream is = response.getResponseStream()) {
-			return OBJECT_MAPPER.readValue(is, Collection.class);
+			collection = OBJECT_MAPPER.readValue(is, Collection.class);
 		}
+		if (collection != null && collection.getId() != null) {
+			// the address of the document, for the static search of collections without self link
+			collectionUrls.put(collection.getId(), url);
+		}
+		return collection;
 	}
 
 	private boolean isDataJSONLink(Link l) {

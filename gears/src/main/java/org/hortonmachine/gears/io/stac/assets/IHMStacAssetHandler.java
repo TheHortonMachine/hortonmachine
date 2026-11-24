@@ -59,14 +59,20 @@ public interface IHMStacAssetHandler {
 			throw new IllegalArgumentException("Asset href is null or empty");
 		}
 
-		// protected assets are read through the access context of the asset
+		// protected assets are read through the access context of the asset, the s3 ones without
+		// authentication as objects of public buckets
 		HMStacAsset asset = getAsset();
 		HMStacAccess access = asset != null ? asset.getAccess() : null;
-		if (access != null && access.isAuthenticated(href)) {
+		if ((access != null && access.isAuthenticated(href)) || HMStacAccess.isS3Scheme(href)) {
+			if (access == null) {
+				access = new HMStacAccess();
+			}
 			if (monitor != null) {
 				monitor.beginTask("Downloading asset: " + href, IHMProgressMonitor.UNKNOWN);
 			}
-			try (HMStacResponse response = access.get(href, asset.getStorageEndpoint());
+			String storageEndpoint = asset != null ? asset.getStorageEndpoint() : null;
+			String storageRegion = asset != null ? asset.getStorageRegion() : null;
+			try (HMStacResponse response = access.get(href, storageEndpoint, storageRegion);
 					InputStream is = response.getInputStream()) {
 				NetworkUtilities.copyToFile(is, response.getContentLength(), targetFile.toFile(), monitor);
 			} finally {

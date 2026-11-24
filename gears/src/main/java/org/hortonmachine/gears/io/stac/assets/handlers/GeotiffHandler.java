@@ -6,6 +6,7 @@ import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -25,7 +26,9 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
 import org.hortonmachine.gears.io.stac.PlanetaryComputerMicrosoft;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
+import org.hortonmachine.gears.io.stac.auth.HMS3Location;
 import org.hortonmachine.gears.io.stac.auth.HMStacAccess;
+import org.hortonmachine.gears.io.stac.cog.HMCogSourceSPIProvider;
 import org.hortonmachine.gears.libs.modules.HMConstants;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
 import org.hortonmachine.gears.utils.RegionMap;
@@ -33,6 +36,7 @@ import org.hortonmachine.gears.utils.coverage.CoverageUtilities;
 import org.locationtech.jts.geom.Envelope;
 
 import com.github.davidmoten.aws.lw.client.Client;
+import com.github.davidmoten.aws.lw.client.ResponseInputStream;
 
 import it.geosolutions.imageio.core.BasicAuthURI;
 import it.geosolutions.imageio.plugins.cog.CogImageReadParam;
@@ -169,17 +173,12 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	 * Read the CRS from the header of the geotiff with range requests. If the catalog doesn't
 	 * declare the resolution, also that is taken from the header.
 	 *
-	 * <p>Only for assets readable through plain http range requests, null for the others,
-	 * which would need the download of the whole file.</p>
+	 * <p>Only the header is read, with a range request, also for the protected and s3 assets.</p>
 	 */
 	@Override
 	public CoordinateReferenceSystem readCrs() throws Exception {
 		checkSupported();
-		HMStacAccess access = asset.getAccess();
-		if (assetUrl.startsWith("s3://") || (access != null && access.isAuthenticated(assetUrl))) {
-			return null;
-		}
-		GeoTiffReader reader = createCogReader(assetUrl, null, null);
+		GeoTiffReader reader = new GeoTiffReader(createSource(null, null, null));
 		try {
 			if (resolution <= 0) {
 				int cols = reader.getOriginalGridRange().getSpan(0);
@@ -204,8 +203,9 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			downloadAsset(tempFile.getAbsolutePath(), monitor);
 			return targetType.cast(tempFile);
 		} else if (targetType.isAssignableFrom(InputStream.class)) {
-			BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
-			return targetType.cast(readS3Raster(cogUri, null));
+			// the whole object, through the access for the protected and s3 assets
+			HMStacAccess access = asset.getAccess() != null ? asset.getAccess() : new HMStacAccess();
+			return targetType.cast(access.get(assetUrl, asset.getStorageEndpoint(), asset.getStorageRegion()).getInputStream());
 		}
 		return null;
 	}
@@ -241,25 +241,8 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 	@Override
 	public GridCoverage2D readRaster(RegionMap region, String user, String password, Client client) throws Exception {
 		checkSupported();
-		BasicAuthURI cogUri = new BasicAuthURI(assetUrl, false);
-		if (user != null && password != null) {
-			cogUri.setUser(user);
-			cogUri.setPassword(password);
-		}
-		GeoTiffReader reader;
-		HMStacAccess access = asset.getAccess();
-		boolean isHttpCog = false;
-		if (client == null && access != null && access.isAuthenticated(assetUrl)) {
-			// protected asset: read through the access context (whole object, no range requests yet),
-			// on the storage declared by the asset if an S3 compatible service
-			reader = new GeoTiffReader(access.get(assetUrl, asset.getStorageEndpoint()).getInputStream());
-		} else if (assetUrl.startsWith("s3://")) {
-			InputStream inputProvider = readS3Raster(cogUri, client);
-			reader = new GeoTiffReader(inputProvider);
-		} else {
-			reader = createCogReader(assetUrl, user, password);
-			isHttpCog = true;
-		}
+		CogSourceSPIProvider source = createSource(user, password, client);
+		GeoTiffReader reader = new GeoTiffReader(source);
 		CoordinateReferenceSystem crs = reader.getCoordinateReferenceSystem();
 
 		if (region == null) {
@@ -276,21 +259,13 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 			return coverage;
 		}
 		GridGeometry2D gridGeometry = coverage.getGridGeometry();
-		if (isHttpCog && gridGeometry.getGridRange2D().width == reader.getOriginalGridRange().getSpan(0)) {
-			// full resolution of a COG over http: the window is read at once, with the range requests of
+		if (gridGeometry.getGridRange2D().width == reader.getOriginalGridRange().getSpan(0)) {
+			// full resolution of a COG: the window is read at once, with the range requests of
 			// all its blocks together, about twice as fast as the lazy image reading block after block
 			Rectangle window = gridGeometry.worldToGrid(new ReferencedEnvelope(cropEnv, crs))
 					.intersection(gridGeometry.getGridRange2D());
 			if (!window.isEmpty()) {
-				String href = PlanetaryComputerMicrosoft.isAzureBlob(assetUrl)
-						? PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl)
-						: assetUrl;
-				BasicAuthURI windowUri = new BasicAuthURI(href, false);
-				if (user != null && password != null) {
-					windowUri.setUser(user);
-					windowUri.setPassword(password);
-				}
-				BufferedImage image = readCogWindow(windowUri, window);
+				BufferedImage image = readCogWindow(source, window);
 				return new GridCoverageFactory().create(coverage.getName(), image,
 						gridGeometry.gridToWorld(new GridEnvelope2D(window)), coverage.getSampleDimensions(), null,
 						coverage.getProperties());
@@ -307,6 +282,96 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 				cropped.getSampleDimensions(), null, cropped.getProperties());
 	}
 	
+	/**
+	 * Create the source of the asset for the GeoTools readers, read with range requests:
+	 *
+	 * <ul>
+	 * <li>with an S3 client (legacy): signed range requests of the client;</li>
+	 * <li>protected by an authentication of the access of the asset: its range requests (signed S3 requests,
+	 *     tokens, api keys...), on the storage endpoint and region declared by the asset;</li>
+	 * <li>s3:// without authentication: the https address of the object of the public bucket;</li>
+	 * <li>else the http(s) address, with the optional basic credentials and the token of the Microsoft
+	 *     Planetary Computer blobs.</li>
+	 * </ul>
+	 */
+	private CogSourceSPIProvider createSource(String user, String password, Client client) throws Exception {
+		HMStacAccess access = asset.getAccess();
+		String storageEndpoint = asset.getStorageEndpoint();
+		String storageRegion = asset.getStorageRegion();
+		if (client != null && HMStacAccess.isS3Scheme(assetUrl)) {
+			HMS3Location location = HMS3Location.parse(assetUrl);
+			return new HMCogSourceSPIProvider(assetUrl, location.toHttpsUrl(storageRegion),
+					href -> (start, end) -> readClientRange(client, HMS3Location.parse(href), start, end));
+		}
+		if (access != null && access.isAuthenticated(assetUrl)) {
+			return HMCogSourceSPIProvider.fromAccess(access, assetUrl, storageEndpoint, storageRegion);
+		}
+		String url;
+		if (HMStacAccess.isS3Scheme(assetUrl)) {
+			url = (access != null ? access : new HMStacAccess()).toHttpUrl(assetUrl, storageEndpoint, storageRegion);
+		} else {
+			url = PlanetaryComputerMicrosoft.isAzureBlob(assetUrl) ? PlanetaryComputerMicrosoft.getHrefWithToken(assetUrl)
+					: assetUrl;
+		}
+		BasicAuthURI cogUri = new BasicAuthURI(url, false);
+		if (user != null && password != null) {
+			cogUri.setUser(user);
+			cogUri.setPassword(password);
+		}
+		return new CogSourceSPIProvider(cogUri, new CogImageReaderSpi(), new CogImageInputStreamSpi(),
+				HttpRangeReader.class.getName());
+	}
+
+	/**
+	 * Read a range of bytes of an object with a signed request of a client.
+	 */
+	private static byte[] readClientRange(Client client, HMS3Location location, long start, long end) throws IOException {
+		if (location == null) {
+			throw new IOException("Not an s3 address.");
+		}
+		try (ResponseInputStream stream = client.path(location.getBucket(), location.getKey())
+				.header("Range", "bytes=" + start + "-" + end).responseInputStream()) {
+			if (stream.statusCode() >= 400) {
+				throw new IOException("HTTP " + stream.statusCode() + " reading bytes " + start + "-" + end + " of "
+						+ location + ": " + new String(stream.readNBytes(500), StandardCharsets.UTF_8));
+			}
+			int length = (int) (end - start + 1);
+			if (stream.statusCode() != 206) {
+				stream.skipNBytes(start);
+			}
+			return stream.readNBytes(length);
+		} catch (java.io.EOFException e) {
+			return new byte[0];
+		}
+	}
+
+	/**
+	 * Read a window of the full resolution image of a COG at once, with the range requests of all its blocks
+	 * together.
+	 *
+	 * @param source the source of the COG.
+	 * @param window the window in pixels.
+	 * @return the image of the window, starting at 0,0.
+	 * @throws IOException
+	 */
+	private static BufferedImage readCogWindow(CogSourceSPIProvider source, Rectangle window) throws IOException {
+		ImageInputStream cogStream = source.getStream();
+		if (cogStream == null) {
+			throw new IOException("Unable to open " + source.getCogUri().getUri());
+		}
+		CogImageReader reader = new CogImageReader(new CogImageReaderSpi());
+		try {
+			reader.setInput(cogStream);
+			CogImageReadParam param = new CogImageReadParam();
+			param.setSourceRegion(window);
+			param.setRangeReaderClass(HttpRangeReader.class);
+			return reader.read(0, param);
+		} finally {
+			reader.dispose();
+			cogStream.close();
+		}
+	}
+
 	/**
 	 * Create a reader of a cloud optimized GeoTIFF served over http(s), which reads with range
 	 * requests only the header and the blocks of the parts and overviews asked, as the tiles of a

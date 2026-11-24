@@ -27,6 +27,7 @@ public class HMStacAsset {
 	private Envelope envelope;
 	private HMStacAccess access;
 	private String storageEndpoint;
+	private String storageRegion;
 
 	public HMStacAsset(String id, JsonNode assetNode) {
 		this(id, assetNode, null);
@@ -53,6 +54,7 @@ public class HMStacAsset {
 		this.access = access;
 		this.assetNode = assetNode;
 		this.storageEndpoint = findStorageEndpoint(assetNode, storageSchemes);
+		this.storageRegion = findStorageRegion(assetNode, storageSchemes);
 		if (assetNode.has("title")) {
 			title = assetNode.get("title").stringValue(null);
 		}
@@ -117,6 +119,41 @@ public class HMStacAsset {
 	 */
 	public String getStorageEndpoint() {
 		return storageEndpoint;
+	}
+
+	/**
+	 * The region of the bucket holding the asset, as declared by the <code>region</code> of the schemes of
+	 * the storage extension the asset refers to (preferring the ones that are not requester pays).
+	 *
+	 * @return the region (e.g. <code>us-west-2</code>) or null if not declared.
+	 */
+	public String getStorageRegion() {
+		return storageRegion;
+	}
+
+	private static String findStorageRegion(JsonNode assetNode, JsonNode storageSchemes) {
+		JsonNode refs = assetNode.get("storage:refs");
+		if (storageSchemes == null || !storageSchemes.isObject() || refs == null || !refs.isArray()) {
+			return null;
+		}
+		String requesterPaysRegion = null;
+		for (JsonNode ref : refs) {
+			JsonNode scheme = storageSchemes.get(ref.asString(""));
+			if (scheme == null) {
+				continue;
+			}
+			String region = scheme.path("region").asString(null);
+			if (region == null || region.isBlank() || region.contains("{")) {
+				continue;
+			}
+			if (!scheme.path("requester_pays").asBoolean(false)) {
+				return region.trim();
+			}
+			if (requesterPaysRegion == null) {
+				requesterPaysRegion = region.trim();
+			}
+		}
+		return requesterPaysRegion;
 	}
 
 	private static String findStorageEndpoint(JsonNode assetNode, JsonNode storageSchemes) {
