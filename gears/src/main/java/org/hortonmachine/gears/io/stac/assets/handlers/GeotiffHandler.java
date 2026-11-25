@@ -24,6 +24,7 @@ import org.geotools.coverage.processing.Operations;
 import org.geotools.gce.geotiff.GeoTiffReader;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
+import org.hortonmachine.gears.io.stac.HMStacUtils;
 import org.hortonmachine.gears.io.stac.PlanetaryComputerMicrosoft;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetRasterHandler;
 import org.hortonmachine.gears.io.stac.auth.HMS3Location;
@@ -69,15 +70,17 @@ public class GeotiffHandler implements IHMStacAssetRasterHandler {
 		this.assetNode = asset.getAssetNode();
 		this.assetUrl = assetNode.get("href").stringValue(null);
 		String type = asset.getType();
-		if(type==null) {
-			return;
-		}
-		String assetType = type.replace(" ", "").toLowerCase();
-		for (String acceptedType : ACCEPTED_TYPES) {
-			String checkType = acceptedType.replace(" ", "").toLowerCase();
-			if (assetType.contains(checkType)) {
-				supported = true;
-				break;
+		if (type == null) {
+			// assets without type: by the extension of the file
+			supported = HMStacUtils.hasExtension(assetUrl, ".tif", ".tiff");
+		} else {
+			String assetType = type.replace(" ", "").toLowerCase();
+			for (String acceptedType : ACCEPTED_TYPES) {
+				String checkType = acceptedType.replace(" ", "").toLowerCase();
+				if (assetType.contains(checkType)) {
+					supported = true;
+					break;
+				}
 			}
 		}
 		if (supported) {

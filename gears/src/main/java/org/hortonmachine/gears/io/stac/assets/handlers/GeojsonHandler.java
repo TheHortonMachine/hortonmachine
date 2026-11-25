@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.hortonmachine.gears.io.stac.HMStacAsset;
+import org.hortonmachine.gears.io.stac.HMStacUtils;
 import org.hortonmachine.gears.io.stac.assets.IHMStacAssetHandler;
 import org.hortonmachine.gears.io.vectorreader.OmsVectorReader;
 import org.hortonmachine.gears.libs.monitor.IHMProgressMonitor;
@@ -26,10 +27,15 @@ public class GeojsonHandler implements IHMStacAssetHandler {
 		this.asset = asset;
 		this.assetNode = asset.getAssetNode();
 		this.assetUrl = assetNode.get("href").stringValue(null);
-		for (String acceptedType : ACCEPTED_TYPES) {
-			if (asset.getType()!=null && asset.getType().toLowerCase().contains(acceptedType)) {
-				supported = true;
-				break;
+		if (asset.getType() == null) {
+			// assets without type: by the extension of the file (not .json, too often metadata)
+			supported = HMStacUtils.hasExtension(assetUrl, ".geojson");
+		} else {
+			for (String acceptedType : ACCEPTED_TYPES) {
+				if (asset.getType().toLowerCase().contains(acceptedType)) {
+					supported = true;
+					break;
+				}
 			}
 		}
 	}

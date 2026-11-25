@@ -26,6 +26,30 @@ public class HMStacUtils {
         dateFormatter.setTimeZone(utcTz);
     }
     
+    /**
+     * @param url an address, also with query or fragment (e.g. signed urls).
+     * @param extensions the extensions, with the dot (e.g. <code>.tif</code>).
+     * @return <code>true</code> if the path of the address ends with one of the extensions, ignoring the case.
+     */
+    public static boolean hasExtension( String url, String... extensions ) {
+        if (url == null)
+            return false;
+        String path = url;
+        int end = path.length();
+        int query = path.indexOf('?');
+        if (query >= 0)
+            end = query;
+        int fragment = path.indexOf('#');
+        if (fragment >= 0 && fragment < end)
+            end = fragment;
+        path = path.substring(0, end).toLowerCase();
+        for( String extension : extensions ) {
+            if (path.endsWith(extension.toLowerCase()))
+                return true;
+        }
+        return false;
+    }
+
     public static String simplify( Object obj ) {
         if (obj instanceof ReferencedEnvelope) {
             ReferencedEnvelope refEnv = (ReferencedEnvelope) obj;
