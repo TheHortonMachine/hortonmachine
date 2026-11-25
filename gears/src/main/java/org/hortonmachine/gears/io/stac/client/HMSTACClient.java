@@ -510,6 +510,10 @@ public class HMSTACClient extends STACClient {
 	 *         <code>null</code> if not known.
 	 * @throws IOException if the self link is invalid.
 	 */
+	public URL getCollectionUrl(Collection collection) throws IOException {
+		return findCollectionUrl(collection);
+	}
+
 	private URL findCollectionUrl(Collection collection) throws IOException {
 		URL collectionUrl = collectionUrls.get(collection.getId());
 		if (collectionUrl != null)

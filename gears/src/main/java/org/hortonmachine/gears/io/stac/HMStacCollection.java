@@ -108,7 +108,23 @@ public class HMStacCollection {
     public String getType() {
         return collection.getType();
     }
-    
+
+    /**
+     * @return the address of the document of the collection: where it was found in a static catalog, else its
+     *         self link; <code>null</code> if not known.
+     */
+    public String getUrl() {
+        if (stacClient instanceof HMSTACClient hmClient) {
+            try {
+                java.net.URL url = hmClient.getCollectionUrl(collection);
+                return url == null ? null : url.toString();
+            } catch (java.io.IOException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
     public Map<String, Object> getOtherFields() {
 		return otherFields;
 	}
