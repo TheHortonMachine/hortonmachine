@@ -2422,6 +2422,8 @@ public abstract class DatabaseController extends DatabaseView implements IOnClos
             databaseTreeCellRenderer = new DatabaseTreeCellRenderer(currentConnectedSqlDatabase, activeActionProviders);
         }
         databaseTreeView._databaseTree.setCellRenderer(databaseTreeCellRenderer);
+        // the renderer sets tooltips, ex. on tables with extra context menu actions
+        javax.swing.ToolTipManager.sharedInstance().registerComponent(databaseTreeView._databaseTree);
     }
 
     protected void setDbTreeTitle( String title ) {

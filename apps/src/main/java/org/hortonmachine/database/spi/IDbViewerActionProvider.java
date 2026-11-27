@@ -102,6 +102,23 @@ public interface IDbViewerActionProvider {
     }
 
     /**
+     * Cheaply tells whether {@link #getTableActions(ADb, TableLevel, Component)}
+     * contributes actions for the given table, so the database tree can mark that
+     * table's icon with a badge of {@link #getIcon()}.
+     *
+     * <p>Called on every repaint of the tree, so it must not query the database:
+     * check the table name, possibly against flags computed once in
+     * {@link #supportsDatabase(ADb)}. Only called for providers for which
+     * {@link #supportsDatabase(ADb)} returned {@code true}.
+     *
+     * @return {@code true} if the table's context menu gets actions from this
+     *          provider; the default is {@code false}, so no badge.
+     */
+    default boolean hasTableActions( ADb db, TableLevel tableLevel ) {
+        return false;
+    }
+
+    /**
      * @return actions to contribute to the column-node context menu, or an
      *          empty list if none apply. Only called for providers for which
      *          {@link #supportsDatabase(ADb)} returned {@code true}.

@@ -17,7 +17,10 @@
  */
 package org.hortonmachine.database.tree;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -35,6 +38,7 @@ import org.hortonmachine.dbs.compat.objects.TableLevel;
 import org.hortonmachine.dbs.compat.objects.TableTypeLevel;
 import org.hortonmachine.dbs.datatypes.EGeometryType;
 import org.hortonmachine.dbs.utils.SqlName;
+import org.hortonmachine.gui.utils.BadgedIcon;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**
@@ -48,6 +52,10 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private ADb db;
     private Icon dbProviderIcon;
+    /** The active providers that have an icon, to badge the tables they have actions for. */
+    private final List<IDbViewerActionProvider> badgeProviders = new ArrayList<>();
+    /** Badged table icons, by base icon and badge. */
+    private final Map<Icon, Map<Icon, Icon>> badgedIcons = new HashMap<>();
 
     private ImageIcon h2gisIcon = ImageCache.getInstance().getImage(ImageCache.H2GIS32);
     private ImageIcon gpkgIcon = ImageCache.getInstance().getImage(ImageCache.GPKG32);
@@ -88,8 +96,10 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
             for( IDbViewerActionProvider provider : activeProviders ) {
                 Icon icon = provider.getIcon();
                 if (icon != null) {
-                    dbProviderIcon = icon;
-                    break;
+                    if (dbProviderIcon == null) {
+                        dbProviderIcon = icon;
+                    }
+                    badgeProviders.add(provider);
                 }
             }
         }
@@ -101,6 +111,7 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
             boolean leaf, int row, boolean hasFocus ) {
 
         super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+        setToolTipText(null);
 
         if (value instanceof DbLevel) {
             if (dbProviderIcon != null) {
@@ -147,6 +158,7 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
                     setIcon(tableIcon);
                 }
             }
+            badgeIfProviderActions(tableLevel);
         } else if (value instanceof ColumnLevel) {
             ColumnLevel columnLevel = (ColumnLevel) value;
             if (columnLevel.isPK) {
@@ -214,6 +226,29 @@ public class DatabaseTreeCellRenderer extends DefaultTreeCellRenderer {
         }
 
         return this;
+    }
+
+    /**
+     * Mark the table icon with the icon of the first provider that has context menu
+     * actions for this table, so it is visible that right clicking it offers more.
+     */
+    private void badgeIfProviderActions( TableLevel tableLevel ) {
+        for( IDbViewerActionProvider provider : badgeProviders ) {
+            boolean hasActions;
+            try {
+                hasActions = provider.hasTableActions(db, tableLevel);
+            } catch (Exception ex) {
+                hasActions = false;
+            }
+            if (hasActions) {
+                Icon base = getIcon();
+                Icon badge = provider.getIcon();
+                setIcon(badgedIcons.computeIfAbsent(base, b -> new HashMap<>()).computeIfAbsent(badge,
+                        bd -> new BadgedIcon(base, bd)));
+                setToolTipText("Right-click for more actions");
+                return;
+            }
+        }
     }
 
 }

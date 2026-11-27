@@ -31,18 +31,26 @@ import org.hortonmachine.gears.io.geoframe.whetgeo.Whetgeo1DOutputSchema;
 import org.hortonmachine.gui.utils.ImageCache;
 
 /**
- * Contributes the GEOSPACE 1D state chart action to the database viewer's
- * table context menu, for databases recognized as GEOSPACE output
- * GeoPackages.
+ * Contributes the GEOSPACE 1D actions to the database viewer's table context
+ * menu: the state chart on the output state table, and the grid view on the
+ * output grid table and on the input {@code grid_geometry} table.
  *
  * @author Andrea Antonello (https://g-ant.eu)
  */
 public class GeospaceActionProvider implements IDbViewerActionProvider {
 
+    // which kind of WHETGEO 1D gpkg the connection is, checked once in supportsDatabase,
+    // since hasTableActions runs on every repaint of the database tree
+    private boolean outputDb;
+    private boolean inputDb;
+
     @Override
     public boolean supportsDatabase( ADb db ) {
         try {
-            return db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE) && db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID);
+            outputDb = db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE)
+                    && db.hasTable(Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID);
+            inputDb = GeospaceGridDataLoader.isInputDb(db);
+            return outputDb || inputDb;
         } catch (Exception ex) {
             return false;
         }
@@ -50,10 +58,25 @@ public class GeospaceActionProvider implements IDbViewerActionProvider {
 
     @Override
     public List<Action> getTableActions( ADb db, TableLevel tableLevel, Component parent ) {
-        if (!Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE.equals(tableLevel.tableName.getName())) {
-            return Collections.emptyList();
+        String table = tableLevel.tableName.getName();
+        if (outputDb && Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE.equals(table)) {
+            return Collections.singletonList(new GeospaceStateChartAction(db, parent));
         }
-        return Collections.singletonList(new GeospaceStateChartAction(db, parent));
+        if (outputDb && Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID.equals(table)) {
+            return Collections.singletonList(new GeospaceGridAction(db, parent, false));
+        }
+        if (inputDb && GeospaceGridDataLoader.TABLE_INPUT_GRID.equals(table)) {
+            return Collections.singletonList(new GeospaceGridAction(db, parent, true));
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public boolean hasTableActions( ADb db, TableLevel tableLevel ) {
+        String table = tableLevel.tableName.getName();
+        return (outputDb && (Whetgeo1DOutputSchema.TABLE_OUTPUT_STATE.equals(table)
+                || Whetgeo1DOutputSchema.TABLE_OUTPUT_GRID.equals(table)))
+                || (inputDb && GeospaceGridDataLoader.TABLE_INPUT_GRID.equals(table));
     }
 
     @Override
